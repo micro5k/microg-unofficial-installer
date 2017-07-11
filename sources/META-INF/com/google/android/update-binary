@@ -1,0 +1,152 @@
+#!/sbin/sh
+
+### GLOBAL VARIABLES ###
+
+DEBUG_LOG=0
+RECOVERY_API_VER="$1"
+RECOVERY_PIPE="/proc/self/fd/$2"
+ZIP_FILE="$3"
+BASE_TMP_PATH='/tmp'
+TMP_PATH='/tmp/microG'
+
+MANUAL_TMP_MOUNT=0
+
+GENER_ERROR=0
+STATUS=1
+
+### FUNCTIONS ###
+
+enable_debug_log()
+{
+  exec 3>&1 4>&2  # Backup stdout and stderr
+  ZIP_PATH=$(dirname "$ZIP_FILE")
+  exec 1>>"${ZIP_PATH}/debug-a5k.log" 2>&1
+}
+
+disable_debug_log()
+{
+  exec 1>&3 2>&4  # Restore stdout and stderr
+}
+
+ui_msg()
+{
+  echo -e "ui_print $1\nui_print" >> $RECOVERY_PIPE
+  test "$DEBUG_LOG" -ne 0 && echo "$1"
+}
+
+ui_debug()
+{
+  echo "$1"
+}
+
+ui_error()
+{
+  >&2 echo "ERROR: $1"
+  ui_msg "ERROR: $1"
+  test -n "$2" && exit "$2"
+  exit 79
+}
+
+is_mounted()
+{
+  case `mount` in
+    *" $1 "*) return 0;;  # Mounted
+  esac;
+  return 1  # NOT mounted
+}
+
+getprop()
+{
+  test -e '/sbin/getprop' && /sbin/getprop "ro.${1}" || grep "^ro\.${1}=" '/default.prop' | head -n1 | cut -d '=' -f 2
+}
+
+is_substring()
+{
+  case "$2" in 
+    *"$1"*) return 0;;  # Found
+  esac;
+  return 1  # NOT found
+}
+
+set_perm()
+{
+  local uid="$1"; local gid="$2"; local mod="$3"
+  shift 3
+  chown $uid.$gid "$@"; chown $uid:$gid "$@"
+  chmod $mod "$@" || ui_error "chmod failed on '$@'" 81
+}
+
+package_extract_file_unsafe()
+{
+  unzip -opq "$ZIP_FILE" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 82
+}
+
+package_extract_file()
+{
+  "${BASE_TMP_PATH}/busybox" unzip -opq "$ZIP_FILE" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 83
+}
+
+create_dir()
+{
+  mkdir -p "$1" || ui_error "Failed to create the dir '$dir'" 84
+  set_perm 0 0 0755 "$1"
+}
+
+delete_recursive()
+{
+  rm -rf "$@" || ui_error "Failed to delete files/folders" 85
+}
+
+### CODE ###
+
+test "$DEBUG_LOG" -ne 0 && enable_debug_log  # Enable file logging if needed
+
+ui_debug 'PRELOADER'
+if ! is_mounted '/tmp'; then
+  # Workaround: create and mount /tmp if it isn't already mounted
+  MANUAL_TMP_MOUNT=1
+  ui_msg 'WARNING: Creating missing /tmp...'
+  if [[ ! -d '/tmp' ]]; then create_dir '/tmp'; fi
+  mount -v -t tmpfs -o rw tmpfs /tmp
+  set_perm 0 2000 0775 '/tmp'
+
+  if ! is_mounted '/tmp'; then ui_error '/tmp is NOT mounted'; fi
+fi
+
+ABI_LIST=','$(getprop 'product.cpu.abilist')','$(getprop 'product.cpu.abi')','$(getprop 'product.cpu.abi2')','
+
+if is_substring ',x86,' "$ABI_LIST"; then
+  ui_debug 'Extracting x86 BusyBox...'
+  package_extract_file_unsafe 'misc/busybox/busybox-x86' "${BASE_TMP_PATH}/busybox"
+elif is_substring ',armeabi,' "$ABI_LIST"; then
+  ui_debug 'Extracting ARM BusyBox...'
+  package_extract_file_unsafe 'misc/busybox/busybox-arm' "${BASE_TMP_PATH}/busybox"
+else
+  ui_error 'Unsupported CPU'
+fi
+set_perm 0 0 0755 "${BASE_TMP_PATH}/busybox"  # Give it execution rights
+ui_debug $(sha1sum "${BASE_TMP_PATH}/busybox")
+
+delete_recursive "$TMP_PATH"
+create_dir "$TMP_PATH"
+
+ui_debug 'Extracting scripts...'
+package_extract_file 'inc/common.sh' "${TMP_PATH}/common.sh"
+package_extract_file 'install.sh' "${TMP_PATH}/install.sh"
+package_extract_file 'uninstall.sh' "${TMP_PATH}/uninstall.sh"
+set_perm 0 0 0755 "${TMP_PATH}/common.sh"  # Give it execution rights
+set_perm 0 0 0755 "${TMP_PATH}/install.sh"  # Give it execution rights
+set_perm 0 0 0755 "${TMP_PATH}/uninstall.sh"  # Give it execution rights
+
+ui_debug 'Starting installation script...'
+"${BASE_TMP_PATH}/busybox" ash -c "'${TMP_PATH}/install.sh' Preloader '${RECOVERY_API_VER}' '${RECOVERY_PIPE}' '${ZIP_FILE}' '${TMP_PATH}' '${DEBUG_LOG}'"; STATUS="$?"
+
+test -f "${TMP_PATH}/installed" || GENER_ERROR=1
+delete_recursive "${TMP_PATH}"
+
+test "$DEBUG_LOG" -ne 0 && disable_debug_log  # Restore status
+
+test "$MANUAL_TMP_MOUNT" -ne 0 && (umount '/tmp' || ui_error 'Cannot unmount /tmp')
+
+if test "$STATUS" -ne 0; then ui_error "Installation script failed with error $STATUS" "$STATUS"; fi
+if test "$GENER_ERROR" -ne 0; then ui_error 'Installation failed with an unknown error'; fi
