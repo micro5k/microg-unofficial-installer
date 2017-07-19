@@ -43,8 +43,6 @@ ${SYS_PATH}/app/LegacyNetworkLocation.apk
 "
 
 REMNANTS_LIST="
-${PRIVAPP_PATH}/OneTimeInitializer/
-${PRIVAPP_PATH}/OneTimeInitializer.apk
 ${PRIVAPP_PATH}/GoogleOneTimeInitializer/
 ${PRIVAPP_PATH}/GoogleOneTimeInitializer.apk
 ${PRIVAPP_PATH}/GsfProxy/
