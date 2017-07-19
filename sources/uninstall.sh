@@ -63,8 +63,6 @@ ${PRIVAPP_PATH}/FDroidPrivileged.apk
 ${PRIVAPP_PATH}/FDroidPriv/
 ${PRIVAPP_PATH}/FDroidPriv.apk
 
-${SYS_PATH}/app/OneTimeInitializer/
-${SYS_PATH}/app/OneTimeInitializer.apk
 ${SYS_PATH}/app/GoogleOneTimeInitializer/
 ${SYS_PATH}/app/GoogleOneTimeInitializer.apk
 ${SYS_PATH}/app/GsfProxy/
@@ -73,6 +71,7 @@ ${SYS_PATH}/app/GmsCore_update/
 ${SYS_PATH}/app/GmsCore_update.apk
 ${SYS_PATH}/app/PrebuiltGmsCore/
 ${SYS_PATH}/app/PrebuiltGmsCore.apk
+${SYS_PATH}/app/MarketUpdater.apk
 
 ${SYS_PATH}/addon.d/00-1-microg.sh
 ${SYS_PATH}/addon.d/1-microg.sh
