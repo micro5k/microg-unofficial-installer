@@ -156,9 +156,14 @@ copy_dir_content()
   cp -rpf "$1"/* "$2"/ || ui_error "Failed to copy dir content from '$1' to '$2'" 98
 }
 
+delete()
+{
+  rm -f "$@" || ui_error "Failed to delete files" 99
+}
+
 delete_recursive()
 {
-  rm -rf "$@" || ui_error "Failed to delete Failed to delete files/folders" 99
+  rm -rf "$@" || ui_error "Failed to delete files/folders" 99
 }
 
 # Other
