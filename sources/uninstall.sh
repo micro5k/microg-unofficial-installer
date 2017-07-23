@@ -60,6 +60,8 @@ ${PRIVAPP_PATH}/FDroidPrivileged/
 ${PRIVAPP_PATH}/FDroidPrivileged.apk
 ${PRIVAPP_PATH}/FDroidPriv/
 ${PRIVAPP_PATH}/FDroidPriv.apk
+${PRIVAPP_PATH}/Velvet/
+${PRIVAPP_PATH}/Velvet.apk
 
 ${SYS_PATH}/app/GoogleOneTimeInitializer/
 ${SYS_PATH}/app/GoogleOneTimeInitializer.apk
