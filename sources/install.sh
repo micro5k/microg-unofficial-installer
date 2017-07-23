@@ -84,7 +84,7 @@ ZIP_PATH=$(dirname "$ZIP_FILE")
 # Info
 ui_msg '---------------------------'
 ui_msg 'microG unofficial installer'
-ui_msg 'v1.0.19-alpha'
+ui_msg 'v1.0.20-alpha'
 ui_msg '(by ale5000)'
 ui_msg '---------------------------'
 ui_msg ''
