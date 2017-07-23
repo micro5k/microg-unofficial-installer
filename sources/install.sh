@@ -140,6 +140,28 @@ fi
 # Clean some Google Apps and previous installations
 . "${TMP_PATH}/uninstall.sh"
 
+# Setup default permissions
+ui_debug 'Setup default permissions...'
+if [[ ! -e "${SYS_PATH}/etc/default-permissions" ]]; then
+  ui_msg 'Creating the default permissions folder...'
+  create_dir "${SYS_PATH}/etc/default-permissions"
+fi;
+copy_dir_content "${TMP_PATH}/files/etc/default-permissions" "${SYS_PATH}/etc/default-permissions"
+
+# Resetting runtime permissions
+if ! is_mounted '/data'; then
+  mount '/data'
+  if ! is_mounted '/data'; then ui_error 'ERROR: /data cannot be mounted'; fi
+fi
+if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
+  if ! grep -q 'com.google.android.gms' /data/system/users/*/runtime-permissions.xml; then
+    # Purge the runtime permissions to prevent issues when the user flash this for the first time on a dirty install
+    ui_debug "Resetting runtime permissions..."
+    delete /data/system/users/*/runtime-permissions.xml
+  fi;
+fi;
+umount '/data'
+
 # Installing
 ui_msg 'Installing...'
 if [[ $OLD_ANDROID != true ]]; then
