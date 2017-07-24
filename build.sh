@@ -33,6 +33,20 @@ if [[ "${BASEDIR:0:1}" != '/' ]]; then
   if [[ "$CURDIR" != '/' ]]; then BASEDIR="$CURDIR$BASEDIR"; fi
 fi
 
+# Detect OS
+UNAME=$(uname)
+if [[ "$UNAME" == 'Linux' ]]; then
+  PLATFORM='linux'
+elif [[ "$UNAME" == 'Windows_NT' ]]; then
+  PLATFORM='win'
+#elif [[ "$UNAME" == 'Darwin' ]]; then
+  #PLATFORM='macos'
+#elif [[ "$UNAME" == 'FreeBSD' ]]; then
+  #PLATFORM='freebsd'
+else
+  ui_error 'Unsupported OS'
+fi
+
 # Create the output dir
 OUT_DIR="$BASEDIR/output"
 mkdir -p "$OUT_DIR" || ui_error 'Failed to create the output dir'
@@ -48,13 +62,18 @@ VER=$(cat "$BASEDIR/sources/inc/VERSION")
 cp -rf "$BASEDIR/sources" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
 cp -rf "$BASEDIR/"LICENSE* "$TEMP_DIR/sources/" || ui_error 'Failed to copy license to the temp dir'
 
-# Remove previous file
+# Remove the previous file
 rm -f "$OUT_DIR/$FILENAME-v$VER.zip" || ui_error 'Failed to remove the previous zip file'
 
-# Compress
+# Compress and sign
 cd "$TEMP_DIR/sources" || ui_error 'Failed to change folder'
-zip -r9X "$OUT_DIR/$FILENAME-v$VER.zip" * || ui_error 'Failed compression'
+zip -r9X "$TEMP_DIR/zip-1.zip" * || ui_error 'Failed compressing'
+java -jar "$BASEDIR/tools/signapk.jar" "$BASEDIR/certs"/*.x509.pem "$BASEDIR/certs"/*.pk8 "$TEMP_DIR/zip-1.zip" "$TEMP_DIR/zip-2.zip" || ui_error 'Failed signing'
+"$BASEDIR/tools/$PLATFORM/zipadjust" "$TEMP_DIR/zip-2.zip" "$TEMP_DIR/zip-3.zip" || ui_error 'Failed zipadjusting'
+java -jar "$BASEDIR/tools/minsignapk.jar" "$BASEDIR/certs"/*.x509.pem "$BASEDIR/certs"/*.pk8 "$TEMP_DIR/zip-3.zip" "$TEMP_DIR/zip-4.zip" || ui_error 'Failed minsigning'
 cd "$OUT_DIR"
+
+cp -f "$TEMP_DIR/zip-4.zip" "$OUT_DIR/$FILENAME-v$VER.zip" || ui_error 'Failed to copy the final file'
 
 # Cleanup remnants
 rm -rf "$TEMP_DIR" || ui_error 'Failed to cleanup'
