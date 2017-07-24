@@ -33,22 +33,28 @@ if [[ "${BASEDIR:0:1}" != '/' ]]; then
   if [[ "$CURDIR" != '/' ]]; then BASEDIR="$CURDIR$BASEDIR"; fi
 fi
 
-# Set filename and version
-FILENAME='microG-unofficial-installer-ale5000'
-VER=$(cat "$BASEDIR/sources/inc/VERSION")
-
 # Create the output dir
 OUT_DIR="$BASEDIR/output"
 mkdir -p "$OUT_DIR" || ui_error 'Failed to create the output dir'
 
+# Create the temp dir
+TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX)
+
+# Set filename and version
+FILENAME='microG-unofficial-installer-ale5000'
+VER=$(cat "$BASEDIR/sources/inc/VERSION")
+
+# Copy data
+cp -rf "$BASEDIR/sources" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
+cp -rf "$BASEDIR/"LICENSE* "$TEMP_DIR/sources/" || ui_error 'Failed to copy license to the temp dir'
+
 # Remove previous file
 rm -f "$OUT_DIR/$FILENAME-v$VER.zip" || ui_error 'Failed to remove the previous zip file'
 
-# Copy license
-cp -rpf "$BASEDIR/"LICENSE* "$BASEDIR/sources" || ui_error 'Failed to copy license'
-
-cd "$BASEDIR/sources" || ui_error 'Failed to change folder'
+# Compress
+cd "$TEMP_DIR/sources" || ui_error 'Failed to change folder'
 zip -r9X "$OUT_DIR/$FILENAME-v$VER.zip" * || ui_error 'Failed compression'
+cd "$OUT_DIR"
 
 # Cleanup remnants
-rm -f "$BASEDIR/sources/"LICENSE* || ui_error 'Failed to cleanup'
+rm -rf "$TEMP_DIR" || ui_error 'Failed to cleanup'
