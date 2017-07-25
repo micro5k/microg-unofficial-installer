@@ -131,6 +131,7 @@ delete_recursive "$TMP_PATH"
 create_dir "$TMP_PATH"
 
 ui_debug 'Extracting scripts...'
+create_dir "$TMP_PATH/inc"
 package_extract_file 'inc/common.sh' "${TMP_PATH}/inc/common.sh"
 package_extract_file 'uninstall.sh' "${TMP_PATH}/uninstall.sh"
 package_extract_file 'install.sh' "${TMP_PATH}/install.sh"
