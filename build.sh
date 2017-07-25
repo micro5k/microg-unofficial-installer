@@ -25,14 +25,6 @@ ui_error()
   exit 1
 }
 
-# Detect script dir
-BASEDIR=$(dirname "$0")
-if [[ "${BASEDIR:0:1}" != '/' ]]; then
-  if [[ "$BASEDIR" == '.' ]]; then BASEDIR=''; else BASEDIR="/$BASEDIR"; fi
-  CURDIR=$(pwd)
-  if [[ "$CURDIR" != '/' ]]; then BASEDIR="$CURDIR$BASEDIR"; fi
-fi
-
 # Detect OS
 UNAME=$(uname)
 if [[ "$UNAME" == 'Linux' ]]; then
@@ -45,6 +37,16 @@ elif [[ "$UNAME" == 'Windows_NT' ]]; then
   #PLATFORM='freebsd'
 else
   ui_error 'Unsupported OS'
+fi
+
+# Detect script dir (with absolute path)
+CURDIR=$(pwd)
+BASEDIR=$(dirname "$0")
+if [[ "${BASEDIR:0:1}" == '/' ]] || [[ "$PLATFORM" == 'win' && "${BASEDIR:1:1}" == ':' ]]; then
+  :  # If already absolute leave it as is
+else
+  if [[ "$BASEDIR" == '.' ]]; then BASEDIR=''; else BASEDIR="/$BASEDIR"; fi
+  if [[ "$CURDIR" != '/' ]]; then BASEDIR="$CURDIR$BASEDIR"; fi
 fi
 
 # Create the output dir
