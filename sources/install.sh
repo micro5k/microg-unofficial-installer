@@ -6,7 +6,7 @@ RECOVERY_API_VER="$2"
 RECOVERY_PIPE="$3"
 ZIP_FILE="$4"
 TMP_PATH="$5"
-DEBUG_LOG="$6"
+#DEBUG_LOG="$6"
 
 INSTALLER=1
 CPU=false
@@ -145,7 +145,7 @@ ui_debug 'Setup default Android permissions...'
 if [[ ! -e "${SYS_PATH}/etc/default-permissions" ]]; then
   ui_msg 'Creating the default permissions folder...'
   create_dir "${SYS_PATH}/etc/default-permissions"
-fi;
+fi
 copy_dir_content "${TMP_PATH}/files/etc/default-permissions" "${SYS_PATH}/etc/default-permissions"
 
 # Resetting Android runtime permissions
@@ -158,8 +158,8 @@ if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
     # Purge the runtime permissions to prevent issues when the user flash this for the first time on a dirty install
     ui_debug "Resetting Android runtime permissions..."
     delete /data/system/users/*/runtime-permissions.xml
-  fi;
-fi;
+  fi
+fi
 umount '/data'
 
 # Installing
