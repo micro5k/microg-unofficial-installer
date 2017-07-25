@@ -26,7 +26,7 @@ PATH="${TMP_PATH}/bin"
 
 ### FUNCTIONS ###
 
-. "${TMP_PATH}/common.sh"
+. "${TMP_PATH}/inc/common.sh"
 
 
 ### CODE ###

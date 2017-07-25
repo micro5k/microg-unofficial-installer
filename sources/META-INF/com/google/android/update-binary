@@ -131,12 +131,12 @@ delete_recursive "$TMP_PATH"
 create_dir "$TMP_PATH"
 
 ui_debug 'Extracting scripts...'
-package_extract_file 'inc/common.sh' "${TMP_PATH}/common.sh"
-package_extract_file 'install.sh' "${TMP_PATH}/install.sh"
+package_extract_file 'inc/common.sh' "${TMP_PATH}/inc/common.sh"
 package_extract_file 'uninstall.sh' "${TMP_PATH}/uninstall.sh"
-set_perm 0 0 0755 "${TMP_PATH}/common.sh"  # Give it execution rights
-set_perm 0 0 0755 "${TMP_PATH}/install.sh"  # Give it execution rights
+package_extract_file 'install.sh' "${TMP_PATH}/install.sh"
+set_perm 0 0 0755 "${TMP_PATH}/inc/common.sh"  # Give it execution rights
 set_perm 0 0 0755 "${TMP_PATH}/uninstall.sh"  # Give it execution rights
+set_perm 0 0 0755 "${TMP_PATH}/install.sh"  # Give it execution rights
 
 ui_debug 'Starting installation script...'
 "${BASE_TMP_PATH}/busybox" bash -c "'${TMP_PATH}/install.sh' Preloader '${RECOVERY_API_VER}' '${RECOVERY_PIPE}' '${ZIP_FILE}' '${TMP_PATH}' '${DEBUG_LOG}'"; STATUS="$?"

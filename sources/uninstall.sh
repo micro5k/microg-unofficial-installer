@@ -1,12 +1,12 @@
 #!/sbin/sh
 
 if [[ -z "$INSTALLER" ]]; then
-  $RECOVERY_PIPE='nul'
-  $ZIP_FILE="$0"
-  $TMP_PATH='/tmp'
-  . './inc/common.sh'
+  ui_msg()
+  {
+    echo "$1"
+  }
 
-  ui_debug 'Uninstalling...'
+  ui_msg 'Uninstalling...'
 
   SYS_PATH='/system'
   PRIVAPP_PATH="${SYS_PATH}/app"
@@ -84,5 +84,5 @@ rm -rf ${DELETE_LIST}  # Filenames cannot contain spaces
 rm -rf ${REMNANTS_LIST}  # Filenames cannot contain spaces
 
 if [[ -z "$INSTALLER" ]]; then
-  ui_debug 'Done.'
+  ui_msg 'Done.'
 fi
