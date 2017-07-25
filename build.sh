@@ -61,6 +61,7 @@ VER=$(cat "$BASEDIR/sources/inc/VERSION")
 # Download Play Store if missing
 if [[ ! -e "$BASEDIR/sources/files/priv-app/Phonesky.apk" ]]; then
   wget -O "$BASEDIR/sources/files/priv-app/Phonesky.apk" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0' 'http://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911' || ui_error 'Failed to download Play Store'
+  echo ''
 fi
 
 # Copy data
@@ -73,6 +74,7 @@ rm -f "$OUT_DIR/$FILENAME-v$VER-signed.zip" || ui_error 'Failed to remove the pr
 # Compress and sign
 cd "$TEMP_DIR/sources" || ui_error 'Failed to change folder'
 zip -r9X "$TEMP_DIR/zip-1.zip" * || ui_error 'Failed compressing'
+echo ''
 java -jar "$BASEDIR/tools/signapk.jar" "$BASEDIR/certs"/*.x509.pem "$BASEDIR/certs"/*.pk8 "$TEMP_DIR/zip-1.zip" "$TEMP_DIR/zip-2.zip" || ui_error 'Failed signing'
 "$BASEDIR/tools/$PLATFORM/zipadjust" "$TEMP_DIR/zip-2.zip" "$TEMP_DIR/zip-3.zip" || ui_error 'Failed zipadjusting'
 java -jar "$BASEDIR/tools/minsignapk.jar" "$BASEDIR/certs"/*.x509.pem "$BASEDIR/certs"/*.pk8 "$TEMP_DIR/zip-3.zip" "$TEMP_DIR/zip-4.zip" || ui_error 'Failed minsigning'
@@ -82,3 +84,6 @@ cp -f "$TEMP_DIR/zip-4.zip" "$OUT_DIR/$FILENAME-v$VER-signed.zip" || ui_error 'F
 
 # Cleanup remnants
 rm -rf "$TEMP_DIR" || ui_error 'Failed to cleanup'
+
+echo ''
+echo 'Done.'
