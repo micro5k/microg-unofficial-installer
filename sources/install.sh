@@ -39,7 +39,7 @@ fi
 SYS_ROOT_IMAGE=$(getprop 'build.system_root_image')
 if [[ -z "$SYS_ROOT_IMAGE" ]]; then
   SYS_ROOT_IMAGE=false;
-elif [[ $SYS_ROOT_IMAGE == true && -d '/system/system' ]]; then
+elif [[ $SYS_ROOT_IMAGE == true && -e '/system/system' ]]; then
   SYS_PATH='/system/system';
 fi
 
