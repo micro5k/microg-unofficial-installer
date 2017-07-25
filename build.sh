@@ -58,6 +58,11 @@ TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX)
 FILENAME='microG-unofficial-installer-ale5000'
 VER=$(cat "$BASEDIR/sources/inc/VERSION")
 
+# Download Play Store if missing
+if [[ ! -e "$BASEDIR/sources/files/priv-app/Phonesky.apk" ]]; then
+  wget -O "$BASEDIR/sources/files/priv-app/Phonesky.apk" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0' 'http://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911' || ui_error 'Failed to download Play Store'
+fi
+
 # Copy data
 cp -rf "$BASEDIR/sources" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
 cp -rf "$BASEDIR/"LICENSE* "$TEMP_DIR/sources/" || ui_error 'Failed to copy license to the temp dir'
