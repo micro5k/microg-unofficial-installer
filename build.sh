@@ -63,7 +63,7 @@ cp -rf "$BASEDIR/sources" "$TEMP_DIR/" || ui_error 'Failed to copy data to the t
 cp -rf "$BASEDIR/"LICENSE* "$TEMP_DIR/sources/" || ui_error 'Failed to copy license to the temp dir'
 
 # Remove the previous file
-rm -f "$OUT_DIR/$FILENAME-v$VER.zip" || ui_error 'Failed to remove the previous zip file'
+rm -f "$OUT_DIR/$FILENAME-v$VER-signed.zip" || ui_error 'Failed to remove the previous zip file'
 
 # Compress and sign
 cd "$TEMP_DIR/sources" || ui_error 'Failed to change folder'
@@ -73,7 +73,7 @@ java -jar "$BASEDIR/tools/signapk.jar" "$BASEDIR/certs"/*.x509.pem "$BASEDIR/cer
 java -jar "$BASEDIR/tools/minsignapk.jar" "$BASEDIR/certs"/*.x509.pem "$BASEDIR/certs"/*.pk8 "$TEMP_DIR/zip-3.zip" "$TEMP_DIR/zip-4.zip" || ui_error 'Failed minsigning'
 cd "$OUT_DIR"
 
-cp -f "$TEMP_DIR/zip-4.zip" "$OUT_DIR/$FILENAME-v$VER.zip" || ui_error 'Failed to copy the final file'
+cp -f "$TEMP_DIR/zip-4.zip" "$OUT_DIR/$FILENAME-v$VER-signed.zip" || ui_error 'Failed to copy the final file'
 
 # Cleanup remnants
 rm -rf "$TEMP_DIR" || ui_error 'Failed to cleanup'
