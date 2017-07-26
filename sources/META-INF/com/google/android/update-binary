@@ -31,7 +31,7 @@ disable_debug_log()
 ui_msg()
 {
   echo -e "ui_print $1\nui_print" >> $RECOVERY_PIPE
-  test "$DEBUG_LOG" -ne 0 && echo "$1"
+  if [ "$DEBUG_LOG" -ne 0 ]; then echo "$1"; fi
 }
 
 ui_debug()
@@ -41,7 +41,7 @@ ui_debug()
 
 ui_error()
 {
-  >&2 echo "ERROR: $1"
+  #>&2 echo "ERROR: $1"
   ui_msg "ERROR: $1"
   test -n "$2" && exit "$2"
   exit 79
@@ -106,7 +106,7 @@ if ! is_mounted '/tmp'; then
   # Workaround: create and mount /tmp if it isn't already mounted
   MANUAL_TMP_MOUNT=1
   ui_msg 'WARNING: Creating missing /tmp...'
-  if [[ ! -d '/tmp' ]]; then create_dir '/tmp'; fi
+  if [ ! -e '/tmp' ]; then create_dir '/tmp'; fi
   mount -v -t tmpfs -o rw tmpfs /tmp
   set_perm 0 2000 0775 '/tmp'
 
