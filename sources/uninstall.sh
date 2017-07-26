@@ -62,6 +62,10 @@ ${PRIVAPP_PATH}/GmsCoreSetupPrebuilt/
 ${PRIVAPP_PATH}/GmsCoreSetupPrebuilt.apk
 ${PRIVAPP_PATH}/UnifiedNlp/
 ${PRIVAPP_PATH}/UnifiedNlp.apk
+${PRIVAPP_PATH}/com.qualcomm.location/
+${PRIVAPP_PATH}/com.qualcomm.location.apk
+${PRIVAPP_PATH}/AMAPNetworkLocation/
+${PRIVAPP_PATH}/AMAPNetworkLocation.apk
 ${PRIVAPP_PATH}/com.google.android.gms/
 ${PRIVAPP_PATH}/com.google.android.gms.apk
 ${PRIVAPP_PATH}/PlayStore/
@@ -89,7 +93,13 @@ ${SYS_PATH}/app/GmsCoreSetupPrebuilt/
 ${SYS_PATH}/app/GmsCoreSetupPrebuilt.apk
 ${SYS_PATH}/app/UnifiedNlp/
 ${SYS_PATH}/app/UnifiedNlp.apk
+${SYS_PATH}/app/com.qualcomm.location/
+${SYS_PATH}/app/com.qualcomm.location.apk
+${SYS_PATH}/app/AMAPNetworkLocation/
+${SYS_PATH}/app/AMAPNetworkLocation.apk
 ${SYS_PATH}/app/MarketUpdater.apk
+
+${SYS_PATH}/etc/permissions/com.qualcomm.location.xml
 
 ${SYS_PATH}/addon.d/00-1-microg.sh
 ${SYS_PATH}/addon.d/1-microg.sh
