@@ -35,6 +35,7 @@ ${PRIVAPP_PATH}/NetworkLocation.apk
 ${SYS_PATH}/app/GsfProxy/
 ${SYS_PATH}/app/PlayGames/
 ${SYS_PATH}/app/YouTube/
+${SYS_PATH}/app/LegacyNetworkLocation/
 
 ${SYS_PATH}/app/GsfProxy.apk
 ${SYS_PATH}/app/PlayGames.apk
@@ -51,7 +52,14 @@ ${PRIVAPP_PATH}/GmsCore_update/
 ${PRIVAPP_PATH}/GmsCore_update.apk
 ${PRIVAPP_PATH}/PrebuiltGmsCore/
 ${PRIVAPP_PATH}/PrebuiltGmsCore.apk
+${PRIVAPP_PATH}/GmsCoreSetupPrebuilt/
+${PRIVAPP_PATH}/GmsCoreSetupPrebuilt.apk
+${PRIVAPP_PATH}/UnifiedNlp/
+${PRIVAPP_PATH}/UnifiedNlp.apk
+${PRIVAPP_PATH}/com.google.android.gms/
 ${PRIVAPP_PATH}/com.google.android.gms.apk
+${PRIVAPP_PATH}/PlayStore/
+${PRIVAPP_PATH}/PlayStore.apk
 ${PRIVAPP_PATH}/BlankStore/
 ${PRIVAPP_PATH}/BlankStore.apk
 ${PRIVAPP_PATH}/FakeStore/
@@ -71,6 +79,10 @@ ${SYS_PATH}/app/GmsCore_update/
 ${SYS_PATH}/app/GmsCore_update.apk
 ${SYS_PATH}/app/PrebuiltGmsCore/
 ${SYS_PATH}/app/PrebuiltGmsCore.apk
+${SYS_PATH}/app/GmsCoreSetupPrebuilt/
+${SYS_PATH}/app/GmsCoreSetupPrebuilt.apk
+${SYS_PATH}/app/UnifiedNlp/
+${SYS_PATH}/app/UnifiedNlp.apk
 ${SYS_PATH}/app/MarketUpdater.apk
 
 ${SYS_PATH}/addon.d/00-1-microg.sh
