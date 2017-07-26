@@ -41,6 +41,12 @@ ${SYS_PATH}/app/GsfProxy.apk
 ${SYS_PATH}/app/PlayGames.apk
 ${SYS_PATH}/app/YouTube.apk
 ${SYS_PATH}/app/LegacyNetworkLocation.apk
+
+${SYS_PATH}/app/IchnaeaNlpBackend/
+${SYS_PATH}/app/IchnaeaNlpBackend.apk
+
+${SYS_PATH}/app/NominatimGeocoderBackend/
+${SYS_PATH}/app/NominatimGeocoderBackend.apk
 "
 
 REMNANTS_LIST="
