@@ -125,7 +125,6 @@ else
   ui_error 'Unsupported CPU'
 fi
 set_perm 0 0 0755 "${BASE_TMP_PATH}/busybox"  # Give it execution rights
-ui_debug $(sha1sum "${BASE_TMP_PATH}/busybox")
 
 delete_recursive "$TMP_PATH"
 create_dir "$TMP_PATH"
