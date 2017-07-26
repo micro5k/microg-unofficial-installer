@@ -11,7 +11,7 @@ fi
 ui_msg()
 {
   echo -e "ui_print $1\nui_print" >> $RECOVERY_PIPE
-  test "$DEBUG_LOG" -ne 0 && echo "$1"; true
+  if [[ "$DEBUG_LOG" -ne 0 ]]; then echo "$1"; fi
 }
 
 ui_msg_sameline_start()
@@ -31,7 +31,7 @@ ui_debug()
 
 ui_error()
 {
-  >&2 echo "ERROR: $1"
+  #>&2 echo "ERROR: $1"
   ui_msg "ERROR: $1"
   test -n "$2" && exit "$2"
   exit 91
@@ -60,7 +60,7 @@ is_mounted_read_write()
 get_mount_status()
 {
   local mount_line=$(mount | grep " $1 " | head -n1)
-  if [[ -z $mount_line ]]; then return 1; fi  # NOT mounted
+  if [[ -z "$mount_line" ]]; then return 1; fi  # NOT mounted
   if echo "$mount_line" | grep -qi -e "[(\s,]rw[\s,)]"; then return 0; fi  # Mounted read-write (RW)
   return 2  # Mounted read-only (RO)
 }
