@@ -25,6 +25,14 @@ ui_error()
   exit 1
 }
 
+dl_file()
+{
+  if [[ ! -e "$2/$1" ]]; then
+    wget -O "$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0' "$3" || ui_error "Failed to download $1"
+    echo ''
+  fi
+}
+
 # Detect OS
 UNAME=$(uname)
 if [[ "$UNAME" == 'Linux' ]]; then
@@ -63,10 +71,7 @@ VER=$(cat "$BASEDIR/sources/inc/VERSION")
 FILENAME="$NAME-v$VER-signed"
 
 # Download Play Store if missing
-if [[ ! -e "$BASEDIR/sources/files/priv-app/Phonesky.apk" ]]; then
-  wget -O "$BASEDIR/sources/files/priv-app/Phonesky.apk" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0' 'http://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911' || ui_error 'Failed to download Play Store'
-  echo ''
-fi
+dl_file 'priv-app/Phonesky.apk' "$BASEDIR/sources/files" 'http://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911'
 
 # Copy data
 cp -rf "$BASEDIR/sources" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
