@@ -25,12 +25,29 @@ ui_error()
   exit 1
 }
 
+verify_sha1()
+{
+  local file_name="$1"
+  local hash="$2"
+  local file_hash=$(sha1sum "$file_name" | cut -d ' ' -f 1)
+
+  if [[ $hash != "$file_hash" ]]; then return 1; fi  # Failed
+  return 0  # Success
+}
+
+corrupted_file()
+{
+  rm -f "$1" || echo 'Failed to remove the corrupted file.'
+  ui_error "The file '$1' is corrupted."
+}
+
 dl_file()
 {
   if [[ ! -e "$2/$1" ]]; then
-    wget -O "$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0' "$3" || ui_error "Failed to download $1"
+    wget -O "$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0' "$3" || ui_error "Failed to download the file '$1'."
     echo ''
   fi
+  verify_sha1 "$2/$1" "$4" || corrupted_file "$2/$1"
 }
 
 # Detect OS
@@ -71,7 +88,7 @@ VER=$(cat "$BASEDIR/sources/inc/VERSION")
 FILENAME="$NAME-v$VER-signed"
 
 # Download Play Store if missing
-dl_file 'priv-app/Phonesky.apk' "$BASEDIR/sources/files" 'http://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911'
+dl_file 'priv-app/Phonesky.apk' "$BASEDIR/sources/files" 'http://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911' 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'
 
 # Copy data
 cp -rf "$BASEDIR/sources" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
