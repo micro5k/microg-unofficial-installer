@@ -43,11 +43,12 @@ corrupted_file()
 
 dl_file()
 {
-  if [[ ! -e "$2/$1" ]]; then
-    wget -O "$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0' "$3" || ui_error "Failed to download the file '$1'."
+  if [[ ! -e "$3/$2/$1" ]]; then
+    mkdir -p "$3/$2"
+    wget -O "$3/$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0' "$4" || ui_error "Failed to download the file '$2/$1'."
     echo ''
   fi
-  verify_sha1 "$2/$1" "$4" || corrupted_file "$2/$1"
+  verify_sha1 "$3/$2/$1" "$5" || corrupted_file "$3/$2/$1"
 }
 
 # Detect OS
@@ -87,8 +88,8 @@ TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX)
 VER=$(cat "$BASEDIR/sources/inc/VERSION")
 FILENAME="$NAME-v$VER-signed"
 
-# Download Play Store if missing
-dl_file 'priv-app/Phonesky.apk' "$BASEDIR/sources/files" 'http://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911' 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'
+# Download files if they are missing
+dl_file 'Phonesky.apk' 'priv-app' "$BASEDIR/sources/files" 'http://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911' 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'
 
 # Copy data
 cp -rf "$BASEDIR/sources" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
