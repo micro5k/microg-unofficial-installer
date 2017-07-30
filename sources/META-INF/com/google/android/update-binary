@@ -124,9 +124,14 @@ create_dir_safe()
   set_perm_safe 0 0 0755 "$1"
 }
 
+delete_safe()
+{
+  "$BASE_TMP_PATH/busybox" rm -f "$@" || ui_error "Failed to delete files" 85
+}
+
 delete_recursive_safe()
 {
-  "$BASE_TMP_PATH/busybox" rm -rf "$@" || ui_error "Failed to delete files/folders" 85
+  "$BASE_TMP_PATH/busybox" rm -rf "$@" || ui_error "Failed to delete files/folders" 86
 }
 
 ### CODE ###
@@ -190,3 +195,5 @@ test "$MANUAL_TMP_MOUNT" -ne 0 && (umount '/tmp' || ui_error 'Cannot unmount /tm
 
 if test "$STATUS" -ne 0; then ui_error "Installation script failed with error $STATUS" "$STATUS"; fi
 if test "$GENER_ERROR" -ne 0; then ui_error 'Installation failed with an unknown error'; fi
+
+delete_safe "$BASE_TMP_PATH/busybox"
