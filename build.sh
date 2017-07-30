@@ -98,6 +98,8 @@ cp -rf "$BASEDIR/"LICENSE* "$TEMP_DIR/sources/" || ui_error 'Failed to copy lice
 # Remove the previous file
 rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip file'
 
+### IMPORTANT: Keep using 'zip' for compression since 'zipadjust' isn't compatible with zip archives created by '7za' and it will corrupt them
+
 # Compress and sign
 cd "$TEMP_DIR/sources" || ui_error 'Failed to change folder'
 zip -r9X "$TEMP_DIR/zip-1.zip" * || ui_error 'Failed compressing'
