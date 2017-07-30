@@ -101,7 +101,7 @@ getprop()
 
 build_getprop()
 {
-  grep "^ro\.${1}=" "${TMP_PATH}/build.prop" | head -n1 | cut -d '=' -f 2
+  grep "^ro\.${1}=" "$TMP_PATH/build.prop" | head -n1 | cut -d '=' -f 2
 }
 
 # String related functions
