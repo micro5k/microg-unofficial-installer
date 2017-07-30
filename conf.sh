@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-NAME='microG-unofficial-installer-ale5000'
+export NAME='microG-unofficial-installer-ale5000'
