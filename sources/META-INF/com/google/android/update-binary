@@ -21,9 +21,10 @@ LICENSE
 ### GLOBAL VARIABLES ###
 
 export DEBUG_LOG=0
-RECOVERY_API_VER="$1"
-RECOVERY_PIPE="/proc/self/fd/$2"
-ZIP_FILE="$3"
+export RECOVERY_API_VER="$1"
+export RECOVERY_PIPE="/proc/self/fd/$2"
+export ZIP_FILE="$3"
+export ZIP_PATH=$(dirname "$ZIP_FILE")
 BASE_TMP_PATH='/tmp'
 TMP_PATH='/tmp/microG'
 
@@ -37,7 +38,6 @@ STATUS=1
 enable_debug_log()
 {
   exec 3>&1 4>&2  # Backup stdout and stderr
-  ZIP_PATH=$(dirname "$ZIP_FILE")
   exec 1>>"${ZIP_PATH}/debug-a5k.log" 2>&1
 }
 
@@ -156,7 +156,7 @@ elif is_substring ',armeabi,' "$ABI_LIST"; then
 else
   ui_error 'Unsupported CPU'
 fi
-set_perm_safe 0 0 0755 "$BASE_TMP_PATH/busybox"  # Give it execution rights
+set_perm 0 0 0755 "$BASE_TMP_PATH/busybox"  # Give it execution rights
 
 # Delete previous traces
 delete_recursive_safe "$TMP_PATH"
@@ -179,7 +179,7 @@ create_dir_safe "$TMP_PATH/bin"
 export PATH="$TMP_PATH/bin"
 
 ui_debug 'Starting installation script...'
-"$BASE_TMP_PATH/busybox" bash -c "'$TMP_PATH/install.sh' Preloader '${RECOVERY_API_VER}' '${RECOVERY_PIPE}' '${ZIP_FILE}' '$TMP_PATH'"; STATUS="$?"
+"$BASE_TMP_PATH/busybox" bash -c "'$TMP_PATH/install.sh' Preloader '$TMP_PATH'"; STATUS="$?"
 
 test -f "$TMP_PATH/installed" || GENER_ERROR=1
 delete_recursive_safe "$TMP_PATH"

@@ -20,12 +20,9 @@ LICENSE
 
 ### GLOBAL VARIABLES ###
 
-RECOVERY_API_VER="$2"
-RECOVERY_PIPE="$3"
-ZIP_FILE="$4"
-TMP_PATH="$5"
+export INSTALLER=1
+TMP_PATH="$2"
 
-INSTALLER=1
 CPU=false
 CPU64=false
 LEGACY_ARM=false
@@ -33,7 +30,6 @@ LEGACY_ANDROID=false
 OLD_ANDROID=false
 SYS_ROOT_IMAGE=''
 SYS_PATH='/system'
-ZIP_PATH=false
 
 
 ### FUNCTIONS ###
@@ -90,8 +86,6 @@ elif is_substring ',arm64-v8a,' "$ABI_LIST"; then
 fi
 
 if is_substring ',armeabi,' "$ABI_LIST" && ! is_substring ',armeabi-v7a,' "$ABI_LIST"; then LEGACY_ARM=true; fi
-
-ZIP_PATH=$(dirname "$ZIP_FILE")
 
 # Info
 ui_msg '---------------------------'
