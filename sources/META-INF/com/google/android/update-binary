@@ -26,7 +26,7 @@ export RECOVERY_PIPE="/proc/self/fd/$2"
 export ZIP_FILE="$3"
 export ZIP_PATH=$(dirname "$ZIP_FILE")
 BASE_TMP_PATH='/tmp'
-TMP_PATH='/tmp/microG'
+TMP_PATH='/tmp/custom-setup-a5k'
 
 MANUAL_TMP_MOUNT=0
 
@@ -38,7 +38,7 @@ STATUS=1
 enable_debug_log()
 {
   exec 3>&1 4>&2  # Backup stdout and stderr
-  exec 1>>"${ZIP_PATH}/debug-a5k.log" 2>&1
+  exec 1>>"$ZIP_PATH/debug-a5k.log" 2>&1
 }
 
 disable_debug_log()
