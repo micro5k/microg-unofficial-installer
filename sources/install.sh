@@ -35,11 +35,6 @@ SYS_ROOT_IMAGE=''
 SYS_PATH='/system'
 ZIP_PATH=false
 
-mkdir "${TMP_PATH}/bin"
-/tmp/busybox --install -s "${TMP_PATH}/bin"
-# Clean search path so BusyBox will use only internal applets
-PATH="${TMP_PATH}/bin"
-
 
 ### FUNCTIONS ###
 

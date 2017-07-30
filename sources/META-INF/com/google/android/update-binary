@@ -94,14 +94,22 @@ set_perm()
   chmod $mod "$@" || ui_error "chmod failed on '$@'" 81
 }
 
-package_extract_file_unsafe()
+set_perm_safe()
 {
-  unzip -opq "$ZIP_FILE" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 82
+  local uid="$1"; local gid="$2"; local mod="$3"
+  shift 3
+  "$BASE_TMP_PATH/busybox" chown $uid:$gid "$@" || ui_error "chown failed on '$@'" 81
+  "$BASE_TMP_PATH/busybox" chmod $mod "$@" || ui_error "chmod failed on '$@'" 81
 }
 
 package_extract_file()
 {
-  "${BASE_TMP_PATH}/busybox" unzip -opq "$ZIP_FILE" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 83
+  unzip -opq "$ZIP_FILE" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 82
+}
+
+package_extract_file_safe()
+{
+  "$BASE_TMP_PATH/busybox" unzip -opq "$ZIP_FILE" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 83
 }
 
 create_dir()
@@ -110,9 +118,15 @@ create_dir()
   set_perm 0 0 0755 "$1"
 }
 
-delete_recursive()
+create_dir_safe()
 {
-  rm -rf "$@" || ui_error "Failed to delete files/folders" 85
+  "$BASE_TMP_PATH/busybox" mkdir -p "$1" || ui_error "Failed to create the dir '$dir'" 84
+  set_perm_safe 0 0 0755 "$1"
+}
+
+delete_recursive_safe()
+{
+  "$BASE_TMP_PATH/busybox" rm -rf "$@" || ui_error "Failed to delete files/folders" 85
 }
 
 ### CODE ###
@@ -135,32 +149,38 @@ ABI_LIST=','$(getprop 'product.cpu.abilist')','$(getprop 'product.cpu.abi')','$(
 
 if is_substring ',x86,' "$ABI_LIST"; then
   ui_debug 'Extracting x86 BusyBox...'
-  package_extract_file_unsafe 'misc/busybox/busybox-x86' "${BASE_TMP_PATH}/busybox"
+  package_extract_file 'misc/busybox/busybox-x86' "${BASE_TMP_PATH}/busybox"
 elif is_substring ',armeabi,' "$ABI_LIST"; then
   ui_debug 'Extracting ARM BusyBox...'
-  package_extract_file_unsafe 'misc/busybox/busybox-arm' "${BASE_TMP_PATH}/busybox"
+  package_extract_file 'misc/busybox/busybox-arm' "${BASE_TMP_PATH}/busybox"
 else
   ui_error 'Unsupported CPU'
 fi
-set_perm 0 0 0755 "${BASE_TMP_PATH}/busybox"  # Give it execution rights
+set_perm_safe 0 0 0755 "${BASE_TMP_PATH}/busybox"  # Give it execution rights
 
-delete_recursive "$TMP_PATH"
-create_dir "$TMP_PATH"
+# Delete previous traces
+delete_recursive_safe "$TMP_PATH"
 
 ui_debug 'Extracting scripts...'
-create_dir "$TMP_PATH/inc"
-package_extract_file 'inc/common.sh' "${TMP_PATH}/inc/common.sh"
-package_extract_file 'uninstall.sh' "${TMP_PATH}/uninstall.sh"
-package_extract_file 'install.sh' "${TMP_PATH}/install.sh"
-set_perm 0 0 0755 "${TMP_PATH}/inc/common.sh"  # Give it execution rights
-set_perm 0 0 0755 "${TMP_PATH}/uninstall.sh"  # Give it execution rights
-set_perm 0 0 0755 "${TMP_PATH}/install.sh"  # Give it execution rights
+create_dir_safe "$TMP_PATH/inc"
+package_extract_file_safe 'inc/common.sh' "${TMP_PATH}/inc/common.sh"
+package_extract_file_safe 'uninstall.sh' "${TMP_PATH}/uninstall.sh"
+package_extract_file_safe 'install.sh' "${TMP_PATH}/install.sh"
+set_perm_safe 0 0 0755 "${TMP_PATH}/inc/common.sh"  # Give it execution rights
+set_perm_safe 0 0 0755 "${TMP_PATH}/uninstall.sh"  # Give it execution rights
+set_perm_safe 0 0 0755 "${TMP_PATH}/install.sh"  # Give it execution rights
+
+# Temporarily install BusyBox
+create_dir_safe "$TMP_PATH/bin"
+"$BASE_TMP_PATH/busybox" --install -s "$TMP_PATH/bin"
+# Clean search path so only internal BusyBox applets will be used
+export PATH="$TMP_PATH/bin"
 
 ui_debug 'Starting installation script...'
 "${BASE_TMP_PATH}/busybox" bash -c "'${TMP_PATH}/install.sh' Preloader '${RECOVERY_API_VER}' '${RECOVERY_PIPE}' '${ZIP_FILE}' '${TMP_PATH}'"; STATUS="$?"
 
 test -f "${TMP_PATH}/installed" || GENER_ERROR=1
-delete_recursive "${TMP_PATH}"
+delete_recursive_safe "${TMP_PATH}"
 
 test "$DEBUG_LOG" -ne 0 && disable_debug_log  # Restore status
 
