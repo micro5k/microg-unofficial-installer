@@ -31,6 +31,8 @@ OLD_ANDROID=false
 SYS_ROOT_IMAGE=''
 SYS_PATH='/system'
 
+MARKET='PlayStore'
+
 
 ### FUNCTIONS ###
 
@@ -127,7 +129,6 @@ if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" 'f8c69c7a7f036cb2115563a39
    verify_sha1 "$TMP_PATH/files/priv-app-kk/GmsCore.apk" '52890ef5d04abd563fa220725708fd2bc48e894e' &&  # ToDO: Remove when bug #379 is fixed
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" 'fa6267bee3f73d248d1110be53d66736aa4fece0' &&
-   verify_sha1 "$TMP_PATH/files/priv-app/Phonesky.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746' &&
    verify_sha1 "$TMP_PATH/files/app/IchnaeaNlpBackend.apk" '19b286a12a4902b7627c04cb54bdda63af494696' &&
    verify_sha1 "$TMP_PATH/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
    ###verify_sha1 "$TMP_PATH/files/app/PlayGames.apk" 'c99c27053bf518dd3d08449e9478b43de0da50ed' &&
@@ -135,7 +136,9 @@ if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" 'f8c69c7a7f036cb2115563a39
    verify_sha1 "$TMP_PATH/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7' &&
    verify_sha1 "$TMP_PATH/files/etc/permissions/com.google.android.maps.xml" '05b2b8685380f86df0776a844b16f12137f06583' &&
    verify_sha1 "$TMP_PATH/files/etc/permissions/features.xml" '1eb8c90eeed31d6124710662e815aedc1b213c25' &&
-   verify_sha1 "$TMP_PATH/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053'
+   verify_sha1 "$TMP_PATH/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053' &&
+   verify_sha1 "$TMP_PATH/files/variants/PlayStore.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746' &&
+   verify_sha1 "$TMP_PATH/files/variants/FakeStore.apk" '1028f11133ec0a9a41fcd6615837124b61abd251'
 then
   ui_msg_sameline_end 'OK'
 else
@@ -170,6 +173,9 @@ umount '/data'
 
 # Installing
 ui_msg 'Installing...'
+
+mv -f "$TMP_PATH/files/variants/$MARKET.apk" "$TMP_PATH/files/priv-app/Phonesky.apk"
+
 if [[ $OLD_ANDROID != true ]]; then
   # Move apps into subdirs
   for entry in "$TMP_PATH/files/priv-app"/*; do
