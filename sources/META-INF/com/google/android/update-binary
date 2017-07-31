@@ -223,7 +223,7 @@ create_dir_safe "$TMP_PATH/bin"
 export PATH="$TMP_PATH/bin"
 
 # Live setup
-ui_msg 'Select the volume + key to enable live setup.'
+ui_msg 'INFO: Select the volume + key to enable live setup.'
 ui_msg 'Waiting input for 2 seconds...'
 choose_timeout 2; test "$?" -eq 3 && export LIVE_SETUP=1
 
