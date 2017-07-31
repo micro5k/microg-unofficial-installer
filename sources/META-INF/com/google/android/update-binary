@@ -20,6 +20,7 @@ LICENSE
 
 ### GLOBAL VARIABLES ###
 
+export LIVE_SETUP=0
 export DEBUG_LOG=0
 export RECOVERY_API_VER="$1"
 export RECOVERY_PIPE="/proc/self/fd/$2"
@@ -32,6 +33,7 @@ MANUAL_TMP_MOUNT=0
 
 GENER_ERROR=0
 STATUS=1
+
 
 ### FUNCTIONS ###
 
@@ -134,6 +136,41 @@ delete_recursive_safe()
   "$BASE_TMP_PATH/busybox" rm -rf "$@" || ui_error "Failed to delete files/folders" 86
 }
 
+check_key()
+{
+  case "$1" in
+  42)  # Vol +
+    return 3;;
+  21)  # Vol -
+    return 2;;
+  143)  # Nothing selected
+    return 1;;
+  *)
+    return 0;;
+  esac
+}
+
+choose_timeout()
+{
+  timeout -t "$1" "$BASE_TMP_PATH/keycheck"
+  check_key "$?"
+  return "$?"
+}
+
+choose()
+{
+  local result=1
+  ui_msg "QUESTION: $1"
+  ui_msg "$2"
+  ui_msg "$3"
+  while true; do
+    timeout -t 1 "$BASE_TMP_PATH/keycheck"; result="$?"
+    if [ "$result" -ne 143 ]; then check_key "$result"; return "$?"; fi
+    sleep 0.03
+  done
+}
+
+
 ### CODE ###
 
 test "$DEBUG_LOG" -ne 0 && enable_debug_log  # Enable file logging if needed
@@ -158,10 +195,12 @@ if is_substring ',x86,' "$ABI_LIST"; then
 elif is_substring ',armeabi,' "$ABI_LIST"; then
   ui_debug 'Extracting ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm' "$BASE_TMP_PATH/busybox"
+  package_extract_file 'misc/keycheck/keycheck-arm' "$BASE_TMP_PATH/keycheck"
 else
   ui_error 'Unsupported CPU'
 fi
 set_perm 0 0 0755 "$BASE_TMP_PATH/busybox"  # Give it execution rights
+test -e "$BASE_TMP_PATH/keycheck" && set_perm_safe 0 0 0755 "$BASE_TMP_PATH/keycheck"  # Give it execution rights
 
 # Delete previous traces
 delete_recursive_safe "$TMP_PATH"
@@ -182,6 +221,16 @@ create_dir_safe "$TMP_PATH/bin"
 "$BASE_TMP_PATH/busybox" --install -s "$TMP_PATH/bin"
 # Clean search path so only internal BusyBox applets will be used
 export PATH="$TMP_PATH/bin"
+
+# Live setup
+ui_msg 'Select the volume + key to enable live setup.'
+ui_msg 'Waiting input for 2 seconds...'
+choose_timeout 2; test "$?" -eq 3 && export LIVE_SETUP=1
+
+if [ "$LIVE_SETUP" -ne 0 ]; then
+  ui_msg 'LIVE SETUP ENABLED!'
+  choose 'Do you want to enable debug log?' '+) Yes' '-) No'; if [ "$?" -eq 3 ]; then export DEBUG_LOG=1; enable_debug_log; fi
+fi
 
 ui_debug 'Starting installation script...'
 "$BASE_TMP_PATH/busybox" bash -c "'$TMP_PATH/install.sh' Preloader '$TMP_PATH'"; STATUS="$?"
