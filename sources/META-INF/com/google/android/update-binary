@@ -229,7 +229,9 @@ choose_timeout 2; test "$?" -eq 3 && export LIVE_SETUP=1
 
 if [ "$LIVE_SETUP" -ne 0 ]; then
   ui_msg 'LIVE SETUP ENABLED!'
-  choose 'Do you want to enable debug log?' '+) Yes' '-) No'; if [ "$?" -eq 3 ]; then export DEBUG_LOG=1; enable_debug_log; fi
+  if [ "$DEBUG_LOG" -eq 0 ]; then
+    choose 'Do you want to enable the debug log?' '+) Yes' '-) No'; if [ "$?" -eq 3 ]; then export DEBUG_LOG=1; enable_debug_log; fi
+  fi
 fi
 
 ui_debug 'Starting installation script...'
