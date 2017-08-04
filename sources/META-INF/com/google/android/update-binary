@@ -152,7 +152,7 @@ check_key()
 
 choose_timeout()
 {
-  timeout -t "$1" "$BASE_TMP_PATH/keycheck"
+  timeout -t "$1" keycheck
   check_key "$?"
   return "$?"
 }
@@ -164,7 +164,7 @@ choose()
   ui_msg "$2"
   ui_msg "$3"
   while true; do
-    timeout -t 1 "$BASE_TMP_PATH/keycheck"; result="$?"
+    timeout -t 1 keycheck; result="$?"
     if [ "$result" -ne 143 ]; then check_key "$result"; return "$?"; fi
     sleep 0.03
   done
@@ -200,11 +200,23 @@ else
   ui_error 'Unsupported CPU'
 fi
 set_perm 0 0 0755 "$BASE_TMP_PATH/busybox"  # Give it execution rights
-test -e "$BASE_TMP_PATH/keycheck" && set_perm_safe 0 0 0755 "$BASE_TMP_PATH/keycheck"  # Give it execution rights
 
 # Delete previous traces
 delete_recursive_safe "$TMP_PATH"
 create_dir_safe "$TMP_PATH"
+create_dir_safe "$TMP_PATH/bin"
+
+# Clean search path so only internal BusyBox applets will be used
+export PATH="$TMP_PATH/bin"
+
+# Temporarily setup BusyBox
+"$BASE_TMP_PATH/busybox" --install -s "$TMP_PATH/bin"
+
+# Temporarily setup Keycheck
+if [ -e "$BASE_TMP_PATH/keycheck" ]; then
+  "$BASE_TMP_PATH/busybox" mv -f "$BASE_TMP_PATH/keycheck" "$TMP_PATH/bin/keycheck";
+  set_perm_safe 0 0 0755 "$TMP_PATH/bin/keycheck"  # Give it execution rights
+fi
 
 # Extract scripts
 ui_debug 'Extracting scripts...'
@@ -216,18 +228,15 @@ set_perm_safe 0 0 0755 "$TMP_PATH/inc/common.sh"  # Give it execution rights
 set_perm_safe 0 0 0755 "$TMP_PATH/uninstall.sh"  # Give it execution rights
 set_perm_safe 0 0 0755 "$TMP_PATH/install.sh"  # Give it execution rights
 
-# Temporarily install BusyBox
-create_dir_safe "$TMP_PATH/bin"
-"$BASE_TMP_PATH/busybox" --install -s "$TMP_PATH/bin"
-# Clean search path so only internal BusyBox applets will be used
-export PATH="$TMP_PATH/bin"
-
 # Live setup
-ui_msg 'INFO: Select the volume + key to enable live setup.'
-ui_msg 'Waiting input for 2 seconds...'
-choose_timeout 2; test "$?" -eq 3 && export LIVE_SETUP=1
+if [ -e "$TMP_PATH/bin/keycheck" ]; then
+  ui_msg '---------------------------------------------------'
+  ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
+  ui_msg 'Waiting input for 2 seconds...'
+  choose_timeout 2; test "$?" -eq 3 && export LIVE_SETUP=1
+fi
 
-if [ "$LIVE_SETUP" -ne 0 ]; then
+if [ "$LIVE_SETUP" -eq 1 ]; then
   ui_msg 'LIVE SETUP ENABLED!'
   if [ "$DEBUG_LOG" -eq 0 ]; then
     choose 'Do you want to enable the debug log?' '+) Yes' '-) No'; if [ "$?" -eq 3 ]; then export DEBUG_LOG=1; enable_debug_log; fi
@@ -247,5 +256,4 @@ test "$MANUAL_TMP_MOUNT" -ne 0 && (umount '/tmp' || ui_error 'Cannot unmount /tm
 if test "$STATUS" -ne 0; then ui_error "Installation script failed with error $STATUS" "$STATUS"; fi
 if test "$GENER_ERROR" -ne 0; then ui_error 'Installation failed with an unknown error'; fi
 
-delete_safe "$BASE_TMP_PATH/keycheck"
 delete_safe "$BASE_TMP_PATH/busybox"

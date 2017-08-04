@@ -184,6 +184,41 @@ delete_recursive()
   rm -rf "$@" || ui_error "Failed to delete files/folders" 99
 }
 
+# Input related functions
+check_key()
+{
+  case "$1" in
+  42)  # Vol +
+    return 3;;
+  21)  # Vol -
+    return 2;;
+  143)  # Nothing selected
+    return 1;;
+  *)
+    return 0;;
+  esac
+}
+
+choose_timeout()
+{
+  timeout -t "$1" keycheck
+  check_key "$?"
+  return "$?"
+}
+
+choose()
+{
+  local result=1
+  ui_msg "QUESTION: $1"
+  ui_msg "$2"
+  ui_msg "$3"
+  while true; do
+    timeout -t 1 keycheck; result="$?"
+    if [ "$result" -ne 143 ]; then check_key "$result"; return "$?"; fi
+    sleep 0.03
+  done
+}
+
 # Other
 remove_ext()
 {
