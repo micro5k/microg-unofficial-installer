@@ -89,7 +89,7 @@ fi
 
 if is_substring ',armeabi,' "$ABI_LIST" && ! is_substring ',armeabi-v7a,' "$ABI_LIST"; then LEGACY_ARM=true; fi
 
-if [[ "$LIVE_SETUP" -ne 0 ]]; then
+if [[ "$LIVE_SETUP" -eq 1 ]]; then
   choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore';
   if [[ "$?" -eq 3 ]]; then MARKET='PlayStore'; else MARKET='FakeStore'; fi
 fi
