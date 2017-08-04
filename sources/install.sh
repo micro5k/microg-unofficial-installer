@@ -95,6 +95,7 @@ if [[ "$LIVE_SETUP" -eq 1 ]]; then
 fi
 
 # Info
+ui_msg ''
 ui_msg '---------------------------'
 ui_msg 'microG unofficial installer'
 ui_msg 'v1.0.20-alpha'

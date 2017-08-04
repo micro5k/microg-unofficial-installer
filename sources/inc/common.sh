@@ -213,7 +213,7 @@ choose()
   ui_msg "$2"
   ui_msg "$3"
   while true; do
-    timeout -t 1 keycheck; result="$?"
+    timeout -t 10 keycheck; result="$?"
     if [ "$result" -ne 143 ]; then check_key "$result"; return "$?"; fi
     sleep 0.03
   done

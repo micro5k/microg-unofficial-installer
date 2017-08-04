@@ -164,7 +164,7 @@ choose()
   ui_msg "$2"
   ui_msg "$3"
   while true; do
-    timeout -t 1 keycheck; result="$?"
+    timeout -t 10 keycheck; result="$?"
     if [ "$result" -ne 143 ]; then check_key "$result"; return "$?"; fi
     sleep 0.03
   done
@@ -232,6 +232,7 @@ set_perm_safe 0 0 0755 "$TMP_PATH/install.sh"  # Give it execution rights
 if [ -e "$TMP_PATH/bin/keycheck" ]; then
   ui_msg '---------------------------------------------------'
   ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
+  ui_msg '---------------------------------------------------'
   ui_msg 'Waiting input for 2 seconds...'
   choose_timeout 2; test "$?" -eq 3 && export LIVE_SETUP=1
 fi
@@ -243,6 +244,7 @@ if [ "$LIVE_SETUP" -eq 1 ]; then
   fi
 fi
 
+ui_msg ''
 ui_debug 'Starting installation script...'
 "$BASE_TMP_PATH/busybox" bash -c "'$TMP_PATH/install.sh' Preloader '$TMP_PATH'"; STATUS="$?"
 
