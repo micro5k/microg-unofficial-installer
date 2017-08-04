@@ -1,13 +1,17 @@
 CONTENTS
 ========
 
+Variants
+--------
+- **files/variants/FakeStore.apk** => FakeStore 0.0.2
+- **files/variants/PlayStore.apk** => Google Play Store 5.1.11 (80310011)
+
 Common
 ------
 - **files/priv-app/GmsCore.apk** => microG Service Core 0.2.4-103 (on Android >= 5)
 - **files/priv-app-kk/GmsCore.apk** => microG Service Core 0.2.4-81 (on Android < 5)
 - **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0
-- **files/priv-app/RemoteDroidGuard.apk** => microG DroidGuard Helper 0.1.0-10
-- **files/priv-app/Phonesky.apk** => Google Play Store 5.1.11 (80310011)
+- **files/priv-app/DroidGuard.apk** => microG DroidGuard Helper 0.1.0-10
 
 - **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.3.2
 - **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2
