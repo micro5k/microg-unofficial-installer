@@ -20,7 +20,6 @@ LICENSE
 
 ### GLOBAL VARIABLES ###
 
-export LIVE_SETUP=0
 export DEBUG_LOG=0
 export RECOVERY_API_VER="$1"
 export RECOVERY_PIPE="/proc/self/fd/$2"
@@ -228,11 +227,13 @@ set_perm_safe 0 0 0755 "$TMP_PATH/inc/common.sh"  # Give it execution rights
 set_perm_safe 0 0 0755 "$TMP_PATH/uninstall.sh"  # Give it execution rights
 set_perm_safe 0 0 0755 "$TMP_PATH/install.sh"  # Give it execution rights
 
+package_extract_file_safe 'settings.conf' "$TMP_PATH/default-settings.conf"
+. "$TMP_PATH/default-settings.conf"
+
 # Live setup
-if [ -e "$TMP_PATH/bin/keycheck" ]; then
+if [ "$LIVE_SETUP" -eq 0 ] && [ -e "$TMP_PATH/bin/keycheck" ]; then
   ui_msg '---------------------------------------------------'
   ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
-  ui_msg '---------------------------------------------------'
   ui_msg 'Waiting input for 2 seconds...'
   choose_timeout 2; test "$?" -eq 3 && export LIVE_SETUP=1
 fi
