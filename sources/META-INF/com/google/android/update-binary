@@ -229,6 +229,7 @@ set_perm_safe 0 0 0755 "$TMP_PATH/install.sh"  # Give it execution rights
 
 package_extract_file_safe 'settings.conf' "$TMP_PATH/default-settings.conf"
 . "$TMP_PATH/default-settings.conf"
+# ToDO: Enabling DEBUG_LOG in the settings file currently doesn't have any effect, fix it
 
 # Live setup
 if [ "$LIVE_SETUP" -eq 0 ] && [ -e "$TMP_PATH/bin/keycheck" ]; then
