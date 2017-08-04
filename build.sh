@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 <<LICENSE
-  Copyright (C) 2016-2017  ale5000
+  Copyright (C) 2017  ale5000
   This file is part of microG unofficial installer by @ale5000.
 
   microG unofficial installer is free software: you can redistribute it and/or modify
