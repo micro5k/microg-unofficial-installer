@@ -96,7 +96,7 @@ remount_read_only()
 # Getprop related functions
 getprop()
 {
-  test -e '/sbin/getprop' && /sbin/getprop "ro.${1}" || grep "^ro\.${1}=" '/default.prop' | head -n1 | cut -d '=' -f 2
+  (test -e '/sbin/getprop' && /sbin/getprop "ro.${1}") || (grep "^ro\.${1}=" '/default.prop' | head -n1 | cut -d '=' -f 2)
 }
 
 build_getprop()
