@@ -96,7 +96,7 @@ fi
 ui_msg ''
 ui_msg '---------------------------'
 ui_msg 'microG unofficial installer'
-ui_msg 'v1.0.20-alpha'
+ui_msg 'v1.0.21-beta'
 ui_msg '(by ale5000)'
 ui_msg '---------------------------'
 ui_msg ''
