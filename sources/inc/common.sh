@@ -64,9 +64,9 @@ validate_return_code()
 # Mounting related functions
 is_mounted()
 {
-  case `mount` in
+  case $(mount) in
     *" $1 "*) return 0;;  # Mounted
-  esac;
+  esac
   return 1  # NOT mounted
 }
 
