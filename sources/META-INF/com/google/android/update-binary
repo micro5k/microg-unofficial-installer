@@ -198,7 +198,9 @@ elif is_substring ',armeabi,' "$ABI_LIST"; then
 else
   ui_error 'Unsupported CPU'
 fi
-set_perm 0 0 0755 "$BASE_TMP_PATH/busybox"  # Give it execution rights
+# Give execution rights
+chmod +x "$BASE_TMP_PATH/busybox" || ui_error "chmod failed on '$BASE_TMP_PATH/busybox'" 81  # Needed to make working the "safe" functions
+set_perm_safe 0 0 0755 "$BASE_TMP_PATH/busybox"
 
 # Delete previous traces
 delete_recursive_safe "$TMP_PATH"
@@ -214,7 +216,8 @@ export PATH="$TMP_PATH/bin"
 # Temporarily setup Keycheck
 if [ -e "$BASE_TMP_PATH/keycheck" ]; then
   "$BASE_TMP_PATH/busybox" mv -f "$BASE_TMP_PATH/keycheck" "$TMP_PATH/bin/keycheck";
-  set_perm_safe 0 0 0755 "$TMP_PATH/bin/keycheck"  # Give it execution rights
+  # Give it execution rights
+  set_perm_safe 0 0 0755 "$TMP_PATH/bin/keycheck"
 fi
 
 # Extract scripts
@@ -223,9 +226,10 @@ create_dir_safe "$TMP_PATH/inc"
 package_extract_file_safe 'inc/common.sh' "$TMP_PATH/inc/common.sh"
 package_extract_file_safe 'uninstall.sh' "$TMP_PATH/uninstall.sh"
 package_extract_file_safe 'install.sh' "$TMP_PATH/install.sh"
-set_perm_safe 0 0 0755 "$TMP_PATH/inc/common.sh"  # Give it execution rights
-set_perm_safe 0 0 0755 "$TMP_PATH/uninstall.sh"  # Give it execution rights
-set_perm_safe 0 0 0755 "$TMP_PATH/install.sh"  # Give it execution rights
+# Give it execution rights
+set_perm_safe 0 0 0755 "$TMP_PATH/inc/common.sh"
+set_perm_safe 0 0 0755 "$TMP_PATH/uninstall.sh"
+set_perm_safe 0 0 0755 "$TMP_PATH/install.sh"
 
 package_extract_file_safe 'settings.conf' "$TMP_PATH/default-settings.conf"
 . "$TMP_PATH/default-settings.conf"
