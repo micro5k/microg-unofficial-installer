@@ -122,6 +122,7 @@ ${SYS_PATH}/etc/permissions/com.qualcomm.location.xml
 ${SYS_PATH}/addon.d/00-1-microg.sh
 ${SYS_PATH}/addon.d/1-microg.sh
 ${SYS_PATH}/addon.d/10-mapsapi.sh
+${SYS_PATH}/addon.d/70-microg.sh
 
 ${SYS_PATH}/app/WhisperPush.apk
 "
