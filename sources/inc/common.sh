@@ -18,10 +18,13 @@
   along with microG unofficial installer.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE
 
+### GLOBAL VARIABLES ###
+
 if [[ -z "$RECOVERY_PIPE" || -z "$ZIP_FILE" || -z "$TMP_PATH" ]]; then
   echo 'Some variables are NOT set.'
   exit 90
 fi
+
 
 ### FUNCTIONS ###
 
