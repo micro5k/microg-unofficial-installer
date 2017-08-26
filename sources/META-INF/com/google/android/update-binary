@@ -33,6 +33,8 @@ MANUAL_TMP_MOUNT=0
 GENER_ERROR=0
 STATUS=1
 
+export BOOTMODE=false
+
 
 ### FUNCTIONS ###
 
@@ -238,6 +240,10 @@ set_perm_safe 0 0 0755 "$TMP_PATH/install.sh"
 package_extract_file_safe 'settings.conf' "$TMP_PATH/default-settings.conf"
 . "$TMP_PATH/default-settings.conf"
 test "$DEBUG_LOG" -eq 1 && enable_debug_log  # Enable file logging if needed
+
+# Detect boot mode
+(ps | grep zygote | grep -v grep >/dev/null) && BOOTMODE=true
+$BOOTMODE || (ps -A 2>/dev/null | grep zygote | grep -v grep >/dev/null && BOOTMODE=true)
 
 # Live setup
 if [ "$LIVE_SETUP" -eq 0 ] && [ -e "$TMP_PATH/bin/keycheck" ]; then
