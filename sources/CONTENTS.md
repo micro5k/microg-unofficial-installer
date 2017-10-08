@@ -4,7 +4,8 @@ CONTENTS
 Variants
 --------
 - **files/variants/FakeStore.apk** => FakeStore 0.0.2
-- **files/variants/PlayStore-legacy.apk** => Google Play Store 5.1.11 (80310011)
+- **files/variants/PlayStore-recent.apk** => Google Play Store 7.1.25.I-all (137772785) - nodpi
+- **files/variants/PlayStore-legacy.apk** => Google Play Store 5.1.11 (80310011) - nodpi
 
 Common
 ------
