@@ -30,6 +30,7 @@ LEGACY_ANDROID=false
 OLD_ANDROID=false
 SYS_ROOT_IMAGE=''
 SYS_PATH='/system'
+MARKET_FILENAME=''
 
 
 ### FUNCTIONS ###
@@ -88,8 +89,22 @@ fi
 if is_substring ',armeabi,' "$ABI_LIST" && ! is_substring ',armeabi-v7a,' "$ABI_LIST"; then LEGACY_ARM=true; fi
 
 if [[ "$LIVE_SETUP" -eq 1 ]]; then
-  choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore';
-  if [[ "$?" -eq 3 ]]; then export MARKET='PlayStore-legacy'; else export MARKET='FakeStore'; fi
+  choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore'
+  if [[ "$?" -eq 3 ]]; then export MARKET='PlayStore'; else export MARKET='FakeStore'; fi
+fi
+
+if [[ $MARKET == 'PlayStore' ]]; then
+  if [[ $PLAYSTORE_VERSION == 'auto' ]]; then
+    if [[ $OLD_ANDROID != true ]]; then
+      MARKET_FILENAME = "${MARKET}-recent.apk"
+    else
+      MARKET_FILENAME = "${MARKET}-legacy.apk"
+    fi
+  else
+    MARKET_FILENAME = "${MARKET}-${PLAYSTORE_VERSION}.apk"
+  fi
+else
+  MARKET_FILENAME = "${MARKET}.apk"
 fi
 
 # Info
@@ -141,6 +156,7 @@ if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" '90dbb655885d9530997a761c5
    verify_sha1 "$TMP_PATH/files/etc/permissions/com.google.android.maps.xml" '05b2b8685380f86df0776a844b16f12137f06583' &&
    verify_sha1 "$TMP_PATH/files/etc/permissions/features.xml" '1eb8c90eeed31d6124710662e815aedc1b213c25' &&
    verify_sha1 "$TMP_PATH/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053' &&
+   verify_sha1 "$TMP_PATH/files/variants/PlayStore-recent.apk" '6c60fa863dd7befef49082c0dcf6278947a09333' &&
    verify_sha1 "$TMP_PATH/files/variants/PlayStore-legacy.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746' &&
    verify_sha1 "$TMP_PATH/files/variants/FakeStore.apk" '1028f11133ec0a9a41fcd6615837124b61abd251'
 then
@@ -178,7 +194,7 @@ umount '/data'
 # Installing
 ui_msg 'Installing...'
 
-mv -f "$TMP_PATH/files/variants/$MARKET.apk" "$TMP_PATH/files/priv-app/Phonesky.apk"
+mv -f "$TMP_PATH/files/variants/${MARKET_FILENAME}" "$TMP_PATH/files/priv-app/Phonesky.apk"
 
 if [[ $OLD_ANDROID != true ]]; then
   # Move apps into subdirs
