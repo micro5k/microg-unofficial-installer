@@ -96,15 +96,15 @@ fi
 if [[ $MARKET == 'PlayStore' ]]; then
   if [[ $PLAYSTORE_VERSION == 'auto' ]]; then
     if [[ $OLD_ANDROID != true ]]; then
-      MARKET_FILENAME = "${MARKET}-recent.apk"
+      MARKET_FILENAME="${MARKET}-recent.apk"
     else
-      MARKET_FILENAME = "${MARKET}-legacy.apk"
+      MARKET_FILENAME="${MARKET}-legacy.apk"
     fi
   else
-    MARKET_FILENAME = "${MARKET}-${PLAYSTORE_VERSION}.apk"
+    MARKET_FILENAME="${MARKET}-${PLAYSTORE_VERSION}.apk"
   fi
 else
-  MARKET_FILENAME = "${MARKET}.apk"
+  MARKET_FILENAME="${MARKET}.apk"
 fi
 
 # Info
