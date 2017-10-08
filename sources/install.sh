@@ -136,7 +136,7 @@ if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" 'f8c69c7a7f036cb2115563a39
    verify_sha1 "$TMP_PATH/files/app/IchnaeaNlpBackend.apk" '19b286a12a4902b7627c04cb54bdda63af494696' &&
    verify_sha1 "$TMP_PATH/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
    ###verify_sha1 "$TMP_PATH/files/app/PlayGames.apk" 'c99c27053bf518dd3d08449e9478b43de0da50ed' &&
-   verify_sha1 "$TMP_PATH/files/priv-app/FDroidPrivilegedExtension.apk" '075a81cd2b1449bb8e3db883c64778e44f3ce342' &&
+   verify_sha1 "$TMP_PATH/files/priv-app/FDroidPrivilegedExtension.apk" '08588e36b1e605401047766c8708c33622f1c4b9' &&
    verify_sha1 "$TMP_PATH/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7' &&
    verify_sha1 "$TMP_PATH/files/etc/permissions/com.google.android.maps.xml" '05b2b8685380f86df0776a844b16f12137f06583' &&
    verify_sha1 "$TMP_PATH/files/etc/permissions/features.xml" '1eb8c90eeed31d6124710662e815aedc1b213c25' &&
