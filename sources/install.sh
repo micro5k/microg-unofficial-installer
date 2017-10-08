@@ -89,7 +89,7 @@ if is_substring ',armeabi,' "$ABI_LIST" && ! is_substring ',armeabi-v7a,' "$ABI_
 
 if [[ "$LIVE_SETUP" -eq 1 ]]; then
   choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore';
-  if [[ "$?" -eq 3 ]]; then export MARKET='PlayStore'; else export MARKET='FakeStore'; fi
+  if [[ "$?" -eq 3 ]]; then export MARKET='PlayStore-legacy'; else export MARKET='FakeStore'; fi
 fi
 
 # Info
@@ -141,7 +141,7 @@ if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" '90dbb655885d9530997a761c5
    verify_sha1 "$TMP_PATH/files/etc/permissions/com.google.android.maps.xml" '05b2b8685380f86df0776a844b16f12137f06583' &&
    verify_sha1 "$TMP_PATH/files/etc/permissions/features.xml" '1eb8c90eeed31d6124710662e815aedc1b213c25' &&
    verify_sha1 "$TMP_PATH/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053' &&
-   verify_sha1 "$TMP_PATH/files/variants/PlayStore.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746' &&
+   verify_sha1 "$TMP_PATH/files/variants/PlayStore-legacy.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746' &&
    verify_sha1 "$TMP_PATH/files/variants/FakeStore.apk" '1028f11133ec0a9a41fcd6615837124b61abd251'
 then
   ui_msg_sameline_end 'OK'

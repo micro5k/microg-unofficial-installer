@@ -4,7 +4,7 @@ CONTENTS
 Variants
 --------
 - **files/variants/FakeStore.apk** => FakeStore 0.0.2
-- **files/variants/PlayStore.apk** => Google Play Store 5.1.11 (80310011)
+- **files/variants/PlayStore-legacy.apk** => Google Play Store 5.1.11 (80310011)
 
 Common
 ------
