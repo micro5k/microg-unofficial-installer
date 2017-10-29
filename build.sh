@@ -77,6 +77,9 @@ fi
 
 . "$BASEDIR/conf.sh"
 
+# Check dependencies
+which 'zip' || ui_error 'zip command is missing'
+
 # Create the output dir
 OUT_DIR="$BASEDIR/output"
 mkdir -p "$OUT_DIR" || ui_error 'Failed to create the output dir'
