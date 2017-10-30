@@ -51,12 +51,16 @@ dl_file()
   verify_sha1 "$3/$2/$1" "$5" || corrupted_file "$3/$2/$1"
 }
 
-# Detect OS
+# Detect OS and set OS specific info
+SEP='/'
+PATHSEP=':'
 UNAME=$(uname)
 if [[ "$UNAME" == 'Linux' ]]; then
   PLATFORM='linux'
 elif [[ "$UNAME" == 'Windows_NT' ]]; then
   PLATFORM='win'
+  SEP='\'
+  PATHSEP=';'
 #elif [[ "$UNAME" == 'Darwin' ]]; then
   #PLATFORM='macos'
 #elif [[ "$UNAME" == 'FreeBSD' ]]; then
