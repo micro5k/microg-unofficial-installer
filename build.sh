@@ -78,11 +78,13 @@ else
   if [[ "$BASEDIR" == '.' ]]; then BASEDIR=''; else BASEDIR="/$BASEDIR"; fi
   if [[ "$CURDIR" != '/' ]]; then BASEDIR="$CURDIR$BASEDIR"; fi
 fi
+TOOLS_DIR="${BASEDIR}${SEP}tools${SEP}${PLATFORM}"
+PATH="${TOOLS_DIR}${PATHSEP}${PATH}"
 
 . "$BASEDIR/conf.sh"
 
 # Check dependencies
-which 'zip' || ui_error 'zip command is missing'
+type -p 'zip' || ui_error 'zip command is missing'
 
 # Create the output dir
 OUT_DIR="$BASEDIR/output"
