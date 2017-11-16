@@ -76,7 +76,7 @@ dl_file()
 {
   if [[ ! -e "$3/$2/$1" ]]; then
     mkdir -p "$3/$2"
-    "$WGET_CMD" -O "$3/$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0' "$4" || ui_error "Failed to download the file '$2/$1'."
+    "$WGET_CMD" -O "$3/$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0' '--no-check-certificate' "$4" || ui_error "Failed to download the file '$2/$1'."
     echo ''
   fi
   verify_sha1 "$3/$2/$1" "$5" || corrupted_file "$3/$2/$1"
