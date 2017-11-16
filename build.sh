@@ -25,32 +25,6 @@ ui_error()
   exit 1
 }
 
-verify_sha1()
-{
-  local file_name="$1"
-  local hash="$2"
-  local file_hash=$(sha1sum "$file_name" | cut -d ' ' -f 1)
-
-  if [[ $hash != "$file_hash" ]]; then return 1; fi  # Failed
-  return 0  # Success
-}
-
-corrupted_file()
-{
-  rm -f "$1" || echo 'Failed to remove the corrupted file.'
-  ui_error "The file '$1' is corrupted."
-}
-
-dl_file()
-{
-  if [[ ! -e "$3/$2/$1" ]]; then
-    mkdir -p "$3/$2"
-    wget -O "$3/$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0' "$4" || ui_error "Failed to download the file '$2/$1'."
-    echo ''
-  fi
-  verify_sha1 "$3/$2/$1" "$5" || corrupted_file "$3/$2/$1"
-}
-
 # Detect OS and set OS specific info
 SEP='/'
 PATHSEP=':'
@@ -78,8 +52,35 @@ else
   if [[ "$BASEDIR" == '.' ]]; then BASEDIR=''; else BASEDIR="/$BASEDIR"; fi
   if [[ "$CURDIR" != '/' ]]; then BASEDIR="$CURDIR$BASEDIR"; fi
 fi
+WGET_CMD='wget'
 TOOLS_DIR="${BASEDIR}${SEP}tools${SEP}${PLATFORM}"
 PATH="${TOOLS_DIR}${PATHSEP}${PATH}"
+
+verify_sha1()
+{
+  local file_name="$1"
+  local hash="$2"
+  local file_hash=$(sha1sum "$file_name" | cut -d ' ' -f 1)
+
+  if [[ $hash != "$file_hash" ]]; then return 1; fi  # Failed
+  return 0  # Success
+}
+
+corrupted_file()
+{
+  rm -f "$1" || echo 'Failed to remove the corrupted file.'
+  ui_error "The file '$1' is corrupted."
+}
+
+dl_file()
+{
+  if [[ ! -e "$3/$2/$1" ]]; then
+    mkdir -p "$3/$2"
+    "$WGET_CMD" -O "$3/$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0' "$4" || ui_error "Failed to download the file '$2/$1'."
+    echo ''
+  fi
+  verify_sha1 "$3/$2/$1" "$5" || corrupted_file "$3/$2/$1"
+}
 
 . "$BASEDIR/conf.sh"
 
