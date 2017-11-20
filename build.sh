@@ -15,7 +15,7 @@
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 LICENSE
 
 ui_error()
@@ -103,8 +103,8 @@ VER=$(cat "$BASEDIR/sources/inc/VERSION")
 FILENAME="$NAME-v$VER-signed"
 
 # Download files if they are missing
-dl_file 'PlayStore-recent.apk' 'sources/files/variants' "$BASEDIR" 'http://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=137220' '6c60fa863dd7befef49082c0dcf6278947a09333'
-dl_file 'PlayStore-legacy.apk' 'sources/files/variants' "$BASEDIR" 'http://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911' 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'
+dl_file 'PlayStore-recent.apk' 'sources/files/variants' "$BASEDIR" 'https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=137220' '6c60fa863dd7befef49082c0dcf6278947a09333'
+dl_file 'PlayStore-legacy.apk' 'sources/files/variants' "$BASEDIR" 'https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911' 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'
 
 dl_file 'keycheck-arm' 'sources/misc/keycheck' "$BASEDIR" 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0'
 
