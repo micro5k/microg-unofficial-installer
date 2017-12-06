@@ -1,6 +1,9 @@
 microG unofficial installer
 ===========================
+[![License](https://img.shields.io/github/license/micro-a5k/microg-unofficial-installer.svg)](https://github.com/micro-a5k/microg-unofficial-installer)
 
+Description
+-----------
 microG unofficial installer simplify the installation of microG (all the included files are the original versions).
 
 Code analysis
