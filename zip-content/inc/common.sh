@@ -165,7 +165,7 @@ verify_sha1()
   return 0  # Success
 }
 
-# File related functions
+# File / folder related functions
 create_dir()
 {
   mkdir -p "$1" || ui_error "Failed to create the dir '$dir'" 97
@@ -177,14 +177,34 @@ copy_dir_content()
   cp -rpf "$1"/* "$2"/ || ui_error "Failed to copy dir content from '$1' to '$2'" 98
 }
 
+copy_file()
+{
+  cp -pf "$1" "$2"/ || ui_error "Failed to copy the file '$1' to '$2'" 99
+}
+
+move_file()
+{
+  mv -f "$1" "$2"/ || ui_error "Failed to move the file '$1' to '$2'" 100
+}
+
+move_rename_file()
+{
+  mv -f "$1" "$2" || ui_error "Failed to move/rename the file from '$1' to '$2'" 101
+}
+
+move_dir_content()
+{
+  mv -f "$1"/* "$2"/ || ui_error "Failed to move dir content from '$1' to '$2'" 102
+}
+
 delete()
 {
-  rm -f "$@" || ui_error "Failed to delete files" 99
+  rm -f "$@" || ui_error "Failed to delete files" 103
 }
 
 delete_recursive()
 {
-  rm -rf "$@" || ui_error "Failed to delete files/folders" 99
+  rm -rf "$@" || ui_error "Failed to delete files/folders" 104
 }
 
 # Input related functions

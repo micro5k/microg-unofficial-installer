@@ -252,7 +252,8 @@ if $KEYCHECK_ENABLED && [ "$LIVE_SETUP" -eq 0 ] && [ "${LIVE_SETUP_TIMEOUT}" -ge
   ui_msg '---------------------------------------------------'
   ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
   ui_msg "Waiting input for ${LIVE_SETUP_TIMEOUT} seconds..."
-  choose_timeout "${LIVE_SETUP_TIMEOUT}"; test "$?" -eq 3 && export LIVE_SETUP=1
+  choose_timeout "${LIVE_SETUP_TIMEOUT}"; chosen = "$?"
+  if test "$chosen" -eq 3; then export LIVE_SETUP=1; fi
 fi
 
 if [ "$LIVE_SETUP" -eq 1 ]; then

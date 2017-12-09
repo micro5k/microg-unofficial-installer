@@ -139,6 +139,7 @@ fi
 
 ui_msg 'Extracting files...'
 custom_package_extract_dir 'files' "$TMP_PATH"
+custom_package_extract_dir 'addon.d' "$TMP_PATH"
 
 ui_debug 'Setting permissions...'
 set_std_perm_recursive "$TMP_PATH/files"
@@ -194,7 +195,8 @@ umount '/data'
 # Installing
 ui_msg 'Installing...'
 
-mv -f "$TMP_PATH/files/variants/${MARKET_FILENAME}" "$TMP_PATH/files/priv-app/Phonesky.apk"
+move_rename_file "$TMP_PATH/files/variants/${MARKET_FILENAME}" "$TMP_PATH/files/priv-app/Phonesky.apk"
+delete_recursive "$TMP_PATH/files/variants"
 
 if [[ $OLD_ANDROID != true ]]; then
   # Move apps into subdirs
@@ -213,15 +215,17 @@ if [[ $OLD_ANDROID != true ]]; then
 else
   cp -rpf "$TMP_PATH/files/priv-app-kk/GmsCore.apk" "$TMP_PATH/files/priv-app/GmsCore.apk"  # ToDO: Remove when bug #379 is fixed
 fi
+delete_recursive "$TMP_PATH/files/priv-app-kk"
+
+if [[ $LEGACY_ANDROID == true ]]; then
+  move_dir_content "$TMP_PATH/files/app-legacy" "$TMP_PATH/files/app"
+fi
+delete_recursive "$TMP_PATH/files/app-legacy"
 
 copy_dir_content "$TMP_PATH/files/priv-app" "${PRIVAPP_PATH}"
 copy_dir_content "$TMP_PATH/files/app" "${SYS_PATH}/app"
 copy_dir_content "$TMP_PATH/files/framework" "${SYS_PATH}/framework"
 copy_dir_content "$TMP_PATH/files/etc/permissions" "${SYS_PATH}/etc/permissions"
-
-if [[ $LEGACY_ANDROID == true ]]; then
-  copy_dir_content "$TMP_PATH/files/app-legacy" "${SYS_PATH}/app"
-fi
 
 ui_debug 'Extracting libs...'
 create_dir "$TMP_PATH/libs"
@@ -263,10 +267,10 @@ if [[ -d "${SYS_PATH}/addon.d" ]]; then
   if [[ $LEGACY_ANDROID == true ]]; then
     :  ### Skip it
   elif [[ $OLD_ANDROID == true ]]; then
-    :  ### Not ready yet #cp -rpf "$TMP_PATH/files/addon.d/00-1-microg-k.sh" "${SYS_PATH}/addon.d/00-1-microg.sh"
+    :  ### Not ready yet #cp -rpf "$TMP_PATH/addon.d/00-1-microg-k.sh" "${SYS_PATH}/addon.d/00-1-microg.sh"
   else
     ui_msg 'Installing survival script...'
-    cp -rpf "$TMP_PATH/files/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d/00-1-microg.sh"
+    copy_file "$TMP_PATH/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
   fi
 fi
 
