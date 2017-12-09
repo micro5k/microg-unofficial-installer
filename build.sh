@@ -99,18 +99,18 @@ mkdir -p "$OUT_DIR" || ui_error 'Failed to create the output dir'
 TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX)
 
 # Set filename and version
-VER=$(cat "$BASEDIR/sources/inc/VERSION")
+VER=$(cat "$BASEDIR/zip-content/inc/VERSION")
 FILENAME="$NAME-v$VER-signed"
 
 # Download files if they are missing
-dl_file 'PlayStore-recent.apk' 'sources/files/variants' "$BASEDIR" 'https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=137220' '6c60fa863dd7befef49082c0dcf6278947a09333'
-dl_file 'PlayStore-legacy.apk' 'sources/files/variants' "$BASEDIR" 'https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911' 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'
+dl_file 'PlayStore-recent.apk' 'zip-content/files/variants' "$BASEDIR" 'https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=137220' '6c60fa863dd7befef49082c0dcf6278947a09333'
+dl_file 'PlayStore-legacy.apk' 'zip-content/files/variants' "$BASEDIR" 'https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911' 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'
 
-dl_file 'keycheck-arm' 'sources/misc/keycheck' "$BASEDIR" 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0'
+dl_file 'keycheck-arm' 'zip-content/misc/keycheck' "$BASEDIR" 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0'
 
 # Copy data
-cp -rf "$BASEDIR/sources" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
-cp -rf "$BASEDIR/"LICENSE* "$TEMP_DIR/sources/" || ui_error 'Failed to copy license to the temp dir'
+cp -rf "$BASEDIR/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
+cp -rf "$BASEDIR/"LICENSE* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy license to the temp dir'
 
 # Remove the previous file
 rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip file'
@@ -118,7 +118,7 @@ rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip fi
 ### IMPORTANT: Keep using 'zip' for compression since 'zipadjust' isn't compatible with zip archives created by '7za' and it will corrupt them
 
 # Compress and sign
-cd "$TEMP_DIR/sources" || ui_error 'Failed to change folder'
+cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change folder'
 zip -r9X "$TEMP_DIR/zip-1.zip" * || ui_error 'Failed compressing'
 echo ''
 java -jar "$BASEDIR/tools/signapk.jar" "$BASEDIR/certs"/*.x509.pem "$BASEDIR/certs"/*.pk8 "$TEMP_DIR/zip-1.zip" "$TEMP_DIR/zip-2.zip" || ui_error 'Failed signing'
