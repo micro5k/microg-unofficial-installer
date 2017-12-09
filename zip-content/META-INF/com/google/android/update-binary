@@ -33,6 +33,7 @@ MANUAL_TMP_MOUNT=0
 GENER_ERROR=0
 STATUS=1
 
+KEYCHECK_ENABLED=false
 export BOOTMODE=false
 
 
@@ -220,10 +221,11 @@ export PATH="$TMP_PATH/bin"
 "$BASE_TMP_PATH/busybox" --install -s "$TMP_PATH/bin"
 
 # Temporarily setup Keycheck
-if [ -e "$BASE_TMP_PATH/keycheck" ]; then
-  "$BASE_TMP_PATH/busybox" mv -f "$BASE_TMP_PATH/keycheck" "$TMP_PATH/bin/keycheck";
+if test -e "$BASE_TMP_PATH/keycheck"; then
+  "$BASE_TMP_PATH/busybox" mv -f "$BASE_TMP_PATH/keycheck" "$TMP_PATH/bin/keycheck" || ui_error "Failed to move keycheck to the bin folder"
   # Give execution rights
   set_perm_safe 0 0 0755 "$TMP_PATH/bin/keycheck"
+  KEYCHECK_ENABLED=true
 fi
 
 # Extract scripts
@@ -246,7 +248,7 @@ test "$DEBUG_LOG" -eq 1 && enable_debug_log  # Enable file logging if needed
 $BOOTMODE || (ps -A 2>/dev/null | grep zygote | grep -v grep >/dev/null && BOOTMODE=true)
 
 # Live setup
-if [ "$LIVE_SETUP" -eq 0 ] && [ "${LIVE_SETUP_TIMEOUT}" -ge 1 ] && [ -e "$TMP_PATH/bin/keycheck" ]; then
+if $KEYCHECK_ENABLED && [ "$LIVE_SETUP" -eq 0 ] && [ "${LIVE_SETUP_TIMEOUT}" -ge 1 ]; then
   ui_msg '---------------------------------------------------'
   ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
   ui_msg "Waiting input for ${LIVE_SETUP_TIMEOUT} seconds..."
