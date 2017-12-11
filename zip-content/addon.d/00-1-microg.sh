@@ -17,7 +17,7 @@ EOF
 case "$1" in
   backup)
     echo 'Backup of microG unofficial installer in progress...'
-    list_files | while read FILE DUMMY; do
+    list_files | while read FILE _; do
       if test -z "$FILE"; then continue; fi
       echo " $S/$FILE"
       backup_file "$S/$FILE"
