@@ -153,6 +153,7 @@ if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" '90dbb655885d9530997a761c5
    verify_sha1 "$TMP_PATH/files/priv-app-kk/GmsCore.apk" '52890ef5d04abd563fa220725708fd2bc48e894e' &&  # ToDO: Remove when bug #379 is fixed
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" 'fa6267bee3f73d248d1110be53d66736aa4fece0' &&
+   verify_sha1 "$TMP_PATH/files/app/DejaVuBackend.apk" 'ec1197a15f12b9259c2ee3d9e087acd5e08befa3' &&
    verify_sha1 "$TMP_PATH/files/app/IchnaeaNlpBackend.apk" '19b286a12a4902b7627c04cb54bdda63af494696' &&
    verify_sha1 "$TMP_PATH/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
    ###verify_sha1 "$TMP_PATH/files/app/PlayGames.apk" 'c99c27053bf518dd3d08449e9478b43de0da50ed' &&
