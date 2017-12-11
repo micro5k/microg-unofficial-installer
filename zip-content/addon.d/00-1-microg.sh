@@ -1,6 +1,8 @@
 #!/sbin/sh
 #
 # /system/addon.d/00-1-microg.sh
+# During a ROM upgrade, this script backs up microG,
+# /system is formatted and reinstalled, then files are restored.
 #
 
 . /tmp/backuptool.functions
@@ -17,8 +19,8 @@ case "$1" in
     echo 'Backup of microG unofficial installer in progress...'
     list_files | while read FILE DUMMY; do
       if test -z "$FILE"; then continue; fi
-      echo " "$S/"$FILE"
-      backup_file $S/"$FILE"
+      echo " $S/$FILE"
+      backup_file "$S/$FILE"
     done
     echo 'Done.'
   ;;
@@ -28,7 +30,7 @@ case "$1" in
       if test -z "$FILE"; then continue; fi
       R=""
       [ -n "$REPLACEMENT" ] && R="$S/$REPLACEMENT"
-      [ -f "$C/$S/$FILE" ] && restore_file $S/"$FILE" "$R"
+      [ -f "$C/$S/$FILE" ] && restore_file "$S/$FILE" "$R"
     done
     echo 'Done.'
   ;;
