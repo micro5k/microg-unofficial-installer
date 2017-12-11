@@ -267,10 +267,12 @@ if [[ -d "${SYS_PATH}/addon.d" ]]; then
   if [[ $LEGACY_ANDROID == true ]]; then
     :  ### Skip it
   elif [[ $OLD_ANDROID == true ]]; then
-    :  ### Not ready yet #cp -rpf "$TMP_PATH/addon.d/00-1-microg-k.sh" "${SYS_PATH}/addon.d/00-1-microg.sh"
+    :  ### Not ready yet
   else
     ui_msg 'Installing survival script...'
-    copy_file "$TMP_PATH/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
+    FILE_LIST=$(list_files "$TMP_PATH/files" "$TMP_PATH/files/")
+    custom_replace_string_in_file "$FILE_LIST" "$TMP_PATH/addon.d/00-1-microg.sh"
+    copy_file "$TMP_PATH/addon.d/00-1-microg.sh" "$SYS_PATH/addon.d"
   fi
 fi
 

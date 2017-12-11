@@ -116,6 +116,12 @@ is_substring()
   return 1  # NOT found
 }
 
+custom_replace_string_in_file()  # $1 => This function replace %PLACEHOLDER% with this string   $2 => File to process
+{
+  local replacement="${1//#/?}"  # Remove the character that would break sed
+  sed -i "s#%PLACEHOLDER%#${replacement}#" "$2" || ui_error "Failed to replace a string in the file '$2'" 92
+}
+
 # Permission related functions
 set_perm()
 {
@@ -207,6 +213,17 @@ delete_recursive()
   rm -rf "$@" || ui_error "Failed to delete files/folders" 104
 }
 
+list_files()  # $1 => Folder to scan   $2 => Prefix to remove
+{
+  for entry in "$1"/*; do
+    if test -d "${entry}"; then
+      list_files "${entry}" "$2"
+    else
+      printf '%s' "${entry#$2}\n" || ui_error "File listing failed" 105
+    fi
+  done
+}
+
 # Input related functions
 check_key()
 {
@@ -224,7 +241,7 @@ check_key()
 
 choose_timeout()
 {
-  timeout -t "$1" keycheck
+  timeout -t "$1" keycheck || ui_error "Timeout or keycheck failed" 106
   check_key "$?"
   return "$?"
 }

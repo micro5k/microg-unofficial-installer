@@ -1,17 +1,14 @@
 #!/sbin/sh
 #
 # /system/addon.d/00-1-microg.sh
-# (Lollipop and higher)
 #
 
 . /tmp/backuptool.functions
 
-list_files() {
+list_files()
+{
 cat <<EOF
-priv-app/GmsCore/GmsCore.apk
-priv-app/GoogleServicesFramework/GoogleServicesFramework.apk
-priv-app/DroidGuard/DroidGuard.apk
-priv-app/Phonesky/Phonesky.apk
+%PLACEHOLDER%
 EOF
 }
 
@@ -20,6 +17,7 @@ case "$1" in
 
     echo 'Backup of microG in progress...'
     list_files | while read FILE DUMMY; do
+      if test -z "$FILE"; then continue; fi
       echo " "$S/"$FILE"
       backup_file $S/"$FILE"
     done
@@ -37,6 +35,7 @@ case "$1" in
   ;;
   restore)
     list_files | while read FILE REPLACEMENT; do
+      if test -z "$FILE"; then continue; fi
       R=""
       [ -n "$REPLACEMENT" ] && R="$S/$REPLACEMENT"
       [ -f "$C/$S/$FILE" ] && restore_file $S/"$FILE" "$R"
