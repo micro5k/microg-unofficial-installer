@@ -137,14 +137,18 @@ if [[ $OLD_ANDROID == true ]]; then
   if [[ $CPU64 != false && ! -d "${SYS_PATH}/vendor/lib64" ]]; then create_dir "${SYS_PATH}/vendor/lib64"; fi
 fi
 
-ui_msg 'Extracting files...'
+# Extracting
+ui_msg 'Extracting...'
 custom_package_extract_dir 'files' "$TMP_PATH"
 custom_package_extract_dir 'addon.d' "$TMP_PATH"
 
-ui_debug 'Setting permissions...'
+# Setting up permissions
+ui_debug 'Setting up permissions...'
 set_std_perm_recursive "$TMP_PATH/files"
+set_std_perm_recursive "$TMP_PATH/addon.d"
 
-ui_msg_sameline_start 'Verifying files...'
+# Verifying
+ui_msg_sameline_start 'Verifying...'
 if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" '90dbb655885d9530997a761c5001fd7f785f972e' &&
    verify_sha1 "$TMP_PATH/files/priv-app-kk/GmsCore.apk" '52890ef5d04abd563fa220725708fd2bc48e894e' &&  # ToDO: Remove when bug #379 is fixed
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
@@ -167,11 +171,26 @@ else
   ui_error 'ERROR: Verification failed'
 fi
 
+# Temporary workaround
+if [[ $OLD_ANDROID == true ]]; then
+  copy_file "$TMP_PATH/files/priv-app-kk/GmsCore.apk" "$TMP_PATH/files/priv-app"  # ToDO: Remove when bug #379 is fixed
+fi
+delete_recursive "$TMP_PATH/files/priv-app-kk"
+
+# Extracting libs
+ui_msg 'Extracting libs...'
+create_dir "$TMP_PATH/libs"
+zip_extract_dir "$TMP_PATH/files/priv-app/GmsCore.apk" 'lib' "$TMP_PATH/libs"
+
+# Setting up libs permissions
+ui_debug 'Setting up libs permissions...'
+set_std_perm_recursive "$TMP_PATH/libs"
+
 # Clean some Google Apps and previous installations
 . "$TMP_PATH/uninstall.sh"
 
-# Setup default Android permissions
-ui_debug 'Setup default Android permissions...'
+# Configuring default Android permissions
+ui_debug 'Configuring default Android permissions...'
 if [[ ! -e "${SYS_PATH}/etc/default-permissions" ]]; then
   ui_msg 'Creating the default permissions folder...'
   create_dir "${SYS_PATH}/etc/default-permissions"
@@ -186,14 +205,19 @@ fi
 if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
   if ! grep -q 'com.google.android.gms' /data/system/users/*/runtime-permissions.xml; then
     # Purge the runtime permissions to prevent issues when the user flash this for the first time on a dirty install
-    ui_debug "Resetting Android runtime permissions..."
+    ui_msg "Resetting Android runtime permissions..."
     delete /data/system/users/*/runtime-permissions.xml
   fi
 fi
 umount '/data'
 
-# Installing
-ui_msg 'Installing...'
+# Preparing
+ui_msg 'Preparing...'
+
+if [[ $LEGACY_ANDROID == true ]]; then
+  move_dir_content "$TMP_PATH/files/app-legacy" "$TMP_PATH/files/app"
+fi
+delete_recursive "$TMP_PATH/files/app-legacy"
 
 move_rename_file "$TMP_PATH/files/variants/${MARKET_FILENAME}" "$TMP_PATH/files/priv-app/Phonesky.apk"
 delete_recursive "$TMP_PATH/files/variants"
@@ -212,48 +236,29 @@ if [[ $OLD_ANDROID != true ]]; then
     create_dir "$path_without_ext"
     mv -f "$entry" "$path_without_ext"/
   done
-else
-  cp -rpf "$TMP_PATH/files/priv-app-kk/GmsCore.apk" "$TMP_PATH/files/priv-app/GmsCore.apk"  # ToDO: Remove when bug #379 is fixed
-fi
-delete_recursive "$TMP_PATH/files/priv-app-kk"
 
-if [[ $LEGACY_ANDROID == true ]]; then
-  move_dir_content "$TMP_PATH/files/app-legacy" "$TMP_PATH/files/app"
-fi
-delete_recursive "$TMP_PATH/files/app-legacy"
+  # The name of the following architectures remain unchanged: x86, x86_64, mips, mips64
+  move_rename_dir "$TMP_PATH/libs/lib/arm64-v8a" "$TMP_PATH/libs/lib/arm64"
+  if [[ $LEGACY_ARM != true ]]; then
+    move_rename_dir "$TMP_PATH/libs/lib/armeabi-v7a" "$TMP_PATH/libs/lib/arm"
+    delete_recursive "$TMP_PATH/libs/lib/armeabi"
+  else
+    move_rename_dir "$TMP_PATH/libs/lib/armeabi" "$TMP_PATH/libs/lib/arm"
+    delete_recursive "$TMP_PATH/libs/lib/armeabi-v7a"
+  fi
 
+  create_dir "$TMP_PATH/files/priv-app/GmsCore/lib"
+  move_dir_content "$TMP_PATH/libs/lib" "$TMP_PATH/files/priv-app/GmsCore/lib"
+fi
+
+# Installing
+ui_msg 'Installing...'
 copy_dir_content "$TMP_PATH/files/priv-app" "${PRIVAPP_PATH}"
 copy_dir_content "$TMP_PATH/files/app" "${SYS_PATH}/app"
 copy_dir_content "$TMP_PATH/files/framework" "${SYS_PATH}/framework"
 copy_dir_content "$TMP_PATH/files/etc/permissions" "${SYS_PATH}/etc/permissions"
 
-ui_debug 'Extracting libs...'
-create_dir "$TMP_PATH/libs"
-if [[ $OLD_ANDROID != true ]]; then
-  zip_extract_dir "$TMP_PATH/files/priv-app/GmsCore/GmsCore.apk" 'lib' "$TMP_PATH/libs"
-else
-  zip_extract_dir "$TMP_PATH/files/priv-app/GmsCore.apk" 'lib' "$TMP_PATH/libs"
-fi
-
-ui_debug 'Setting permissions...'
-set_std_perm_recursive "$TMP_PATH/libs"
-
-# Installing libs
-ui_msg 'Installing libs...'
-if [[ $OLD_ANDROID != true ]]; then
-  # The name of the following architectures remain unchanged: x86, x86_64, mips, mips64
-  mv -f "$TMP_PATH/libs/lib/arm64-v8a/" "$TMP_PATH/libs/lib/arm64"
-  if [[ $LEGACY_ARM != true ]]; then
-    mv -f "$TMP_PATH/libs/lib/armeabi-v7a/" "$TMP_PATH/libs/lib/arm"
-    rm -rf "$TMP_PATH/libs/lib/armeabi"
-  else
-    mv -f "$TMP_PATH/libs/lib/armeabi/" "$TMP_PATH/libs/lib/arm"
-    rm -rf "$TMP_PATH/libs/lib/armeabi-v7a"
-  fi
-
-  create_dir "${PRIVAPP_PATH}/GmsCore/lib"
-  copy_dir_content "$TMP_PATH/libs/lib" "${PRIVAPP_PATH}/GmsCore/lib"
-else
+if [[ $OLD_ANDROID == true ]]; then
   if [[ $CPU != false ]]; then
     copy_dir_content "$TMP_PATH/libs/lib/${CPU}" "${SYS_PATH}/vendor/lib"
   fi
@@ -261,6 +266,7 @@ else
     copy_dir_content "$TMP_PATH/libs/lib/${CPU64}" "${SYS_PATH}/vendor/lib64"
   fi
 fi
+delete_recursive "$TMP_PATH/libs"
 
 # Install survival script
 if [[ -d "${SYS_PATH}/addon.d" ]]; then

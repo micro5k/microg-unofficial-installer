@@ -198,6 +198,11 @@ move_rename_file()
   mv -f "$1" "$2" || ui_error "Failed to move/rename the file from '$1' to '$2'" 101
 }
 
+move_rename_dir()
+{
+  mv -f "$1"/ "$2" || ui_error "Failed to move/rename the folder from '$1' to '$2'" 101
+}
+
 move_dir_content()
 {
   mv -f "$1"/* "$2"/ || ui_error "Failed to move dir content from '$1' to '$2'" 102
@@ -241,7 +246,7 @@ check_key()
 
 choose_timeout()
 {
-  timeout -t "$1" keycheck || ui_error "Timeout or keycheck failed" 106
+  timeout -t "$1" keycheck
   check_key "$?"
   return "$?"
 }
