@@ -146,6 +146,7 @@ custom_package_extract_dir 'addon.d' "$TMP_PATH"
 ui_debug 'Setting up permissions...'
 set_std_perm_recursive "$TMP_PATH/files"
 set_std_perm_recursive "$TMP_PATH/addon.d"
+set_perm 0 0 0755 "$TMP_PATH/addon.d/00-1-microg.sh"
 
 # Verifying
 ui_msg_sameline_start 'Verifying...'
