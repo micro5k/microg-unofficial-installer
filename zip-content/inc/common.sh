@@ -233,11 +233,11 @@ list_files()  # $1 => Folder to scan   $2 => Prefix to remove
 check_key()
 {
   case "$1" in
-  42)  # Vol +
+  42)   # Vol +
     return 3;;
-  21)  # Vol -
+  21)   # Vol -
     return 2;;
-  143)  # Nothing selected
+  132)  # Error (example: Illegal instruction)
     return 1;;
   *)
     return 0;;
@@ -247,13 +247,13 @@ check_key()
 choose_timeout()
 {
   local key_code=1
-  timeout -t "$1" keycheck; key_code="$?"
+  timeout -t "$1" keycheck; key_code="$?"  # Timeout return 127 when it cannot execute the binary
   if test "$key_code" -eq 143; then
     ui_msg 'Key code: No key pressed'
     return 0
-  elif test "$key_code" -eq 127; then
+  elif test "$key_code" -eq 127 || test "$key_code" -eq 132; then
     ui_msg 'WARNING: Key detection failed'
-    return 0
+    return 1
   fi
 
   ui_msg "Key code: $key_code"
@@ -267,12 +267,7 @@ choose()
   ui_msg "QUESTION: $1"
   ui_msg "$2"
   ui_msg "$3"
-  while true; do
-    keycheck; key_code="$?"
-    if test "$key_code" -ne 143; then break; fi
-    sleep 0.03
-  done
-
+  keycheck; key_code="$?"
   ui_msg "Key code: $key_code"
   check_key "$key_code"
   return "$?"
