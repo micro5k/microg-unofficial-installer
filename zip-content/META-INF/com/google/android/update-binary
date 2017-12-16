@@ -158,8 +158,16 @@ check_key()
 
 choose_timeout()
 {
-  timeout -t "$1" keycheck
-  check_key "$?"
+  timeout -t "$1" keycheck; key="$?"
+  if test "$key" -eq 143; then
+    ui_msg 'Key code: No key pressed'
+    return 0
+  elif test "$key" -eq 127; then
+    ui_msg 'WARNING: Key detection failed'
+    return 0
+  fi
+  ui_msg "Key code: $key"
+  check_key "$key"
   return "$?"
 }
 
