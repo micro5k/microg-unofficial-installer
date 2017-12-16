@@ -221,6 +221,8 @@ if [[ $LEGACY_ANDROID == true ]]; then
 fi
 delete_recursive "$TMP_PATH/files/app-legacy"
 
+if test "$API" -lt 18; then delete "$TMP_PATH/files/app/DejaVuBackend.apk"; fi
+
 move_rename_file "$TMP_PATH/files/variants/${MARKET_FILENAME}" "$TMP_PATH/files/priv-app/Phonesky.apk"
 delete_recursive "$TMP_PATH/files/variants"
 
