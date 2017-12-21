@@ -188,7 +188,13 @@ zip_extract_dir "$TMP_PATH/files/priv-app/GmsCore.apk" 'lib' "$TMP_PATH/libs"
 ui_debug 'Setting up libs permissions...'
 set_std_perm_recursive "$TMP_PATH/libs"
 
-# Clean some Google Apps and previous installations
+# MOUNT /data PARTITION
+if ! is_mounted '/data'; then
+  mount '/data'
+  if ! is_mounted '/data'; then ui_error 'ERROR: /data cannot be mounted'; fi
+fi
+
+# Clean some Google Apps, microG and previous installations
 . "$TMP_PATH/uninstall.sh"
 
 # Configuring default Android permissions
@@ -200,10 +206,6 @@ fi
 copy_dir_content "$TMP_PATH/files/etc/default-permissions" "${SYS_PATH}/etc/default-permissions"
 
 # Resetting Android runtime permissions
-if ! is_mounted '/data'; then
-  mount '/data'
-  if ! is_mounted '/data'; then ui_error 'ERROR: /data cannot be mounted'; fi
-fi
 if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
   if ! grep -q 'com.google.android.gms' /data/system/users/*/runtime-permissions.xml; then
     # Purge the runtime permissions to prevent issues when the user flash this for the first time on a dirty install
@@ -211,6 +213,8 @@ if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
     delete /data/system/users/*/runtime-permissions.xml
   fi
 fi
+
+# UNMOUNT /data PARTITION
 umount '/data'
 
 # Preparing
