@@ -226,6 +226,7 @@ fi
 delete_recursive "$TMP_PATH/files/app-legacy"
 
 if test "$API" -lt 18; then delete "$TMP_PATH/files/app/DejaVuBackend.apk"; fi
+if test "$API" -lt 23; then delete "$TMP_PATH/files/etc/sysconfig/microg-a5k.xml"; fi
 
 move_rename_file "$TMP_PATH/files/variants/${MARKET_FILENAME}" "$TMP_PATH/files/priv-app/Phonesky.apk"
 delete_recursive "$TMP_PATH/files/variants"
@@ -265,6 +266,9 @@ copy_dir_content "$TMP_PATH/files/priv-app" "${PRIVAPP_PATH}"
 copy_dir_content "$TMP_PATH/files/app" "${SYS_PATH}/app"
 copy_dir_content "$TMP_PATH/files/framework" "${SYS_PATH}/framework"
 copy_dir_content "$TMP_PATH/files/etc/permissions" "${SYS_PATH}/etc/permissions"
+if test "$API" -ge 23; then
+  copy_dir_content "$TMP_PATH/files/etc/sysconfig" "${SYS_PATH}/etc/sysconfig"
+fi
 
 if [[ $OLD_ANDROID == true ]]; then
   if [[ $CPU != false ]]; then
