@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
-
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <!-- Copyright (C) 2017  ale5000
      This file was created by ale5000 (ale5000-git on GitHub).
 
@@ -29,7 +28,6 @@
      Granting these permissions could prevent issues on some ROMs or
      on non-clean installations.
 -->
-
 <exceptions>
 
     <exception
