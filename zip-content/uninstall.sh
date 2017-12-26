@@ -59,10 +59,13 @@ com.qualcomm.location
 org.microg.nlp
 
 DejaVuBackend
+DejaVuNlpBackend
 org.fitchfamily.android.dejavu
 IchnaeaNlpBackend
+MozillaNlpBackend
 org.microg.nlp.backend.ichnaea
 NominatimGeocoderBackend
+NominatimNlpBackend
 org.microg.nlp.backend.nominatim
 EOF
 }
@@ -111,6 +114,20 @@ ${SYS_PATH}/addon.d/00-1-microg.sh
 ${SYS_PATH}/addon.d/1-microg.sh
 ${SYS_PATH}/addon.d/10-mapsapi.sh
 ${SYS_PATH}/addon.d/70-microg.sh
+
+${SYS_PATH}/addon.d/05-microg.sh
+${SYS_PATH}/addon.d/05-microg-playstore.sh
+${SYS_PATH}/addon.d/05-microg-playstore-patched.sh
+${SYS_PATH}/addon.d/05-unifiednlp.sh
+
+${SYS_PATH}/etc/default-permissions/microg-permissions.xml
+${SYS_PATH}/etc/default-permissions/microg-playstore-permissions.xml
+${SYS_PATH}/etc/default-permissions/microg-playstore-patched-permissions.xml
+${SYS_PATH}/etc/default-permissions/unifiednlp-permissions.xml
+
+${SYS_PATH}/etc/sysconfig/microg.xml
+${SYS_PATH}/etc/sysconfig/microg-playstore.xml
+${SYS_PATH}/etc/sysconfig/microg-playstore-patched.xml
 "
 rm -rf ${DELETE_LIST}  # Filenames cannot contain spaces
 
