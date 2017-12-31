@@ -67,6 +67,7 @@ com.mgoogle.android.gms
 com.google.android.gms
 com.google.android.gsf
 com.android.vending
+com.google.android.youtube
 
 com.google.android.location
 com.qualcomm.location
@@ -83,6 +84,7 @@ list_app_data_to_remove()
 cat <<EOF
 com.mgoogle.android.gms
 com.android.vending
+com.google.android.youtube
 
 com.google.android.location
 com.qualcomm.location
