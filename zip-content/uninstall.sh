@@ -76,6 +76,7 @@ org.schabi.newpipe
 com.google.android.location
 com.qualcomm.location
 org.microg.nlp
+com.google.android.maps
 
 org.fitchfamily.android.dejavu
 org.microg.nlp.backend.ichnaea
