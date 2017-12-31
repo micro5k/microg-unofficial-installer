@@ -34,6 +34,8 @@ PlayGames
 Velvet
 YouTube
 
+NewPipe
+
 GmsCore_update
 GmsCoreSetupPrebuilt
 PrebuiltGmsCore
@@ -68,6 +70,8 @@ com.google.android.gms
 com.google.android.gsf
 com.android.vending
 com.google.android.youtube
+
+org.schabi.newpipe
 
 com.google.android.location
 com.qualcomm.location

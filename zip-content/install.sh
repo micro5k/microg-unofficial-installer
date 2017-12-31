@@ -154,6 +154,7 @@ if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" '8dcc9a0097d8e10478fff6e8c
    verify_sha1 "$TMP_PATH/files/priv-app-kk/GmsCore.apk" '52890ef5d04abd563fa220725708fd2bc48e894e' &&  # ToDO: Remove when bug #379 is fixed
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" 'fa6267bee3f73d248d1110be53d66736aa4fece0' &&
+   verify_sha1 "$TMP_PATH/files/app/NewPipe.apk" 'dbd14fd60bc7bedeb35fcd8151e91031b5216b0d' &&
    verify_sha1 "$TMP_PATH/files/app/DejaVuBackend.apk" '8ad36825c795c62f5859345a60e8e6a8a3861ecd' &&
    verify_sha1 "$TMP_PATH/files/app/IchnaeaNlpBackend.apk" '9be5de681ebb1184fc5e00933f1fd18c080f7ee8' &&
    verify_sha1 "$TMP_PATH/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
@@ -227,6 +228,7 @@ delete_recursive "$TMP_PATH/files/app-legacy"
 
 if test "$API" -lt 18; then delete "$TMP_PATH/files/app/DejaVuBackend.apk"; fi
 if test "$API" -lt 23; then delete "$TMP_PATH/files/etc/sysconfig/microg-a5k.xml"; fi
+if test "$API" -lt 15; then delete "$TMP_PATH/files/app/NewPipe.apk"; fi
 
 move_rename_file "$TMP_PATH/files/variants/${MARKET_FILENAME}" "$TMP_PATH/files/priv-app/Phonesky.apk"
 delete_recursive "$TMP_PATH/files/variants"
