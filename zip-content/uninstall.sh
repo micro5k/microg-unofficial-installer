@@ -18,21 +18,18 @@
   along with microG unofficial installer.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE
 
-list_app_files()
+list_app_filenames()
 {
 cat <<EOF
 GmsCore
-com.google.android.gms
 GoogleFeedback
 GoogleLoginService
 GoogleOneTimeInitializer
 GooglePartnerSetup
 GoogleServicesFramework
-com.google.android.gsf
 GsfProxy
 MarketUpdater
 Phonesky
-com.android.vending
 PlayGames
 Velvet
 YouTube
@@ -54,21 +51,42 @@ LegacyNetworkLocation
 NetworkLocation
 UnifiedNlp
 
+DejaVuBackend
+DejaVuNlpBackend
+IchnaeaNlpBackend
+MozillaNlpBackend
+NominatimGeocoderBackend
+NominatimNlpBackend
+EOF
+}
+
+list_app_internal_filenames()
+{
+cat <<EOF
+com.mgoogle.android.gms
+com.google.android.gms
+com.google.android.gsf
+com.android.vending
+
 com.google.android.location
 com.qualcomm.location
 org.microg.nlp
 
-DejaVuBackend
-DejaVuNlpBackend
 org.fitchfamily.android.dejavu
-IchnaeaNlpBackend
-MozillaNlpBackend
 org.microg.nlp.backend.ichnaea
-NominatimGeocoderBackend
-NominatimNlpBackend
 org.microg.nlp.backend.nominatim
+EOF
+}
 
+list_app_data_to_remove()
+{
+cat <<EOF
 com.mgoogle.android.gms
+com.android.vending
+
+com.google.android.location
+com.qualcomm.location
+org.microg.nlp
 EOF
 }
 
@@ -90,6 +108,9 @@ if [[ -z "$INSTALLER" ]]; then
   if [[ -d "${SYS_PATH}/priv-app" ]]; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi
 fi
 
+INTERNAL_MEMORY_PATH='/sdcard0'
+if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
+
 remove_file_if_exist()
 {
   if [[ -e "$1" ]]; then
@@ -98,7 +119,7 @@ remove_file_if_exist()
   fi
 }
 
-list_app_files | while read FILE; do
+list_app_filenames | while read FILE; do
   if [[ -z "$FILE" ]]; then continue; fi
   remove_file_if_exist "${PRIVAPP_PATH}/$FILE"
   remove_file_if_exist "${PRIVAPP_PATH}/$FILE.apk"
@@ -106,15 +127,24 @@ list_app_files | while read FILE; do
   remove_file_if_exist "${SYS_PATH}/app/$FILE"
   remove_file_if_exist "${SYS_PATH}/app/$FILE.apk"
   remove_file_if_exist "${SYS_PATH}/app/$FILE.odex"
+done
+
+list_app_internal_filenames | while read FILE; do
+  if [[ -z "$FILE" ]]; then continue; fi
+  remove_file_if_exist "${PRIVAPP_PATH}/$FILE.apk"
+  remove_file_if_exist "${SYS_PATH}/app/$FILE.apk"
   remove_file_if_exist "/data/app/$FILE"-*
+  remove_file_if_exist "/mnt/asec/$FILE"-*
+done
+
+list_app_data_to_remove | while read FILE; do
+  if [[ -z "$FILE" ]]; then continue; fi
+  remove_file_if_exist "/data/data/$FILE"
+  remove_file_if_exist "${INTERNAL_MEMORY_PATH}/Android/data/$FILE"
 done
 
 DELETE_LIST="
 ${SYS_PATH}/etc/permissions/com.qualcomm.location.xml
-
-/data/data/com.android.vending
-
-/data/data/com.mgoogle.android.gms
 
 ${SYS_PATH}/addon.d/00-1-microg.sh
 ${SYS_PATH}/addon.d/1-microg.sh
