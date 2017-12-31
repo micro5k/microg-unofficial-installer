@@ -67,6 +67,8 @@ org.microg.nlp.backend.ichnaea
 NominatimGeocoderBackend
 NominatimNlpBackend
 org.microg.nlp.backend.nominatim
+
+com.mgoogle.android.gms
 EOF
 }
 
@@ -111,6 +113,8 @@ DELETE_LIST="
 ${SYS_PATH}/etc/permissions/com.qualcomm.location.xml
 
 /data/data/com.android.vending
+
+/data/data/com.mgoogle.android.gms
 
 ${SYS_PATH}/addon.d/00-1-microg.sh
 ${SYS_PATH}/addon.d/1-microg.sh
