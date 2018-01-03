@@ -34,6 +34,9 @@ PlayGames
 Velvet
 YouTube
 
+DroidGuard
+GmsDroidGuard
+
 NewPipe
 
 GmsCore_update
@@ -71,11 +74,14 @@ com.google.android.gsf
 com.android.vending
 com.google.android.youtube
 
+org.microg.gms.droidguard
+
 org.schabi.newpipe
 
 com.google.android.location
 com.qualcomm.location
 org.microg.nlp
+org.microg.unifiednlp
 com.google.android.maps
 
 org.fitchfamily.android.dejavu
