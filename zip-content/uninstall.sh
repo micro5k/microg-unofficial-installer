@@ -163,6 +163,7 @@ ${SYS_PATH}/addon.d/00-1-microg.sh
 ${SYS_PATH}/addon.d/1-microg.sh
 ${SYS_PATH}/addon.d/10-mapsapi.sh
 ${SYS_PATH}/addon.d/70-microg.sh
+${SYS_PATH}/addon.d/70-gapps.sh
 
 ${SYS_PATH}/addon.d/05-microg.sh
 ${SYS_PATH}/addon.d/05-microg-playstore.sh
