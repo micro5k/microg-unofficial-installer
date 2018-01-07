@@ -180,6 +180,7 @@ create_dir()
 
 copy_dir_content()
 {
+  if [[ ! -e "$2" ]]; then create_dir "$2"; fi
   cp -rpf "$1"/* "$2"/ || ui_error "Failed to copy dir content from '$1' to '$2'" 98
 }
 
