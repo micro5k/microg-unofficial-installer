@@ -32,12 +32,12 @@ MarketUpdater
 Phonesky
 PlayGames
 Velvet
-YouTube
 
 DroidGuard
 GmsDroidGuard
 
 NewPipe
+YouTube
 
 GmsCore_update
 GmsCoreSetupPrebuilt
@@ -51,8 +51,8 @@ FDroidPrivileged
 PlayStore
 Vending
 
-BaiduNetworkLocation
 AMAPNetworkLocation
+BaiduNetworkLocation
 LegacyNetworkLocation
 NetworkLocation
 UnifiedNlp
@@ -71,19 +71,20 @@ list_app_internal_filenames()
 cat <<EOF
 com.mgoogle.android.gms
 com.google.android.gms
-com.google.android.gsf
+com.google.android.feedback
 com.google.android.gsf.login
+com.google.android.gsf
 com.android.vending
-com.google.android.youtube
 
 org.microg.gms.droidguard
 
 org.schabi.newpipe
+com.google.android.youtube
 
-com.baidu.location
-com.amap.android.location
-com.google.android.location
 com.qualcomm.location
+com.amap.android.location
+com.baidu.location
+com.google.android.location
 org.microg.nlp
 org.microg.unifiednlp
 com.google.android.maps
@@ -98,12 +99,19 @@ list_app_data_to_remove()
 {
 cat <<EOF
 com.mgoogle.android.gms
+com.google.android.feedback
+com.google.android.gsf.login
+com.google.android.gsf
 com.android.vending
+
 com.google.android.youtube
 
-com.google.android.location
 com.qualcomm.location
+com.amap.android.location
+com.baidu.location
+com.google.android.location
 org.microg.nlp
+org.microg.unifiednlp
 EOF
 }
 
