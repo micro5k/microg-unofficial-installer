@@ -148,8 +148,12 @@ done
 
 list_app_internal_filenames | while read FILE; do
   if [[ -z "$FILE" ]]; then continue; fi
+  remove_file_if_exist "${PRIVAPP_PATH}/$FILE"
   remove_file_if_exist "${PRIVAPP_PATH}/$FILE.apk"
+  remove_file_if_exist "${PRIVAPP_PATH}/$FILE.odex"
+  remove_file_if_exist "${SYS_PATH}/app/$FILE"
   remove_file_if_exist "${SYS_PATH}/app/$FILE.apk"
+  remove_file_if_exist "${SYS_PATH}/app/$FILE.odex"
   remove_file_if_exist "/data/app/$FILE"-*
   remove_file_if_exist "/mnt/asec/$FILE"-*
 done
