@@ -71,6 +71,7 @@ cat <<EOF
 com.mgoogle.android.gms
 com.google.android.gms
 com.google.android.gsf
+com.google.android.gsf.login
 com.android.vending
 com.google.android.youtube
 
