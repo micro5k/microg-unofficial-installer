@@ -51,6 +51,7 @@ FDroidPrivileged
 PlayStore
 Vending
 
+BaiduNetworkLocation
 AMAPNetworkLocation
 LegacyNetworkLocation
 NetworkLocation
@@ -79,6 +80,7 @@ org.microg.gms.droidguard
 
 org.schabi.newpipe
 
+com.baidu.location
 com.google.android.location
 com.qualcomm.location
 org.microg.nlp
