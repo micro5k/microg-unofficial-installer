@@ -81,6 +81,7 @@ org.microg.gms.droidguard
 org.schabi.newpipe
 
 com.baidu.location
+com.amap.android.location
 com.google.android.location
 com.qualcomm.location
 org.microg.nlp
