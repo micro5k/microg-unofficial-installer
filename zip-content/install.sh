@@ -208,11 +208,9 @@ copy_dir_content "$TMP_PATH/files/etc/default-permissions" "${SYS_PATH}/etc/defa
 
 # Resetting Android runtime permissions
 if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
-  if ! grep -q 'com.google.android.gms' /data/system/users/*/runtime-permissions.xml; then
-    # Purge the runtime permissions to prevent issues when the user flash this for the first time on a dirty install
-    ui_msg "Resetting Android runtime permissions..."
-    delete /data/system/users/*/runtime-permissions.xml
-  fi
+  # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
+  ui_msg "Resetting Android runtime permissions..."
+  delete /data/system/users/*/runtime-permissions.xml
 fi
 
 # UNMOUNT /data PARTITION
