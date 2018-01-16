@@ -29,8 +29,7 @@
      on non-clean installations.
 -->
 <exceptions>
-    <exception
-            package="com.google.android.gms">
+    <exception package="com.google.android.gms">
         <!-- Phone -->
         <permission name="android.permission.READ_PHONE_STATE" fixed="false"></permission>
         <!-- Account -->
@@ -43,14 +42,12 @@
         <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"></permission>
     </exception>
 
-    <exception
-            package="com.google.android.gsf">
+    <exception package="com.google.android.gsf">
         <permission name="com.google.android.c2dm.permission.RECEIVE" fixed="false"></permission>
         <permission name="com.google.android.c2dm.permission.SEND" fixed="false"></permission>
     </exception>
 
-    <exception
-            package="com.android.vending">
+    <exception package="com.android.vending">
         <!-- Phone -->
         <permission name="android.permission.READ_PHONE_STATE" fixed="false"></permission>
         <!-- Account -->
@@ -63,13 +60,11 @@
         <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"></permission>
     </exception>
 
-    <exception
-            package="org.microg.gms.droidguard">
+    <exception package="org.microg.gms.droidguard">
         <permission name="android.permission.INTERNET" fixed="false"></permission>
     </exception>
 
-    <exception
-            package="org.microg.nlp.backend.ichnaea">
+    <exception package="org.microg.nlp.backend.ichnaea">
         <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"></permission>
         <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"></permission>
         <permission name="android.permission.ACCESS_NETWORK_STATE" fixed="false"></permission>
@@ -79,21 +74,18 @@
         <permission name="android.permission.READ_PHONE_STATE" fixed="false"></permission>
     </exception>
 
-    <exception
-            package="org.fitchfamily.android.dejavu">
+    <exception package="org.fitchfamily.android.dejavu">
         <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"></permission>
         <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"></permission>
         <permission name="android.permission.ACCESS_WIFI_STATE" fixed="false"></permission>
         <permission name="android.permission.CHANGE_WIFI_STATE" fixed="false"></permission>
     </exception>
 
-    <exception
-            package="org.microg.nlp.backend.nominatim">
+    <exception package="org.microg.nlp.backend.nominatim">
         <permission name="android.permission.INTERNET" fixed="false"></permission>
     </exception>
 
-    <exception
-            package="org.schabi.newpipe">
+    <exception package="org.schabi.newpipe">
         <permission name="android.permission.ACCESS_NETWORK_STATE" fixed="false"></permission>
         <permission name="android.permission.INTERNET" fixed="false"></permission>
         <permission name="android.permission.SYSTEM_ALERT_WINDOW" fixed="false"></permission>
