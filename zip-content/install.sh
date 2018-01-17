@@ -198,6 +198,15 @@ fi
 # Clean some Google Apps, microG and previous installations
 . "$TMP_PATH/uninstall.sh"
 
+# Resetting Android runtime permissions
+if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
+  if [[ ! -e "${SYS_PATH}/etc/default-permissions/microg-permissions.xml" ]] || ! grep -q 'com.google.android.gms' /data/system/users/*/runtime-permissions.xml; then
+    # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
+    ui_msg "Resetting Android runtime permissions..."
+    delete /data/system/users/*/runtime-permissions.xml
+  fi
+fi
+
 # Configuring default Android permissions
 ui_debug 'Configuring default Android permissions...'
 if [[ ! -e "${SYS_PATH}/etc/default-permissions" ]]; then
@@ -205,13 +214,6 @@ if [[ ! -e "${SYS_PATH}/etc/default-permissions" ]]; then
   create_dir "${SYS_PATH}/etc/default-permissions"
 fi
 copy_dir_content "$TMP_PATH/files/etc/default-permissions" "${SYS_PATH}/etc/default-permissions"
-
-# Resetting Android runtime permissions
-if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
-  # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
-  ui_msg "Resetting Android runtime permissions..."
-  delete /data/system/users/*/runtime-permissions.xml
-fi
 
 # UNMOUNT /data PARTITION
 umount '/data'
