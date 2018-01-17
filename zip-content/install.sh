@@ -195,9 +195,6 @@ if ! is_mounted '/data'; then
   if ! is_mounted '/data'; then ui_error 'ERROR: /data cannot be mounted'; fi
 fi
 
-# Clean some Google Apps, microG and previous installations
-. "$TMP_PATH/uninstall.sh"
-
 # Resetting Android runtime permissions
 if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
   if [[ ! -e "${SYS_PATH}/etc/default-permissions/microg-permissions.xml" ]] || ! grep -q 'com.google.android.gms' /data/system/users/*/runtime-permissions.xml; then
@@ -206,6 +203,9 @@ if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
     delete /data/system/users/*/runtime-permissions.xml
   fi
 fi
+
+# Clean some Google Apps, microG and previous installations
+. "$TMP_PATH/uninstall.sh"
 
 # Configuring default Android permissions
 ui_debug 'Configuring default Android permissions...'
