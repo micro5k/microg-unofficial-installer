@@ -98,6 +98,16 @@ remount_read_only()
   mount -v -o remount,ro "$1" "$1"
 }
 
+unmount()
+{
+  umount "$1" || ui_error "Failed to unmount '$1'" 106
+}
+
+unmount_safe()
+{
+  "$BASE_TMP_PATH/busybox" umount "$1" || ui_error "Failed to unmount '$1'" 106
+}
+
 # Getprop related functions
 getprop()
 {
