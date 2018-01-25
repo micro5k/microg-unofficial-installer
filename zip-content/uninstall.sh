@@ -156,6 +156,7 @@ done
 
 list_app_internal_filenames | while read FILE; do
   if [[ -z "$FILE" ]]; then continue; fi
+  remove_file_if_exist "${SYS_PATH}/etc/permissions/$FILE.xml"
   remove_file_if_exist "${PRIVAPP_PATH}/$FILE"
   remove_file_if_exist "${PRIVAPP_PATH}/$FILE.apk"
   remove_file_if_exist "${PRIVAPP_PATH}/$FILE.odex"
@@ -173,8 +174,6 @@ list_app_data_to_remove | while read FILE; do
 done
 
 DELETE_LIST="
-${SYS_PATH}/etc/permissions/com.qualcomm.location.xml
-
 ${SYS_PATH}/addon.d/00-1-microg.sh
 ${SYS_PATH}/addon.d/00-1-microg-k.sh
 ${SYS_PATH}/addon.d/1-microg.sh
