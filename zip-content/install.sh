@@ -296,6 +296,9 @@ if [[ -d "${SYS_PATH}/addon.d" ]]; then
   fi
 fi
 
+echo 'type="GmsCore"' > "${SYS_PATH}/etc/ug.prop"
+touch "${SYS_PATH}/etc/ug.prop"
+
 umount '/system'
 
 touch "$TMP_PATH/installed"
