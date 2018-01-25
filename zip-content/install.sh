@@ -284,6 +284,7 @@ fi
 delete_recursive "$TMP_PATH/libs"
 
 echo 'type="GmsCore"' > "$TMP_PATH/files/etc/${INSTALLATION_SETTINGS_FILE}"
+set_perm 0 0 0644 "$TMP_PATH/files/etc/${INSTALLATION_SETTINGS_FILE}"
 copy_file "$TMP_PATH/files/etc/${INSTALLATION_SETTINGS_FILE}" "${SYS_PATH}/etc"
 
 # Install survival script
