@@ -216,7 +216,7 @@ fi
 copy_dir_content "$TMP_PATH/files/etc/default-permissions" "${SYS_PATH}/etc/default-permissions"
 
 # UNMOUNT /data PARTITION
-umount '/data'
+unmount '/data'
 
 # Preparing
 ui_msg 'Preparing...'
@@ -299,7 +299,7 @@ fi
 echo 'type="GmsCore"' > "${SYS_PATH}/etc/ug.prop"
 touch "${SYS_PATH}/etc/ug.prop"
 
-umount '/system'
+unmount '/system'
 
 touch "$TMP_PATH/installed"
 ui_msg 'Done.'
