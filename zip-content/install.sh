@@ -31,6 +31,7 @@ OLD_ANDROID=false
 SYS_ROOT_IMAGE=''
 SYS_PATH='/system'
 MARKET_FILENAME=''
+INSTALLATION_SETTINGS_FILE='ug.prop'
 
 
 ### FUNCTIONS ###
@@ -282,6 +283,9 @@ if [[ $OLD_ANDROID == true ]]; then
 fi
 delete_recursive "$TMP_PATH/libs"
 
+echo 'type="GmsCore"' > "$TMP_PATH/files/etc/${INSTALLATION_SETTINGS_FILE}"
+copy_file "$TMP_PATH/files/etc/${INSTALLATION_SETTINGS_FILE}" "${SYS_PATH}/etc"
+
 # Install survival script
 if [[ -d "${SYS_PATH}/addon.d" ]]; then
   if [[ $LEGACY_ANDROID == true ]]; then
@@ -296,9 +300,7 @@ if [[ -d "${SYS_PATH}/addon.d" ]]; then
   fi
 fi
 
-echo 'type="GmsCore"' > "${SYS_PATH}/etc/ug.prop"
-touch "${SYS_PATH}/etc/ug.prop"
-
+touch "${SYS_PATH}/etc/${INSTALLATION_SETTINGS_FILE}"
 unmount '/system'
 
 touch "$TMP_PATH/installed"
