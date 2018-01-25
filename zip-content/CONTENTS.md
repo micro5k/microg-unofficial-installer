@@ -16,7 +16,7 @@ Common
 
 - **files/app/NewPipe.apk** => NewPipe 0.11.4
 
-- **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.0.7
+- **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.0.8
 - **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.3.3
 - **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2
 
