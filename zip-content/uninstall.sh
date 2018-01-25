@@ -187,14 +187,19 @@ ${SYS_PATH}/addon.d/05-microg-playstore.sh
 ${SYS_PATH}/addon.d/05-microg-playstore-patched.sh
 ${SYS_PATH}/addon.d/05-unifiednlp.sh
 
+${SYS_PATH}/etc/default-permissions/opengapps-permissions.xml
 ${SYS_PATH}/etc/default-permissions/microg-permissions.xml
 ${SYS_PATH}/etc/default-permissions/microg-playstore-permissions.xml
 ${SYS_PATH}/etc/default-permissions/microg-playstore-patched-permissions.xml
 ${SYS_PATH}/etc/default-permissions/unifiednlp-permissions.xml
 
+${SYS_PATH}/etc/sysconfig/google.xml
+${SYS_PATH}/etc/sysconfig/google_build.xml
 ${SYS_PATH}/etc/sysconfig/microg.xml
 ${SYS_PATH}/etc/sysconfig/microg-playstore.xml
 ${SYS_PATH}/etc/sysconfig/microg-playstore-patched.xml
+
+${SYS_PATH}/etc/preferred-apps/google.xml
 "
 rm -rf ${DELETE_LIST}  # Filenames cannot contain spaces
 
