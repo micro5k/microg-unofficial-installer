@@ -32,6 +32,6 @@ Android < 4.4
 
 Used during setup (not installed)
 ---------------------------------
-- BusyBox 1.27.2 - 2017-09-06 (compiled by [YashdSaraf][1]) - Available [here](https://forum.xda-developers.com/showthread.php?t=3348543).
+- BusyBox 1.28.0-YDS-201801031253 (compiled by [YashdSaraf][1]) - Available [here](https://forum.xda-developers.com/showthread.php?t=3348543).
 
 [1]: https://forum.xda-developers.com/member.php?u=5423715  "YashdSaraf"
