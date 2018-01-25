@@ -31,19 +31,19 @@ fi
 # Message related functions
 ui_msg()
 {
-  if [[ "$DEBUG_LOG" -ne 0 ]]; then echo "$1"; fi
+  if [ "$DEBUG_LOG" -ne 0 ]; then echo "$1"; fi
   echo -e "ui_print $1\nui_print" >> $RECOVERY_PIPE
 }
 
 ui_msg_sameline_start()
 {
-  if [[ "$DEBUG_LOG" -ne 0 ]]; then echo -n "$1"; fi
+  if [ "$DEBUG_LOG" -ne 0 ]; then echo -n "$1"; fi
   echo -n "ui_print $1" >> $RECOVERY_PIPE
 }
 
 ui_msg_sameline_end()
 {
-  if [[ "$DEBUG_LOG" -ne 0 ]]; then echo "$1"; fi
+  if [ "$DEBUG_LOG" -ne 0 ]; then echo "$1"; fi
   echo -e " $1\nui_print" >> $RECOVERY_PIPE
 }
 
