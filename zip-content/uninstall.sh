@@ -25,7 +25,6 @@ GmsCore
 GoogleFeedback
 GoogleLoginService
 GoogleOneTimeInitializer
-GooglePartnerSetup
 GoogleServicesFramework
 GsfProxy
 MarketUpdater
@@ -65,6 +64,7 @@ NominatimGeocoderBackend
 NominatimNlpBackend
 EOF
 }
+# Note: Do not remove GooglePartnerSetup since some ROMs may need it.
 
 list_app_internal_filenames()
 {
