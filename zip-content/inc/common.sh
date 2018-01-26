@@ -100,7 +100,7 @@ remount_read_only()
 
 unmount()
 {
-  umount "$1" || ui_error "Failed to unmount '$1'" 106
+  umount "$1" || ui_msg "WARNING: Failed to unmount '$1'"
 }
 
 unmount_safe()
