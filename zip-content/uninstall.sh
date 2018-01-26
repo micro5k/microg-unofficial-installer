@@ -138,10 +138,12 @@ if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
 remove_file_if_exist()
 {
-  if [[ -e "$1" ]]; then
-    ui_debug "Deleting '$1'..."
-    delete_recursive "$1"
-  fi
+  for file in "$@"; do
+    if [[ -e "$filename" ]]; then
+      ui_debug "Deleting '$filename'..."
+      delete_recursive "$filename"
+    fi
+  done
 }
 
 list_app_filenames | while read FILE; do
