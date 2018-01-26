@@ -170,6 +170,8 @@ done
 list_app_data_to_remove | while read FILE; do
   if [[ -z "$FILE" ]]; then continue; fi
   remove_file_if_exist "/data/data/$FILE"
+  remove_file_if_exist '/data/user'/*/"$FILE"
+  remove_file_if_exist '/data/user_de'/*/"$FILE"
   remove_file_if_exist "${INTERNAL_MEMORY_PATH}/Android/data/$FILE"
 done
 
