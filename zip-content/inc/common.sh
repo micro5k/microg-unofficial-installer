@@ -128,6 +128,16 @@ is_substring()
   return 1  # NOT found
 }
 
+replace_string()
+{
+  echo "${1//$2/$3}"
+}
+
+replace_slash_with_at()
+{
+  echo $(echo $1 | sed -e 's/\//@/g')
+}
+
 custom_replace_string_in_file()  # $1 => This function replace %PLACEHOLDER% with this string   $2 => File to process
 {
   local replacement="${1//#/?}"  # Remove the character that would break sed
