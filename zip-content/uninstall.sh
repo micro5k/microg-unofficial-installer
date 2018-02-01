@@ -138,6 +138,14 @@ if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
 delete_file_or_folder_if_exist()
 {
+  if [[ -e "$1" ]]; then
+    ui_debug "Deleting '$1'..."
+    delete_recursive "$1"
+  fi
+}
+
+delete_file_or_folder_with_wildcard_if_exist()
+{
   for filename in "$@"; do
     if [[ -e "$filename" ]]; then
       ui_debug "Deleting '$filename'..."
@@ -165,21 +173,21 @@ list_app_internal_filenames | while read FILE; do
   delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE"
   delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE.apk"
   delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE.odex"
-  delete_file_or_folder_if_exist "/data/app/$FILE"-*
-  delete_file_or_folder_if_exist "/mnt/asec/$FILE"-*
+  delete_file_or_folder_with_wildcard_if_exist "/data/app/$FILE"-*
+  delete_file_or_folder_with_wildcard_if_exist "/mnt/asec/$FILE"-*
 done
 
 list_app_filenames | while read FILE; do
   if [[ -z "$FILE" ]]; then continue; fi
-  delete_file_or_folder_if_exist /data/dalvik-cache/*/system@priv-app@"${FILE}"[@\.]*@classes.???
-  delete_file_or_folder_if_exist /data/dalvik-cache/*/system@app@"${FILE}"[@\.]*@classes.???
+  delete_file_or_folder_with_wildcard_if_exist /data/dalvik-cache/*/system@priv-app@"${FILE}"[@\.]*@classes.???
+  delete_file_or_folder_with_wildcard_if_exist /data/dalvik-cache/*/system@app@"${FILE}"[@\.]*@classes.???
 done
 
 list_app_data_to_remove | while read FILE; do
   if [[ -z "$FILE" ]]; then continue; fi
   delete_file_or_folder_if_exist "/data/data/$FILE"
-  delete_file_or_folder_if_exist '/data/user'/*/"$FILE"
-  delete_file_or_folder_if_exist '/data/user_de'/*/"$FILE"
+  delete_file_or_folder_with_wildcard_if_exist '/data/user'/*/"$FILE"
+  delete_file_or_folder_with_wildcard_if_exist '/data/user_de'/*/"$FILE"
   delete_file_or_folder_if_exist "${INTERNAL_MEMORY_PATH}/Android/data/$FILE"
 done
 
