@@ -136,7 +136,7 @@ fi
 INTERNAL_MEMORY_PATH='/sdcard0'
 if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
-remove_file_if_exist()
+delete_file_or_folder_if_exist()
 {
   for filename in "$@"; do
     if [[ -e "$filename" ]]; then
@@ -148,39 +148,39 @@ remove_file_if_exist()
 
 list_app_filenames | while read FILE; do
   if [[ -z "$FILE" ]]; then continue; fi
-  remove_file_if_exist "${PRIVAPP_PATH}/$FILE"
-  remove_file_if_exist "${PRIVAPP_PATH}/$FILE.apk"
-  remove_file_if_exist "${PRIVAPP_PATH}/$FILE.odex"
-  remove_file_if_exist "${SYS_PATH}/app/$FILE"
-  remove_file_if_exist "${SYS_PATH}/app/$FILE.apk"
-  remove_file_if_exist "${SYS_PATH}/app/$FILE.odex"
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE"
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE.apk"
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE.odex"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE.apk"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE.odex"
 done
 
 list_app_internal_filenames | while read FILE; do
   if [[ -z "$FILE" ]]; then continue; fi
-  remove_file_if_exist "${SYS_PATH}/etc/permissions/$FILE.xml"
-  remove_file_if_exist "${PRIVAPP_PATH}/$FILE"
-  remove_file_if_exist "${PRIVAPP_PATH}/$FILE.apk"
-  remove_file_if_exist "${PRIVAPP_PATH}/$FILE.odex"
-  remove_file_if_exist "${SYS_PATH}/app/$FILE"
-  remove_file_if_exist "${SYS_PATH}/app/$FILE.apk"
-  remove_file_if_exist "${SYS_PATH}/app/$FILE.odex"
-  remove_file_if_exist "/data/app/$FILE"-*
-  remove_file_if_exist "/mnt/asec/$FILE"-*
+  delete_file_or_folder_if_exist "${SYS_PATH}/etc/permissions/$FILE.xml"
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE"
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE.apk"
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE.odex"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE.apk"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE.odex"
+  delete_file_or_folder_if_exist "/data/app/$FILE"-*
+  delete_file_or_folder_if_exist "/mnt/asec/$FILE"-*
 done
 
 list_app_filenames | while read FILE; do
   if [[ -z "$FILE" ]]; then continue; fi
-  remove_file_if_exist /data/dalvik-cache/*/system@priv-app@"${FILE}"[@\.]*@classes.???
-  remove_file_if_exist /data/dalvik-cache/*/system@app@"${FILE}"[@\.]*@classes.???
+  delete_file_or_folder_if_exist /data/dalvik-cache/*/system@priv-app@"${FILE}"[@\.]*@classes.???
+  delete_file_or_folder_if_exist /data/dalvik-cache/*/system@app@"${FILE}"[@\.]*@classes.???
 done
 
 list_app_data_to_remove | while read FILE; do
   if [[ -z "$FILE" ]]; then continue; fi
-  remove_file_if_exist "/data/data/$FILE"
-  remove_file_if_exist '/data/user'/*/"$FILE"
-  remove_file_if_exist '/data/user_de'/*/"$FILE"
-  remove_file_if_exist "${INTERNAL_MEMORY_PATH}/Android/data/$FILE"
+  delete_file_or_folder_if_exist "/data/data/$FILE"
+  delete_file_or_folder_if_exist '/data/user'/*/"$FILE"
+  delete_file_or_folder_if_exist '/data/user_de'/*/"$FILE"
+  delete_file_or_folder_if_exist "${INTERNAL_MEMORY_PATH}/Android/data/$FILE"
 done
 
 DELETE_LIST="
