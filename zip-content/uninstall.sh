@@ -154,41 +154,41 @@ delete_file_or_folder_with_wildcard_if_exist()
   done
 }
 
-list_app_filenames | while read FILE; do
-  if [[ -z "$FILE" ]]; then continue; fi
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE"
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE.apk"
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE.odex"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE.apk"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE.odex"
+list_app_filenames | while read FILENAME; do
+  if [[ -z "$FILENAME" ]]; then continue; fi
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME"
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME.apk"
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME.odex"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.apk"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.odex"
 done
 
-list_app_internal_filenames | while read FILE; do
-  if [[ -z "$FILE" ]]; then continue; fi
-  delete_file_or_folder_if_exist "${SYS_PATH}/etc/permissions/$FILE.xml"
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE"
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE.apk"
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILE.odex"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE.apk"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILE.odex"
-  delete_file_or_folder_with_wildcard_if_exist "/data/app/$FILE"-*
-  delete_file_or_folder_with_wildcard_if_exist "/mnt/asec/$FILE"-*
+list_app_internal_filenames | while read FILENAME; do
+  if [[ -z "$FILENAME" ]]; then continue; fi
+  delete_file_or_folder_if_exist "${SYS_PATH}/etc/permissions/$FILENAME.xml"
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME"
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME.apk"
+  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME.odex"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.apk"
+  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.odex"
+  delete_file_or_folder_with_wildcard_if_exist "/data/app/$FILENAME"-*
+  delete_file_or_folder_with_wildcard_if_exist "/mnt/asec/$FILENAME"-*
 done
 
-list_app_filenames | while read FILE; do
-  if [[ -z "$FILE" ]]; then continue; fi
-  delete_file_or_folder_with_wildcard_if_exist /data/dalvik-cache/*/system@priv-app@"${FILE}"[@\.]*@classes.???
-  delete_file_or_folder_with_wildcard_if_exist /data/dalvik-cache/*/system@app@"${FILE}"[@\.]*@classes.???
+list_app_filenames | while read FILENAME; do
+  if [[ -z "$FILENAME" ]]; then continue; fi
+  delete_file_or_folder_with_wildcard_if_exist /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes.???
+  delete_file_or_folder_with_wildcard_if_exist /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes.???
 done
 
-list_app_data_to_remove | while read FILE; do
-  if [[ -z "$FILE" ]]; then continue; fi
-  delete_file_or_folder_if_exist "/data/data/$FILE"
-  delete_file_or_folder_with_wildcard_if_exist '/data/user'/*/"$FILE"
-  delete_file_or_folder_with_wildcard_if_exist '/data/user_de'/*/"$FILE"
-  delete_file_or_folder_if_exist "${INTERNAL_MEMORY_PATH}/Android/data/$FILE"
+list_app_data_to_remove | while read FILENAME; do
+  if [[ -z "$FILENAME" ]]; then continue; fi
+  delete_file_or_folder_if_exist "/data/data/$FILENAME"
+  delete_file_or_folder_with_wildcard_if_exist '/data/user'/*/"$FILENAME"
+  delete_file_or_folder_with_wildcard_if_exist '/data/user_de'/*/"$FILENAME"
+  delete_file_or_folder_if_exist "${INTERNAL_MEMORY_PATH}/Android/data/$FILENAME"
 done
 
 DELETE_LIST="
