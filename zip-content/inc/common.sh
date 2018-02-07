@@ -238,7 +238,20 @@ delete()
 
 delete_recursive()
 {
-  rm -rf "$@" || ui_error "Failed to delete files/folders" 104
+  if test -e "$1"; then
+    ui_debug "Deleting '$1'..."
+    rm -rf "$1" || ui_error "Failed to delete files/folders" 104
+  fi
+}
+
+delete_recursive_wildcard()
+{
+  for filename in "$@"; do
+    if test -e "$filename"; then
+      ui_debug "Deleting '$filename'...."
+      rm -rf "$filename" || ui_error "Failed to delete files/folders" 105
+    fi
+  done
 }
 
 list_files()  # $1 => Folder to scan   $2 => Prefix to remove
@@ -247,7 +260,7 @@ list_files()  # $1 => Folder to scan   $2 => Prefix to remove
     if test -d "${entry}"; then
       list_files "${entry}" "$2"
     else
-      printf '%s' "${entry#$2}\n" || ui_error "File listing failed" 105
+      printf '%s' "${entry#$2}\n" || ui_error "File listing failed" 106
     fi
   done
 }
