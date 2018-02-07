@@ -179,8 +179,8 @@ done
 
 list_app_filenames | while read FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
-  delete_recursive_wildcard /data/dalvik-cache/*/"system@priv-app@${FILENAME}"[@\.]*@classes.???
-  delete_recursive_wildcard /data/dalvik-cache/*/"system@app@${FILENAME}"[@\.]*@classes.???
+  delete_recursive_wildcard /data/dalvik-cache/*/system"@priv-app@${FILENAME}"[@\.]*@classes.*
+  delete_recursive_wildcard /data/dalvik-cache/*/system"@app@${FILENAME}"[@\.]*@classes.*
 done
 
 list_app_data_to_remove | while read FILENAME; do
