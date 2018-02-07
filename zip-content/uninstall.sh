@@ -173,22 +173,22 @@ list_app_internal_filenames | while read FILENAME; do
   delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME"
   delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.apk"
   delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.odex"
-  delete_recursive_wildcard "/data/app/$FILENAME"-*
-  delete_recursive_wildcard "/mnt/asec/$FILENAME"-*
+  delete_recursive_wildcard "/data/app/${FILENAME}"-*
+  delete_recursive_wildcard "/mnt/asec/${FILENAME}"-*
 done
 
 list_app_filenames | while read FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
-  delete_recursive_wildcard /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes.???
-  delete_recursive_wildcard /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes.???
+  delete_recursive_wildcard /data/dalvik-cache/*/"system@priv-app@${FILENAME}"[@\.]*@classes.???
+  delete_recursive_wildcard /data/dalvik-cache/*/"system@app@${FILENAME}"[@\.]*@classes.???
 done
 
 list_app_data_to_remove | while read FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
   delete_file_or_folder_if_exist "/data/data/$FILENAME"
-  delete_recursive_wildcard '/data/user'/*/"$FILENAME"
-  delete_recursive_wildcard '/data/user_de'/*/"$FILENAME"
-  delete_file_or_folder_if_exist "${INTERNAL_MEMORY_PATH}/Android/data/$FILENAME"
+  delete_recursive_wildcard '/data/user'/*/"${FILENAME}"
+  delete_recursive_wildcard '/data/user_de'/*/"${FILENAME}"
+  delete_file_or_folder_if_exist "${INTERNAL_MEMORY_PATH}/Android/data/${FILENAME}"
 done
 
 DELETE_LIST="
