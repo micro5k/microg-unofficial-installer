@@ -123,7 +123,20 @@ if [[ -z "$INSTALLER" ]]; then
 
   delete_recursive()
   {
-   rm -rf "$1" || ui_debug "Failed to delete '$1'"
+    if test -e "$1"; then
+      ui_debug "Deleting '$1'..."
+      rm -rf "$1" || ui_debug "Failed to delete files/folders"
+    fi
+  }
+
+  delete_recursive_wildcard()
+  {
+    for filename in "$@"; do
+      if test -e "$filename"; then
+        ui_debug "Deleting '$filename'...."
+        rm -rf "$filename" || ui_debug "Failed to delete files/folders"
+      fi
+    done
   }
 
   ui_debug 'Uninstalling...'
@@ -138,20 +151,7 @@ if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
 delete_file_or_folder_if_exist()
 {
-  if [[ -e "$1" ]]; then
-    ui_debug "Deleting '$1'..."
-    delete_recursive "$1"
-  fi
-}
-
-delete_file_or_folder_with_wildcard_if_exist()
-{
-  for filename in "$@"; do
-    if [[ -e "$filename" ]]; then
-      ui_debug "Deleting '$filename'..."
-      delete_recursive "$filename"
-    fi
-  done
+  delete_recursive "$1"
 }
 
 list_app_filenames | while read FILENAME; do
@@ -173,21 +173,21 @@ list_app_internal_filenames | while read FILENAME; do
   delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME"
   delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.apk"
   delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.odex"
-  delete_file_or_folder_with_wildcard_if_exist "/data/app/$FILENAME"-*
-  delete_file_or_folder_with_wildcard_if_exist "/mnt/asec/$FILENAME"-*
+  delete_recursive_wildcard "/data/app/$FILENAME"-*
+  delete_recursive_wildcard "/mnt/asec/$FILENAME"-*
 done
 
 list_app_filenames | while read FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
-  delete_file_or_folder_with_wildcard_if_exist /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes.???
-  delete_file_or_folder_with_wildcard_if_exist /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes.???
+  delete_recursive_wildcard /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes.???
+  delete_recursive_wildcard /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes.???
 done
 
 list_app_data_to_remove | while read FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
   delete_file_or_folder_if_exist "/data/data/$FILENAME"
-  delete_file_or_folder_with_wildcard_if_exist '/data/user'/*/"$FILENAME"
-  delete_file_or_folder_with_wildcard_if_exist '/data/user_de'/*/"$FILENAME"
+  delete_recursive_wildcard '/data/user'/*/"$FILENAME"
+  delete_recursive_wildcard '/data/user_de'/*/"$FILENAME"
   delete_file_or_folder_if_exist "${INTERNAL_MEMORY_PATH}/Android/data/$FILENAME"
 done
 
