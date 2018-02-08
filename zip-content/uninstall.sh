@@ -149,30 +149,25 @@ fi
 INTERNAL_MEMORY_PATH='/sdcard0'
 if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
-delete_file_or_folder_if_exist()
-{
-  delete_recursive "$1"
-}
-
 list_app_filenames | while read FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME"
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME.apk"
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME.odex"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.apk"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.odex"
+  delete_recursive "${PRIVAPP_PATH}/$FILENAME"
+  delete_recursive "${PRIVAPP_PATH}/$FILENAME.apk"
+  delete_recursive "${PRIVAPP_PATH}/$FILENAME.odex"
+  delete_recursive "${SYS_PATH}/app/$FILENAME"
+  delete_recursive "${SYS_PATH}/app/$FILENAME.apk"
+  delete_recursive "${SYS_PATH}/app/$FILENAME.odex"
 done
 
 list_app_internal_filenames | while read FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
-  delete_file_or_folder_if_exist "${SYS_PATH}/etc/permissions/$FILENAME.xml"
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME"
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME.apk"
-  delete_file_or_folder_if_exist "${PRIVAPP_PATH}/$FILENAME.odex"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.apk"
-  delete_file_or_folder_if_exist "${SYS_PATH}/app/$FILENAME.odex"
+  delete_recursive "${SYS_PATH}/etc/permissions/$FILENAME.xml"
+  delete_recursive "${PRIVAPP_PATH}/$FILENAME"
+  delete_recursive "${PRIVAPP_PATH}/$FILENAME.apk"
+  delete_recursive "${PRIVAPP_PATH}/$FILENAME.odex"
+  delete_recursive "${SYS_PATH}/app/$FILENAME"
+  delete_recursive "${SYS_PATH}/app/$FILENAME.apk"
+  delete_recursive "${SYS_PATH}/app/$FILENAME.odex"
   delete_recursive_wildcard "/data/app/${FILENAME}"-*
   delete_recursive_wildcard "/mnt/asec/${FILENAME}"-*
 done
@@ -185,10 +180,10 @@ done
 
 list_app_data_to_remove | while read FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
-  delete_file_or_folder_if_exist "/data/data/$FILENAME"
+  delete_recursive "/data/data/$FILENAME"
   delete_recursive_wildcard '/data/user'/*/"${FILENAME}"
   delete_recursive_wildcard '/data/user_de'/*/"${FILENAME}"
-  delete_file_or_folder_if_exist "${INTERNAL_MEMORY_PATH}/Android/data/${FILENAME}"
+  delete_recursive "${INTERNAL_MEMORY_PATH}/Android/data/${FILENAME}"
 done
 
 DELETE_LIST="
