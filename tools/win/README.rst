@@ -2,7 +2,7 @@
  TOOLS
 =======
 
-- BusyBox-w32_ => busybox.exe
+- BusyBox-w32_ **1.29.0-FRP-1946-g99daecdac** => busybox.exe
 - Wget_ **1.19.4** => wget.exe
 - Zip_ **3.0** => zip.exe
 
