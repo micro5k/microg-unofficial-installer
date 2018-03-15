@@ -56,10 +56,6 @@ WGET_CMD='wget'
 TOOLS_DIR="${BASEDIR}${SEP}tools${SEP}${PLATFORM}"
 PATH="${TOOLS_DIR}${PATHSEP}${PATH}"
 
-if [[ "$PLATFORM" == 'win' ]]; then
-  WGET_CMD="${TOOLS_DIR}${SEP}${WGET_CMD}"
-fi
-
 verify_sha1()
 {
   local file_name="$1"
