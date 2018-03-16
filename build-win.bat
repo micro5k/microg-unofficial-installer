@@ -1,5 +1,10 @@
 @echo off
-title Building the flashable ZIP... 2> nul
-"%CD%\tools\win\busybox" bash "%CD%\build.sh"
-title Done 2> nul
-pause > nul
+
+SETLOCAL 2> nul
+TITLE Building the flashable ZIP... 2> nul
+
+"%CD%\tools\win\busybox.exe" bash "%CD%\build.sh"
+
+TITLE Done 2> nul
+ENDLOCAL 2> nul
+PAUSE > nul
