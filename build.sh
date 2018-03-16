@@ -98,7 +98,7 @@ TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX)
 VER=$(cat "$BASEDIR/zip-content/inc/VERSION")
 FILENAME="$NAME-v$VER-signed"
 
-. "$BASEDIR/build-addition.sh"
+. "$BASEDIR/addition.sh"
 
 # Download files if they are missing
 dl_file 'PlayStore-recent.apk' 'zip-content/files/variants' "$BASEDIR" 'https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=137220' '6c60fa863dd7befef49082c0dcf6278947a09333'
