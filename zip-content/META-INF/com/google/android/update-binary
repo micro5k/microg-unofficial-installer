@@ -28,7 +28,6 @@ export ZIP_PATH=$(dirname "$ZIP_FILE")
 BASE_TMP_PATH='/tmp'
 TMP_PATH='/tmp/custom-setup-a5k'
 
-DEBUG_LOG_ENABLED=0
 MANUAL_TMP_MOUNT=0
 GENER_ERROR=0
 STATUS=1
@@ -39,12 +38,13 @@ export BOOTMODE=false
 
 ### FUNCTIONS ###
 
+DEBUG_LOG_ENABLED=0
 enable_debug_log()
 {
   if [ "$DEBUG_LOG_ENABLED" -eq 1 ]; then return; fi
-  DEBUG_LOG_ENABLED=1
   exec 3>&1 4>&2  # Backup stdout and stderr
   exec 1>>"$ZIP_PATH/debug-a5k.log" 2>&1
+  DEBUG_LOG_ENABLED=1
 }
 
 disable_debug_log()
