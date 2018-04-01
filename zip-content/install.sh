@@ -156,7 +156,7 @@ if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" '4ff22041aa736f46e4d7bc89b
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" 'fa6267bee3f73d248d1110be53d66736aa4fece0' &&
    verify_sha1 "$TMP_PATH/files/app/NewPipe.apk" '182aa4c505615592bc872430d0cbdbadac41ba3a' &&
-   verify_sha1 "$TMP_PATH/files/app/DejaVuBackend.apk" 'a9691a8e0b1ff98c2f39a364f9da0e19cea5dc75' &&
+   verify_sha1 "$TMP_PATH/files/app/DejaVuBackend.apk" 'cb0b347f49b27f1d5bc0455342bdc31cc949c0f7' &&
    verify_sha1 "$TMP_PATH/files/app/IchnaeaNlpBackend.apk" '9be5de681ebb1184fc5e00933f1fd18c080f7ee8' &&
    verify_sha1 "$TMP_PATH/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
    ###verify_sha1 "$TMP_PATH/files/app/PlayGames.apk" 'c99c27053bf518dd3d08449e9478b43de0da50ed' &&
