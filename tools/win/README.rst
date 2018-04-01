@@ -2,7 +2,7 @@
  TOOLS
 =======
 
-- BusyBox-w32_ **1.29.0-FRP-1986-g701cea96c (2018-03-15)** => busybox.exe
+- BusyBox-w32_ **1.29.0-FRP-2001-gd9c5d3c61 (2018-03-27)** => busybox.exe
 - Zip_ **3.0** => zip.exe
 
 
