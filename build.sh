@@ -119,12 +119,10 @@ rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip fi
 cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change folder'
 zip -r9X "$TEMP_DIR/zip-1.zip" * || ui_error 'Failed compressing'
 echo ''
-java -jar "$BASEDIR/tools/signapk.jar" "$BASEDIR/certs"/*.x509.pem "$BASEDIR/certs"/*.pk8 "$TEMP_DIR/zip-1.zip" "$TEMP_DIR/zip-2.zip" || ui_error 'Failed signing'
-"$BASEDIR/tools/$PLATFORM/zipadjust" "$TEMP_DIR/zip-2.zip" "$TEMP_DIR/zip-3.zip" || ui_error 'Failed zipadjusting'
-java -jar "$BASEDIR/tools/minsignapk.jar" "$BASEDIR/certs"/*.x509.pem "$BASEDIR/certs"/*.pk8 "$TEMP_DIR/zip-3.zip" "$TEMP_DIR/zip-4.zip" || ui_error 'Failed minsigning'
+java -jar "$BASEDIR/tools/zipsigner.jar" "$TEMP_DIR/zip-1.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing'
 cd "$OUT_DIR"
 
-cp -f "$TEMP_DIR/zip-4.zip" "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to copy the final file'
+cp -f "$TEMP_DIR/$FILENAME.zip" "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to copy the final file'
 
 # Cleanup remnants
 rm -rf "$TEMP_DIR" || ui_error 'Failed to cleanup'
