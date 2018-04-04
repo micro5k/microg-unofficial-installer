@@ -185,6 +185,7 @@ zip_extract_dir()
 # Hash related functions
 verify_sha1()
 {
+  ui_debug "$1"
   local file_name="$1"
   local hash="$2"
   local file_hash=$(sha1sum "$file_name" | cut -d ' ' -f 1)
