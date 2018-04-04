@@ -162,8 +162,8 @@ if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" '4ff22041aa736f46e4d7bc89b
    ###verify_sha1 "$TMP_PATH/files/app/PlayGames.apk" 'c99c27053bf518dd3d08449e9478b43de0da50ed' &&
    verify_sha1 "$TMP_PATH/files/priv-app/FDroidPrivilegedExtension.apk" '08588e36b1e605401047766c8708c33622f1c4b9' &&
    verify_sha1 "$TMP_PATH/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7' &&
-   verify_sha1 "$TMP_PATH/files/etc/permissions/com.google.android.maps.xml" '05b2b8685380f86df0776a844b16f12137f06583' &&
-   verify_sha1 "$TMP_PATH/files/etc/permissions/features.xml" '1eb8c90eeed31d6124710662e815aedc1b213c25' &&
+   verify_sha1 "$TMP_PATH/files/etc/permissions/com.google.android.maps.xml" 'f4d7d0ff10e96a6e0856223354f06e2f6b6efa54' &&
+   verify_sha1 "$TMP_PATH/files/etc/permissions/features.xml" '16839289f4c763a21a2e24af9f8aa3f38435358f' &&
    verify_sha1 "$TMP_PATH/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053' &&
    verify_sha1 "$TMP_PATH/files/variants/PlayStore-recent.apk" '6c60fa863dd7befef49082c0dcf6278947a09333' &&
    verify_sha1 "$TMP_PATH/files/variants/PlayStore-legacy.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746' &&
