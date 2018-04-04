@@ -43,7 +43,7 @@ INSTALLATION_SETTINGS_FILE='ug.prop'
 
 if ! is_mounted '/system'; then
   mount '/system'
-  if ! is_mounted '/system'; then ui_error 'ERROR: /system cannot be mounted'; fi
+  if ! is_mounted '/system'; then ui_error '/system cannot be mounted'; fi
 fi
 
 SYS_ROOT_IMAGE=$(getprop 'build.system_root_image')
@@ -67,9 +67,9 @@ elif [[ $API -ge 9 ]]; then
   LEGACY_ANDROID=true
   OLD_ANDROID=true
 elif [[ $API -ge 1 ]]; then
-  ui_error 'ERROR: Your Android version is too old'
+  ui_error 'Your Android version is too old'
 else
-  ui_error 'ERROR: Invalid API level'
+  ui_error 'Invalid API level'
 fi
 
 ABI_LIST=','$(build_getprop 'product\.cpu\.abi')','$(build_getprop 'product\.cpu\.abi2')','$(build_getprop 'product\.cpu\.abilist')','
@@ -125,13 +125,13 @@ ui_msg "Privileged apps: ${PRIVAPP_PATH}"
 ui_msg ''
 
 if [[ $CPU == false && $CPU64 == false ]]; then
-  ui_error 'ERROR: Unsupported CPU'
+  ui_error 'Unsupported CPU'
 fi
 
 # Check the existance of the vendor libraries folders
 if [[ $OLD_ANDROID == true ]]; then
   if [[ ! -d "${SYS_PATH}/vendor" ]]; then
-    ui_error 'ERROR: Missing vendor folder'
+    ui_error 'Missing vendor folder'
   fi
 
   if [[ $CPU != false && ! -d "${SYS_PATH}/vendor/lib" ]]; then create_dir "${SYS_PATH}/vendor/lib"; fi
@@ -172,7 +172,7 @@ then
   ui_msg_sameline_end 'OK'
 else
   ui_msg_sameline_end 'ERROR'
-  ui_error 'ERROR: Verification failed'
+  ui_error 'Verification failed'
 fi
 
 # Temporary workaround
@@ -193,7 +193,7 @@ set_std_perm_recursive "$TMP_PATH/libs"
 # MOUNT /data PARTITION
 if ! is_mounted '/data'; then
   mount '/data'
-  if ! is_mounted '/data'; then ui_error 'ERROR: /data cannot be mounted'; fi
+  if ! is_mounted '/data'; then ui_error '/data cannot be mounted'; fi
 fi
 
 # Resetting Android runtime permissions
