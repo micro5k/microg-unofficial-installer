@@ -33,7 +33,6 @@ if [[ "$UNAME" == 'Linux' ]]; then
   PLATFORM='linux'
 elif [[ "$UNAME" == 'Windows_NT' ]]; then
   PLATFORM='win'
-  SEP='\'
   PATHSEP=';'
 #elif [[ "$UNAME" == 'Darwin' ]]; then
   #PLATFORM='macos'
@@ -118,7 +117,6 @@ rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip fi
 # Compress and sign
 cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change folder'
 zip -r9X "$TEMP_DIR/zip-1.zip" * || ui_error 'Failed compressing'
-echo ''
 java -jar "$BASEDIR/tools/zipsigner.jar" "$TEMP_DIR/zip-1.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing'
 cd "$OUT_DIR"
 
