@@ -2,6 +2,8 @@
 
 <<LICENSE
   Copyright (C) 2017-2018  ale5000
+  LICENSE: GPL-3.0+
+
   This file was created by ale5000 (ale5000-git on GitHub).
 
   This program is free software: you can redistribute it and/or modify
