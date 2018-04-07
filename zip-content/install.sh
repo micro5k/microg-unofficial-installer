@@ -125,7 +125,7 @@ ui_msg "Privileged apps: ${PRIVAPP_PATH}"
 ui_msg ''
 
 if [[ $CPU == false && $CPU64 == false ]]; then
-  ui_error 'Unsupported CPU'
+  ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
 fi
 
 # Check the existance of the vendor libraries folders

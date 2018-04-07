@@ -213,7 +213,7 @@ elif is_substring ',armeabi,' "$ABI_LIST"; then
   package_extract_file 'misc/busybox/busybox-arm' "$BASE_TMP_PATH/busybox"
   package_extract_file 'misc/keycheck/keycheck-arm' "$BASE_TMP_PATH/keycheck"
 else
-  ui_error 'Unsupported CPU'
+  ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
 fi
 # Give execution rights
 chmod +x "$BASE_TMP_PATH/busybox" || ui_error "chmod failed on '$BASE_TMP_PATH/busybox'" 81  # Needed to make working the "safe" functions
