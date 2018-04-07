@@ -33,9 +33,13 @@ PATHSEP=':'
 UNAME=$(uname)
 if [[ "$UNAME" == 'Linux' ]]; then
   PLATFORM='linux'
-elif [[ "$UNAME" == 'Windows_NT' ]]; then
+elif [[ "$UNAME" == 'Windows_NT' || "$UNAME" == 'MINGW64_NT-10.0' ]]; then
   PLATFORM='win'
-  PATHSEP=';'
+  if [[ $(uname -o) == 'Msys' ]]; then
+    :            # MSYS under Windows
+  else
+    PATHSEP=';'  # BusyBox under Windows
+  fi
 #elif [[ "$UNAME" == 'Darwin' ]]; then
   #PLATFORM='macos'
 #elif [[ "$UNAME" == 'FreeBSD' ]]; then
