@@ -31,18 +31,26 @@ ui_error()
 SEP='/'
 PATHSEP=':'
 UNAME=$(uname)
-if [[ "$UNAME" == 'Linux' ]]; then
+compare_start_uname()
+{
+  case "$UNAME" in
+    "$1"*) return 0;;  # Found
+  esac
+  return 1  # NOT found
+}
+
+if compare_start_uname 'Linux'; then
   PLATFORM='linux'
-elif [[ "$UNAME" == 'Windows_NT' || "$UNAME" == 'MINGW64_NT-10.0' ]]; then
+elif compare_start_uname 'Windows_NT' || compare_start_uname 'MINGW32_NT-' || compare_start_uname 'MINGW64_NT-'; then
   PLATFORM='win'
   if [[ $(uname -o) == 'Msys' ]]; then
     :            # MSYS under Windows
   else
     PATHSEP=';'  # BusyBox under Windows
   fi
-#elif [[ "$UNAME" == 'Darwin' ]]; then
+#elif compare_start_uname 'Darwin'; then
   #PLATFORM='macos'
-#elif [[ "$UNAME" == 'FreeBSD' ]]; then
+#elif compare_start_uname 'FreeBSD'; then
   #PLATFORM='freebsd'
 else
   ui_error 'Unsupported OS'
