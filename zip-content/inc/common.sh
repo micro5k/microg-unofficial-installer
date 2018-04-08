@@ -124,7 +124,7 @@ is_substring()
 {
   case "$2" in
     *"$1"*) return 0;;  # Found
-  esac;
+  esac
   return 1  # NOT found
 }
 
