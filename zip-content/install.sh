@@ -53,6 +53,7 @@ elif [[ $SYS_ROOT_IMAGE == true && -e '/system/system' ]]; then
   SYS_PATH='/system/system';
 fi
 
+test -f "${SYS_PATH}/build.prop" || ui_error 'The ROM cannot be found'
 cp -pf "${SYS_PATH}/build.prop" "$TMP_PATH/build.prop"  # Cache the file for faster access
 
 PRIVAPP_PATH="${SYS_PATH}/app"
