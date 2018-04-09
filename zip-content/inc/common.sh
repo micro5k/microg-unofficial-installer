@@ -29,6 +29,19 @@ fi
 ### FUNCTIONS ###
 
 # Message related functions
+_show_text_on_recovery()
+{
+  echo -e "ui_print $1\nui_print" >> $RECOVERY_PIPE
+}
+
+ui_error()
+{
+  >&2 echo "ERROR: $1"
+  _show_text_on_recovery "ERROR: $1"
+  test -n "$2" && exit "$2"
+  exit 91
+}
+
 ui_msg()
 {
   if [ "$DEBUG_LOG" -ne 0 ]; then echo "$1"; fi
@@ -50,14 +63,6 @@ ui_msg_sameline_end()
 ui_debug()
 {
   echo "$1"
-}
-
-ui_error()
-{
-  #>&2 echo "ERROR: $1"
-  ui_msg "ERROR: $1"
-  test -n "$2" && exit "$2"
-  exit 91
 }
 
 # Error checking functions
