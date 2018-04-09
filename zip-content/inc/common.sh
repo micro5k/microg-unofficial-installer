@@ -36,10 +36,11 @@ _show_text_on_recovery()
 
 ui_error()
 {
-  >&2 echo "ERROR: $1"
+  ERROR_CODE=91
+  if test -n "$2"; then ERROR_CODE="$2"; fi
+  >&2 echo "ERROR ${ERROR_CODE}: $1"
   _show_text_on_recovery "ERROR: $1"
-  test -n "$2" && exit "$2"
-  exit 91
+  exit "${ERROR_CODE}"
 }
 
 ui_msg()
