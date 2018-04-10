@@ -203,7 +203,14 @@ if ! is_mounted '/tmp'; then
   if ! is_mounted '/tmp'; then ui_error '/tmp is NOT mounted'; fi
 fi
 
-ABI_LIST=','$(getprop 'product.cpu.abilist')','$(getprop 'product.cpu.abi')','$(getprop 'product.cpu.abi2')','
+RECVAR_ABI1=$(getprop 'product.cpu.abi')
+RECVAR_ABI2=$(getprop 'product.cpu.abi2')
+RECVAR_ABILIST=$(getprop 'product.cpu.abilist')
+if test -z "${RECVAR_ABI1}"; then ui_warning "Empty ABI 1"; fi
+if test -z "${RECVAR_ABI2}"; then ui_warning "Empty ABI 2"; fi
+if test -z "${RECVAR_ABILIST}"; then ui_warning "Empty ABI list"; fi
+
+ABI_LIST=",${RECVAR_ABILIST},${RECVAR_ABI1},${RECVAR_ABI2},"
 
 if is_substring ',x86,' "$ABI_LIST"; then
   ui_debug 'Extracting x86 BusyBox...'
