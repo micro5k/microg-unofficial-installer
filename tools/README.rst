@@ -7,6 +7,6 @@
 - Zip_ **3.0** => win/zip.exe
 
 
-.. _zipsigner: https://github.com/topjohnwu/Magisk/tree/master/utils/src/main/java/com/topjohnwu/utils
+.. _zipsigner: https://github.com/topjohnwu/Magisk/tree/master/utils
 .. _BusyBox-w32: https://frippery.org/busybox/
 .. _Zip: http://www.info-zip.org/Zip.html
