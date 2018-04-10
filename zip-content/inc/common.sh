@@ -43,6 +43,12 @@ ui_error()
   exit "${ERROR_CODE}"
 }
 
+ui_warning()
+{
+  >&2 echo "WARNING: $1"
+  _show_text_on_recovery "WARNING: $1"
+}
+
 ui_msg()
 {
   if [ "$DEBUG_LOG" -ne 0 ]; then echo "$1"; fi
