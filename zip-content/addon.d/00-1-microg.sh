@@ -10,7 +10,7 @@
 list_files()
 {
 cat <<EOF
-%PLACEHOLDER%
+%PLACEHOLDER-1%
 EOF
 }
 
