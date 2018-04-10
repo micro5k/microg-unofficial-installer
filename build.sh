@@ -2,7 +2,7 @@
 
 <<LICENSE
   Copyright (C) 2017-2018  ale5000
-  LICENSE: GPL-3.0+
+  LICENSE: GPL-3.0-or-later
 
   This file was created by ale5000 (ale5000-git on GitHub).
 
