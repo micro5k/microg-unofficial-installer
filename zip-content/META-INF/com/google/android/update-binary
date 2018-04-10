@@ -1,7 +1,7 @@
 #!/sbin/sh
 
 <<LICENSE
-  Copyright (C) 2016-2017  ale5000
+  Copyright (C) 2016-2018  ale5000
   This file was created by ale5000 (ale5000-git on GitHub).
 
   This program is free software: you can redistribute it and/or modify
