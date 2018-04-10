@@ -3,7 +3,7 @@
 =======
 
 - zipsigner_ **2.1 min** => zipsigner.jar
-- BusyBox-w32_ **1.29.0-FRP-2001-gd9c5d3c61 (2018-03-27)** => win/busybox.exe
+- BusyBox-w32_ **1.29.0-FRP-2121-ga316078ad (2018-04-09)** => win/busybox.exe
 - Zip_ **3.0** => win/zip.exe
 
 
