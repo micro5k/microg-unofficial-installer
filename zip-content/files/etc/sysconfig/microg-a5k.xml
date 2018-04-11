@@ -18,5 +18,8 @@
 <config>
     <!-- These are the packages that are white-listed to always have internet
          access while in power save mode, even if they aren't in the foreground. -->
+
+    <!-- microG GmsCore must always have network access for GCM. -->
     <allow-in-power-save package="com.google.android.gms"></allow-in-power-save>
+    <allow-in-data-usage-save package="com.google.android.gms"></allow-in-data-usage-save>
 </config>
