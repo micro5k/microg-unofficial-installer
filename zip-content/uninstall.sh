@@ -45,8 +45,6 @@ WhisperPush
 
 BlankStore
 FakeStore
-FDroidPriv
-FDroidPrivileged
 PlayStore
 Vending
 

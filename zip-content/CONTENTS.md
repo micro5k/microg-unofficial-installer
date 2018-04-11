@@ -20,8 +20,6 @@ Common
 - **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.3.3
 - **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2
 
-- **files/priv-app/FDroidPrivilegedExtension.apk** => F-Droid Privileged Extension 0.2.7
-
 - **files/framework/com.google.android.maps.jar** => microG Maps API v1 0.1.0
 
 
