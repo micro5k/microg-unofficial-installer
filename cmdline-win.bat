@@ -1,5 +1,7 @@
 @echo off
 
+REM LICENSE: GPL-3.0-or-later
+
 SETLOCAL 2> nul
 TITLE Command-line 2> nul
 
