@@ -243,6 +243,8 @@ delete_recursive_safe "$TMP_PATH"
 create_dir_safe "$TMP_PATH"
 create_dir_safe "$TMP_PATH/bin"
 
+PREVIOUS_PATH="${PATH}"
+
 # Clean search path so only internal BusyBox applets will be used
 export PATH="$TMP_PATH/bin"
 
@@ -300,6 +302,8 @@ ui_debug 'Starting installation script...'
 "$BASE_TMP_PATH/busybox" bash -c "'$TMP_PATH/install.sh' Preloader '$TMP_PATH'"; STATUS="$?"
 
 test -f "$TMP_PATH/installed" || GENER_ERROR=1
+
+export PATH="${PREVIOUS_PATH}"
 delete_recursive_safe "$TMP_PATH"
 
 #!!! UNSAFE ENVIRONMENT FROM HERE !!!#
