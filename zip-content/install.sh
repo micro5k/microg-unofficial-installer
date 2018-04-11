@@ -284,9 +284,13 @@ if [[ $OLD_ANDROID == true ]]; then
 fi
 delete_recursive "$TMP_PATH/libs"
 
-echo 'type="GmsCore"' > "$TMP_PATH/files/etc/${INSTALLATION_SETTINGS_FILE}"
-set_perm 0 0 0644 "$TMP_PATH/files/etc/${INSTALLATION_SETTINGS_FILE}"
-copy_file "$TMP_PATH/files/etc/${INSTALLATION_SETTINGS_FILE}" "${SYS_PATH}/etc"
+USED_SETTINGS_PATH="$TMP_PATH/files/etc/zips"
+
+create_dir "${USED_SETTINGS_PATH}"
+echo 'type="GmsCore"' > "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
+set_perm 0 0 0644 "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
+create_dir "${SYS_PATH}/etc/zips"
+copy_dir_content "${USED_SETTINGS_PATH}" "${SYS_PATH}/etc/zips"
 
 # Install survival script
 if [[ -d "${SYS_PATH}/addon.d" ]]; then
@@ -302,7 +306,6 @@ if [[ -d "${SYS_PATH}/addon.d" ]]; then
   fi
 fi
 
-touch "${SYS_PATH}/etc/${INSTALLATION_SETTINGS_FILE}"
 unmount '/system'
 
 touch "$TMP_PATH/installed"
