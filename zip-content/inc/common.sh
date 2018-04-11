@@ -274,7 +274,7 @@ list_files()  # $1 => Folder to scan   $2 => Prefix to remove
     if test -d "${entry}"; then
       list_files "${entry}" "$2"
     else
-      printf '%s' "${entry#$2}\n" || ui_error "File listing failed, folder: $1, entry: ${entry}, prefix to remove: $2" 106
+      printf '%s\\n' "${entry#$2}" || ui_error "File listing failed, folder: $1, entry: ${entry}, prefix to remove: $2" 106
     fi
   done
 }
