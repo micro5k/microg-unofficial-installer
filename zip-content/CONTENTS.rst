@@ -1,3 +1,4 @@
+========
 CONTENTS
 ========
 
@@ -28,8 +29,9 @@ Android < 4.4
 - **files/app-legacy/LegacyNetworkLocation.apk** => UnifiedNlp (legacy) 1.6.8
 
 
-Used during setup (not installed)
----------------------------------
-- BusyBox 1.28.3-YDS-201804091805 (compiled by [YashdSaraf][1]) - Available [here](https://forum.xda-developers.com/showthread.php?t=3348543).
+Components used only during setup (not installed)
+-------------------------------------------------
+- BusyBox 1.28.3-YDS-201804091805 (compiled by YashdSaraf_) - Available `here <https://forum.xda-developers.com/showthread.php?t=3348543>`_.
 
-[1]: https://forum.xda-developers.com/member.php?u=5423715  "YashdSaraf"
+
+.. _YashdSaraf: https://forum.xda-developers.com/member.php?u=5423715
