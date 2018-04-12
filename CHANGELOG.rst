@@ -4,7 +4,7 @@ Changelog
 
 All notable changes to this project will be documented in this file.
 
-1.0.29 beta - 2018-04-11
+1.0.29 beta (2018-04-11)
 ------------------------
 - Switched signing tool to zipsigner (thanks @topjohnwu)
 - Highly improved debug logging
@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 - Removed F-Droid Privileged Extension, it will be in a separate package in the future
 - Minor changes and fixes
 
-1.0.28 alpha - Unreleased
+1.0.28 alpha (Unreleased)
 -------------------------
 - Improved debug logging
 - Updated BusyBox for Android to 1.28.0-YDS-201801031253
