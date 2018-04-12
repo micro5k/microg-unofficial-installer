@@ -8,7 +8,6 @@ All notable changes to this project will be documented in this file.
 ------------------------
 - Switched signing tool to zipsigner (thanks @topjohnwu)
 - Highly improved debug logging
-- Minor changes and fixes
 - Improved compatibility of the build script
 - Check the presence of the ROM before installing
 - Fixed error logging from the subshell
