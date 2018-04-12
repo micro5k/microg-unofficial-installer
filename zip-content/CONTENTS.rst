@@ -29,6 +29,11 @@ Android < 4.4
 - **files/app-legacy/LegacyNetworkLocation.apk** => UnifiedNlp (legacy) 1.6.8
 
 
+Scripts
+-------------
+- microG / GApps removal script
+
+
 Components used only during setup (not installed)
 -------------------------------------------------
 - BusyBox 1.28.3-YDS-201804091805 (compiled by YashdSaraf_) - Available `here <https://forum.xda-developers.com/showthread.php?t=3348543>`_.
