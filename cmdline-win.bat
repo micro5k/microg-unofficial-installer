@@ -1,6 +1,6 @@
 @echo off
 
-REM LICENSE: GPL-3.0-or-later
+REM Author: ale5000
 
 SETLOCAL 2> nul
 TITLE Command-line 2> nul
