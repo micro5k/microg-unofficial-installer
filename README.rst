@@ -1,9 +1,8 @@
 ===========================
 microG unofficial installer
 ===========================
-.. image:: https://img.shields.io/github/license/micro-a5k/microg-unofficial-installer.svg
-   :alt: License
-   :target: https://github.com/micro-a5k/microg-unofficial-installer
+:Author: `ale5000 <https://github.com/ale5000-git>`_
+:License: `GPL-3.0-or-later <LICENSE.rst>`_
 
 Description
 ===========
