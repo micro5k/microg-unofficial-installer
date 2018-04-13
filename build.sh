@@ -48,8 +48,8 @@ elif compare_start_uname 'Windows_NT' || compare_start_uname 'MINGW32_NT-' || co
   else
     PATHSEP=';'  # BusyBox under Windows
   fi
-#elif compare_start_uname 'Darwin'; then
-  #PLATFORM='macos'
+elif compare_start_uname 'Darwin'; then
+  PLATFORM='macos'
 #elif compare_start_uname 'FreeBSD'; then
   #PLATFORM='freebsd'
 else
