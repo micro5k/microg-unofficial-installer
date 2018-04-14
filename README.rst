@@ -4,9 +4,18 @@ microG unofficial installer
 :Author: `ale5000 <https://github.com/ale5000-git>`_
 :License: `GPL-3.0-or-later <LICENSE.rst>`_
 
+
+Releases
+========
+.. image:: https://img.shields.io/github/release/micro-a5k/microg-unofficial-installer/all.svg?maxAge=3600
+   :alt: GitHub (pre-)release
+   :target: https://github.com/micro-a5k/microg-unofficial-installer/releases
+
+
 Description
 ===========
 microG unofficial installer simplify the installation of microG (all the included files are the original versions).
+
 
 Code analysis
 =============
