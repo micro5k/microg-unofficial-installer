@@ -9,7 +9,7 @@ Releases
 --------
 .. image:: https://img.shields.io/github/release/micro-a5k/microg-unofficial-installer/all.svg?maxAge=3600
    :alt: GitHub (pre-)release
-   :target: https://github.com/micro-a5k/microg-unofficial-installer/releases
+   :target: https://github.com/micro-a5k/microg-unofficial-installer/releases/latest
 
 
 Description
