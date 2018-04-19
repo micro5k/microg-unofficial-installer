@@ -9,4 +9,4 @@
 
 .. _zipsigner: https://github.com/topjohnwu/Magisk/tree/master/utils
 .. _BusyBox-w32: https://frippery.org/busybox/
-.. _Zip: http://www.info-zip.org/Zip.html
+.. _Zip: http://infozip.sourceforge.net/Zip.html
