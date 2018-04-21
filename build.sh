@@ -87,12 +87,12 @@ corrupted_file()
 
 dl_file()
 {
-  if [[ ! -e "$3/$2/$1" ]]; then
-    mkdir -p "$3/$2"
-    "$WGET_CMD" -O "$3/$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0' "$4" || ui_error "Failed to download the file '$2/$1'."
+  if [[ ! -e "$BASEDIR/$2/$1" ]]; then
+    mkdir -p "$BASEDIR/$2"
+    "$WGET_CMD" -O "$BASEDIR/$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0' "$4" || ui_error "Failed to download the file '$2/$1'."
     echo ''
   fi
-  verify_sha1 "$3/$2/$1" "$5" || corrupted_file "$3/$2/$1"
+  verify_sha1 "$BASEDIR/$2/$1" "$3" || corrupted_file "$BASEDIR/$2/$1"
 }
 
 . "$BASEDIR/conf.sh"
@@ -114,10 +114,11 @@ FILENAME="$NAME-v$VER-signed"
 . "$BASEDIR/addition.sh"
 
 # Download files if they are missing
-dl_file 'PlayStore-recent.apk' 'zip-content/files/variants' "$BASEDIR" 'https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=137220' '6c60fa863dd7befef49082c0dcf6278947a09333'
-dl_file 'PlayStore-legacy.apk' 'zip-content/files/variants' "$BASEDIR" 'https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=2911' 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'
+files_to_download | while IFS='|' read DL_FILENAME DL_PATH DL_HASH DL_URL; do
+  dl_file "$DL_FILENAME" "$DL_PATH" "$DL_HASH" "$DL_URL"
+done
 
-dl_file 'keycheck-arm' 'zip-content/misc/keycheck' "$BASEDIR" 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0'
+dl_file 'keycheck-arm' 'zip-content/misc/keycheck' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck'
 
 # Copy data
 cp -rf "$BASEDIR/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
