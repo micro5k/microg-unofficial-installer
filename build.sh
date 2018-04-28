@@ -122,7 +122,7 @@ dl_file 'keycheck-arm' 'zip-content/misc/keycheck' '77d47e9fb79bf4403fddab0130f0
 
 # Copy data
 cp -rf "$BASEDIR/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
-cp -rf "$BASEDIR/"LICENSE* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy license to the temp dir'
+cp -rf "$BASEDIR/"LIC* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy license to the temp dir'
 
 # Remove the previous file
 rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip file'
