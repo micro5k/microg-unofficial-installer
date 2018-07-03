@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 <<LICENSE
-  Copyright (C) 2017-2018  ale5000
-  LICENSE: GPL-3.0-or-later
+  Copyright (C) 2017-2018 ale5000
+  SPDX-License-Identifer: GPL-3.0-or-later
 
-  This file was created by ale5000 (ale5000-git on GitHub).
+  This file was created by ale5000 (ale5000-git on GitHub and GitLab).
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
