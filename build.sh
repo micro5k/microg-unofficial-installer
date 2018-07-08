@@ -89,7 +89,7 @@ dl_file()
 {
   if [[ ! -e "$BASEDIR/$2/$1" ]]; then
     mkdir -p "$BASEDIR/$2"
-    "$WGET_CMD" -O "$BASEDIR/$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0' "$4" || ui_error "Failed to download the file '$2/$1'."
+    "$WGET_CMD" -O "$BASEDIR/$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0' "$4" || ui_error "Failed to download the file '$2/$1'."
     echo ''
   fi
   verify_sha1 "$BASEDIR/$2/$1" "$3" || corrupted_file "$BASEDIR/$2/$1"
