@@ -18,7 +18,7 @@ Common
 - **files/app/NewPipe.apk** => NewPipe 0.13.7
 
 - **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.5
-- **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.3.3
+- **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.4.0
 - **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2
 
 - **files/framework/com.google.android.maps.jar** => microG Maps API v1 0.1.0
