@@ -1,9 +1,11 @@
 #!/sbin/sh
 #
-# /system/addon.d/00-1-microg.sh
-# During a ROM upgrade, this script backs up microG,
-# /system is formatted and reinstalled, then files are restored.
+# ADDOND_VERSION=2
 #
+# /system/addon.d/00-1-microg.sh
+#
+
+# This script backup and restore microG during a ROM upgrade.
 
 . /tmp/backuptool.functions
 
