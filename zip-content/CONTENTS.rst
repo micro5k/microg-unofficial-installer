@@ -15,7 +15,7 @@ Common
 - **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0
 - **files/priv-app/DroidGuard.apk** => microG DroidGuard Helper 0.1.0-10
 
-- **files/app/NewPipe.apk** => NewPipe 0.11.6
+- **files/app/NewPipe.apk** => NewPipe 0.13.7
 
 - **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.5
 - **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.3.3
