@@ -125,7 +125,7 @@ cp -rf "$BASEDIR/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to t
 cp -rf "$BASEDIR"/LIC* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy license to the temp dir'
 
 # Useful for reproducible builds
-touch -c -t 197911300100.00 "$TEMP_DIR/zip-content"/* || ui_error 'Failed to set modification date'
+find "$TEMP_DIR/zip-content/" -exec touch -c -t 197911300100.00 '{}' + || ui_error 'Failed to set modification date'
 
 # Remove the previous file
 rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip file'
