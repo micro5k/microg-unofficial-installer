@@ -134,7 +134,7 @@ rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip fi
 cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change folder'
 zip -r9X "$TEMP_DIR/flashable.zip" . -i "*" || ui_error 'Failed compressing'  # Note: There are quotes around the wildcard to use the zip globbing instead of the shell globbing
 java -jar "$BASEDIR/tools/zipsigner.jar" "$TEMP_DIR/flashable.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing'
-cd "$OUT_DIR"
+cd "$INIT_DIR"
 
 cp -f "$TEMP_DIR/$FILENAME.zip" "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to copy the final file'
 
