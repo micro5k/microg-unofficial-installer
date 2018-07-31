@@ -57,13 +57,13 @@ else
 fi
 
 # Detect script dir (with absolute path)
-CURDIR=$(pwd)
+INIT_DIR=$(pwd)
 BASEDIR=$(dirname "$0")
 if [[ "${BASEDIR:0:1}" == '/' ]] || [[ "$PLATFORM" == 'win' && "${BASEDIR:1:1}" == ':' ]]; then
   :  # If already absolute leave it as is
 else
   if [[ "$BASEDIR" == '.' ]]; then BASEDIR=''; else BASEDIR="/$BASEDIR"; fi
-  if [[ "$CURDIR" != '/' ]]; then BASEDIR="$CURDIR$BASEDIR"; fi
+  if [[ "$INIT_DIR" != '/' ]]; then BASEDIR="$INIT_DIR$BASEDIR"; fi
 fi
 WGET_CMD='wget'
 TOOLS_DIR="${BASEDIR}${SEP}tools${SEP}${PLATFORM}"
