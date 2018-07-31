@@ -229,7 +229,7 @@ delete_recursive "$TMP_PATH/files/app-legacy"
 
 if test "$API" -lt 21; then delete "$TMP_PATH/files/etc/sysconfig/microg-a5k.xml"; fi
 if test "$API" -lt 18; then delete "$TMP_PATH/files/app/DejaVuBackend.apk"; fi
-if test "$API" -lt 15; then delete "$TMP_PATH/files/app/NewPipe.apk"; fi
+if [ "$INSTALL_NEWPIPE" -eq 0 ] || [ "$API" -lt 15 ]; then delete "$TMP_PATH/files/app/NewPipe.apk"; fi
 
 move_rename_file "$TMP_PATH/files/variants/${MARKET_FILENAME}" "$TMP_PATH/files/priv-app/Phonesky.apk"
 delete_recursive "$TMP_PATH/files/variants"
