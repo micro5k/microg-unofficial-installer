@@ -1,6 +1,6 @@
 @echo off
-
-REM Author: ale5000
+REM Copyright (C) 2016-2018 ale5000
+REM SPDX-License-Identifer: GPL-3.0-or-later
 
 SETLOCAL 2> nul
 TITLE Building the flashable ZIP... 2> nul
