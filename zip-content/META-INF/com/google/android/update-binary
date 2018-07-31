@@ -219,14 +219,20 @@ RECVAR_ABI1=$(getprop 'product.cpu.abi')
 RECVAR_ABI2=$(getprop 'product.cpu.abi2')
 RECVAR_ABILIST=$(getprop 'product.cpu.abilist')
 if test -z "${RECVAR_ABI1}"; then ui_warning "Empty ABI 1"; fi
-if test -z "${RECVAR_ABI2}"; then ui_warning "Empty ABI 2"; fi
 if test -z "${RECVAR_ABILIST}"; then ui_warning "Empty ABI list"; fi
 
 ABI_LIST=",${RECVAR_ABILIST},${RECVAR_ABI1},${RECVAR_ABI2},"
 
-if is_substring ',x86,' "$ABI_LIST"; then
+if is_substring ',x86_64,' "$ABI_LIST"; then
+  ui_debug 'Extracting 64-bit x86 BusyBox...'
+  package_extract_file 'misc/busybox/busybox-x86_64' "$BASE_TMP_PATH/busybox"
+elif is_substring ',x86,' "$ABI_LIST"; then
   ui_debug 'Extracting x86 BusyBox...'
   package_extract_file 'misc/busybox/busybox-x86' "$BASE_TMP_PATH/busybox"
+elif is_substring ',arm64-v8a,' "$ABI_LIST"; then
+  ui_debug 'Extracting 64-bit ARM BusyBox...'
+  package_extract_file 'misc/busybox/busybox-arm64' "$BASE_TMP_PATH/busybox"
+  package_extract_file 'misc/keycheck/keycheck-arm' "$BASE_TMP_PATH/keycheck"
 elif is_substring ',armeabi,' "$ABI_LIST"; then
   ui_debug 'Extracting ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm' "$BASE_TMP_PATH/busybox"
