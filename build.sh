@@ -131,10 +131,10 @@ find "$TEMP_DIR/zip-content/" -exec touch -c -t 197911300100.00 '{}' + || ui_err
 rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip file'
 
 # Compress and sign
-cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change folder'
+cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change the folder'
 zip -r9X "$TEMP_DIR/flashable.zip" . -i "*" || ui_error 'Failed compressing'  # Note: There are quotes around the wildcard to use the zip globbing instead of the shell globbing
 java -jar "$BASEDIR/tools/zipsigner.jar" "$TEMP_DIR/flashable.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing'
-cd "$INIT_DIR"
+cd "$INIT_DIR" || ui_error 'Failed to change back the folder'
 
 cp -f "$TEMP_DIR/$FILENAME.zip" "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to copy the final file'
 
