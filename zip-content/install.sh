@@ -299,10 +299,8 @@ if [[ -d "${SYS_PATH}/addon.d" ]]; then
     :  ### Not ready yet
   else
     ui_msg 'Installing survival script...'
-    FILE_LIST=$(list_files "$TMP_PATH/files" "$TMP_PATH/files/"); STATUS="$?"
-    if [ "$STATUS" -ne 0 ]; then ui_error "Creating file list for the survival script failed" "$STATUS"; fi
-
-    custom_replace_string_in_file "$FILE_LIST" "$TMP_PATH/addon.d/00-1-microg.sh"
+    append_file_list "$TMP_PATH/files" "$TMP_PATH/files/" "$TMP_PATH/backup-filelist.lst"
+    replace_line_in_file "$TMP_PATH/addon.d/00-1-microg.sh" '%PLACEHOLDER-1%' "$TMP_PATH/backup-filelist.lst"
     copy_file "$TMP_PATH/addon.d/00-1-microg.sh" "$SYS_PATH/addon.d"
   fi
 fi
