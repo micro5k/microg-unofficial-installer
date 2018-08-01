@@ -280,6 +280,23 @@ list_files()  # $1 => Folder to scan   $2 => Prefix to remove
   done
 }
 
+append_file_list()  # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output filename
+{
+  local dir="$1"
+  test -d "$dir" || return
+
+  shift
+  # After shift: $1 => Prefix to remove  $2 => Output filename
+  for entry in "$dir"/*; do
+    if test -d "${entry}"; then
+      append_file_list "${entry}" "$@"
+    else
+      entry="${entry#$1}" || ui_error "Failed to remove prefix from the entry => ${entry}" 106
+      echo "${entry}" >> "$2" || ui_error "File listing failed, current entry => ${entry}, folder => $dir" 106
+    fi
+  done
+}
+
 # Input related functions
 check_key()
 {
