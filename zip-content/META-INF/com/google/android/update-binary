@@ -233,7 +233,7 @@ elif is_substring ',arm64-v8a,' "$ABI_LIST"; then
   ui_debug 'Extracting 64-bit ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm64' "$BASE_TMP_PATH/busybox"
   package_extract_file 'misc/keycheck/keycheck-arm' "$BASE_TMP_PATH/keycheck"
-elif is_substring ',armeabi,' "$ABI_LIST"; then
+elif is_substring ',armeabi,' "$ABI_LIST" || is_substring ',armeabi-v7a,' "$ABI_LIST"; then
   ui_debug 'Extracting ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm' "$BASE_TMP_PATH/busybox"
   package_extract_file 'misc/keycheck/keycheck-arm' "$BASE_TMP_PATH/keycheck"
