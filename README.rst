@@ -32,6 +32,6 @@ Releases
 
 Code analysis
 -------------
-.. image:: https://api.codacy.com/project/badge/Grade/2c946235a38a47b49d827edd3ad73931
+.. image:: https://api.codacy.com/project/badge/Grade/e1a27d872add4b48b16ffb4d1774003d
    :alt: Codacy Badge
-   :target: https://www.codacy.com/app/ale5000-git/microg-unofficial-installer?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=micro-a5k/microg-unofficial-installer&amp;utm_campaign=Badge_Grade
+   :target: https://www.codacy.com/app/micro5k/microg-unofficial-installer
