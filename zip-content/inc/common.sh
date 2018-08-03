@@ -150,12 +150,6 @@ replace_slash_with_at()
   echo $(echo $1 | sed -e 's/\//@/g')
 }
 
-custom_replace_string_in_file()  # $1 => This function replace %PLACEHOLDER-1% with this string   $2 => File to process
-{
-  local replacement="${1//#/?}"  # Remove the character that would break sed
-  sed -i "s#%PLACEHOLDER-1%#${replacement}#" "$2" || ui_error "Failed to replace a string in the file '$2'" 92
-}
-
 replace_line_in_file()  # $1 => File to process  $2 => Line to replace  $3 => File to read for replacement text
 {
   sed -i "/$2/r $3" "$1" || ui_error "Failed to replace (1) a line in the file => '$1'" 92
