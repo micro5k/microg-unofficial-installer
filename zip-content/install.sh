@@ -299,7 +299,7 @@ if [[ -d "${SYS_PATH}/addon.d" ]]; then
     :  ### Not ready yet
   else
     ui_msg 'Installing survival script...'
-    append_file_list "$TMP_PATH/files" "$TMP_PATH/files/" "$TMP_PATH/backup-filelist.lst"
+    write_file_list "$TMP_PATH/files" "$TMP_PATH/files/" "$TMP_PATH/backup-filelist.lst"
     replace_line_in_file "$TMP_PATH/addon.d/00-1-microg.sh" '%PLACEHOLDER-1%' "$TMP_PATH/backup-filelist.lst"
     copy_file "$TMP_PATH/addon.d/00-1-microg.sh" "$SYS_PATH/addon.d"
   fi

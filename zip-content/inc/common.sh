@@ -297,6 +297,12 @@ append_file_list()  # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output
   done
 }
 
+write_file_list()  # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output filename
+{
+  delete "$3"
+  append_file_list "$@"
+}
+
 # Input related functions
 check_key()
 {
