@@ -129,14 +129,10 @@ if [[ $CPU == false && $CPU64 == false ]]; then
   ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
 fi
 
-# Check the existance of the vendor libraries folders
+# Check the existance of the libraries folders
 if [[ $OLD_ANDROID == true ]]; then
-  if [[ ! -d "${SYS_PATH}/vendor" ]]; then
-    ui_error 'Missing vendor folder'
-  fi
-
-  if [[ $CPU != false && ! -d "${SYS_PATH}/vendor/lib" ]]; then create_dir "${SYS_PATH}/vendor/lib"; fi
-  if [[ $CPU64 != false && ! -d "${SYS_PATH}/vendor/lib64" ]]; then create_dir "${SYS_PATH}/vendor/lib64"; fi
+  if [[ $CPU != false && ! -d "${SYS_PATH}/lib" ]]; then create_dir "${SYS_PATH}/lib"; fi
+  if [[ $CPU64 != false && ! -d "${SYS_PATH}/lib64" ]]; then create_dir "${SYS_PATH}/lib64"; fi
 fi
 
 # Extracting
@@ -275,10 +271,17 @@ fi
 
 if [[ $OLD_ANDROID == true ]]; then
   if [[ $CPU != false ]]; then
-    copy_dir_content "$TMP_PATH/libs/lib/${CPU}" "${SYS_PATH}/vendor/lib"
+    copy_dir_content "$TMP_PATH/libs/lib/${CPU}" "${SYS_PATH}/lib"
   fi
   if [[ $CPU64 != false ]]; then
-    copy_dir_content "$TMP_PATH/libs/lib/${CPU64}" "${SYS_PATH}/vendor/lib64"
+    copy_dir_content "$TMP_PATH/libs/lib/${CPU64}" "${SYS_PATH}/lib64"
+  fi
+
+  if test -e "${SYS_PATH}/vendor/lib/libvtm-jni.so"; then
+    delete "${SYS_PATH}/vendor/lib/libvtm-jni.so"
+  fi
+  if test -e "${SYS_PATH}/vendor/lib64/libvtm-jni.so"; then
+    delete "${SYS_PATH}/vendor/lib64/libvtm-jni.so"
   fi
 fi
 delete_recursive "$TMP_PATH/libs"
