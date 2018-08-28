@@ -30,6 +30,11 @@ Releases
    :target: https://github.com/micro-a5k/microg-unofficial-installer/releases/latest
 
 
+Download
+--------
+You could download the flashable zip already built from the `XDA forum <https://forum.xda-developers.com/showthread.php?t=3432360>`_ or download the sources from the `release page <https://github.com/micro5k/microg-unofficial-installer/releases/latest>`_, extract them and then run the build script.
+
+
 Code analysis
 -------------
 .. image:: https://api.codacy.com/project/badge/Grade/e1a27d872add4b48b16ffb4d1774003d
