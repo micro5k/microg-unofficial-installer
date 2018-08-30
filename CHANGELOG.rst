@@ -4,6 +4,15 @@ Changelog
 
 All notable changes to this project will be documented in this file.
 
+
+`Dev`_ (Unreleased)
+------------------------
+- Click on the title to see.
+
+`1.0.31`_ beta (2018-08-28)
+------------------------
+Changelog will appear soon...
+
 1.0.29 beta (2018-04-11)
 ------------------------
 - Switched signing tool to zipsigner (thanks @topjohnwu)
@@ -29,3 +38,7 @@ All notable changes to this project will be documented in this file.
 - Updated Déjà Vu Location Service to 1.1.5
 - Updated NewPipe to 0.11.6
 - Minor changes and fixes
+
+
+.. _1.0.31: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.29-beta...v1.0.31-beta
+.. _Dev: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.31-beta...master
