@@ -209,7 +209,7 @@ if ! is_mounted '/tmp'; then
   MANUAL_TMP_MOUNT=1
   ui_msg 'WARNING: Creating missing /tmp...'
   if [ ! -e '/tmp' ]; then create_dir '/tmp'; fi
-  mount -v -t tmpfs -o rw tmpfs /tmp
+  mount -t tmpfs -o rw tmpfs /tmp
   set_perm 0 2000 0775 '/tmp'
 
   if ! is_mounted '/tmp'; then ui_error '/tmp is NOT mounted'; fi
