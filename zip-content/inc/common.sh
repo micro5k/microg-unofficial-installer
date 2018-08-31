@@ -102,12 +102,12 @@ get_mount_status()
 
 remount_read_write()
 {
-  mount -v -o remount,rw "$1" "$1"
+  mount -o remount,rw "$1" "$1"
 }
 
 remount_read_only()
 {
-  mount -v -o remount,ro "$1" "$1"
+  mount -o remount,ro "$1" "$1"
 }
 
 unmount()
