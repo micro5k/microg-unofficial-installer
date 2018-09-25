@@ -15,6 +15,11 @@ Donations
    :alt: Donate using Liberapay
    :target: https://liberapay.com/microg-by-ale5000/donate
 
+.. image:: https://bitcoin.org/img/icons/logotop.png
+   :alt: Bitcoin
+   :width: 30%
+3DgYfLRbZMQPmLFLXh66moieK3kdvGvgXX
+
 
 License
 -------
