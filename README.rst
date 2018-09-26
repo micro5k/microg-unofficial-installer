@@ -18,11 +18,13 @@ Donations
 .. |Bitcoin| image:: https://bitcoin.org/img/icons/logotop.png
    :alt: Bitcoin
 
-+-------------+------------------------------------+
-| |Liberapay| |                                    |
-+-------------+------------------------------------+
-| |Bitcoin|   | 3DgYfLRbZMQPmLFLXh66moieK3kdvGvgXX |
-+-------------+------------------------------------+
++-------------+-------------------------------------+
+| |Liberapay| |                                     |
++-------------+-------------------------------------+
+| |Bitcoin|   | 3DgYfLRbZMQPmLFLXh66moieK3kdvGvgXX_ |
++-------------+-------------------------------------+
+
+.. _3DgYfLRbZMQPmLFLXh66moieK3kdvGvgXX: https://www.blockchain.com/it/btc/payment_request?address=3DgYfLRbZMQPmLFLXh66moieK3kdvGvgXX&message=microG+related+stuff+by+ale5000
 
 
 License
