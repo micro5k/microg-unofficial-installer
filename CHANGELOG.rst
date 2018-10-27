@@ -6,12 +6,33 @@ All notable changes to this project will be documented in this file.
 
 
 `Dev`_ (Unreleased)
-------------------------
+-------------------
 - Click on the title to see.
 
 `1.0.31`_ beta (2018-08-28)
-------------------------
-Changelog will appear soon...
+---------------------------
+- Initial work regarding reproducible builds of the installer zip file (untested)
+- Updated BusyBox for Android to 1.29.1-YDS-201807291348 
+- Added an option to skip the installation of NewPipe, ref #8
+- Switched to using a 64-bit BusyBox on a 64-bit device 
+- Switched to a more error proof method for creating the file list, ref: #9
+- Check also armeabi-v7a in the CPU detection for BusyBox
+- Switched from vendor/lib to system/lib so it is easier to setup 
+- Updated microG Service Core to 0.2.5.12879 
+
+`1.0.30`_ alpha (Unreleased)
+----------------------------
+- Add support for building the installer under macOS (untested)
+- Auto-grant signature spoofing permission to microG, thanks to @lazerl0rd
+- Auto-grant signature spoofing permission also to FakeStore
+- Updated zipsigner to 2.2
+- Grant additional rights to microG GmsCore
+- Declared support for Addon.d-v2
+- Updated BusyBox for Windows to 1.30.0-FRP-2294-gf72845d93 (2018-07-25)
+- Updated NewPipe to 0.13.7
+- Updated Mozilla UnifiedNlp Backend to 1.4.0
+- Updated Déjà Vu Location Service to 1.1.8
+- Minor changes
 
 1.0.29 beta (2018-04-11)
 ------------------------
@@ -40,5 +61,6 @@ Changelog will appear soon...
 - Minor changes and fixes
 
 
-.. _1.0.31: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.29-beta...v1.0.31-beta
-.. _Dev: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.31-beta...master
+.. _Dev: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.31-beta...HEAD
+.. _1.0.31: https://github.com/micro5k/microg-unofficial-installer/compare/fd8c10cf26d51a2cbdfa48f9cc17d8f69a3af8e6...v1.0.31-beta
+.. _1.0.30: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.29-beta...fd8c10cf26d51a2cbdfa48f9cc17d8f69a3af8e6
