@@ -3,6 +3,7 @@ CONTENTS
 ========
 .. |star| replace:: ⭐️
 .. |fire| replace:: 🔥
+.. |boom| replace:: 💥
 
 Variants
 --------
