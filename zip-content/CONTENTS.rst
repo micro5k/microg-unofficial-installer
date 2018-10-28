@@ -1,32 +1,34 @@
 ========
 CONTENTS
 ========
+.. |star| replace:: ⭐️
+.. |fire| replace:: 🔥
 
 Variants
 --------
-- **files/variants/FakeStore.apk** => FakeStore 0.0.2
+- **files/variants/FakeStore.apk** => FakeStore 0.0.2 |fire|
 - **files/variants/PlayStore-recent.apk** => Google Play Store 7.1.25.I-all (137772785) - nodpi
 - **files/variants/PlayStore-legacy.apk** => Google Play Store 5.1.11 (80310011) - nodpi
 
 Common
 ------
-- **files/priv-app/GmsCore.apk** => microG Service Core 0.2.6.13280 (on Android >= 5)
-- **files/priv-app-kk/GmsCore.apk** => microG Service Core 0.2.4-81 (on Android < 5)
-- **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0
-- **files/priv-app/DroidGuard.apk** => microG DroidGuard Helper 0.1.0-10
+- **files/priv-app/GmsCore.apk** => microG Service Core 0.2.6.13280 (on Android >= 5) |fire|
+- **files/priv-app-kk/GmsCore.apk** => microG Service Core 0.2.4-81 (on Android < 5) |fire|
+- **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0 |fire|
+- **files/priv-app/DroidGuard.apk** => microG DroidGuard Helper 0.1.0-10 |fire|
 
-- **files/app/NewPipe.apk** => NewPipe 0.14.1
+- **files/app/NewPipe.apk** => NewPipe 0.14.1 |star|
 
-- **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.9
-- **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.4.0
-- **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2
+- **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.9 |star|
+- **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.4.0 |star|
+- **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star|
 
-- **files/framework/com.google.android.maps.jar** => microG Maps API v1 0.1.0
+- **files/framework/com.google.android.maps.jar** => microG Maps API v1 0.1.0 |fire|
 
 
 Android < 4.4
 -------------
-- **files/app-legacy/LegacyNetworkLocation.apk** => UnifiedNlp (legacy) 1.6.8
+- **files/app-legacy/LegacyNetworkLocation.apk** => UnifiedNlp (legacy) 1.6.8 |star|
 
 
 Scripts
@@ -38,5 +40,10 @@ Components used only during setup (not installed)
 -------------------------------------------------
 - BusyBox 1.29.1-YDS-201807291348 (compiled by YashdSaraf_) - Available `here <https://forum.xda-developers.com/showthread.php?t=3348543>`_.
 
-
 .. _YashdSaraf: https://forum.xda-developers.com/member.php?u=5423715
+
+|
+
+|star| *F-Droid version (compiled and signed by F-Droid).*
+
+|fire| *Original version (compiled and signed by its original author).*
