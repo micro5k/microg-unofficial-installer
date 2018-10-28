@@ -11,7 +11,11 @@ microG unofficial installer simplify the installation of microG (all the include
 
 Donations
 ---------
-.. |Liberapay| image:: https://liberapay.com/assets/widgets/donate.svg
+.. |Liberapay| image:: https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Liberapay_logo_v2_white-on-yello1w.svg/128px-Liberapay.png
+   :alt: Liberapay
+   :target: https://liberapay.com/microg-by-ale5000/
+
+.. |DonateWithLiberapay| image:: https://liberapay.com/assets/widgets/donate.svg
    :alt: Donate using Liberapay
    :target: https://liberapay.com/microg-by-ale5000/donate
 
@@ -19,7 +23,7 @@ Donations
    :alt: Bitcoin
 
 +-------------+-------------------------------------+
-| |Liberapay| |                                     |
+| |Liberapay| | |DonateWithLiberapay|               |
 +-------------+-------------------------------------+
 | |Bitcoin|   | 3DgYfLRbZMQPmLFLXh66moieK3kdvGvgXX_ |
 +-------------+-------------------------------------+
