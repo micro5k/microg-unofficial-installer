@@ -7,18 +7,19 @@ All notable changes to this project will be documented in this file.
 
 `Dev`_ (Unreleased)
 -------------------
-- Click on the title to see.
+- Click above to see all the changes.
 
 `1.0.31`_ beta (2018-08-28)
 ---------------------------
 - Initial work regarding reproducible builds of the installer zip file (untested)
-- Updated BusyBox for Android to 1.29.1-YDS-201807291348 
+- Updated BusyBox for Android to 1.29.1-YDS-201807291348
 - Added an option to skip the installation of NewPipe, ref #8
-- Switched to using a 64-bit BusyBox on a 64-bit device 
+- Switched to using a 64-bit BusyBox on a 64-bit device
 - Switched to a more error proof method for creating the file list, ref: #9
 - Check also armeabi-v7a in the CPU detection for BusyBox
-- Switched from vendor/lib to system/lib so it is easier to setup 
-- Updated microG Service Core to 0.2.5.12879 
+- Switched from vendor/lib to system/lib so it is easier to setup
+- Updated microG Service Core to 0.2.5.12879
+- Minor changes
 
 `1.0.30`_ alpha (Unreleased)
 ----------------------------
