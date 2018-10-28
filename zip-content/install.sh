@@ -151,7 +151,7 @@ ui_msg_sameline_start 'Verifying... '
 if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
    verify_sha1 "$TMP_PATH/files/priv-app-kk/GmsCore.apk" '52890ef5d04abd563fa220725708fd2bc48e894e' &&  # ToDO: Remove when bug #379 is fixed
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
-   verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" 'fa6267bee3f73d248d1110be53d66736aa4fece0' &&
+   verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" '71603d196245565fe384a18bd9f4637bca136b06' &&
    verify_sha1 "$TMP_PATH/files/app/NewPipe.apk" '7e2b64ab167221988b52644c03823638a1316b86' &&
    verify_sha1 "$TMP_PATH/files/app/DejaVuBackend.apk" '560f52bcd95c6b2e9f3309b361ccd3a54934cdfa' &&
    verify_sha1 "$TMP_PATH/files/app/IchnaeaNlpBackend.apk" 'ef9fad611ab2cf2e68cdc7d05af4496998e8d3b5' &&

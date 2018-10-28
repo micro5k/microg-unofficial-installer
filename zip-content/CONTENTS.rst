@@ -16,7 +16,7 @@ Common
 - **files/priv-app/GmsCore.apk** => microG Service Core 0.2.6.13280 (on Android >= 5) |fire|
 - **files/priv-app-kk/GmsCore.apk** => microG Service Core 0.2.4-81 (on Android < 5) |fire|
 - **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0 |fire|
-- **files/priv-app/DroidGuard.apk** => microG DroidGuard Helper 0.1.0-10 |fire|
+- **files/priv-app/DroidGuard.apk** => microG DroidGuard Helper 0.1.0-17-custom |boom|
 
 - **files/app/NewPipe.apk** => NewPipe 0.14.1 |star|
 
@@ -48,3 +48,5 @@ Components used only during setup (not installed)
 |star| *F-Droid version (compiled and signed by F-Droid).*
 
 |fire| *Original version (compiled and signed by its original author).*
+
+|boom| *Nanolx's version (compiled and signed by @Nanolx).*
