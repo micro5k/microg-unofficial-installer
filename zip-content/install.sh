@@ -268,6 +268,7 @@ copy_dir_content "$TMP_PATH/files/etc/permissions" "${SYS_PATH}/etc/permissions"
 if test "$API" -ge 21; then
   copy_dir_content "$TMP_PATH/files/etc/sysconfig" "${SYS_PATH}/etc/sysconfig"
 fi
+copy_dir_content "$TMP_PATH/files/etc/org.fdroid.fdroid" "${SYS_PATH}/etc/org.fdroid.fdroid"
 
 if [[ $OLD_ANDROID == true ]]; then
   if [[ $CPU != false ]]; then
