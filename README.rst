@@ -9,8 +9,8 @@ Description
 microG unofficial installer simplify the installation of microG (all the included files are the original versions).
 
 
-Donations
----------
+Donate
+------
 .. |Liberapay| image:: assets/liberapay.png
    :alt: Liberapay
    :target: https://liberapay.com/microg-by-ale5000/
