@@ -10,4 +10,4 @@ PackageSupplier: Person: ale5000
 PackageDownloadLocation: https://api.github.com/repos/micro5k/microg-unofficial-installer/zipball/master
 PackageLicenseConcluded: GPL-3.0-or-later
 PackageLicenseDeclared: GPL-3.0
-PackageCopyrightText: Copyright (C) 2016-2018 ale5000
+PackageCopyrightText: Copyright © 2016-2018 ale5000
