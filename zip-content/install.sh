@@ -270,6 +270,7 @@ ui_msg 'Installing...'
 copy_dir_content "$TMP_PATH/files/priv-app" "${PRIVAPP_PATH}"
 copy_dir_content "$TMP_PATH/files/app" "${SYS_PATH}/app"
 copy_dir_content "$TMP_PATH/files/framework" "${SYS_PATH}/framework"
+if test "$API" -lt 26; then delete "$TMP_PATH/files/etc/permissions/privapp-permissions-microg.xml"; fi
 copy_dir_content "$TMP_PATH/files/etc/permissions" "${SYS_PATH}/etc/permissions"
 if test "$API" -ge 21; then
   copy_dir_content "$TMP_PATH/files/etc/sysconfig" "${SYS_PATH}/etc/sysconfig"
