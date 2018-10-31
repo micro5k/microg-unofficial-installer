@@ -39,14 +39,12 @@ Scripts
 
 Components used only during setup (not installed)
 -------------------------------------------------
-- BusyBox 1.29.1-YDS-201807291348 (compiled by YashdSaraf_) - Available `here <https://forum.xda-developers.com/showthread.php?t=3348543>`_.
-
-.. _YashdSaraf: https://forum.xda-developers.com/member.php?u=5423715
+- BusyBox 1.29.1-YDS-201807291348 (compiled by `@YashdSaraf <https://github.com/yashdsaraf>`_) - Available `here <https://forum.xda-developers.com/showthread.php?t=3348543>`_.
 
 |
 
-|star| *F-Droid version (compiled and signed by F-Droid).*
+|star| *F-Droid version* (compiled and signed by F-Droid).
 
-|fire| *Original version (compiled and signed by its original author).*
+|fire| *Original version* (compiled and signed by its original author).
 
-|boom| *Nanolx's version (compiled and signed by @Nanolx).*
+|boom| *Nanolx's version* (compiled and signed by `@Nanolx <https://github.com/Nanolx>`_).
