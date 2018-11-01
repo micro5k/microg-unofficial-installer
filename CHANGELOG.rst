@@ -9,6 +9,19 @@ All notable changes to this project will be documented in this file.
 -------------------
 - Click above to see all the changes.
 
+`1.0.32`_ beta (2018-11-01)
+---------------------------
+- Added also a Bitcoin address for receiving donations
+- Updated microG Service Core to 0.2.6.13280
+- Updated Déjà Vu Location Service to 1.1.9
+- Switched to a custom build of microG DroidGuard Helper to fix SafetyNet Attestation
+- Preset F-Droid repositories
+- Updated NewPipe to 0.14.2
+- Install default permissions file only if needed
+- Updated default permissions
+- Install privapp permissions whitelist on Android 8 and higher
+- Minor changes
+
 `1.0.31`_ beta (2018-08-28)
 ---------------------------
 - Initial work regarding reproducible builds of the installer zip file (untested)
@@ -62,6 +75,7 @@ All notable changes to this project will be documented in this file.
 - Minor changes and fixes
 
 
-.. _Dev: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.31-beta...HEAD
+.. _Dev: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.32-beta...HEAD
+.. _1.0.32: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.31-beta...v1.0.32-beta
 .. _1.0.31: https://github.com/micro5k/microg-unofficial-installer/compare/fd8c10cf26d51a2cbdfa48f9cc17d8f69a3af8e6...v1.0.31-beta
 .. _1.0.30: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.29-beta...fd8c10cf26d51a2cbdfa48f9cc17d8f69a3af8e6
