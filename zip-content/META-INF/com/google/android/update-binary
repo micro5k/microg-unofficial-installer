@@ -93,9 +93,17 @@ is_mounted()
   return 1  # NOT mounted
 }
 
+parse_file()
+{
+  local tmp=$(grep "^${2}=" "$1" | head -n1 | cut -d '=' -f 2) && echo "$tmp"
+  if test -n "$tmp"; then return 0; fi  # Found
+  return 1  # NOT found
+}
+
 getprop()
 {
-  (test -e '/sbin/getprop' && /sbin/getprop "ro.${1}") || (grep "^ro\.${1}=" '/default.prop' | head -n1 | cut -d '=' -f 2)
+  local prop=''
+  (test -e '/sbin/getprop' && /sbin/getprop "ro.$1") || (prop=$(parse_file '/default.prop' "ro\.$1") && echo "$prop") || (test -e '/system/build.prop' && prop=$(parse_file '/system/build.prop' "ro\.$1") && echo "$prop")
 }
 
 is_substring()
