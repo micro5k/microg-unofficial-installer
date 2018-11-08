@@ -100,10 +100,22 @@ parse_file()
   return 1  # NOT found
 }
 
-getprop()
+rec_getprop()
 {
   local prop=''
-  (test -e '/sbin/getprop' && /sbin/getprop "ro.$1") || (prop=$(parse_file '/default.prop' "ro\.$1") && echo "$prop") || (test -e '/system/build.prop' && prop=$(parse_file '/system/build.prop' "ro\.$1") && echo "$prop")
+  (test -e '/sbin/getprop' && prop=$(/sbin/getprop "ro.$1") && test -n "$prop" && echo "$prop") || (prop=$(parse_file '/default.prop' "ro\.$1") && echo "$prop") || (test -e '/system/build.prop' && prop=$(parse_file '/system/build.prop' "ro\.$1") && echo "$prop")
+}
+
+get_rec_abilist()
+{
+  local abilist=$(rec_getprop 'product.cpu.abilist')
+  if test -n "$abilist"; then echo "$abilist"; return 0; fi  # Found
+
+  local abi1=$(rec_getprop 'product.cpu.abi')
+  local abi2=$(rec_getprop 'product.cpu.abi2')
+  if test -n "$abi1" || test -n "$abi2"; then echo "$abi1,$abi2"; return 0; fi  # Found
+
+  return 1  # NOT found
 }
 
 is_substring()
@@ -223,13 +235,7 @@ if ! is_mounted '/tmp'; then
   if ! is_mounted '/tmp'; then ui_error '/tmp is NOT mounted'; fi
 fi
 
-RECVAR_ABI1=$(getprop 'product.cpu.abi')
-RECVAR_ABI2=$(getprop 'product.cpu.abi2')
-RECVAR_ABILIST=$(getprop 'product.cpu.abilist')
-if test -z "${RECVAR_ABI1}"; then ui_warning "Empty ABI 1"; fi
-if test -z "${RECVAR_ABILIST}"; then ui_warning "Empty ABI list"; fi
-
-ABI_LIST=",${RECVAR_ABILIST},${RECVAR_ABI1},${RECVAR_ABI2},"
+ABI_LIST=",$(get_rec_abilist)," || ui_error "Empty ABI list"
 
 if is_substring ',x86_64,' "$ABI_LIST"; then
   ui_debug 'Extracting 64-bit x86 BusyBox...'
