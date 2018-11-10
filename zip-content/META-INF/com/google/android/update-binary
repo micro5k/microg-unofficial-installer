@@ -95,7 +95,7 @@ is_mounted()
 
 parse_file()
 {
-  local tmp=$(grep "^${2}=" "$1" | head -n1 | cut -d '=' -f 2) && echo "$tmp"
+  local tmp=$(grep -F "${2}=" "$1" | head -n1 | cut -d '=' -f 2) && echo "$tmp"
   if test -n "$tmp"; then return 0; fi  # Found
   return 1  # NOT found
 }
@@ -103,7 +103,7 @@ parse_file()
 rec_getprop()
 {
   local prop=''
-  (test -e '/sbin/getprop' && prop=$(/sbin/getprop "ro.$1") && test -n "$prop" && echo "$prop") || (prop=$(parse_file '/default.prop' "ro\.$1") && echo "$prop") || (test -e '/system/build.prop' && prop=$(parse_file '/system/build.prop' "ro\.$1") && echo "$prop")
+  (test -e '/sbin/getprop' && prop=$(/sbin/getprop "ro.$1") && test -n "$prop" && echo "$prop") || (prop=$(parse_file '/default.prop' "ro.$1") && echo "$prop") || (test -e '/system/build.prop' && prop=$(parse_file '/system/build.prop' "ro.$1") && echo "$prop")
 }
 
 get_rec_abilist()
