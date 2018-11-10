@@ -93,6 +93,15 @@ is_mounted()
   return 1  # NOT mounted
 }
 
+ensure_system_is_mounted()
+{
+  if ! is_mounted '/system'; then
+    mount '/system'
+    if ! is_mounted '/system'; then ui_error '/system cannot be mounted'; fi
+  fi
+  return 0;  # OK
+}
+
 parse_file()
 {
   local tmp=$(grep -F "${2}=" "$1" | head -n1 | cut -d '=' -f 2) && echo "$tmp"
@@ -103,7 +112,7 @@ parse_file()
 rec_getprop()
 {
   local prop=''
-  (test -e '/sbin/getprop' && prop=$(/sbin/getprop "ro.$1") && test -n "$prop" && echo "$prop") || (prop=$(parse_file '/default.prop' "ro.$1") && echo "$prop") || (test -e '/system/build.prop' && prop=$(parse_file '/system/build.prop' "ro.$1") && echo "$prop")
+  (test -e '/sbin/getprop' && prop=$(/sbin/getprop "ro.$1") && test -n "$prop" && echo "$prop") || (prop=$(parse_file '/default.prop' "ro.$1") && echo "$prop") || (ensure_system_is_mounted && test -e '/system/build.prop' && prop=$(parse_file '/system/build.prop' "ro.$1") && echo "$prop")
 }
 
 get_rec_abilist()
