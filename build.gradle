@@ -30,3 +30,7 @@ task buildOta(group: "- OTA", description: "Build the OTA zip.") {
         
     }
 }
+
+wrapper {
+    distributionType = Wrapper.DistributionType.ALL
+}
