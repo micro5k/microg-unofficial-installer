@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-task buildOta {
+task buildOta(group: "- OTA", description: "Build the OTA zip.") {
     doLast {
         println 'Building OTA zip with Gradle...'
 
