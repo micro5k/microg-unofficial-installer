@@ -135,9 +135,18 @@ rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip fi
 cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change the folder'
 zip -r9X "$TEMP_DIR/flashable.zip" . -i "*" || ui_error 'Failed compressing'  # Note: There are quotes around the wildcard to use the zip globbing instead of the shell globbing
 java -jar "$BASEDIR/tools/zipsigner.jar" "$TEMP_DIR/flashable.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing'
-cd "$INIT_DIR" || ui_error 'Failed to change back the folder'
-
 cp -f "$TEMP_DIR/$FILENAME.zip" "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to copy the final file'
+
+echo ''
+cd "$OUT_DIR" || ui_error 'Failed to change the folder'
+
+sha256sum "$FILENAME.zip" > "$OUT_DIR/$FILENAME.sha256" || ui_error 'Failed to compute the sha256 hash'
+echo 'SHA-256:'
+cat "$OUT_DIR/$FILENAME.sha256"
+
+md5sum "$FILENAME.zip" > "$OUT_DIR/$FILENAME.md5" || ui_error 'Failed to compute the md5 hash'
+
+cd "$INIT_DIR" || ui_error 'Failed to change back the folder'
 
 # Cleanup remnants
 rm -rf "$TEMP_DIR" || ui_error 'Failed to cleanup'
