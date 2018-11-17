@@ -147,11 +147,11 @@ cp -f "$TEMP_DIR/$FILENAME.zip" "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to 
 echo ''
 cd "$OUT_DIR" || ui_error 'Failed to change the folder'
 
-sha256sum "$FILENAME.zip" > "$OUT_DIR/$FILENAME.sha256" || ui_error 'Failed to compute the sha256 hash'
+sha256sum "$FILENAME.zip" > "$OUT_DIR/$FILENAME.zip.sha256" || ui_error 'Failed to compute the sha256 hash'
 echo 'SHA-256:'
-cat "$OUT_DIR/$FILENAME.sha256"
+cat "$OUT_DIR/$FILENAME.zip.sha256"
 
-md5sum "$FILENAME.zip" > "$OUT_DIR/$FILENAME.md5" || ui_error 'Failed to compute the md5 hash'
+md5sum "$FILENAME.zip" > "$OUT_DIR/$FILENAME.zip.md5" || ui_error 'Failed to compute the md5 hash'
 
 cd "$INIT_DIR" || ui_error 'Failed to change back the folder'
 
