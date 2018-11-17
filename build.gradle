@@ -16,11 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-task buildOta(group: "- OTA", description: 'Build the flashable OTA zip.') {
+def isWindows() {
+    return System.properties['os.name'].toLowerCase(Locale.ROOT).contains('windows')
+}
+
+def is64BitArch() {
+    return System.properties['os.arch'].contains('64')
+}
+
+println 'OS: '+System.properties['os.name']
+println '64 bit: '+is64BitArch()
+
+task buildOta(group: '- OTA', description: 'Build the flashable OTA zip.') {
     doLast {
         println 'Building the flashable OTA zip with Gradle...'
         exec {
-            if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+            if(isWindows()) {
                 executable = './build-win.bat'
             } else {
                 executable = './build.sh'
