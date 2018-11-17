@@ -16,18 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-task buildOta(group: "- OTA", description: "Build the OTA zip.") {
+task buildOta(group: "- OTA", description: 'Build the flashable OTA zip.') {
     doLast {
-        println 'Building OTA zip with Gradle...'
-
+        println 'Building the flashable OTA zip with Gradle...'
         exec {
             if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-                executable = "build-win.bat"
+                executable = './build-win.bat'
             } else {
-                executable = "build.sh"
+                executable = './build.sh'
             }
         }
-        
     }
 }
 
