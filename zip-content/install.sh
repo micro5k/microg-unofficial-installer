@@ -109,8 +109,6 @@ else
   MARKET_FILENAME="${MARKET}.apk"
 fi
 
-if ! test -f "${MARKET_FILENAME}"; then MARKET_FILENAME="FakeStore.apk"; fi
-
 # Info
 ui_msg ''
 ui_msg '---------------------------'
@@ -125,7 +123,6 @@ ui_msg "Detected 64-bit CPU arch: ${CPU64}"
 ui_msg "System root image: ${SYS_ROOT_IMAGE}"
 ui_msg "System path: ${SYS_PATH}"
 ui_msg "Privileged apps: ${PRIVAPP_PATH}"
-ui_msg "Market app: ${MARKET_FILENAME}"
 ui_msg ''
 
 if [[ $CPU == false && $CPU64 == false ]]; then
@@ -148,6 +145,10 @@ ui_debug 'Setting up permissions...'
 set_std_perm_recursive "$TMP_PATH/files"
 set_std_perm_recursive "$TMP_PATH/addon.d"
 set_perm 0 0 0755 "$TMP_PATH/addon.d/00-1-microg.sh"
+
+# Fallback to FakeStore if the selected market is missing
+if ! test -f "$TMP_PATH/files/variants/${MARKET_FILENAME}"; then MARKET_FILENAME='FakeStore.apk'; fi
+ui_msg "Selected market app: ${MARKET_FILENAME}"
 
 # Verifying
 ui_msg_sameline_start 'Verifying... '
