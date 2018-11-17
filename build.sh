@@ -114,11 +114,18 @@ FILENAME="$NAME-v$VER-signed"
 . "$BASEDIR/addition.sh"
 
 # Download files if they are missing
-files_to_download | while IFS='|' read DL_FILENAME DL_PATH DL_HASH DL_URL; do
+oss_files_to_download | while IFS='|' read DL_FILENAME DL_PATH DL_HASH DL_URL; do
   dl_file "$DL_FILENAME" "$DL_PATH" "$DL_HASH" "$DL_URL"
 done
 
-dl_file 'keycheck-arm' 'zip-content/misc/keycheck' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck'
+if test -n "${OPENSOURCE_ONLY}"; then
+  echo 'Skipped not OSS files!'
+else
+  files_to_download | while IFS='|' read DL_FILENAME DL_PATH DL_HASH DL_URL; do
+    dl_file "$DL_FILENAME" "$DL_PATH" "$DL_HASH" "$DL_URL"
+  done
+  dl_file 'keycheck-arm' 'zip-content/misc/keycheck' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck'
+fi
 
 # Copy data
 cp -rf "$BASEDIR/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'

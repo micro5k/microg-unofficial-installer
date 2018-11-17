@@ -27,7 +27,7 @@ def is64BitArch() {
 println 'OS: '+System.properties['os.name']
 println '64 bit: '+is64BitArch()
 
-task buildOta(group: '- OTA', description: 'Build the flashable OTA zip.') {
+task buildOta(group: '- OTA build', description: 'Build the flashable OTA zip.') {
     doLast {
         println 'Building the flashable OTA zip with Gradle...'
         exec {
@@ -36,6 +36,20 @@ task buildOta(group: '- OTA', description: 'Build the flashable OTA zip.') {
             } else {
                 executable = './build.sh'
             }
+        }
+    }
+}
+
+task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip (open-source components only).') {
+    doLast {
+        println 'Building the flashable OTA zip (open-source components only) with Gradle...'
+        exec {
+            if(isWindows()) {
+                executable = './build-win.bat'
+            } else {
+                executable = './build.sh'
+            }
+            environment OPENSOURCE_ONLY: "1"
         }
     }
 }

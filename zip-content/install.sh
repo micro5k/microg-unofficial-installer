@@ -109,6 +109,8 @@ else
   MARKET_FILENAME="${MARKET}.apk"
 fi
 
+if ! test -f "${MARKET_FILENAME}"; then MARKET_FILENAME="FakeStore.apk"; fi
+
 # Info
 ui_msg ''
 ui_msg '---------------------------'
@@ -123,6 +125,7 @@ ui_msg "Detected 64-bit CPU arch: ${CPU64}"
 ui_msg "System root image: ${SYS_ROOT_IMAGE}"
 ui_msg "System path: ${SYS_PATH}"
 ui_msg "Privileged apps: ${PRIVAPP_PATH}"
+ui_msg "Market app: ${MARKET_FILENAME}"
 ui_msg ''
 
 if [[ $CPU == false && $CPU64 == false ]]; then

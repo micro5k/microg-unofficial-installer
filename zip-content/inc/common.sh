@@ -197,6 +197,8 @@ zip_extract_dir()
 # Hash related functions
 verify_sha1()
 {
+  if ! test -e "$1"; then ui_warning "This file to verify is missing => '$1'"; return 0; fi
+
   ui_debug "$1"
   local file_name="$1"
   local hash="$2"
