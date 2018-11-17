@@ -6,3 +6,4 @@
  */
 
 rootProject.name = 'microg-unofficial-installer'
+println 'microG unofficial installer'
