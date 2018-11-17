@@ -1,4 +1,19 @@
+# Custom project files
 output/
 zip-content/files/variants/PlayStore-legacy.apk
 zip-content/files/variants/PlayStore-recent.apk
 zip-content/misc/keycheck/
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Gradle files
+.gradle/
+build/
+user.gradle
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log Files
+*.log
