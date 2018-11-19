@@ -24,6 +24,14 @@ def is64BitArch() {
     return System.properties['os.arch'].contains('64')
 }
 
+def getBuildScriptName() {
+    if(isWindows()) {
+        return './build-win.bat'
+    } else {
+        return './build.sh'
+    }
+}
+
 println 'OS: '+System.properties['os.name']
 println '64 bit: '+is64BitArch()
 
@@ -31,11 +39,7 @@ task buildOta(group: '- OTA build', description: 'Build the flashable OTA zip.')
     doLast {
         println 'Building the flashable OTA zip with Gradle...'
         exec {
-            if(isWindows()) {
-                executable = './build-win.bat'
-            } else {
-                executable = './build.sh'
-            }
+            executable = getBuildScriptName()
             args 'Gradle'
         }
     }
@@ -45,11 +49,7 @@ task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip
     doLast {
         println 'Building the flashable OTA zip (open-source components only) with Gradle...'
         exec {
-            if(isWindows()) {
-                executable = './build-win.bat'
-            } else {
-                executable = './build.sh'
-            }
+            executable = getBuildScriptName()
             args 'Gradle'
             environment OPENSOURCE_ONLY: "1"
         }
