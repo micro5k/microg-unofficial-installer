@@ -134,7 +134,7 @@ cp -rf "$BASEDIR"/CHANGELOG* "$TEMP_DIR/zip-content/" || ui_error 'Failed to cop
 
 # Delete not OSS files if they were already downloaded
 if test -n "${OPENSOURCE_ONLY}"; then
-  files_to_download | while IFS='|' read DL_FILENAME DL_PATH OTHER_INFO; do
+  files_to_download | while IFS='|' read DL_FILENAME DL_PATH _; do
     rm -f "${TEMP_DIR}/${DL_PATH}/${DL_FILENAME}" || ui_error 'Failed to remove not OSS files'
   done
 fi
