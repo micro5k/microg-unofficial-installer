@@ -1,9 +1,11 @@
 @echo off
+REM Copyright (C) 2017-2018 ale5000
+REM SPDX-License-Identifer: GPL-3.0-or-later
 
-REM Author: ale5000
+SET "INITIAL_TITLE=%COMSPEC%"
+TITLE Command-line 2> nul
 
 SETLOCAL 2> nul
-TITLE Command-line 2> nul
 
 REM Fix the working directory when using "Run as administrator"
 IF "%CD%" == "%windir%\system32" CD /D "%~dp0"
