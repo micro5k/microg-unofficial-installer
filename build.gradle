@@ -36,6 +36,7 @@ task buildOta(group: '- OTA build', description: 'Build the flashable OTA zip.')
             } else {
                 executable = './build.sh'
             }
+            args 'Gradle'
         }
     }
 }
@@ -49,6 +50,7 @@ task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip
             } else {
                 executable = './build.sh'
             }
+            args 'Gradle'
             environment OPENSOURCE_ONLY: "1"
         }
     }
