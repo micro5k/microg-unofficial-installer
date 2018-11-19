@@ -132,6 +132,13 @@ cp -rf "$BASEDIR/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to t
 cp -rf "$BASEDIR"/LIC* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
 cp -rf "$BASEDIR"/CHANGELOG* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the changelog to the temp dir'
 
+# Delete not OSS files if they were already downloaded
+if test -n "${OPENSOURCE_ONLY}"; then
+  files_to_download | while IFS='|' read DL_FILENAME DL_PATH OTHER_INFO; do
+    rm -f "${TEMP_DIR}/${DL_PATH}/${DL_FILENAME}" || ui_error 'Failed to remove not OSS files'
+  done
+fi
+
 # Useful for reproducible builds
 find "$TEMP_DIR/zip-content/" -exec touch -c -t 197911300100.00 '{}' + || ui_error 'Failed to set modification date'
 
