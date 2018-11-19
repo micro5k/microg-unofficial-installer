@@ -2,9 +2,7 @@
 REM Copyright (C) 2017-2018 ale5000
 REM SPDX-License-Identifer: GPL-3.0-or-later
 
-SET "INITIAL_TITLE=%COMSPEC%"
 TITLE Command-line 2> nul
-
 SETLOCAL 2> nul
 
 REM Fix the working directory when using "Run as administrator"
@@ -17,5 +15,5 @@ IF EXIST "%~dp0tools\win" SET "PATH=%~dp0tools\win;%PATH%"
 
 "%~dp0tools\win\busybox.exe" ash -s -c "alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=clear;"
 
-TITLE 2> nul
 ENDLOCAL 2> nul
+TITLE %ComSpec% 2> nul
