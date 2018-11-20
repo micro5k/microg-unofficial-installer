@@ -59,3 +59,8 @@ task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
 }
+
+buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+}
