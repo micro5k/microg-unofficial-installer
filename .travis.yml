@@ -1,6 +1,9 @@
 language: java
 install: true
 
+git:
+  depth: 1
+
 jdk:
   - openjdk8
 
