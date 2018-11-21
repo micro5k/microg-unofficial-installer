@@ -3,6 +3,10 @@ microG unofficial installer
 ===========================
 :Author: `ale5000 <https://github.com/ale5000-git>`_
 
+.. image:: https://travis-ci.com/micro5k/microg-unofficial-installer.svg?branch=master
+   :alt: Travis CI
+   :target: https://travis-ci.com/micro5k/microg-unofficial-installer
+
 
 Description
 -----------
