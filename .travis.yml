@@ -1,14 +1,12 @@
 language: java
 install: true
+jdk: openjdk8
 
 git:
   depth: 1
 
-jdk:
-  - openjdk8
-
 script:
-  - ./gradlew buildOtaOSS --scan -s
+  - ./gradlew buildOtaOSS -s
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
