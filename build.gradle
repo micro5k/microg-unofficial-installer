@@ -16,6 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+plugins {
+    id 'com.gradle.build-scan' version '1.16' 
+}
+
+buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+    publishAlwaysIf(System.getenv('CI') != null)
+}
+
 def isWindows() {
     return System.properties['os.name'].toLowerCase(Locale.ROOT).contains('windows')
 }
@@ -58,11 +68,4 @@ task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip
 
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
-}
-
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
-
-    publishAlways()
 }
