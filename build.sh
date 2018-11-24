@@ -104,7 +104,7 @@ OUT_DIR="$BASEDIR/output"
 mkdir -p "$OUT_DIR" || ui_error 'Failed to create the output dir'
 
 # Create the temp dir
-TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX)
+TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXXXX)
 
 # Set filename and version
 VER=$(cat "$BASEDIR/zip-content/inc/VERSION")
