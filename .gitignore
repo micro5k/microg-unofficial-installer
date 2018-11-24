@@ -1,8 +1,6 @@
-# Custom project files
+# Custom project folders
+cache/
 output/
-zip-content/files/variants/PlayStore-legacy.apk
-zip-content/files/variants/PlayStore-recent.apk
-zip-content/misc/keycheck/
 
 # Files for the ART/Dalvik VM
 *.dex

@@ -87,12 +87,11 @@ corrupted_file()
 
 dl_file()
 {
-  if [[ ! -e "$BASEDIR/$2/$1" ]]; then
-    mkdir -p "$BASEDIR/$2"
-    "$WGET_CMD" -O "$BASEDIR/$2/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0' "$4" || ui_error "Failed to download the file '$2/$1'."
+  if [[ ! -e "$BASEDIR/cache/$1" ]]; then
+    "$WGET_CMD" -O "$BASEDIR/cache/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0' "$3" || ui_error "Failed to download the file => 'cache/$1'."
     echo ''
   fi
-  verify_sha1 "$BASEDIR/$2/$1" "$3" || corrupted_file "$BASEDIR/$2/$1"
+  verify_sha1 "$BASEDIR/cache/$1" "$2" || corrupted_file "$BASEDIR/cache/$1"
 }
 
 . "$BASEDIR/conf.sh"
@@ -114,17 +113,19 @@ FILENAME="$NAME-v$VER-signed"
 . "$BASEDIR/addition.sh"
 
 # Download files if they are missing
-oss_files_to_download | while IFS='|' read DL_FILENAME DL_PATH DL_HASH DL_URL; do
-  dl_file "$DL_FILENAME" "$DL_PATH" "$DL_HASH" "$DL_URL"
+mkdir -p "$BASEDIR/cache"
+
+oss_files_to_download | while IFS='|' read LOCAL_FILENAME _ DL_HASH DL_URL; do
+  dl_file "$LOCAL_FILENAME" "$DL_HASH" "$DL_URL"
 done
 
-if test -n "${OPENSOURCE_ONLY}"; then
-  echo 'Skipped not OSS files!'
-else
-  files_to_download | while IFS='|' read DL_FILENAME DL_PATH DL_HASH DL_URL; do
-    dl_file "$DL_FILENAME" "$DL_PATH" "$DL_HASH" "$DL_URL"
+if test -z "${OPENSOURCE_ONLY}"; then
+  files_to_download | while IFS='|' read LOCAL_FILENAME _ DL_HASH DL_URL; do
+    dl_file "$LOCAL_FILENAME" "$DL_HASH" "$DL_URL"
   done
-  dl_file 'keycheck-arm' 'zip-content/misc/keycheck' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck'
+  dl_file 'keycheck-arm' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck'
+else
+  echo 'Skipped not OSS files!'
 fi
 
 # Copy data
@@ -132,11 +133,15 @@ cp -rf "$BASEDIR/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to t
 cp -rf "$BASEDIR"/LIC* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
 cp -rf "$BASEDIR"/CHANGELOG* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the changelog to the temp dir'
 
-# Delete not OSS files if they were already downloaded
-if test -n "${OPENSOURCE_ONLY}"; then
-  files_to_download | while IFS='|' read DL_FILENAME DL_PATH _; do
-    rm -f "${TEMP_DIR}/${DL_PATH}/${DL_FILENAME}" || ui_error 'Failed to remove not OSS files'
+# Copy not OSS files
+if test -z "${OPENSOURCE_ONLY}"; then
+  files_to_download | while IFS='|' read LOCAL_FILENAME LOCAL_PATH _; do
+    mkdir -p "$TEMP_DIR/zip-content/$LOCAL_PATH"
+    cp -f "$BASEDIR/cache/$LOCAL_FILENAME" "$TEMP_DIR/zip-content/$LOCAL_PATH/" || ui_error "Failed to copy to the temp dir the file => '$LOCAL_FILENAME'"
   done
+
+  mkdir -p "$TEMP_DIR/zip-content/misc/keycheck"
+  cp -f "$BASEDIR/cache/keycheck-arm" "$TEMP_DIR/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'keycheck-arm'"
 fi
 
 # Useful for reproducible builds
