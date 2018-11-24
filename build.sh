@@ -156,18 +156,22 @@ zip -r9X "$TEMP_DIR/flashable.zip" . -i "*" || ui_error 'Failed compressing'  # 
 java -jar "$BASEDIR/tools/zipsigner.jar" "$TEMP_DIR/flashable.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing'
 cp -f "$TEMP_DIR/$FILENAME.zip" "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to copy the final file'
 
-echo ''
 cd "$OUT_DIR" || ui_error 'Failed to change the folder'
 
 # Cleanup remnants
 rm -rf "$TEMP_DIR" &
 pid="$!"
 
+# Create checksum files
+echo ''
 sha256sum "$FILENAME.zip" > "$OUT_DIR/$FILENAME.zip.sha256" || ui_error 'Failed to compute the sha256 hash'
 echo 'SHA-256:'
 cat "$OUT_DIR/$FILENAME.zip.sha256"
 
+echo ''
 md5sum "$FILENAME.zip" > "$OUT_DIR/$FILENAME.zip.md5" || ui_error 'Failed to compute the md5 hash'
+echo 'MD5:'
+cat "$OUT_DIR/$FILENAME.zip.md5"
 
 cd "$INIT_DIR" || ui_error 'Failed to change back the folder'
 
