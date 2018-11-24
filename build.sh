@@ -159,6 +159,10 @@ cp -f "$TEMP_DIR/$FILENAME.zip" "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to 
 echo ''
 cd "$OUT_DIR" || ui_error 'Failed to change the folder'
 
+# Cleanup remnants
+rm -rf "$TEMP_DIR" &
+pid="$!"
+
 sha256sum "$FILENAME.zip" > "$OUT_DIR/$FILENAME.zip.sha256" || ui_error 'Failed to compute the sha256 hash'
 echo 'SHA-256:'
 cat "$OUT_DIR/$FILENAME.zip.sha256"
@@ -167,8 +171,8 @@ md5sum "$FILENAME.zip" > "$OUT_DIR/$FILENAME.zip.md5" || ui_error 'Failed to com
 
 cd "$INIT_DIR" || ui_error 'Failed to change back the folder'
 
-# Cleanup remnants
-rm -rf "$TEMP_DIR" || ui_error 'Failed to cleanup'
-
 echo ''
 echo 'Done.'
+
+wait "$pid"
+exit "$?"
