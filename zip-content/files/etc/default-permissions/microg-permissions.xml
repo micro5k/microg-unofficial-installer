@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 
-<!-- Copyright (C) 2017-2018  ale5000
-     This file was created by ale5000 (ale5000-git on GitHub).
+<!-- Copyright (C) 2017-2018 ale5000
+     SPDX-License-Identifer: GPL-3.0-or-later
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -33,44 +33,16 @@
 <exceptions>
 
     <exception package="com.google.android.gms">
-        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
-        <permission name="android.permission.ACCESS_COARSE_UPDATES" fixed="false"/>
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
-        <permission name="android.permission.ACCESS_NETWORK_STATE" fixed="false"/>
-        <permission name="android.permission.AUTHENTICATE_ACCOUNTS" fixed="false"/>
-        <permission name="android.permission.GET_ACCOUNTS" fixed="false"/>
-        <permission name="android.permission.INSTALL_LOCATION_PROVIDER" fixed="false"/>
-        <permission name="android.permission.INTERNET" fixed="false"/>
-        <permission name="android.permission.MANAGE_ACCOUNTS" fixed="false"/>
-        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false"/>
-        <permission name="android.permission.READ_PHONE_STATE" fixed="false"/>
-        <permission name="android.permission.RECEIVE_BOOT_COMPLETED" fixed="false"/>
-        <permission name="android.permission.USE_CREDENTIALS" fixed="false"/>
-        <permission name="android.permission.WAKE_LOCK" fixed="false"/>
-        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"/>
-        <permission name="com.android.settings.INJECT_SETTINGS" fixed="false"/>
-        <permission name="com.google.android.c2dm.permission.RECEIVE" fixed="false"/>
-        <permission name="com.google.android.c2dm.permission.SEND" fixed="false"/>
-        <permission name="com.google.android.gtalkservice.permission.GTALK_SERVICE" fixed="false"/>
-        <permission name="org.microg.gms.STATUS_BROADCAST" fixed="false"/>
-        <permission name="org.microg.permission.FORCE_COARSE_LOCATION" fixed="false"/>
-        <!-- Signature spoofing -->
-        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true"/>
-    </exception>
-
-    <exception package="com.google.android.gsf">
-        <permission name="com.google.android.c2dm.permission.RECEIVE" fixed="false"/>
-        <permission name="com.google.android.c2dm.permission.SEND" fixed="false"/>
-    </exception>
-
-    <exception package="com.android.vending">
-        <!-- Phone -->
-        <permission name="android.permission.READ_PHONE_STATE" fixed="false"/>
-        <!-- Account -->
+        <!-- Account / Contacts -->
+        <permission name="android.permission.READ_CONTACTS" fixed="false"/>
+        <permission name="android.permission.WRITE_CONTACTS" fixed="false"/>
         <permission name="android.permission.GET_ACCOUNTS" fixed="false"/>
         <!-- Location -->
         <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
         <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
+        <permission name="org.microg.permission.FORCE_COARSE_LOCATION" fixed="false"/>
+        <!-- Phone -->
+        <permission name="android.permission.READ_PHONE_STATE" fixed="false"/>
         <!-- Storage -->
         <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false"/>
         <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"/>
@@ -78,45 +50,41 @@
         <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true"/>
     </exception>
 
-    <exception package="org.microg.gms.droidguard">
-        <permission name="android.permission.INTERNET" fixed="false"/>
-    </exception>
-
-    <exception package="org.microg.nlp.backend.ichnaea">
-        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
-        <permission name="android.permission.ACCESS_NETWORK_STATE" fixed="false"/>
-        <permission name="android.permission.ACCESS_WIFI_STATE" fixed="false"/>
-        <permission name="android.permission.CHANGE_WIFI_STATE" fixed="false"/>
-        <permission name="android.permission.INTERNET" fixed="false"/>
-        <permission name="android.permission.READ_PHONE_STATE" fixed="false"/>
-    </exception>
-
-    <exception package="org.fitchfamily.android.dejavu">
-        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
-        <permission name="android.permission.ACCESS_WIFI_STATE" fixed="false"/>
-        <permission name="android.permission.CHANGE_WIFI_STATE" fixed="false"/>
-    </exception>
-
-    <exception package="org.microg.nlp.backend.nominatim">
-        <permission name="android.permission.INTERNET" fixed="false"/>
-    </exception>
-
-    <exception package="org.schabi.newpipe">
-        <permission name="android.permission.ACCESS_NETWORK_STATE" fixed="false"/>
-        <permission name="android.permission.FOREGROUND_SERVICE" fixed="false"/>
-        <permission name="android.permission.INTERNET" fixed="false"/>
-        <permission name="android.permission.SYSTEM_ALERT_WINDOW" fixed="false"/>
-        <permission name="android.permission.WAKE_LOCK" fixed="false"/>
-        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"/>
-    </exception>
-
-    <exception package="com.google.android.gm">
-        <!-- Contacts -->
+    <exception package="com.android.vending">
+        <!-- Account / Contacts -->
         <permission name="android.permission.READ_CONTACTS" fixed="false"/>
         <permission name="android.permission.WRITE_CONTACTS" fixed="false"/>
         <permission name="android.permission.GET_ACCOUNTS" fixed="false"/>
-     </exception>
+        <!-- Location -->
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
+        <!-- Phone -->
+        <permission name="android.permission.READ_PHONE_STATE" fixed="false"/>
+        <!-- Storage -->
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false"/>
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"/>
+        <!-- Signature spoofing -->
+        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true"/>
+    </exception>
+
+    <exception package="org.microg.nlp.backend.ichnaea">
+        <!-- Phone -->
+        <permission name="android.permission.READ_PHONE_STATE" fixed="false"/>
+        <!-- Location -->
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
+    </exception>
+
+    <exception package="org.fitchfamily.android.dejavu">
+        <!-- Location -->
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
+    </exception>
+
+    <exception package="org.schabi.newpipe">
+        <!-- Storage -->
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false"/>
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"/>
+    </exception>
 
 </exceptions>
