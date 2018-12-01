@@ -21,8 +21,8 @@
     <!-- microG GmsCore must always have network access for GCM. -->
     <allow-in-power-save package="com.google.android.gms" />
     <allow-in-data-usage-save package="com.google.android.gms" />
-
     <allow-unthrottled-location package="com.google.android.gms" />
+
     <hidden-api-whitelisted-app package="com.google.android.gms" />
 
 </config>
