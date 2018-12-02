@@ -6,7 +6,7 @@ stages:
 
 build:
   stage: build
-  script: /usr/lib/jvm/java-8-openjdk-amd64/bin/java ./gradlew buildOtaOSS
+  script: ./gradlew buildOtaOSS
 
 after_script:
   - rm -f  $GRADLE_USER_HOME/caches/modules-2/modules-2.lock
