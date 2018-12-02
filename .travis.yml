@@ -1,6 +1,10 @@
-language: java
-install: true
+language: android
 jdk: openjdk8
+
+android:
+  components:
+    - build-tools-27.0.3
+    - android-27
 
 git:
   depth: 1

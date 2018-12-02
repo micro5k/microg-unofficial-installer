@@ -73,6 +73,9 @@ task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip
     }
 }
 
+task build(dependsOn: ':buildOtaOSS') {
+}
+
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
 }
