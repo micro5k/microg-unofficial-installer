@@ -4,9 +4,13 @@ stages:
   - build
   #- execute
 
+before_script:
+  - export GRADLE_USER_HOME="$PWD/.gradle"
+  - apt-get install zip
+
 build:
   stage: build
-  script: ./gradlew buildOtaOSS
+  script: ./gradlew buildOtaOSS -s
 
 after_script:
   - rm -f  $GRADLE_USER_HOME/caches/modules-2/modules-2.lock
