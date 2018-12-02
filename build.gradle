@@ -42,8 +42,11 @@ def getBuildScriptName() {
     }
 }
 
-println 'OS: '+System.properties['os.name']
-println '64 bit: '+is64BitArch()
+task configure() {
+    buildDir = "$rootProject.projectDir/output"
+    println 'OS: '+System.properties['os.name']
+    println '64 bit: '+is64BitArch()
+}
 
 task buildOta(group: '- OTA build', description: 'Build the flashable OTA zip.') {
     doLast {
