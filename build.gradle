@@ -48,6 +48,10 @@ task configure() {
     println '64 bit: '+is64BitArch()
 }
 
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
 task buildOta(group: '- OTA build', description: 'Build the flashable OTA zip.') {
     doLast {
         println 'Building the flashable OTA zip with Gradle...'
