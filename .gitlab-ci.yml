@@ -6,7 +6,7 @@ stages:
 
 before_script:
   - export GRADLE_USER_HOME="$PWD/.gradle"
-  - apt-get install -y zip
+  - apt-get update && apt-get install -y zip
 
 build:
   stage: build
