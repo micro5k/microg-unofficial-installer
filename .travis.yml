@@ -27,7 +27,7 @@ before_cache:
   - rm -f  $HOME/.gradle/caches/user-id.txt.lock
 cache:
   directories:
-    - $TRAVIS_BUILD_DIR/cache/
+    - cache/
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
-    - $HOME/.android/build-cache
+    - $HOME/.android/build-cache/
