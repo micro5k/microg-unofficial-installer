@@ -13,10 +13,8 @@ variables:
   GIT_DEPTH: "3"
 
 before_script:
-  - export APT_CACHE="$CI_PROJECT_DIR/.apt-cache"
+  - export APT_CACHE="$CI_PROJECT_DIR/.apt-cache"; mkdir -p "$APT_CACHE/lists/partial"; mkdir -p "$APT_CACHE/archives/partial"
   - export GRADLE_USER_HOME="$PWD/.gradle"
-  - echo "$CI_PROJECT_DIR"
-  - mkdir -p "$APT_CACHE/lists/partial" && mkdir -p "$APT_CACHE/archives/partial"
   - apt-get -o Dir::State::Lists="$APT_CACHE/lists" update
   - apt-get -o Dir::State::Lists="$APT_CACHE/lists" -o Dir::Cache::Archives="$APT_CACHE/archives" install -y unzip zip
 
