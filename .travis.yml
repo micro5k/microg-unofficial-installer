@@ -44,4 +44,4 @@ deploy:
   on:
     repo: micro5k/microg-unofficial-installer
     tags: true
-    condition: "$OSS" = true
+    condition: $OSS = true
