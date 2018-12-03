@@ -77,5 +77,7 @@ task build(dependsOn: ':buildOtaOSS') {
 }
 
 wrapper {
+    gradleVersion = '4.10.2'
     distributionType = Wrapper.DistributionType.ALL
+    distributionSha256Sum = 'b7aedd369a26b177147bcb715f8b1fc4fe32b0a6ade0d7fd8ee5ed0c6f731f2c'
 }
