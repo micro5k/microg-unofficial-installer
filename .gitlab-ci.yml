@@ -21,7 +21,7 @@ before_script:
   - echo "$CI_PROJECT_DIR"
   - mkdir -p "$CI_PROJECT_DIR/.apt-cache/archives/partial"
   - apt-get update
-  - apt-get -o dir::cache::archives="$CI_PROJECT_DIR/.apt-cache/archives" install -y zip
+  - apt-get -o dir::cache::archives="$CI_PROJECT_DIR/.apt-cache/archives" install -y unzip zip
 
 build:
   stage: build
