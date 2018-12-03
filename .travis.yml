@@ -3,33 +3,45 @@ jdk: openjdk8
 
 cache:
   directories:
-    - cache/
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
-    - $HOME/.android/build-cache/
+  - cache/
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
+  - "$HOME/.android/build-cache/"
 
 git:
   depth: 3
 
 android:
   components:
-    - build-tools-27.0.3
-    - android-27
+  - build-tools-27.0.3
+  - android-27
 
 env:
   matrix:
-    - OSS=true
-    - OSS=false
+  - OSS=true
+  - OSS=false
 
 script:
-  - if [[ -n "${OSS}" && "${OSS}" == true ]]; then ./gradlew buildOtaOSS -s; else ./gradlew buildOta -s; fi
+- if [[ -n "$OSS" && "$OSS" == true ]]; then ./gradlew buildOtaOSS -s; else ./gradlew buildOta -s; fi
 
 before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-  - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.bin
-  - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.lock
-  - rm -f  $HOME/.gradle/caches/journal-1/file-access.bin
-  - rm -f  $HOME/.gradle/caches/journal-1/journal-1.lock
-  - rm -f  $HOME/.gradle/caches/user-id.txt
-  - rm -f  $HOME/.gradle/caches/user-id.txt.lock
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+- rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.bin
+- rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.lock
+- rm -f  $HOME/.gradle/caches/journal-1/file-access.bin
+- rm -f  $HOME/.gradle/caches/journal-1/journal-1.lock
+- rm -f  $HOME/.gradle/caches/user-id.txt
+- rm -f  $HOME/.gradle/caches/user-id.txt.lock
+
+deploy:
+  provider: releases
+  api_key:
+    secure: eOW9aTSA0Dkokch/cFBlbc1WG3GeXG6seOLRwxVA8n5ZETCw8OiRHYN9f5mRHYmZlHwyGrzfM0EbIga9VUOaPmS9Dk/jGKEU7GpeCltjVSrAGDDsGpejftVdQPWWmbQ0LqGzmFs/Z26zv2kWEip+yq7ZI65s5/cbf6RqsofXH5QD4fdnvGzf2xKFETAZub0AE2ctvhJEn/jnRPL2L+B/aLoTovnaVTcs1SOOkEKDWY5XO2W2cuhlevsxoR54LsmjLXYA9XVFzk58obecdaQ8iKwGDYE2c5QjkI+hUgw60MTPOEcN1AxXNwa/xvjnTfMJWvyssI+PPP3ZEsJzZeu/6WK/AWSQ1WJwhYnabU9zIlTHW7OLmTShn9B8iXvAlWCzYexhj8voxtdL0bko8Au/J0VLbYLCCO+btnzreez0CAcIj8FRXiv0cN3wO2LGwmdJkmREajoMKinuqnBk0SIVh4pEJU6ZEibZtaA6x75GW1r0FxYMw+ZPGSLWTTvs7+o6dK3u2w9SF90u/xjDd4kRc9nNV510MarXrUH8B+/J6mTUQW4V+xD4i5gYqe6e237atDvt1/jBjqiu6Cue9O6Td7a8g0DD1mCoJ0tf92m8ZbMi3oB+gvcQjuudIfdSYf+FKPSTT3LozZCc4rwqG/VCnNKyAf49EunA6m0QCDSI7FE=
+  file_glob: true
+  file: output/*
+  skip_cleanup: true
+  on:
+    repo: micro5k/microg-unofficial-installer
+    tags: true
+    condition: "$OSS" = true
