@@ -1,6 +1,7 @@
 # Custom project folders
 cache/
 output/
+.apt-cache/
 
 # Files for the ART/Dalvik VM
 *.dex

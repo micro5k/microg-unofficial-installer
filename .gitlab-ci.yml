@@ -1,27 +1,28 @@
 image: openjdk:8-jdk
 
-variables:
-  GIT_DEPTH: "3"
-
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
-    #- cache/
+    - cache/
     - .gradle/caches/
     - .gradle/wrapper/
     #- .android/build-cache/
     - .apt-cache/
 
+variables:
+  GIT_DEPTH: "3"
+
+before_script:
+  - export APT_CACHE="$CI_PROJECT_DIR/.apt-cache"
+  - export GRADLE_USER_HOME="$PWD/.gradle"
+  - echo "$CI_PROJECT_DIR"
+  - mkdir -p "$APT_CACHE/lists/partial" && mkdir -p "$APT_CACHE/archives/partial"
+  - apt-get -o Dir::State::Lists="$APT_CACHE/lists" update
+  - apt-get -o Dir::State::Lists="$APT_CACHE/lists" -o Dir::Cache::Archives="$APT_CACHE/archives" install -y unzip zip
+
 stages:
   - build
   #- execute
-
-before_script:
-  - export GRADLE_USER_HOME="$PWD/.gradle"
-  - echo "$CI_PROJECT_DIR"
-  - mkdir -p "$CI_PROJECT_DIR/.apt-cache/archives/partial"
-  - apt-get update
-  - apt-get -o dir::cache::archives="$CI_PROJECT_DIR/.apt-cache/archives" install -y unzip zip
 
 build:
   stage: build

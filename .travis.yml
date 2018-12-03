@@ -1,13 +1,20 @@
 language: android
 jdk: openjdk8
 
+cache:
+  directories:
+    - cache/
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.android/build-cache/
+
+git:
+  depth: 3
+
 android:
   components:
     - build-tools-27.0.3
     - android-27
-
-git:
-  depth: 3
 
 env:
   matrix:
@@ -26,9 +33,3 @@ before_cache:
   - rm -f  $HOME/.gradle/caches/journal-1/journal-1.lock
   - rm -f  $HOME/.gradle/caches/user-id.txt
   - rm -f  $HOME/.gradle/caches/user-id.txt.lock
-cache:
-  directories:
-    - cache/
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
-    - $HOME/.android/build-cache/
