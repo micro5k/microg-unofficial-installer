@@ -4,11 +4,12 @@ variables:
   GIT_DEPTH: "3"
 
 cache:
+  key: ${CI_COMMIT_REF_SLUG}
   paths:
-    - .apt-cache
-    - .gradle/caches
-    - .gradle/wrapper
-    #- .android/build-cache
+    - .apt-cache/
+    - .gradle/caches/
+    - .gradle/wrapper/
+    #- .android/build-cache/
 
 stages:
   - build
@@ -28,3 +29,8 @@ build:
 after_script:
   - rm -f  $GRADLE_USER_HOME/caches/modules-2/modules-2.lock
   - rm -fr $GRADLE_USER_HOME/caches/*/plugin-resolution/
+  - rm -f  $GRADLE_USER_HOME/caches/$GRADLE_VERSION/fileHashes/fileHashes.bin
+  - rm -f  $GRADLE_USER_HOME/caches/$GRADLE_VERSION/fileHashes/fileHashes.lock
+  - rm -f  $GRADLE_USER_HOME/caches/journal-1/file-access.bin
+  - rm -f  $GRADLE_USER_HOME/caches/journal-1/journal-1.lock
+  - rm -f  $GRADLE_USER_HOME/caches/user-id.txt.lock
