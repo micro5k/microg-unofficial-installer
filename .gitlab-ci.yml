@@ -1,5 +1,14 @@
 image: openjdk:8-jdk
 
+variables:
+  GIT_DEPTH: "3"
+
+cache:
+  paths:
+    - .gradle/caches
+    - .gradle/wrapper
+    - .android/build-cache
+
 stages:
   - build
   #- execute
@@ -15,9 +24,3 @@ build:
 after_script:
   - rm -f  $GRADLE_USER_HOME/caches/modules-2/modules-2.lock
   - rm -fr $GRADLE_USER_HOME/caches/*/plugin-resolution/
-
-cache:
-  paths:
-    - .gradle/caches
-    - .gradle/wrapper
-    - .android/build-cache
