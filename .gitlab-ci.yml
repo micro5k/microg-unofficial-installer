@@ -5,9 +5,10 @@ variables:
 
 cache:
   paths:
+    - .apt-cache
     - .gradle/caches
     - .gradle/wrapper
-    - .android/build-cache
+    #- .android/build-cache
 
 stages:
   - build
@@ -15,7 +16,9 @@ stages:
 
 before_script:
   - export GRADLE_USER_HOME="$PWD/.gradle"
-  - apt-get update && apt-get install -y zip
+  - echo "$CI_PROJECT_DIR"
+  - apt-get update
+  - apt-get -o dir::cache::archives="$CI_PROJECT_DIR/.apt-cache/archives" install -y zip
 
 build:
   stage: build
