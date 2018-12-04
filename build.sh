@@ -160,7 +160,10 @@ rm -f "$OUT_DIR/${FILENAME}-signed".zip* || ui_error 'Failed to remove the previ
 cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change the folder'
 zip -r9X -ic "$TEMP_DIR/flashable.zip" . -i "*" || ui_error 'Failed compressing'  # Note: There are quotes around the wildcard to use the zip globbing instead of the shell globbing
 FILENAME="$FILENAME-signed"
-java -jar "$BASEDIR/tools/zipsigner.jar" "$TEMP_DIR/flashable.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing'
+
+# Sign and zipalign
+mkdir -p "$TEMP_DIR/zipsign"
+java -Djava.io.tmpdir="$TEMP_DIR/zipsign" -jar "$BASEDIR/tools/zipsigner.jar" "$TEMP_DIR/flashable.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing and zipaligning'
 
 echo ''
 zip -T "$TEMP_DIR/$FILENAME.zip" || ui_error 'The zip is corrupted'
