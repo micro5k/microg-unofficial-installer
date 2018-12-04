@@ -104,7 +104,11 @@ OUT_DIR="$BASEDIR/output"
 mkdir -p "$OUT_DIR" || ui_error 'Failed to create the output dir'
 
 # Create the temp dir
-TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX)
+TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX) || ui_error 'Failed to create our temp dir'
+if test -z "$TEMP_DIR"; then ui_error 'Failed to create our temp dir'; fi
+
+# Empty our temp dir (should be already empty, but we must be sure)
+rm -rf "$TEMP_DIR"/* || ui_error 'Failed to empty our temp dir'
 
 # Set filename and version
 VER=$(cat "$BASEDIR/zip-content/inc/VERSION")
@@ -148,9 +152,9 @@ fi
 # Useful for reproducible builds
 find "$TEMP_DIR/zip-content/" -exec touch -c -t 197911300100.00 '{}' + || ui_error 'Failed to set modification date'
 
-# Remove the previous file
-rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip file'
-rm -f "$OUT_DIR/$FILENAME-signed.zip" || ui_error 'Failed to remove the previous zip file'
+# Remove the previously built files (if they exist)
+rm -f "$OUT_DIR/${FILENAME}".zip* || ui_error 'Failed to remove the previously built files'
+rm -f "$OUT_DIR/${FILENAME}-signed".zip* || ui_error 'Failed to remove the previously built files'
 
 # Compress and sign
 cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change the folder'
