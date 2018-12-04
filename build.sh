@@ -88,7 +88,7 @@ corrupted_file()
 dl_file()
 {
   if [[ ! -e "$BASEDIR/cache/$1" ]]; then
-    "$WGET_CMD" -O "$BASEDIR/cache/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0' "$3" || ui_error "Failed to download the file => 'cache/$1'."
+    "$WGET_CMD" -O "$BASEDIR/cache/$1" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:63.0) Gecko/20100101 Firefox/63.0' "$3" || ui_error "Failed to download the file => 'cache/$1'."
     echo ''
   fi
   verify_sha1 "$BASEDIR/cache/$1" "$2" || corrupted_file "$BASEDIR/cache/$1"
