@@ -2,7 +2,8 @@
  TOOLS
 =======
 
-- zipsigner_ **2.2-g6d93831** => zipsigner.jar
+- zipsigner_ **3.0-g32809e5** => zipsigner.jar
+- zipsigner_ **3.0-g32809e5** (Dalvik) => zipsigner-dvk.jar
 - BusyBox-w32_ **1.30.0-FRP-2294-gf72845d93 (2018-07-25)** => win/busybox.exe
 - Zip_ **3.0** => win/zip.exe
 - UnZip_ **6.0** => win/unzip.exe
