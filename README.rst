@@ -54,7 +54,7 @@ Releases
 
 Download
 --------
-You could download the flashable zip already built from the `XDA forum <https://forum.xda-developers.com/showthread.php?t=3432360>`_ or download the sources from the `release page <https://github.com/micro5k/microg-unofficial-installer/releases>`_, extract them and then run the build script.
+See here for the `instructions <docs/INSTRUCTIONS.rst>`_.
 
 
 Code analysis
