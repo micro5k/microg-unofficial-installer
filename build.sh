@@ -138,8 +138,9 @@ cp -rf "$BASEDIR/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to t
 cp -rf "$BASEDIR"/LIC* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
 cp -rf "$BASEDIR"/CHANGELOG* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the changelog to the temp dir'
 
-# Copy not OSS files
-if test -z "${OPENSOURCE_ONLY}"; then
+if test -n "${OPENSOURCE_ONLY}"; then
+  touch "$TEMP_DIR/zip-content/OPENSOURCE-ONLY"
+else
   files_to_download | while IFS='|' read LOCAL_FILENAME LOCAL_PATH _; do
     mkdir -p "$TEMP_DIR/zip-content/$LOCAL_PATH"
     cp -f "$BASEDIR/cache/$LOCAL_FILENAME" "$TEMP_DIR/zip-content/$LOCAL_PATH/" || ui_error "Failed to copy to the temp dir the file => '$LOCAL_FILENAME'"
