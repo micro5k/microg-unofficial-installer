@@ -108,7 +108,8 @@ TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX)
 
 # Set filename and version
 VER=$(cat "$BASEDIR/zip-content/inc/VERSION")
-FILENAME="$NAME-v$VER-signed"
+FILENAME="$NAME-v$VER"
+if test -n "${OPENSOURCE_ONLY}"; then FILENAME="$FILENAME-OSS"; fi
 
 . "$BASEDIR/addition.sh"
 
@@ -149,10 +150,12 @@ find "$TEMP_DIR/zip-content/" -exec touch -c -t 197911300100.00 '{}' + || ui_err
 
 # Remove the previous file
 rm -f "$OUT_DIR/$FILENAME.zip" || ui_error 'Failed to remove the previous zip file'
+rm -f "$OUT_DIR/$FILENAME-signed.zip" || ui_error 'Failed to remove the previous zip file'
 
 # Compress and sign
 cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change the folder'
 zip -r9X -ic "$TEMP_DIR/flashable.zip" . -i "*" || ui_error 'Failed compressing'  # Note: There are quotes around the wildcard to use the zip globbing instead of the shell globbing
+FILENAME="$FILENAME-signed"
 java -jar "$BASEDIR/tools/zipsigner.jar" "$TEMP_DIR/flashable.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing'
 
 echo ''
