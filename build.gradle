@@ -17,7 +17,8 @@
  */
 
 plugins {
-    id 'com.gradle.build-scan' version '1.16' 
+    id 'com.gradle.build-scan' version '1.16'
+    id 'maven'
 }
 
 buildScan {
@@ -48,8 +49,8 @@ task configure() {
     println '64 bit: '+is64BitArch()
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+task cleanAll(dependsOn: ':clean', type: Delete) {
+    delete buildDir, "${projectDir}/cache"
 }
 
 task buildOta(group: '- OTA build', description: 'Build the flashable OTA zip.') {
