@@ -73,6 +73,10 @@ task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip
         }
     }
 }
+build.finalizedBy buildOtaOSS
+
+task install(dependsOn: ':build') {
+}
 
 wrapper {
     gradleVersion = '4.10.2'
