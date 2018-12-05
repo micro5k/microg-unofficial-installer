@@ -1,9 +1,12 @@
 /*
  * The settings file is used to specify which projects to include in your build.
  * 
- * Detailed information about configuring a multi-project build in Gradle can be found
- * in the user guide.
+ * Copyright (C) 2018 ale5000
+ * SPDX-License-Identifer: GPL-3.0-or-later
  */
 
 rootProject.name = 'microg-unofficial-installer'
 println 'microG unofficial installer'
+
+// Enable stack trace
+gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
