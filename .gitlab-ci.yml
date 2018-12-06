@@ -10,7 +10,7 @@ cache:
     - .apt-cache/
 
 variables:
-  GIT_DEPTH: "3"
+  GIT_DEPTH: "1"
 
 before_script:
   - export APT_CACHE="$CI_PROJECT_DIR/.apt-cache"; mkdir -p "$APT_CACHE/lists/partial"; mkdir -p "$APT_CACHE/archives/partial"

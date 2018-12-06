@@ -16,13 +16,16 @@ android:
   - build-tools-27.0.3
   - android-27
 
-env:
-  matrix:
-  - OSS=true
-  - OSS=false
+matrix:
+  include:
+    - env: OSS=true
+      #script: ./gradlew buildOtaOSS
+    - env: OSS=false
+      #script: ./gradlew buildOta
+  fast_finish: true
 
 script:
-- if [[ -n "$OSS" && "$OSS" == true ]]; then ./gradlew buildOtaOSS -s; else ./gradlew buildOta -s; fi
+- if [[ -n "$OSS" && "$OSS" == true ]]; then ./gradlew buildOtaOSS; else ./gradlew buildOta; fi
 
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock

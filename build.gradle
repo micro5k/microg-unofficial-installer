@@ -44,14 +44,15 @@ def getBuildScriptName() {
 }
 
 task configure() {
-    buildDir = "$rootProject.projectDir/output"
+    buildDir = "${projectDir}/output"
     println 'OS: '+System.properties['os.name']
     println '64 bit: '+is64BitArch()
 }
 
-task cleanAll(dependsOn: ':clean', type: Delete) {
+task cleanAll(type: Delete) {
     delete buildDir, "${projectDir}/cache"
 }
+clean.finalizedBy cleanAll
 
 task buildOta(group: '- OTA build', description: 'Build the flashable OTA zip.') {
     doLast {
