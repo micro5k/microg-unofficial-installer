@@ -76,7 +76,8 @@ task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip
 }
 build.finalizedBy buildOtaOSS
 
-task install(dependsOn: ':build') {
+task install(dependsOn: build) {
+    // Nothing to install on a PC
 }
 
 wrapper {
