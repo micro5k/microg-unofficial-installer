@@ -21,6 +21,7 @@ LICENSE
 list_app_filenames()
 {
 cat <<EOF
+ConfigUpdater
 GmsCore
 GoogleFeedback
 GoogleLoginService
@@ -41,6 +42,7 @@ YouTube
 GmsCore_update
 GmsCoreSetupPrebuilt
 PrebuiltGmsCore
+PrebuiltGmsCorePix
 WhisperPush
 
 BlankStore
@@ -62,17 +64,20 @@ NominatimGeocoderBackend
 NominatimNlpBackend
 EOF
 }
-# Note: Do not remove GooglePartnerSetup since some ROMs may need it.
+# Note: Do not remove GooglePartnerSetup (com.google.android.partnersetup) since some ROMs may need it.
 
 list_app_internal_filenames()
 {
 cat <<EOF
+com.google.android.configupdater
 com.mgoogle.android.gms
 com.google.android.gms
 com.google.android.feedback
 com.google.android.gsf.login
+com.google.android.onetimeinitializer
 com.google.android.gsf
 com.android.vending
+com.google.android.googlequicksearchbox
 
 org.microg.gms.droidguard
 
