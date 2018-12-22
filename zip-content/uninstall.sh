@@ -21,23 +21,12 @@ LICENSE
 list_app_filenames()
 {
 cat <<EOF
-ConfigUpdater
-GmsCore
-GoogleFeedback
-GoogleLoginService
-GoogleOneTimeInitializer
-GoogleServicesFramework
 GsfProxy
 MarketUpdater
-Phonesky
 PlayGames
 Velvet
 
-DroidGuard
 GmsDroidGuard
-
-NewPipe
-YouTube
 
 GmsCore_update
 GmsCoreSetupPrebuilt
@@ -49,19 +38,6 @@ BlankStore
 FakeStore
 PlayStore
 Vending
-
-AMAPNetworkLocation
-BaiduNetworkLocation
-LegacyNetworkLocation
-NetworkLocation
-UnifiedNlp
-
-DejaVuBackend
-DejaVuNlpBackend
-IchnaeaNlpBackend
-MozillaNlpBackend
-NominatimGeocoderBackend
-NominatimNlpBackend
 EOF
 }
 # Note: Do not remove GooglePartnerSetup (com.google.android.partnersetup) since some ROMs may need it.
@@ -69,32 +45,8 @@ EOF
 list_app_internal_filenames()
 {
 cat <<EOF
-com.google.android.configupdater
 com.mgoogle.android.gms
-com.google.android.gms
-com.google.android.feedback
-com.google.android.gsf.login
-com.google.android.onetimeinitializer
-com.google.android.gsf
-com.android.vending
 com.google.android.googlequicksearchbox
-
-org.microg.gms.droidguard
-
-org.schabi.newpipe
-com.google.android.youtube
-
-com.qualcomm.location
-com.amap.android.location
-com.baidu.location
-com.google.android.location
-org.microg.nlp
-org.microg.unifiednlp
-com.google.android.maps
-
-org.fitchfamily.android.dejavu
-org.microg.nlp.backend.ichnaea
-org.microg.nlp.backend.nominatim
 EOF
 }
 
@@ -115,6 +67,44 @@ com.baidu.location
 com.google.android.location
 org.microg.nlp
 org.microg.unifiednlp
+EOF
+}
+
+uninstall_list()
+{
+cat <<EOF
+ChromeHomePage|com.android.partnerbrowsercustomizations.tmobile
+ConfigUpdater|com.google.android.configupdater
+GmsCore|com.google.android.gms
+GoogleFeedback|com.google.android.feedback
+GoogleLoginService|com.google.android.gsf.login
+GoogleOneTimeInitializer|com.google.android.onetimeinitializer
+GoogleServicesFramework|com.google.android.gsf
+
+Phonesky|com.android.vending
+
+DroidGuard|org.microg.gms.droidguard
+
+NewPipe|org.schabi.newpipe
+YouTube|com.google.android.youtube
+
+|com.qualcomm.location
+AMAPNetworkLocation|com.amap.android.location
+BaiduNetworkLocation|com.baidu.location
+LegacyNetworkLocation|
+MediaTekLocationProvider|com.mediatek.android.location
+NetworkLocation|com.google.android.location
+UnifiedNlp|org.microg.nlp
+|org.microg.unifiednlp
+
+|com.google.android.maps
+
+DejaVuBackend|org.fitchfamily.android.dejavu
+DejaVuNlpBackend|
+IchnaeaNlpBackend|org.microg.nlp.backend.ichnaea
+MozillaNlpBackend|
+NominatimGeocoderBackend|org.microg.nlp.backend.nominatim
+NominatimNlpBackend|
 EOF
 }
 
@@ -151,6 +141,30 @@ fi
 
 INTERNAL_MEMORY_PATH='/sdcard0'
 if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
+
+uninstall_list | while IFS='|' read FILENAME INTERNAL_NAME OTHER; do
+  if test -n "${FILENAME}"; then
+    delete_recursive "${PRIVAPP_PATH}/${FILENAME}"
+    delete_recursive "${PRIVAPP_PATH}/${FILENAME}.apk"
+    delete_recursive "${PRIVAPP_PATH}/${FILENAME}.odex"
+    delete_recursive "${SYS_PATH}/app/${FILENAME}"
+    delete_recursive "${SYS_PATH}/app/${FILENAME}.apk"
+    delete_recursive "${SYS_PATH}/app/${FILENAME}.odex"
+
+    delete_recursive_wildcard /data/dalvik-cache/*/system"@priv-app@${FILENAME}"[@\.]*@classes.*
+    delete_recursive_wildcard /data/dalvik-cache/*/system"@app@${FILENAME}"[@\.]*@classes.*
+  fi
+  if test -n "${INTERNAL_NAME}"; then
+    delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
+    delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}"
+    delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
+    delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}"
+    delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
+    delete_recursive_wildcard "/data/app/${INTERNAL_NAME}"-*
+    delete_recursive_wildcard "/mnt/asec/${INTERNAL_NAME}"-*
+  fi
+done
+STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
 
 list_app_filenames | while read FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
