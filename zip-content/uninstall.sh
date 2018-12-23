@@ -24,7 +24,6 @@ cat <<EOF
 GsfProxy
 MarketUpdater
 PlayGames
-Velvet
 
 GmsDroidGuard
 
@@ -75,10 +74,11 @@ GmsCore|com.google.android.gms
 GoogleFeedback|com.google.android.feedback
 GoogleLoginService|com.google.android.gsf.login
 GoogleOneTimeInitializer|com.google.android.onetimeinitializer
-GoogleQuickSearchBox|com.google.android.googlequicksearchbox
 GoogleServicesFramework|com.google.android.gsf
+Velvet|com.google.android.googlequicksearchbox
 
 GmsCoreSetupPrebuilt|
+GoogleQuickSearchBox|
 PrebuiltGmsCore|
 PrebuiltGmsCorePi|
 PrebuiltGmsCorePix|
