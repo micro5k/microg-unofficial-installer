@@ -29,9 +29,6 @@ Velvet
 GmsDroidGuard
 
 GmsCore_update
-GmsCoreSetupPrebuilt
-PrebuiltGmsCore
-PrebuiltGmsCorePix
 WhisperPush
 
 BlankStore
@@ -46,7 +43,6 @@ list_app_internal_filenames()
 {
 cat <<EOF
 com.mgoogle.android.gms
-com.google.android.googlequicksearchbox
 EOF
 }
 
@@ -79,9 +75,16 @@ GmsCore|com.google.android.gms
 GoogleFeedback|com.google.android.feedback
 GoogleLoginService|com.google.android.gsf.login
 GoogleOneTimeInitializer|com.google.android.onetimeinitializer
+GoogleQuickSearchBox|com.google.android.googlequicksearchbox
 GoogleServicesFramework|com.google.android.gsf
 
+GmsCoreSetupPrebuilt|
+PrebuiltGmsCore|
+PrebuiltGmsCorePi|
+PrebuiltGmsCorePix|
+
 Phonesky|com.android.vending
+MarketUpdater|com.android.vending.updater
 
 DroidGuard|org.microg.gms.droidguard
 
