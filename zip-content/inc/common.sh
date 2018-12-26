@@ -156,6 +156,19 @@ replace_line_in_file()  # $1 => File to process  $2 => Line to replace  $3 => Fi
   sed -i "/$2/d" "$1" || ui_error "Failed to replace (2) a line in the file => '$1'" 92
 }
 
+search_string_in_file()
+{
+  grep -qF "$1" "$2" && return 0  # Found
+  return 1  # NOT found
+}
+
+search_ansi_string_in_utf16_file()
+{
+  local SEARCH_STRING=$(echo -n "$1" | od -A n -t x1 | cut -c 2- | head -c -1 | tr '\n', ' ' | sed 's/ /00/g')
+  od -A n -t x1 "$2" | tr -d ' \n' | grep -qF "$SEARCH_STRING" && return 0  # Found
+  return 1  # NOT found
+}
+
 # Permission related functions
 set_perm()
 {
@@ -185,6 +198,13 @@ custom_package_extract_dir()
   mkdir -p "$2" || ui_error "Failed to create the dir '$2' for extraction" 95
   set_perm 0 0 0755 "$2"
   unzip -oq "$ZIP_FILE" "$1/*" -d "$2" || ui_error "Failed to extract the dir '$1' from this archive" 95
+}
+
+zip_extract_file()
+{
+  mkdir -p "$3" || ui_error "Failed to create the dir '$3' for extraction" 96
+  set_perm 0 0 0755 "$3"
+  unzip -oq "$1" "$2" -d "$3" || ui_error "Failed to extract the file '$2' from the archive '$1'" 96
 }
 
 zip_extract_dir()

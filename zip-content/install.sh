@@ -28,6 +28,7 @@ CPU64=false
 LEGACY_ARM=false
 LEGACY_ANDROID=false
 OLD_ANDROID=false
+FAKE_SIGN=false
 SYS_ROOT_IMAGE=''
 SYS_PATH='/system'
 MARKET_FILENAME=''
@@ -123,6 +124,16 @@ ui_msg "Detected 64-bit CPU arch: ${CPU64}"
 ui_msg "System root image: ${SYS_ROOT_IMAGE}"
 ui_msg "System path: ${SYS_PATH}"
 ui_msg "Privileged apps: ${PRIVAPP_PATH}"
+
+zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "$TMP_PATH/framework-res"
+XML_MANIFEST="$TMP_PATH/framework-res/AndroidManifest.xml"
+# Detect the presence of the fake signature runtime permission
+# Note: It won't detect it if the permission isn't runtime, but it is still fine
+if search_ansi_string_in_utf16_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "$XML_MANIFEST" || search_string_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "$XML_MANIFEST"; then
+  FAKE_SIGN=true
+fi
+ui_msg "Fake signature: ${FAKE_SIGN}"
+
 ui_msg ''
 
 if [[ $CPU == false && $CPU64 == false ]]; then
