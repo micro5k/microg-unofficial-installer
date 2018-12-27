@@ -127,8 +127,8 @@ ui_msg "Privileged apps: ${PRIVAPP_PATH}"
 
 zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "$TMP_PATH/framework-res"
 XML_MANIFEST="$TMP_PATH/framework-res/AndroidManifest.xml"
-# Detect the presence of the fake signature runtime permission
-# Note: It won't detect it if the permission isn't runtime, but it is still fine
+# Detect the presence of the fake signature permission
+# Note: It won't detect it if signature spoofing doesn't require a permission, but it is still fine for our case
 if search_ansi_string_in_utf16_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "$XML_MANIFEST" || search_string_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "$XML_MANIFEST"; then
   FAKE_SIGN=true
 fi
@@ -227,6 +227,11 @@ if test "$API" -ge 23; then
   if [[ ! -e "${SYS_PATH}/etc/default-permissions" ]]; then
     ui_msg 'Creating the default permissions folder...'
     create_dir "${SYS_PATH}/etc/default-permissions"
+  fi
+
+  if test $FAKE_SIGN == true; then
+    echo '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true"/>' > "$TMP_PATH/fake-sign-perm.dat"
+    replace_line_in_file "$TMP_PATH/files/etc/default-permissions/google-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' "$TMP_PATH/fake-sign-perm.dat"
   fi
   copy_dir_content "$TMP_PATH/files/etc/default-permissions" "${SYS_PATH}/etc/default-permissions"
 else

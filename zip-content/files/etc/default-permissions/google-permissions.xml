@@ -47,7 +47,7 @@
         <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false"/>
         <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"/>
         <!-- Signature spoofing -->
-        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true"/>
+        <!-- %FAKE_PACKAGE_SIGNATURE% -->
     </exception>
 
     <exception package="com.android.vending">
@@ -64,7 +64,7 @@
         <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false"/>
         <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"/>
         <!-- Signature spoofing -->
-        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true"/>
+        <!-- %FAKE_PACKAGE_SIGNATURE% -->
     </exception>
 
     <exception package="org.microg.nlp.backend.ichnaea">
