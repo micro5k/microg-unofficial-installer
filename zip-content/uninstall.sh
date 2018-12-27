@@ -206,31 +206,28 @@ list_app_data_to_remove | while read FILENAME; do
   delete_recursive "${INTERNAL_MEMORY_PATH}/Android/data/${FILENAME}"
 done
 
+delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-microg.sh
+delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-microg-*.sh
+delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-unifiednlp.sh
+delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-mapsapi.sh
+delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-gapps.sh
+
+delete_recursive "${SYS_PATH}"/etc/default-permissions/google-permissions.xml
+delete_recursive "${SYS_PATH}"/etc/default-permissions/opengapps-permissions.xml
+delete_recursive "${SYS_PATH}"/etc/default-permissions/unifiednlp-permissions.xml
+delete_recursive "${SYS_PATH}"/etc/default-permissions/microg-permissions.xml
+delete_recursive_wildcard "${SYS_PATH}"/etc/default-permissions/microg-*-permissions.xml
+
+delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google.xml
+delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-microg.xml
+delete_recursive "${SYS_PATH}"/etc/permissions/features.xml
+
+delete_recursive "${SYS_PATH}"/etc/sysconfig/google.xml
+delete_recursive "${SYS_PATH}"/etc/sysconfig/microg.xml
+delete_recursive_wildcard "${SYS_PATH}"/etc/sysconfig/microg-*.xml
+
 DELETE_LIST="
-${SYS_PATH}/addon.d/00-1-microg.sh
-${SYS_PATH}/addon.d/00-1-microg-k.sh
-${SYS_PATH}/addon.d/1-microg.sh
-${SYS_PATH}/addon.d/10-mapsapi.sh
-${SYS_PATH}/addon.d/70-microg.sh
-${SYS_PATH}/addon.d/70-gapps.sh
-
-${SYS_PATH}/addon.d/05-microg.sh
-${SYS_PATH}/addon.d/05-microg-playstore.sh
-${SYS_PATH}/addon.d/05-microg-playstore-patched.sh
-${SYS_PATH}/addon.d/05-unifiednlp.sh
-
-${SYS_PATH}/etc/default-permissions/opengapps-permissions.xml
-${SYS_PATH}/etc/default-permissions/microg-permissions.xml
-${SYS_PATH}/etc/default-permissions/microg-playstore-permissions.xml
-${SYS_PATH}/etc/default-permissions/microg-playstore-patched-permissions.xml
-${SYS_PATH}/etc/default-permissions/unifiednlp-permissions.xml
-
-${SYS_PATH}/etc/sysconfig/google.xml
 ${SYS_PATH}/etc/sysconfig/google_build.xml
-${SYS_PATH}/etc/sysconfig/microg.xml
-${SYS_PATH}/etc/sysconfig/microg-playstore.xml
-${SYS_PATH}/etc/sysconfig/microg-playstore-patched.xml
-
 ${SYS_PATH}/etc/preferred-apps/google.xml
 "
 rm -rf ${DELETE_LIST}  # Filenames cannot contain spaces
