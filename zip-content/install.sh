@@ -210,7 +210,7 @@ fi
 # Resetting Android runtime permissions
 if test "$API" -ge 23; then
   if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
-    if [[ ! -e "${SYS_PATH}/etc/default-permissions/microg-permissions.xml" ]] || ! grep -q 'com.google.android.gms' /data/system/users/*/runtime-permissions.xml; then
+    if ! grep -q 'com.google.android.gms' /data/system/users/*/runtime-permissions.xml; then
       # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
       ui_msg "Resetting Android runtime permissions..."
       delete /data/system/users/*/runtime-permissions.xml
@@ -244,7 +244,7 @@ if [[ $LEGACY_ANDROID == true ]]; then
 fi
 delete_recursive "$TMP_PATH/files/app-legacy"
 
-if test "$API" -lt 21; then delete "$TMP_PATH/files/etc/sysconfig/microg-a5k.xml"; fi
+if test "$API" -lt 21; then delete "$TMP_PATH/files/etc/sysconfig/google.xml"; fi
 if test "$API" -lt 18; then delete "$TMP_PATH/files/app/DejaVuBackend.apk"; fi
 if [ "$INSTALL_NEWPIPE" -eq 0 ] || [ "$API" -lt 15 ]; then delete "$TMP_PATH/files/app/NewPipe.apk"; fi
 
@@ -285,7 +285,7 @@ ui_msg 'Installing...'
 copy_dir_content "$TMP_PATH/files/priv-app" "${PRIVAPP_PATH}"
 copy_dir_content "$TMP_PATH/files/app" "${SYS_PATH}/app"
 copy_dir_content "$TMP_PATH/files/framework" "${SYS_PATH}/framework"
-if test "$API" -lt 26; then delete "$TMP_PATH/files/etc/permissions/privapp-permissions-microg.xml"; fi
+if test "$API" -lt 26; then delete "$TMP_PATH/files/etc/permissions/privapp-permissions-google.xml"; fi
 copy_dir_content "$TMP_PATH/files/etc/permissions" "${SYS_PATH}/etc/permissions"
 if test "$API" -ge 21; then
   copy_dir_content "$TMP_PATH/files/etc/sysconfig" "${SYS_PATH}/etc/sysconfig"
