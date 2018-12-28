@@ -290,7 +290,14 @@ ui_msg 'Installing...'
 copy_dir_content "$TMP_PATH/files/priv-app" "${PRIVAPP_PATH}"
 copy_dir_content "$TMP_PATH/files/app" "${SYS_PATH}/app"
 copy_dir_content "$TMP_PATH/files/framework" "${SYS_PATH}/framework"
-if test "$API" -lt 26; then delete "$TMP_PATH/files/etc/permissions/privapp-permissions-google.xml"; fi
+if test "$API" -lt 26; then
+  delete "$TMP_PATH/files/etc/permissions/privapp-permissions-google.xml"
+else
+  if test $FAKE_SIGN == true; then
+    echo '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE"/>' > "$TMP_PATH/fake-sign-perm.dat"
+    replace_line_in_file "$TMP_PATH/files/etc/permissions/privapp-permissions-google.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' "$TMP_PATH/fake-sign-perm.dat"
+  fi
+fi
 copy_dir_content "$TMP_PATH/files/etc/permissions" "${SYS_PATH}/etc/permissions"
 if test "$API" -ge 21; then
   copy_dir_content "$TMP_PATH/files/etc/sysconfig" "${SYS_PATH}/etc/sysconfig"

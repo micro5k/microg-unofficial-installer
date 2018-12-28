@@ -24,6 +24,7 @@ This XML file declares which privileged permissions should be granted to privile
     <privapp-permissions package="com.google.android.gms">
         <permission name="android.permission.INSTALL_LOCATION_PROVIDER"/>
         <permission name="android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST"/>
+        <!-- %FAKE_PACKAGE_SIGNATURE% -->
     </privapp-permissions>
 
 </permissions>
