@@ -21,11 +21,7 @@ LICENSE
 list_app_filenames()
 {
 cat <<EOF
-GsfProxy
-MarketUpdater
 PlayGames
-
-GmsDroidGuard
 
 GmsCore_update
 WhisperPush
@@ -33,15 +29,6 @@ WhisperPush
 BlankStore
 FakeStore
 PlayStore
-Vending
-EOF
-}
-# Note: Do not remove GooglePartnerSetup (com.google.android.partnersetup) since some ROMs may need it.
-
-list_app_internal_filenames()
-{
-cat <<EOF
-com.mgoogle.android.gms
 EOF
 }
 
@@ -75,18 +62,22 @@ GoogleFeedback|com.google.android.feedback
 GoogleLoginService|com.google.android.gsf.login
 GoogleOneTimeInitializer|com.google.android.onetimeinitializer
 GoogleServicesFramework|com.google.android.gsf
+microG-for-OGYT|com.mgoogle.android.gms
 Velvet|com.google.android.googlequicksearchbox
 
 GmsCoreSetupPrebuilt|
 GoogleQuickSearchBox|
+GsfProxy|
 PrebuiltGmsCore|
 PrebuiltGmsCorePi|
 PrebuiltGmsCorePix|
 
-Phonesky|com.android.vending
 MarketUpdater|com.android.vending.updater
+Phonesky|com.android.vending
+Vending|
 
 DroidGuard|org.microg.gms.droidguard
+GmsDroidGuard|
 
 NewPipe|org.schabi.newpipe
 YouTube|com.google.android.youtube
@@ -110,6 +101,7 @@ NominatimGeocoderBackend|org.microg.nlp.backend.nominatim
 NominatimNlpBackend|
 EOF
 }
+# Note: Do not remove GooglePartnerSetup (com.google.android.partnersetup) since some ROMs may need it.
 
 if [[ -z "$INSTALLER" ]]; then
   ui_debug()
@@ -179,19 +171,6 @@ list_app_filenames | while read FILENAME; do
   delete_recursive "${SYS_PATH}/app/$FILENAME.odex"
 done
 
-list_app_internal_filenames | while read FILENAME; do
-  if [[ -z "$FILENAME" ]]; then continue; fi
-  delete_recursive "${SYS_PATH}/etc/permissions/$FILENAME.xml"
-  delete_recursive "${PRIVAPP_PATH}/$FILENAME"
-  delete_recursive "${PRIVAPP_PATH}/$FILENAME.apk"
-  delete_recursive "${PRIVAPP_PATH}/$FILENAME.odex"
-  delete_recursive "${SYS_PATH}/app/$FILENAME"
-  delete_recursive "${SYS_PATH}/app/$FILENAME.apk"
-  delete_recursive "${SYS_PATH}/app/$FILENAME.odex"
-  delete_recursive_wildcard "/data/app/${FILENAME}"-*
-  delete_recursive_wildcard "/mnt/asec/${FILENAME}"-*
-done
-
 list_app_filenames | while read FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
   delete_recursive_wildcard /data/dalvik-cache/*/system"@priv-app@${FILENAME}"[@\.]*@classes.*
@@ -213,6 +192,8 @@ delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-mapsapi.sh
 delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-gapps.sh
 
 delete_recursive "${SYS_PATH}"/etc/default-permissions/google-permissions.xml
+delete_recursive "${SYS_PATH}"/etc/default-permissions/phonesky-permissions.xml
+delete_recursive "${SYS_PATH}"/etc/default-permissions/contacts-calendar-sync.xml
 delete_recursive "${SYS_PATH}"/etc/default-permissions/opengapps-permissions.xml
 delete_recursive "${SYS_PATH}"/etc/default-permissions/unifiednlp-permissions.xml
 delete_recursive "${SYS_PATH}"/etc/default-permissions/microg-permissions.xml
@@ -223,14 +204,11 @@ delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-microg.xml
 delete_recursive "${SYS_PATH}"/etc/permissions/features.xml
 
 delete_recursive "${SYS_PATH}"/etc/sysconfig/google.xml
+delete_recursive "${SYS_PATH}"/etc/sysconfig/google_build.xml
 delete_recursive "${SYS_PATH}"/etc/sysconfig/microg.xml
 delete_recursive_wildcard "${SYS_PATH}"/etc/sysconfig/microg-*.xml
 
-DELETE_LIST="
-${SYS_PATH}/etc/sysconfig/google_build.xml
-${SYS_PATH}/etc/preferred-apps/google.xml
-"
-rm -rf ${DELETE_LIST}  # Filenames cannot contain spaces
+delete_recursive "${SYS_PATH}"/etc/preferred-apps/google.xml
 
 if [[ -z "$INSTALLER" ]]; then
   ui_debug 'Done.'
