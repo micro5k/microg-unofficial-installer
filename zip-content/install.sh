@@ -238,7 +238,12 @@ else
   delete_recursive "$TMP_PATH/files/etc/default-permissions"
 fi
 
-if test "$RESET_GMS_DATA_OF_ALL_APPS" -eq 1; then reset_gms_data_of_all_apps; fi
+if test "$LIVE_SETUP" -eq 1; then
+  choose 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
+  if test "$?" -eq 3; then reset_gms_data_of_all_apps; fi
+elif test "$RESET_GMS_DATA_OF_ALL_APPS" -eq 1; then
+  reset_gms_data_of_all_apps
+fi
 
 # UNMOUNT /data PARTITION
 unmount '/data'
