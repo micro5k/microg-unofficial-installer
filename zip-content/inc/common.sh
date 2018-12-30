@@ -214,6 +214,14 @@ zip_extract_dir()
   unzip -oq "$1" "$2/*" -d "$3" || ui_error "Failed to extract the dir '$2' from the archive '$1'" 96
 }
 
+# Data reset functions
+reset_gms_data_of_all_apps()
+{
+  ui_debug 'Resetting GMS data of all apps...'
+  find /data/data/*/shared_prefs -name com.google.android.gms.*.xml -delete
+  validate_return_code "$?" 'Failed to reset GMS data of all apps'
+}
+
 # Hash related functions
 verify_sha1()
 {

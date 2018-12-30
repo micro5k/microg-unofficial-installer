@@ -238,6 +238,8 @@ else
   delete_recursive "$TMP_PATH/files/etc/default-permissions"
 fi
 
+if test "$RESET_GMS_DATA_OF_ALL_APPS" -eq 1; then reset_gms_data_of_all_apps; fi
+
 # UNMOUNT /data PARTITION
 unmount '/data'
 
