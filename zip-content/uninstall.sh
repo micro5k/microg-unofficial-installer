@@ -85,6 +85,7 @@ YouTube|com.google.android.youtube
 |com.qualcomm.location
 AMAPNetworkLocation|com.amap.android.location
 BaiduNetworkLocation|com.baidu.location
+OfflineNetworkLocation_Baidu|
 LegacyNetworkLocation|
 MediaTekLocationProvider|com.mediatek.android.location
 NetworkLocation|com.google.android.location
