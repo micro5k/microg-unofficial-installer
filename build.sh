@@ -164,9 +164,9 @@ fi
 rm -f "$OUT_DIR/${FILENAME}".zip* || ui_error 'Failed to remove the previously built files'
 rm -f "$OUT_DIR/${FILENAME}-signed".zip* || ui_error 'Failed to remove the previously built files'
 
-# Compress and sign
+# Compress (it also ensure that the list of files to compress is in the same order under all OSes)
 cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change the folder'
-zip -r9X -ic "$TEMP_DIR/flashable.zip" . -i "*" || ui_error 'Failed compressing'  # Note: There are quotes around the wildcard to use the zip globbing instead of the shell globbing
+find . -type f | LC_ALL=C sort | zip -9X "$TEMP_DIR/flashable.zip" -@ || ui_error 'Failed compressing'
 FILENAME="$FILENAME-signed"
 
 # Sign and zipalign
