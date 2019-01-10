@@ -162,10 +162,16 @@ search_string_in_file()
   return 1  # NOT found
 }
 
-search_ansi_string_in_utf16_file()
+search_ascii_string_in_file()
 {
-  local SEARCH_STRING=$(echo -n "${1}" | od -A n -t x1 | tr -d '\n' | sed -e 's/^ //g;s/ /00/g')
-  od -A n -t x1 "$2" | tr -d ' \n' | grep -qF "$SEARCH_STRING" && return 0  # Found
+  LC_ALL=C grep -qF "$1" "$2" && return 0  # Found
+  return 1  # NOT found
+}
+
+search_ascii_string_as_utf16_in_file()
+{
+  local SEARCH_STRING=$(echo -n "${1}" | od -A n -t x1 | LC_ALL=C tr -d '\n' | LC_ALL=C sed -e 's/^ //g;s/ /00/g')
+  od -A n -t x1 "$2" | LC_ALL=C tr -d ' \n' | LC_ALL=C grep -qF "$SEARCH_STRING" && return 0  # Found
   return 1  # NOT found
 }
 

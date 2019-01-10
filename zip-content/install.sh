@@ -129,7 +129,7 @@ zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml'
 XML_MANIFEST="$TMP_PATH/framework-res/AndroidManifest.xml"
 # Detect the presence of the fake signature permission
 # Note: It won't detect it if signature spoofing doesn't require a permission, but it is still fine for our case
-if search_ansi_string_in_utf16_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "$XML_MANIFEST" || search_string_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "$XML_MANIFEST"; then
+if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "$XML_MANIFEST" || search_ascii_string_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "$XML_MANIFEST"; then
   FAKE_SIGN=true
 fi
 ui_msg "Fake signature: ${FAKE_SIGN}"
