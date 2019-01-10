@@ -1,4 +1,7 @@
-language: android
+dist: xenial
+
+language: java
+#language: android
 jdk: openjdk8
 
 cache:
