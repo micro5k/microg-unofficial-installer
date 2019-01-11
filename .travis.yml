@@ -25,7 +25,7 @@ android:
   - build-tools-27.0.3
   - android-27
 
-matrix:
+jobs:
   include:
     - env: OSS=true
       script: ./gradlew buildOtaOSS
