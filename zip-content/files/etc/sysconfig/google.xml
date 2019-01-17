@@ -9,5 +9,13 @@
     <allow-in-data-usage-save package="com.google.android.gms" />
     <allow-unthrottled-location package="com.google.android.gms" />
 
+    <!-- These are the packages that handle URLs to their websites by default -->
+    <app-link package="com.android.vending" />
+
+    <!-- These are the packages that are white-listed to be able to run as system user -->
+    <system-user-whitelisted-app package="com.android.vending" />
+    <system-user-whitelisted-app package="com.google.android.gms" />
+
+    <!-- These are the packages that are white-listed to be able to use hidden APIs -->
     <hidden-api-whitelisted-app package="com.google.android.gms" />
 </config>
