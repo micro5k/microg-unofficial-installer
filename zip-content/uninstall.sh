@@ -92,8 +92,6 @@ NetworkLocation|com.google.android.location
 UnifiedNlp|org.microg.nlp
 |org.microg.unifiednlp
 
-|com.google.android.maps
-
 DejaVuBackend|org.fitchfamily.android.dejavu
 DejaVuNlpBackend|
 IchnaeaNlpBackend|org.microg.nlp.backend.ichnaea
@@ -103,6 +101,13 @@ NominatimNlpBackend|
 EOF
 }
 # Note: Do not remove GooglePartnerSetup (com.google.android.partnersetup) since some ROMs may need it.
+
+framework_uninstall_list()
+{
+cat <<EOF
+com.google.android.maps|
+EOF
+}
 
 if [[ -z "$INSTALLER" ]]; then
   ui_debug()
@@ -138,7 +143,7 @@ fi
 INTERNAL_MEMORY_PATH='/sdcard0'
 if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
-uninstall_list | while IFS='|' read FILENAME INTERNAL_NAME OTHER; do
+uninstall_list | while IFS='|' read FILENAME INTERNAL_NAME _; do
   if test -n "${FILENAME}"; then
     delete_recursive "${PRIVAPP_PATH}/${FILENAME}"
     delete_recursive "${PRIVAPP_PATH}/${FILENAME}.apk"
@@ -158,6 +163,16 @@ uninstall_list | while IFS='|' read FILENAME INTERNAL_NAME OTHER; do
     delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
     delete_recursive_wildcard "/data/app/${INTERNAL_NAME}"-*
     delete_recursive_wildcard "/mnt/asec/${INTERNAL_NAME}"-*
+  fi
+done
+STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
+
+framework_uninstall_list | while IFS='|' read INTERNAL_NAME _; do
+  if test -n "${INTERNAL_NAME}"; then
+    delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
+    delete_recursive "${SYS_PATH}/framework/${INTERNAL_NAME}.jar"
+    delete_recursive "${SYS_PATH}/framework/${INTERNAL_NAME}.odex"
+    delete_recursive_wildcard "${SYS_PATH}/framework/oat"/*/"${INTERNAL_NAME}.odex"
   fi
 done
 STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
