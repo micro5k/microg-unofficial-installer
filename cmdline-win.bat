@@ -13,7 +13,7 @@ IF EXIST "%ProgramFiles%\GnuWin32\bin" SET "PATH=%ProgramFiles%\GnuWin32\bin;%PA
 SET "PATH=.;%PATH%"
 IF EXIST "%~dp0tools\win" SET "PATH=%~dp0tools\win;%PATH%"
 
-"%~dp0tools\win\busybox.exe" ash -s -c "alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=clear;"
+"%~dp0tools\win\busybox.exe" ash -s -c "alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=clear"
 
 ENDLOCAL 2> nul
 TITLE %ComSpec% 2> nul
