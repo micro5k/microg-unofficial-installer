@@ -21,14 +21,7 @@ LICENSE
 list_app_filenames()
 {
 cat <<EOF
-PlayGames
-
-GmsCore_update
 WhisperPush
-
-BlankStore
-FakeStore
-PlayStore
 EOF
 }
 
@@ -63,8 +56,10 @@ GoogleLoginService|com.google.android.gsf.login
 GoogleOneTimeInitializer|com.google.android.onetimeinitializer
 GoogleServicesFramework|com.google.android.gsf
 microG-for-OGYT|com.mgoogle.android.gms
+PlayGames|com.google.android.play.games
 Velvet|com.google.android.googlequicksearchbox
 
+GmsCore_update|
 GmsCoreSetupPrebuilt|
 GoogleQuickSearchBox|
 GsfProxy|
@@ -75,6 +70,10 @@ PrebuiltGmsCorePix|
 MarketUpdater|com.android.vending.updater
 Phonesky|com.android.vending
 Vending|
+
+BlankStore|
+FakeStore|
+PlayStore|
 
 DroidGuard|org.microg.gms.droidguard
 GmsDroidGuard|
@@ -156,6 +155,7 @@ uninstall_list | while IFS='|' read FILENAME INTERNAL_NAME _; do
     delete_recursive_wildcard /data/dalvik-cache/*/system"@app@${FILENAME}"[@\.]*@classes.*
   fi
   if test -n "${INTERNAL_NAME}"; then
+    delete_recursive "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME}.xml"
     delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
     delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}"
     delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
@@ -225,6 +225,8 @@ delete_recursive "${SYS_PATH}"/etc/sysconfig/microg.xml
 delete_recursive_wildcard "${SYS_PATH}"/etc/sysconfig/microg-*.xml
 
 delete_recursive "${SYS_PATH}"/etc/preferred-apps/google.xml
+
+delete_recursive "${SYS_PATH}"/etc/org.fdroid.fdroid/additional_repos.xml
 
 if [[ -z "$INSTALLER" ]]; then
   ui_debug 'Done.'
