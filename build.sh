@@ -18,9 +18,14 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 LICENSE
 
+export TZ=UTC
 export LANG=en_US
-export LANGUAGE=''
-export LC_ALL=''
+
+unset LANGUAGE
+unset LC_ALL
+unset UNZIP
+unset UNZIP_OPTS
+unset UNZIPOPT
 
 ui_error()
 {
