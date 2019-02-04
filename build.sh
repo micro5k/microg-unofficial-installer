@@ -18,6 +18,10 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 LICENSE
 
+export LANG=en_US
+export LANGUAGE=''
+export LC_ALL=''
+
 ui_error()
 {
   >&2 echo "ERROR: $1"
