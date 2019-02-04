@@ -162,8 +162,11 @@ else
   cp -f "$BASEDIR/cache/misc/keycheck/keycheck-arm" "$TEMP_DIR/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
 fi
 
-# Useful for reproducible builds
-find "$TEMP_DIR/zip-content" -exec touch -c -t 200802290333.46 '{}' + || ui_error 'Failed to set modification date of files'
+# Prepare the data before compression (also uniform attributes - useful for reproducible builds)
+BASE_TMP_SCRIPT_DIR="$TEMP_DIR/zip-content/META-INF/com/google/android"
+mv -f "$BASE_TMP_SCRIPT_DIR/update-binary.sh" "$BASE_TMP_SCRIPT_DIR/update-binary" || ui_error 'Failed to rename a file'
+mv -f "$BASE_TMP_SCRIPT_DIR/updater-script.sh" "$BASE_TMP_SCRIPT_DIR/updater-script" || ui_error 'Failed to rename a file'
+find "$TEMP_DIR/zip-content" -exec touch -c -t 200802290333.46 '{}' + || ui_error 'Failed to set the modification date of files'
 find "$TEMP_DIR/zip-content" -type d -exec chmod 0700 '{}' + -o -type f -exec chmod 0600 '{}' + || ui_error 'Failed to set permissions of files'
 if test "$PLATFORM" == 'win'; then
   ATTRIB -R -A -S -H "$TEMP_DIR/zip-content/*" /S /D
