@@ -245,7 +245,8 @@ verify_sha1()
 # File / folder related functions
 create_dir()
 {
-  mkdir -p "$1" || ui_error "Failed to create the dir '$dir'" 97
+  test -d "$1" && return
+  mkdir -p "$1" || ui_error "Failed to create the dir '$1'" 97
   set_perm 0 0 0755 "$1"
 }
 
@@ -277,6 +278,8 @@ move_rename_dir()
 
 move_dir_content()
 {
+  test -d "$1" || ui_error "You can only move the content of a folder" 102
+  create_dir "$2"
   mv -f "$1"/* "$2"/ || ui_error "Failed to move dir content from '$1' to '$2'" 102
 }
 
