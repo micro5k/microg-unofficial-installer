@@ -20,14 +20,14 @@ LICENSE
 
 list_app_filenames()
 {
-cat <<EOF
+cat <<'EOF'
 WhisperPush
 EOF
 }
 
 list_app_data_to_remove()
 {
-cat <<EOF
+cat <<'EOF'
 com.mgoogle.android.gms
 com.google.android.feedback
 com.google.android.gsf.login
@@ -47,7 +47,7 @@ EOF
 
 uninstall_list()
 {
-cat <<EOF
+cat <<'EOF'
 ChromeHomePage|com.android.partnerbrowsercustomizations.tmobile
 ConfigUpdater|com.google.android.configupdater
 GmsCore|com.google.android.gms
@@ -103,7 +103,7 @@ EOF
 
 framework_uninstall_list()
 {
-cat <<EOF
+cat <<'EOF'
 com.google.android.maps|
 EOF
 }
