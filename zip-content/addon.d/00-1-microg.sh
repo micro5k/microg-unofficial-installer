@@ -11,7 +11,7 @@
 
 list_files()
 {
-cat <<EOF
+cat <<'EOF'
 %PLACEHOLDER-1%
 EOF
 }
