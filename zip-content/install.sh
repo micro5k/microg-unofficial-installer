@@ -18,6 +18,16 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 LICENSE
 
+### INIT ENV ###
+export TZ=UTC
+export LANG=en_US
+
+unset LANGUAGE
+unset LC_ALL
+unset UNZIP
+unset UNZIP_OPTS
+unset UNZIPOPT
+
 ### GLOBAL VARIABLES ###
 
 export INSTALLER=1
