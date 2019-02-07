@@ -309,7 +309,7 @@ delete_recursive_wildcard()
 
 delete_dir_if_empty()
 {
-  if test -e "$1"; then
+  if test -d "$1"; then
     ui_debug "Deleting '$1' folder (if empty)..."
     rmdir --ignore-fail-on-non-empty "$1" || ui_error "Failed to delete the '$1' folder" 103
   fi
