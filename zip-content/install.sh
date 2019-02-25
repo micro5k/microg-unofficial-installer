@@ -184,7 +184,7 @@ if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" 'da538490beadc760a7a8519ec
    ###verify_sha1 "$TMP_PATH/files/app/PlayGames.apk" 'c99c27053bf518dd3d08449e9478b43de0da50ed' &&
    verify_sha1 "$TMP_PATH/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7' &&
    verify_sha1 "$TMP_PATH/files/etc/permissions/com.google.android.maps.xml" 'f4d7d0ff10e96a6e0856223354f06e2f6b6efa54' &&
-   verify_sha1 "$TMP_PATH/files/etc/permissions/features.xml" '16839289f4c763a21a2e24af9f8aa3f38435358f' &&
+   verify_sha1 "$TMP_PATH/files/etc/permissions/features.xml" 'bfdadf82f88c302ac40e869fd38f1c457bec9226' &&
    verify_sha1 "$TMP_PATH/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053' &&
    verify_sha1 "$TMP_PATH/files/variants/PlayStore-recent.apk" '6c60fa863dd7befef49082c0dcf6278947a09333' &&
    verify_sha1 "$TMP_PATH/files/variants/PlayStore-legacy.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746' &&
