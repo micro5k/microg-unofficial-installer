@@ -28,6 +28,8 @@ unset UNZIP_OPTS
 unset UNZIPOPT
 unset CDPATH
 
+echo -en '\033]0;Building the flashable OTA zip...\007'
+
 ui_error()
 {
   >&2 echo "ERROR: $1"
@@ -212,6 +214,7 @@ cd "$INIT_DIR" || ui_error 'Failed to change back the folder'
 
 echo ''
 echo 'Done.'
+echo -en '\033]0;Done\007'
 
 wait "$pid"
 exit "$?"
