@@ -26,6 +26,7 @@ unset LC_ALL
 unset UNZIP
 unset UNZIP_OPTS
 unset UNZIPOPT
+unset CDPATH
 
 ui_error()
 {
