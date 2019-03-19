@@ -68,15 +68,15 @@ fi
 
 # Detect script dir (with absolute path)
 INIT_DIR=$(pwd)
-BASEDIR=$(dirname "$0")
-if [[ "${BASEDIR:0:1}" == '/' ]] || [[ "$PLATFORM" == 'win' && "${BASEDIR:1:1}" == ':' ]]; then
+SCRIPT_DIR=$(dirname "$0")
+if [[ "${SCRIPT_DIR:0:1}" == '/' ]] || [[ "$PLATFORM" == 'win' && "${SCRIPT_DIR:1:1}" == ':' ]]; then
   :  # If already absolute leave it as is
 else
-  if [[ "$BASEDIR" == '.' ]]; then BASEDIR=''; else BASEDIR="/$BASEDIR"; fi
-  if [[ "$INIT_DIR" != '/' ]]; then BASEDIR="$INIT_DIR$BASEDIR"; fi
+  if [[ "$SCRIPT_DIR" == '.' ]]; then SCRIPT_DIR=''; else SCRIPT_DIR="/$SCRIPT_DIR"; fi
+  if [[ "$INIT_DIR" != '/' ]]; then SCRIPT_DIR="$INIT_DIR$SCRIPT_DIR"; fi
 fi
 WGET_CMD='wget'
-TOOLS_DIR="${BASEDIR}${SEP}tools${SEP}${PLATFORM}"
+TOOLS_DIR="${SCRIPT_DIR}${SEP}tools${SEP}${PLATFORM}"
 PATH="${TOOLS_DIR}${PATHSEP}${PATH}"
 
 verify_sha1()
@@ -97,21 +97,21 @@ corrupted_file()
 
 dl_file()
 {
-  if [[ ! -e "$BASEDIR/cache/$1/$2" ]]; then
-    mkdir -p "$BASEDIR/cache/$1"
-    "$WGET_CMD" -O "$BASEDIR/cache/$1/$2" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:63.0) Gecko/20100101 Firefox/63.0' "$4" || ui_error "Failed to download the file => 'cache/$1/$2'."
+  if [[ ! -e "$SCRIPT_DIR/cache/$1/$2" ]]; then
+    mkdir -p "$SCRIPT_DIR/cache/$1"
+    "$WGET_CMD" -O "$SCRIPT_DIR/cache/$1/$2" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:63.0) Gecko/20100101 Firefox/63.0' "$4" || ui_error "Failed to download the file => 'cache/$1/$2'."
     echo ''
   fi
-  verify_sha1 "$BASEDIR/cache/$1/$2" "$3" || corrupted_file "$BASEDIR/cache/$1/$2"
+  verify_sha1 "$SCRIPT_DIR/cache/$1/$2" "$3" || corrupted_file "$SCRIPT_DIR/cache/$1/$2"
 }
 
-. "$BASEDIR/conf.sh"
+. "$SCRIPT_DIR/conf.sh"
 
 # Check dependencies
 which 'zip' || ui_error 'zip command is missing'
 
 # Create the output dir
-OUT_DIR="$BASEDIR/output"
+OUT_DIR="$SCRIPT_DIR/output"
 mkdir -p "$OUT_DIR" || ui_error 'Failed to create the output dir'
 
 # Create the temp dir
@@ -122,14 +122,14 @@ if test -z "$TEMP_DIR"; then ui_error 'Failed to create our temp dir'; fi
 rm -rf "$TEMP_DIR"/* || ui_error 'Failed to empty our temp dir'
 
 # Set filename and version
-VER=$(cat "$BASEDIR/zip-content/inc/VERSION")
+VER=$(cat "$SCRIPT_DIR/zip-content/inc/VERSION")
 FILENAME="$NAME-v$VER"
 if test -n "${OPENSOURCE_ONLY}"; then FILENAME="$FILENAME-OSS"; fi
 
-. "$BASEDIR/addition.sh"
+. "$SCRIPT_DIR/addition.sh"
 
 # Download files if they are missing
-mkdir -p "$BASEDIR/cache"
+mkdir -p "$SCRIPT_DIR/cache"
 
 oss_files_to_download | while IFS='|' read LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL; do
   dl_file "$LOCAL_PATH" "$LOCAL_FILENAME" "$DL_HASH" "$DL_URL"
@@ -148,21 +148,21 @@ else
 fi
 
 # Copy data
-cp -rf "$BASEDIR/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
-cp -rf "$BASEDIR"/LIC* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
-cp -rf "$BASEDIR"/CHANGELOG* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the changelog to the temp dir'
+cp -rf "$SCRIPT_DIR/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
+cp -rf "$SCRIPT_DIR"/LIC* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
+cp -rf "$SCRIPT_DIR"/CHANGELOG* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the changelog to the temp dir'
 
 if test -n "${OPENSOURCE_ONLY}"; then
   touch "$TEMP_DIR/zip-content/OPENSOURCE-ONLY"
 else
   files_to_download | while IFS='|' read LOCAL_FILENAME LOCAL_PATH _; do
     mkdir -p "$TEMP_DIR/zip-content/$LOCAL_PATH"
-    cp -f "$BASEDIR/cache/$LOCAL_PATH/$LOCAL_FILENAME" "$TEMP_DIR/zip-content/$LOCAL_PATH/" || ui_error "Failed to copy to the temp dir the file => '$LOCAL_PATH/$LOCAL_FILENAME'"
+    cp -f "$SCRIPT_DIR/cache/$LOCAL_PATH/$LOCAL_FILENAME" "$TEMP_DIR/zip-content/$LOCAL_PATH/" || ui_error "Failed to copy to the temp dir the file => '$LOCAL_PATH/$LOCAL_FILENAME'"
   done
   STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
 
   mkdir -p "$TEMP_DIR/zip-content/misc/keycheck"
-  cp -f "$BASEDIR/cache/misc/keycheck/keycheck-arm" "$TEMP_DIR/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
+  cp -f "$SCRIPT_DIR/cache/misc/keycheck/keycheck-arm" "$TEMP_DIR/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
 fi
 
 # Prepare the data before compression (also uniform attributes - useful for reproducible builds)
@@ -187,7 +187,7 @@ FILENAME="$FILENAME-signed"
 
 # Sign and zipalign
 mkdir -p "$TEMP_DIR/zipsign"
-java -Djava.io.tmpdir="$TEMP_DIR/zipsign" -jar "$BASEDIR/tools/zipsigner.jar" "$TEMP_DIR/flashable.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing and zipaligning'
+java -Djava.io.tmpdir="$TEMP_DIR/zipsign" -jar "$SCRIPT_DIR/tools/zipsigner.jar" "$TEMP_DIR/flashable.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing and zipaligning'
 
 echo ''
 zip -T "$TEMP_DIR/$FILENAME.zip" || ui_error 'The zip is corrupted'
