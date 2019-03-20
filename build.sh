@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+LAST_COMMAND="$_"   # IMPORTANT: This must be the first line in the script after the shebang otherwise it will not work
 
 <<LICENSE
-  Copyright (C) 2017-2018 ale5000
+  Copyright (C) 2017-2019 ale5000
   SPDX-License-Identifer: GPL-3.0-or-later
 
   This program is free software: you can redistribute it and/or modify
@@ -17,6 +18,11 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 LICENSE
+
+temp="$(ps -o pid,comm | grep -Fw $$)"; for word in $temp; do CURRENT_SHELL="$word"; done; unset temp word
+if test -n "$BASH_SOURCE"; then SCRIPT="${BASH_SOURCE[0]}"; elif test "$0" != "$CURRENT_SHELL" && test "$0" != "-$CURRENT_SHELL"; then SCRIPT="$0"; elif test -n "$LAST_COMMAND"; then SCRIPT="$LAST_COMMAND"; else echo 'ERROR: The script name cannot be found'; exit 1; fi; unset LAST_COMMAND
+SCRIPT="$(realpath "$SCRIPT" 2>&-)" || exit 1
+SCRIPT_DIR="$(dirname "$SCRIPT")"
 
 export TZ=UTC
 export LANG=en_US
@@ -70,13 +76,6 @@ fi
 
 # Detect script dir (with absolute path)
 INIT_DIR=$(pwd)
-SCRIPT_DIR=$(dirname "$0")
-if [[ "${SCRIPT_DIR:0:1}" == '/' ]] || [[ "$PLATFORM" == 'win' && "${SCRIPT_DIR:1:1}" == ':' ]]; then
-  :  # If already absolute leave it as is
-else
-  if [[ "$SCRIPT_DIR" == '.' ]]; then SCRIPT_DIR=''; else SCRIPT_DIR="/$SCRIPT_DIR"; fi
-  if [[ "$INIT_DIR" != '/' ]]; then SCRIPT_DIR="$INIT_DIR$SCRIPT_DIR"; fi
-fi
 WGET_CMD='wget'
 TOOLS_DIR="${SCRIPT_DIR}${SEP}tools${SEP}${PLATFORM}"
 PATH="${TOOLS_DIR}${PATHSEP}${PATH}"
