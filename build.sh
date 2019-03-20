@@ -30,7 +30,7 @@ unset CDPATH
 
 PROMPT_COMMAND=
 PS1='\033[01;32m\u\033[00m:\033[01;34m\w\033[00m\$'
-echo -e '\033]0;Building the flashable OTA zip...\007'
+echo -ne '\033]0;Building the flashable OTA zip...\007' && echo -ne "\r                                                            \r"
 
 ui_error()
 {
