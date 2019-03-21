@@ -120,7 +120,7 @@ TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX) || ui_error 'Failed to create our tem
 if test -z "$TEMP_DIR"; then ui_error 'Failed to create our temp dir'; fi
 
 # Empty our temp dir (should be already empty, but we must be sure)
-rm -rf "$TEMP_DIR"/* #|| ui_error 'Failed to empty our temp dir'  # ToDO: Remove workaround when BusyBox is fixed
+rm -rf "$TEMP_DIR"/* || ui_error 'Failed to empty our temp dir'
 
 # Set filename and version
 VER=$(cat "$SCRIPT_DIR/zip-content/inc/VERSION")
@@ -177,8 +177,8 @@ if test "$PLATFORM" == 'win'; then
 fi
 
 # Remove the previously built files (if they exist)
-rm -f "$OUT_DIR/${FILENAME}".zip* #|| ui_error 'Failed to remove the previously built files'  # ToDO: Remove workaround when BusyBox is fixed
-rm -f "$OUT_DIR/${FILENAME}-signed".zip* #|| ui_error 'Failed to remove the previously built files'  # ToDO: Remove workaround when BusyBox is fixed
+rm -f "$OUT_DIR/${FILENAME}".zip* || ui_error 'Failed to remove the previously built files'
+rm -f "$OUT_DIR/${FILENAME}-signed".zip* || ui_error 'Failed to remove the previously built files'
 
 # Compress (it ensure that the list of files to compress is in the same order under all OSes)
 # Note: Unicode filenames in the zip are disabled since we don't need them and also zipsigner.jar chokes on them
