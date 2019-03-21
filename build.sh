@@ -33,7 +33,7 @@ echo -ne '\033]0;Building the flashable OTA zip...\007' && echo -ne "\r         
 which 'zip' || ui_error 'zip command is missing'
 
 # Create the output dir
-OUT_DIR="${SCRIPT_DIR/output}"
+OUT_DIR="${SCRIPT_DIR}/output"
 mkdir -p "$OUT_DIR" || ui_error 'Failed to create the output dir'
 
 # Create the temp dir
