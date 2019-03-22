@@ -14,7 +14,7 @@ SET "PATH=.;%PATH%"
 IF EXIST "%~dp0tools\win" SET "PATH=%~dp0tools\win;%PATH%"
 
 CHCP 858 >nul || ECHO "Changing the codepage failed"
-"%~dp0tools\win\busybox.exe" ash -s -c ". ./scripts/common.sh; alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=clear" ash %*
+"%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0scripts\common.sh'; alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=clear" "%~f0" %*
 
 ENDLOCAL 2> nul
 TITLE %ComSpec% 2> nul
