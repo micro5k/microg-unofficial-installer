@@ -59,6 +59,6 @@ See here for the `instructions <docs/INSTRUCTIONS.rst>`_.
 
 Code analysis
 -------------
-.. image:: https://api.codacy.com/project/badge/Grade/e1a27d872add4b48b16ffb4d1774003d
+.. image:: https://api.codacy.com/project/badge/Grade/181fdc3a41894aae99500e324341b1ec
    :alt: Codacy Badge
    :target: https://www.codacy.com/app/micro5k/microg-unofficial-installer
