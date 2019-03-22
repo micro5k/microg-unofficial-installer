@@ -20,8 +20,8 @@ LAST_COMMAND="$_"   # IMPORTANT: This must be the first line in the script after
 LICENSE
 
 temp="$(ps -o pid,comm | grep -Fw $$)"; for word in $temp; do CURRENT_SHELL="$word"; done; unset temp word
-if test -n "$BASH_SOURCE"; then SCRIPT="${BASH_SOURCE[0]}"; elif test "$0" != "$CURRENT_SHELL" && test "$0" != "-$CURRENT_SHELL"; then SCRIPT="$0"; elif test -n "$LAST_COMMAND"; then SCRIPT="$LAST_COMMAND"; else echo 'ERROR: The script name cannot be found'; exit 1; fi; unset LAST_COMMAND
-SCRIPT="$(realpath "$SCRIPT" 2>&-)" || exit 1
+if test -n "$BASH_SOURCE"; then SCRIPT="${BASH_SOURCE[0]}"; elif test "$0" != "$CURRENT_SHELL" && test "$0" != "-$CURRENT_SHELL"; then SCRIPT="$0"; elif test -n "$LAST_COMMAND"; then SCRIPT="$LAST_COMMAND"; else echo 'ERROR: The script name cannot be found'; return 1 2>&- || exit 1; fi; unset LAST_COMMAND
+SCRIPT="$(realpath "$SCRIPT" 2>&-)" || return 1 2>&- || exit 1
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 
 printf '\033]0;%s\007' 'Building the flashable OTA zip...' | cat && printf '\r                                                            \r'
