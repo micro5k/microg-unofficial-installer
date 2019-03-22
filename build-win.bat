@@ -10,6 +10,5 @@ SET "EXIT_CODE=%ERRORLEVEL%"
 
 IF NOT "%~1" == "Gradle" PAUSE > nul
 
-TITLE %ComSpec% 2> nul
 IF %EXIT_CODE% NEQ 0 EXIT /B %EXIT_CODE%
 SET "EXIT_CODE="
