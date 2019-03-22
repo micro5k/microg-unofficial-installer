@@ -24,7 +24,7 @@ if test -n "$BASH_SOURCE"; then SCRIPT="${BASH_SOURCE[0]}"; elif test "$0" != "$
 SCRIPT="$(realpath "$SCRIPT" 2>&-)" || exit 1
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 
-echo -ne '\033]0;Building the flashable OTA zip...\007' && echo -ne "\r                                                            \r"
+printf '\033]0;%s\007' 'Building the flashable OTA zip...' | cat && printf '\r                                                            \r'
 
 . "${SCRIPT_DIR}/scripts/common.sh"
 . "${SCRIPT_DIR}/conf.sh"
