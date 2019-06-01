@@ -173,8 +173,8 @@ ui_msg "Selected market app: ${MARKET_FILENAME}"
 
 # Verifying
 ui_msg_sameline_start 'Verifying... '
-if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
-   verify_sha1 "$TMP_PATH/files/priv-app-kk/GmsCore.apk" '52890ef5d04abd563fa220725708fd2bc48e894e' &&  # ToDO: Remove when bug #379 is fixed
+if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" '8644b60e48fd470c36ca74ad72d320f7f44bdc69' &&
+   verify_sha1 "$TMP_PATH/files/priv-app-legacy/GmsCore.apk" '52890ef5d04abd563fa220725708fd2bc48e894e' &&
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" '71603d196245565fe384a18bd9f4637bca136b06' &&
    verify_sha1 "$TMP_PATH/files/app/NewPipe.apk" 'b2ce8526126472fdf96b7b2a67c65347424fa31c' &&
@@ -196,11 +196,11 @@ else
   ui_error 'Verification failed'
 fi
 
-# Temporary workaround
-if [[ $OLD_ANDROID == true ]]; then
-  copy_file "$TMP_PATH/files/priv-app-kk/GmsCore.apk" "$TMP_PATH/files/priv-app"  # ToDO: Remove when bug #379 is fixed
+# Legacy version
+if [[ $API -lt 14 ]]; then
+  copy_file "$TMP_PATH/files/priv-app-legacy/GmsCore.apk" "$TMP_PATH/files/priv-app"
 fi
-delete_recursive "$TMP_PATH/files/priv-app-kk"
+delete_recursive "$TMP_PATH/files/priv-app-legacy"
 
 # Extracting libs
 ui_msg 'Extracting libs...'
