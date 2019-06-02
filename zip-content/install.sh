@@ -342,6 +342,7 @@ USED_SETTINGS_PATH="$TMP_PATH/files/etc/zips"
 
 create_dir "${USED_SETTINGS_PATH}"
 echo 'type="GmsCore"' > "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
+echo 'gmscore_build_type="official"' >> "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
 set_perm 0 0 0644 "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
 create_dir "${SYS_PATH}/etc/zips"
 copy_dir_content "${USED_SETTINGS_PATH}" "${SYS_PATH}/etc/zips"
