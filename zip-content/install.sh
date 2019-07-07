@@ -178,7 +178,7 @@ if verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-mapbox.apk" '5492829a8
    verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-vtm-legacy.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" '71603d196245565fe384a18bd9f4637bca136b06' &&
-   verify_sha1 "$TMP_PATH/files/app/NewPipe.apk" 'b2ce8526126472fdf96b7b2a67c65347424fa31c' &&
+   verify_sha1 "$TMP_PATH/files/app/NewPipe.apk" 'b1214a26763d70db49ebfcd9f3488f72233fba02' &&
    verify_sha1 "$TMP_PATH/files/app/DejaVuBackend.apk" '3344e0fa38b57980125bc3049a0cb3dff86a22f2' &&
    verify_sha1 "$TMP_PATH/files/app/IchnaeaNlpBackend.apk" 'ef9fad611ab2cf2e68cdc7d05af4496998e8d3b5' &&
    verify_sha1 "$TMP_PATH/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
@@ -274,7 +274,7 @@ delete_recursive "$TMP_PATH/files/app-legacy"
 
 if test "$API" -lt 21; then delete "$TMP_PATH/files/etc/sysconfig/google.xml"; fi
 if test "$API" -lt 18; then delete "$TMP_PATH/files/app/DejaVuBackend.apk"; fi
-if [ "$INSTALL_NEWPIPE" -eq 0 ] || [ "$API" -lt 15 ]; then delete "$TMP_PATH/files/app/NewPipe.apk"; fi
+if [ "$INSTALL_NEWPIPE" -eq 0 ] || [ "$API" -lt 24 ]; then delete "$TMP_PATH/files/app/NewPipe.apk"; fi
 
 move_rename_file "$TMP_PATH/files/variants/${MARKET_FILENAME}" "$TMP_PATH/files/priv-app/Phonesky.apk"
 delete_recursive "$TMP_PATH/files/variants"
