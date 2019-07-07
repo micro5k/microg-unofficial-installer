@@ -173,8 +173,8 @@ ui_msg "Selected market app: ${MARKET_FILENAME}"
 
 # Verifying
 ui_msg_sameline_start 'Verifying... '
-if verify_sha1 "$TMP_PATH/files/priv-app/GmsCore.apk" 'ab29dde8d37f46a83f947d6a3f278b9e94811769' &&
-   verify_sha1 "$TMP_PATH/files/priv-app-legacy/GmsCore.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
+if verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-vtm.apk" 'ab29dde8d37f46a83f947d6a3f278b9e94811769' &&
+   verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-vtm-legacy.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" '71603d196245565fe384a18bd9f4637bca136b06' &&
    verify_sha1 "$TMP_PATH/files/app/NewPipe.apk" 'b2ce8526126472fdf96b7b2a67c65347424fa31c' &&
@@ -197,10 +197,11 @@ else
 fi
 
 # Legacy version
-if [[ $API -lt 14 ]]; then
-  copy_file "$TMP_PATH/files/priv-app-legacy/GmsCore.apk" "$TMP_PATH/files/priv-app"
+if [[ $API -ge 14 ]]; then
+  copy_file "$TMP_PATH/files/variants/priv-app/GmsCore-vtm.apk" "$TMP_PATH/files/priv-app"
+else
+  copy_file "$TMP_PATH/files/variants/priv-app/GmsCore-vtm-legacy.apk" "$TMP_PATH/files/priv-app"
 fi
-delete_recursive "$TMP_PATH/files/priv-app-legacy"
 
 # Extracting libs
 ui_msg 'Extracting libs...'
