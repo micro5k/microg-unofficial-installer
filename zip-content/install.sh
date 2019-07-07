@@ -197,7 +197,7 @@ else
   ui_error 'Verification failed'
 fi
 
-# Legacy version
+# Handle variants
 if [[ $API -ge 14 ]]; then
   if [[ $GMSCORE_VERSION == 'auto' && $CPU != 'armeabi' ]]; then
     move_rename_file "$TMP_PATH/files/variants/priv-app/GmsCore-mapbox.apk" "$TMP_PATH/files/priv-app/GmsCore.apk"
@@ -206,6 +206,14 @@ if [[ $API -ge 14 ]]; then
   fi
 else
   move_rename_file "$TMP_PATH/files/variants/priv-app/GmsCore-vtm-legacy.apk" "$TMP_PATH/files/priv-app/GmsCore.apk"
+fi
+
+if [[ $INSTALL_NEWPIPE -ne 0 ]]; then
+  if [[ $API -ge 19 ]]; then
+    move_rename_file "$TMP_PATH/files/variants/app/NewPipe.apk" "$TMP_PATH/files/app/NewPipe.apk"
+  #elif [[ $API -ge 16 ]]; then
+    #move_rename_file "$TMP_PATH/files/variants/app/NewPipeLegacy.apk" "$TMP_PATH/files/app/NewPipe.apk"
+  fi
 fi
 
 # Extracting libs
@@ -274,7 +282,6 @@ delete_recursive "$TMP_PATH/files/app-legacy"
 
 if test "$API" -lt 21; then delete "$TMP_PATH/files/etc/sysconfig/google.xml"; fi
 if test "$API" -lt 18; then delete "$TMP_PATH/files/app/DejaVuBackend.apk"; fi
-if [ "$INSTALL_NEWPIPE" -eq 0 ] || [ "$API" -lt 24 ]; then delete "$TMP_PATH/files/app/NewPipe.apk"; fi
 
 move_rename_file "$TMP_PATH/files/variants/${MARKET_FILENAME}" "$TMP_PATH/files/priv-app/Phonesky.apk"
 delete_recursive "$TMP_PATH/files/variants"
