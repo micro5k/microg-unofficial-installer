@@ -20,6 +20,7 @@ Common
 - **files/priv-app/DroidGuard.apk** => microG DroidGuard Helper 0.1.0-17-custom |boom|
 
 - **files/variants/app/NewPipe.apk** => NewPipe 0.16.2 |star|
+- **files/variants/app/NewPipeLegacy.apk** => NewPipe Legacy 0.16.2 |star|
 
 - **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.11 |star|
 - **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.4.0 |star|

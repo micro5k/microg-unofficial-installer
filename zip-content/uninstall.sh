@@ -79,6 +79,7 @@ DroidGuard|org.microg.gms.droidguard
 GmsDroidGuard|
 
 NewPipe|org.schabi.newpipe
+NewPipeLegacy|org.schabi.newpipelegacy
 YouTube|com.google.android.youtube
 
 |com.qualcomm.location

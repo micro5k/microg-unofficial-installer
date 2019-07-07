@@ -179,6 +179,7 @@ if verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-mapbox.apk" '5492829a8
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" '71603d196245565fe384a18bd9f4637bca136b06' &&
    verify_sha1 "$TMP_PATH/files/app/NewPipe.apk" 'b1214a26763d70db49ebfcd9f3488f72233fba02' &&
+   verify_sha1 "$TMP_PATH/files/app/NewPipeLegacy.apk" '45a9419c500c21e8e77087f47188ed64a58ca497' &&
    verify_sha1 "$TMP_PATH/files/app/DejaVuBackend.apk" '3344e0fa38b57980125bc3049a0cb3dff86a22f2' &&
    verify_sha1 "$TMP_PATH/files/app/IchnaeaNlpBackend.apk" 'ef9fad611ab2cf2e68cdc7d05af4496998e8d3b5' &&
    verify_sha1 "$TMP_PATH/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
@@ -211,8 +212,8 @@ fi
 if [[ $INSTALL_NEWPIPE -ne 0 ]]; then
   if [[ $API -ge 19 ]]; then
     move_rename_file "$TMP_PATH/files/variants/app/NewPipe.apk" "$TMP_PATH/files/app/NewPipe.apk"
-  #elif [[ $API -ge 16 ]]; then
-    #move_rename_file "$TMP_PATH/files/variants/app/NewPipeLegacy.apk" "$TMP_PATH/files/app/NewPipe.apk"
+  elif [[ $API -ge 16 ]]; then
+    move_rename_file "$TMP_PATH/files/variants/app/NewPipeLegacy.apk" "$TMP_PATH/files/app/NewPipe.apk"
   fi
 fi
 
