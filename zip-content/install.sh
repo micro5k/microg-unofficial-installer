@@ -173,7 +173,8 @@ ui_msg "Selected market app: ${MARKET_FILENAME}"
 
 # Verifying
 ui_msg_sameline_start 'Verifying... '
-if verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-vtm.apk" 'ab29dde8d37f46a83f947d6a3f278b9e94811769' &&
+if verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-mapbox.apk" '5492829a8cf711c46becedd82539890ba7819c7b' &&
+   verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-vtm.apk" 'ab29dde8d37f46a83f947d6a3f278b9e94811769' &&
    verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-vtm-legacy.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" '71603d196245565fe384a18bd9f4637bca136b06' &&
@@ -198,9 +199,13 @@ fi
 
 # Legacy version
 if [[ $API -ge 14 ]]; then
-  copy_file "$TMP_PATH/files/variants/priv-app/GmsCore-vtm.apk" "$TMP_PATH/files/priv-app"
+  if [[ $GMSCORE_VERSION == 'auto' && $CPU != 'armeabi' ]]; then
+    move_rename_file "$TMP_PATH/files/variants/priv-app/GmsCore-mapbox.apk" "$TMP_PATH/files/priv-app/GmsCore.apk"
+  else
+    move_rename_file "$TMP_PATH/files/variants/priv-app/GmsCore-vtm.apk" "$TMP_PATH/files/priv-app/GmsCore.apk"
+  fi
 else
-  copy_file "$TMP_PATH/files/variants/priv-app/GmsCore-vtm-legacy.apk" "$TMP_PATH/files/priv-app"
+  move_rename_file "$TMP_PATH/files/variants/priv-app/GmsCore-vtm-legacy.apk" "$TMP_PATH/files/priv-app/GmsCore.apk"
 fi
 
 # Extracting libs

@@ -13,6 +13,7 @@ Variants
 
 Common
 ------
+- **files/variants/priv-app/GmsCore-mapbox.apk** => microG Service Core 0.2.8.17785-4-06c8b76 (on Android >= 4) |fire|
 - **files/variants/priv-app/GmsCore-vtm.apk** => microG Service Core 0.2.8.17785-2-vtm-8a0010a (on Android >= 4) |fire|
 - **files/variants/priv-app/GmsCore-vtm-legacy.apk** => microG Service Core 0.2.6.13280 (on Android < 4) |fire|
 - **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0 |fire|
