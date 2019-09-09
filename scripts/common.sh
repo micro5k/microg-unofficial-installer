@@ -47,7 +47,7 @@ dl_file()
 {
   if [[ ! -e "$SCRIPT_DIR/cache/$1/$2" ]]; then
     mkdir -p "$SCRIPT_DIR/cache/$1"
-    "$WGET_CMD" -O "$SCRIPT_DIR/cache/$1/$2" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:63.0) Gecko/20100101 Firefox/63.0' "$4" || ui_error "Failed to download the file => 'cache/$1/$2'."
+    "$WGET_CMD" -O "$SCRIPT_DIR/cache/$1/$2" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:69.0) Gecko/20100101 Firefox/69.0' "$4" || ui_error "Failed to download the file => 'cache/$1/$2'."
     echo ''
   fi
   verify_sha1 "$SCRIPT_DIR/cache/$1/$2" "$3" || corrupted_file "$SCRIPT_DIR/cache/$1/$2"
