@@ -9,7 +9,7 @@ TOOLS
 - UnZip_ **6.0** => win/unzip.exe
 
 
-.. _zipsigner: https://github.com/topjohnwu/Magisk/tree/master/utils
+.. _zipsigner: https://github.com/topjohnwu/Magisk/tree/master/signing
 .. _BusyBox-w32: https://frippery.org/busybox/
 .. _Zip: http://infozip.sourceforge.net/Zip.html
 .. _UnZip: http://infozip.sourceforge.net/UnZip.html
