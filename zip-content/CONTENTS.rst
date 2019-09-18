@@ -7,33 +7,33 @@ CONTENTS
 
 Variants
 --------
-- **files/variants/FakeStore.apk** => FakeStore 0.0.2 |fire|
-- **files/variants/PlayStore-recent.apk** => Google Play Store 7.1.25.I-all (137772785) - nodpi (on Android >= 5)
-- **files/variants/PlayStore-legacy.apk** => Google Play Store 5.1.11 (80310011) - nodpi (on Android < 5)
+- **files/variants/FakeStore.apk** => FakeStore 0.0.2 |star| |fire|
+- **files/variants/PlayStore-recent.apk** => Google Play Store 7.1.25.I-all (137772785) - nodpi (on Android >= 5) |fire|
+- **files/variants/PlayStore-legacy.apk** => Google Play Store 5.1.11 (80310011) - nodpi (on Android < 5) |fire|
 
-- **files/variants/priv-app/GmsCore-mapbox.apk** => microG Service Core 0.2.8.17785-4-06c8b76 (on Android >= 4) |fire|
-- **files/variants/priv-app/GmsCore-vtm.apk** => microG Service Core 0.2.8.17785-2-vtm-8a0010a (on Android >= 4) |fire|
-- **files/variants/priv-app/GmsCore-vtm-legacy.apk** => microG Service Core 0.2.6.13280 (on Android < 4) |fire|
+- **files/variants/priv-app/GmsCore-mapbox.apk** => microG Service Core 0.2.8.17785-4-06c8b76 (on Android >= 4) |star| |fire|
+- **files/variants/priv-app/GmsCore-vtm.apk** => microG Service Core 0.2.8.17785-2-vtm-8a0010a (on Android >= 4) |star| |fire|
+- **files/variants/priv-app/GmsCore-vtm-legacy.apk** => microG Service Core 0.2.6.13280 (on Android < 4) |star| |fire|
 
-- **files/variants/app/NewPipe.apk** => NewPipe 0.16.2 (on Android >= 4.4) |star|
-- **files/variants/app/NewPipeLegacy.apk** => NewPipe Legacy 0.16.2 (on Android < 4.4) |star|
+- **files/variants/app/NewPipe.apk** => NewPipe 0.16.2 (on Android >= 4.4) |star| |fire|
+- **files/variants/app/NewPipeLegacy.apk** => NewPipe Legacy 0.16.2 (on Android < 4.4) |star| |fire|
 
 
 Common
 ------
-- **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0 |fire|
+- **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0 |star| |fire|
 - **files/priv-app/DroidGuard.apk** => microG DroidGuard Helper 0.1.0-17-custom |boom|
 
-- **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.11 |star|
-- **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.4.0 |star|
-- **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star|
+- **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.11 |star| |fire|
+- **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.4.0 |star| |fire|
+- **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star| |fire|
 
 - **files/framework/com.google.android.maps.jar** => microG Maps API v1 0.1.0 |fire|
 
 
 Android < 4.4
 -------------
-- **files/app-legacy/LegacyNetworkLocation.apk** => UnifiedNlp (legacy) 1.6.8 |star|
+- **files/app-legacy/LegacyNetworkLocation.apk** => UnifiedNlp (legacy) 1.6.8 |star| |fire|
 
 
 Scripts
@@ -47,8 +47,8 @@ Components used only during setup (not installed)
 
 |
 
-|star| *F-Droid version* (compiled and signed by F-Droid).
+|star| *Can be updated through F-Droid*.
 
-|fire| *Original version* (compiled and signed by its original author).
+|fire| *Original version*.
 
 |boom| *Nanolx's version* (compiled and signed by `@Nanolx <https://github.com/Nanolx>`_).
