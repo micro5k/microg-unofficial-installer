@@ -53,13 +53,13 @@ if test -n "${OPENSOURCE_ONLY}"; then FILENAME="$FILENAME-OSS"; fi
 # Download files if they are missing
 mkdir -p "$SCRIPT_DIR/cache"
 
-oss_files_to_download | while IFS='|' read LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL; do
+oss_files_to_download | while IFS='|' read LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL _; do
   dl_file "$LOCAL_PATH" "$LOCAL_FILENAME" "$DL_HASH" "$DL_URL"
 done
 STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
 
 if test -z "${OPENSOURCE_ONLY}"; then
-  files_to_download | while IFS='|' read LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL; do
+  files_to_download | while IFS='|' read LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL _; do
     dl_file "$LOCAL_PATH" "$LOCAL_FILENAME" "$DL_HASH" "$DL_URL"
   done
   STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
