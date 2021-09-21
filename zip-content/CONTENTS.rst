@@ -22,7 +22,7 @@ Variants
 Common
 ------
 - **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0 |star| |fire|
-- **files/priv-app/DroidGuard.apk** => microG DroidGuard Helper 0.1.0-17-custom |boom|
+- **files/priv-app/DroidGuard.apk** => microG DroidGuard Helper 0.1.2-dirty |boom|
 
 - **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.11 |star| |fire|
 - **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.4.0 |star| |fire|

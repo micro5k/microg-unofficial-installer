@@ -177,7 +177,7 @@ if verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-mapbox.apk" 'f8f8e9d4a
    verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-vtm.apk" 'fb4e019006a061a7027c6e9a79db26965f153ce1' &&
    verify_sha1 "$TMP_PATH/files/variants/priv-app/GmsCore-vtm-legacy.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
    verify_sha1 "$TMP_PATH/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
-   verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" '71603d196245565fe384a18bd9f4637bca136b06' &&
+   verify_sha1 "$TMP_PATH/files/priv-app/DroidGuard.apk" 'd1116dfdff529892d3e2dd793dd93a4d987c1c5f' &&
    verify_sha1 "$TMP_PATH/files/app/NewPipe.apk" 'b1214a26763d70db49ebfcd9f3488f72233fba02' &&
    verify_sha1 "$TMP_PATH/files/app/NewPipeLegacy.apk" '45a9419c500c21e8e77087f47188ed64a58ca497' &&
    verify_sha1 "$TMP_PATH/files/app/DejaVuBackend.apk" '3344e0fa38b57980125bc3049a0cb3dff86a22f2' &&
