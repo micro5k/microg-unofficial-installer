@@ -26,8 +26,8 @@ jobs:
   include:
     - env: OSS=true
       script: ./gradlew buildOtaOSS
-    - env: OSS=false
-      script: ./gradlew buildOta
+    #- env: OSS=false
+    #  script: ./gradlew buildOta
   fast_finish: true
 
 before_cache:
