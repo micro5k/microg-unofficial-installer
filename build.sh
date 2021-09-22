@@ -30,7 +30,8 @@ printf '\033]0;%s\007' 'Building the flashable OTA zip...' | cat && printf '\r  
 . "${SCRIPT_DIR}/conf.sh"
 
 # Check dependencies
-which 'zip' || ui_error 'zip command is missing'
+which 'zip' || ui_error 'Zip is missing'
+which 'java' || ui_error 'Java is missing'
 
 # Create the output dir
 OUT_DIR="${SCRIPT_DIR}/output"
