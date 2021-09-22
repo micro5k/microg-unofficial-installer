@@ -139,5 +139,4 @@ echo ''
 echo 'Done.'
 echo -e '\033]0;Done\007'
 
-wait "$pid"
 exit "$?"
