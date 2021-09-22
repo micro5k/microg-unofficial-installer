@@ -1,9 +1,9 @@
 os: linux
-dist: xenial
+virt: lxd
 
 language: java
 #language: android
-jdk: openjdk8
+#jdk: openjdk8
 
 cache:
   directories:
@@ -13,7 +13,7 @@ cache:
   - "$HOME/.android/build-cache/"
 
 git:
-  depth: 3
+  depth: 1
 
 addons:
   apt:
@@ -46,7 +46,7 @@ before_cache:
 
 deploy:
   provider: releases
-  api_key:
+  token:
     secure: vGgp4Z7stIxE9hBWc3/v3OLmzdU1K/nIMVqzwi/1aVC8Tcsmx8kdmm6Mkkrl1mqmGVoWfZ+v3gB/Th0bIGY4tmf0pailDY8QN9PwQx3IImLMEg7mxDtT7F1Z03/+ox4yCAmWVs97p/vw2Ph0mGYgwYodFgiejZNOnOzVCmBit4lPgjMiB7dTJm99VdC4DTJ86xQN18Q+DN3H5si6pr8tjBJhYxGHy2FxaoJqX+j4LAm8gPgprXmH/xty4nuNnfo2P2xL5NSH+RwfZLe76dJAu7kUv6YRu6qo8EsSSd3TlScfHHo2EqzM6Pa6yZRCEg3mLHMwwlPPBq4W29K1nXJgMkm4f+NxEZ6smDaekDqp3cGNE8s1fQotMJzIUtaF1pbmi1I14/H+yaH3tkDf6eXGXcmc92Juv23HcWcJfJsaRRVpPFZsHL0FYXxHyFbQ2zkz1m2bJx2zWKX9Pl0BPYka9ezUHp7FqdrSlCumDJP70Iz3ZEQ9RpVzoW/gTDVJbTLCq4H9NnHePsXrS/+3lkuzobKUVSDSHnrAgv5cVYc9L8VMRfjYWONjAzGeq3H6d/DYNWiwUv6jdZuae7WbWh8MJHlhMXImpcGcuWrh+bWeKz7S0iLAUCTsQIjoT55YimR+Zmxy4Dv1oJHtfx09766BJziJM4euAWyzb0AKytDoZ/8=
   file_glob: true
   file: output/*
