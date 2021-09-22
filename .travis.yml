@@ -3,7 +3,7 @@ virt: lxd
 
 language: java
 #language: android
-#jdk: openjdk8
+jdk: openjdk8
 
 cache:
   directories:
