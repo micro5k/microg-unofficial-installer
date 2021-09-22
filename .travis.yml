@@ -1,5 +1,5 @@
 os: linux
-dist: bionic
+dist: xenial
 virt: lxd
 
 language: java
