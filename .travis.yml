@@ -1,5 +1,5 @@
 os: linux
-dist: focal
+dist: bionic
 virt: lxd
 
 language: java
