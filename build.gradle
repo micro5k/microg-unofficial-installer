@@ -17,7 +17,7 @@
  */
 
 plugins {
-    id 'com.gradle.build-scan' version '1.16'
+    id 'com.gradle.build-scan' version '3.7'
     id 'base'
 }
 
@@ -81,7 +81,7 @@ task install(dependsOn: build) {
 }
 
 wrapper {
-    gradleVersion = '4.10.2'
+    gradleVersion = '5.6.4'
     distributionType = Wrapper.DistributionType.ALL
-    distributionSha256Sum = 'b7aedd369a26b177147bcb715f8b1fc4fe32b0a6ade0d7fd8ee5ed0c6f731f2c'
+    distributionSha256Sum = 'abc10bcedb58806e8654210f96031db541bcd2d6fc3161e81cb0572d6a15e821'
 }
