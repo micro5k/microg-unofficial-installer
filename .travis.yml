@@ -1,4 +1,5 @@
 os: linux
+dist: focal
 virt: lxd
 
 language: java
@@ -20,11 +21,6 @@ addons:
     packages:
     - unzip=6.0*
     - zip=3.0*
-
-android:
-  components:
-  - build-tools-27.0.3
-  - android-27
 
 jobs:
   include:
