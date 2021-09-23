@@ -255,17 +255,17 @@ ABI_LIST=",$(get_rec_abilist)," || ui_error "Empty ABI list"
 
 if is_substring ',x86_64,' "$ABI_LIST"; then
   ui_debug 'Extracting 64-bit x86 BusyBox...'
-  package_extract_file 'misc/busybox/busybox-x86_64' "$BASE_TMP_PATH/busybox"
+  package_extract_file 'misc/busybox/busybox-x86_64.bin' "$BASE_TMP_PATH/busybox"
 elif is_substring ',x86,' "$ABI_LIST"; then
   ui_debug 'Extracting x86 BusyBox...'
-  package_extract_file 'misc/busybox/busybox-x86' "$BASE_TMP_PATH/busybox"
+  package_extract_file 'misc/busybox/busybox-x86.bin' "$BASE_TMP_PATH/busybox"
 elif is_substring ',arm64-v8a,' "$ABI_LIST"; then
   ui_debug 'Extracting 64-bit ARM BusyBox...'
-  package_extract_file 'misc/busybox/busybox-arm64' "$BASE_TMP_PATH/busybox"
+  package_extract_file 'misc/busybox/busybox-arm64.bin' "$BASE_TMP_PATH/busybox"
   package_extract_file 'misc/keycheck/keycheck-arm' "$BASE_TMP_PATH/keycheck"
 elif is_substring ',armeabi,' "$ABI_LIST" || is_substring ',armeabi-v7a,' "$ABI_LIST"; then
   ui_debug 'Extracting ARM BusyBox...'
-  package_extract_file 'misc/busybox/busybox-arm' "$BASE_TMP_PATH/busybox"
+  package_extract_file 'misc/busybox/busybox-arm.bin' "$BASE_TMP_PATH/busybox"
   package_extract_file 'misc/keycheck/keycheck-arm' "$BASE_TMP_PATH/keycheck"
 else
   ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
