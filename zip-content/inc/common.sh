@@ -1,4 +1,5 @@
 #!/sbin/sh
+# shellcheck disable=SC3043
 
 <<LICENSE
   Copyright (C) 2016-2018  ale5000
@@ -31,7 +32,7 @@ fi
 # Message related functions
 _show_text_on_recovery()
 {
-  echo -e "ui_print $1\nui_print" >> $RECOVERY_PIPE
+  echo -e "ui_print $1\nui_print" >> "$RECOVERY_PIPE"
 }
 
 ui_error()
@@ -52,19 +53,19 @@ ui_warning()
 ui_msg()
 {
   if [ "$DEBUG_LOG" -ne 0 ]; then echo "$1"; fi
-  echo -e "ui_print $1\nui_print" >> $RECOVERY_PIPE
+  echo -e "ui_print $1\nui_print" >> "$RECOVERY_PIPE"
 }
 
 ui_msg_sameline_start()
 {
   if [ "$DEBUG_LOG" -ne 0 ]; then echo -n "$1"; fi
-  echo -n "ui_print $1" >> $RECOVERY_PIPE
+  echo -n "ui_print $1" >> "$RECOVERY_PIPE"
 }
 
 ui_msg_sameline_end()
 {
   if [ "$DEBUG_LOG" -ne 0 ]; then echo "$1"; fi
-  echo -e " $1\nui_print" >> $RECOVERY_PIPE
+  echo -e " $1\nui_print" >> "$RECOVERY_PIPE"
 }
 
 ui_debug()
@@ -94,7 +95,8 @@ is_mounted_read_write()
 
 get_mount_status()
 {
-  local mount_line=$(mount | grep " $1 " | head -n1)
+  local mount_line
+  mount_line=$(mount | grep " $1 " | head -n1)
   if [[ -z "$mount_line" ]]; then return 1; fi  # NOT mounted
   if echo "$mount_line" | grep -qi -e "[(\s,]rw[\s,)]"; then return 0; fi  # Mounted read-write (RW)
   return 2  # Mounted read-only (RO)
@@ -170,7 +172,8 @@ search_ascii_string_in_file()
 
 search_ascii_string_as_utf16_in_file()
 {
-  local SEARCH_STRING=$(echo -n "${1}" | od -A n -t x1 | LC_ALL=C tr -d '\n' | LC_ALL=C sed -e 's/^ //g;s/ /00/g')
+  local SEARCH_STRING
+  SEARCH_STRING=$(echo -n "${1}" | od -A n -t x1 | LC_ALL=C tr -d '\n' | LC_ALL=C sed -e 's/^ //g;s/ /00/g')
   od -A n -t x1 "$2" | LC_ALL=C tr -d ' \n' | LC_ALL=C grep -qF "$SEARCH_STRING" && return 0  # Found
   return 1  # NOT found
 }
@@ -193,7 +196,8 @@ set_std_perm_recursive()  # Use it only if you know your version of 'find' handl
 # Extraction related functions
 package_extract_file()
 {
-  local dir=$(dirname "$2")
+  local dir
+  dir=$(dirname "$2")
   mkdir -p "$dir" || ui_error "Failed to create the dir '$dir' for extraction" 94
   set_perm 0 0 0755 "$dir"
   unzip -opq "$ZIP_FILE" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 94
@@ -236,7 +240,8 @@ verify_sha1()
   ui_debug "$1"
   local file_name="$1"
   local hash="$2"
-  local file_hash=$(sha1sum "$file_name" | cut -d ' ' -f 1)
+  local file_hash
+  file_hash=$(sha1sum "$file_name" | cut -d ' ' -f 1)
 
   if [[ $hash != "$file_hash" ]]; then return 1; fi  # Failed
   return 0  # Success
