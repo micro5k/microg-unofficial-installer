@@ -1,9 +1,9 @@
 os: linux
-dist: xenial
+dist: bionic
 virt: lxd
 
 language: java
-#jdk: openjdk8
+jdk: openjdk8
 
 cache:
   directories:
