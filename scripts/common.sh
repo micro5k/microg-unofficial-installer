@@ -30,7 +30,8 @@ verify_sha1()
 {
   local file_name="$1"
   local hash="$2"
-  local file_hash=$(sha1sum "$file_name" | cut -d ' ' -f 1)
+  local file_hash
+  file_hash=$(sha1sum "$file_name" | cut -d ' ' -f 1)
 
   if [[ $hash != "$file_hash" ]]; then return 1; fi  # Failed
   return 0  # Success
@@ -76,7 +77,8 @@ else
 fi
 
 # Set some environment variables
-export INIT_DIR=$(pwd)
+INIT_DIR=$(pwd)
+export INIT_DIR
 PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$'  # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
 PROMPT_COMMAND=
 
