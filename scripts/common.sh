@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC3043
 
 export TZ=UTC
 export LANG=en_US
