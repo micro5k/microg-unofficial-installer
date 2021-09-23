@@ -7,6 +7,7 @@
 
 # This script backup and restore microG during a ROM upgrade.
 
+# shellcheck disable=SC1091
 . /tmp/backuptool.functions
 
 list_files()
