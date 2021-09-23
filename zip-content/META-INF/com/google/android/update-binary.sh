@@ -106,7 +106,8 @@ ensure_system_is_mounted()
 
 parse_file()
 {
-  local tmp=$(grep -F "${2}=" "$1" | head -n1 | cut -d '=' -f 2) && echo "$tmp"
+  local tmp
+  tmp=$(grep -F "${2}=" "$1" | head -n1 | cut -d '=' -f 2) && echo "$tmp"
   if test -n "$tmp"; then return 0; fi  # Found
   return 1  # NOT found
 }
