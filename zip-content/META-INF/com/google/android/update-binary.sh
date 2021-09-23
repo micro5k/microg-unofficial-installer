@@ -1,4 +1,5 @@
 #!/sbin/sh
+# shellcheck disable=SC3037,SC3043
 
 <<LICENSE
   Copyright (C) 2016-2018  ale5000
@@ -24,7 +25,8 @@ export DEBUG_LOG=0
 export RECOVERY_API_VER="$1"
 export RECOVERY_PIPE="/proc/self/fd/$2"
 export ZIP_FILE="$3"
-export ZIP_PATH=$(dirname "$ZIP_FILE")
+ZIP_PATH=$(dirname "$ZIP_FILE")
+export ZIP_PATH
 BASE_TMP_PATH='/tmp'
 TMP_PATH='/tmp/custom-setup-a5k'
 
@@ -117,11 +119,14 @@ rec_getprop()
 
 get_rec_abilist()
 {
-  local abilist=$(rec_getprop 'product.cpu.abilist')
+  local abilist
+  abilist=$(rec_getprop 'product.cpu.abilist')
   if test -n "$abilist"; then echo "$abilist"; return 0; fi  # Found
 
-  local abi1=$(rec_getprop 'product.cpu.abi')
-  local abi2=$(rec_getprop 'product.cpu.abi2')
+  local abi1
+  abi1=$(rec_getprop 'product.cpu.abi')
+  local abi2
+  abi2=$(rec_getprop 'product.cpu.abi2')
   if test -n "$abi1" || test -n "$abi2"; then echo "$abi1,$abi2"; return 0; fi  # Found
 
   return 1  # NOT found
