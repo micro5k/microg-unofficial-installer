@@ -24,7 +24,7 @@ if test -n "$BASH_SOURCE"; then SCRIPT="${BASH_SOURCE[0]}"; elif test "$0" != "$
 SCRIPT="$(realpath "$SCRIPT" 2>&-)" || return 1 2>&- || exit 1
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 
-printf '\033]0;%s\007' 'Building the flashable OTA zip...' | cat && printf '\r                                                            \r'
+if test "$TERM" != 'dumb'; then printf '\033]0;%s\007' 'Building the flashable OTA zip...' | cat && printf '\r                                                            \r'; fi
 
 . "${SCRIPT_DIR}/scripts/common.sh"
 . "${SCRIPT_DIR}/conf.sh"
@@ -137,6 +137,6 @@ cd "$INIT_DIR" || ui_error 'Failed to change back the folder'
 
 echo ''
 echo 'Done.'
-echo -e '\033]0;Done\007'
+if test "$TERM" != 'dumb'; then echo -e '\033]0;Done\007'; fi
 
 exit "$?"
