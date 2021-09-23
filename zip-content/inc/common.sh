@@ -1,5 +1,5 @@
 #!/sbin/sh
-# shellcheck disable=SC3043
+# shellcheck disable=SC3043,SC3037,SC3010
 
 <<LICENSE
   Copyright (C) 2016-2018  ale5000
