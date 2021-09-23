@@ -1,4 +1,5 @@
 #!/sbin/sh
+# shellcheck disable=SC3010
 
 <<LICENSE
   Copyright (C) 2016-2018  ale5000
