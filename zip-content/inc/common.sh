@@ -1,7 +1,7 @@
 #!/sbin/sh
 # shellcheck disable=SC3043,SC3037,SC3010
 
-<<LICENSE
+LICENSE_TEXT=$(cat <<'LICENSE'
   Copyright (C) 2016-2018  ale5000
   This file was created by ale5000 (ale5000-git on GitHub).
 
@@ -18,6 +18,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 LICENSE
+)
 
 ### GLOBAL VARIABLES ###
 
