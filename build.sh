@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 LAST_COMMAND="$_"   # IMPORTANT: This must be the first line in the script after the shebang otherwise it will not work
 
-<<LICENSE
+cat<<'LICENSE'
   Copyright (C) 2017-2019 ale5000
   SPDX-License-Identifer: GPL-3.0-or-later
 
