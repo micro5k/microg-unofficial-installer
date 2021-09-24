@@ -16,10 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+defaultTasks 'tasks'
+
 plugins {
     id 'com.gradle.build-scan' version '3.7'
-    id 'base'
-    id 'com.github.hierynomus.license-report' version '0.16.1'
+    //id 'base'
+    //id 'com.github.hierynomus.license-report' version '0.16.1'
 }
 
 buildScan {
@@ -45,7 +47,10 @@ def getBuildScriptName() {
 }
 
 task configure() {
+    description = 'microG unofficial installer is a flashable zip made to simplify the installation of microG.'
+    version = rootProject.file('zip-content/inc/VERSION').text.trim()
     buildDir = "${projectDir}/output"
+
     println 'OS: '+System.properties['os.name']
     println '64 bit: '+is64BitArch()
 }
@@ -78,6 +83,10 @@ task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip
 build.finalizedBy buildOtaOSS
 
 task test(dependsOn: build) {
+    // Dummy task
+}
+
+task downloadLicenses(dependsOn: build) {
     // Dummy task
 }
 
