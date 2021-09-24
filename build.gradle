@@ -2,9 +2,9 @@
 // SPDX-License-Identifer: GPL-3.0-or-later
 
 plugins {
-    id 'com.github.spotbugs' version '4.4.1'
     id 'base'
     //id 'com.github.hierynomus.license-report' version '0.16.1'
+    id 'com.github.spotbugs' version '4.7.6'
 }
 
 buildScan {
@@ -32,18 +32,18 @@ def getBuildScriptName() {
 }
 
 task configure() {
-    description = 'microG unofficial installer is a flashable zip made to simplify the installation of microG.'
-    version = rootProject.file('zip-content/inc/VERSION').text.trim()
-    buildDir = "${projectDir}/output"
+    rootProject.description = 'microG unofficial installer is a flashable zip made to simplify the installation of microG.'
+    rootProject.version = rootProject.file('zip-content/inc/VERSION').text.trim()
+    rootProject.buildDir = "${projectDir}/output"
 
     println 'OS: '+System.properties['os.name']
     println '64 bit: '+is64BitArch()
 }
 
-task cleanAll(type: Delete) {
+task cleanCache(type: Delete) {
     delete buildDir, "${projectDir}/cache"
 }
-clean.finalizedBy cleanAll
+clean.finalizedBy cleanCache
 
 task buildOta(group: '- OTA build', description: 'Build the flashable OTA zip.') {
     doLast {
@@ -71,7 +71,7 @@ task test(dependsOn: build) {
     // Dummy task
 }
 
-task downloadLicenses(dependsOn: build) {
+task downloadLicenses() {
     // Dummy task
 }
 
