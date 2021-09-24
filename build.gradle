@@ -18,6 +18,7 @@
 
 plugins {
     id 'com.gradle.build-scan' version '3.7'
+    id 'com.github.spotbugs' version '4.4.1'
     id 'base'
     //id 'com.github.hierynomus.license-report' version '0.16.1'
 }
