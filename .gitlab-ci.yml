@@ -19,6 +19,7 @@ before_script:
   - apt-get -o Dir::State::Lists="$APT_CACHE/lists" -o Dir::Cache::Archives="$APT_CACHE/archives" install -y unzip zip
 
 stages:
+  - test
   - build
   #- execute
 
