@@ -9,6 +9,7 @@ cache:
     - ".apt-cache/"
 
 variables:
+  CI_DEFAULT_BRANCH: 'main'
   GIT_DEPTH: '1'
 
 before_script:
@@ -16,6 +17,12 @@ before_script:
   - export GRADLE_USER_HOME="$PWD/.gradle"
   - apt-get -o Dir::State::Lists="$APT_CACHE/lists" update
   - apt-get -o Dir::State::Lists="$APT_CACHE/lists" -o Dir::Cache::Archives="$APT_CACHE/archives" install -y unzip zip
+
+include:
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/License-Scanning.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
 
 stages:
   - build
@@ -33,14 +40,17 @@ build:
   only:
     - main
 
+dependency_scanning:
+  stage: test
+
+license_scanning:
+  stage: test
+
 sast:
   stage: test
 
-include:
-  - template: Security/Dependency-Scanning.gitlab-ci.yml
-  - template: Security/License-Scanning.gitlab-ci.yml
-  - template: Security/SAST.gitlab-ci.yml
-  - template: Security/Secret-Detection.gitlab-ci.yml
+.secret-analyzer:
+  stage: test
 
 after_script:
   - rm -f  $GRADLE_USER_HOME/caches/modules-2/modules-2.lock
