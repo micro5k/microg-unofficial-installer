@@ -2,7 +2,7 @@
 LAST_COMMAND="$_"   # IMPORTANT: This must be the first line in the script after the shebang otherwise it will not work
 
 cat <<'LICENSE'
-  Copyright (C) 2017-2019 ale5000
+  Copyright (C) 2016-2019, 2021 ale5000
   SPDX-License-Identifer: GPL-3.0-or-later
 
   This program is free software: you can redistribute it and/or modify

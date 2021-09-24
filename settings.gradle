@@ -1,9 +1,5 @@
-/*
- * The settings file is used to specify which projects to include in your build.
- * 
- * Copyright (C) 2018 ale5000
- * SPDX-License-Identifer: GPL-3.0-or-later
- */
+// Copyright (C) 2016-2019, 2021 ale5000
+// SPDX-License-Identifer: GPL-3.0-or-later
 
 plugins {
     id 'com.gradle.enterprise' version '3.7'

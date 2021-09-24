@@ -1,5 +1,5 @@
 @echo off
-REM Copyright (C) 2017-2018 ale5000
+REM Copyright (C) 2016-2019, 2021 ale5000
 REM SPDX-License-Identifer: GPL-3.0-or-later
 
 SETLOCAL 2> nul
