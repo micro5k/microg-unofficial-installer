@@ -20,7 +20,9 @@ addons:
     - unzip=6.0*
     - zip=3.0*
 
-before_script: export TERM=dumb
+before_script:
+  - export TERM=dumb
+  - export UPLOAD_BUILD_SCAN=true
 
 jobs:
   include:
