@@ -9,7 +9,6 @@ cache:
     - ".apt-cache/"
 
 variables:
-  CI_DEFAULT_BRANCH: 'main'
   GIT_DEPTH: '1'
 
 before_script:
@@ -22,7 +21,7 @@ include:
   - template: Security/Dependency-Scanning.gitlab-ci.yml
   - template: Security/License-Scanning.gitlab-ci.yml
   - template: Security/SAST.gitlab-ci.yml
-  - template: Security/Secret-Detection.gitlab-ci.yml
+  #- template: Security/Secret-Detection.gitlab-ci.yml
 
 stages:
   - build
@@ -40,16 +39,7 @@ build:
   only:
     - main
 
-dependency_scanning:
-  stage: test
-
-license_scanning:
-  stage: test
-
 sast:
-  stage: test
-
-.secret-analyzer:
   stage: test
 
 after_script:
