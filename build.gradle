@@ -18,7 +18,7 @@
 
 plugins {
     id 'com.gradle.build-scan' version '3.7'
-    //id 'base'
+    id 'base'
     //id 'com.github.hierynomus.license-report' version '0.16.1'
 }
 
