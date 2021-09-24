@@ -37,13 +37,16 @@ build:
   script: "./gradlew buildOtaOSS"
   artifacts:
     paths:
-      - output/*.zip
+      - output/*.zip*
     expire_in: 1 week
   only:
     - main
 
 sast:
   stage: test
+  artifacts:
+    paths:
+      - gl-sast-report.json
 
 after_script:
   - rm -f  $GRADLE_USER_HOME/caches/modules-2/modules-2.lock
