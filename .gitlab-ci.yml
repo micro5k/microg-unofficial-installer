@@ -1,12 +1,12 @@
 image: openjdk:8-jdk
 
 cache:
-  key: ${CI_COMMIT_REF_SLUG}
+  key: "${CI_COMMIT_REF_SLUG}"
   paths:
     - cache/
-    - .gradle/caches/
-    - .gradle/wrapper/
-    - .apt-cache/
+    - ".gradle/caches/"
+    - ".gradle/wrapper/"
+    - ".apt-cache/"
 
 variables:
   GIT_DEPTH: "1"
@@ -26,6 +26,9 @@ stages:
 build:
   stage: build
   script: ./gradlew buildOtaOSS
+
+sast:
+  stage: test
 
 include:
   - template: Security/Dependency-Scanning.gitlab-ci.yml
