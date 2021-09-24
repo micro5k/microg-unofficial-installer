@@ -2,8 +2,9 @@
 LAST_COMMAND="$_"   # IMPORTANT: This must be the first line in the script after the shebang otherwise it will not work
 
 cat <<'LICENSE'
-  Copyright (C) 2016-2019, 2021 ale5000
+  SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
   SPDX-License-Identifer: GPL-3.0-or-later
+  SPDX-FileType: SOURCE
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by

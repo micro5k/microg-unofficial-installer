@@ -1,6 +1,7 @@
 @echo off
-REM Copyright (C) 2016-2019, 2021 ale5000
+REM SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
 REM SPDX-License-Identifer: GPL-3.0-or-later
+REM SPDX-FileType: SOURCE
 
 TITLE Command-line 2> nul
 SETLOCAL 2> nul
