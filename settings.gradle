@@ -8,5 +8,5 @@ plugins {
 rootProject.name = 'microg-unofficial-installer'
 println 'microG unofficial installer'
 
-// Enable stack trace
-gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
+/* Always enable stack trace */
+//gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
