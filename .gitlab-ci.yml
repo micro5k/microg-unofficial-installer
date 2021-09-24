@@ -6,7 +6,6 @@ cache:
     - cache/
     - .gradle/caches/
     - .gradle/wrapper/
-    #- .android/build-cache/
     - .apt-cache/
 
 variables:
@@ -19,9 +18,10 @@ before_script:
   - apt-get -o Dir::State::Lists="$APT_CACHE/lists" -o Dir::Cache::Archives="$APT_CACHE/archives" install -y unzip zip
 
 stages:
-  - test
   - build
+  - test
   #- execute
+  #- package
 
 build:
   stage: build
