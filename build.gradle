@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-defaultTasks 'tasks'
-
 plugins {
     id 'com.gradle.build-scan' version '3.7'
     //id 'base'
@@ -29,6 +27,8 @@ buildScan {
     termsOfServiceAgree = 'yes'
     publishAlwaysIf(System.getenv('UPLOAD_BUILD_SCAN') != null)
 }
+
+defaultTasks 'tasks'
 
 def isWindows() {
     return System.properties['os.name'].toLowerCase(Locale.ROOT).contains('windows')
