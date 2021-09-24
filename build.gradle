@@ -17,7 +17,6 @@
  */
 
 plugins {
-    id 'com.gradle.build-scan' version '3.7'
     id 'com.github.spotbugs' version '4.4.1'
     id 'base'
     //id 'com.github.hierynomus.license-report' version '0.16.1'
@@ -96,7 +95,7 @@ task install(dependsOn: build) {
 }
 
 wrapper {
-    gradleVersion = '5.6.4'
+    gradleVersion = '6.5'
     distributionType = Wrapper.DistributionType.ALL
-    distributionSha256Sum = 'abc10bcedb58806e8654210f96031db541bcd2d6fc3161e81cb0572d6a15e821'
+    distributionSha256Sum = 'c9910513d0eed63cd8f5c7fec4cb4a05731144770104a0871234a4edc3ba3cef'
 }
