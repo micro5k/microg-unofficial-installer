@@ -23,6 +23,9 @@ include:
   - template: Security/SAST.gitlab-ci.yml
   #- template: Security/Secret-Detection.gitlab-ci.yml
 
+variables:
+  SAST_EXPERIMENTAL_FEATURES: "true"
+
 stages:
   - build
   - test
