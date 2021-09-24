@@ -51,6 +51,6 @@ See here for the `instructions <docs/INSTRUCTIONS.rst>`_.
 
 Code analysis
 -------------
-.. image:: https://app.codacy.com/project/badge/Grade/5e8ab2a36dc14820aaa75caf548a77bf
+.. image:: https://app.codacy.com/project/badge/Grade/892e0ecec7b744ad8f26b97b30d552f1
    :alt: Codacy Badge
    :target: https://www.codacy.com/gh/micro5k/microg-unofficial-installer/dashboard
