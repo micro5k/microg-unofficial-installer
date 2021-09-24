@@ -26,6 +26,12 @@ stages:
 build:
   stage: build
   script: "./gradlew buildOtaOSS"
+  artifacts:
+    paths:
+      - output/*.zip
+    expire_in: 1 week
+  only:
+    - main
 
 sast:
   stage: test
@@ -39,9 +45,3 @@ include:
 after_script:
   - rm -f  $GRADLE_USER_HOME/caches/modules-2/modules-2.lock
   - rm -fr $GRADLE_USER_HOME/caches/*/plugin-resolution/
-  - rm -f  $GRADLE_USER_HOME/caches/*/fileHashes/fileHashes.bin
-  - rm -f  $GRADLE_USER_HOME/caches/*/fileHashes/fileHashes.lock
-  - rm -f  $GRADLE_USER_HOME/caches/journal-1/file-access.bin
-  - rm -f  $GRADLE_USER_HOME/caches/journal-1/journal-1.lock
-  - rm -f  $GRADLE_USER_HOME/caches/user-id.txt
-  - rm -f  $GRADLE_USER_HOME/caches/user-id.txt.lock
