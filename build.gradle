@@ -4,8 +4,19 @@
 
 plugins {
     id 'base'
-    //id 'com.github.hierynomus.license-report' version '0.16.1'
+    id 'com.github.hierynomus.license-report' version '0.15.0'
     id 'com.github.spotbugs' version '4.7.6'
+}
+
+description = 'microG unofficial installer is a flashable zip made to simplify the installation of microG.'
+
+task configure() {
+    defaultTasks 'tasks'
+    archivesBaseName = 'microg-unofficial-installer'
+    version = rootProject.file('zip-content/inc/VERSION').text.trim()
+
+    rootProject.buildDir = "${projectDir}/output"
+    println 'OS: '+System.properties['os.name']
 }
 
 buildScan {
@@ -14,14 +25,13 @@ buildScan {
     publishAlwaysIf(System.getenv('UPLOAD_BUILD_SCAN') != null)
 }
 
-defaultTasks 'tasks'
+task cleanCache(type: Delete) {
+    delete buildDir, "${projectDir}/cache"
+}
+clean.finalizedBy cleanCache
 
 def isWindows() {
     return System.properties['os.name'].toLowerCase(Locale.ROOT).contains('windows')
-}
-
-def is64BitArch() {
-    return System.properties['os.arch'].contains('64')
 }
 
 def getBuildScriptName() {
@@ -31,20 +41,6 @@ def getBuildScriptName() {
         return './build.sh'
     }
 }
-
-task configure() {
-    rootProject.description = 'microG unofficial installer is a flashable zip made to simplify the installation of microG.'
-    rootProject.version = rootProject.file('zip-content/inc/VERSION').text.trim()
-    rootProject.buildDir = "${projectDir}/output"
-
-    println 'OS: '+System.properties['os.name']
-    println '64 bit: '+is64BitArch()
-}
-
-task cleanCache(type: Delete) {
-    delete buildDir, "${projectDir}/cache"
-}
-clean.finalizedBy cleanCache
 
 task buildOta(group: '- OTA build', description: 'Build the flashable OTA zip.') {
     doLast {
@@ -68,11 +64,7 @@ task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip
 }
 build.finalizedBy buildOtaOSS
 
-task test(dependsOn: build) {
-    // Dummy task
-}
-
-task downloadLicenses() {
+task test() {
     // Dummy task
 }
 

@@ -3,11 +3,10 @@
 // SPDX-FileType: SOURCE
 
 plugins {
-    id 'com.gradle.enterprise' version '3.7'
+    id 'com.gradle.enterprise' version '3.7'  /* New name of com.gradle.build-scan */
 }
 
-rootProject.name = 'microg-unofficial-installer'
-println 'microG unofficial installer'
+rootProject.name = 'microG unofficial installer'
+println rootProject.name
 
-/* Always enable stack trace */
-//gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
+//gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS  /* Always enable stack trace */
