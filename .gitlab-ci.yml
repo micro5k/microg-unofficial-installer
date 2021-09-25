@@ -42,6 +42,11 @@ build:
   only:
     - main
 
+license_scanning:
+  artifacts:
+    paths:
+      - gl-license-scanning-report.json
+
 sast:
   stage: test
   artifacts:
