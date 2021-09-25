@@ -16,6 +16,7 @@ task configure() {
     version = rootProject.file('zip-content/inc/VERSION').text.trim()
 
     rootProject.buildDir = "${projectDir}/output"
+    println 'Version: '+version
     println 'OS: '+System.properties['os.name']
 }
 
@@ -26,7 +27,7 @@ buildScan {
 }
 
 task cleanCache(type: Delete) {
-    delete buildDir, "${projectDir}/cache"
+    delete "${projectDir}/cache"
 }
 clean.finalizedBy cleanCache
 
