@@ -1,4 +1,4 @@
-name: Shell Linter
+name: Validations and checks
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Gradle Wrapper validation
         uses: gradle/wrapper-validation-action@v1
-      - name: Run ShellCheck
+      - name: ShellCheck
         uses: azohra/shell-linter@latest
         with:
           severity: 'error'
