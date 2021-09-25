@@ -14,6 +14,8 @@ task configure() {
     defaultTasks 'tasks'
     archivesBaseName = 'microg-unofficial-installer'
     version = rootProject.file('zip-content/inc/VERSION').text.trim()
+    ext.isBeta = version.endsWith("-beta")
+    ext.isSnapshot = version.endsWith("-snapshot")
 
     rootProject.buildDir = "${projectDir}/output"
     println 'Version: '+version
