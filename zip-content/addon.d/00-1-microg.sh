@@ -1,11 +1,10 @@
 #!/sbin/sh
-#
 # ADDOND_VERSION=2
-#
-# /system/addon.d/00-1-microg.sh
-#
+# INFO: This script backup and restore microG during ROM upgrades
 
-# This script backup and restore microG during a ROM upgrade.
+# SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
+# SPDX-License-Identifer: GPL-3.0-or-later
+# SPDX-FileType: SOURCE
 
 # shellcheck disable=SC1091
 . /tmp/backuptool.functions
