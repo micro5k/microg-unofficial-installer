@@ -43,6 +43,7 @@ build:
     - main
 
 license_scanning:
+  stage: test
   artifacts:
     paths:
       - gl-license-scanning-report.json
