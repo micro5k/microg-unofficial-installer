@@ -60,7 +60,7 @@ disable_debug_log()
 
 _show_text_on_recovery()
 {
-  echo -e "ui_print $1\nui_print" >> $RECOVERY_PIPE
+  echo -e "ui_print $1\nui_print" >> "$RECOVERY_PIPE"
 }
 
 ui_error()
@@ -80,7 +80,7 @@ ui_warning()
 
 ui_msg()
 {
-  echo -e "ui_print $1\nui_print" >> $RECOVERY_PIPE
+  echo -e "ui_print $1\nui_print" >> "$RECOVERY_PIPE"
   if [ "$DEBUG_LOG" -ne 0 ]; then echo "$1"; fi
 }
 
@@ -147,16 +147,16 @@ set_perm()
 {
   local uid="$1"; local gid="$2"; local mod="$3"
   shift 3
-  chown $uid.$gid "$@"; chown $uid:$gid "$@"
-  chmod $mod "$@" || ui_error "chmod failed on '$@'" 81
+  chown "$uid:$gid" "$@" || chown "$uid.$gid" "$@" || ui_error "chown failed on: $*" 81
+  chmod "$mod" "$@" || ui_error "chmod failed on: $*" 81
 }
 
 set_perm_safe()
 {
   local uid="$1"; local gid="$2"; local mod="$3"
   shift 3
-  "$BASE_TMP_PATH/busybox" chown $uid:$gid "$@" || ui_error "chown failed on '$@'" 81
-  "$BASE_TMP_PATH/busybox" chmod $mod "$@" || ui_error "chmod failed on '$@'" 81
+  "$BASE_TMP_PATH/busybox" chown "$uid:$gid" "$@" || "$BASE_TMP_PATH/busybox" chown "$uid.$gid" "$@" || ui_error "chown failed on: $*" 81
+  "$BASE_TMP_PATH/busybox" chmod "$mod" "$@" || ui_error "chmod failed on: $*" 81
 }
 
 package_extract_file()
@@ -308,6 +308,7 @@ set_perm_safe 0 0 0755 "$TMP_PATH/uninstall.sh"
 set_perm_safe 0 0 0755 "$TMP_PATH/install.sh"
 
 package_extract_file_safe 'settings.conf' "$TMP_PATH/default-settings.conf"
+# shellcheck source=zip-content/settings.conf
 . "$TMP_PATH/default-settings.conf"
 test "$DEBUG_LOG" -eq 1 && enable_debug_log  # Enable file logging if needed
 

@@ -185,8 +185,8 @@ set_perm()
 {
   local uid="$1"; local gid="$2"; local mod="$3"
   shift 3
-  chown $uid:$gid "$@" || ui_error "chown failed on '$@'" 92
-  chmod $mod "$@" || ui_error "chmod failed on '$@'" 93
+  chown "$uid:$gid" "$@" || chown "$uid.$gid" "$@" || ui_error "chown failed on: $*" 81
+  chmod "$mod" "$@" || ui_error "chmod failed on: $*" 81
 }
 
 set_std_perm_recursive()  # Use it only if you know your version of 'find' handle spaces correctly
