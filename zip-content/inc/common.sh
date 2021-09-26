@@ -1,9 +1,10 @@
 #!/sbin/sh
-# shellcheck disable=SC3043,SC3037,SC3010,SC2039
+# shellcheck disable=SC3043,SC3037,SC3010,SC3060,SC2039
 
 # SC3043: In POSIX sh, local is undefined
 # SC3037: In POSIX sh, echo flags are undefined
 # SC3010: In POSIX sh, [[ ]] is undefined
+# SC3060: In POSIX sh, string replacement is undefined
 # SC2039: In POSIX sh, something is undefined (use this since azohra/shell-linter do not yet support specific exclusions)
 
 # SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
@@ -140,7 +141,7 @@ replace_string()
 
 replace_slash_with_at()
 {
-  echo $(echo $1 | sed -e 's/\//@/g')
+  echo "$(echo "$1" | sed -e 's/\//@/g')"
 }
 
 replace_line_in_file()  # $1 => File to process  $2 => Line to replace  $3 => File to read for replacement text
@@ -219,7 +220,7 @@ zip_extract_dir()
 reset_gms_data_of_all_apps()
 {
   ui_debug 'Resetting GMS data of all apps...'
-  find /data/data/*/shared_prefs -name com.google.android.gms.*.xml -delete
+  find /data/data/*/shared_prefs -name "com.google.android.gms.*.xml" -delete
   validate_return_code "$?" 'Failed to reset GMS data of all apps'
 }
 
@@ -318,7 +319,7 @@ list_files()  # $1 => Folder to scan   $2 => Prefix to remove
     if test -d "${entry}"; then
       list_files "${entry}" "$2"
     else
-      entry="${entry#$2}" || ui_error "Failed to remove prefix, entry => ${entry}, prefix to remove => $2" 106
+      entry="${entry#"$2"}" || ui_error "Failed to remove prefix, entry => ${entry}, prefix to remove => $2" 106
       printf '%s\\n' "${entry}" || ui_error "File listing failed, entry => ${entry}, folder => $1" 106
     fi
   done
@@ -335,7 +336,7 @@ append_file_list()  # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output
     if test -d "${entry}"; then
       append_file_list "${entry}" "$@"
     else
-      entry="${entry#$1}" || ui_error "Failed to remove prefix from the entry => ${entry}" 106
+      entry="${entry#"$1"}" || ui_error "Failed to remove prefix from the entry => ${entry}" 106
       echo "${entry}" >> "$2" || ui_error "File listing failed, current entry => ${entry}, folder => $dir" 106
     fi
   done
@@ -401,5 +402,5 @@ remove_ext()
 # Test
 find_test()  # This is useful to test 'find' - if every file/folder, even the ones with spaces, is displayed in a single line then your version is good
 {
-  find "$1" -type d -exec echo FOLDER: '{}' ';' -o -type f -exec echo FILE: '{}' ';' | while read x; do echo "$x"; done
+  find "$1" -type d -exec echo 'FOLDER:' '{}' ';' -o -type f -exec echo 'FILE:' '{}' ';' | while read -r x; do echo "$x"; done
 }
