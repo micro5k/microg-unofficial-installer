@@ -20,4 +20,4 @@ jobs:
       - name: ShellCheck
         uses: azohra/shell-linter@latest
         with:
-          severity: 'error'
+          severity: 'warning'
