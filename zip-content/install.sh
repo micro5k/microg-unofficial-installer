@@ -1,4 +1,8 @@
 #!/sbin/sh
+# shellcheck disable=SC3010,SC2039
+
+# SC3010: In POSIX sh, [[ ]] is undefined
+# SC2039: In POSIX sh, something is undefined (use this since azohra/shell-linter do not yet support specific exclusions)
 
 # SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
 # SPDX-License-Identifer: GPL-3.0-or-later
@@ -33,6 +37,7 @@ INSTALLATION_SETTINGS_FILE='ug.prop'
 
 ### FUNCTIONS ###
 
+# shellcheck source=inc/common.sh"
 . "$TMP_PATH/inc/common.sh"
 
 

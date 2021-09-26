@@ -6,7 +6,7 @@
 # SPDX-License-Identifer: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-# shellcheck disable=SC1091
+# shellcheck source=/dev/null
 . /tmp/backuptool.functions
 
 list_files()
