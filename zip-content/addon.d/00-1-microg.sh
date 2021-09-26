@@ -19,7 +19,7 @@ EOF
 case "$1" in
   backup)
     echo 'Backup of microG unofficial installer in progress...'
-    list_files | while read FILE _; do
+    list_files | while read -r FILE _; do
       if test -z "$FILE"; then continue; fi
       echo " $S/$FILE"
       backup_file "$S/$FILE"
@@ -28,7 +28,7 @@ case "$1" in
   ;;
   restore)
     echo 'Restore of microG unofficial installer in progress...'
-    list_files | while read FILE REPLACEMENT; do
+    list_files | while read -r FILE REPLACEMENT; do
       if test -z "$FILE"; then continue; fi
       R=""
       [ -n "$REPLACEMENT" ] && R="$S/$REPLACEMENT"

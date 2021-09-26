@@ -21,13 +21,15 @@ cat <<'LICENSE'
 LICENSE
 
 temp="$(ps -o pid,comm | grep -Fw $$)"; for word in $temp; do CURRENT_SHELL="$word"; done; unset temp word
-if test -n "$BASH_SOURCE"; then SCRIPT="${BASH_SOURCE[0]}"; elif test "$0" != "$CURRENT_SHELL" && test "$0" != "-$CURRENT_SHELL"; then SCRIPT="$0"; elif test -n "$LAST_COMMAND"; then SCRIPT="$LAST_COMMAND"; else echo 'ERROR: The script name cannot be found'; return 1 2>&- || exit 1; fi; unset LAST_COMMAND
+if test "${#BASH_SOURCE}" -ge 1; then SCRIPT="${BASH_SOURCE[0]}"; elif test "$0" != "$CURRENT_SHELL" && test "$0" != "-$CURRENT_SHELL"; then SCRIPT="$0"; elif test -n "$LAST_COMMAND"; then SCRIPT="$LAST_COMMAND"; else echo 'ERROR: The script name cannot be found'; return 1 2>&- || exit 1; fi; unset LAST_COMMAND
 SCRIPT="$(realpath "$SCRIPT" 2>&-)" || return 1 2>&- || exit 1
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 
 if test "$TERM" != 'dumb'; then printf '\033]0;%s\007' 'Building the flashable OTA zip...' | cat && printf '\r                                                            \r'; fi
 
+# shellcheck source=scripts/common.sh
 . "${SCRIPT_DIR}/scripts/common.sh"
+# shellcheck source=conf.sh
 . "${SCRIPT_DIR}/conf.sh"
 
 # Check dependencies
@@ -40,28 +42,29 @@ mkdir -p "$OUT_DIR" || ui_error 'Failed to create the output dir'
 
 # Create the temp dir
 TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX) || ui_error 'Failed to create our temp dir'
-if test -z "$TEMP_DIR"; then ui_error 'Failed to create our temp dir'; fi
+if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
 
 # Empty our temp dir (should be already empty, but we must be sure)
-rm -rf "$TEMP_DIR"/* || ui_error 'Failed to empty our temp dir'
+rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
 
 # Set filename and version
 VER=$(cat "$SCRIPT_DIR/zip-content/inc/VERSION.txt")
 FILENAME="$NAME-v$VER"
 if test -n "${OPENSOURCE_ONLY}"; then FILENAME="$FILENAME-OSS"; fi
 
+# shellcheck source=addition.sh
 . "$SCRIPT_DIR/addition.sh"
 
 # Download files if they are missing
 mkdir -p "$SCRIPT_DIR/cache"
 
-oss_files_to_download | while IFS='|' read LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL DL_MIRROR _; do
+oss_files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL DL_MIRROR _; do
   dl_file "$LOCAL_PATH" "$LOCAL_FILENAME" "$DL_HASH" "$DL_URL" "$DL_MIRROR"
 done
 STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
 
 if test -z "${OPENSOURCE_ONLY}"; then
-  files_to_download | while IFS='|' read LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL DL_MIRROR _; do
+  files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL DL_MIRROR _; do
     dl_file "$LOCAL_PATH" "$LOCAL_FILENAME" "$DL_HASH" "$DL_URL" "$DL_MIRROR"
   done
   STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
@@ -79,7 +82,7 @@ cp -rf "$SCRIPT_DIR"/CHANGELOG* "$TEMP_DIR/zip-content/" || ui_error 'Failed to 
 if test -n "${OPENSOURCE_ONLY}"; then
   touch "$TEMP_DIR/zip-content/OPENSOURCE-ONLY"
 else
-  files_to_download | while IFS='|' read LOCAL_FILENAME LOCAL_PATH _; do
+  files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _; do
     mkdir -p "$TEMP_DIR/zip-content/$LOCAL_PATH"
     cp -f "$SCRIPT_DIR/cache/$LOCAL_PATH/$LOCAL_FILENAME" "$TEMP_DIR/zip-content/$LOCAL_PATH/" || ui_error "Failed to copy to the temp dir the file => '$LOCAL_PATH/$LOCAL_FILENAME'"
   done
@@ -121,7 +124,7 @@ cd "$OUT_DIR" || ui_error 'Failed to change the folder'
 
 # Cleanup remnants
 rm -rf "$TEMP_DIR" &
-pid="$!"
+#pid="$!"
 
 # Create checksum files
 echo ''
