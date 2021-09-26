@@ -17,6 +17,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Gradle Wrapper validation
         uses: gradle/wrapper-validation-action@v1
+      - name: Remove gradlew (to avoid ShellCheck scan of it)
+        run: rm -f gradlew
       - name: ShellCheck
         uses: azohra/shell-linter@latest
         with:
