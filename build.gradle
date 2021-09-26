@@ -13,7 +13,7 @@ description = 'microG unofficial installer is a flashable zip made to simplify t
 task configure() {
     defaultTasks 'tasks'
     archivesBaseName = 'microg-unofficial-installer'
-    version = rootProject.file('zip-content/inc/VERSION').text.trim()
+    version = rootProject.file('zip-content/inc/VERSION.txt').text.trim()
     ext.isBeta = version.endsWith("-beta")
     ext.isSnapshot = version.endsWith("-snapshot")
 

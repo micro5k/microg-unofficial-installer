@@ -46,7 +46,7 @@ if test -z "$TEMP_DIR"; then ui_error 'Failed to create our temp dir'; fi
 rm -rf "$TEMP_DIR"/* || ui_error 'Failed to empty our temp dir'
 
 # Set filename and version
-VER=$(cat "$SCRIPT_DIR/zip-content/inc/VERSION")
+VER=$(cat "$SCRIPT_DIR/zip-content/inc/VERSION.txt")
 FILENAME="$NAME-v$VER"
 if test -n "${OPENSOURCE_ONLY}"; then FILENAME="$FILENAME-OSS"; fi
 
