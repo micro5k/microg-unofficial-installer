@@ -159,13 +159,13 @@ package_extract_file_safe()
 
 create_dir()
 {
-  mkdir -p "$1" || ui_error "Failed to create the dir '$dir'" 84
+  mkdir -p "$1" || ui_error "Failed to create the dir: $1" 84
   set_perm 0 0 0755 "$1"
 }
 
 create_dir_safe()
 {
-  "$BASE_TMP_PATH/busybox" mkdir -p "$1" || ui_error "Failed to create the dir '$dir'" 84
+  "$BASE_TMP_PATH/busybox" mkdir -p "$1" || ui_error "Failed to create the dir: $1" 84
   set_perm_safe 0 0 0755 "$1"
 }
 
