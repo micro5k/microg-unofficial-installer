@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC3043
+# shellcheck disable=SC3043,SC2039
+
+# SC3043: In POSIX sh, local is undefined
+# SC2039: In POSIX sh, something is undefined (use this since azohra/shell-linter do not yet support specific exclusions)
 
 # SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
 # SPDX-License-Identifer: GPL-3.0-or-later
