@@ -19,8 +19,7 @@ jobs:
         uses: gradle/wrapper-validation-action@master
       - name: Remove gradlew (to avoid ShellCheck scan of it)
         run: rm -f gradlew
-      - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@1.1.0
+      - name: Run ShellChecker
+        uses: a5k-actions/shellchecker@main
         with:
-          check_together: 'yes'
           severity: 'warning'
