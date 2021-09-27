@@ -1,0 +1,20 @@
+name: SPDX license overview
+
+on: [ push, pull_request ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Create spdx file
+        uses: philips-software/spdx-action@v0.8.0
+        with:
+          project: microG unofficial installer
+      - name: Upload spdx file
+        uses: actions/upload-artifact@v2
+        with:
+          name: licenses
+          path: ${{ steps.spdx-builder.outputs.spdx-file }}
