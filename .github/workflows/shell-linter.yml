@@ -1,4 +1,4 @@
-name: Validations and checks
+name: Code validation
 
 on:
   push:
@@ -16,10 +16,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Gradle Wrapper validation
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/wrapper-validation-action@master
       - name: Remove gradlew (to avoid ShellCheck scan of it)
         run: rm -f gradlew
-      - name: ShellCheck
-        uses: azohra/shell-linter@latest
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@1.1.0
         with:
+          check_together: 'yes'
           severity: 'warning'
