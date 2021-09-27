@@ -22,10 +22,12 @@ task configure() {
     println 'OS: '+System.properties['os.name']
 }
 
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
-    publishAlwaysIf(System.getenv('UPLOAD_BUILD_SCAN') != null)
+gradleEnterprise {
+    buildScan {
+        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+        termsOfServiceAgree = 'yes'
+        publishAlwaysIf(System.getenv('UPLOAD_BUILD_SCAN') != null)
+    }
 }
 
 task cleanCache(type: Delete) {
