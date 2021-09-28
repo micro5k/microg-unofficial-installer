@@ -1,11 +1,10 @@
 #!/sbin/sh
-# shellcheck disable=SC3043,SC3037,SC3010,SC3060,SC2039
+# shellcheck disable=SC3043,SC3037,SC3010,SC3060
 
 # SC3043: In POSIX sh, local is undefined
 # SC3037: In POSIX sh, echo flags are undefined
 # SC3010: In POSIX sh, [[ ]] is undefined
 # SC3060: In POSIX sh, string replacement is undefined
-# SC2039: In POSIX sh, something is undefined (use this since azohra/shell-linter do not yet support specific exclusions)
 
 # SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
 # SPDX-License-Identifer: GPL-3.0-or-later
