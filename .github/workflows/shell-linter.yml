@@ -1,18 +1,16 @@
-name: Code validation
+name: "Code linting"
 
-on: [ push, pull_request ]
+on: [push, pull_request]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: "Checkout code"
         uses: actions/checkout@v2
-      - name: Gradle Wrapper validation
-        uses: gradle/wrapper-validation-action@master
-      - name: Run ShellChecker
+      - name: "ShellChecker"
         uses: a5k-actions/shellchecker@main
         with:
-          severity: 'warning'
-          ignore-files: 'gradlew'
+          severity: "warning"
+          ignore-files: "gradlew"
