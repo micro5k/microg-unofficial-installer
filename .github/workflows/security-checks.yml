@@ -1,0 +1,17 @@
+name: "Security checks"
+
+on: [push, pull_request]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: "5"
+      - name: "Gitleaks"
+        uses: zricethezav/gitleaks-action@v1
+      - name: "Gradle Wrapper validation"
+        uses: gradle/wrapper-validation-action@master
