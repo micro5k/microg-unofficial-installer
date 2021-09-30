@@ -1,6 +1,7 @@
 * text=auto
 
 *.bin           binary
+*.exe           binary
 *.apk           binary
 *.jar           binary
 *.png           binary
