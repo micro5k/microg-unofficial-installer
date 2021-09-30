@@ -1,20 +1,27 @@
 * text=auto
 
-*.yml text eol=lf
-*.conf text eol=lf
-*.sh text eol=lf
-*.ash text eol=lf
-*.bash text eol=lf
-*.py text eol=lf
+*.bin           binary
+*.apk           binary
+*.jar           binary
+*.png           binary
+*.jpg           binary
 
-gradlew text eol=lf
-*.gradle text eol=lf
-*.properties text eol=lf
+*.gitattributes text eol=lf
+*.gitignore     text eol=lf
+*.gitmodules    text eol=lf
 
-*.bat text eol=crlf
+gradlew         text eol=lf
+*.gradle        text eol=lf
+*.properties    text eol=lf
 
-*.bin binary
-*.apk binary
-*.jar binary
-*.png binary
-*.jpg binary
+*.yml           text eol=lf
+*.conf          text eol=lf
+*.sh            text eol=lf
+*.ash           text eol=lf
+*.bash          text eol=lf
+*.py            text eol=lf
+
+*.rst           text eol=lf
+*.md            text eol=lf
+
+*.bat           text eol=crlf
