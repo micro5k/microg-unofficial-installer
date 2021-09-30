@@ -20,6 +20,7 @@ gradlew         text eol=lf
 *.ash           text eol=lf
 *.bash          text eol=lf
 *.py            text eol=lf
+*.xml           text eol=lf
 
 *.rst           text eol=lf
 *.md            text eol=lf
