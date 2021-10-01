@@ -41,7 +41,7 @@ def isWindows() {
 
 def getBuildScriptName() {
     if(isWindows()) {
-        return './build-win.bat'
+        return './build.bat'
     } else {
         return './build.sh'
     }
