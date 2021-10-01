@@ -14,7 +14,7 @@ cache:
     - ".apt-cache/"
 
 variables:
-  GIT_DEPTH: '1'
+  GIT_DEPTH: "1"
   # SAST_EXPERIMENTAL_FEATURES: "true"
 
 before_script:
