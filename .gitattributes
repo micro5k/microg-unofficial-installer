@@ -1,9 +1,10 @@
 * text=auto
 
-*.bin           binary
 *.exe           binary
+*.bin           binary
 *.apk           binary
 *.jar           binary
+*.gz            binary
 *.png           binary
 *.jpg           binary
 
@@ -18,8 +19,8 @@ gradlew         text eol=lf
 *.yml           text eol=lf
 *.spdx          text eol=lf
 *.xml           text eol=lf
-*.conf          text eol=lf
 
+*.conf          text eol=lf
 *.sh            text eol=lf
 *.ash           text eol=lf
 *.bash          text eol=lf
@@ -28,4 +29,5 @@ gradlew         text eol=lf
 *.rst           text eol=lf
 *.md            text eol=lf
 
+*.txt           text eol=crlf
 *.bat           text eol=crlf
