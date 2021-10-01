@@ -1,3 +1,8 @@
+---
+# SPDX-FileCopyrightText: Copyright (C) 2021 ale5000
+# SPDX-License-Identifer: GPL-3.0-or-later
+# SPDX-FileType: SOURCE
+
 image: openjdk:8-jdk
 
 cache:
@@ -10,6 +15,7 @@ cache:
 
 variables:
   GIT_DEPTH: '1'
+  # SAST_EXPERIMENTAL_FEATURES: "true"
 
 before_script:
   - export APT_CACHE="$CI_PROJECT_DIR/.apt-cache"; mkdir -p "$APT_CACHE/lists/partial"; mkdir -p "$APT_CACHE/archives/partial"
@@ -22,9 +28,6 @@ include:
   - template: Security/License-Scanning.gitlab-ci.yml
   - template: Security/SAST.gitlab-ci.yml
   #- template: Security/Secret-Detection.gitlab-ci.yml
-
-variables:
-  SAST_EXPERIMENTAL_FEATURES: "true"
 
 stages:
   - build
