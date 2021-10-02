@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-LAST_COMMAND="$_"   # IMPORTANT: This must be the first line in the script after the shebang otherwise it will not work
+# shellcheck disable=SC2009
+LAST_COMMAND="$_"  # IMPORTANT: This must be at the start of the script before any other command otherwise it will not work
 
 cat <<'LICENSE'
   SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
@@ -21,7 +22,15 @@ cat <<'LICENSE'
 LICENSE
 
 temp="$(ps -o pid,comm | grep -Fw $$)"; for word in $temp; do CURRENT_SHELL="$word"; done; unset temp word
-if test "${#BASH_SOURCE}" -ge 1; then SCRIPT="${BASH_SOURCE[0]}"; elif test "$0" != "$CURRENT_SHELL" && test "$0" != "-$CURRENT_SHELL"; then SCRIPT="$0"; elif test -n "$LAST_COMMAND"; then SCRIPT="$LAST_COMMAND"; else echo 'ERROR: The script name cannot be found'; return 1 2>&- || exit 1; fi; unset LAST_COMMAND
+detect_script()
+{
+  # shellcheck disable=SC3028,SC3054
+  if test "${#BASH_SOURCE}" -ge 1; then SCRIPT="${BASH_SOURCE[0]}"
+  elif test -n "$0" && test "$0" != "${CURRENT_SHELL}" && test "$0" != "-${CURRENT_SHELL}"; then SCRIPT="$0"
+  elif test -n "${LAST_COMMAND}"; then SCRIPT="${LAST_COMMAND}"
+  else echo 'ERROR: The script name cannot be found'; return 1; fi
+}
+detect_script || return 1 2>&- || exit 1; unset LAST_COMMAND
 SCRIPT="$(realpath "$SCRIPT" 2>&-)" || return 1 2>&- || exit 1
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 
