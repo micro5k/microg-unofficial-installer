@@ -7,14 +7,14 @@ os: linux
 dist: bionic
 virt: lxd
 
-language: java
-jdk: openjdk8
+language: "java"
+jdk: "openjdk8"
 
 cache:
   directories:
-  - cache/
-  - "$HOME/.gradle/caches/"
-  - "$HOME/.gradle/wrapper/"
+    - "cache/"
+    - "$HOME/.gradle/caches/"
+    - "$HOME/.gradle/wrapper/"
 
 git:
   depth: 1
@@ -22,8 +22,8 @@ git:
 addons:
   apt:
     packages:
-    - unzip=6.0*
-    - zip=3.0*
+      - unzip=6.0*
+      - zip=3.0*
 
 before_script:
   - export TERM=dumb
@@ -32,14 +32,14 @@ before_script:
 jobs:
   include:
     - env: OSS=true
-      script: ./gradlew buildOtaOSS
+      script: "./gradlew buildOtaOSS"
     # - env: OSS=false
-      # script: ./gradlew buildOta
+    # script: "./gradlew buildOta"
   fast_finish: true
 
 before_cache:
-- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+  - rm -f  "$HOME/.gradle/caches/modules-2/modules-2.lock"
+  - rm -fr "$HOME/.gradle/caches/*/plugin-resolution/"
 
 deploy:
   provider: releases
