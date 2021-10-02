@@ -8,7 +8,7 @@ image: openjdk:8-jdk
 cache:
   key: "${CI_COMMIT_REF_SLUG}"
   paths:
-    - cache/
+    - "cache/"
     - ".gradle/caches/"
     - ".gradle/wrapper/"
     - ".apt-cache/"
@@ -18,10 +18,13 @@ variables:
   # SAST_EXPERIMENTAL_FEATURES: "true"
 
 before_script:
-  - export APT_CACHE="$CI_PROJECT_DIR/.apt-cache"; mkdir -p "$APT_CACHE/lists/partial"; mkdir -p "$APT_CACHE/archives/partial"
+  - export APT_CACHE="$CI_PROJECT_DIR/.apt-cache"
+  - mkdir -p "$APT_CACHE/lists/partial"; mkdir -p "$APT_CACHE/archives/partial"
   - export GRADLE_USER_HOME="$PWD/.gradle"
   - apt-get -o Dir::State::Lists="$APT_CACHE/lists" update
-  - apt-get -o Dir::State::Lists="$APT_CACHE/lists" -o Dir::Cache::Archives="$APT_CACHE/archives" install -y unzip zip
+  - >-
+    apt-get -o Dir::State::Lists="$APT_CACHE/lists" -o
+    Dir::Cache::Archives="$APT_CACHE/archives" install -y unzip zip
 
 include:
   # - template: Security/Dependency-Scanning.gitlab-ci.yml
@@ -58,5 +61,5 @@ sast:
       - gl-sast-report.json
 
 after_script:
-  - rm -f  $GRADLE_USER_HOME/caches/modules-2/modules-2.lock
-  - rm -fr $GRADLE_USER_HOME/caches/*/plugin-resolution/
+  - rm -f  "$GRADLE_USER_HOME/caches/modules-2/modules-2.lock"
+  - rm -fr "$GRADLE_USER_HOME/caches/*/plugin-resolution/"
