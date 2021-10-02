@@ -34,7 +34,7 @@ detect_script || return 1 2>&- || exit 1; unset LAST_COMMAND
 SCRIPT="$(realpath "$SCRIPT" 2>&-)" || return 1 2>&- || exit 1
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 
-if test "$TERM" != 'dumb'; then printf '\033]0;%s\007' 'Building the flashable OTA zip...' | cat && printf '\r                                                            \r'; fi
+if test -z "${CI}"; then printf '\033]0;%s\007' 'Building the flashable OTA zip...' && printf '\r                                             \r'; fi
 
 # shellcheck source=scripts/common.sh
 . "${SCRIPT_DIR}/scripts/common.sh"
@@ -150,6 +150,6 @@ cd "$INIT_DIR" || ui_error 'Failed to change back the folder'
 
 echo ''
 echo 'Done.'
-if test "$TERM" != 'dumb'; then echo -e '\033]0;Done\007'; fi
+if test -z "${CI}"; then printf '\033]0;Done\007' && printf '\r                    \r'; fi
 
 exit "$?"
