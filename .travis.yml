@@ -34,7 +34,7 @@ jobs:
     - env: OSS=true
       script: "./gradlew buildOtaOSS"
     # - env: OSS=false
-    # script: "./gradlew buildOta"
+      # script: "./gradlew buildOta"
   fast_finish: true
 
 before_cache:
