@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2009
+# shellcheck disable=SC3043
 LAST_COMMAND="$_"  # IMPORTANT: This must be at the start of the script before any other command otherwise it will not work
 
 cat <<'LICENSE'
@@ -21,9 +21,10 @@ cat <<'LICENSE'
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 LICENSE
 
-temp="$(ps -o pid,comm | grep -Fw $$)"; for word in $temp; do CURRENT_SHELL="$word"; done; unset temp word
 detect_script()
 {
+  # shellcheck disable=SC2009
+  CURRENT_SHELL="$(ps -o 'pid,comm' | grep -Fw "$$" | while IFS=' ' read -r _ CURRENT_SHELL; do echo "${CURRENT_SHELL}"; done)"
   # shellcheck disable=SC3028,SC3054
   if test "${#BASH_SOURCE}" -ge 1; then SCRIPT="${BASH_SOURCE[0]}"
   elif test -n "$0" && test "$0" != "${CURRENT_SHELL}" && test "$0" != "-${CURRENT_SHELL}"; then SCRIPT="$0"
