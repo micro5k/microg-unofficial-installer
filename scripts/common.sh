@@ -54,7 +54,7 @@ corrupted_file()
 WGET_CMD='wget'
 dl_file()
 {
-  if [[ -e "$SCRIPT_DIR/cache/$1/$2" ]]; then verify_sha1 "$SCRIPT_DIR/cache/$1/$2" "$3" || rm -f "$SCRIPT_DIR/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
+  if [[ -e "$SCRIPT_DIR/cache/$1/$2" ]]; then verify_sha1 "$SCRIPT_DIR/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
 
   if [[ ! -e "$SCRIPT_DIR/cache/$1/$2" ]]; then
     mkdir -p "$SCRIPT_DIR/cache/$1"

@@ -98,7 +98,7 @@ com.google.android.maps|
 EOF
 }
 
-if [[ -z "$INSTALLER" ]]; then
+if [[ -z "${INSTALLER}" ]]; then
   ui_debug()
   {
     echo "$1"
@@ -115,9 +115,9 @@ if [[ -z "$INSTALLER" ]]; then
   delete_recursive_wildcard()
   {
     for filename in "$@"; do
-      if test -e "$filename"; then
-        ui_debug "Deleting '$filename'...."
-        rm -rf "$filename" || ui_debug "Failed to delete files/folders"
+      if test -e "${filename}"; then
+        ui_debug "Deleting '${filename}'...."
+        rm -rf "${filename:?}" || ui_debug "Failed to delete files/folders"
       fi
     done
   }
@@ -156,7 +156,7 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete_recursive_wildcard "/mnt/asec/${INTERNAL_NAME}"-*
   fi
 done
-STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
+STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
 framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
   if test -n "${INTERNAL_NAME}"; then
@@ -166,28 +166,28 @@ framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
     delete_recursive_wildcard "${SYS_PATH}/framework/oat"/*/"${INTERNAL_NAME}.odex"
   fi
 done
-STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
+STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
 list_app_filenames | while read -r FILENAME; do
-  if [[ -z "$FILENAME" ]]; then continue; fi
-  delete_recursive "${PRIVAPP_PATH}/$FILENAME"
-  delete_recursive "${PRIVAPP_PATH}/$FILENAME.apk"
-  delete_recursive "${PRIVAPP_PATH}/$FILENAME.odex"
-  delete_recursive "${SYS_PATH}/app/$FILENAME"
-  delete_recursive "${SYS_PATH}/app/$FILENAME.apk"
-  delete_recursive "${SYS_PATH}/app/$FILENAME.odex"
+  if [[ -z "${FILENAME}" ]]; then continue; fi
+  delete_recursive "${PRIVAPP_PATH}/${FILENAME}"
+  delete_recursive "${PRIVAPP_PATH}/${FILENAME}.apk"
+  delete_recursive "${PRIVAPP_PATH}/${FILENAME}.odex"
+  delete_recursive "${SYS_PATH}/app/${FILENAME}"
+  delete_recursive "${SYS_PATH}/app/${FILENAME}.apk"
+  delete_recursive "${SYS_PATH}/app/${FILENAME}.odex"
 done
 
 list_app_filenames | while read -r FILENAME; do
-  if [[ -z "$FILENAME" ]]; then continue; fi
+  if [[ -z "${FILENAME}" ]]; then continue; fi
   delete_recursive_wildcard /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
   delete_recursive_wildcard /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
   delete_recursive_wildcard /data/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
 done
 
 list_app_data_to_remove | while read -r FILENAME; do
-  if [[ -z "$FILENAME" ]]; then continue; fi
-  delete_recursive "/data/data/$FILENAME"
+  if [[ -z "${FILENAME}" ]]; then continue; fi
+  delete_recursive "/data/data/${FILENAME}"
   delete_recursive_wildcard '/data/user'/*/"${FILENAME}"
   delete_recursive_wildcard '/data/user_de'/*/"${FILENAME}"
   delete_recursive "${INTERNAL_MEMORY_PATH}/Android/data/${FILENAME}"
@@ -220,6 +220,6 @@ delete_recursive "${SYS_PATH}"/etc/preferred-apps/google.xml
 
 delete_recursive "${SYS_PATH}"/etc/org.fdroid.fdroid/additional_repos.xml
 
-if [[ -z "$INSTALLER" ]]; then
+if [[ -z "${INSTALLER}" ]]; then
   ui_debug 'Done.'
 fi
