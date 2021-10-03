@@ -24,11 +24,12 @@ ui_error()
   exit 1
 }
 
-UNAME=$(uname)
+UNAME="$(uname)"
 compare_start_uname()
 {
-  case "$UNAME" in
+  case "${UNAME}" in
     "$1"*) return 0;;  # Found
+    *)                 # NOT found
   esac
   return 1  # NOT found
 }
@@ -54,14 +55,14 @@ corrupted_file()
 WGET_CMD='wget'
 dl_file()
 {
-  if [[ -e "$SCRIPT_DIR/cache/$1/$2" ]]; then verify_sha1 "$SCRIPT_DIR/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
+  if [[ -e "${SCRIPT_DIR}/cache/$1/$2" ]]; then verify_sha1 "${SCRIPT_DIR}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
 
-  if [[ ! -e "$SCRIPT_DIR/cache/$1/$2" ]]; then
-    mkdir -p "$SCRIPT_DIR/cache/$1"
-    "$WGET_CMD" -c -O "$SCRIPT_DIR/cache/$1/$2" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0' "$4" || ( if ! test -z "$5"; then dl_file "$1" "$2" "$3" "$5"; else ui_error "Failed to download the file => 'cache/$1/$2'."; fi )
+  if [[ ! -e "${SCRIPT_DIR}/cache/$1/$2" ]]; then
+    mkdir -p "${SCRIPT_DIR}/cache/$1"
+    "${WGET_CMD}" -c -O "${SCRIPT_DIR}/cache/$1/$2" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0' "$4" || ( if ! test -z "$5"; then dl_file "$1" "$2" "$3" "$5"; else ui_error "Failed to download the file => 'cache/$1/$2'."; fi )
     echo ''
   fi
-  verify_sha1 "$SCRIPT_DIR/cache/$1/$2" "$3" || corrupted_file "$SCRIPT_DIR/cache/$1/$2"
+  verify_sha1 "${SCRIPT_DIR}/cache/$1/$2" "$3" || corrupted_file "${SCRIPT_DIR}/cache/$1/$2"
 }
 
 # Detect OS and set OS specific info
