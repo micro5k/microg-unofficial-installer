@@ -37,7 +37,9 @@ SCRIPT_DIR="$(dirname "$SCRIPT")"
 
 if test -z "${CI}"; then printf '\033]0;%s\007' 'Building the flashable OTA zip...' && printf '\r                                             \r'; fi
 
+# shellcheck source=SCRIPTDIR/scripts/common.sh
 . "${SCRIPT_DIR}/scripts/common.sh"
+# shellcheck source=SCRIPTDIR/conf.sh
 . "${SCRIPT_DIR}/conf.sh"
 
 # Check dependencies
@@ -60,6 +62,7 @@ VER=$(cat "${SCRIPT_DIR}/zip-content/inc/VERSION.txt")
 FILENAME="$NAME-v$VER"
 if test -n "${OPENSOURCE_ONLY}"; then FILENAME="$FILENAME-OSS"; fi
 
+# shellcheck source=SCRIPTDIR/addition.sh
 . "${SCRIPT_DIR}/addition.sh"
 
 # Download files if they are missing

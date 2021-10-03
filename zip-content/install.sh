@@ -36,7 +36,7 @@ INSTALLATION_SETTINGS_FILE='ug.prop'
 
 ### FUNCTIONS ###
 
-# shellcheck source=zip-content/inc/common.sh
+# shellcheck source=SCRIPTDIR/inc/common.sh
 . "$TMP_PATH/inc/common.sh"
 
 
@@ -234,7 +234,7 @@ if test "$API" -ge 23; then
 fi
 
 # Clean some Google Apps, microG and previous installations
-# shellcheck source=zip-content/uninstall.sh
+# shellcheck source=SCRIPTDIR/uninstall.sh
 . "$TMP_PATH/uninstall.sh"
 
 # Configuring default Android permissions
