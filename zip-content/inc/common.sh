@@ -116,12 +116,12 @@ unmount_safe()
 # Getprop related functions
 getprop()
 {
-  (test -e '/sbin/getprop' && /sbin/getprop "ro.${1}") || (grep "^ro\.${1}=" '/default.prop' | head -n1 | cut -d '=' -f 2)
+  (test -e '/sbin/getprop' && /sbin/getprop "ro.$1") || (grep "^ro\.$1=" '/default.prop' | head -n1 | cut -d '=' -f 2)
 }
 
 build_getprop()
 {
-  grep "^ro\.${1}=" "$TMP_PATH/build.prop" | head -n1 | cut -d '=' -f 2
+  grep "^ro\.$1=" "$TMP_PATH/build.prop" | head -n1 | cut -d '=' -f 2
 }
 
 # String related functions
@@ -166,7 +166,7 @@ search_ascii_string_in_file()
 search_ascii_string_as_utf16_in_file()
 {
   local SEARCH_STRING
-  SEARCH_STRING=$(echo -n "${1}" | od -A n -t x1 | LC_ALL=C tr -d '\n' | LC_ALL=C sed -e 's/^ //g;s/ /00/g')
+  SEARCH_STRING=$(echo -n "$1" | od -A n -t x1 | LC_ALL=C tr -d '\n' | LC_ALL=C sed -e 's/^ //g;s/ /00/g')
   od -A n -t x1 "$2" | LC_ALL=C tr -d ' \n' | LC_ALL=C grep -qF "$SEARCH_STRING" && return 0  # Found
   return 1  # NOT found
 }
