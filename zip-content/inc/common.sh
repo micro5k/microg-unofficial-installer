@@ -12,7 +12,7 @@
 
 ### GLOBAL VARIABLES ###
 
-if [[ -z "$RECOVERY_PIPE" || -z "$ZIP_FILE" || -z "$TMP_PATH" ]]; then
+if [[ -z "${RECOVERY_PIPE}" || -z "${ZIP_FILE}" || -z "${TMP_PATH}" ]]; then
   echo 'Some variables are NOT set.'
   exit 90
 fi
@@ -23,7 +23,7 @@ fi
 # Message related functions
 _show_text_on_recovery()
 {
-  echo -e "ui_print $1\nui_print" >> "$RECOVERY_PIPE"
+  echo -e "ui_print $1\nui_print" >> "${RECOVERY_PIPE}"
 }
 
 ui_error()
@@ -43,20 +43,20 @@ ui_warning()
 
 ui_msg()
 {
-  if [ "$DEBUG_LOG" -ne 0 ]; then echo "$1"; fi
-  echo -e "ui_print $1\nui_print" >> "$RECOVERY_PIPE"
+  if [ "${DEBUG_LOG}" -ne 0 ]; then echo "$1"; fi
+  echo -e "ui_print $1\nui_print" >> "${RECOVERY_PIPE}"
 }
 
 ui_msg_sameline_start()
 {
-  if [ "$DEBUG_LOG" -ne 0 ]; then echo -n "$1"; fi
-  echo -n "ui_print $1" >> "$RECOVERY_PIPE"
+  if [ "${DEBUG_LOG}" -ne 0 ]; then echo -n "$1"; fi
+  echo -n "ui_print $1" >> "${RECOVERY_PIPE}"
 }
 
 ui_msg_sameline_end()
 {
-  if [ "$DEBUG_LOG" -ne 0 ]; then echo "$1"; fi
-  echo -e " $1\nui_print" >> "$RECOVERY_PIPE"
+  if [ "${DEBUG_LOG}" -ne 0 ]; then echo "$1"; fi
+  echo -e " $1\nui_print" >> "${RECOVERY_PIPE}"
 }
 
 ui_debug()
@@ -75,6 +75,7 @@ is_mounted()
 {
   case $(mount) in
     *" $1 "*) return 0;;  # Mounted
+    *)                    # NOT mounted
   esac
   return 1  # NOT mounted
 }
@@ -88,8 +89,8 @@ get_mount_status()
 {
   local mount_line
   mount_line=$(mount | grep " $1 " | head -n1)
-  if [[ -z "$mount_line" ]]; then return 1; fi  # NOT mounted
-  if echo "$mount_line" | grep -qi -e "[(\s,]rw[\s,)]"; then return 0; fi  # Mounted read-write (RW)
+  if [[ -z "${mount_line}" ]]; then return 1; fi  # NOT mounted
+  if echo "${mount_line}" | grep -qi -e "[(\s,]rw[\s,)]"; then return 0; fi  # Mounted read-write (RW)
   return 2  # Mounted read-only (RO)
 }
 
@@ -110,7 +111,7 @@ unmount()
 
 unmount_safe()
 {
-  "$BASE_TMP_PATH/busybox" umount "$1" || ui_error "Failed to unmount '$1'" 106
+  "${BASE_TMP_PATH}/busybox" umount "$1" || ui_error "Failed to unmount '$1'" 106
 }
 
 # Getprop related functions
@@ -121,7 +122,7 @@ getprop()
 
 build_getprop()
 {
-  grep "^ro\.$1=" "$TMP_PATH/build.prop" | head -n1 | cut -d '=' -f 2
+  grep "^ro\.$1=" "${TMP_PATH}/build.prop" | head -n1 | cut -d '=' -f 2
 }
 
 # String related functions
@@ -129,6 +130,7 @@ is_substring()
 {
   case "$2" in
     *"$1"*) return 0;;  # Found
+    *)                  # NOT found
   esac
   return 1  # NOT found
 }
@@ -167,7 +169,7 @@ search_ascii_string_as_utf16_in_file()
 {
   local SEARCH_STRING
   SEARCH_STRING=$(echo -n "$1" | od -A n -t x1 | LC_ALL=C tr -d '\n' | LC_ALL=C sed -e 's/^ //g;s/ /00/g')
-  od -A n -t x1 "$2" | LC_ALL=C tr -d ' \n' | LC_ALL=C grep -qF "$SEARCH_STRING" && return 0  # Found
+  od -A n -t x1 "$2" | LC_ALL=C tr -d ' \n' | LC_ALL=C grep -qF "${SEARCH_STRING}" && return 0  # Found
   return 1  # NOT found
 }
 
@@ -177,8 +179,8 @@ set_perm()
   local uid="$1"; local gid="$2"; local mod="$3"
   shift 3
   # Quote: Previous versions of the chown utility used the dot (.) character to distinguish the group name; this has been changed to be a colon (:) character, so that user and group names may contain the dot character
-  chown "$uid:$gid" "$@" || chown "$uid.$gid" "$@" || ui_error "chown failed on: $*" 81
-  chmod "$mod" "$@" || ui_error "chmod failed on: $*" 81
+  chown "${uid}:${gid}" "$@" || chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
+  chmod "${mod}" "$@" || ui_error "chmod failed on: $*" 81
 }
 
 set_std_perm_recursive()  # Use it only if you know your version of 'find' handle spaces correctly
@@ -192,16 +194,16 @@ package_extract_file()
 {
   local dir
   dir=$(dirname "$2")
-  mkdir -p "$dir" || ui_error "Failed to create the dir '$dir' for extraction" 94
-  set_perm 0 0 0755 "$dir"
-  unzip -opq "$ZIP_FILE" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 94
+  mkdir -p "${dir}" || ui_error "Failed to create the dir '${dir}' for extraction" 94
+  set_perm 0 0 0755 "${dir}"
+  unzip -opq "${ZIP_FILE}" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 94
 }
 
 custom_package_extract_dir()
 {
   mkdir -p "$2" || ui_error "Failed to create the dir '$2' for extraction" 95
   set_perm 0 0 0755 "$2"
-  unzip -oq "$ZIP_FILE" "$1/*" -d "$2" || ui_error "Failed to extract the dir '$1' from this archive" 95
+  unzip -oq "${ZIP_FILE}" "$1/*" -d "$2" || ui_error "Failed to extract the dir '$1' from this archive" 95
 }
 
 zip_extract_file()
@@ -230,14 +232,14 @@ reset_gms_data_of_all_apps()
 verify_sha1()
 {
   if ! test -e "$1"; then ui_debug "This file to verify is missing => '$1'"; return 0; fi
-
   ui_debug "$1"
+
   local file_name="$1"
   local hash="$2"
   local file_hash
-  file_hash=$(sha1sum "$file_name" | cut -d ' ' -f 1)
 
-  if [[ $hash != "$file_hash" ]]; then return 1; fi  # Failed
+  file_hash="$(sha1sum "${file_name}" | cut -d ' ' -f 1)"
+  if test -z "${file_hash}" || test "${hash}" != "${file_hash}"; then return 1; fi  # Failed
   return 0  # Success
 }
 
@@ -299,8 +301,8 @@ delete_recursive()
 delete_recursive_wildcard()
 {
   for filename in "$@"; do
-    if test -e "$filename"; then
-      ui_debug "Deleting '$filename'...."
+    if test -e "${filename}"; then
+      ui_debug "Deleting '${filename}'...."
       rm -rf "${filename:?}" || ui_error "Failed to delete files/folders" 105
     fi
   done
@@ -330,16 +332,16 @@ list_files()  # $1 => Folder to scan   $2 => Prefix to remove
 append_file_list()  # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output filename
 {
   local dir="$1"
-  test -d "$dir" || return
+  test -d "${dir}" || return
 
   shift
   # After shift: $1 => Prefix to remove  $2 => Output filename
-  for entry in "$dir"/*; do
+  for entry in "${dir}"/*; do
     if test -d "${entry}"; then
       append_file_list "${entry}" "$@"
     else
       entry="${entry#"$1"}" || ui_error "Failed to remove prefix from the entry => ${entry}" 106
-      echo "${entry}" >> "$2" || ui_error "File listing failed, current entry => ${entry}, folder => $dir" 106
+      echo "${entry}" >> "$2" || ui_error "File listing failed, current entry => ${entry}, folder => ${dir}" 106
     fi
   done
 }
@@ -369,16 +371,16 @@ choose_timeout()
 {
   local key_code=1
   timeout -t "$1" keycheck; key_code="$?"  # Timeout return 127 when it cannot execute the binary
-  if test "$key_code" -eq 143; then
+  if test "${key_code}" -eq 143; then
     ui_msg 'Key code: No key pressed'
     return 0
-  elif test "$key_code" -eq 127 || test "$key_code" -eq 132; then
+  elif test "${key_code}" -eq 127 || test "${key_code}" -eq 132; then
     ui_msg 'WARNING: Key detection failed'
     return 1
   fi
 
-  ui_msg "Key code: $key_code"
-  check_key "$key_code"
+  ui_msg "Key code: ${key_code}"
+  check_key "${key_code}"
   return "$?"
 }
 
@@ -389,8 +391,8 @@ choose()
   ui_msg "$2"
   ui_msg "$3"
   keycheck; key_code="$?"
-  ui_msg "Key code: $key_code"
-  check_key "$key_code"
+  ui_msg "Key code: ${key_code}"
+  check_key "${key_code}"
   return "$?"
 }
 
@@ -404,5 +406,5 @@ remove_ext()
 # Test
 find_test()  # This is useful to test 'find' - if every file/folder, even the ones with spaces, is displayed in a single line then your version is good
 {
-  find "$1" -type d -exec echo 'FOLDER:' '{}' ';' -o -type f -exec echo 'FILE:' '{}' ';' | while read -r x; do echo "$x"; done
+  find "$1" -type d -exec echo 'FOLDER:' '{}' ';' -o -type f -exec echo 'FILE:' '{}' ';' | while read -r x; do echo "${x}"; done
 }
