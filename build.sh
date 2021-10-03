@@ -37,9 +37,7 @@ SCRIPT_DIR="$(dirname "$SCRIPT")"
 
 if test -z "${CI}"; then printf '\033]0;%s\007' 'Building the flashable OTA zip...' && printf '\r                                             \r'; fi
 
-# shellcheck source=scripts/common.sh
 . "${SCRIPT_DIR}/scripts/common.sh"
-# shellcheck source=conf.sh
 . "${SCRIPT_DIR}/conf.sh"
 
 # Check dependencies
@@ -58,15 +56,14 @@ if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
 rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
 
 # Set filename and version
-VER=$(cat "$SCRIPT_DIR/zip-content/inc/VERSION.txt")
+VER=$(cat "${SCRIPT_DIR}/zip-content/inc/VERSION.txt")
 FILENAME="$NAME-v$VER"
 if test -n "${OPENSOURCE_ONLY}"; then FILENAME="$FILENAME-OSS"; fi
 
-# shellcheck source=addition.sh
-. "$SCRIPT_DIR/addition.sh"
+. "${SCRIPT_DIR}/addition.sh"
 
 # Download files if they are missing
-mkdir -p "$SCRIPT_DIR/cache"
+mkdir -p "${SCRIPT_DIR}/cache"
 
 oss_files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL DL_MIRROR _; do
   dl_file "$LOCAL_PATH" "$LOCAL_FILENAME" "$DL_HASH" "$DL_URL" "$DL_MIRROR"
@@ -85,21 +82,21 @@ else
 fi
 
 # Copy data
-cp -rf "$SCRIPT_DIR/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
-cp -rf "$SCRIPT_DIR"/LIC* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
-cp -rf "$SCRIPT_DIR"/CHANGELOG* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the changelog to the temp dir'
+cp -rf "${SCRIPT_DIR}/zip-content" "$TEMP_DIR/" || ui_error 'Failed to copy data to the temp dir'
+cp -rf "${SCRIPT_DIR}"/LIC* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
+cp -rf "${SCRIPT_DIR}"/CHANGELOG* "$TEMP_DIR/zip-content/" || ui_error 'Failed to copy the changelog to the temp dir'
 
 if test -n "${OPENSOURCE_ONLY}"; then
   touch "$TEMP_DIR/zip-content/OPENSOURCE-ONLY"
 else
   files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _; do
     mkdir -p "$TEMP_DIR/zip-content/$LOCAL_PATH"
-    cp -f "$SCRIPT_DIR/cache/$LOCAL_PATH/$LOCAL_FILENAME" "$TEMP_DIR/zip-content/$LOCAL_PATH/" || ui_error "Failed to copy to the temp dir the file => '$LOCAL_PATH/$LOCAL_FILENAME'"
+    cp -f "${SCRIPT_DIR}/cache/$LOCAL_PATH/$LOCAL_FILENAME" "$TEMP_DIR/zip-content/$LOCAL_PATH/" || ui_error "Failed to copy to the temp dir the file => '$LOCAL_PATH/$LOCAL_FILENAME'"
   done
   STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
 
   mkdir -p "$TEMP_DIR/zip-content/misc/keycheck"
-  cp -f "$SCRIPT_DIR/cache/misc/keycheck/keycheck-arm" "$TEMP_DIR/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
+  cp -f "${SCRIPT_DIR}/cache/misc/keycheck/keycheck-arm" "$TEMP_DIR/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
 fi
 
 # Prepare the data before compression (also uniform attributes - useful for reproducible builds)
@@ -124,7 +121,7 @@ FILENAME="$FILENAME-signed"
 
 # Sign and zipalign
 mkdir -p "$TEMP_DIR/zipsign"
-java -Djava.io.tmpdir="$TEMP_DIR/zipsign" -jar "$SCRIPT_DIR/tools/zipsigner.jar" "$TEMP_DIR/flashable.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing and zipaligning'
+java -Djava.io.tmpdir="$TEMP_DIR/zipsign" -jar "${SCRIPT_DIR}/tools/zipsigner.jar" "$TEMP_DIR/flashable.zip" "$TEMP_DIR/$FILENAME.zip" || ui_error 'Failed signing and zipaligning'
 
 echo ''
 zip -T "$TEMP_DIR/$FILENAME.zip" || ui_error 'The zip is corrupted'
