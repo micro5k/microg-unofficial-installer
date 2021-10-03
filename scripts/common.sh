@@ -38,9 +38,10 @@ verify_sha1()
   local file_name="$1"
   local hash="$2"
   local file_hash
-  file_hash=$(sha1sum "$file_name" | cut -d ' ' -f 1)
 
-  if [[ $hash != "$file_hash" ]]; then return 1; fi  # Failed
+  if test ! -f "${file_name}"; then return 1; fi  # Failed
+  file_hash="$(sha1sum "${file_name}" | cut -d ' ' -f 1)"
+  if test -z "${file_hash}" || test "${hash}" != "${file_hash}"; then return 1; fi  # Failed
   return 0  # Success
 }
 

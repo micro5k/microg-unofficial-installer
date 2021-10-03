@@ -20,6 +20,7 @@ cat <<'LICENSE'
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 LICENSE
+echo ''
 
 detect_script()
 {
@@ -43,8 +44,8 @@ if test -z "${CI}"; then printf '\033]0;%s\007' 'Building the flashable OTA zip.
 . "${SCRIPT_DIR}/conf.sh"
 
 # Check dependencies
-which 'zip' || ui_error 'Zip is missing'
-which 'java' || ui_error 'Java is missing'
+which 'zip' 1>&- || ui_error 'Zip is missing'
+which 'java' 1>&- || ui_error 'Java is missing'
 
 # Create the output dir
 OUT_DIR="${SCRIPT_DIR}/output"
@@ -119,6 +120,7 @@ rm -f "$OUT_DIR/${FILENAME}-signed".zip* || ui_error 'Failed to remove the previ
 # Compress (it ensure that the list of files to compress is in the same order under all OSes)
 # Note: Unicode filenames in the zip are disabled since we don't need them and also zipsigner.jar chokes on them
 cd "$TEMP_DIR/zip-content" || ui_error 'Failed to change the folder'
+echo 'Zipping...'
 find . -type f | LC_ALL=C sort | zip -9X -nw -UN=n "$TEMP_DIR/flashable.zip" -@ || ui_error 'Failed compressing'
 FILENAME="$FILENAME-signed"
 
