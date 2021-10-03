@@ -303,7 +303,9 @@ test "$DEBUG_LOG" -eq 1 && enable_debug_log  # Enable file logging if needed
 if [ "$DEBUG_LOG_ENABLED" -eq 1 ]; then export DEBUG_LOG=1; fi
 
 # Detect boot mode
+# shellcheck disable=SC2009
 (ps | grep zygote | grep -v grep >/dev/null) && BOOTMODE=true
+# shellcheck disable=SC2009
 $BOOTMODE || (ps -A 2>/dev/null | grep zygote | grep -v grep >/dev/null && BOOTMODE=true)
 
 # Live setup

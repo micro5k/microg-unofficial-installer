@@ -132,7 +132,7 @@ fi
 INTERNAL_MEMORY_PATH='/sdcard0'
 if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
-uninstall_list | while IFS='|' read FILENAME INTERNAL_NAME _; do
+uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
   if test -n "${FILENAME}"; then
     delete_recursive "${PRIVAPP_PATH}/${FILENAME}"
     delete_recursive "${PRIVAPP_PATH}/${FILENAME}.apk"
@@ -158,7 +158,7 @@ uninstall_list | while IFS='|' read FILENAME INTERNAL_NAME _; do
 done
 STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
 
-framework_uninstall_list | while IFS='|' read INTERNAL_NAME _; do
+framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
   if test -n "${INTERNAL_NAME}"; then
     delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
     delete_recursive "${SYS_PATH}/framework/${INTERNAL_NAME}.jar"
@@ -168,7 +168,7 @@ framework_uninstall_list | while IFS='|' read INTERNAL_NAME _; do
 done
 STATUS="$?"; if test "$STATUS" -ne 0; then exit "$STATUS"; fi
 
-list_app_filenames | while read FILENAME; do
+list_app_filenames | while read -r FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
   delete_recursive "${PRIVAPP_PATH}/$FILENAME"
   delete_recursive "${PRIVAPP_PATH}/$FILENAME.apk"
@@ -178,14 +178,14 @@ list_app_filenames | while read FILENAME; do
   delete_recursive "${SYS_PATH}/app/$FILENAME.odex"
 done
 
-list_app_filenames | while read FILENAME; do
+list_app_filenames | while read -r FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
   delete_recursive_wildcard /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
   delete_recursive_wildcard /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
   delete_recursive_wildcard /data/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
 done
 
-list_app_data_to_remove | while read FILENAME; do
+list_app_data_to_remove | while read -r FILENAME; do
   if [[ -z "$FILENAME" ]]; then continue; fi
   delete_recursive "/data/data/$FILENAME"
   delete_recursive_wildcard '/data/user'/*/"${FILENAME}"

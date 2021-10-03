@@ -140,7 +140,9 @@ replace_string()
 
 replace_slash_with_at()
 {
-  echo "$(echo "$1" | sed -e 's/\//@/g')"
+  local result
+  result="$(echo "$@" | sed -e 's/\//@/g')"
+  echo "${result}"
 }
 
 replace_line_in_file()  # $1 => File to process  $2 => Line to replace  $3 => File to read for replacement text
