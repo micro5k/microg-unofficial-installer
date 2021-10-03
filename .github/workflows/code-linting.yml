@@ -17,5 +17,4 @@ jobs:
       - name: "ShellChecker"
         uses: a5k-actions/shellchecker@main
         with:
-          severity: "warning"
           ignore-files: "gradlew"
