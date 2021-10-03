@@ -50,4 +50,5 @@ case "$1" in
   post-restore)
     # Stub
   ;;
+  *)
 esac

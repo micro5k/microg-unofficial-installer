@@ -80,6 +80,7 @@ is_mounted()
 {
   case $(mount) in
     *" $1 "*) return 0;;  # Mounted
+    *)                    # NOT mounted
   esac
   return 1  # NOT mounted
 }
@@ -126,6 +127,7 @@ is_substring()
 {
   case "$2" in 
     *"$1"*) return 0;;  # Found
+    *)                  # NOT found
   esac;
   return 1  # NOT found
 }
