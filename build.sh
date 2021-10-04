@@ -26,8 +26,8 @@ detect_script()
 {
   # shellcheck disable=SC2009
   CURRENT_SHELL="$(ps -o 'pid,comm' | grep -Fw "$$" | while IFS=' ' read -r _ CURRENT_SHELL; do echo "${CURRENT_SHELL}"; done)"
-  # shellcheck disable=SC3028,SC3054
-  if test "${#BASH_SOURCE}" -ge 1; then SCRIPT="${BASH_SOURCE[0]}"
+  # shellcheck disable=SC3028,SC2128
+  if test "${#BASH_SOURCE}" -ge 1; then SCRIPT="${BASH_SOURCE}"  # Expanding an array without an index gives the first element (it is intended)
   elif test -n "$0" && test "$0" != "${CURRENT_SHELL}" && test "$0" != "-${CURRENT_SHELL}"; then SCRIPT="$0"
   elif test -n "${LAST_COMMAND}"; then SCRIPT="${LAST_COMMAND}"
   else echo 'ERROR: The script name cannot be found'; return 1; fi
