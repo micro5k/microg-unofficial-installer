@@ -40,7 +40,7 @@ SCRIPT_DIR="$(dirname "${SCRIPT}")"
 if test -z "${CI}"; then printf '\033]0;%s\007' 'Building the flashable OTA zip...' && printf '\r                                             \r'; fi
 
 # shellcheck source=SCRIPTDIR/scripts/common.sh
-. "${SCRIPT_DIR}/scripts/common.sh"
+if ! test "${A5K_FUNCTIONS_INCLUDED}" = true; then . "${SCRIPT_DIR}/scripts/common.sh"; fi
 # shellcheck source=SCRIPTDIR/conf.sh
 . "${SCRIPT_DIR}/conf.sh"
 
