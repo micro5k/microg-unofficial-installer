@@ -7,6 +7,8 @@
 # SPDX-License-Identifer: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
+export A5K_FUNCTIONS_INCLUDED=true
+readonly A5K_FUNCTIONS_INCLUDED
 export TZ=UTC
 export LANG=en_US
 
