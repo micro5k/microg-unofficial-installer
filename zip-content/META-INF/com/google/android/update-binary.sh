@@ -1,8 +1,6 @@
 #!/sbin/sh
-# shellcheck disable=SC3043,SC3037
-
+# shellcheck disable=SC3043
 # SC3043: In POSIX sh, local is undefined
-# SC3037: In POSIX sh, echo flags are undefined
 
 # SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
 # SPDX-License-Identifer: GPL-3.0-or-later
@@ -14,7 +12,7 @@ export DEBUG_LOG=0
 export RECOVERY_API_VER="$1"
 export RECOVERY_PIPE="/proc/self/fd/$2"
 export ZIP_FILE="$3"
-ZIP_PATH=$(dirname "${ZIP_FILE}")
+ZIP_PATH="$(dirname "${ZIP_FILE?}")"
 export ZIP_PATH
 BASE_TMP_PATH='/tmp'
 TMP_PATH='/tmp/custom-setup-a5k'
@@ -32,43 +30,45 @@ export BOOTMODE=false
 DEBUG_LOG_ENABLED=0
 enable_debug_log()
 {
-  if [ "${DEBUG_LOG_ENABLED}" -eq 1 ]; then return; fi
+  if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
+  DEBUG_LOG_ENABLED=1
   exec 3>&1 4>&2  # Backup stdout and stderr
   exec 1>>"${ZIP_PATH}/debug-a5k.log" 2>&1
-  DEBUG_LOG_ENABLED=1
 }
 
 disable_debug_log()
 {
-  if [ "${DEBUG_LOG_ENABLED}" -eq 0 ]; then return; fi
-  exec 1>&3 2>&4  # Restore stdout and stderr
+  if test "${DEBUG_LOG_ENABLED}" -eq 0; then return; fi
   DEBUG_LOG_ENABLED=0
+  exec 1>&3 2>&4  # Restore stdout and stderr
 }
 
 _show_text_on_recovery()
 {
-  echo -e "ui_print $1\nui_print" >> "${RECOVERY_PIPE}"
+  echo "ui_print $1" >> "${RECOVERY_PIPE}"
+  echo 'ui_print' >> "${RECOVERY_PIPE}"
 }
 
 ui_error()
 {
   ERROR_CODE=79
   if test -n "$2"; then ERROR_CODE="$2"; fi
-  >&2 echo "ERROR ${ERROR_CODE}: $1"
+  echo "ERROR ${ERROR_CODE}: $1" >&2
   _show_text_on_recovery "ERROR: $1"
   exit "${ERROR_CODE}"
 }
 
 ui_warning()
 {
-  >&2 echo "WARNING: $1"
+  echo "WARNING: $1" >&2
   _show_text_on_recovery "WARNING: $1"
 }
 
 ui_msg()
 {
-  echo -e "ui_print $1\nui_print" >> "${RECOVERY_PIPE}"
-  if [ "${DEBUG_LOG}" -ne 0 ]; then echo "$1"; fi
+  echo "ui_print $1" >> "${RECOVERY_PIPE}"
+  echo 'ui_print' >> "${RECOVERY_PIPE}"
+  if test "${DEBUG_LOG}" -ne 0; then echo "$1"; fi
 }
 
 ui_debug()
