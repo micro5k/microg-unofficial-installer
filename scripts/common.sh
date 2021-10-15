@@ -14,6 +14,7 @@ export LANG=en_US
 
 unset LANGUAGE
 unset LC_ALL
+unset LC_MESSAGES
 unset UNZIP
 unset UNZIP_OPTS
 unset UNZIPOPT
