@@ -1,0 +1,33 @@
+---
+name: "Code coverage"
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  coverage:
+    name: "Code coverage"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v2
+      - name: "Set up Ruby"
+        uses: ruby/setup-ruby@v1.83.0
+        with:
+          ruby-version: "3"
+          bundler-cache: true
+      - name: "Install Bashcov"
+        shell: bash
+        run: |
+          # Installing Bashcov...
+          gem install bashcov
+      - name: "Execute code coverage"
+        shell: bash
+        run: |
+          # Executing code coverage...
+          export OPENSOURCE_ONLY='1'
+          bashcov './build.sh'
+      - name: "Upload code coverage to Codacy"
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
