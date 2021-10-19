@@ -14,21 +14,19 @@ jobs:
       - name: "Set up Ruby"
         uses: ruby/setup-ruby@v1.83.0
         with:
-          ruby-version: "3"
+          ruby-version: "3.0"
           bundler-cache: true
-      - name: "Install Bashcov"
-        shell: bash
+      - name: "Install Bashcov and Codecov"
         run: |
-          # Installing Bashcov...
-          gem install bashcov
+          # Installing Bashcov and Codecov...
+          gem install bashcov codecov
       - name: "Execute code coverage"
-        shell: bash
         run: |
           # Executing code coverage...
           export OPENSOURCE_ONLY='1'
           bashcov './build.sh'
-      - name: "Upload code coverage to Codacy"
-        uses: codacy/codacy-coverage-reporter-action@v1
+      - name: "Upload reports to Codecov"
+        uses: codecov/codecov-action@v2
         with:
-          project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
-          coverage-reports: "./coverage/.resultset.json"
+          directory: "${{ github.workspace }}/coverage"
+          files: "codecov-result.json"
