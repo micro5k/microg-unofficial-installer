@@ -12,9 +12,13 @@
 *.gitignore     text eol=lf
 *.gitmodules    text eol=lf
 
+# Gradle files
 gradlew         text eol=lf
 *.gradle        text eol=lf
 *.properties    text eol=lf
+
+# Textual data
+*.dat           text eol=lf
 
 *.yml           text eol=lf
 *.spdx          text eol=lf
