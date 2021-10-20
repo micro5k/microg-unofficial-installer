@@ -7,6 +7,10 @@ microG unofficial installer
    :alt: Travis CI
    :target: https://app.travis-ci.com/micro5k/microg-unofficial-installer
 
+.. image:: https://codecov.io/gh/micro5k/microg-unofficial-installer/branch/main/graph/badge.svg
+   :alt: Coverage
+   :target: https://codecov.io/gh/micro5k/microg-unofficial-installer
+
 
 Description
 -----------
