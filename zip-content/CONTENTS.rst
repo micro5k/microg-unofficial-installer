@@ -11,7 +11,7 @@ Variants
 - **files/variants/PlayStore-recent.apk** => Google Play Store 7.1.25.I-all (137772785) - nodpi (Android >= 5) |fire|
 - **files/variants/PlayStore-legacy.apk** => Google Play Store 5.1.11 (80310011) - nodpi (Android < 5) |fire|
 
-- **files/variants/priv-app/GmsCore-mapbox.apk** => microG Service Core 0.2.10.19420 (Android >= 4) |star| |fire|
+- **files/variants/priv-app/GmsCore-mapbox.apk** => microG Service Core 0.2.22.212658 (Android >= 4) |star| |fire|
 - **files/variants/priv-app/GmsCore-vtm.apk** => microG Service Core 0.2.10.19420-vtm (Android >= 4) |star| |fire|
 - **files/variants/priv-app/GmsCore-vtm-legacy.apk** => microG Service Core 0.2.6.13280-vtm (Android < 4) |star| |fire|
 
