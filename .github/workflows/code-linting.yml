@@ -16,6 +16,6 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v2
       - name: "ShellChecker"
-        uses: a5k-actions/shellchecker@main
+        uses: a5k-actions/shellchecker@v0
         with:
           ignore-files: "gradlew"
