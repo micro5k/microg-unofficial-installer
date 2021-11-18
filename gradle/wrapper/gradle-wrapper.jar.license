@@ -1,16 +1,3 @@
-SPDXVersion: SPDX-2.2
-DataLicense: CC0-1.0
-SPDXID: SPDXRef-DOCUMENT
-DocumentName: gradle-wrapper
-DocumentNamespace: https://github.com/micro5k/microg-unofficial-installer/blob/main/gradle/wrapper/gradle-wrapper.spdx?UUID=661c6537-978b-4629-846a-56f59e5a323f&documentVersion=1.1
-
-Creator: Person: anonymous
-Created: 2021-09-30T20:00:00Z
-
-FileName: ./gradle/wrapper/gradle-wrapper.jar
-SPDXID: SPDXRef-1
-FileType: ARCHIVE
-FileChecksum: SHA1: 33b0acb4572934fc1dd7d5880c65036724974e06
-LicenseInfoInFile: NOASSERTION
-LicenseConcluded: Apache-2.0
-FileCopyrightText: Copyright (C) 2015-2021 the original authors
+SPDX-FileCopyrightText: Copyright (C) 2015-2021 the original authors
+SPDX-License-Identifer: Apache-2.0
+SPDX-FileType: ARCHIVE
