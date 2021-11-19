@@ -1,3 +1,8 @@
+---
+# SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
+# SPDX-License-Identifer: CC0-1.0
+# SPDX-FileType: SOURCE
+
 coverage:
   status:
     project:
@@ -6,4 +11,4 @@ coverage:
     patch:
       default:
         threshold: 10%
-    changes: 'no'
+    changes: "no"
