@@ -244,7 +244,7 @@ verify_sha1()
 }
 
 # File / folder related functions
-create_dir()
+create_dir() # Ensure dir exists
 {
   test -d "$1" && return
   mkdir -p "$1" || ui_error "Failed to create the dir '$1'" 97
