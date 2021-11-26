@@ -10,10 +10,10 @@
 export A5K_FUNCTIONS_INCLUDED=true
 readonly A5K_FUNCTIONS_INCLUDED
 export TZ=UTC
-export LANG=en_US
+export LC_ALL=C
+export LANG=C
 
 unset LANGUAGE
-unset LC_ALL
 unset LC_MESSAGES
 unset UNZIP
 unset UNZIP_OPTS
