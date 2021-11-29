@@ -1,15 +1,19 @@
 ---
+# SPDX-FileCopyrightText: Copyright (C) 2021 ale5000
+# SPDX-License-Identifer: GPL-3.0-or-later
+# SPDX-FileType: SOURCE
 name: "Code coverage"
-
-on: [push, pull_request, workflow_dispatch]
-
+on:
+  - push
+  - pull_request
+  - workflow_dispatch
 jobs:
   coverage:
     name: "Code coverage"
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Checkout code"
+      - name: "Check out code"
         uses: actions/checkout@v2
       - name: "Validate codecov.yml"
         shell: bash

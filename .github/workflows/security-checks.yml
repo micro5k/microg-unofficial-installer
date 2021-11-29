@@ -2,20 +2,20 @@
 # SPDX-FileCopyrightText: Copyright (C) 2021 ale5000
 # SPDX-License-Identifer: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
-
 name: "Security checks"
-
-on: [push, pull_request]
-
+on:
+  - push
+  - pull_request
 jobs:
   security:
+    name: "Security checks"
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Checkout code"
+      - name: "Check out code"
         uses: actions/checkout@v2
         with:
-          fetch-depth: "5"
+          fetch-depth: "20"
       - name: "Gitleaks"
         uses: zricethezav/gitleaks-action@v1
       - name: "Gradle Wrapper validation"

@@ -2,18 +2,18 @@
 # SPDX-FileCopyrightText: Copyright (C) 2021 ale5000
 # SPDX-License-Identifer: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
-
 name: "Code linting"
-
-on: [push, pull_request, workflow_dispatch]
-
+on:
+  - push
+  - pull_request
+  - workflow_dispatch
 jobs:
   shellchecker:
     name: "ShellChecker"
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Checkout code"
+      - name: "Check out code"
         uses: actions/checkout@v2
       - name: "ShellChecker"
         uses: a5k-actions/shellchecker@v0
