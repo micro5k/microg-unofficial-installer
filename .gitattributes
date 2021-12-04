@@ -40,6 +40,6 @@ build           text eol=lf
 
 *.rst           text eol=lf
 *.md            text eol=lf
+*.txt           text eol=lf
 
-*.txt           text eol=crlf
 *.bat           text eol=crlf
