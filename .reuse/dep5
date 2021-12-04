@@ -1,0 +1,14 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: microG unofficial installer
+Upstream-Contact: ale5000
+Source: https://github.com/micro5k/microg-unofficial-installer
+License: GPL-3.0-or-later
+Copyright: 2016-2019, 2021 ale5000
+
+Files: gradlew
+Copyright: 2015 the original author or authors.
+License: Apache-2.0
+
+Files: gradlew.bat
+Copyright: 2015 the original author or authors.
+License: Apache-2.0
