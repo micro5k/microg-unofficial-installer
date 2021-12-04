@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
+# SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
 # SPDX-FileType: SOURCE
 

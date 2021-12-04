@@ -1,4 +1,4 @@
-@REM SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
+@REM SPDX-FileCopyrightText: (c) 2016-2019, 2021 ale5000
 @REM SPDX-License-Identifier: GPL-3.0-or-later
 @REM SPDX-FileType: SOURCE
 
