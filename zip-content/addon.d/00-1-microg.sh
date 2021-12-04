@@ -3,7 +3,7 @@
 # INFO: This script backup and restore microG during ROM upgrades
 
 # SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
-# SPDX-License-Identifer: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
 # shellcheck source=/dev/null

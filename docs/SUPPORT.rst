@@ -1,6 +1,6 @@
 ..
    SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
-   SPDX-License-Identifer: GPL-3.0-or-later
+   SPDX-License-Identifier: GPL-3.0-or-later
    SPDX-FileType: DOCUMENTATION
 
 The best way to get support is to open an Issue_ here on GitHub or to post in the `official support thread`_ on the XDA forum.
