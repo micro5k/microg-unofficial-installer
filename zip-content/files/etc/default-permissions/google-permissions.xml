@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2017-2018 ale5000
+<!-- SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
      SPDX-License-Identifier: GPL-3.0-or-later
+     SPDX-FileType: SOURCE
 
      This file contains permissions to be granted by default.
      Default permissions are granted to special platform components and to apps that are approved to get default grants.

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2017-2018 ale5000
-     Copyright (C) 2018 Nanolx
+<!-- SPDX-FileCopyrightText: Copyright (C) 2016-2019, 2021 ale5000
+     SPDX-FileCopyrightText: Copyright (C) 2018 Nanolx
      SPDX-License-Identifier: GPL-3.0-or-later
+     SPDX-FileType: SOURCE
 
      This XML file declares which privileged permissions should be granted to privileged applications
 -->
