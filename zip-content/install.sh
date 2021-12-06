@@ -28,8 +28,7 @@ LEGACY_ARM=false
 LEGACY_ANDROID=false
 OLD_ANDROID=false
 FAKE_SIGN=false
-SYS_ROOT_IMAGE=''
-SYS_PATH='/system'
+SYS_PATH=''
 MARKET_FILENAME=''
 INSTALLATION_SETTINGS_FILE='ug.prop'
 
@@ -47,14 +46,16 @@ if ! is_mounted '/system'; then
   if ! is_mounted '/system'; then ui_error '/system cannot be mounted'; fi
 fi
 
-SYS_ROOT_IMAGE=$(getprop 'build.system_root_image')
-if [[ -z "${SYS_ROOT_IMAGE}" ]]; then
-  SYS_ROOT_IMAGE=false;
-elif [[ "${SYS_ROOT_IMAGE}" == true && -e '/system/system' ]]; then
+if test -f '/system_root/system/build.prop'; then
+  SYS_PATH='/system_root/system';
+elif test -f '/system/system/build.prop'; then
   SYS_PATH='/system/system';
+elif test -f '/system/build.prop'; then
+  SYS_PATH='/system';
+else
+  ui_error 'The ROM cannot be found'
 fi
 
-test -f "${SYS_PATH}/build.prop" || ui_error 'The ROM cannot be found'
 cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop"  # Cache the file for faster access
 
 PRIVAPP_PATH="${SYS_PATH}/app"
@@ -121,7 +122,6 @@ ui_msg ''
 ui_msg "API: ${API}"
 ui_msg "Detected CPU arch: ${CPU}"
 ui_msg "Detected 64-bit CPU arch: ${CPU64}"
-ui_msg "System root image: ${SYS_ROOT_IMAGE}"
 ui_msg "System path: ${SYS_PATH}"
 ui_msg "Privileged apps: ${PRIVAPP_PATH}"
 
