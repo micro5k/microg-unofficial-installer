@@ -1,13 +1,13 @@
 #!/sbin/sh
 # ADDOND_VERSION=2
-# INFO: This script backup and restore microG during ROM upgrades
 
 # SPDX-FileCopyrightText: (c) 2016-2019, 2021 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
+# INFO: This script backup and restore microG during ROM upgrades
 
 # shellcheck source=/dev/null
-. /tmp/backuptool.functions
+. '/tmp/backuptool.functions'
 
 list_files()
 {
@@ -21,9 +21,8 @@ case "$1" in
     echo 'Backup of microG unofficial installer in progress...'
     list_files | while read -r FILE _; do
       if test -z "${FILE}"; then continue; fi
-      # shellcheck disable=SC2154
-      echo " ${S}/${FILE}"
-      backup_file "${S}/${FILE}"
+      echo " ${S:?ERROR}/${FILE}"
+      backup_file "${S:?ERROR}/${FILE}"
     done
     echo 'Done.'
   ;;
@@ -32,9 +31,8 @@ case "$1" in
     list_files | while read -r FILE REPLACEMENT; do
       if test -z "${FILE}"; then continue; fi
       R=""
-      [ -n "${REPLACEMENT}" ] && R="${S}/${REPLACEMENT}"
-      # shellcheck disable=SC2154
-      [ -f "${C}/${S}/${FILE}" ] && restore_file "${S}/${FILE}" "${R}"
+      [ -n "${REPLACEMENT}" ] && R="${S:?ERROR}/${REPLACEMENT}"
+      [ -f "${C:?ERROR}/${S:?ERROR}/${FILE}" ] && restore_file "${S:?ERROR}/${FILE}" "${R}"
     done
     echo 'Done.'
   ;;

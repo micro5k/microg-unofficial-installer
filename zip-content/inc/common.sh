@@ -74,8 +74,8 @@ validate_return_code()
 is_mounted()
 {
   case $(mount) in
-    *" $1 "*) return 0;;  # Mounted
-    *)                    # NOT mounted
+    *[[:blank:]]"$1"[[:blank:]]*) return 0;;  # Mounted
+    *)                                        # NOT mounted
   esac
   return 1  # NOT mounted
 }
