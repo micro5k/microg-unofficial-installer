@@ -21,8 +21,8 @@ case "$1" in
     echo 'Backup of microG unofficial installer in progress...'
     list_files | while read -r FILE _; do
       if test -z "${FILE}"; then continue; fi
-      echo " ${S:?ERROR}/${FILE}"
-      backup_file "${S:?ERROR}/${FILE}"
+      echo " ${S:?}/${FILE}"
+      backup_file "${S:?}/${FILE}"
     done
     echo 'Done.'
   ;;
@@ -31,8 +31,8 @@ case "$1" in
     list_files | while read -r FILE REPLACEMENT; do
       if test -z "${FILE}"; then continue; fi
       R=""
-      [ -n "${REPLACEMENT}" ] && R="${S:?ERROR}/${REPLACEMENT}"
-      [ -f "${C:?ERROR}/${S:?ERROR}/${FILE}" ] && restore_file "${S:?ERROR}/${FILE}" "${R}"
+      [ -n "${REPLACEMENT}" ] && R="${S:?}/${REPLACEMENT}"
+      [ -f "${C:?}/${S:?}/${FILE}" ] && restore_file "${S:?}/${FILE}" "${R}"
     done
     echo 'Done.'
   ;;
