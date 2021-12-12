@@ -108,30 +108,6 @@ rec_getprop()
   (test -e '/sbin/getprop' && prop=$(/sbin/getprop "ro.$1") && test -n "${prop}" && echo "${prop}") || (prop=$(parse_file '/default.prop' "ro.$1") && echo "${prop}") || (ensure_system_is_mounted && test -e '/system/build.prop' && prop=$(parse_file '/system/build.prop' "ro.$1") && echo "${prop}")
 }
 
-get_rec_abilist()
-{
-  local abilist
-  abilist=$(rec_getprop 'product.cpu.abilist')
-  if test -n "${abilist}"; then echo "${abilist}"; return 0; fi  # Found
-
-  local abi1
-  abi1=$(rec_getprop 'product.cpu.abi')
-  local abi2
-  abi2=$(rec_getprop 'product.cpu.abi2')
-  if test -n "${abi1}" || test -n "${abi2}"; then echo "${abi1},${abi2}"; return 0; fi  # Found
-
-  return 1  # NOT found
-}
-
-is_substring()
-{
-  case "$2" in 
-    *"$1"*) return 0;;  # Found
-    *)                  # NOT found
-  esac;
-  return 1  # NOT found
-}
-
 set_perm()
 {
   local uid="$1"; local gid="$2"; local mod="$3"
@@ -241,24 +217,34 @@ if ! is_mounted '/tmp'; then
   if ! is_mounted '/tmp'; then ui_error '/tmp is NOT mounted'; fi
 fi
 
-ABI_LIST=",$(get_rec_abilist)," || ui_error "Empty ABI list"
+detect_main_arch()
+{
+  case "$(uname -m)" in
+    x86_64                    ) MAIN_ARCH='x86_64';;
+    x86                       ) MAIN_ARCH='x86';;
+    aarch64 | arm64* | armv8* ) MAIN_ARCH='arm64-v8a';;
+    armv7*                    ) MAIN_ARCH='armeabi-v7a';;
+    armv6* | armv5*           ) MAIN_ARCH='armeabi';;
+    *) ui_error "Unsupported CPU architecture: $(uname -m)"
+  esac
+}
 
-if is_substring ',x86_64,' "${ABI_LIST}"; then
+detect_main_arch
+
+if test "${MAIN_ARCH}" = 'x86_64'; then
   ui_debug 'Extracting 64-bit x86 BusyBox...'
   package_extract_file 'misc/busybox/busybox-x86_64.bin' "${BASE_TMP_PATH}/busybox"
-elif is_substring ',x86,' "${ABI_LIST}"; then
+elif test "${MAIN_ARCH}" = 'x86'; then
   ui_debug 'Extracting x86 BusyBox...'
   package_extract_file 'misc/busybox/busybox-x86.bin' "${BASE_TMP_PATH}/busybox"
-elif is_substring ',arm64-v8a,' "${ABI_LIST}"; then
+elif test "${MAIN_ARCH}" = 'arm64-v8a'; then
   ui_debug 'Extracting 64-bit ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm64.bin' "${BASE_TMP_PATH}/busybox"
   package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH}/keycheck"
-elif is_substring ',armeabi,' "${ABI_LIST}" || is_substring ',armeabi-v7a,' "${ABI_LIST}"; then
+elif test "${MAIN_ARCH}" = 'armeabi-v7a' || test "${MAIN_ARCH}" = 'armeabi'; then
   ui_debug 'Extracting ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm.bin' "${BASE_TMP_PATH}/busybox"
   package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH}/keycheck"
-else
-  ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
 fi
 # Give execution rights
 chmod +x "${BASE_TMP_PATH}/busybox" || ui_error "chmod failed on '${BASE_TMP_PATH}/busybox'" 81  # Needed to make working the "safe" functions
