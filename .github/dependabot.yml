@@ -1,0 +1,13 @@
+---
+# SPDX-FileCopyrightText: none
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileType: SOURCE
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "com.github.hierynomus.license-report"
