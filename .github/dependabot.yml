@@ -11,3 +11,4 @@ updates:
     open-pull-requests-limit: 5
     ignore:
       - dependency-name: "com.github.hierynomus.license-report"
+      - dependency-name: "com.github.spotbugs"
