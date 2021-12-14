@@ -168,15 +168,13 @@ if verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" '0a81951
    verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
    verify_sha1 "${TMP_PATH}/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "${TMP_PATH}/files/priv-app/DroidGuard.apk" 'd1116dfdff529892d3e2dd793dd93a4d987c1c5f' &&
-   verify_sha1 "${TMP_PATH}/files/app/NewPipe.apk" 'b1214a26763d70db49ebfcd9f3488f72233fba02' &&
-   verify_sha1 "${TMP_PATH}/files/app/NewPipeLegacy.apk" '45a9419c500c21e8e77087f47188ed64a58ca497' &&
+   verify_sha1 "${TMP_PATH}/files/variants/app/NewPipe.apk" 'b1214a26763d70db49ebfcd9f3488f72233fba02' &&
+   verify_sha1 "${TMP_PATH}/files/variants/app/NewPipeLegacy.apk" '45a9419c500c21e8e77087f47188ed64a58ca497' &&
    verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '3344e0fa38b57980125bc3049a0cb3dff86a22f2' &&
    verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'ef9fad611ab2cf2e68cdc7d05af4496998e8d3b5' &&
    verify_sha1 "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
    ###verify_sha1 "${TMP_PATH}/files/app/PlayGames.apk" 'c99c27053bf518dd3d08449e9478b43de0da50ed' &&
    verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7' &&
-   verify_sha1 "${TMP_PATH}/files/etc/permissions/com.google.android.maps.xml" 'f4d7d0ff10e96a6e0856223354f06e2f6b6efa54' &&
-   verify_sha1 "${TMP_PATH}/files/etc/permissions/features.xml" 'bfdadf82f88c302ac40e869fd38f1c457bec9226' &&
    verify_sha1 "${TMP_PATH}/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053' &&
    verify_sha1 "${TMP_PATH}/files/variants/PlayStore-recent.apk" '6c60fa863dd7befef49082c0dcf6278947a09333' &&
    verify_sha1 "${TMP_PATH}/files/variants/PlayStore-legacy.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746' &&
