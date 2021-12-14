@@ -5,7 +5,7 @@
 plugins {
     id 'base'
     id 'com.github.hierynomus.license-report' version '0.15.0'
-    id 'com.github.spotbugs' version '4.7.6'
+    id 'com.github.spotbugs' version '5.0.2'
 }
 
 description = 'microG unofficial installer is a flashable zip made to simplify the installation of microG.'
