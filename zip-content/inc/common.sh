@@ -286,7 +286,7 @@ move_dir_content()
 
 delete()
 {
-  ui_debug "Deleting $*..."
+  ui_debug "Deleting '$*'..."
   rm -f "$@" || ui_error "Failed to delete files" 103
 }
 
