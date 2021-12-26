@@ -4,35 +4,18 @@
 
 * text=auto
 
-*.exe           binary
-*.bin           binary
-*.apk           binary
-*.jar           binary
-*.gz            binary
-*.png           binary
-*.jpg           binary
-
 *.gitattributes text eol=lf
 *.gitignore     text eol=lf
 *.gitmodules    text eol=lf
 
-# Gradle files
-gradlew         text eol=lf
-*.gradle        text eol=lf
-*.properties    text eol=lf
-
-# Textual data
-*.dat           text eol=lf
-
 *.yml           text eol=lf
+*.spdx          text eol=lf
+*.xml           text eol=lf
+*.json          text eol=lf
+*.simplecov     text eol=lf
 
 .reuse/dep5     text eol=lf
 *.license       text eol=lf
-*.spdx          text eol=lf
-
-*.simplecov     text eol=lf
-*.xml           text eol=lf
-*.json          text eol=lf
 
 build           text eol=lf
 *.conf          text eol=lf
@@ -46,3 +29,20 @@ build           text eol=lf
 *.txt           text eol=lf
 
 *.bat           text eol=crlf
+
+# Gradle files
+gradlew         text eol=lf
+*.gradle        text eol=lf
+*.properties    text eol=lf
+
+# Textual data
+*.dat           text eol=lf
+
+# Binaries
+*.exe           binary
+*.bin           binary
+*.apk           binary
+*.jar           binary
+*.gz            binary
+*.png           binary
+*.jpg           binary
