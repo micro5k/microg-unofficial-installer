@@ -168,7 +168,7 @@ if verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" '0a81951
    verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
    verify_sha1 "${TMP_PATH}/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "${TMP_PATH}/files/priv-app/DroidGuard.apk" 'd1116dfdff529892d3e2dd793dd93a4d987c1c5f' &&
-   verify_sha1 "${TMP_PATH}/files/variants/app/NewPipe.apk" 'b1214a26763d70db49ebfcd9f3488f72233fba02' &&
+   verify_sha1 "${TMP_PATH}/files/variants/app/NewPipe.apk" '6eb07f807752db95602ab15fb9819e35e079d0e2' &&
    verify_sha1 "${TMP_PATH}/files/variants/app/NewPipeLegacy.apk" '95413ee2bf576e4c7b0bdc9e9e79fd2187d444a9' &&
    verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '3344e0fa38b57980125bc3049a0cb3dff86a22f2' &&
    verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'ef9fad611ab2cf2e68cdc7d05af4496998e8d3b5' &&
