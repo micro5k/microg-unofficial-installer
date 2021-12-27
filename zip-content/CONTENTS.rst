@@ -12,16 +12,28 @@ CONTENTS
 
 Variants
 --------
-- **files/variants/FakeStore.apk** => FakeStore 0.0.2 |star| |fire|
-- **files/variants/PlayStore-recent.apk** => Google Play Store 7.1.25.I-all (137772785) - nodpi (Android >= 5) |fire|
-- **files/variants/PlayStore-legacy.apk** => Google Play Store 5.1.11 (80310011) - nodpi (Android < 5) |fire|
 
-- **files/variants/priv-app/GmsCore-mapbox.apk** => microG Service Core 0.2.22.212658 (Android >= 4) |star| |fire|
-- **files/variants/priv-app/GmsCore-vtm.apk** => microG Service Core 0.2.10.19420-vtm (Android >= 4) |star| |fire|
-- **files/variants/priv-app/GmsCore-vtm-legacy.apk** => microG Service Core 0.2.6.13280-vtm (Android < 4) |star| |fire|
-
-- **files/variants/app/NewPipe.apk** => NewPipe 0.16.2 (Android >= 4.4) |star| |fire|
-- **files/variants/app/NewPipeLegacy.apk** => NewPipe Legacy 0.16.2 (Android < 4.4) |star| |fire|
++------------------------------------------------------------------------------------------------------------+----------------------+---------------------------+
+|                                                                                                            |    Updatable with    |         Signed by         |
+|                                                Application                                                 +---------+------------+---------+-----------------+
+|                                                                                                            | F-Droid | Play Store | F-Droid | Original author |
++============================================================================================================+=========+============+=========+=================+
+| `FakeStore 0.0.2 <files/variants/FakeStore.apk>`_                                                          | |star|  |            |         |     |fire|      |
++------------------------------------------------------------------------------------------------------------+---------+------------+---------+-----------------+
+| `Google Play Store 7.1.25.I-all <files/variants/PlayStore-recent.apk>`_ (137772785) - nodpi (Android >= 5) |         |   |star|   |         |     |fire|      |
++------------------------------------------------------------------------------------------------------------+---------+------------+---------+-----------------+
+| `Google Play Store 5.1.11 <files/variants/PlayStore-legacy.apk>`_ (80310011) - nodpi (Android < 5)         |         |   |star|   |         |     |fire|      |
++------------------------------------------------------------------------------------------------------------+---------+------------+---------+-----------------+
+| `microG Service Core 0.2.22.212658 <files/variants/priv-app/GmsCore-mapbox.apk>`_ (Android >= 4)           | |star|  |            |         |     |fire|      |
++------------------------------------------------------------------------------------------------------------+---------+------------+---------+-----------------+
+| `microG Service Core 0.2.10.19420-vtm <files/variants/priv-app/GmsCore-vtm.apk>`_ (Android >= 4)           | |star|  |            |         |     |fire|      |
++------------------------------------------------------------------------------------------------------------+---------+------------+---------+-----------------+
+| `microG Service Core 0.2.6.13280-vtm <files/variants/priv-app/GmsCore-vtm-legacy.apk>`_ (Android < 4)      | |star|  |            |         |     |fire|      |
++------------------------------------------------------------------------------------------------------------+---------+------------+---------+-----------------+
+| `NewPipe 0.16.2 <files/variants/app/NewPipe.apk>`_ (Android >= 4.4)                                        | |star|  |            | |fire|  |                 |
++------------------------------------------------------------------------------------------------------------+---------+------------+---------+-----------------+
+| `NewPipe Legacy 0.16.2 <files/variants/app/NewPipeLegacy.apk>`_ (Android < 4.4)                            | |star|  |            | |fire|  |                 |
++------------------------------------------------------------------------------------------------------------+---------+------------+---------+-----------------+
 
 
 Common
