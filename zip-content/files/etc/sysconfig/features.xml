@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-FileCopyrightText: (c) 2016-2019, 2021 ale5000
+     SPDX-License-Identifier: Apache-2.0
+     SPDX-FileType: SOURCE
+-->
+
+<config>
+    <feature name="com.google.android.feature.GOOGLE_BUILD" />
+    <feature name="com.google.android.feature.GOOGLE_EXPERIENCE" />
+    <feature name="com.google.android.feature.PIXEL_EXPERIENCE" />
+    <feature name="com.google.android.feature.PIXEL_2017_EXPERIENCE" />
+    <feature name="com.google.android.feature.PIXEL_2018_EXPERIENCE" />
+    <feature name="com.google.android.feature.PIXEL_2019_MIDYEAR_EXPERIENCE" />
+    <feature name="com.google.android.feature.PIXEL_2019_EXPERIENCE" />
+    <feature name="com.google.android.feature.PIXEL_2020_EXPERIENCE" />
+
+    <feature name="com.google.android.apps.photos.PIXEL_2017_PRELOAD" />
+    <feature name="com.google.android.apps.photos.PIXEL_2018_PRELOAD" />
+    <feature name="com.google.android.apps.photos.PIXEL_2019_MIDYEAR_PRELOAD" />
+    <feature name="com.google.android.apps.dialer.SUPPORTED" />
+
+    <feature name="android.hardware.camera.ar" />
+</config>
