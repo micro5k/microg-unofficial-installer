@@ -169,7 +169,7 @@ if verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" 'b57f050
    verify_sha1 "${TMP_PATH}/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "${TMP_PATH}/files/variants/app/NewPipe.apk" '6eb07f807752db95602ab15fb9819e35e079d0e2' &&
    verify_sha1 "${TMP_PATH}/files/variants/app/NewPipeLegacy.apk" '95413ee2bf576e4c7b0bdc9e9e79fd2187d444a9' &&
-   verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '3344e0fa38b57980125bc3049a0cb3dff86a22f2' &&
+   verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '9a6ffed69c510a06a719a2d52c3fd49218f71806' &&
    verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'ef9fad611ab2cf2e68cdc7d05af4496998e8d3b5' &&
    verify_sha1 "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
    ###verify_sha1 "${TMP_PATH}/files/app/PlayGames.apk" 'c99c27053bf518dd3d08449e9478b43de0da50ed' &&

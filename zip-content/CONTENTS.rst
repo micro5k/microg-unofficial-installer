@@ -40,7 +40,7 @@ Common
 ------
 - **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0 |star| |fire|
 
-- **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.11 |star| |fire|
+- **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.12 |star| |fire|
 - **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.4.0 |star| |fire|
 - **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star| |fire|
 
@@ -66,5 +66,3 @@ Components used only during setup (not installed)
 |star| *Can be updated through F-Droid*.
 
 |fire| *Original version*.
-
-|boom| *Nanolx's version* (compiled and signed by `@Nanolx <https://github.com/Nanolx>`_).
