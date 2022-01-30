@@ -350,11 +350,6 @@ set_perm 0 0 0644 "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
 create_dir "${SYS_PATH}/etc/zips"
 copy_dir_content "${USED_SETTINGS_PATH}" "${SYS_PATH}/etc/zips"
 
-# Workaround for when the database of GSF is accessed directly
-if test -d '/data/data/com.google.android.gsf'; then
-  ln -sfv '/data/data/com.google.android.gms/databases' '/data/data/com.google.android.gsf/databases' || ui_error 'Symlink creation failed'
-fi
-
 # Install survival script
 if [[ -d "${SYS_PATH}/addon.d" ]]; then
   if [[ "${LEGACY_ANDROID}" == true ]]; then
