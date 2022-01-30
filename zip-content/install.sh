@@ -243,7 +243,7 @@ if test "${API}" -ge 23; then
   fi
 
   if test "${FAKE_SIGN}" == true; then
-    echo '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true"/>' > "${TMP_PATH}/fake-sign-perm.dat"
+    echo '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true" />' > "${TMP_PATH}/fake-sign-perm.dat"
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' "${TMP_PATH}/fake-sign-perm.dat"
   fi
   copy_dir_content "${TMP_PATH}/files/etc/default-permissions" "${SYS_PATH}/etc/default-permissions"
@@ -313,7 +313,7 @@ if test "${API}" -lt 26; then
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml"
 else
   if test "${FAKE_SIGN}" == true; then
-    echo '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE"/>' > "${TMP_PATH}/fake-sign-perm.dat"
+    echo '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />' > "${TMP_PATH}/fake-sign-perm.dat"
     replace_line_in_file "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' "${TMP_PATH}/fake-sign-perm.dat"
   fi
 fi

@@ -15,50 +15,49 @@
 <exceptions>
     <exception package="com.google.android.gms">
         <!-- Account / Contacts -->
-        <permission name="android.permission.READ_CONTACTS" fixed="false"/>
-        <permission name="android.permission.WRITE_CONTACTS" fixed="false"/>
-        <permission name="android.permission.GET_ACCOUNTS" fixed="false"/>
+        <permission name="android.permission.READ_CONTACTS" fixed="false" />
+        <permission name="android.permission.WRITE_CONTACTS" fixed="false" />
+        <permission name="android.permission.GET_ACCOUNTS" fixed="false" />
         <!-- Location -->
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
-        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
-        <permission name="org.microg.permission.FORCE_COARSE_LOCATION" fixed="false"/>
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="true" />
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="true" />
+        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="true" whitelisted="true" />
         <!-- Phone -->
-        <permission name="android.permission.READ_PHONE_STATE" fixed="false"/>
+        <permission name="android.permission.READ_PHONE_STATE" fixed="false" />
+        <permission name="android.permission.RECEIVE_SMS" fixed="false" whitelisted="true" />
         <!-- Storage -->
-        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false"/>
-        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"/>
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false" />
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false" />
         <!-- Signature spoofing -->
         <!-- %FAKE_PACKAGE_SIGNATURE% -->
     </exception>
 
     <exception package="com.android.vending">
         <!-- Account / Contacts -->
-        <permission name="android.permission.READ_CONTACTS" fixed="false"/>
-        <permission name="android.permission.WRITE_CONTACTS" fixed="false"/>
-        <permission name="android.permission.GET_ACCOUNTS" fixed="false"/>
+        <permission name="android.permission.READ_CONTACTS" fixed="false" />
+        <permission name="android.permission.WRITE_CONTACTS" fixed="false" />
+        <permission name="android.permission.GET_ACCOUNTS" fixed="false" />
         <!-- Location -->
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
-        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
-        <!-- Phone -->
-        <permission name="android.permission.READ_PHONE_STATE" fixed="false"/>
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false" />
         <!-- Storage -->
-        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false"/>
-        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"/>
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false" />
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false" />
         <!-- Signature spoofing -->
         <!-- %FAKE_PACKAGE_SIGNATURE% -->
     </exception>
 
     <exception package="org.microg.nlp.backend.ichnaea">
         <!-- Phone -->
-        <permission name="android.permission.READ_PHONE_STATE" fixed="false"/>
+        <permission name="android.permission.READ_PHONE_STATE" fixed="false" />
         <!-- Location -->
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
-        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false" />
     </exception>
 
     <exception package="org.fitchfamily.android.dejavu">
         <!-- Location -->
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
-        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false" />
     </exception>
 </exceptions>
