@@ -43,17 +43,20 @@ INSTALLATION_SETTINGS_FILE='ug.prop'
 
 if ! is_mounted '/system'; then
   mount '/system'
-  if ! is_mounted '/system'; then ui_error '/system cannot be mounted'; fi
 fi
 
 if test -f '/system_root/system/build.prop'; then
-  SYS_PATH='/system_root/system';
+  SYS_PATH='/system_root/system'
 elif test -f '/system/system/build.prop'; then
-  SYS_PATH='/system/system';
+  SYS_PATH='/system/system'
 elif test -f '/system/build.prop'; then
-  SYS_PATH='/system';
+  SYS_PATH='/system'
 else
-  ui_error 'The ROM cannot be found'
+  if ! is_mounted '/system'; then
+    ui_error '/system cannot be mounted'
+  else
+    ui_error 'The ROM cannot be found'
+  fi
 fi
 
 cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop"  # Cache the file for faster access
@@ -90,6 +93,20 @@ elif is_substring ',arm64-v8a,' "${ABI_LIST}"; then
   CPU64='arm64-v8a'
 fi
 
+# Info
+ui_msg ''
+ui_msg '---------------------------'
+ui_msg 'microG unofficial installer'
+ui_msg 'v1.0.35-alpha'
+ui_msg '(by ale5000)'
+ui_msg '---------------------------'
+ui_msg ''
+ui_msg "API: ${API}"
+ui_msg "Detected CPU arch: ${CPU}"
+ui_msg "Detected 64-bit CPU arch: ${CPU64}"
+ui_msg "System path: ${SYS_PATH}"
+ui_msg "Privileged apps: ${PRIVAPP_PATH}"
+
 if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi
 
 if [[ "${LIVE_SETUP}" -eq 1 ]]; then
@@ -110,20 +127,6 @@ if [[ "${MARKET}" == 'PlayStore' ]]; then
 else
   MARKET_FILENAME="${MARKET}.apk"
 fi
-
-# Info
-ui_msg ''
-ui_msg '---------------------------'
-ui_msg 'microG unofficial installer'
-ui_msg 'v1.0.35-alpha'
-ui_msg '(by ale5000)'
-ui_msg '---------------------------'
-ui_msg ''
-ui_msg "API: ${API}"
-ui_msg "Detected CPU arch: ${CPU}"
-ui_msg "Detected 64-bit CPU arch: ${CPU64}"
-ui_msg "System path: ${SYS_PATH}"
-ui_msg "Privileged apps: ${PRIVAPP_PATH}"
 
 zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH}/framework-res"
 XML_MANIFEST="${TMP_PATH}/framework-res/AndroidManifest.xml"
