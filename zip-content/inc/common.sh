@@ -80,6 +80,15 @@ is_mounted()
   return 1  # NOT mounted
 }
 
+ensure_system_is_mounted()
+{
+  if ! is_mounted '/system'; then
+    mount '/system'
+    if ! is_mounted '/system'; then ui_error '/system cannot be mounted'; fi
+  fi
+  return 0;  # OK
+}
+
 is_mounted_read_write()
 {
   mount | grep " $1 " | head -n1 | grep -qi -e "[(\s,]rw[\s,)]"

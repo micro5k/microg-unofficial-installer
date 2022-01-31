@@ -79,33 +79,10 @@ ui_debug()
 is_mounted()
 {
   case $(mount) in
-    *" $1 "*) return 0;;  # Mounted
-    *)                    # NOT mounted
+    *[[:blank:]]"$1"[[:blank:]]*) return 0;;  # Mounted
+    *)                                        # NOT mounted
   esac
   return 1  # NOT mounted
-}
-
-ensure_system_is_mounted()
-{
-  if ! is_mounted '/system'; then
-    mount '/system'
-    if ! is_mounted '/system'; then ui_error '/system cannot be mounted'; fi
-  fi
-  return 0;  # OK
-}
-
-parse_file()
-{
-  local tmp
-  tmp=$(grep -F "$2=" "$1" | head -n1 | cut -d '=' -f 2) && echo "${tmp}"
-  if test -n "${tmp}"; then return 0; fi  # Found
-  return 1  # NOT found
-}
-
-rec_getprop()
-{
-  local prop=''
-  (test -e '/sbin/getprop' && prop=$(/sbin/getprop "ro.$1") && test -n "${prop}" && echo "${prop}") || (prop=$(parse_file '/default.prop' "ro.$1") && echo "${prop}") || (ensure_system_is_mounted && test -e '/system/build.prop' && prop=$(parse_file '/system/build.prop' "ro.$1") && echo "${prop}")
 }
 
 set_perm()
