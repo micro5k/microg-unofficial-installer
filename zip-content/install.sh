@@ -41,7 +41,7 @@ INSTALLATION_SETTINGS_FILE='ug.prop'
 
 ### CODE ###
 
-if ! is_mounted '/system'; then
+if ! is_mounted '/system_root' && ! is_mounted '/system'; then
   mount '/system'
 fi
 
