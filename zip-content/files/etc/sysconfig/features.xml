@@ -15,11 +15,11 @@
     <feature name="com.google.android.feature.PIXEL_2020_EXPERIENCE" />
     <feature name="com.google.android.feature.PIXEL_2020_MIDYEAR_EXPERIENCE" />
     <feature name="com.google.android.feature.PIXEL_2021_EXPERIENCE" />
+    <feature name="com.google.android.feature.PIXEL_2022_EXPERIENCE" />
 
-    <feature name="com.google.android.apps.photos.PIXEL_2017_PRELOAD" />
-    <feature name="com.google.android.apps.photos.PIXEL_2018_PRELOAD" />
+    <feature name="com.google.android.feature.NEXT_GENERATION_ASSISTANT" />
+    <feature name="com.google.android.feature.TURBO_PRELOAD" />
     <feature name="com.google.android.apps.photos.PIXEL_2019_PRELOAD" />
-    <feature name="com.google.android.apps.photos.PIXEL_2019_MIDYEAR_PRELOAD" />
     <feature name="com.google.android.apps.dialer.SUPPORTED" />
 
     <feature name="android.software.live_wallpaper" />
