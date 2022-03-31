@@ -78,7 +78,7 @@ task install(dependsOn: build) {
 }
 
 wrapper {
-    gradleVersion = '6.5'
+    gradleVersion = '7.3.3'
     distributionType = Wrapper.DistributionType.ALL
-    distributionSha256Sum = 'c9910513d0eed63cd8f5c7fec4cb4a05731144770104a0871234a4edc3ba3cef'
+    distributionSha256Sum = 'c9490e938b221daf0094982288e4038deed954a3f12fb54cbf270ddf4e37d879'
 }
