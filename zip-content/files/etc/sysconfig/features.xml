@@ -15,6 +15,7 @@
     <feature name="com.google.android.feature.PIXEL_2020_EXPERIENCE" />
     <feature name="com.google.android.feature.PIXEL_2020_MIDYEAR_EXPERIENCE" />
     <feature name="com.google.android.feature.PIXEL_2021_EXPERIENCE" />
+    <feature name="com.google.android.feature.PIXEL_2021_MIDYEAR_EXPERIENCE" />
     <feature name="com.google.android.feature.PIXEL_2022_EXPERIENCE" />
 
     <feature name="com.google.android.feature.NEXT_GENERATION_ASSISTANT" />
