@@ -87,6 +87,9 @@ IchnaeaNlpBackend|org.microg.nlp.backend.ichnaea
 MozillaNlpBackend|
 NominatimGeocoderBackend|org.microg.nlp.backend.nominatim
 NominatimNlpBackend|
+
+HwAps|com.huawei.android.hwaps
+HwPowerGenieEngine3|com.huawei.powergenie
 EOF
 }
 # Note: Do not remove GooglePartnerSetup (com.google.android.partnersetup) since some ROMs may need it.
