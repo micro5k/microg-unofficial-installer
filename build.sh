@@ -89,12 +89,13 @@ fi
 
 # Copy data
 cp -rf "${SCRIPT_DIR}/zip-content" "${TEMP_DIR}/" || ui_error 'Failed to copy data to the temp dir'
-cp -rf "${SCRIPT_DIR}"/LIC* "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
-cp -rf "${SCRIPT_DIR}"/CHANGELOG* "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the changelog to the temp dir'
+cp -rf "${SCRIPT_DIR}/"/LICENSE* "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
+cp -rf "${SCRIPT_DIR}/"/LIC-ADDITION* "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
+cp -rf "${SCRIPT_DIR}/"/CHANGELOG* "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the changelog to the temp dir'
 
 # Do not ship currently unused binaries
-rm -f "${TEMP_DIR}/zip-content/misc/busybox/busybox-"mips* || ui_error 'Failed to delete files in the temp dir'
-rm -rf "${TEMP_DIR}/zip-content/misc/aapt" || ui_error 'Failed to delete files in the temp dir'
+rm -f "${TEMP_DIR}/zip-content/misc/busybox/busybox-"mips* || ui_error 'Failed to delete unused files in the temp dir'
+rm -rf "${TEMP_DIR}/zip-content/misc/aapt" || ui_error 'Failed to delete unused files in the temp dir'
 
 if test -n "${OPENSOURCE_ONLY}"; then
   touch "${TEMP_DIR}/zip-content/OPENSOURCE-ONLY"
