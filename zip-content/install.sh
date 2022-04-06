@@ -245,6 +245,10 @@ if test "${API}" -ge 23; then
     create_dir "${SYS_PATH}/etc/default-permissions"
   fi
 
+  if test "${API}" -ge 29; then  # Android 10+
+    echo '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="true" whitelisted="true" />' > "${TMP_PATH}/location-perm.dat"
+    replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %ACCESS_BACKGROUND_LOCATION% -->' "${TMP_PATH}/location-perm.dat"
+  fi
   if test "${FAKE_SIGN}" == true; then
     echo '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true" />' > "${TMP_PATH}/fake-sign-perm.dat"
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' "${TMP_PATH}/fake-sign-perm.dat"
