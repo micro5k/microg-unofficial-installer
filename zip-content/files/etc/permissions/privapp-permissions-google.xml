@@ -34,6 +34,7 @@
         <permission name="android.permission.LOADER_USAGE_STATS" />
         <permission name="android.permission.MANAGE_ROLLBACKS" />
         <permission name="android.permission.MANAGE_USERS" />
+        <permission name="android.permission.OVERRIDE_COMPAT_CHANGE_CONFIG_ON_RELEASE_BUILD" />
         <permission name="android.permission.PACKAGE_USAGE_STATS" />
         <permission name="android.permission.PACKAGE_VERIFICATION_AGENT" />
         <permission name="android.permission.READ_RUNTIME_PROFILES" />
@@ -46,6 +47,7 @@
         <permission name="android.permission.SUBSTITUTE_NOTIFICATION_APP_NAME" />
         <permission name="android.permission.UPDATE_DEVICE_STATS" />
         <permission name="android.permission.WRITE_SECURE_SETTINGS" />
+        <permission name="com.android.permission.USE_INSTALLER_V2" />
         <deny-permission name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
         <deny-permission name="android.permission.SEND_SMS_NO_CONFIRMATION" />
         <!-- %FAKE_PACKAGE_SIGNATURE% -->
