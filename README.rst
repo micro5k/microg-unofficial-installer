@@ -36,7 +36,7 @@ Donate
 
 License
 -------
-Copyright © 2016-2019, 2021 ale5000
+Copyright © 2016-2019, 2021-2022 ale5000
 
 License: `GPLv3.0 or later <LICENSE.rst>`_
 
