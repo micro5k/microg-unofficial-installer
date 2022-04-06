@@ -13,6 +13,8 @@
     <allow-in-data-usage-save package="com.google.android.ims" />
     <!-- These are the packages that are white-listed to be able to run background location without throttling -->
     <allow-unthrottled-location package="com.google.android.gms" />
+    <allow-unthrottled-location package="org.microg.nlp.backend.ichnaea" />
+    <allow-unthrottled-location package="org.fitchfamily.android.dejavu" />
     <!-- These are the packages that are white-listed to be able to retrieve location even when user location settings are off, for emergency purposes -->
     <allow-ignore-location-settings package="com.google.android.gms" />
 
