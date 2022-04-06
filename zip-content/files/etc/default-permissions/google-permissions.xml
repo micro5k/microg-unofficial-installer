@@ -54,13 +54,13 @@
         <!-- Phone -->
         <permission name="android.permission.READ_PHONE_STATE" fixed="false" />
         <!-- Location -->
-        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false" />
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="true" />
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="true" />
     </exception>
 
     <exception package="org.fitchfamily.android.dejavu">
         <!-- Location -->
-        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false" />
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="true" />
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="true" />
     </exception>
 </exceptions>
