@@ -133,7 +133,7 @@ FILENAME="${FILENAME}-signed"
 
 # Sign and zipalign
 mkdir -p "${TEMP_DIR}/zipsign"
-java -Dzip.encoding=Cp437 -Djava.io.tmpdir="${TEMP_DIR}/zipsign" -jar "${SCRIPT_DIR}/tools/zipsigner.jar" "${TEMP_DIR}/flashable.zip" "${TEMP_DIR}/${FILENAME}.zip" || ui_error 'Failed signing and zipaligning'
+java -Dfile.encoding=Cp437 -Dzip.encoding=Cp437 -Djava.io.tmpdir="${TEMP_DIR}/zipsign" -jar "${SCRIPT_DIR}/tools/zipsigner.jar" "${TEMP_DIR}/flashable.zip" "${TEMP_DIR}/${FILENAME}.zip" || ui_error 'Failed signing and zipaligning'
 
 echo ''
 zip -T "${TEMP_DIR}/${FILENAME}.zip" || ui_error 'The zip is corrupted'
