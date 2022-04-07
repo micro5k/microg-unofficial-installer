@@ -18,6 +18,7 @@ unset LC_MESSAGES
 unset UNZIP
 unset UNZIP_OPTS
 unset UNZIPOPT
+unset JAVA_TOOL_OPTIONS
 unset CDPATH
 
 ui_error()
