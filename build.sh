@@ -128,7 +128,7 @@ rm -f "${OUT_DIR:?}/${FILENAME}-signed".zip* || ui_error 'Failed to remove the p
 # Note: Unicode filenames in the zip are disabled since we don't need them and also zipsigner.jar chokes on them
 cd "${TEMP_DIR}/zip-content" || ui_error 'Failed to change the folder'
 echo 'Zipping...'
-find . -type f | LC_ALL=C sort | zip -9X -nw -UN=n "${TEMP_DIR}/flashable.zip" -@ || ui_error 'Failed compressing'
+find . -type f | LC_ALL=C sort | zip -D -9 -X -UN=n -nw "${TEMP_DIR}/flashable.zip" -@ || ui_error 'Failed compressing'
 FILENAME="${FILENAME}-signed"
 
 # Sign and zipalign
