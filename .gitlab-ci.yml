@@ -48,11 +48,11 @@ build:
   only:
     - main
 
-license_scanning:
-  stage: test
-  artifacts:
-    paths:
-      - gl-license-scanning-report.json
+# license_scanning:
+#   stage: test
+#   artifacts:
+#     paths:
+#       - gl-license-scanning-report.json
 
 sast:
   stage: test
