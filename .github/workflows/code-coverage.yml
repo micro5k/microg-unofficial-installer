@@ -15,6 +15,11 @@ jobs:
     steps:
       - name: "Check out code"
         uses: actions/checkout@v2
+      - name: "Set up Java"
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'microsoft' # See 'Supported distributions' for available options
+          java-version: '11'
       - name: "Validate codecov.yml"
         shell: bash
         run: |
