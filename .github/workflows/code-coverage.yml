@@ -18,8 +18,8 @@ jobs:
       - name: "Set up Java"
         uses: actions/setup-java@v3
         with:
-          distribution: 'microsoft' # See 'Supported distributions' for available options
-          java-version: '11'
+          distribution: 'microsoft'
+          java-version: '8'
       - name: "Validate codecov.yml"
         shell: bash
         run: |
