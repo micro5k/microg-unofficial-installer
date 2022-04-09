@@ -9,15 +9,16 @@
 *.gitmodules    text eol=lf
 
 *.yml           text eol=lf
-*.spdx          text eol=lf
 *.xml           text eol=lf
 *.json          text eol=lf
 *.simplecov     text eol=lf
 
 .reuse/dep5     text eol=lf
 *.license       text eol=lf
+*.spdx          text eol=lf
 
 build           text eol=lf
+*.prop          text eol=lf
 *.conf          text eol=lf
 *.sh            text eol=lf
 *.ash           text eol=lf
