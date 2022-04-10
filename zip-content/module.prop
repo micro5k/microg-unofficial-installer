@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: none
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileType: SOURCE
+
+id=microg-unofficial-installer
+name=microG unofficial installer
+version=v1.0.35-alpha
+versionCode=1
+author=ale5000
+description=microG unofficial installer is a flashable zip made to simplify the installation of microG.
