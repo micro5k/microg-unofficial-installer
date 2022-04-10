@@ -9,9 +9,10 @@
 ### GLOBAL VARIABLES ###
 
 export DEBUG_LOG=0
-export RECOVERY_API_VER="$1"
-export RECOVERY_PIPE="/proc/self/fd/$2"
-export ZIP_FILE="$3"
+export RECOVERY_API_VER="${1}"
+export OUTFD="${2}"
+export RECOVERY_PIPE="/proc/self/fd/${2}"
+export ZIP_FILE="${3}"
 ZIP_PATH="$(dirname "${ZIP_FILE:?}")"
 export ZIP_PATH
 BASE_TMP_PATH='/tmp'
