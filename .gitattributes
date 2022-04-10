@@ -17,7 +17,10 @@
 *.license       text eol=lf
 *.spdx          text eol=lf
 
-build           text eol=lf
+# Batch scripts
+*.bat           text eol=crlf
+
+# Our files
 *.prop          text eol=lf
 *.conf          text eol=lf
 *.sh            text eol=lf
@@ -25,19 +28,23 @@ build           text eol=lf
 *.bash          text eol=lf
 *.py            text eol=lf
 
+# Our custom files
+build           text eol=lf
+updater         text eol=lf
+mount           text eol=lf
+
+# Text
 *.rst           text eol=lf
 *.md            text eol=lf
 *.txt           text eol=lf
 
-*.bat           text eol=crlf
+# Textual data
+*.dat           text eol=lf
 
 # Gradle files
 gradlew         text eol=lf
 *.gradle        text eol=lf
 *.properties    text eol=lf
-
-# Textual data
-*.dat           text eol=lf
 
 # Binaries
 *.exe           binary
