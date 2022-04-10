@@ -208,7 +208,10 @@ detect_main_arch()
 
 detect_main_arch
 
-if test "${MAIN_ARCH}" = 'x86_64'; then
+if test -n "${CUSTOM_BUSYBOX:-}" && test -e "${CUSTOM_BUSYBOX}"; then
+  ui_debug 'Copying custom BusyBox...'
+  "${CUSTOM_BUSYBOX}" cp -pf "${CUSTOM_BUSYBOX}" "${BASE_TMP_PATH}/busybox" || ui_error "Failed to copy custom BusyBox"
+elif test "${MAIN_ARCH}" = 'x86_64'; then
   ui_debug 'Extracting 64-bit x86 BusyBox...'
   package_extract_file 'misc/busybox/busybox-x86_64.bin' "${BASE_TMP_PATH}/busybox"
 elif test "${MAIN_ARCH}" = 'x86'; then
