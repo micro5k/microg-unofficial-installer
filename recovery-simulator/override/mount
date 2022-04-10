@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+
+# SPDX-FileCopyrightText: (c) 2016-2019, 2021 ale5000
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileType: SOURCE
+
+if test -n "$1"; then
+  echo "$1 mounted"
+  return 0 2>&- || exit 0
+fi
+
+cat <<'EOF'
+rootfs on / type rootfs (rw,seclabel)
+tmpfs on /dev type tmpfs (rw,seclabel,nosuid,relatime,mode=755)
+devpts on /dev/pts type devpts (rw,seclabel,relatime,mode=600)
+proc on /proc type proc (rw,relatime)
+sysfs on /sys type sysfs (rw,seclabel,relatime)
+selinuxfs on /sys/fs/selinux type selinuxfs (rw,relatime)
+tmpfs on /tmp type tmpfs (rw,seclabel,relatime)
+/dev/block/mmcblk0p7 on /cache type ext4 (rw,seclabel,relatime,user_xattr,barrier=1,data=ordered)
+/dev/block/mmcblk0p11 on /sdcard0 type vfat (rw,relatime,fmask=0000,dmask=0000,allow_utime=0022,codepage=cp437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro)
+/dev/block/mmcblk0p11 on /and-sec type vfat (rw,relatime,fmask=0000,dmask=0000,allow_utime=0022,codepage=cp437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro)
+/dev/block/mmcblk1p1 on /sdcard1 type vfat (rw,relatime,fmask=0000,dmask=0000,allow_utime=0022,codepage=cp437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro)
+/dev/block/mmcblk0p10 on /data type ext4 (rw,seclabel,relatime,user_xattr,barrier=1,data=ordered)
+/dev/block/mmcblk0p9 on /system type ext4 (rw,seclabel,relatime,user_xattr,barrier=1,data=ordered)
+EOF

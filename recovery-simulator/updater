@@ -1,0 +1,22 @@
+#!/sbin/sh
+
+# SPDX-FileCopyrightText: (c) 2016-2019, 2021 ale5000
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileType: SOURCE
+
+unset OUR_TEMP_DIR
+unset BB_GLOBBING
+unset FUNCNAME
+unset HOSTNAME
+unset LINENO
+unset OPTIND
+unset OLDPWD
+
+IFS=' 	
+'
+PS1='\w \$ '
+PS2='> '
+PS4='+ '
+
+# shellcheck source=/dev/null
+. "${TMPDIR}/update-binary"

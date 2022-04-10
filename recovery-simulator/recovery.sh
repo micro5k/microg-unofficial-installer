@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: (c) 2016-2019, 2021 ale5000
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileType: SOURCE
+
+# NOTE: This script simulate a real recovery but it relies on the zip to use the suggested paths.
+# IMPORTANT: A misbehaving zip can damage your real system.
+
+fail_wih_msg()
+{
+  echo "${1}"
+  exit 1
+}
+
+# Reset environment
+if ! "${ENV_RESETTED:-false}"; then
+  THIS_SCRIPT="$(realpath "${0}" 2>&-)" || fail_wih_msg 'Failed to get script filename'
+  # Create the temp dir (must be done before resetting environment)
+  OUR_TEMP_DIR="$(mktemp -d -t ANDR-RECOV-XXXXXX)" || fail_wih_msg 'Failed to create our temp dir'
+  exec env -i ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT}" OUR_TEMP_DIR="${OUR_TEMP_DIR}" PATH="${PATH}" bash "${THIS_SCRIPT}" "${1}"
+fi
+unset ENV_RESETTED
+
+# Check dependencies
+UNZIP_CMD="$(command -v unzip)" || fail_wih_msg 'Unzip is missing'
+CUSTOM_BUSYBOX="$(command -v busybox)" || fail_wih_msg 'BusyBox is missing'
+
+# Get dir of this script
+THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT}")" || fail_wih_msg 'Failed to get script dir'
+unset THIS_SCRIPT
+
+# Ensure we have a path the the temp dir and empty it (should be already empty, but we must be sure)
+if test -z "${OUR_TEMP_DIR}"; then fail_wih_msg 'Failed to create our temp dir'; fi
+rm -rf "${OUR_TEMP_DIR:?}"/* || fail_wih_msg 'Failed to empty our temp dir'
+
+# Simulate the environment variables (part 1)
+BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"  # Internal var
+SIMULATED_MICROSD="${BASE_SIMULATION_PATH}/sdcard1"  # Internal var
+EXTERNAL_STORAGE="${BASE_SIMULATION_PATH}/sdcard0"
+LD_LIBRARY_PATH=".:${BASE_SIMULATION_PATH}/sbin"
+ANDROID_DATA="${BASE_SIMULATION_PATH}/data"
+ANDROID_ROOT="${BASE_SIMULATION_PATH}/system"
+ANDROID_PROPERTY_WORKSPACE='21,32768'
+TZ='CET-1CEST,M3.5.0,M10.5.0'
+TMPDIR="${BASE_SIMULATION_PATH}/tmp"
+
+# Simulate the recovery environment inside the temp folder
+mkdir -p "${ANDROID_ROOT}"
+mkdir -p "${ANDROID_ROOT}/bin"
+ln -s "${ANDROID_ROOT}/bin" "${BASE_SIMULATION_PATH}/sbin" || mkdir -p "${BASE_SIMULATION_PATH}/sbin"
+mkdir -p "${ANDROID_DATA}"
+mkdir -p "${EXTERNAL_STORAGE}"
+ln -s "${EXTERNAL_STORAGE}" "${BASE_SIMULATION_PATH}/sdcard" || mkdir -p "${BASE_SIMULATION_PATH}/sdcard"
+mkdir -p "${SIMULATED_MICROSD}"
+
+mkdir -p "${TMPDIR}"
+cp -rf "${THIS_SCRIPT_DIR}/updater" "${TMPDIR}/updater" || fail_wih_msg 'Failed to copy the updater script'
+chmod +x "${TMPDIR}/updater" || fail_wih_msg "chmod failed on '${TMPDIR}/updater'"
+
+mkdir -p "${THIS_SCRIPT_DIR}/output"
+touch "${THIS_SCRIPT_DIR}/output/recovery_output"
+exec 99>> "${THIS_SCRIPT_DIR}/output/recovery_output"
+RECOVERY_FD=99
+
+# Simulate the environment variables (part 2)
+PATH="${THIS_SCRIPT_DIR}/override:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin"
+export EXTERNAL_STORAGE
+export LD_LIBRARY_PATH
+export ANDROID_DATA
+export PATH
+export ANDROID_ROOT
+export ANDROID_PROPERTY_WORKSPACE
+export TZ
+export TMPDIR
+export CUSTOM_BUSYBOX
+
+# Prepare before execution
+FLASHABLE_ZIP_PATH="${1}"
+FLASHABLE_ZIP="$(basename "${FLASHABLE_ZIP_PATH}")"
+cp -rf "${FLASHABLE_ZIP_PATH}" "${SIMULATED_MICROSD}/${FLASHABLE_ZIP}" || fail_wih_msg 'Failed to copy the flashable ZIP'
+"${UNZIP_CMD}" -opq "${SIMULATED_MICROSD}/${FLASHABLE_ZIP}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}\update-binary" || fail_wih_msg 'Failed to extract the update-binary'
+
+# Execute the script that will run the flashable zip
+cd "${BASE_SIMULATION_PATH}" || fail_wih_msg 'Failed to change dir to the base simulation path'
+"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SIMULATED_MICROSD}/${FLASHABLE_ZIP}"
+rm -r "${TMPDIR}\update-binary"
