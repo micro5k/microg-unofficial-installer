@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-image: "openjdk:17-jdk"
+image: "openjdk:17-jdk-slim"
 
 cache:
   key: "${CI_COMMIT_REF_SLUG}"
