@@ -32,6 +32,7 @@
 build                               text eol=lf
 recovery-simulator/updater          text eol=lf
 recovery-simulator/overrides/mount  text eol=lf
+recovery-simulator/overrides/umount text eol=lf
 
 # Text
 *.rst           text eol=lf
