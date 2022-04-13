@@ -36,8 +36,8 @@ rm -rf "${OUR_TEMP_DIR:?}"/* || fail_wih_msg 'Failed to empty our temp dir'
 
 # Simulate the environment variables (part 1)
 BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"  # Internal var
-SIMULATED_MICROSD="${BASE_SIMULATION_PATH}/sdcard1"  # Internal var
 EXTERNAL_STORAGE="${BASE_SIMULATION_PATH}/sdcard0"
+SECONDARY_STORAGE="${BASE_SIMULATION_PATH}/sdcard1"
 LD_LIBRARY_PATH=".:${BASE_SIMULATION_PATH}/sbin"
 ANDROID_DATA="${BASE_SIMULATION_PATH}/data"
 ANDROID_ROOT="${BASE_SIMULATION_PATH}/system"
@@ -48,11 +48,12 @@ TMPDIR="${BASE_SIMULATION_PATH}/tmp"
 # Simulate the recovery environment inside the temp folder
 mkdir -p "${ANDROID_ROOT}"
 mkdir -p "${ANDROID_ROOT}/bin"
-ln -s "${ANDROID_ROOT}/bin" "${BASE_SIMULATION_PATH}/sbin" || mkdir -p "${BASE_SIMULATION_PATH}/sbin"
 mkdir -p "${ANDROID_DATA}"
 mkdir -p "${EXTERNAL_STORAGE}"
+mkdir -p "${SECONDARY_STORAGE}"
+ln -s "${BASE_SIMULATION_PATH}/system/bin" "${BASE_SIMULATION_PATH}/sbin" || mkdir -p "${BASE_SIMULATION_PATH}/sbin"
 ln -s "${EXTERNAL_STORAGE}" "${BASE_SIMULATION_PATH}/sdcard" || mkdir -p "${BASE_SIMULATION_PATH}/sdcard"
-mkdir -p "${SIMULATED_MICROSD}"
+
 
 mkdir -p "${TMPDIR}"
 cp -rf "${THIS_SCRIPT_DIR}/updater" "${TMPDIR}/updater" || fail_wih_msg 'Failed to copy the updater script'
@@ -78,10 +79,10 @@ export CUSTOM_BUSYBOX
 # Prepare before execution
 FLASHABLE_ZIP_PATH="${1}"
 FLASHABLE_ZIP="$(basename "${FLASHABLE_ZIP_PATH}")"
-cp -rf "${FLASHABLE_ZIP_PATH}" "${SIMULATED_MICROSD}/${FLASHABLE_ZIP}" || fail_wih_msg 'Failed to copy the flashable ZIP'
-"${UNZIP_CMD}" -opq "${SIMULATED_MICROSD}/${FLASHABLE_ZIP}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}\update-binary" || fail_wih_msg 'Failed to extract the update-binary'
+cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}" || fail_wih_msg 'Failed to copy the flashable ZIP'
+"${UNZIP_CMD}" -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}\update-binary" || fail_wih_msg 'Failed to extract the update-binary'
 
 # Execute the script that will run the flashable zip
 cd "${BASE_SIMULATION_PATH}" || fail_wih_msg 'Failed to change dir to the base simulation path'
-"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SIMULATED_MICROSD}/${FLASHABLE_ZIP}"
+"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}"
 rm -r "${TMPDIR}\update-binary"
