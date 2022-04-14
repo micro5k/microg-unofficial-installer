@@ -98,7 +98,7 @@ rm -f "${TEMP_DIR}/zip-content/misc/busybox/busybox-"mips* || ui_error 'Failed t
 rm -rf "${TEMP_DIR}/zip-content/misc/aapt" || ui_error 'Failed to delete unused files in the temp dir'
 
 if test -n "${OPENSOURCE_ONLY}"; then
-  touch "${TEMP_DIR}/zip-content/OPENSOURCE-ONLY"
+  echo 'Include only Open source components, for more info see here: https://github.com/micro5k/microg-unofficial-installer/blob/main/docs/INSTRUCTIONS.rst' > "${TEMP_DIR}/zip-content/OPENSOURCE-ONLY" || ui_error 'Failed to create the OPENSOURCE-ONLY file'
 else
   files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _; do
     mkdir -p "${TEMP_DIR}/zip-content/${LOCAL_PATH}"
