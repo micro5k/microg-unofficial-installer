@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
+set -o pipefail
+
 export A5K_FUNCTIONS_INCLUDED=true
 readonly A5K_FUNCTIONS_INCLUDED
 export TZ=UTC
@@ -40,7 +42,7 @@ compare_start_uname()
 
 simple_get_prop()
 {
-  grep -F -w "${1}" "${2}" | cut -d '=' -f 2
+  grep -F "${1}=" "${2}" | head -n1 | cut -d '=' -f 2
 }
 
 verify_sha1()
