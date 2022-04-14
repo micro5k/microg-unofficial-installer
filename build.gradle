@@ -71,7 +71,9 @@ task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip
         }
     }
 }
-build.finalizedBy buildOtaOSS
+build.configure {
+    finalizedBy buildOtaOSS
+}
 
 task test() {
     // Dummy task
