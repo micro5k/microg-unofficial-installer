@@ -34,10 +34,12 @@ gradleEnterprise {
     }
 }
 
-task cleanCache(type: Delete) {
+tasks.register('cleanCache', Delete) {
     delete "${projectDir}/cache"
 }
-clean.finalizedBy cleanCache
+clean.configure {
+    finalizedBy cleanCache
+}
 
 def isWindows() {
     return System.properties['os.name'].toLowerCase(Locale.ROOT).contains('windows')
@@ -51,7 +53,9 @@ def getBuildScriptName() {
     }
 }
 
-task buildOta(group: '- OTA build', description: 'Build the flashable OTA zip.') {
+tasks.register('buildOta') {
+    group '- OTA build'
+    description 'Build the flashable OTA zip.'
     doLast {
         println 'Building the flashable OTA zip with Gradle...'
         exec {
@@ -61,7 +65,9 @@ task buildOta(group: '- OTA build', description: 'Build the flashable OTA zip.')
     }
 }
 
-task buildOtaOSS(group: '- OTA build', description: 'Build the flashable OTA zip (open-source components only).') {
+tasks.register('buildOtaOSS') {
+    group '- OTA build'
+    description 'Build the flashable OTA zip (open-source components only).'
     doLast {
         println 'Building the flashable OTA zip (open-source components only) with Gradle...'
         exec {
@@ -75,12 +81,12 @@ build.configure {
     finalizedBy buildOtaOSS
 }
 
-task test() {
-    // Dummy task
-}
+// Dummy task
+tasks.register('test')
 
-task install(dependsOn: build) {
-    // Dummy task
+// Dummy task
+tasks.register('install') {
+    dependsOn build
 }
 
 wrapper {
