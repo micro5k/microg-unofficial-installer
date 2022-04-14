@@ -38,6 +38,11 @@ compare_start_uname()
   return 1  # NOT found
 }
 
+simple_get_prop()
+{
+  grep -F -w "${1}" "${2}" | cut -d '=' -f 2
+}
+
 verify_sha1()
 {
   local file_name="$1"
