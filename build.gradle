@@ -12,9 +12,13 @@ description = 'microG unofficial installer is a flashable zip made to simplify t
 
 task configure() {
     defaultTasks 'tasks'
-    archivesBaseName = 'microg-unofficial-installer'
-    version = rootProject.file('zip-content/inc/VERSION.dat').text.trim()
+    def props = new Properties()
+    file('zip-content/module.prop').withInputStream { props.load(it) }
+
+    archivesBaseName = props.getProperty('id')
+    version = props.getProperty('version').trim()
     ext.isBeta = version.endsWith("-beta")
+    ext.isAlpha = version.endsWith("-alpha")
     ext.isSnapshot = version.endsWith("-snapshot")
 
     rootProject.buildDir = "${projectDir}/output"
