@@ -6,11 +6,14 @@
 image: "openjdk:17-jdk-alpine"
 
 cache:
-  key: "${CI_COMMIT_REF_SLUG}"
+  key:
+    files:
+      - gradle/wrapper/gradle-wrapper.properties
   paths:
-    - "cache/"
-    - ".gradle/caches/"
-    - ".gradle/wrapper/"
+    - cache/
+    - .gradle/caches/
+    - .gradle/notifications/
+    - .gradle/wrapper/
 
 variables:
   GIT_DEPTH: "1"
