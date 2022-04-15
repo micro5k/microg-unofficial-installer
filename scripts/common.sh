@@ -9,7 +9,7 @@
 
 set -o pipefail
 
-readonly A5K_FUNCTIONS_INCLUDED=true
+if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTIONS_INCLUDED=true; fi
 export TZ=UTC
 export LC_ALL=C
 export LANG=C
