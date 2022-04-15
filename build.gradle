@@ -8,29 +8,30 @@ plugins {
     //id 'com.github.spotbugs' version '4.7.6'
 }
 
-description = 'microG unofficial installer is a flashable zip made to simplify the installation of microG.'
-
-task configure() {
-    defaultTasks 'tasks'
-    def props = new Properties()
-    file('zip-content/module.prop').withInputStream { props.load(it) }
-
-    archivesBaseName = props.getProperty('id')
-    version = props.getProperty('version').trim()
-    ext.isBeta = version.endsWith("-beta")
-    ext.isAlpha = version.endsWith("-alpha")
-    ext.isSnapshot = version.endsWith("-snapshot")
-
-    rootProject.buildDir = "${projectDir}/output"
-    println 'Version: '+version
-    println 'OS: '+System.properties['os.name']
-}
-
 gradleEnterprise.buildScan {
     termsOfServiceUrl = 'https://gradle.com/terms-of-service'
     termsOfServiceAgree = 'yes'
-    publishAlwaysIf(System.getenv('UPLOAD_BUILD_SCAN') != null)
+    publishAlwaysIf System.getenv('UPLOAD_BUILD_SCAN') != null
 }
+
+def configure() {
+    defaultTasks 'tasks'
+
+    def props = new Properties()
+    file('zip-content/module.prop').withInputStream { props.load(it) }
+
+    description = props.getProperty('description')
+    version = props.getProperty('version').trim()
+    archivesBaseName = props.getProperty('id')
+    //ext.isBeta = version.endsWith('-beta')
+    //ext.isAlpha = version.endsWith('-alpha')
+    //ext.isSnapshot = version.endsWith('-snapshot')
+    rootProject.buildDir = "${projectDir}/output"
+
+    println 'Version: '+version
+    println 'OS: '+System.properties['os.name']
+}
+configure()
 
 tasks.register('cleanCache', Delete) {
     delete "${projectDir}/cache"
@@ -39,12 +40,8 @@ tasks.named('clean').configure {
     finalizedBy tasks.named('cleanCache')
 }
 
-def isWindows() {
-    return System.properties['os.name'].toLowerCase(Locale.ROOT).contains('windows')
-}
-
 def getBuildScriptName() {
-    if(isWindows()) {
+    if(System.properties['os.name'].toLowerCase(Locale.ROOT).contains('windows')) {
         return './build.bat'
     } else {
         return './build.sh'
@@ -71,7 +68,7 @@ tasks.register('buildOtaOSS') {
         exec {
             executable = getBuildScriptName()
             args 'Gradle'
-            environment OPENSOURCE_ONLY: "1"
+            environment OPENSOURCE_ONLY: '1'
         }
     }
 }
