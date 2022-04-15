@@ -4,8 +4,8 @@
 
 plugins {
     id 'base'
-    id 'com.github.hierynomus.license-report' version '0.15.0'
-    id 'com.github.spotbugs' version '4.7.6'
+    //id 'com.github.hierynomus.license-report' version '0.15.0'
+    //id 'com.github.spotbugs' version '4.7.6'
 }
 
 description = 'microG unofficial installer is a flashable zip made to simplify the installation of microG.'
@@ -26,18 +26,16 @@ task configure() {
     println 'OS: '+System.properties['os.name']
 }
 
-gradleEnterprise {
-    buildScan {
-        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-        termsOfServiceAgree = 'yes'
-        publishAlwaysIf(System.getenv('UPLOAD_BUILD_SCAN') != null)
-    }
+gradleEnterprise.buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+    publishAlwaysIf(System.getenv('UPLOAD_BUILD_SCAN') != null)
 }
 
 tasks.register('cleanCache', Delete) {
     delete "${projectDir}/cache"
 }
-clean.configure {
+tasks.named('clean').configure {
     finalizedBy cleanCache
 }
 
@@ -77,8 +75,8 @@ tasks.register('buildOtaOSS') {
         }
     }
 }
-build.configure {
-    finalizedBy tasks.named('buildOtaOSS')
+tasks.named('build').configure {
+    finalizedBy buildOtaOSS
 }
 
 // Dummy task
@@ -89,7 +87,7 @@ tasks.register('install') {
     dependsOn build
 }
 
-wrapper.configure {
+tasks.named('wrapper').configure {
     gradleVersion = '7.3.3'
     distributionType = Wrapper.DistributionType.ALL
     distributionSha256Sum = 'c9490e938b221daf0094982288e4038deed954a3f12fb54cbf270ddf4e37d879'
