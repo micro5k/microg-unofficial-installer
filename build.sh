@@ -74,13 +74,13 @@ mkdir -p "${SCRIPT_DIR}/cache"
 oss_files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL DL_MIRROR _; do
   dl_file "${LOCAL_PATH}" "${LOCAL_FILENAME}" "${DL_HASH}" "${DL_URL}" "${DL_MIRROR}"
 done
-STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
+STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
 if test -z "${OPENSOURCE_ONLY}"; then
   files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL DL_MIRROR _; do
     dl_file "${LOCAL_PATH}" "${LOCAL_FILENAME}" "${DL_HASH}" "${DL_URL}" "${DL_MIRROR}"
   done
-  STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
+  STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
   dl_file 'misc/keycheck' 'keycheck-arm' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
 else
@@ -104,7 +104,7 @@ else
     mkdir -p "${TEMP_DIR}/zip-content/${LOCAL_PATH}"
     cp -f "${SCRIPT_DIR}/cache/${LOCAL_PATH}/${LOCAL_FILENAME}" "${TEMP_DIR}/zip-content/${LOCAL_PATH}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}'"
   done
-  STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
+  STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
   mkdir -p "${TEMP_DIR}/zip-content/misc/keycheck"
   cp -f "${SCRIPT_DIR}/cache/misc/keycheck/keycheck-arm" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
