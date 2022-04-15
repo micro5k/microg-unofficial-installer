@@ -36,7 +36,7 @@ tasks.register('cleanCache', Delete) {
     delete "${projectDir}/cache"
 }
 tasks.named('clean').configure {
-    finalizedBy cleanCache
+    finalizedBy tasks.named('cleanCache')
 }
 
 def isWindows() {
