@@ -149,7 +149,11 @@ rm -rf "${TEMP_DIR:?}" &
 echo ''
 sha256sum "${FILENAME}.zip" > "${OUT_DIR}/${FILENAME}.zip.sha256" || ui_error 'Failed to compute the sha256 hash'
 echo 'SHA-256:'
-cat "${OUT_DIR}/${FILENAME}.zip.sha256"
+if test "${GITHUB_JOB:-false}" != 'false'; then
+  echo "::notice::$(cat "${OUT_DIR}/${FILENAME}.zip.sha256")"
+else
+  cat "${OUT_DIR}/${FILENAME}.zip.sha256"
+fi
 
 echo ''
 md5sum "${FILENAME}.zip" > "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to compute the md5 hash'
