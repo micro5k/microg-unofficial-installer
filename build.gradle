@@ -78,7 +78,7 @@ tasks.register('buildOtaOSS') {
     }
 }
 build.configure {
-    finalizedBy buildOtaOSS
+    finalizedBy tasks.named('buildOtaOSS')
 }
 
 // Dummy task
@@ -89,7 +89,7 @@ tasks.register('install') {
     dependsOn build
 }
 
-wrapper {
+wrapper.configure {
     gradleVersion = '7.3.3'
     distributionType = Wrapper.DistributionType.ALL
     distributionSha256Sum = 'c9490e938b221daf0094982288e4038deed954a3f12fb54cbf270ddf4e37d879'
