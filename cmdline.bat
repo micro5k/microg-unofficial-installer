@@ -14,6 +14,7 @@ IF EXIST "%ProgramFiles(x86)%\GnuWin32\bin" SET "PATH=%ProgramFiles(x86)%\GnuWin
 IF EXIST "%ProgramFiles%\GnuWin32\bin" SET "PATH=%ProgramFiles%\GnuWin32\bin;%PATH%"
 SET "PATH=.;%PATH%"
 IF EXIST "%~dp0tools\win" SET "PATH=%~dp0tools\win;%PATH%"
+SET "SCRIPT_DIR=%~dp0"
 
 CHCP 858 >nul || ECHO "Changing the codepage failed"
 "%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0scripts\common.sh'; alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=reset" "%~f0" %*
