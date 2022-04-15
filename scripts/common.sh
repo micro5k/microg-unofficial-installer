@@ -9,8 +9,7 @@
 
 set -o pipefail
 
-export A5K_FUNCTIONS_INCLUDED=true
-readonly A5K_FUNCTIONS_INCLUDED
+readonly A5K_FUNCTIONS_INCLUDED=true
 export TZ=UTC
 export LC_ALL=C
 export LANG=C
