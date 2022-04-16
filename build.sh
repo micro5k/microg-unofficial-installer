@@ -31,7 +31,7 @@ detect_script_dir()
   else
     local current_shell
     # shellcheck disable=SC2009
-    current_shell="$(ps -o 'pid,comm' | grep -Fw "$$" | while IFS=' ' read -r _ current_shell; do echo "${current_shell}"; done)"
+    current_shell="$(ps -o 'pid,comm' | grep -Fw "$$" | while IFS=' ' read -r _ current_shell; do echo "${current_shell}"; done || true)"
 
     if test -n "$0" && test -n "${current_shell}" && test "$0" != "${current_shell}" && test "$0" != "-${current_shell}"; then this_script="$0"
     elif test -n "${last_command}"; then this_script="${last_command}"
@@ -48,7 +48,7 @@ detect_script_dir || return 1 2>&- || exit 1
 if test -z "${CI}"; then printf '\033]0;%s\007' 'Building the flashable OTA zip...' && printf '\r                                             \r'; fi
 
 # shellcheck source=SCRIPTDIR/scripts/common.sh
-if ! test "${A5K_FUNCTIONS_INCLUDED}" = true; then . "${SCRIPT_DIR}/scripts/common.sh"; fi
+if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${SCRIPT_DIR}/scripts/common.sh"; fi
 # shellcheck source=SCRIPTDIR/conf.sh
 . "${SCRIPT_DIR}/conf.sh"
 
@@ -156,17 +156,18 @@ rm -rf "${TEMP_DIR:?}" &
 # Create checksum files
 echo ''
 sha256sum "${FILENAME}.zip" > "${OUT_DIR}/${FILENAME}.zip.sha256" || ui_error 'Failed to compute the sha256 hash'
+sha256_hash="$(cat "${OUT_DIR}/${FILENAME}.zip.sha256")" || ui_error 'Failed to display the sha256 hash'
 echo 'SHA-256:'
 if test "${GITHUB_JOB:-false}" != 'false'; then
-  echo "::notice::$(cat "${OUT_DIR}/${FILENAME}.zip.sha256")"
+  echo "::notice::${sha256_hash}"
 else
-  cat "${OUT_DIR}/${FILENAME}.zip.sha256"
+  echo "${sha256_hash}"
 fi
 
 echo ''
 md5sum "${FILENAME}.zip" > "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to compute the md5 hash'
 echo 'MD5:'
-cat "${OUT_DIR}/${FILENAME}.zip.md5"
+cat "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to display the md5 hash'
 
 cd "${INIT_DIR}" || ui_error 'Failed to change back the folder'
 
