@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC3043
-LAST_COMMAND="${_}"  # IMPORTANT: This must be at the start of the script before any other command otherwise it will not work
+last_command="${_}"  # IMPORTANT: This line must be at the start of the script before any other command otherwise it will not work
 
 cat <<'LICENSE'
   SPDX-FileCopyrightText: (c) 2016-2019, 2021-2022 ale5000
@@ -22,7 +22,7 @@ cat <<'LICENSE'
 LICENSE
 echo ''
 
-detect_script()
+detect_script_dir()
 {
   local this_script
 
@@ -34,14 +34,15 @@ detect_script()
     current_shell="$(ps -o 'pid,comm' | grep -Fw "$$" | while IFS=' ' read -r _ current_shell; do echo "${current_shell}"; done)"
 
     if test -n "$0" && test -n "${current_shell}" && test "$0" != "${current_shell}" && test "$0" != "-${current_shell}"; then this_script="$0"
-    elif test -n "${LAST_COMMAND}"; then this_script="${LAST_COMMAND}"
-    else echo 'ERROR: The script name cannot be found'; return 1; fi
+    elif test -n "${last_command}"; then this_script="${last_command}"
+    else echo 'ERROR: The script filename cannot be found'; return 1; fi
   fi
+  unset last_command
 
   this_script="$(realpath "${this_script}" 2>&-)" || return 1
   SCRIPT_DIR="$(dirname "${this_script}")" || return 1
 }
-detect_script || return 1 2>&- || exit 1; unset LAST_COMMAND
+detect_script_dir || return 1 2>&- || exit 1
 
 # shellcheck disable=SC2154
 if test -z "${CI}"; then printf '\033]0;%s\007' 'Building the flashable OTA zip...' && printf '\r                                             \r'; fi
