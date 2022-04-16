@@ -24,17 +24,24 @@ echo ''
 
 detect_script()
 {
-  # shellcheck disable=SC2009
-  CURRENT_SHELL="$(ps -o 'pid,comm' | grep -Fw "$$" | while IFS=' ' read -r _ CURRENT_SHELL; do echo "${CURRENT_SHELL}"; done)"
+  local this_script
+
   # shellcheck disable=SC3028,SC2128
-  if test "${#BASH_SOURCE}" -ge 1; then SCRIPT="${BASH_SOURCE}"  # Expanding an array without an index gives the first element (it is intended)
-  elif test -n "$0" && test "$0" != "${CURRENT_SHELL}" && test "$0" != "-${CURRENT_SHELL}"; then SCRIPT="$0"
-  elif test -n "${LAST_COMMAND}"; then SCRIPT="${LAST_COMMAND}"
-  else echo 'ERROR: The script name cannot be found'; return 1; fi
+  if test "${#BASH_SOURCE}" -ge 1; then this_script="${BASH_SOURCE}"  # Expanding an array without an index gives the first element (it is intended)
+  else
+    local current_shell
+    # shellcheck disable=SC2009
+    current_shell="$(ps -o 'pid,comm' | grep -Fw "$$" | while IFS=' ' read -r _ current_shell; do echo "${current_shell}"; done)"
+
+    if test -n "$0" && test -n "${current_shell}" && test "$0" != "${current_shell}" && test "$0" != "-${current_shell}"; then this_script="$0"
+    elif test -n "${LAST_COMMAND}"; then this_script="${LAST_COMMAND}"
+    else echo 'ERROR: The script name cannot be found'; return 1; fi
+  fi
+
+  this_script="$(realpath "${this_script}" 2>&-)" || return 1
+  SCRIPT_DIR="$(dirname "${this_script}")" || return 1
 }
 detect_script || return 1 2>&- || exit 1; unset LAST_COMMAND
-SCRIPT="$(realpath "${SCRIPT}" 2>&-)" || return 1 2>&- || exit 1
-SCRIPT_DIR="$(dirname "${SCRIPT}")"
 
 # shellcheck disable=SC2154
 if test -z "${CI}"; then printf '\033]0;%s\007' 'Building the flashable OTA zip...' && printf '\r                                             \r'; fi
