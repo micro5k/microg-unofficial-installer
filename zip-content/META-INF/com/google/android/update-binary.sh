@@ -203,7 +203,7 @@ detect_main_arch()
     aarch64 | arm64* | armv8* ) MAIN_ARCH='arm64-v8a';;
     armv7*                    ) MAIN_ARCH='armeabi-v7a';;
     armv6* | armv5*           ) MAIN_ARCH='armeabi';;
-    *) ui_error "Unsupported CPU architecture: $(uname -m)"
+    *) ui_error "Unsupported CPU architecture: $(uname -m || true)"
   esac
 }
 
