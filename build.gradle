@@ -14,10 +14,10 @@ gradleEnterprise.buildScan {
     publishAlwaysIf System.getenv('UPLOAD_BUILD_SCAN') != null
 }
 
-def configure() {
+void configure() {
     defaultTasks 'tasks'
 
-    def props = new Properties()
+    Properties props = new Properties()
     file('zip-content/module.prop').withInputStream { props.load(it) }
 
     description = props.getProperty('description')
@@ -40,7 +40,7 @@ tasks.named('clean').configure {
     finalizedBy tasks.named('cleanCache')
 }
 
-def getBuildScriptName() {
+String getBuildScriptName() {
     if(System.properties['os.name'].toLowerCase(Locale.ROOT).contains('windows')) {
         return './build.bat'
     } else {

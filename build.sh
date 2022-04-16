@@ -140,11 +140,15 @@ find . -type f | LC_ALL=C sort | zip -D -9 -X -UN=n -nw "${TEMP_DIR}/flashable.z
 FILENAME="${FILENAME}-signed"
 
 # Sign and zipalign
+echo ''
+echo 'Signing and zipaligning...'
 mkdir -p "${TEMP_DIR}/zipsign"
 java -Duser.timezone=UTC -Dzip.encoding=Cp437 -Djava.io.tmpdir="${TEMP_DIR}/zipsign" -jar "${SCRIPT_DIR}/tools/zipsigner.jar" "${TEMP_DIR}/flashable.zip" "${TEMP_DIR}/${FILENAME}.zip" || ui_error 'Failed signing and zipaligning'
 
-echo ''
-zip -T "${TEMP_DIR}/${FILENAME}.zip" || ui_error 'The zip is corrupted'
+if test "${FAST_BUILD:-false}" = 'false'; then
+  echo ''
+  zip -T "${TEMP_DIR}/${FILENAME}.zip" || ui_error 'The zip file is corrupted'
+fi
 cp -f "${TEMP_DIR}/${FILENAME}.zip" "${OUT_DIR}/${FILENAME}.zip" || ui_error 'Failed to copy the final file'
 
 cd "${OUT_DIR}" || ui_error 'Failed to change the folder'
@@ -164,10 +168,12 @@ else
   echo "${sha256_hash}"
 fi
 
-echo ''
-md5sum "${FILENAME}.zip" > "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to compute the md5 hash'
-echo 'MD5:'
-cat "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to display the md5 hash'
+if test "${FAST_BUILD:-false}" = 'false'; then
+  echo ''
+  md5sum "${FILENAME}.zip" > "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to compute the md5 hash'
+  echo 'MD5:'
+  cat "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to display the md5 hash'
+fi
 
 cd "${INIT_DIR}" || ui_error 'Failed to change back the folder'
 

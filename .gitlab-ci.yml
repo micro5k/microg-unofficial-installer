@@ -21,6 +21,7 @@ variables:
 
 before_script:
   - export UPLOAD_BUILD_SCAN="true"
+  - export FAST_BUILD="true"
   - export GRADLE_USER_HOME="$PWD/.gradle"
   - apk add bash unzip~=6.0 zip~=3.0
 
