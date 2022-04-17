@@ -17,23 +17,22 @@ cache:
 
 variables:
   GIT_DEPTH: "1"
-  # SAST_EXPERIMENTAL_FEATURES: "true"
+  FAST_BUILD: "true"
+  # UPLOAD_BUILD_SCAN: "true"
 
 before_script:
-  - export UPLOAD_BUILD_SCAN="true"
-  - export FAST_BUILD="true"
   - export GRADLE_USER_HOME="$PWD/.gradle"
   - apk add bash zip~=3.0
 
 include:
   # - template: Security/Dependency-Scanning.gitlab-ci.yml
   # - template: Security/License-Scanning.gitlab-ci.yml
-  - template: Security/SAST.gitlab-ci.yml
+  # - template: Security/SAST.gitlab-ci.yml
   # - template: Security/Secret-Detection.gitlab-ci.yml
 
 stages:
   - build
-  - test
+  # - test
   # - execute
   # - package
 
