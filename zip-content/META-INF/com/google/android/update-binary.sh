@@ -304,6 +304,7 @@ fi
 
 ui_msg ''
 ui_debug 'Starting installation script...'
+echo "${OUR_BB}" ash -c "'${TMP_PATH}/install.sh' Preloader '${TMP_PATH}'"
 "${OUR_BB}" ash -c "'${TMP_PATH}/install.sh' Preloader '${TMP_PATH}'"; STATUS="$?"
 
 test -f "${TMP_PATH}/installed" || GENER_ERROR=1
