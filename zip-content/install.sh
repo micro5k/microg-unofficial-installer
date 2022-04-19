@@ -41,9 +41,7 @@ INSTALLATION_SETTINGS_FILE='ug.prop'
 
 ### CODE ###
 
-if ! is_mounted '/system_root' && ! is_mounted '/system'; then
-  mount '/system'
-fi
+SYS_INITIAL_STATUS=0
 
 if test -f "${ANDROID_ROOT:-/system_root/system}/build.prop"; then
   SYS_PATH="${ANDROID_ROOT:-/system_root/system}"
@@ -54,8 +52,16 @@ elif test -f '/system/system/build.prop'; then
 elif test -f '/system/build.prop'; then
   SYS_PATH='/system'
 else
-  if ! is_mounted '/system'; then
-    ui_error '/system cannot be mounted'
+  SYS_INITIAL_STATUS=1
+  mount '/system_root'
+  mount '/system'
+
+  if test -f '/system_root/system/build.prop'; then
+    SYS_PATH='/system_root/system'
+  elif test -f '/system/system/build.prop'; then
+    SYS_PATH='/system/system'
+  elif test -f '/system/build.prop'; then
+    SYS_PATH='/system'
   else
     ui_error 'The ROM cannot be found'
   fi
@@ -379,7 +385,7 @@ if [[ -d "${SYS_PATH}/addon.d" ]]; then
   fi
 fi
 
-unmount '/system'
+if test "{SYS_INITIAL_STATUS}" = '1'; then unmount '/system'; fi
 
 touch "${TMP_PATH}/installed"
 ui_msg 'Done.'
