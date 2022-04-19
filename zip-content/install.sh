@@ -45,7 +45,9 @@ if ! is_mounted '/system_root' && ! is_mounted '/system'; then
   mount '/system'
 fi
 
-if test -f '/system_root/system/build.prop'; then
+if test -f "${ANDROID_ROOT:-/system_root/system}/build.prop"; then
+  SYS_PATH="${ANDROID_ROOT:-/system_root/system}"
+elif test -f '/system_root/system/build.prop'; then
   SYS_PATH='/system_root/system'
 elif test -f '/system/system/build.prop'; then
   SYS_PATH='/system/system'
