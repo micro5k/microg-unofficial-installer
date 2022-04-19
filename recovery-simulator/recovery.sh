@@ -35,7 +35,7 @@ if test -z "${OUR_TEMP_DIR}"; then fail_with_msg 'Failed to create our temp dir'
 rm -rf "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
 # Simulate the environment variables (part 1)
-BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"  # Internal var
+BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"; mkdir -p "${BASE_SIMULATION_PATH}"  # Internal var
 EXTERNAL_STORAGE="${BASE_SIMULATION_PATH}/sdcard0"
 SECONDARY_STORAGE="${BASE_SIMULATION_PATH}/sdcard1"
 LD_LIBRARY_PATH=".:${BASE_SIMULATION_PATH}/sbin"
@@ -45,7 +45,8 @@ ANDROID_PROPERTY_WORKSPACE='21,32768'
 TZ='CET-1CEST,M3.5.0,M10.5.0'
 TMPDIR="${BASE_SIMULATION_PATH}/tmp"
 
-# Simulate the recovery environment inside the temp folder
+# Simulate the Android environment inside the temp folder
+cd "${BASE_SIMULATION_PATH}" || fail_with_msg 'Failed to change dir to the base simulation path'
 mkdir -p "${ANDROID_ROOT}"
 mkdir -p "${ANDROID_ROOT}/bin"
 mkdir -p "${ANDROID_DATA}"
@@ -62,6 +63,11 @@ ln -s "${EXTERNAL_STORAGE}" "${BASE_SIMULATION_PATH}/sdcard" || mkdir -p "${BASE
   echo 'ro.product.cpu.abilist32=x86,armeabi-v7a,armeabi'
   echo 'ro.product.cpu.abilist64=x86_64,arm64-v8a'
 } > "${ANDROID_ROOT}/build.prop"
+
+touch "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
+mkdir -p "${ANDROID_ROOT}/framework"
+zip -D -9 -X -UN=n -nw "${ANDROID_ROOT}/framework/framework-res.apk" 'AndroidManifest.xml' || fail_with_msg 'Failed compressing framework-res.apk'
+rm -f "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
 
 mkdir -p "${TMPDIR}"
 cp -rf "${THIS_SCRIPT_DIR}/updater.sh" "${TMPDIR}/updater" || fail_with_msg 'Failed to copy the updater script'
@@ -92,7 +98,6 @@ FLASHABLE_ZIP="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_
 "${UNZIP_CMD}" -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
 
 # Execute the script that will run the flashable zip
-cd "${BASE_SIMULATION_PATH}" || fail_with_msg 'Failed to change dir to the base simulation path'
 "${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}"; STATUS="$?"
 
 unset TMPDIR
