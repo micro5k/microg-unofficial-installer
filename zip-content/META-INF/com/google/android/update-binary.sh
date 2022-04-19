@@ -15,8 +15,8 @@ export RECOVERY_PIPE="/proc/self/fd/${2}"
 export ZIP_FILE="${3}"
 ZIP_PATH="$(dirname "${ZIP_FILE:?}")"
 export ZIP_PATH
-BASE_TMP_PATH='/tmp'
-TMP_PATH='/tmp/custom-setup-a5k'
+BASE_TMP_PATH="${TMPDIR:-/tmp}"
+TMP_PATH="${TMPDIR:-/tmp}/custom-setup-a5k"
 
 MANUAL_TMP_MOUNT=0
 GENER_ERROR=0
