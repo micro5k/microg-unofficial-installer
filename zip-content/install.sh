@@ -225,7 +225,9 @@ ui_debug 'Setting up libs permissions...'
 set_std_perm_recursive "${TMP_PATH}/libs"
 
 # MOUNT /data PARTITION
+DATA_INIT_STATUS=0
 if ! is_mounted '/data'; then
+  DATA_INIT_STATUS=1
   mount '/data'
   if ! is_mounted '/data'; then ui_error '/data cannot be mounted'; fi
 fi
@@ -281,7 +283,7 @@ elif test "${RESET_GMS_DATA_OF_ALL_APPS}" -eq 1; then
 fi
 
 # UNMOUNT /data PARTITION
-unmount '/data'
+if test "${DATA_INIT_STATUS}" = '1'; then unmount '/data'; fi
 
 # Preparing
 ui_msg 'Preparing...'
@@ -385,7 +387,7 @@ if [[ -d "${SYS_PATH}/addon.d" ]]; then
   fi
 fi
 
-if test "{SYS_INITIAL_STATUS}" = '1'; then unmount '/system'; fi
+if test "${SYS_INITIAL_STATUS}" = '1'; then unmount '/system'; fi
 
 touch "${TMP_PATH}/installed"
 ui_msg 'Done.'
