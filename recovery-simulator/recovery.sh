@@ -97,4 +97,4 @@ rm -r "${TMPDIR}/update-binary"
 
 unset TMPDIR
 rm -rf "${OUR_TEMP_DIR:?}" &
-if test "${STATUS}" != '0'; then fail_wih_msg "Installation failed with error ${STATUS}"; fi
+if test "${STATUS}" -ne 0; then fail_wih_msg "Installation failed with error ${STATUS}"; fi
