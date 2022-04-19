@@ -266,7 +266,7 @@ if test "${API}" -ge 23; then
     echo '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="true" whitelisted="true" />' > "${TMP_PATH}/location-perm.dat"
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %ACCESS_BACKGROUND_LOCATION% -->' "${TMP_PATH}/location-perm.dat"
   fi
-  if test "${FAKE_SIGN}" == true; then
+  if test "${FAKE_SIGN}" = true; then
     echo '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true" />' > "${TMP_PATH}/fake-sign-perm.dat"
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' "${TMP_PATH}/fake-sign-perm.dat"
   fi
@@ -336,7 +336,7 @@ copy_dir_content "${TMP_PATH}/files/framework" "${SYS_PATH}/framework"
 if test "${API}" -lt 26; then
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml"
 else
-  if test "${FAKE_SIGN}" == true; then
+  if test "${FAKE_SIGN}" = true; then
     echo '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />' > "${TMP_PATH}/fake-sign-perm.dat"
     replace_line_in_file "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' "${TMP_PATH}/fake-sign-perm.dat"
   fi
