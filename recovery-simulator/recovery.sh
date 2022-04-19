@@ -54,6 +54,12 @@ mkdir -p "${SECONDARY_STORAGE}"
 ln -s "${BASE_SIMULATION_PATH}/system/bin" "${BASE_SIMULATION_PATH}/sbin" || mkdir -p "${BASE_SIMULATION_PATH}/sbin"
 ln -s "${EXTERNAL_STORAGE}" "${BASE_SIMULATION_PATH}/sdcard" || mkdir -p "${BASE_SIMULATION_PATH}/sdcard"
 
+echo 'ro.build.version.sdk=25' > "${ANDROID_ROOT}/build.prop"
+echo 'ro.product.cpu.abi=x86_64' >> "${ANDROID_ROOT}/build.prop"
+echo 'ro.product.cpu.abi2=armeabi-v7a' >> "${ANDROID_ROOT}/build.prop"
+echo 'ro.product.cpu.abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi' >> "${ANDROID_ROOT}/build.prop"
+echo 'ro.product.cpu.abilist32=x86,armeabi-v7a,armeabi' >> "${ANDROID_ROOT}/build.prop"
+echo 'ro.product.cpu.abilist64=x86_64,arm64-v8a' >> "${ANDROID_ROOT}/build.prop"
 
 mkdir -p "${TMPDIR}"
 cp -rf "${THIS_SCRIPT_DIR}/updater" "${TMPDIR}/updater" || fail_wih_msg 'Failed to copy the updater script'
