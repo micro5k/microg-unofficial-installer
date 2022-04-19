@@ -41,7 +41,7 @@ INSTALLATION_SETTINGS_FILE='ug.prop'
 
 ### CODE ###
 
-SYS_INITIAL_STATUS=0
+SYS_INIT_STATUS=0
 
 if test -f "${ANDROID_ROOT:-/system_root/system}/build.prop"; then
   SYS_PATH="${ANDROID_ROOT:-/system_root/system}"
@@ -52,7 +52,7 @@ elif test -f '/system/system/build.prop'; then
 elif test -f '/system/build.prop'; then
   SYS_PATH='/system'
 else
-  SYS_INITIAL_STATUS=1
+  SYS_INIT_STATUS=1
   mount '/system_root'
   mount '/system'
 
@@ -387,7 +387,7 @@ if [[ -d "${SYS_PATH}/addon.d" ]]; then
   fi
 fi
 
-if test "${SYS_INITIAL_STATUS}" = '1'; then unmount '/system'; fi
+if test "${SYS_INIT_STATUS}" = '1'; then unmount '/system'; fi
 
 touch "${TMP_PATH}/installed"
 ui_msg 'Done.'
