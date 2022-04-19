@@ -46,6 +46,9 @@ jobs:
           # Executing code coverage...
           export OPENSOURCE_ONLY='1'
           bashcov './build.sh'
+          # Testing zip installation...
+          bash './recovery-simulator/recovery.sh' ./output/*.zip
+          cat './recovery-simulator/output/recovery_output'
       - name: "Upload reports to Codecov"
         uses: codecov/codecov-action@v2
         with:
