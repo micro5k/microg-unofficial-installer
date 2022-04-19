@@ -73,7 +73,7 @@ exec 99>> "${THIS_SCRIPT_DIR}/output/recovery_output"
 RECOVERY_FD=99
 
 # Simulate the environment variables (part 2)
-PATH="${THIS_SCRIPT_DIR}/override:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin"
+PATH="${THIS_SCRIPT_DIR}/override:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin:${PATH}"  # We have to keep the original folders inside PATH otherwise everything stop working
 export EXTERNAL_STORAGE
 export LD_LIBRARY_PATH
 export ANDROID_DATA
@@ -92,8 +92,9 @@ FLASHABLE_ZIP="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_
 
 # Execute the script that will run the flashable zip
 cd "${BASE_SIMULATION_PATH}" || fail_wih_msg 'Failed to change dir to the base simulation path'
-"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}"
+"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}"; STATUS="$?"
 rm -r "${TMPDIR}\update-binary"
 
 unset TMPDIR
 rm -rf "${OUR_TEMP_DIR:?}" &
+if test "${STATUS}" != '0'; then fail_wih_msg "Installation failed with error ${STATUS}"; fi
