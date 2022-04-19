@@ -64,7 +64,7 @@ ln -s "${EXTERNAL_STORAGE}" "${BASE_SIMULATION_PATH}/sdcard" || mkdir -p "${BASE
 } > "${ANDROID_ROOT}/build.prop"
 
 mkdir -p "${TMPDIR}"
-cp -rf "${THIS_SCRIPT_DIR}/updater" "${TMPDIR}/updater" || fail_with_msg 'Failed to copy the updater script'
+cp -rf "${THIS_SCRIPT_DIR}/updater.sh" "${TMPDIR}/updater" || fail_with_msg 'Failed to copy the updater script'
 chmod +x "${TMPDIR}/updater" || fail_with_msg "chmod failed on '${TMPDIR}/updater'"
 
 mkdir -p "${THIS_SCRIPT_DIR}/output"
