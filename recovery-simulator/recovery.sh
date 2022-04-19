@@ -92,7 +92,7 @@ FLASHABLE_ZIP="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_
 
 # Execute the script that will run the flashable zip
 cd "${BASE_SIMULATION_PATH}" || fail_with_msg 'Failed to change dir to the base simulation path'
-"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}"; STATUS="$?"
+"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}"; STATUS="$?"
 rm -r "${TMPDIR}/update-binary"
 
 unset TMPDIR
