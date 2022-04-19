@@ -86,8 +86,8 @@ export CUSTOM_BUSYBOX
 
 # Prepare before execution
 FLASHABLE_ZIP_PATH="${1}"
-FLASHABLE_ZIP="$(basename "${FLASHABLE_ZIP_PATH}")"
-cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}" || fail_wih_msg 'Failed to copy the flashable ZIP'
+FLASHABLE_ZIP="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_wih_msg 'Failed to get the dir of the flashable ZIP'
+"${CUSTOM_BUSYBOX}" cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}" || fail_wih_msg 'Failed to copy the flashable ZIP'
 "${UNZIP_CMD}" -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}\update-binary" || fail_wih_msg 'Failed to extract the update-binary'
 
 # Execute the script that will run the flashable zip
