@@ -98,8 +98,8 @@ set_perm_safe()
 {
   local uid="$1"; local gid="$2"; local mod="$3"
   shift 3
-  "${BASE_TMP_PATH}/busybox" chown "${uid}:${gid}" "$@" || "${BASE_TMP_PATH}/busybox" chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
-  "${BASE_TMP_PATH}/busybox" chmod "${mod}" "$@" || ui_error "chmod failed on: $*" 81
+  "${OUR_BB}" chown "${uid}:${gid}" "$@" || "${OUR_BB}" chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
+  "${OUR_BB}" chmod "${mod}" "$@" || ui_error "chmod failed on: $*" 81
 }
 
 package_extract_file()
@@ -109,7 +109,7 @@ package_extract_file()
 
 package_extract_file_safe()
 {
-  "${BASE_TMP_PATH}/busybox" unzip -opq "${ZIP_FILE}" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 83
+  "${OUR_BB}" unzip -opq "${ZIP_FILE}" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 83
 }
 
 create_dir()
@@ -120,18 +120,18 @@ create_dir()
 
 create_dir_safe()
 {
-  "${BASE_TMP_PATH}/busybox" mkdir -p "$1" || ui_error "Failed to create the dir: $1" 84
+  "${OUR_BB}" mkdir -p "$1" || ui_error "Failed to create the dir: $1" 84
   set_perm_safe 0 0 0755 "$1"
 }
 
 delete_safe()
 {
-  "${BASE_TMP_PATH}/busybox" rm -f "$@" || ui_error "Failed to delete files" 85
+  "${OUR_BB}" rm -f "$@" || ui_error "Failed to delete files" 85
 }
 
 delete_recursive_safe()
 {
-  "${BASE_TMP_PATH}/busybox" rm -rf "$@" || ui_error "Failed to delete files/folders" 86
+  "${OUR_BB}" rm -rf "$@" || ui_error "Failed to delete files/folders" 86
 }
 
 # Input related functions
@@ -209,27 +209,32 @@ detect_main_arch()
 
 detect_main_arch
 
+OUR_BB="${BASE_TMP_PATH}/busybox"
 if test -n "${CUSTOM_BUSYBOX:-}" && test -e "${CUSTOM_BUSYBOX}"; then
-  ui_debug 'Copying custom BusyBox...'
-  "${CUSTOM_BUSYBOX}" cp -pf "${CUSTOM_BUSYBOX}" "${BASE_TMP_PATH}/busybox" || ui_error "Failed to copy custom BusyBox"
+  OUR_BB="${CUSTOM_BUSYBOX}"
+  ui_debug "Using custom BusyBox... '${OUR_BB}'"
 elif test "${MAIN_ARCH}" = 'x86_64'; then
   ui_debug 'Extracting 64-bit x86 BusyBox...'
-  package_extract_file 'misc/busybox/busybox-x86_64.bin' "${BASE_TMP_PATH}/busybox"
+  package_extract_file 'misc/busybox/busybox-x86_64.bin' "${OUR_BB}"
 elif test "${MAIN_ARCH}" = 'x86'; then
   ui_debug 'Extracting x86 BusyBox...'
-  package_extract_file 'misc/busybox/busybox-x86.bin' "${BASE_TMP_PATH}/busybox"
+  package_extract_file 'misc/busybox/busybox-x86.bin' "${OUR_BB}"
 elif test "${MAIN_ARCH}" = 'arm64-v8a'; then
   ui_debug 'Extracting 64-bit ARM BusyBox...'
-  package_extract_file 'misc/busybox/busybox-arm64.bin' "${BASE_TMP_PATH}/busybox"
+  package_extract_file 'misc/busybox/busybox-arm64.bin' "${OUR_BB}"
   package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH}/keycheck"
 elif test "${MAIN_ARCH}" = 'armeabi-v7a' || test "${MAIN_ARCH}" = 'armeabi'; then
   ui_debug 'Extracting ARM BusyBox...'
-  package_extract_file 'misc/busybox/busybox-arm.bin' "${BASE_TMP_PATH}/busybox"
+  package_extract_file 'misc/busybox/busybox-arm.bin' "${OUR_BB}"
   package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH}/keycheck"
 fi
-# Give execution rights
-chmod +x "${BASE_TMP_PATH}/busybox" || ui_error "chmod failed on '${BASE_TMP_PATH}/busybox'" 81  # Needed to make working the "safe" functions
-set_perm_safe 0 0 0755 "${BASE_TMP_PATH}/busybox"
+if ! test -e "${OUR_BB}"; then ui_error 'BusyBox not found'; fi
+
+# Give execution rights (if needed)
+if test "${OUR_BB}" != "${CUSTOM_BUSYBOX}"; then
+  chmod +x "${OUR_BB}" || ui_error "chmod failed on '${OUR_BB}'" 81  # Needed to make working the "safe" functions
+  set_perm_safe 0 0 0755 "${OUR_BB}"
+fi
 
 # Delete previous traces
 delete_recursive_safe "${TMP_PATH}"
@@ -242,11 +247,11 @@ PREVIOUS_PATH="${PATH}"
 export PATH="${TMP_PATH}/bin"
 
 # Temporarily setup BusyBox
-"${BASE_TMP_PATH}/busybox" --install -s "${TMP_PATH}/bin"
+"${OUR_BB}" --install -s "${TMP_PATH}/bin"
 
 # Temporarily setup Keycheck
 if test -e "${BASE_TMP_PATH}/keycheck"; then
-  "${BASE_TMP_PATH}/busybox" mv -f "${BASE_TMP_PATH}/keycheck" "${TMP_PATH}/bin/keycheck" || ui_error "Failed to move keycheck to the bin folder"
+  "${OUR_BB}" mv -f "${BASE_TMP_PATH}/keycheck" "${TMP_PATH}/bin/keycheck" || ui_error "Failed to move keycheck to the bin folder"
   # Give execution rights
   set_perm_safe 0 0 0755 "${TMP_PATH}/bin/keycheck"
   KEYCHECK_ENABLED=true
@@ -295,7 +300,7 @@ fi
 
 ui_msg ''
 ui_debug 'Starting installation script...'
-"${BASE_TMP_PATH}/busybox" bash -c "'${TMP_PATH}/install.sh' Preloader '${TMP_PATH}'"; STATUS="$?"
+"${OUR_BB}" bash -c "'${TMP_PATH}/install.sh' Preloader '${TMP_PATH}'"; STATUS="$?"
 
 test -f "${TMP_PATH}/installed" || GENER_ERROR=1
 
@@ -306,7 +311,9 @@ delete_recursive_safe "${TMP_PATH}"
 
 test "${DEBUG_LOG}" -eq 1 && disable_debug_log  # Disable debug log and restore normal output
 
-test "${MANUAL_TMP_MOUNT}" -ne 0 && unmount_safe '/tmp'
+if test "${MANUAL_TMP_MOUNT}" -ne 0; then
+  "${OUR_BB}" umount '/tmp' || ui_error "Failed to unmount '/tmp'"
+fi
 
 if test "${STATUS}" -ne 0; then ui_error "Installation script failed with error ${STATUS}" "${STATUS}"; fi
 if test "${GENER_ERROR}" -ne 0; then ui_error 'Installation failed with an unknown error'; fi

@@ -130,11 +130,6 @@ unmount()
   umount "$1" || ui_msg "WARNING: Failed to unmount '$1'"
 }
 
-unmount_safe()
-{
-  "${BASE_TMP_PATH}/busybox" umount "$1" || ui_error "Failed to unmount '$1'" 106
-}
-
 # Getprop related functions
 getprop()
 {
