@@ -85,6 +85,7 @@ export TMPDIR
 export CUSTOM_BUSYBOX
 
 # Prepare before execution
+export TEST_INSTALL=true
 FLASHABLE_ZIP_PATH="${1}"
 FLASHABLE_ZIP="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_with_msg 'Failed to get the dir of the flashable ZIP'
 "${CUSTOM_BUSYBOX}" cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}" || fail_with_msg 'Failed to copy the flashable ZIP'
@@ -93,7 +94,6 @@ FLASHABLE_ZIP="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_
 # Execute the script that will run the flashable zip
 cd "${BASE_SIMULATION_PATH}" || fail_with_msg 'Failed to change dir to the base simulation path'
 "${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}"; STATUS="$?"
-rm -r "${TMPDIR}/update-binary"
 
 unset TMPDIR
 rm -rf "${OUR_TEMP_DIR:?}" &
