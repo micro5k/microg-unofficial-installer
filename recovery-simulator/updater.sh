@@ -21,6 +21,7 @@ PS4='+ '
 # Ensure that the overridden commands are preferred over BusyBox applets
 alias mount='/usr/bin/env mount'
 alias umount='/usr/bin/env umount'
+alias chown='/usr/bin/env chown'
 
 # shellcheck source=/dev/null
 . "${TMPDIR}/update-binary"
