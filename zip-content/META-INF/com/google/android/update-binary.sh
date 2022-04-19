@@ -107,11 +107,13 @@ set_perm_safe()
 package_extract_file()
 {
   unzip -opq "${ZIP_FILE}" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 82
+  if ! test -e "$2"; then ui_error "Failed to extract the file '$1' from this archive" 82; fi
 }
 
 package_extract_file_safe()
 {
   "${OUR_BB}" unzip -opq "${ZIP_FILE}" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 83
+  if ! test -e "$2"; then ui_error "Failed to extract the file '$1' from this archive" 83; fi
 }
 
 create_dir()
