@@ -69,7 +69,7 @@ ln -s "${EXTERNAL_STORAGE}" "${BASE_SIMULATION_PATH}/sdcard" || mkdir -p "${BASE
 
 touch "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
 mkdir -p "${ANDROID_ROOT}/framework"
-zip -D -9 -X -UN=n -nw "${ANDROID_ROOT}/framework/framework-res.apk" 'AndroidManifest.xml' || fail_with_msg 'Failed compressing framework-res.apk'
+zip -D -9 -X -UN=n -nw -q "${ANDROID_ROOT}/framework/framework-res.apk" 'AndroidManifest.xml' || fail_with_msg 'Failed compressing framework-res.apk'
 rm -f "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
 
 mkdir -p "${TMPDIR}"
