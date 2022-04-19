@@ -94,3 +94,6 @@ cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}" || fail_w
 cd "${BASE_SIMULATION_PATH}" || fail_wih_msg 'Failed to change dir to the base simulation path'
 "${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}"
 rm -r "${TMPDIR}\update-binary"
+
+unset TMPDIR
+rm -rf "${OUR_TEMP_DIR:?}" &
