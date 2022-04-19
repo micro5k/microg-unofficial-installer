@@ -18,5 +18,9 @@ PS1='\w \$ '
 PS2='> '
 PS4='+ '
 
+# Ensure that the overridden commands are preferred over BusyBox applets
+alis mount='. mount'
+alis umount='. umount'
+
 # shellcheck source=/dev/null
 . "${TMPDIR}/update-binary"
