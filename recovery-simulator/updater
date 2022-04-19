@@ -19,8 +19,8 @@ PS2='> '
 PS4='+ '
 
 # Ensure that the overridden commands are preferred over BusyBox applets
-alias mount='. mount'
-alias umount='. umount'
+alias mount='/usr/bin/env mount'
+alias umount='/usr/bin/env umount'
 
 # shellcheck source=/dev/null
 . "${TMPDIR}/update-binary"
