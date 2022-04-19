@@ -98,7 +98,9 @@ set_perm_safe()
 {
   local uid="$1"; local gid="$2"; local mod="$3"
   shift 3
-  "${OUR_BB}" chown "${uid}:${gid}" "$@" || "${OUR_BB}" chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
+  if test "${OUR_BB}" != "${CUSTOM_BUSYBOX}"; then
+    "${OUR_BB}" chown "${uid}:${gid}" "$@" || "${OUR_BB}" chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
+  fi
   "${OUR_BB}" chmod "${mod}" "$@" || ui_error "chmod failed on: $*" 81
 }
 
