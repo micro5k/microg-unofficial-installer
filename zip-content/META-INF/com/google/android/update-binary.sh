@@ -302,7 +302,7 @@ fi
 
 ui_msg ''
 ui_debug 'Starting installation script...'
-"${OUR_BB}" bash -c "'${TMP_PATH}/install.sh' Preloader '${TMP_PATH}'"; STATUS="$?"
+"${OUR_BB}" ash -c "'${TMP_PATH}/install.sh' Preloader '${TMP_PATH}'"; STATUS="$?"
 
 test -f "${TMP_PATH}/installed" || GENER_ERROR=1
 
