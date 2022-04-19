@@ -34,8 +34,11 @@ unset THIS_SCRIPT
 if test -z "${OUR_TEMP_DIR}"; then fail_with_msg 'Failed to create our temp dir'; fi
 rm -rf "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
-# Simulate the environment variables (part 1)
+# Setup the needed variables
+FLASHABLE_ZIP_PATH="$(realpath "${1}")" || fail_with_msg 'Failed to get the flashable ZIP'
 BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"; mkdir -p "${BASE_SIMULATION_PATH}"  # Internal var
+
+# Simulate the environment variables (part 1)
 EXTERNAL_STORAGE="${BASE_SIMULATION_PATH}/sdcard0"
 SECONDARY_STORAGE="${BASE_SIMULATION_PATH}/sdcard1"
 LD_LIBRARY_PATH=".:${BASE_SIMULATION_PATH}/sbin"
@@ -92,13 +95,12 @@ export CUSTOM_BUSYBOX
 
 # Prepare before execution
 export TEST_INSTALL=true
-FLASHABLE_ZIP_PATH="${1}"
-FLASHABLE_ZIP="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_with_msg 'Failed to get the dir of the flashable ZIP'
-"${CUSTOM_BUSYBOX}" cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}" || fail_with_msg 'Failed to copy the flashable ZIP'
-"${UNZIP_CMD}" -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
+FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
+"${CUSTOM_BUSYBOX}" cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" || fail_with_msg 'Failed to copy the flashable ZIP'
+"${UNZIP_CMD}" -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
 
 # Execute the script that will run the flashable zip
-"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP}"; STATUS="$?"
+"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}"; STATUS="$?"
 
 unset TMPDIR
 rm -rf "${OUR_TEMP_DIR:?}" &
