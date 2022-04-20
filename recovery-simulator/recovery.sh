@@ -78,10 +78,13 @@ mkdir -p "${TMPDIR}"
 cp -rf "${THIS_SCRIPT_DIR}/updater.sh" "${TMPDIR}/updater" || fail_with_msg 'Failed to copy the updater script'
 chmod +x "${TMPDIR}/updater" || fail_with_msg "chmod failed on '${TMPDIR}/updater'"
 
+# Setup recovery output
 mkdir -p "${THIS_SCRIPT_DIR}/output"
-touch "${THIS_SCRIPT_DIR}/output/recovery_output"
-exec 99>> "${THIS_SCRIPT_DIR}/output/recovery_output"
-RECOVERY_FD=99
+touch "${THIS_SCRIPT_DIR}/output/recovery-output.log"
+chattr +aAd "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
+# shellcheck disable=SC3023
+exec 99>> "${THIS_SCRIPT_DIR}/output/recovery-output.log"
+recovery_fd=99
 
 # Simulate the environment variables (part 2)
 PATH="${THIS_SCRIPT_DIR}/override:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin:${PATH}"  # We have to keep the original folders inside PATH otherwise everything stop working
@@ -103,8 +106,10 @@ FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || 
 chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/update-binary'"
 
 # Execute the script that will run the flashable zip
-"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${RECOVERY_FD}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}"; STATUS="$?"
+"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}"; STATUS="$?"
 
+# Final cleanup
+chattr -a "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
 unset TMPDIR
 rm -rf "${OUR_TEMP_DIR:?}" &
 if test "${STATUS}" -ne 0; then fail_with_msg "Installation failed with error ${STATUS}"; fi

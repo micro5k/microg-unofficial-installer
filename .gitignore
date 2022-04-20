@@ -5,9 +5,7 @@
 # Custom project folders
 cache/
 output/
-
-# Custom caches
-.apt-cache/
+recovery-simulator/output/
 
 # Files for the ART/Dalvik VM
 *.dex
