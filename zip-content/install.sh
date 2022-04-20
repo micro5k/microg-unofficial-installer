@@ -226,7 +226,7 @@ set_std_perm_recursive "${TMP_PATH}/libs"
 
 # MOUNT /data PARTITION
 DATA_INIT_STATUS=0
-if ! is_mounted '/data'; then
+if test "${TEST_INSTALL:-false}" = 'false' && ! is_mounted '/data'; then
   DATA_INIT_STATUS=1
   mount '/data'
   if ! is_mounted '/data'; then ui_error '/data cannot be mounted'; fi
