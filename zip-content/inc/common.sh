@@ -249,7 +249,7 @@ reset_gms_data_of_all_apps()
 # Hash related functions
 verify_sha1()
 {
-  if ! test -e "$1"; then ui_debug "This file to verify is missing => '$1'"; return 0; fi
+  if ! test -e "$1"; then ui_debug "The file to verify is missing => '$1'"; return 1; fi  # Failed
   ui_debug "$1"
 
   local file_name="$1"
