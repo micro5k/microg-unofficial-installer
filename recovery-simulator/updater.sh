@@ -23,5 +23,5 @@ alias mount='/usr/bin/env mount'
 alias umount='/usr/bin/env umount'
 alias chown='/usr/bin/env chown'
 
-# shellcheck source=/dev/null
+# shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
 . "${TMPDIR}/update-binary"
