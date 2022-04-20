@@ -51,6 +51,8 @@ TMPDIR="${BASE_SIMULATION_PATH}/tmp"
 # Simulate the Android environment inside the temp folder
 cd "${BASE_SIMULATION_PATH}" || fail_with_msg 'Failed to change dir to the base simulation path'
 mkdir -p "${ANDROID_ROOT}"
+mkdir -p "${BASE_SIMULATION_PATH}/system/priv-app"
+mkdir -p "${BASE_SIMULATION_PATH}/system/app"
 mkdir -p "${ANDROID_ROOT}/bin"
 mkdir -p "${ANDROID_DATA}"
 mkdir -p "${EXTERNAL_STORAGE}"
