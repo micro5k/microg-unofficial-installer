@@ -207,35 +207,34 @@ if ! is_mounted '/tmp'; then
   if ! is_mounted '/tmp'; then ui_error '/tmp is NOT mounted'; fi
 fi
 
-detect_main_arch()
+detect_recovery_arch()
 {
   case "$(uname -m)" in
-    x86_64                    ) MAIN_ARCH='x86_64';;
-    x86                       ) MAIN_ARCH='x86';;
-    aarch64 | arm64* | armv8* ) MAIN_ARCH='arm64-v8a';;
-    armv7*                    ) MAIN_ARCH='armeabi-v7a';;
-    armv6* | armv5*           ) MAIN_ARCH='armeabi';;
-    *) ui_error "Unsupported CPU architecture: $(uname -m || true)"
+    x86_64                    ) RECOVERY_ARCH='x86_64';;
+    x86 | i686                ) RECOVERY_ARCH='x86';;
+    aarch64 | arm64* | armv8* ) RECOVERY_ARCH='arm64-v8a';;
+    armv7*                    ) RECOVERY_ARCH='armeabi-v7a';;
+    armv6* | armv5*           ) RECOVERY_ARCH='armeabi';;
+    *) ui_error "Unsupported architecture: $(uname -m || true)"
   esac
 }
-
-detect_main_arch
+detect_recovery_arch
 
 OUR_BB="${BASE_TMP_PATH}/busybox"
 if test -n "${CUSTOM_BUSYBOX:-}" && test -e "${CUSTOM_BUSYBOX}"; then
   OUR_BB="${CUSTOM_BUSYBOX}"
   ui_debug "Using custom BusyBox... '${OUR_BB}'"
-elif test "${MAIN_ARCH}" = 'x86_64'; then
+elif test "${RECOVERY_ARCH}" = 'x86_64'; then
   ui_debug 'Extracting 64-bit x86 BusyBox...'
   package_extract_file 'misc/busybox/busybox-x86_64.bin' "${OUR_BB}"
-elif test "${MAIN_ARCH}" = 'x86'; then
+elif test "${RECOVERY_ARCH}" = 'x86'; then
   ui_debug 'Extracting x86 BusyBox...'
   package_extract_file 'misc/busybox/busybox-x86.bin' "${OUR_BB}"
-elif test "${MAIN_ARCH}" = 'arm64-v8a'; then
+elif test "${RECOVERY_ARCH}" = 'arm64-v8a'; then
   ui_debug 'Extracting 64-bit ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm64.bin' "${OUR_BB}"
   package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH}/keycheck"
-elif test "${MAIN_ARCH}" = 'armeabi-v7a' || test "${MAIN_ARCH}" = 'armeabi'; then
+elif test "${RECOVERY_ARCH}" = 'armeabi-v7a' || test "${RECOVERY_ARCH}" = 'armeabi'; then
   ui_debug 'Extracting ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm.bin' "${OUR_BB}"
   package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH}/keycheck"
