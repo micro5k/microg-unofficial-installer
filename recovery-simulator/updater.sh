@@ -18,15 +18,11 @@ PS1='\w \$ '
 PS2='> '
 PS4='+ '
 
-# Ensure that the overridden commands are preferred over BusyBox applets
-alias mount='/usr/bin/env mount'
-alias umount='/usr/bin/env umount'
-alias chown='/usr/bin/env chown'
+# Ensure that the overridden commands are preferred over BusyBox applets / This expands when defined, not when used (it is intended)
+# shellcheck disable=SC2139
+alias mount="$(busybox realpath mount)"; alias umount="$(busybox realpath umount)"; alias chown="$(busybox realpath chown)"
 
-echo Debug
-alias b="$(busybox which mount | busybox xargs busybox realpath)"
-type b
-b 'test'
+type mount
 
 # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
 . "${TMPDIR}/update-binary"
