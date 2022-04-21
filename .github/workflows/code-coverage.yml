@@ -51,7 +51,7 @@ jobs:
           echo '==============='
           echo 'RECOVERY OUTPUT'
           echo '==============='
-          cat './recovery-simulator/output/recovery-output.log'
+          cat './recovery-simulator/output/recovery-output-parsed.log'
       - name: "Upload reports to Codecov"
         uses: codecov/codecov-action@v2
         with:
