@@ -25,8 +25,8 @@ fi
 unset ENV_RESETTED
 
 # Check dependencies
-UNZIP_CMD="$(command -v unzip)" || fail_with_msg 'Unzip is missing'
-CUSTOM_BUSYBOX="$(command -v busybox)" || fail_with_msg 'BusyBox is missing'
+UNZIP_CMD="$(which unzip)" || fail_with_msg 'Unzip is missing'
+CUSTOM_BUSYBOX="$(which busybox)" || fail_with_msg 'BusyBox is missing'
 
 # Get dir of this script
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT}")" || fail_with_msg 'Failed to get script dir'
