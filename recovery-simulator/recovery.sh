@@ -108,6 +108,22 @@ chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/
 # Execute the script that will run the flashable zip
 "${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}"; STATUS="$?"
 
+# Parse recovery output
+last_msg_printed=false
+while IFS=' ' read -r ui_command text; do
+  if test "${ui_command}" = 'ui_print'; then
+    if test "${last_msg_printed}" = true && test "${text}" = ''; then
+      last_msg_printed=false
+    else
+      echo "${text}"
+      last_msg_printed=true
+    fi
+  else
+    echo "> COMMAND: ${ui_command} ${text}"
+    last_msg_printed=false
+  fi
+done < "${THIS_SCRIPT_DIR}/output/recovery-output.log" > "${THIS_SCRIPT_DIR}/output/recovery-output-parsed.log"
+
 # Final cleanup
 sudo chattr -a "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
 unset TMPDIR
