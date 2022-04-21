@@ -244,7 +244,7 @@ if ! test -e "${OUR_BB}"; then ui_error 'BusyBox not found'; fi
 # Give execution rights (if needed)
 if test "${OUR_BB}" != "${CUSTOM_BUSYBOX}"; then
   chmod +x "${OUR_BB}" || ui_error "chmod failed on '${OUR_BB}'" 81  # Needed to make working the "safe" functions
-  set_perm_safe 0 0 0755 "${OUR_BB}"
+  set_perm 0 0 0755 "${OUR_BB}"
 fi
 
 # Delete previous traces
