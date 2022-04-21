@@ -36,6 +36,7 @@ rm -rf "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
 # Setup the needed variables
 FLASHABLE_ZIP_PATH="$(realpath "${1}")" || fail_with_msg 'Failed to get the flashable ZIP'
+OVERRIDE_DIR="${THIS_SCRIPT_DIR}/override"
 BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"; mkdir -p "${BASE_SIMULATION_PATH}"  # Internal var
 
 # Simulate the environment variables (part 1)
@@ -87,7 +88,7 @@ exec 99>> "${THIS_SCRIPT_DIR}/output/recovery-output.log"
 recovery_fd=99
 
 # Simulate the environment variables (part 2)
-PATH="${THIS_SCRIPT_DIR}/override:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin:${PATH}"  # We have to keep the original folders inside PATH otherwise everything stop working
+PATH="${OVERRIDE_DIR}:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin:${PATH}"  # We have to keep the original folders inside PATH otherwise everything stop working
 export EXTERNAL_STORAGE
 export LD_LIBRARY_PATH
 export ANDROID_DATA
@@ -99,7 +100,7 @@ export TMPDIR
 export CUSTOM_BUSYBOX
 
 # Prepare before execution
-export TEST_INSTALL=true
+export OVERRIDE_DIR
 FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
 "${CUSTOM_BUSYBOX}" cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" || fail_with_msg 'Failed to copy the flashable ZIP'
 "${UNZIP_CMD}" -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}/update-binary" || fail_with_msg 'Failed to extract the update-binary'

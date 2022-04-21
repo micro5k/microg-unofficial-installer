@@ -20,23 +20,19 @@ PS4='+ '
 
 override_applet()
 {
-  if test "$(uname -o)" != 'MS/Windows'; then
-    full_path="$(busybox which "${1}")" || { echo "Failed to override ${1}"; return 1; }
-    # shellcheck disable=SC2139
-    alias "${1}"="${full_path}"  # This expands when defined, not when used (it is intended)
-    unset full_path
-  else
-    # shellcheck disable=SC2139
-    alias "${1}"="${1}."  # This expands when defined, not when used (it is intended)
-  fi
+  # shellcheck disable=SC2139
+  alias "${1}"="${OVERRIDE_DIR}/${1}"  # This expands when defined, not when used (it is intended)
+  return 0
 }
 
 # Ensure that the overridden commands are preferred over BusyBox applets
 override_applet mount || return 1
 override_applet umount || return 1
 override_applet chown || return 1
-
 unset -f override_applet
+unset OVERRIDE_DIR
+
+export TEST_INSTALL=true
 
 # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
 . "${TMPDIR}/update-binary" || return 1
