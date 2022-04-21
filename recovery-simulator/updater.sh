@@ -18,13 +18,25 @@ PS1='\w \$ '
 PS2='> '
 PS4='+ '
 
-# Ensure that the overridden commands are preferred over BusyBox applets / This expands when defined, not when used (it is intended)
-# shellcheck disable=SC2139
-alias mount="$(busybox which mount | busybox xargs busybox realpath)"
-# shellcheck disable=SC2139
-alias umount="$(busybox which umount | busybox xargs busybox realpath)"
-# shellcheck disable=SC2139
-alias chown="$(busybox which chown | busybox xargs busybox realpath)"
+override_applet()
+{
+  if test "$(uname -o)" != 'MS/Windows'; then
+    full_path="$(busybox which "${1}")" || { echo "Failed to override ${1}"; return 1; }
+    # shellcheck disable=SC2139
+    alias "${1}"="${full_path}"  # This expands when defined, not when used (it is intended)
+    unset full_path
+  else
+    # shellcheck disable=SC2139
+    alias "${1}"="${1}."  # This expands when defined, not when used (it is intended)
+  fi
+}
+
+# Ensure that the overridden commands are preferred over BusyBox applets
+override_applet mount || return 1
+override_applet umount || return 1
+override_applet chown || return 1
+
+unset -f override_applet
 
 # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
-. "${TMPDIR}/update-binary"
+. "${TMPDIR}/update-binary" || return 1
