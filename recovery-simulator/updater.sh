@@ -20,7 +20,11 @@ PS4='+ '
 
 # Ensure that the overridden commands are preferred over BusyBox applets / This expands when defined, not when used (it is intended)
 # shellcheck disable=SC2139
-alias mount="$(busybox realpath mount)"; alias umount="$(busybox realpath umount)"; alias chown="$(busybox realpath chown)"
+alias mount="$(busybox which mount | busybox xargs busybox realpath)"
+# shellcheck disable=SC2139
+alias umount="$(busybox which umount | busybox xargs busybox realpath)"
+# shellcheck disable=SC2139
+alias chown="$(busybox which chown | busybox xargs busybox realpath)"
 
 type mount
 
