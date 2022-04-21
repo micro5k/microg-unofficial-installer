@@ -40,6 +40,7 @@ rm -rf "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 FLASHABLE_ZIP_PATH="$(realpath "${1}" 2>/dev/null)" || fail_with_msg 'Failed to get the flashable ZIP'
 OVERRIDE_DIR="${THIS_SCRIPT_DIR}/override"
 BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"; mkdir -p "${BASE_SIMULATION_PATH}"  # Internal var
+INIT_DIR="$(pwd)"
 
 # Simulate the environment variables (part 1)
 EXTERNAL_STORAGE="${BASE_SIMULATION_PATH}/sdcard0"
@@ -133,6 +134,7 @@ done < "${THIS_SCRIPT_DIR}/output/recovery-output.log" > "${THIS_SCRIPT_DIR}/out
 if test "$(uname -o)" != 'MS/Windows'; then
   sudo chattr -a "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
 fi
+cd "${INIT_DIR}" || fail_with_msg 'Failed to change back the folder'
 unset TMPDIR
 rm -rf "${OUR_TEMP_DIR:?}" &
 if test "${STATUS}" -ne 0; then fail_with_msg "Installation failed with error ${STATUS}"; fi
