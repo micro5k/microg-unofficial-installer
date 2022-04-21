@@ -46,8 +46,11 @@ disable_debug_log()
 
 _show_text_on_recovery()
 {
-  echo "ui_print $1" >> "${RECOVERY_PIPE}"
-  echo 'ui_print' >> "${RECOVERY_PIPE}"
+  if test -e "${RECOVERY_PIPE}"; then
+    printf "ui_print %s\nui_print \n" "${1}" >> "${RECOVERY_PIPE}"
+  else
+    printf "ui_print %s\nui_print \n" "${1}" 1>&"${OUTFD}"
+  fi
 }
 
 ui_error()
@@ -67,9 +70,12 @@ ui_warning()
 
 ui_msg()
 {
-  echo "ui_print $1" >> "${RECOVERY_PIPE}"
-  echo 'ui_print' >> "${RECOVERY_PIPE}"
   if test "${DEBUG_LOG}" -ne 0; then echo "$1"; fi
+  if test -e "${RECOVERY_PIPE}"; then
+    printf "ui_print %s\nui_print \n" "${1}" >> "${RECOVERY_PIPE}"
+  else
+    printf "ui_print %s\nui_print \n" "${1}" 1>&"${OUTFD}"
+  fi
 }
 
 ui_debug()

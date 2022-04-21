@@ -23,7 +23,11 @@ fi
 # Message related functions
 _show_text_on_recovery()
 {
-  echo -e "ui_print $1\nui_print" >> "${RECOVERY_PIPE}"
+  if test -e "${RECOVERY_PIPE}"; then
+    printf "ui_print %s\nui_print \n" "${1}" >> "${RECOVERY_PIPE}"
+  else
+    printf "ui_print %s\nui_print \n" "${1}" 1>&"${OUTFD}"
+  fi
 }
 
 ui_error()
