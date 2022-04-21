@@ -24,10 +24,9 @@ alias umount='/usr/bin/env umount'
 alias chown='/usr/bin/env chown'
 
 echo Debug
-which mount
-env which mount
-env busybox which mount
-env busybox ash -c "command -v mount"
+alias b="$(busybox which mount | busybox xargs busybox realpath)"
+type b
+b 'test'
 
 # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
 . "${TMPDIR}/update-binary"
