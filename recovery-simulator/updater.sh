@@ -26,7 +26,5 @@ alias umount="$(busybox which umount | busybox xargs busybox realpath)"
 # shellcheck disable=SC2139
 alias chown="$(busybox which chown | busybox xargs busybox realpath)"
 
-type mount
-
 # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
 . "${TMPDIR}/update-binary"
