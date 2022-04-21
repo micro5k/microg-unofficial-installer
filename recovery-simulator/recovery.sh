@@ -13,6 +13,8 @@ fail_with_msg()
   exit 1
 }
 
+if test -z "${1}"; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
+
 # Reset environment
 if ! "${ENV_RESETTED:-false}"; then
   THIS_SCRIPT="$(realpath "${0}" 2>&-)" || fail_with_msg 'Failed to get script filename'
@@ -35,7 +37,7 @@ if test -z "${OUR_TEMP_DIR}"; then fail_with_msg 'Failed to create our temp dir'
 rm -rf "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
 # Setup the needed variables
-FLASHABLE_ZIP_PATH="$(realpath "${1}")" || fail_with_msg 'Failed to get the flashable ZIP'
+FLASHABLE_ZIP_PATH="$(realpath "${1}" 2>/dev/null)" || fail_with_msg 'Failed to get the flashable ZIP'
 OVERRIDE_DIR="${THIS_SCRIPT_DIR}/override"
 BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"; mkdir -p "${BASE_SIMULATION_PATH}"  # Internal var
 
@@ -82,7 +84,9 @@ chmod +x "${TMPDIR}/updater" || fail_with_msg "chmod failed on '${TMPDIR}/update
 # Setup recovery output
 mkdir -p "${THIS_SCRIPT_DIR}/output"
 touch "${THIS_SCRIPT_DIR}/output/recovery-output.log"
-sudo chattr +aAd "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
+if test "$(uname -o)" != 'MS/Windows'; then
+  sudo chattr +aAd "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
+fi
 # shellcheck disable=SC3023
 exec 99>> "${THIS_SCRIPT_DIR}/output/recovery-output.log"
 recovery_fd=99
@@ -126,7 +130,9 @@ while IFS=' ' read -r ui_command text; do
 done < "${THIS_SCRIPT_DIR}/output/recovery-output.log" > "${THIS_SCRIPT_DIR}/output/recovery-output-parsed.log"
 
 # Final cleanup
-sudo chattr -a "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
+if test "$(uname -o)" != 'MS/Windows'; then
+  sudo chattr -a "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
+fi
 unset TMPDIR
 rm -rf "${OUR_TEMP_DIR:?}" &
 if test "${STATUS}" -ne 0; then fail_with_msg "Installation failed with error ${STATUS}"; fi
