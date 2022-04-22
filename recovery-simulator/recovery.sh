@@ -13,6 +13,11 @@ fail_with_msg()
   exit 1
 }
 
+link_folder()
+{
+  ln -f "${2}" "${1}" || mkdir -p "${1}" || fail_with_msg "Failed to link dir '${1}'"
+}
+
 if test -z "${1}"; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
 
 # Reset environment
@@ -61,8 +66,8 @@ mkdir -p "${ANDROID_ROOT}/bin"
 mkdir -p "${ANDROID_DATA}"
 mkdir -p "${EXTERNAL_STORAGE}"
 mkdir -p "${SECONDARY_STORAGE}"
-ln -s "${BASE_SIMULATION_PATH}/system/bin" "${BASE_SIMULATION_PATH}/sbin" || mkdir -p "${BASE_SIMULATION_PATH}/sbin"
-ln -s "${EXTERNAL_STORAGE}" "${BASE_SIMULATION_PATH}/sdcard" || mkdir -p "${BASE_SIMULATION_PATH}/sdcard"
+link_folder "${BASE_SIMULATION_PATH}/sbin" "${BASE_SIMULATION_PATH}/system/bin"
+link_folder "${BASE_SIMULATION_PATH}/sdcard" "${EXTERNAL_STORAGE}"
 
 {
   echo 'ro.build.version.sdk=25'
