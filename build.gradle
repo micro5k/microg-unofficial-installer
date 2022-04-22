@@ -40,11 +40,11 @@ tasks.named('clean').configure {
     finalizedBy tasks.named('cleanCache')
 }
 
-String getBuildScriptName() {
+String getScriptExt() {
     if(System.properties['os.name'].toLowerCase(Locale.ROOT).contains('windows')) {
-        return './build.bat'
+        return '.bat'
     } else {
-        return './build.sh'
+        return '.sh'
     }
 }
 
@@ -54,7 +54,7 @@ tasks.register('buildOta') {
     doLast {
         println 'Building the flashable OTA zip with Gradle...'
         exec {
-            executable = getBuildScriptName()
+            executable = "${projectDir}/build" + getScriptExt()
             args 'Gradle'
         }
     }
@@ -63,10 +63,11 @@ tasks.register('buildOta') {
 tasks.register('buildOtaOSS') {
     group '- OTA build'
     description 'Build the flashable OTA zip (open-source components only).'
+
     doLast {
         println 'Building the flashable OTA zip (open-source components only) with Gradle...'
         exec {
-            executable = getBuildScriptName()
+            executable = "${projectDir}/build" + getScriptExt()
             args 'Gradle'
             environment OPENSOURCE_ONLY: '1'
         }
@@ -74,6 +75,13 @@ tasks.register('buildOtaOSS') {
 }
 tasks.named('build').configure {
     finalizedBy buildOtaOSS
+}
+
+tasks.register('installTest', Exec) {
+    group = 'verification'
+
+    executable "${projectDir}/recovery-simulator/recovery" + getScriptExt()
+    args "${projectDir}/output/*.zip"
 }
 
 // Dummy task
