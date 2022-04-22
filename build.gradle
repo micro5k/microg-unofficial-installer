@@ -40,7 +40,7 @@ tasks.named('clean').configure {
     finalizedBy tasks.named('cleanCache')
 }
 
-String getScriptExt() {
+static String getScriptExt() {
     if(System.properties['os.name'].toLowerCase(Locale.ROOT).contains('windows')) {
         return '.bat'
     } else {
@@ -48,30 +48,21 @@ String getScriptExt() {
     }
 }
 
-tasks.register('buildOta') {
+tasks.register('buildOta', Exec) {
     group '- OTA build'
     description 'Build the flashable OTA zip.'
-    doLast {
-        println 'Building the flashable OTA zip with Gradle...'
-        exec {
-            executable = "${projectDir}/build" + getScriptExt()
-            args 'Gradle'
-        }
-    }
+
+    println 'Building the flashable OTA zip with Gradle...'
+    executable "${projectDir}/build" + getScriptExt()
 }
 
-tasks.register('buildOtaOSS') {
+tasks.register('buildOtaOSS', Exec) {
     group '- OTA build'
     description 'Build the flashable OTA zip (open-source components only).'
 
-    doLast {
-        println 'Building the flashable OTA zip (open-source components only) with Gradle...'
-        exec {
-            executable = "${projectDir}/build" + getScriptExt()
-            args 'Gradle'
-            environment OPENSOURCE_ONLY: '1'
-        }
-    }
+    println 'Building the flashable OTA zip (open-source components only) with Gradle...'
+    executable "${projectDir}/build" + getScriptExt()
+    environment OPENSOURCE_ONLY: '1'
 }
 tasks.named('build').configure {
     finalizedBy buildOtaOSS
