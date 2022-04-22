@@ -52,7 +52,9 @@ tasks.register('buildOta', Exec) {
     group '- OTA build'
     description 'Build the flashable OTA zip.'
 
-    println 'Building the flashable OTA zip with Gradle...'
+    doFirst {
+        println 'Building the flashable OTA zip with Gradle...'
+    }
     executable "${projectDir}/build" + getScriptExt()
 }
 
@@ -60,7 +62,9 @@ tasks.register('buildOtaOSS', Exec) {
     group '- OTA build'
     description 'Build the flashable OTA zip (open-source components only).'
 
-    println 'Building the flashable OTA zip (open-source components only) with Gradle...'
+    doFirst {
+        println 'Building the flashable OTA zip (open-source components only) with Gradle...'
+    }
     executable "${projectDir}/build" + getScriptExt()
     environment OPENSOURCE_ONLY: '1'
 }
