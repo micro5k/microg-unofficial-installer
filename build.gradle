@@ -9,8 +9,8 @@ plugins {
 }
 
 gradleEnterprise.buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
+    termsOfServiceUrl 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree 'yes'
     publishAlwaysIf System.getenv('UPLOAD_BUILD_SCAN') != null
 }
 
@@ -28,8 +28,8 @@ void configure() {
     //ext.isSnapshot = version.endsWith('-snapshot')
     rootProject.buildDir = "${projectDir}/output"
 
-    println 'Version: '+version
-    println 'OS: '+System.properties['os.name']
+    println 'Version: ' + version
+    println 'OS: ' + System.properties['os.name']
 }
 configure()
 
@@ -54,8 +54,8 @@ tasks.register('buildOta', Exec) {
 
     doFirst {
         println 'Building the flashable OTA zip with Gradle...'
+        executable "${projectDir}/build" + getScriptExt()
     }
-    executable "${projectDir}/build" + getScriptExt()
 }
 
 tasks.register('buildOtaOSS', Exec) {
@@ -64,31 +64,35 @@ tasks.register('buildOtaOSS', Exec) {
 
     doFirst {
         println 'Building the flashable OTA zip (open-source components only) with Gradle...'
+        executable "${projectDir}/build" + getScriptExt()
+        environment OPENSOURCE_ONLY: '1'
     }
-    executable "${projectDir}/build" + getScriptExt()
-    environment OPENSOURCE_ONLY: '1'
 }
 tasks.named('build').configure {
     finalizedBy buildOtaOSS
 }
 
 tasks.register('installTest', Exec) {
-    group = 'verification'
+    group 'verification'
 
-    executable "${projectDir}/recovery-simulator/recovery" + getScriptExt()
-    args "${projectDir}/output/*.zip"
+    doFirst {
+        executable "${projectDir}/recovery-simulator/recovery" + getScriptExt()
+        args "${projectDir}/output/*.zip"
+    }
+}
+
+tasks.register('test') {
+    dependsOn installTest
+}
+tasks.named('check').configure {
+    dependsOn test
 }
 
 // Dummy task
-tasks.register('test')
-
-// Dummy task
-tasks.register('install') {
-    dependsOn build
-}
+tasks.register('install')
 
 tasks.named('wrapper').configure {
-    gradleVersion = '7.3.3'
-    distributionType = Wrapper.DistributionType.ALL
-    distributionSha256Sum = 'c9490e938b221daf0094982288e4038deed954a3f12fb54cbf270ddf4e37d879'
+    gradleVersion '7.3.3'
+    distributionType Wrapper.DistributionType.ALL
+    distributionSha256Sum 'c9490e938b221daf0094982288e4038deed954a3f12fb54cbf270ddf4e37d879'
 }
