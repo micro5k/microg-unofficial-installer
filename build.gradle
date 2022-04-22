@@ -36,7 +36,13 @@ configure()
 tasks.register('cleanCache', Delete) {
     delete "${projectDir}/cache"
 }
+
+tasks.register('cleanRecoveryOutput', Delete) {
+    delete "${projectDir}/recovery-simulator/output"
+}
+
 tasks.named('clean').configure {
+    finalizedBy tasks.named('cleanRecoveryOutput')
     finalizedBy tasks.named('cleanCache')
 }
 
