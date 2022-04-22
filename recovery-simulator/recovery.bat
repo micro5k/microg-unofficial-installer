@@ -5,7 +5,7 @@
 @echo off
 
 SETLOCAL 2> nul
-"%~dp0tools\win\busybox.exe" ash "%~dp0build.sh" %*
+"%~dp0..\tools\win\busybox.exe" ash "%~dp0recovery.sh" %*
 ENDLOCAL 2> nul
 SET "EXIT_CODE=%ERRORLEVEL%"
 
