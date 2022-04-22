@@ -254,11 +254,13 @@ create_dir_safe "${TMP_PATH}/bin"
 
 PREVIOUS_PATH="${PATH}"
 
-# Clean search path so only internal BusyBox applets will be used
-export PATH="${TMP_PATH}/bin"
+if test "${TEST_INSTALL:-false}" = 'false'; then
+  # Clean search path so only internal BusyBox applets will be used
+  export PATH="${TMP_PATH}/bin"
 
-# Temporarily setup BusyBox
-"${OUR_BB}" --install -s "${TMP_PATH}/bin"
+  # Temporarily setup BusyBox
+  "${OUR_BB}" --install -s "${TMP_PATH}/bin" || ui_error "Failed to setup BusyBox"
+fi
 
 # Temporarily setup Keycheck
 if test -e "${BASE_TMP_PATH}/keycheck"; then
