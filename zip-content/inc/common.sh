@@ -145,6 +145,11 @@ build_getprop()
   grep "^ro\.$1=" "${TMP_PATH}/build.prop" | head -n1 | cut -d '=' -f 2
 }
 
+simple_get_prop()
+{
+  grep -F "${1}=" "${2}" | head -n1 | cut -d '=' -f 2
+}
+
 # String related functions
 is_substring()
 {

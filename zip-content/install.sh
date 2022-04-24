@@ -68,6 +68,7 @@ else
 fi
 
 cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop"  # Cache the file for faster access
+package_extract_file 'module.prop' "${TMP_PATH}/module.prop"
 
 PRIVAPP_PATH="${SYS_PATH}/app"
 if [[ -d "${SYS_PATH}/priv-app" ]]; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi  # Detect the position of the privileged apps folder
@@ -101,11 +102,13 @@ elif is_substring ',arm64-v8a,' "${ABI_LIST}"; then
   CPU64='arm64-v8a'
 fi
 
+install_version="$(simple_get_prop 'version' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version string'
+
 # Info
 ui_msg ''
 ui_msg '---------------------------'
 ui_msg 'microG unofficial installer'
-ui_msg 'v1.0.35-alpha'
+ui_msg "${install_version}"
 ui_msg '(by ale5000)'
 ui_msg '---------------------------'
 ui_msg ''
