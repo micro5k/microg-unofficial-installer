@@ -90,9 +90,6 @@ tasks.register('installTest', Exec) {
 tasks.register('test') {
     dependsOn installTest
 }
-tasks.named('check').configure {
-    dependsOn test
-}
 
 // Dummy task
 tasks.register('install')
