@@ -6,6 +6,7 @@
 microG unofficial installer
 ===========================
 :Author: `ale5000 <https://github.com/ale5000-git>`_
+:License: `GPLv3.0 or later <LICENSE.rst>`_
 
 .. image:: https://codecov.io/gh/micro5k/microg-unofficial-installer/branch/main/graph/badge.svg
    :alt: Coverage
@@ -16,29 +17,28 @@ Description
 -----------
 microG unofficial installer is a flashable zip made to simplify the installation of microG.
 
+This project is available on GitHub_, on GitLab_ as well as on XDA_.
+
+.. _GitHub: https://github.com/micro5k/microg-unofficial-installer
+.. _GitLab: https://gitlab.com/micro5k/microg-unofficial-installer
+.. _XDA: https://forum.xda-developers.com/t/mod-flashable-microg-unofficial-installer.3432360/
+
 
 Donate
 ------
-.. |Liberapay| image:: assets/liberapay.png
-   :alt: Liberapay
-   :target: https://liberapay.com/microg-by-ale5000/
-
-.. |DonateWithLiberapay| image:: https://liberapay.com/assets/widgets/donate.svg
+.. image:: https://liberapay.com/assets/widgets/donate.svg
    :alt: Donate using Liberapay
    :target: https://liberapay.com/microg-by-ale5000/donate
 
-+-------------+-------------------------------------+
-| Service     | Donation link                       |
-+=============+=====================================+
-| |Liberapay| | |DonateWithLiberapay|               |
-+-------------+-------------------------------------+
 
-
-License
--------
+Copyright
+---------
 Copyright © 2016-2019, 2021-2022 ale5000
 
-License: `GPLv3.0 or later <LICENSE.rst>`_
+
+Download
+--------
+See here for the `instructions <docs/INSTRUCTIONS.rst>`_.
 
 
 Releases
@@ -46,11 +46,6 @@ Releases
 .. image:: https://img.shields.io/github/release/micro-a5k/microg-unofficial-installer/all.svg?maxAge=3600
    :alt: GitHub (pre-)release
    :target: https://github.com/micro-a5k/microg-unofficial-installer/releases/latest
-
-
-Download
---------
-See here for the `instructions <docs/INSTRUCTIONS.rst>`_.
 
 
 Code analysis
