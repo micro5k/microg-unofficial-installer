@@ -108,7 +108,7 @@ rm -f "${TEMP_DIR}/zip-content/misc/busybox/busybox-"mips* || ui_error 'Failed t
 rm -f "${TEMP_DIR}/zip-content/LICENSES/Info-ZIP.txt" || ui_error 'Failed to delete unused files in the temp dir'
 
 if test -n "${OPENSOURCE_ONLY}"; then
-  printf '%s\n%s\n\n%s\n'echo '# SPDX-FileCopyrightText: none' '# SPDX-License-Identifier: CC0-1.0' 'Include only Open source components.' > "${TEMP_DIR}/zip-content/OPENSOURCE-ONLY" || ui_error 'Failed to create the OPENSOURCE-ONLY file'
+  printf '%s\n%s\n\n%s\n' '# SPDX-FileCopyrightText: none' '# SPDX-License-Identifier: CC0-1.0' 'Include only Open source components.' > "${TEMP_DIR}/zip-content/OPENSOURCE-ONLY" || ui_error 'Failed to create the OPENSOURCE-ONLY file'
 else
   files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _; do
     mkdir -p "${TEMP_DIR}/zip-content/${LOCAL_PATH}"
