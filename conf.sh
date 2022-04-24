@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: CC0-1.0
 # SPDX-FileType: SOURCE
 
-export NAME='microG-unofficial-installer-ale5000'
+export NAME='microg-unofficial-installer'
 
 oss_files_to_download()
 {

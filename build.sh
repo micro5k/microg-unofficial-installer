@@ -68,8 +68,9 @@ if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
 rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
 
 # Set filename and version
-VER="$(simple_get_prop 'version' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse version string'
-FILENAME="${NAME:?}-${VER:?}"
+VER="$(simple_get_prop 'version' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the version string'
+AUTHOR="$(simple_get_prop 'author' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the author string'
+FILENAME="${NAME:?}-${VER:?}-by-${AUTHOR:?}"
 # shellcheck disable=SC2154
 if test -n "${OPENSOURCE_ONLY}"; then FILENAME="${FILENAME:?}-OSS"; fi
 
