@@ -101,12 +101,13 @@ cp -rf "${SCRIPT_DIR}/"/LICENSE* "${TEMP_DIR}/zip-content/" || ui_error 'Failed 
 cp -rf "${SCRIPT_DIR}/"/LIC-ADDITION* "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
 cp -rf "${SCRIPT_DIR}/"/CHANGELOG* "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the changelog to the temp dir'
 
-# Do not ship currently unused binaries
-rm -f "${TEMP_DIR}/zip-content/misc/busybox/busybox-"mips* || ui_error 'Failed to delete unused files in the temp dir'
+# Do not ship currently unused binaries and unused files
 rm -rf "${TEMP_DIR}/zip-content/misc/aapt" || ui_error 'Failed to delete unused files in the temp dir'
+rm -f "${TEMP_DIR}/zip-content/misc/busybox/busybox-"mips* || ui_error 'Failed to delete unused files in the temp dir'
+rm -f "${TEMP_DIR}/zip-content/LICENSES/Info-ZIP.txt" || ui_error 'Failed to delete unused files in the temp dir'
 
 if test -n "${OPENSOURCE_ONLY}"; then
-  echo 'Include only Open source components, for more info see here: https://github.com/micro5k/microg-unofficial-installer/blob/main/docs/INSTRUCTIONS.rst' > "${TEMP_DIR}/zip-content/OPENSOURCE-ONLY" || ui_error 'Failed to create the OPENSOURCE-ONLY file'
+  printf '%s\n%s\n\n%s\n'echo '# SPDX-FileCopyrightText: none' '# SPDX-License-Identifier: CC0-1.0' 'Include only Open source components.' > "${TEMP_DIR}/zip-content/OPENSOURCE-ONLY" || ui_error 'Failed to create the OPENSOURCE-ONLY file'
 else
   files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _; do
     mkdir -p "${TEMP_DIR}/zip-content/${LOCAL_PATH}"
