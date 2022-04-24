@@ -30,7 +30,6 @@ fi
 unset ENV_RESETTED
 
 # Check dependencies
-UNZIP_CMD="$(which unzip)" || fail_with_msg 'Unzip is missing'
 CUSTOM_BUSYBOX="$(which busybox)" || fail_with_msg 'BusyBox is missing'
 
 # Get dir of this script
@@ -113,7 +112,7 @@ export CUSTOM_BUSYBOX
 export OVERRIDE_DIR
 FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
 "${CUSTOM_BUSYBOX}" cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" || fail_with_msg 'Failed to copy the flashable ZIP'
-"${UNZIP_CMD}" -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
+"${CUSTOM_BUSYBOX}" unzip -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
 chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/update-binary'"
 
 # Execute the script that will run the flashable zip
