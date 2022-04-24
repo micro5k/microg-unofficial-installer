@@ -242,7 +242,7 @@ fi
 if ! test -e "${OUR_BB}"; then ui_error 'BusyBox not found'; fi
 
 # Give execution rights (if needed)
-if test "${OUR_BB}" != "${CUSTOM_BUSYBOX}"; then
+if test -z "${CUSTOM_BUSYBOX:-}" || test "${OUR_BB}" != "${CUSTOM_BUSYBOX}"; then
   chmod +x "${OUR_BB}" || ui_error "chmod failed on '${OUR_BB}'" 81  # Needed to make working the "safe" functions
   set_perm 0 0 0755 "${OUR_BB}"
 fi
@@ -253,6 +253,8 @@ create_dir_safe "${TMP_PATH}"
 create_dir_safe "${TMP_PATH}/bin"
 
 PREVIOUS_PATH="${PATH}"
+DEVICE_MOUNT="$(which mount)"
+export DEVICE_MOUNT
 
 if test "${TEST_INSTALL:-false}" = 'false'; then
   # Clean search path so only internal BusyBox applets will be used
