@@ -54,7 +54,9 @@ elif test -f '/system/build.prop'; then
 else
   SYS_INIT_STATUS=1
 
-  if test -e '/system_root' && mount_partition '/system_root' && test -f '/system_root/system/build.prop'; then
+  if test -n "${ANDROID_ROOT:-}" && test "${ANDROID_ROOT:-}" != '/system_root' && test "${ANDROID_ROOT:-}" != '/system' && mount_partition "${ANDROID_ROOT:-}" && test -f "${ANDROID_ROOT:-}/build.prop"; then
+    SYS_PATH="${ANDROID_ROOT:-}"
+  elif test -e '/system_root' && mount_partition '/system_root' && test -f '/system_root/system/build.prop'; then
     SYS_PATH='/system_root/system'
   elif test -e '/system' && mount_partition '/system' && test -f '/system/system/build.prop'; then
     SYS_PATH='/system/system'
