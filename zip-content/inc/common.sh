@@ -87,11 +87,22 @@ validate_return_code()
 }
 
 # Mounting related functions
+mount_partition()
+{
+  local partition
+  partition="$(readlink -f "${1}")" || { partition="${1}"; ui_warning "Failed to canonicalize '${1}'"; }
+
+  mount "${partition}" || ui_warning "Failed to mount '${1}'"
+}
+
 is_mounted()
 {
-  case $(mount) in
-    *[[:blank:]]"$1"[[:blank:]]*) return 0;;  # Mounted
-    *)                                        # NOT mounted
+  local partition
+  partition="$(readlink -f "${1}")" || { partition="${1}"; ui_warning "Failed to canonicalize '${1}'"; }
+
+  case "$(mount)" in
+    *[[:blank:]]"${partition}"[[:blank:]]*) return 0;;  # Mounted
+    *)                                                  # NOT mounted
   esac
   return 1  # NOT mounted
 }
