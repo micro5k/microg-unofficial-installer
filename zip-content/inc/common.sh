@@ -99,11 +99,11 @@ is_mounted()
 {
   local _partition _mount_result
   _partition="$(readlink -f "${1}")" || { _partition="${1}"; ui_warning "Failed to canonicalize '${1}'"; }
-  _mount_result="$(mount)" #|| _mount_result="$(cat )"
+  _mount_result="$(mount)" || _mount_result="$(cat /proc/mounts)" || ui_error 'is_mounted has failed'
 
   case "${_mount_result}" in
     *[[:blank:]]"${_partition}"[[:blank:]]*) return 0;;  # Mounted
-    *)                                                  # NOT mounted
+    *)                                                   # NOT mounted
   esac
   return 1  # NOT mounted
 }
