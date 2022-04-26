@@ -39,6 +39,13 @@ CUSTOM_BUSYBOX="$(which busybox)" || fail_with_msg 'BusyBox is missing'
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT}")" || fail_with_msg 'Failed to get script dir'
 unset THIS_SCRIPT
 
+newline='
+'
+for _current_file in "$@"
+do
+  FILES="${FILES}$(realpath "${_current_file}")${newline}" || fail_with_msg "Invalid filename: ${_current_file}"
+done
+
 # Ensure we have a path the the temp dir and empty it (should be already empty, but we must be sure)
 if test -z "${OUR_TEMP_DIR}"; then fail_with_msg 'Failed to create our temp dir'; fi
 rm -rf "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
@@ -119,7 +126,7 @@ FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || 
 chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/update-binary'"
 
 # Execute the script that will run the flashable zip
-"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" | TZ=UTC ts '[%Y-%m-%d %H:%M:%S]'; STATUS="$?"
+"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" | TZ=UTC ts '[%H:%M:%S]'; STATUS="$?"
 
 # Parse recovery output
 last_msg_printed=false
