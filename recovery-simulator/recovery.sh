@@ -29,6 +29,8 @@ if ! "${ENV_RESETTED:-false}"; then
   exit 127
 fi
 unset ENV_RESETTED
+unset LC_TIME
+set -o pipefail
 
 # Check dependencies
 CUSTOM_BUSYBOX="$(which busybox)" || fail_with_msg 'BusyBox is missing'
@@ -117,7 +119,7 @@ FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || 
 chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/update-binary'"
 
 # Execute the script that will run the flashable zip
-"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}"; STATUS="$?"
+"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" | TZ=UTC "${CUSTOM_BUSYBOX}" ts '[%Y-%m-%d %H:%M:%S]'; STATUS="$?"
 
 # Parse recovery output
 last_msg_printed=false
