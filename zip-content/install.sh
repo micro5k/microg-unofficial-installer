@@ -1,5 +1,5 @@
 #!/sbin/sh
-# shellcheck disable=SC3010
+# shellcheck disable=SC3010,SC2129
 
 # SC3010: In POSIX sh, [[ ]] is undefined
 
