@@ -30,7 +30,6 @@ OLD_ANDROID=false
 FAKE_SIGN=false
 SYS_PATH=''
 MARKET_FILENAME=''
-INSTALLATION_SETTINGS_FILE='ug.prop'
 
 
 ### FUNCTIONS ###
@@ -69,6 +68,10 @@ fi
 
 cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop"  # Cache the file for faster access
 package_extract_file 'module.prop' "${TMP_PATH}/module.prop"
+install_id="$(simple_get_prop 'id' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse id string'
+install_version="$(simple_get_prop 'version' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version string'
+
+INSTALLATION_SETTINGS_FILE="${install_id}.prop"
 
 PRIVAPP_PATH="${SYS_PATH}/app"
 if [[ -d "${SYS_PATH}/priv-app" ]]; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi  # Detect the position of the privileged apps folder
@@ -101,8 +104,6 @@ if is_substring ',x86_64,' "${ABI_LIST}"; then
 elif is_substring ',arm64-v8a,' "${ABI_LIST}"; then
   CPU64='arm64-v8a'
 fi
-
-install_version="$(simple_get_prop 'version' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version string'
 
 # Info
 ui_msg ''
