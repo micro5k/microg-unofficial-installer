@@ -70,6 +70,7 @@ cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop"  # Cache the file for f
 package_extract_file 'module.prop' "${TMP_PATH}/module.prop"
 install_id="$(simple_get_prop 'id' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse id string'
 install_version="$(simple_get_prop 'version' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version string'
+install_version_code="$(simple_get_prop 'versionCode' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version code'
 
 INSTALLATION_SETTINGS_FILE="${install_id}.prop"
 
@@ -372,6 +373,8 @@ USED_SETTINGS_PATH="${TMP_PATH}/files/etc/zips"
 
 create_dir "${USED_SETTINGS_PATH}"
 echo 'install.type=recovery' > "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
+echo "install.version.code=${install_version_code}" >> "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
+echo "install.version=${install_version}" >> "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
 echo "market.app=${MARKET}" >> "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
 set_perm 0 0 0640 "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
 
