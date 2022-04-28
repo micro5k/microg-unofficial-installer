@@ -14,6 +14,23 @@ All notable changes to this project will be documented in this file.
 -------------------
 - Click above to see all the changes.
 
+`1.1.0`_ beta (2022-04-28)
+---------------------------
+- Added support for Android up to 13
+- Improve system partition mounting
+- Mount partitions only if they aren't already mounted
+- Zip builds are now reproducible (tested on Linux and Windows with Java 17)
+- You can now test the zip installation on PC using "gradlew installTest" (tested on Linux and Windows)
+Full changelog will appear later
+
+`1.0.34`_ beta (2019-07-07)
+---------------------------
+Changelog will appear later
+
+`1.0.33`_ beta (2018-12-04)
+---------------------------
+Changelog will appear later
+
 `1.0.32`_ beta (2018-11-01)
 ---------------------------
 - Added also a Bitcoin address for receiving donations
@@ -80,7 +97,10 @@ All notable changes to this project will be documented in this file.
 - Minor changes and fixes
 
 
-.. _Dev: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.32-beta...HEAD
+.. _Dev: https://github.com/micro5k/microg-unofficial-installer/compare/v1.1.0-beta...HEAD
+.. _1.1.0: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.34-beta...v1.1.0-beta
+.. _1.0.34: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.33-beta...v1.0.34-beta
+.. _1.0.33: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.32-beta...v1.0.33-beta
 .. _1.0.32: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.31-beta...v1.0.32-beta
 .. _1.0.31: https://github.com/micro5k/microg-unofficial-installer/compare/fd8c10cf26d51a2cbdfa48f9cc17d8f69a3af8e6...v1.0.31-beta
 .. _1.0.30: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.29-beta...fd8c10cf26d51a2cbdfa48f9cc17d8f69a3af8e6
