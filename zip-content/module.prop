@@ -4,7 +4,7 @@
 
 id=microg-unofficial-installer
 name=microG unofficial installer
-version=v1.0.35-alpha
+version=v1.1.0-beta
 versionCode=1
 author=ale5000
 description=microG unofficial installer is a flashable zip made to simplify the installation of microG.
