@@ -31,8 +31,8 @@ Donate
    :target: https://liberapay.com/microg-by-ale5000/donate
 
 
-Releases
---------
+Release
+-------
 .. image:: https://img.shields.io/github/v/release/micro5k/microg-unofficial-installer.svg?include_prereleases&cacheSeconds=3600
    :alt: GitHub (pre-)release
    :target: docs/INSTRUCTIONS.rst
