@@ -270,7 +270,7 @@ reset_gms_data_of_all_apps()
   if test -e '/data/data/'; then
     ui_debug 'Resetting GMS data of all apps...'
     find /data/data/*/shared_prefs -name 'com.google.android.gms.*.xml' -delete
-    validate_return_code "$?" 'Failed to reset GMS data of all apps'
+    validate_return_code_warning "$?" 'Failed to reset GMS data of all apps'
   fi
 }
 
