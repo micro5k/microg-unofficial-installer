@@ -31,21 +31,26 @@ Donate
    :target: https://liberapay.com/microg-by-ale5000/donate
 
 
+Releases
+--------
+.. image:: https://img.shields.io/github/v/release/micro5k/microg-unofficial-installer.svg?include_prereleases&cacheSeconds=3600
+   :alt: GitHub (pre-)release
+   :target: docs/INSTRUCTIONS.rst
+
+See here for the `instructions <docs/INSTRUCTIONS.rst>`_.
+
+.. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/latest/total.svg?cacheSeconds=3600
+   :alt: Downloads of the latest release
+   :target: docs/INSTRUCTIONS.rst
+
+.. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/total.svg?cacheSeconds=3600
+   :alt: Total downloads
+   :target: docs/INSTRUCTIONS.rst
+
+
 Copyright
 ---------
 Copyright © 2016-2019, 2021-2022 ale5000
-
-
-Download
---------
-See here for the `instructions <docs/INSTRUCTIONS.rst>`_.
-
-
-Releases
---------
-.. image:: https://img.shields.io/github/release/micro-a5k/microg-unofficial-installer/all.svg?maxAge=3600
-   :alt: GitHub (pre-)release
-   :target: https://github.com/micro-a5k/microg-unofficial-installer/releases/latest
 
 
 Code analysis
