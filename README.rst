@@ -37,7 +37,7 @@ Release
    :alt: GitHub (pre-)release
    :target: docs/INSTRUCTIONS.rst
 
-See here for the `instructions <docs/INSTRUCTIONS.rst>`_.
+See `here <docs/INSTRUCTIONS.rst>`_ for the instructions.
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/latest/total.svg?cacheSeconds=3600
    :alt: Downloads of the latest release
