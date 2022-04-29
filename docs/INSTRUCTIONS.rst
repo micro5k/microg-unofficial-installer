@@ -26,4 +26,4 @@ or
 Download
 --------
 
-You can get the complete package in the `XDA thread <https://forum.xda-developers.com/showthread.php?t=3432360>`_, instead the open-source only version in the `release page <https://github.com/micro5k/microg-unofficial-installer/releases>`_.
+You can get the complete package in the `XDA thread <https://forum.xda-developers.com/showthread.php?t=3432360>`_, instead the open-source only version in the `release page <https://github.com/micro5k/microg-unofficial-installer/releases/latest>`_.
