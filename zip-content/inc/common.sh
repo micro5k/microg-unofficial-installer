@@ -83,7 +83,12 @@ ui_debug()
 # Error checking functions
 validate_return_code()
 {
-  if [[ "$1" != 0 ]]; then ui_error "ERROR: $2"; fi
+  if test "${1}" -ne 0; then ui_error "${2}"; fi
+}
+
+validate_return_code_warning()
+{
+  if test "${1}" -ne 0; then ui_warning "${2}"; fi
 }
 
 # Mounting related functions
