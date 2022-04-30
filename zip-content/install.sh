@@ -1,7 +1,4 @@
 #!/sbin/sh
-# shellcheck disable=SC3010
-
-# SC3010: In POSIX sh, [[ ]] is undefined
 
 # SPDX-FileCopyrightText: (c) 2016-2019, 2021 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -75,17 +72,17 @@ install_version_code="$(simple_get_prop 'versionCode' "${TMP_PATH}/module.prop")
 INSTALLATION_SETTINGS_FILE="${install_id}.prop"
 
 PRIVAPP_PATH="${SYS_PATH}/app"
-if [[ -d "${SYS_PATH}/priv-app" ]]; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi  # Detect the position of the privileged apps folder
+if test -e "${SYS_PATH}/priv-app"; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi  # Detect the position of the privileged apps folder
 
 API=$(build_getprop 'build\.version\.sdk')
-if [[ "${API}" -ge 21 ]]; then
+if test "${API}" -ge 21; then
   :  ### New Android versions
-elif [[ "${API}" -ge 19 ]]; then
+elif test "${API}" -ge 19; then
   OLD_ANDROID=true
-elif [[ "${API}" -ge 9 ]]; then
+elif test "${API}" -ge 9; then
   LEGACY_ANDROID=true
   OLD_ANDROID=true
-elif [[ "${API}" -ge 1 ]]; then
+elif test "${API}" -ge 1; then
   ui_error 'Your Android version is too old'
 else
   ui_error 'Invalid API level'
@@ -122,14 +119,14 @@ ui_msg "Privileged apps: ${PRIVAPP_PATH}"
 
 if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi
 
-if [[ "${LIVE_SETUP}" -eq 1 ]]; then
+if test "${LIVE_SETUP}" -eq 1; then
   choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore'
-  if [[ "$?" -eq 3 ]]; then export MARKET='PlayStore'; else export MARKET='FakeStore'; fi
+  if test "$?" -eq 3; then export MARKET='PlayStore'; else export MARKET='FakeStore'; fi
 fi
 
-if [[ "${MARKET}" == 'PlayStore' ]]; then
-  if [[ "${PLAYSTORE_VERSION}" == 'auto' ]]; then
-    if [[ "${OLD_ANDROID}" != true ]]; then
+if test "${MARKET}" = 'PlayStore'; then
+  if test "${PLAYSTORE_VERSION}" = 'auto'; then
+    if test "${OLD_ANDROID}" != true; then
       MARKET_FILENAME="${MARKET}-recent.apk"
     else
       MARKET_FILENAME="${MARKET}-legacy.apk"
@@ -152,14 +149,14 @@ ui_msg "Fake signature: ${FAKE_SIGN}"
 
 ui_msg ''
 
-if [[ ${CPU} == false && ${CPU64} == false ]]; then
+if test ${CPU} = false && test ${CPU64} = false; then
   ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
 fi
 
 # Check the existance of the libraries folders
-if [[ ${OLD_ANDROID} == true ]]; then
-  if [[ ${CPU} != false && ! -d "${SYS_PATH}/lib" ]]; then create_dir "${SYS_PATH}/lib"; fi
-  if [[ ${CPU64} != false && ! -d "${SYS_PATH}/lib64" ]]; then create_dir "${SYS_PATH}/lib64"; fi
+if test ${OLD_ANDROID} = true; then
+  if test ${CPU} != false && ! test -e "${SYS_PATH}/lib"; then create_dir "${SYS_PATH}/lib"; fi
+  if test ${CPU64} != false && ! test -e "${SYS_PATH}/lib64"; then create_dir "${SYS_PATH}/lib64"; fi
 fi
 
 # Extracting
@@ -202,8 +199,8 @@ else
 fi
 
 # Handle variants
-if [[ "${API}" -ge 14 ]]; then
-  if [[ "${GMSCORE_VERSION}" == 'auto' && "${CPU}" != 'armeabi' ]]; then
+if test "${API}" -ge 14; then
+  if test "${GMSCORE_VERSION}" = 'auto' && test "${CPU}" != 'armeabi'; then
     move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
   else
     move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
@@ -212,10 +209,10 @@ else
   move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
 fi
 
-if [[ "${INSTALL_NEWPIPE}" -ne 0 ]]; then
-  if [[ "${API}" -ge 19 ]]; then
+if test "${INSTALL_NEWPIPE}" -ne 0; then
+  if test "${API}" -ge 19; then
     move_rename_file "${TMP_PATH}/files/variants/app/NewPipe.apk" "${TMP_PATH}/files/app/NewPipe.apk"
-  elif [[ "${API}" -ge 16 ]]; then
+  elif test "${API}" -ge 16; then
     move_rename_file "${TMP_PATH}/files/variants/app/NewPipeLegacy.apk" "${TMP_PATH}/files/app/NewPipe.apk"
   fi
 fi
@@ -239,14 +236,14 @@ fi
 
 # Resetting Android runtime permissions
 if test "${API}" -ge 23; then
-  if [[ -e '/data/system/users/0/runtime-permissions.xml' ]]; then
+  if test -e '/data/system/users/0/runtime-permissions.xml'; then
     if ! grep -q 'com.google.android.gms' /data/system/users/*/runtime-permissions.xml; then
       # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
       ui_msg "Resetting legacy Android runtime permissions..."
       delete /data/system/users/*/runtime-permissions.xml
     fi
   fi
-  if [[ -e '/data/misc_de/0/apexdata/com.android.permission/runtime-permissions.xml' ]]; then
+  if test -e '/data/misc_de/0/apexdata/com.android.permission/runtime-permissions.xml'; then
     if ! grep -q 'com.google.android.gms' /data/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml; then
       # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
       ui_msg "Resetting Android runtime permissions..."
@@ -262,7 +259,7 @@ fi
 # Configuring default Android permissions
 if test "${API}" -ge 23; then
   ui_debug 'Configuring default Android permissions...'
-  if [[ ! -e "${SYS_PATH}/etc/default-permissions" ]]; then
+  if ! test -e "${SYS_PATH}/etc/default-permissions"; then
     ui_msg 'Creating the default permissions folder...'
     create_dir "${SYS_PATH}/etc/default-permissions"
   fi
@@ -293,7 +290,7 @@ if test "${DATA_INIT_STATUS}" = '1'; then unmount '/data'; fi
 # Preparing
 ui_msg 'Preparing...'
 
-if [[ "${LEGACY_ANDROID}" == true ]]; then
+if test "${LEGACY_ANDROID}" = true; then
   move_dir_content "${TMP_PATH}/files/app-legacy" "${TMP_PATH}/files/app"
 fi
 delete_recursive "${TMP_PATH}/files/app-legacy"
@@ -304,7 +301,7 @@ if test "${API}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; 
 move_rename_file "${TMP_PATH}/files/variants/${MARKET_FILENAME}" "${TMP_PATH}/files/priv-app/Phonesky.apk"
 delete_recursive "${TMP_PATH}/files/variants"
 
-if [[ "${OLD_ANDROID}" != true ]]; then
+if test "${OLD_ANDROID}" != true; then
   # Move apps into subdirs
   for entry in "${TMP_PATH}/files/priv-app"/*; do
     path_without_ext=$(remove_ext "${entry}")
@@ -321,7 +318,7 @@ if [[ "${OLD_ANDROID}" != true ]]; then
 
   # The name of the following architectures remain unchanged: x86, x86_64, mips, mips64
   move_rename_dir "${TMP_PATH}/libs/lib/arm64-v8a" "${TMP_PATH}/libs/lib/arm64"
-  if [[ "${LEGACY_ARM}" != true ]]; then
+  if test "${LEGACY_ARM}" != true; then
     move_rename_dir "${TMP_PATH}/libs/lib/armeabi-v7a" "${TMP_PATH}/libs/lib/arm"
     delete_recursive "${TMP_PATH}/libs/lib/armeabi"
   else
@@ -352,11 +349,11 @@ if test "${API}" -ge 21; then
 fi
 copy_dir_content "${TMP_PATH}/files/etc/org.fdroid.fdroid" "${SYS_PATH}/etc/org.fdroid.fdroid"
 
-if [[ "${OLD_ANDROID}" == true ]]; then
-  if [[ "${CPU}" != false ]]; then
+if test "${OLD_ANDROID}" = true; then
+  if test "${CPU}" != false; then
     copy_dir_content "${TMP_PATH}/libs/lib/${CPU}" "${SYS_PATH}/lib"
   fi
-  if [[ "${CPU64}" != false ]]; then
+  if test "${CPU64}" != false; then
     copy_dir_content "${TMP_PATH}/libs/lib/${CPU64}" "${SYS_PATH}/lib64"
   fi
 
@@ -389,10 +386,10 @@ copy_dir_content "${USED_SETTINGS_PATH}" "${SYS_PATH}/etc/zips"
 delete "${SYS_PATH}/etc/zips/ug.prop"
 
 # Install survival script
-if [[ -d "${SYS_PATH}/addon.d" ]]; then
-  if [[ "${LEGACY_ANDROID}" == true ]]; then
+if test -e "${SYS_PATH}/addon.d"; then
+  if test "${LEGACY_ANDROID}" = true; then
     :  ### Skip it
-  elif [[ "${OLD_ANDROID}" == true ]]; then
+  elif test "${OLD_ANDROID}" = true; then
     :  ### Not ready yet
   else
     ui_msg 'Installing survival script...'
