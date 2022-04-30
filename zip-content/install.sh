@@ -1,5 +1,5 @@
 #!/sbin/sh
-# shellcheck disable=SC3010,SC2129
+# shellcheck disable=SC3010
 
 # SC3010: In POSIX sh, [[ ]] is undefined
 
@@ -370,12 +370,14 @@ fi
 delete_recursive "${TMP_PATH}/libs"
 
 USED_SETTINGS_PATH="${TMP_PATH}/files/etc/zips"
-
 create_dir "${USED_SETTINGS_PATH}"
-echo 'install.type=recovery' > "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
-echo "install.version.code=${install_version_code}" >> "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
-echo "install.version=${install_version}" >> "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
-echo "market.app=${MARKET}" >> "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
+
+{
+  echo 'install.type=recovery'
+  echo "install.version.code=${install_version_code}"
+  echo "install.version=${install_version}"
+  echo "market.app=${MARKET}"
+} > "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
 set_perm 0 0 0640 "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
 
 create_dir "${SYS_PATH}/etc/zips"
