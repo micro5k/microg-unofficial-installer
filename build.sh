@@ -125,11 +125,11 @@ fi
 BASE_TMP_SCRIPT_DIR="${TEMP_DIR}/zip-content/META-INF/com/google/android"
 mv -f "${BASE_TMP_SCRIPT_DIR}/update-binary.sh" "${BASE_TMP_SCRIPT_DIR}/update-binary" || ui_error 'Failed to rename a file'
 mv -f "${BASE_TMP_SCRIPT_DIR}/updater-script.sh" "${BASE_TMP_SCRIPT_DIR}/updater-script" || ui_error 'Failed to rename a file'
-find "${TEMP_DIR}/zip-content" -exec touch -c -t 200802290333.46 '{}' + || ui_error 'Failed to set the modification date of files'
 find "${TEMP_DIR}/zip-content" -type d -exec chmod 0700 '{}' + -o -type f -exec chmod 0600 '{}' + || ui_error 'Failed to set permissions of files'
 if test "${PLATFORM}" == 'win'; then
   ATTRIB -R -A -S -H "${TEMP_DIR}/zip-content/*" /S /D
 fi
+find "${TEMP_DIR}/zip-content" -exec touch -c -t 200802290333.46 '{}' + || ui_error 'Failed to set the modification date of files'
 
 # Remove the previously built files (if they exist)
 rm -f "${OUT_DIR:?}/${FILENAME}".zip* || ui_error 'Failed to remove the previously built files'
@@ -158,7 +158,7 @@ cd "${OUT_DIR}" || ui_error 'Failed to change the folder'
 
 # Cleanup remnants
 rm -rf "${TEMP_DIR:?}" &
-#pid="$!"
+#pid="${!}"
 
 # Create checksum files
 echo ''
@@ -184,4 +184,5 @@ echo ''
 echo 'Done.'
 if test -z "${CI}"; then printf '\033]0;Done\007' && printf '\r                    \r'; fi
 
+#wait "${pid}"
 exit "$?"
