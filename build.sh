@@ -61,7 +61,7 @@ OUT_DIR="${SCRIPT_DIR}/output"
 mkdir -p "${OUT_DIR}" || ui_error 'Failed to create the output dir'
 
 # Create the temp dir
-TEMP_DIR=$(mktemp -d -t ZIPBUILDER-XXXXXX) || ui_error 'Failed to create our temp dir'
+TEMP_DIR="$(mktemp -d -t ZIPBUILDER-XXXXXX)" || ui_error 'Failed to create our temp dir'
 if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
 
 # Empty our temp dir (should be already empty, but we must be sure)
