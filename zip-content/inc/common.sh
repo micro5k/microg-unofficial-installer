@@ -1,18 +1,15 @@
 #!/sbin/sh
-# shellcheck disable=SC3043,SC3037,SC3010,SC3060
-
-# SC3043: In POSIX sh, local is undefined
-# SC3037: In POSIX sh, echo flags are undefined
-# SC3010: In POSIX sh, [[ ]] is undefined
-# SC3060: In POSIX sh, string replacement is undefined
 
 # SPDX-FileCopyrightText: (c) 2016-2019, 2021 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
+# shellcheck disable=SC3043
+# SC3043: In POSIX sh, local is undefined
+
 ### GLOBAL VARIABLES ###
 
-if [[ -z "${RECOVERY_PIPE}" || -z "${ZIP_FILE}" || -z "${TMP_PATH}" ]]; then
+if test -z "${RECOVERY_PIPE}" || test -z "${ZIP_FILE}" || test -z "${TMP_PATH}"; then
   echo 'Some variables are NOT set.'
   exit 90
 fi
@@ -47,7 +44,7 @@ ui_warning()
 
 ui_msg()
 {
-  if [ "${DEBUG_LOG}" -ne 0 ]; then echo "$1"; fi
+  if test "${DEBUG_LOG}" -ne 0; then echo "$1"; fi
   if test -e "${RECOVERY_PIPE}"; then
     printf "ui_print %s\nui_print \n" "${1}" >> "${RECOVERY_PIPE}"
   else
@@ -57,21 +54,21 @@ ui_msg()
 
 ui_msg_sameline_start()
 {
-  if [ "${DEBUG_LOG}" -ne 0 ]; then echo -n "$1"; fi
+  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1}"; fi
   if test -e "${RECOVERY_PIPE}"; then
-    printf "ui_print %s" "${1}" >> "${RECOVERY_PIPE}"
+    printf 'ui_print %s' "${1}" >> "${RECOVERY_PIPE}"
   else
-    printf "ui_print %s" "${1}" 1>&"${OUTFD}"
+    printf 'ui_print %s' "${1}" 1>&"${OUTFD}"
   fi
 }
 
 ui_msg_sameline_end()
 {
-  if [ "${DEBUG_LOG}" -ne 0 ]; then echo "$1"; fi
+  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1}"; fi
   if test -e "${RECOVERY_PIPE}"; then
-    printf "%s\nui_print \n" "${1}" >> "${RECOVERY_PIPE}"
+    printf '%s\nui_print \n' "${1}" >> "${RECOVERY_PIPE}"
   else
-    printf "%s\nui_print \n" "${1}" 1>&"${OUTFD}"
+    printf '%s\nui_print \n' "${1}" 1>&"${OUTFD}"
   fi
 }
 
@@ -130,8 +127,8 @@ is_mounted_read_write()
 get_mount_status()
 {
   local mount_line
-  mount_line=$(mount | grep " $1 " | head -n1)
-  if [[ -z "${mount_line}" ]]; then return 1; fi  # NOT mounted
+  mount_line="$(mount | grep " $1 " | head -n1)"
+  if test -z "${mount_line}"; then return 1; fi  # NOT mounted
   if echo "${mount_line}" | grep -qi -e "[(\s,]rw[\s,)]"; then return 0; fi  # Mounted read-write (RW)
   return 2  # Mounted read-only (RO)
 }
@@ -179,6 +176,7 @@ is_substring()
 
 replace_string()
 {
+  # shellcheck disable=SC3060
   echo "${1//$2/$3}"
 }
 
@@ -210,7 +208,7 @@ search_ascii_string_in_file()
 search_ascii_string_as_utf16_in_file()
 {
   local SEARCH_STRING
-  SEARCH_STRING=$(echo -n "$1" | od -A n -t x1 | LC_ALL=C tr -d '\n' | LC_ALL=C sed -e 's/^ //g;s/ /00/g')
+  SEARCH_STRING="$(printf '%s' "${1}" | od -A n -t x1 | LC_ALL=C tr -d '\n' | LC_ALL=C sed -e 's/^ //g;s/ /00/g')"
   od -A n -t x1 "$2" | LC_ALL=C tr -d ' \n' | LC_ALL=C grep -qF "${SEARCH_STRING}" && return 0  # Found
   return 1  # NOT found
 }
