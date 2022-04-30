@@ -88,6 +88,7 @@ link_folder "${BASE_SIMULATION_PATH}/sdcard" "${EXTERNAL_STORAGE}"
 } > "${ANDROID_ROOT}/build.prop"
 
 touch "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
+printf 'a\0n\0d\0r\0o\0i\0d\0.\0p\0e\0r\0m\0i\0s\0s\0i\0o\0n\0.\0F\0A\0K\0E\0_\0P\0A\0C\0K\0A\0G\0E\0_\0S\0I\0G\0N\0A\0T\0U\0R\0E\0' > "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
 mkdir -p "${ANDROID_ROOT}/framework"
 zip -D -9 -X -UN=n -nw -q "${ANDROID_ROOT}/framework/framework-res.apk" 'AndroidManifest.xml' || fail_with_msg 'Failed compressing framework-res.apk'
 rm -f "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
