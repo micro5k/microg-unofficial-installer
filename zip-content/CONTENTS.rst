@@ -41,7 +41,7 @@ Common
 - **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0 |star| |fire|
 
 - **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.12 |star| |fire|
-- **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.4.0 |star| |fire|
+- **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.5.0 |star| |fire|
 - **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star| |fire|
 
 - **files/framework/com.google.android.maps.jar** => microG Maps API v1 0.1.0 |fire|
