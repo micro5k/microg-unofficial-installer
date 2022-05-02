@@ -16,9 +16,9 @@
 <exceptions>
     <exception package="com.google.android.gms">
         <!-- Account / Contacts -->
+        <permission name="android.permission.GET_ACCOUNTS" fixed="false" />
         <permission name="android.permission.READ_CONTACTS" fixed="false" />
         <permission name="android.permission.WRITE_CONTACTS" fixed="false" />
-        <permission name="android.permission.GET_ACCOUNTS" fixed="false" />
         <!-- Location -->
         <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="true" />
         <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="true" />
