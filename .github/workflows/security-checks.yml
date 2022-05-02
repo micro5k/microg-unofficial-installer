@@ -2,21 +2,22 @@
 # SPDX-FileCopyrightText: (c) 2021 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
-name: "Security checks"
+name: "Periodic security checks"
 on:
-  - push
-  - pull_request
+  schedule:
+    - cron: "0 0 * * 1"
+  pull_request:
 jobs:
-  security:
-    name: "Security checks"
+  base-job:
+    name: "Periodic security checks"
     runs-on: ubuntu-latest
 
     steps:
       - name: "Check out code"
         uses: actions/checkout@v3
         with:
-          fetch-depth: "20"
-      - name: "Gitleaks"
-        uses: zricethezav/gitleaks-action@v1
+          fetch-depth: "0"
       - name: "Gradle Wrapper validation"
         uses: gradle/wrapper-validation-action@master
+      - name: "Gitleaks"
+        uses: zricethezav/gitleaks-action@v1
