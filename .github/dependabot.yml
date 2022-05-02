@@ -5,10 +5,14 @@
 
 version: 2
 updates:
-  - package-ecosystem: gradle
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: daily
+      interval: "daily"
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"
     open-pull-requests-limit: 5
     ignore:
       - dependency-name: "com.github.hierynomus.license-report"
