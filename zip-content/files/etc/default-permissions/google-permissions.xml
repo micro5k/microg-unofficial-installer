@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- SPDX-FileCopyrightText: (c) 2016-2019, 2021 ale5000
-     SPDX-License-Identifier: Apache-2.0
-     SPDX-FileType: SOURCE
+<!--
+    SPDX-FileCopyrightText: (c) 2016-2019, 2021 ale5000
+    SPDX-License-Identifier: Apache-2.0
+    SPDX-FileType: SOURCE
 
-     This file contains permissions to be granted by default.
-     Default permissions are granted to special platform components and to apps that are approved to get default grants.
-     The special components are apps that are expected to work out-of-the-box as they provide core use cases.
-     Fixed permissions cannot be controlled by the user and need a special approval.
-     Typically these are to ensure either legally mandated functions or the app is considered a part of the OS.
+    This file contains permissions to be granted by default.
+    Default permissions are granted to special platform components and to apps that are approved to get default grants.
+    The special components are apps that are expected to work out-of-the-box as they provide core use cases.
+    Fixed permissions cannot be controlled by the user and need a special approval.
+    Typically these are to ensure either legally mandated functions or the app is considered a part of the OS.
 
-     Granting these permissions could prevent issues on some ROMs or on non-clean installations.
+    Granting these permissions could prevent issues on some ROMs or on non-clean installations.
 -->
 
 <exceptions>
