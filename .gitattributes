@@ -12,6 +12,7 @@
 *.xml           text eol=lf
 *.json          text eol=lf
 *.simplecov     text eol=lf
+*.dis           text eol=lf
 
 .reuse/dep5     text eol=lf
 *.license       text eol=lf
@@ -23,6 +24,7 @@
 # Our files
 *.prop          text eol=lf
 *.conf          text eol=lf
+*.bats          text eol=lf
 *.sh            text eol=lf
 *.ash           text eol=lf
 *.bash          text eol=lf

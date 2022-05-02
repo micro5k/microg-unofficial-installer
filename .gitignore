@@ -15,7 +15,7 @@ recovery-simulator/output/
 build/
 user.gradle
 
-# Local configuration file (sdk path, etc)
+# Local configuration files
 local.properties
 
 # Log Files
