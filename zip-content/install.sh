@@ -370,6 +370,10 @@ USED_SETTINGS_PATH="${TMP_PATH}/files/etc/zips"
 create_dir "${USED_SETTINGS_PATH}"
 
 {
+  echo '# SPDX-FileCopyrightText: none'
+  echo '# SPDX-License-Identifier: CC0-1.0'
+  echo '# SPDX-FileType: SOURCE'
+  echo ''
   echo 'install.type=recovery'
   echo "install.version.code=${install_version_code}"
   echo "install.version=${install_version}"
