@@ -56,6 +56,7 @@
         <!-- Location -->
         <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="true" />
         <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="true" />
+        <!-- %ACCESS_BACKGROUND_LOCATION% -->
     </exception>
 
     <exception package="org.fitchfamily.android.dejavu">
