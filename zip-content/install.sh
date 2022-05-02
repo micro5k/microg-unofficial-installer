@@ -252,7 +252,7 @@ if test "${API}" -ge 23; then
   fi
 fi
 
-# Clean some Google Apps, microG and previous installations
+# Clean previous installations
 # shellcheck source=SCRIPTDIR/uninstall.sh
 . "${TMP_PATH}/uninstall.sh"
 
