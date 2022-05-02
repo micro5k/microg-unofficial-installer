@@ -54,6 +54,6 @@ jobs:
           echo '==============='
           cat './recovery-simulator/output/recovery-output-parsed.log'
       - name: "Upload reports to Codecov"
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           files: "${{ github.workspace }}/coverage/codecov-result.json"
