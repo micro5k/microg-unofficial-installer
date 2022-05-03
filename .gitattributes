@@ -11,8 +11,9 @@
 *.yml           text eol=lf
 *.xml           text eol=lf
 *.json          text eol=lf
-*.simplecov     text eol=lf
 *.dis           text eol=lf
+.simplecov      text eol=lf
+.shellcheckrc   text eol=lf
 
 .reuse/dep5     text eol=lf
 *.license       text eol=lf
