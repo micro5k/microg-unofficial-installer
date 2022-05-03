@@ -331,14 +331,14 @@ move_dir_content()
 delete()
 {
   ui_debug "Deleting '$*'..."
-  rm -f "$@" || ui_error "Failed to delete files" 103
+  rm -f -- "$@" || ui_error "Failed to delete files" 103
 }
 
 delete_recursive()
 {
   if test -e "$1"; then
     ui_debug "Deleting '$1'..."
-    rm -rf "$1" || ui_error "Failed to delete files/folders" 104
+    rm -rf -- "$1" || ui_error "Failed to delete files/folders" 104
   fi
 }
 
@@ -347,7 +347,7 @@ delete_recursive_wildcard()
   for filename in "$@"; do
     if test -e "${filename}"; then
       ui_debug "Deleting '${filename}'...."
-      rm -rf "${filename:?}" || ui_error "Failed to delete files/folders" 105
+      rm -rf -- "${filename:?}" || ui_error "Failed to delete files/folders" 105
     fi
   done
 }
@@ -356,7 +356,7 @@ delete_dir_if_empty()
 {
   if test -d "$1"; then
     ui_debug "Deleting '$1' folder (if empty)..."
-    rmdir --ignore-fail-on-non-empty "$1" || ui_error "Failed to delete the '$1' folder" 103
+    rmdir --ignore-fail-on-non-empty -- "$1" || ui_error "Failed to delete the '$1' folder" 103
   fi
 }
 

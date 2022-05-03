@@ -58,7 +58,7 @@ verify_sha1()
 
 corrupted_file()
 {
-  rm -f "$1" || echo 'Failed to remove the corrupted file.'
+  rm -f -- "$1" || echo 'Failed to remove the corrupted file.'
   ui_error "The file '$1' is corrupted."
 }
 
