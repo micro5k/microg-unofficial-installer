@@ -56,9 +56,9 @@ jobs:
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: "Download OSS build"
+          name: "microG unofficial installer OSS build (extract it)"
           path: output/*.zip*
-          retention-days: 14
+          retention-days: 7
       - name: "Upload reports to Codecov"
         uses: codecov/codecov-action@v3
         with:
