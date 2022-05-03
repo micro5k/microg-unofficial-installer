@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
+
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileType: SOURCE
+
 # shellcheck disable=SC3043
+
 last_command="${_}"  # IMPORTANT: This line must be at the start of the script before any other command otherwise it will not work
 
 cat <<'LICENSE'
   SPDX-FileCopyrightText: (c) 2016-2019, 2021-2022 ale5000
-  SPDX-License-Identifier: GPL-3.0-or-later
-  SPDX-FileType: SOURCE
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
