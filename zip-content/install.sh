@@ -88,6 +88,7 @@ else
   ui_error 'Invalid API level'
 fi
 
+# shellcheck disable=SC2312
 ABI_LIST=','$(build_getprop 'product\.cpu\.abi')','$(build_getprop 'product\.cpu\.abi2')','$(build_getprop 'product\.cpu\.abilist')','
 if is_substring ',x86,' "${ABI_LIST}"; then
   CPU='x86'

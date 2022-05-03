@@ -78,11 +78,12 @@ dl_file()
 # Detect OS and set OS specific info
 SEP='/'
 PATHSEP=':'
+_uname_o_saved="$(uname -o)" || ui_error 'Failed to get uname -o'
 if compare_start_uname 'Linux'; then
   PLATFORM='linux'
 elif compare_start_uname 'Windows_NT' || compare_start_uname 'MINGW32_NT-' || compare_start_uname 'MINGW64_NT-'; then
   PLATFORM='win'
-  if [[ $(uname -o) == 'Msys' ]]; then
+  if test "${_uname_o_saved}" = 'Msys'; then
     :            # MSYS under Windows
   else
     PATHSEP=';'  # BusyBox under Windows

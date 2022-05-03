@@ -28,9 +28,11 @@ if ! "${ENV_RESETTED:-false}"; then
   exec env -i ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT}" OUR_TEMP_DIR="${OUR_TEMP_DIR}" PATH="${PATH}" bash "${THIS_SCRIPT}" "$@" || fail_with_msg 'failed: exec'
   exit 127
 fi
+
+set -o pipefail
 unset ENV_RESETTED
 unset LC_TIME
-set -o pipefail
+uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
 # Check dependencies
 CUSTOM_BUSYBOX="$(which busybox)" || fail_with_msg 'BusyBox is missing'
@@ -100,7 +102,7 @@ chmod +x "${TMPDIR}/updater" || fail_with_msg "chmod failed on '${TMPDIR}/update
 # Setup recovery output
 mkdir -p "${THIS_SCRIPT_DIR}/output"
 touch "${THIS_SCRIPT_DIR}/output/recovery-output.log"
-if test "$(uname -o)" != 'MS/Windows'; then
+if test "${uname_o_saved}" != 'MS/Windows'; then
   sudo chattr +aAd "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
 fi
 # shellcheck disable=SC3023
@@ -146,7 +148,7 @@ while IFS=' ' read -r ui_command text; do
 done < "${THIS_SCRIPT_DIR}/output/recovery-output.log" > "${THIS_SCRIPT_DIR}/output/recovery-output-parsed.log"
 
 # Final cleanup
-if test "$(uname -o)" != 'MS/Windows'; then
+if test "${uname_o_saved}" != 'MS/Windows'; then
   sudo chattr -a "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
 fi
 cd "${INIT_DIR}" || fail_with_msg 'Failed to change back the folder'
