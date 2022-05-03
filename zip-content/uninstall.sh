@@ -10,7 +10,6 @@
 list_app_filenames()
 {
 cat <<'EOF'
-WhisperPush
 EOF
 }
 
@@ -89,6 +88,8 @@ IchnaeaNlpBackend|org.microg.nlp.backend.ichnaea
 MozillaNlpBackend|
 NominatimGeocoderBackend|org.microg.nlp.backend.nominatim
 NominatimNlpBackend|
+
+WhisperPush|org.whispersystems.whisperpush
 
 HwAps|com.huawei.android.hwaps
 HwPowerGenieEngine3|com.huawei.powergenie
@@ -185,9 +186,9 @@ done
 
 list_app_filenames | while read -r FILENAME; do
   if [[ -z "${FILENAME}" ]]; then continue; fi
+  delete_recursive_wildcard /data/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
   delete_recursive_wildcard /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
   delete_recursive_wildcard /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
-  delete_recursive_wildcard /data/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
 done
 
 list_app_data_to_remove | while read -r FILENAME; do
