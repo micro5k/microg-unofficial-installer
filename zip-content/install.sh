@@ -149,14 +149,14 @@ ui_msg "Fake signature: ${FAKE_SIGN}"
 
 ui_msg ''
 
-if test ${CPU} = false && test ${CPU64} = false; then
+if test "${CPU}" = false && test "${CPU64}" = false; then
   ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
 fi
 
 # Check the existance of the libraries folders
-if test ${OLD_ANDROID} = true; then
-  if test ${CPU} != false && ! test -e "${SYS_PATH}/lib"; then create_dir "${SYS_PATH}/lib"; fi
-  if test ${CPU64} != false && ! test -e "${SYS_PATH}/lib64"; then create_dir "${SYS_PATH}/lib64"; fi
+if test "${OLD_ANDROID}" = true; then
+  if test "${CPU}" != false && ! test -e "${SYS_PATH}/lib"; then create_dir "${SYS_PATH}/lib"; fi
+  if test "${CPU64}" != false && ! test -e "${SYS_PATH}/lib64"; then create_dir "${SYS_PATH}/lib64"; fi
 fi
 
 # Extracting
