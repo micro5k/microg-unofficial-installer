@@ -56,8 +56,9 @@ jobs:
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: "OSS build"
+          name: "Download OSS build"
           path: output/*.zip*
+          retention-days: 14
       - name: "Upload reports to Codecov"
         uses: codecov/codecov-action@v3
         with:
