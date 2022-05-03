@@ -44,7 +44,7 @@ GoogleFeedback|com.google.android.feedback
 GoogleLoginService|com.google.android.gsf.login
 GoogleOneTimeInitializer|com.google.android.onetimeinitializer
 GoogleServicesFramework|com.google.android.gsf
-microG-for-OGYT|com.mgoogle.android.gms
+|com.mgoogle.android.gms
 PlayGames|com.google.android.play.games
 Velvet|com.google.android.googlequicksearchbox
 
@@ -55,6 +55,7 @@ GsfProxy|
 PrebuiltGmsCore|
 PrebuiltGmsCorePi|
 PrebuiltGmsCorePix|
+MicroGGMSCore|
 
 MarketUpdater|com.android.vending.updater
 Phonesky|com.android.vending
@@ -74,6 +75,7 @@ YouTube|com.google.android.youtube
 |com.qualcomm.location
 AMAPNetworkLocation|com.amap.android.location
 BaiduNetworkLocation|com.baidu.location
+Baidu_Location|com.baidu.map.location
 OfflineNetworkLocation_Baidu|
 LegacyNetworkLocation|
 MediaTekLocationProvider|com.mediatek.android.location
