@@ -47,7 +47,7 @@ See `here <docs/INSTRUCTIONS.rst>`_ for the instructions.
 
 Copyright
 ---------
-Copyright © 2016-2019, 2021-2022 ale5000
+© 2016-2019, 2021-2022 ale5000
 
 
 Code analysis
