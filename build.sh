@@ -125,6 +125,9 @@ else
   cp -f "${SCRIPT_DIR}/cache/misc/keycheck/keycheck-arm" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
 fi
 
+# Remove the cache folder only if it is empty
+rmdir --ignore-fail-on-non-empty "${SCRIPT_DIR}/cache" || ui_error 'Failed to remove the empty cache folder'
+
 # Prepare the data before compression (also uniform attributes - useful for reproducible builds)
 BASE_TMP_SCRIPT_DIR="${TEMP_DIR}/zip-content/META-INF/com/google/android"
 mv -f "${BASE_TMP_SCRIPT_DIR}/update-binary.sh" "${BASE_TMP_SCRIPT_DIR}/update-binary" || ui_error 'Failed to rename a file'
