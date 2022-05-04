@@ -49,7 +49,7 @@ jobs:
           # Executing code coverage...
           sudo apt-get -qq -y install moreutils 1> /dev/null
           export OPENSOURCE_ONLY='1'
-          bashcov './build.sh' | TZ=UTC ts '[%H:%M:%S]'
+          bashcov './build.sh' # | TZ=UTC ts '[%H:%M:%S]'  # Timestamp disabled as it break GitHub notice
           # Testing zip installation...
           bash './recovery-simulator/recovery.sh' ./output/*.zip
           echo '==============='
