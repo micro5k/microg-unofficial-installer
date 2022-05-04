@@ -47,10 +47,10 @@ jobs:
       - name: "Execute code coverage"
         run: |
           # Executing code coverage...
-          export OPENSOURCE_ONLY='1'
-          bashcov './build.sh'
-          # Testing zip installation...
           sudo apt-get -qq -y install moreutils 1> /dev/null
+          export OPENSOURCE_ONLY='1'
+          bashcov './build.sh' | TZ=UTC ts '[%H:%M:%S]'
+          # Testing zip installation...
           bash './recovery-simulator/recovery.sh' ./output/*.zip
           echo '==============='
           echo 'RECOVERY OUTPUT'
