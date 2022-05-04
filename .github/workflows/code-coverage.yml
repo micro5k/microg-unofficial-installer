@@ -52,6 +52,7 @@ jobs:
           bashcov './build.sh' # | TZ=UTC ts '[%H:%M:%S]'  # Timestamp disabled as it break GitHub notice
           # Testing zip installation...
           bash './recovery-simulator/recovery.sh' ./output/*.zip
+          printf '\n\n'
           echo '==============='
           echo 'RECOVERY OUTPUT'
           echo '==============='
