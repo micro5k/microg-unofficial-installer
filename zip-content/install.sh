@@ -105,7 +105,6 @@ elif is_substring ',arm64-v8a,' "${ABI_LIST}"; then
 fi
 
 # Info
-ui_msg ''
 ui_msg '---------------------------'
 ui_msg 'microG unofficial installer'
 ui_msg "${install_version}"

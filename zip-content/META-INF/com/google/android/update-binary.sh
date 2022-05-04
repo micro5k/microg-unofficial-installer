@@ -313,7 +313,7 @@ if [ "${LIVE_SETUP}" -eq 1 ]; then
   fi
 fi
 
-ui_msg ''
+ui_debug ''
 ui_debug 'Starting installation script...'
 "${OUR_BB}" ash "${TMP_PATH}/install.sh" Preloader "${TMP_PATH}"; STATUS="$?"
 
