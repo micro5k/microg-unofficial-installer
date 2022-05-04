@@ -2,8 +2,12 @@
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
-
 image: "openjdk:17-jdk-alpine"
+
+variables:
+  GIT_DEPTH: 1
+  FAST_BUILD: true
+  # UPLOAD_BUILD_SCAN: true
 
 cache:
   key:
@@ -14,11 +18,6 @@ cache:
     - .gradle/caches/
     - .gradle/notifications/
     - .gradle/wrapper/
-
-variables:
-  GIT_DEPTH: "1"
-  FAST_BUILD: "true"
-  # UPLOAD_BUILD_SCAN: "true"
 
 before_script:
   - export GRADLE_USER_HOME="$PWD/.gradle"
