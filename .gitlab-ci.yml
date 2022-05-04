@@ -5,9 +5,9 @@
 image: "openjdk:17-jdk-alpine"
 
 variables:
-  GIT_DEPTH: 1
-  FAST_BUILD: true
-  # UPLOAD_BUILD_SCAN: true
+  GIT_DEPTH: "1"
+  FAST_BUILD: "true"
+  # UPLOAD_BUILD_SCAN: "true"
 
 cache:
   key:
