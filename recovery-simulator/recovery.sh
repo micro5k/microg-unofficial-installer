@@ -135,6 +135,13 @@ set +e
 "${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" | TZ=UTC ts '[%H:%M:%S]'; STATUS="$?"
 set -e
 
+# Close recovery output
+# shellcheck disable=SC3023
+exec 99>&-
+if test "${uname_o_saved}" != 'MS/Windows'; then
+  sudo chattr -a "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
+fi
+
 # Parse recovery output
 last_msg_printed=false
 while IFS=' ' read -r ui_command text; do
@@ -152,9 +159,6 @@ while IFS=' ' read -r ui_command text; do
 done < "${THIS_SCRIPT_DIR}/output/recovery-output.log" > "${THIS_SCRIPT_DIR}/output/recovery-output-parsed.log"
 
 # Final cleanup
-if test "${uname_o_saved}" != 'MS/Windows'; then
-  sudo chattr -a "${THIS_SCRIPT_DIR}/output/recovery-output.log" || fail_with_msg "chattr failed on 'recovery-output.log'"
-fi
 cd "${INIT_DIR}" || fail_with_msg 'Failed to change back the folder'
 unset TMPDIR
 rm -rf "${OUR_TEMP_DIR:?}" &
