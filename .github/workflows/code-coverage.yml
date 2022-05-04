@@ -12,7 +12,7 @@ env:
   # UPLOAD_BUILD_SCAN: true
 jobs:
   base-job:
-    name: "Building, code coverage and testing"
+    name: "Base job"
     runs-on: ubuntu-latest
 
     steps:

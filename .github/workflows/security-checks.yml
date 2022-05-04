@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 jobs:
   base-job:
-    name: "Periodic security checks"
+    name: "Base job"
     runs-on: ubuntu-latest
 
     steps:
