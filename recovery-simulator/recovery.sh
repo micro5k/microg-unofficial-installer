@@ -101,6 +101,8 @@ cp -rf "${THIS_SCRIPT_DIR}/updater.sh" "${TMPDIR}/updater" || fail_with_msg 'Fai
 chmod +x "${TMPDIR}/updater" || fail_with_msg "chmod failed on '${TMPDIR}/updater'"
 
 # Setup recovery output
+recovery_fd=99
+if test -e "/proc/self/fd/${recovery_fd}"; then fail_with_msg 'Recovery FD already exist'; fi
 mkdir -p "${THIS_SCRIPT_DIR}/output"
 touch "${THIS_SCRIPT_DIR}/output/recovery-output.log"
 if test "${uname_o_saved}" != 'MS/Windows'; then
@@ -108,7 +110,6 @@ if test "${uname_o_saved}" != 'MS/Windows'; then
 fi
 # shellcheck disable=SC3023
 exec 99>> "${THIS_SCRIPT_DIR}/output/recovery-output.log"
-recovery_fd=99
 
 # Simulate the environment variables (part 2)
 PATH="${OVERRIDE_DIR}:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin:${PATH}"  # We have to keep the original folders inside PATH otherwise everything stop working
