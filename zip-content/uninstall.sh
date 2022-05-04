@@ -114,7 +114,7 @@ if [[ -z "${INSTALLER}" ]]; then
   {
     if test -e "$1"; then
       ui_debug "Deleting '$1'..."
-      rm -rf "$1" || ui_debug "Failed to delete files/folders"
+      rm -rf -- "$1" || ui_debug "Failed to delete files/folders"
     fi
   }
 
@@ -123,7 +123,7 @@ if [[ -z "${INSTALLER}" ]]; then
     for filename in "$@"; do
       if test -e "${filename}"; then
         ui_debug "Deleting '${filename}'...."
-        rm -rf "${filename:?}" || ui_debug "Failed to delete files/folders"
+        rm -rf -- "${filename:?}" || ui_debug "Failed to delete files/folders"
       fi
     done
   }
@@ -228,5 +228,8 @@ delete_recursive "${SYS_PATH}"/etc/preferred-apps/google.xml
 delete_recursive "${SYS_PATH}"/etc/org.fdroid.fdroid/additional_repos.xml
 
 if [[ -z "${INSTALLER}" ]]; then
+  install_id='microg-unofficial-installer'
+  delete_recursive "${SYS_PATH}/etc/zips/${install_id}.prop"
+  rmdir --ignore-fail-on-non-empty -- "${SYS_PATH}/etc/zips"
   ui_debug 'Done.'
 fi
