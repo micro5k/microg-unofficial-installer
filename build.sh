@@ -54,6 +54,8 @@ if test -z "${CI}"; then printf '\033]0;%s\007' 'Building the flashable OTA zip.
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${SCRIPT_DIR}/scripts/common.sh"; fi
 # shellcheck source=SCRIPTDIR/conf-1.sh
 . "${SCRIPT_DIR}/conf-1.sh"
+# shellcheck source=SCRIPTDIR/conf-2.sh
+. "${SCRIPT_DIR}/conf-2.sh"
 
 # Check dependencies
 hash 'zip' 2>&- || ui_error 'Zip is missing'
