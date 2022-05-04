@@ -5,7 +5,10 @@
 # SPDX-FileType: SOURCE
 
 # NOTE: This script simulate a real recovery but it relies on the flashable zip to use the suggested paths.
-# IMPORTANT: A misbehaving flashable zip can damage your real system.
+# REALLY IMPORTANT: A misbehaving flashable zip can damage your real system.
+
+set -e
+set -o pipefail
 
 fail_with_msg()
 {
@@ -28,9 +31,6 @@ if ! "${ENV_RESETTED:-false}"; then
   exec env -i ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT}" OUR_TEMP_DIR="${OUR_TEMP_DIR}" PATH="${PATH}" bash "${THIS_SCRIPT}" "$@" || fail_with_msg 'failed: exec'
   exit 127
 fi
-
-set -e
-set -o pipefail
 unset ENV_RESETTED
 unset LC_TIME
 uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
