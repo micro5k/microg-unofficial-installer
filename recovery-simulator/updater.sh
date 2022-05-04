@@ -1,6 +1,6 @@
 #!/sbin/sh
 
-# SPDX-FileCopyrightText: (c) 2016 ale5000
+# SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
@@ -22,17 +22,17 @@ override_applet()
 {
   # shellcheck disable=SC2139
   alias "${1}"="${OVERRIDE_DIR}/${1}"  # This expands when defined, not when used (it is intended)
-  return 0
+  return "${?}"
 }
 
 # Ensure that the overridden commands are preferred over BusyBox applets
-override_applet mount || return 1
-override_applet umount || return 1
-override_applet chown || return 1
+override_applet mount || exit 125
+override_applet umount || exit 125
+override_applet chown || exit 125
 unset -f override_applet
 unset OVERRIDE_DIR
 
 export TEST_INSTALL=true
 
 # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
-. "${TMPDIR}/update-binary" || return 1
+. "${TMPDIR}/update-binary" || exit 124
