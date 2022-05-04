@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-# SPDX-FileCopyrightText: (c) 2016 ale5000
+# SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-# NOTE: This script simulate a real recovery but it relies on the zip to use the suggested paths.
-# IMPORTANT: A misbehaving zip can damage your real system.
+# NOTE: This script simulate a real recovery but it relies on the flashable zip to use the suggested paths.
+# IMPORTANT: A misbehaving flashable zip can damage your real system.
 
 fail_with_msg()
 {
@@ -29,6 +29,7 @@ if ! "${ENV_RESETTED:-false}"; then
   exit 127
 fi
 
+set -e
 set -o pipefail
 unset ENV_RESETTED
 unset LC_TIME
@@ -129,7 +130,9 @@ FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || 
 chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/update-binary'"
 
 # Execute the script that will run the flashable zip
+set +e
 "${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" | TZ=UTC ts '[%H:%M:%S]'; STATUS="$?"
+set -e
 
 # Parse recovery output
 last_msg_printed=false
