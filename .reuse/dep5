@@ -17,3 +17,12 @@ Files: zip-content/misc/busybox/busybox-*.bin
 Copyright: Copyright (C) tons of folks. See: https://github.com/yashdsaraf/busybox/blob/master/AUTHORS
 License: GPL-2.0-only
 Comment: [Sources => 'https://github.com/yashdsaraf/busybox', Binary => 'https://github.com/yashdsaraf/bb-bot/releases']
+
+License: GPL-3.0-or-later
+ https://github.com/micro5k/microg-unofficial-installer/raw/main/LICENSES/GPL-3.0-or-later.txt
+
+License: Apache-2.0
+ https://github.com/micro5k/microg-unofficial-installer/raw/main/LICENSES/Apache-2.0.txt
+
+License: GPL-2.0-only
+ https://github.com/micro5k/microg-unofficial-installer/raw/main/LICENSES/GPL-2.0-only.txt
