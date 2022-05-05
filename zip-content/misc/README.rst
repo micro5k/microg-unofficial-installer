@@ -7,9 +7,7 @@
 TOOLS
 =====
 
-- `Android Asset Packaging Tool`_ **0.2-2a587ba28f** (AAPT) => aapt/aapt-arm64.bin
-- `Android Asset Packaging Tool`_ **0.2-2a587ba28f** (AAPT) => aapt/aapt-arm.bin
-- `Android Asset Packaging Tool`_ **0.2-2a587ba28f** (AAPT) => aapt/aapt-x86.bin
+- `Android Asset Packaging Tool`_ **0.2-2a587ba28f** (AAPT) => aapt/aapt-*.bin
 - BusyBox_ **1.29.1-YDS-201807291348** (compiled by `@YashdSaraf <https://github.com/yashdsaraf>`_) => busybox/busybox-*.bin
 
 
