@@ -57,7 +57,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${SCRIPT_DIR}/scri
 # shellcheck source=SCRIPTDIR/conf-2.sh
 if test "${OPENSOURCE_ONLY:-false}" = 'false'; then . "${SCRIPT_DIR}/conf-2.sh"; fi
 
-if ! is_oss_only_build_enabled && test "${OPENSOURCE_ONLY:-false}" != 'false'; then ui_error 'The OSS only build is disabled'; fi
+if ! is_oss_only_build_enabled && test "${OPENSOURCE_ONLY:-false}" != 'false'; then echo 'WARNING: The OSS only build is disabled'; return 0 2>&- || exit 0; fi
 
 # Check dependencies
 hash 'zip' 2>&- || ui_error 'Zip is missing'
