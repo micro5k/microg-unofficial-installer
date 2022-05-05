@@ -59,7 +59,7 @@ Scripts
 
 Components used only during setup (not installed)
 -------------------------------------------------
-- BusyBox 1.29.1-YDS-201807291348 (compiled by `@YashdSaraf <https://github.com/yashdsaraf>`_) - Available `here <https://forum.xda-developers.com/showthread.php?t=3348543>`_.
+- BusyBox for Android (available `here <https://forum.xda-developers.com/showthread.php?t=3348543>`_) - See `here <misc/README.rst>`_ for more info
 
 |
 
