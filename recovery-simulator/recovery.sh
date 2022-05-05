@@ -7,8 +7,8 @@
 # NOTE: This script simulate a real recovery but it relies on the flashable zip to use the suggested paths.
 # REALLY IMPORTANT: A misbehaving flashable zip can damage your real system.
 
-set -e
-set -o pipefail
+# shellcheck disable=SC3040
+set -eo pipefail
 
 fail_with_msg()
 {
@@ -161,5 +161,6 @@ done < "${THIS_SCRIPT_DIR}/output/recovery-output.log" > "${THIS_SCRIPT_DIR}/out
 # Final cleanup
 cd "${INIT_DIR}" || fail_with_msg 'Failed to change back the folder'
 unset TMPDIR
-rm -rf "${OUR_TEMP_DIR:?}" &
+rm -rf -- "${OUR_TEMP_DIR:?}" &
+set +e
 if test "${STATUS}" -ne 0; then fail_with_msg "Installation failed with error ${STATUS}"; fi
