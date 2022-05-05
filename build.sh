@@ -179,7 +179,7 @@ cp -f "${TEMP_DIR}/${FILENAME}.zip" "${OUT_DIR}/${FILENAME}.zip" || ui_error 'Fa
 cd "${OUT_DIR}" || ui_error 'Failed to change the folder'
 
 # Cleanup remnants
-rm -rf "${TEMP_DIR:?}" &
+rm -rf -- "${TEMP_DIR:?}" &
 #pid="${!}"
 
 # Create checksum files
