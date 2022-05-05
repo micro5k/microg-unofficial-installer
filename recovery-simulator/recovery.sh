@@ -21,6 +21,33 @@ link_folder()
   ln -sf "${2}" "${1}" || mkdir -p "${1}" || fail_with_msg "Failed to link dir '${1}'"
 }
 
+ui_print()
+{
+  echo "ui_print ${1}"
+}
+
+recovery_flash_start()
+{
+  ui_print "I:Set page: 'install'"
+  ui_print "I:Set page: 'flash_confirm'"
+  ui_print "I:Set page: 'flash_zip'"
+  ui_print "I:operation_start: 'Flashing'"
+  ui_print "Installing zip file '${1}'"
+  #ui_print "Checking for MD5 file..."
+  #ui_print "MD5 matched for '${1}'."
+  ui_print "I:Update binary zip"
+}
+
+recovery_flash_end_fail()
+{
+  ui_print "Updater process ended with ERROR: ${1}"
+  ui_print "Error installing zip file '${2}'"
+  ui_print "Updating partition details..."
+  ui_print "...done"
+  ui_print "I:Set page: 'flash_done'"
+  ui_print "I:operation_end - status=1"
+}
+
 if test -z "${1}"; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
 
 # Reset environment
@@ -131,9 +158,11 @@ FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || 
 chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/update-binary'"
 
 # Execute the script that will run the flashable zip
+recovery_flash_start "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
 set +e
-"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" | TZ=UTC ts '[%H:%M:%S]'; STATUS="$?"
+"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" | TZ=UTC ts '[%H:%M:%S]'; STATUS="${?}"
 set -e
+if test "${STATUS}" -ne 0; then recovery_flash_end_fail "${STATUS}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"; fi
 
 # Close recovery output
 # shellcheck disable=SC3023
@@ -163,4 +192,4 @@ cd "${INIT_DIR}" || fail_with_msg 'Failed to change back the folder'
 unset TMPDIR
 rm -rf -- "${OUR_TEMP_DIR:?}" &
 set +e
-if test "${STATUS}" -ne 0; then fail_with_msg "Installation failed with error ${STATUS}"; fi
+if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi

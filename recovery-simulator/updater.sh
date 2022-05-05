@@ -35,4 +35,4 @@ unset OVERRIDE_DIR
 export TEST_INSTALL=true
 
 # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
-. "${TMPDIR}/update-binary" || exit 124
+. "${TMPDIR}/update-binary" || exit "${?}"
