@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-# shellcheck disable=SC3043
-
 last_command="${_}"  # IMPORTANT: This line must be at the start of the script before any other command otherwise it will not work
+
+# shellcheck disable=SC3040
+set -eo pipefail
 
 cat <<'LICENSE'
   SPDX-FileCopyrightText: (c) 2016-2019, 2021-2022 ale5000
@@ -27,11 +27,13 @@ echo ''
 
 detect_script_dir()
 {
+  # shellcheck disable=SC3043
   local this_script
 
   # shellcheck disable=SC3028,SC2128
   if test "${#BASH_SOURCE}" -ge 1; then this_script="${BASH_SOURCE}"  # Expanding an array without an index gives the first element (it is intended)
   else
+    # shellcheck disable=SC3043
     local current_shell
     # shellcheck disable=SC2009
     current_shell="$(ps -o 'pid,comm' | grep -Fw "$$" | while IFS=' ' read -r _ current_shell; do echo "${current_shell}"; done || true)"
@@ -201,4 +203,4 @@ echo 'Done.'
 change_title 'Done'
 
 #wait "${pid}"
-exit "$?"
+set +e
