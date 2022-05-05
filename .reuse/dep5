@@ -14,7 +14,7 @@ Copyright: Copyright 2015 the original author or authors.
 License: Apache-2.0
 
 Files: zip-content/misc/busybox/busybox-*.bin
-Copyright: Copyright (C) tons of folks. See: https://github.com/yashdsaraf/busybox/blob/master/AUTHORS
+Copyright: Copyright (C) tons of folks. See: https://github.com/yashdsaraf/busybox/raw/master/AUTHORS
 License: GPL-2.0-only
 Comment: [Sources => 'https://github.com/yashdsaraf/busybox', Binary => 'https://github.com/yashdsaraf/bb-bot/releases']
 
