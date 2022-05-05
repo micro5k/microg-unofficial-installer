@@ -1,3 +1,5 @@
-SPDX-FileCopyrightText: (c) 2015 the original author or authors
+SPDX-FileCopyrightText: Copyright 2007 the original author or authors.
 SPDX-License-Identifier: Apache-2.0
 SPDX-FileType: ARCHIVE
+
+Sources: https://github.com/gradle/gradle/tree/master/subprojects/wrapper
