@@ -1,3 +1,6 @@
-SPDX-FileCopyrightText: (c) 1998-2021 many authors <https://github.com/rmyorston/busybox-w32/blob/master/AUTHORS>
+SPDX-FileCopyrightText: Copyright (C) tons of folks. See: https://github.com/rmyorston/busybox-w32/raw/master/AUTHORS
 SPDX-License-Identifier: GPL-2.0-only
 SPDX-FileType: DOCUMENTATION
+
+Sources: https://github.com/rmyorston/busybox-w32
+Binary: https://frippery.org/busybox/
