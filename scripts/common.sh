@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC3043
-
-# SC3043: In POSIX sh, local is undefined
-
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-set -o pipefail
+# shellcheck disable=SC3043
+# SC3043: In POSIX sh, local is undefined
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTIONS_INCLUDED=true; fi
+
+# shellcheck disable=SC3040
+set -o pipefail
+
 export TZ=UTC
 export LC_ALL=C
 export LANG=C
@@ -39,6 +40,12 @@ compare_start_uname()
   return 1  # NOT found
 }
 
+change_title()
+{
+  # shellcheck disable=SC2154
+  if test -z "${CI}"; then printf '\033]0;%s\007\r' "${1}" && printf '%*s     \r' "${#1}" ''; fi
+}
+
 simple_get_prop()
 {
   grep -F "${1}=" "${2}" | head -n1 | cut -d '=' -f 2
@@ -65,14 +72,14 @@ corrupted_file()
 WGET_CMD='wget'
 dl_file()
 {
-  if [[ -e "${SCRIPT_DIR}/cache/$1/$2" ]]; then verify_sha1 "${SCRIPT_DIR}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
+  if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
 
-  if [[ ! -e "${SCRIPT_DIR}/cache/$1/$2" ]]; then
-    mkdir -p "${SCRIPT_DIR}/cache/$1"
-    "${WGET_CMD}" -c -O "${SCRIPT_DIR}/cache/$1/$2" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0' "$4" || { if test -n "$5"; then dl_file "$1" "$2" "$3" "$5"; else ui_error "Failed to download the file => 'cache/$1/$2'."; fi; }
+  if ! test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then
+    mkdir -p "${SCRIPT_DIR:?}/cache/$1"
+    "${WGET_CMD}" -c -O "${SCRIPT_DIR:?}/cache/$1/$2" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0' "$4" || { if test -n "$5"; then dl_file "$1" "$2" "$3" "$5"; else ui_error "Failed to download the file => 'cache/$1/$2'."; fi; }
     echo ''
   fi
-  verify_sha1 "${SCRIPT_DIR}/cache/$1/$2" "$3" || corrupted_file "${SCRIPT_DIR}/cache/$1/$2"
+  verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || corrupted_file "${SCRIPT_DIR:?}/cache/$1/$2"
 }
 
 # Detect OS and set OS specific info
@@ -102,5 +109,5 @@ export INIT_DIR
 PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$'  # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
 PROMPT_COMMAND=
 
-TOOLS_DIR="${SCRIPT_DIR}${SEP}tools${SEP}${PLATFORM}"
+TOOLS_DIR="${SCRIPT_DIR:?}${SEP}tools${SEP}${PLATFORM}"
 PATH="${TOOLS_DIR}${PATHSEP}${PATH}"

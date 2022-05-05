@@ -9,6 +9,7 @@ last_command="${_}"  # IMPORTANT: This line must be at the start of the script b
 
 # shellcheck disable=SC3040
 set -eo pipefail
+# shellcheck disable=SC3044
 shopt -s inherit_errexit 2> /dev/null || true
 
 cat <<'LICENSE'
@@ -53,16 +54,11 @@ detect_script_dir()
 }
 detect_script_dir || return 1 2>&- || exit 1
 
-change_title()
-{
-  if test -z "${CI}"; then printf '\033]0;%s\007\r' "${1}" && printf '%*s     \r' "${#1}" ''; fi
-}
-
-# shellcheck disable=SC2154
-change_title 'Building the flashable OTA zip...'
-
 # shellcheck source=SCRIPTDIR/scripts/common.sh
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${SCRIPT_DIR}/scripts/common.sh"; fi
+
+change_title 'Building the flashable OTA zip...'
+
 # shellcheck source=SCRIPTDIR/conf-1.sh
 . "${SCRIPT_DIR}/conf-1.sh"
 # shellcheck source=SCRIPTDIR/conf-2.sh
