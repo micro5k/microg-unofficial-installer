@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: (c) 2021 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
-name: "Building, code coverage and testing"
+name: "Base"
 on:
   - push
   - pull_request
@@ -79,5 +79,8 @@ jobs:
         shell: bash
         run: |
           # Validating dep5
+          if ! test -e './.reuse/dep5'; then exit 0; fi
           sudo apt-get -qq -y install cme 1> /dev/null
-          if test -e './.reuse/dep5'; then cme check dpkg-copyright -file './.reuse/dep5'; fi
+          status='0'
+          cme check dpkg-copyright -file './.reuse/dep5' || status="${?}"
+          if test "${status}" -eq 0; then echo 'Result: pass'; else echo 'Result: fail'; exit "${status}"; fi
