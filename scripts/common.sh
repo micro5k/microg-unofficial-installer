@@ -31,6 +31,8 @@ unset JAVA_TOOL_OPTIONS
 unset _JAVA_OPTIONS
 unset CDPATH
 
+SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || return 1 2>&- || exit 1
+
 ui_error()
 {
   >&2 echo "ERROR: $1"
