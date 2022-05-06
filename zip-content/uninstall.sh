@@ -227,7 +227,8 @@ delete_recursive "${SYS_PATH}"/etc/preferred-apps/google.xml
 
 delete_recursive "${SYS_PATH}"/etc/org.fdroid.fdroid/additional_repos.xml
 
+rmdir --ignore-fail-on-non-empty -- "${SYS_PATH}/etc/zips"
+
 if [[ -z "${INSTALLER}" ]]; then
-  rmdir --ignore-fail-on-non-empty -- "${SYS_PATH}/etc/zips"
   ui_debug 'Done.'
 fi
