@@ -253,6 +253,7 @@ if test "${API}" -ge 23; then
 fi
 
 # Clean previous installations
+delete "${SYS_PATH}/etc/zips/${install_id}.prop"
 # shellcheck source=SCRIPTDIR/uninstall.sh
 . "${TMP_PATH}/uninstall.sh"
 
