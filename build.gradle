@@ -61,6 +61,7 @@ tasks.register('buildOta', Exec) {
     doFirst {
         println 'Building the flashable OTA zip with Gradle...'
         executable "${projectDir}/build" + getScriptExt()
+        environment OPENSOURCE_ONLY: 'false'
     }
 }
 
