@@ -24,8 +24,8 @@ PS1='\w \$ '
 PS2='> '
 PS4='+ '
 
-# Ensure that the overridden commands are preferred over BusyBox applets
-export BB_OVERRIDE_APPLETS='mount umount chown' || exit 125
+# Ensure that the overridden commands are preferred over BusyBox applets (and that unsafe commands aren't accessible)
+export BB_OVERRIDE_APPLETS='su sudo mount umount chown' || exit 125
 override_applet mount || exit 124
 override_applet umount || exit 124
 override_applet chown || exit 124
