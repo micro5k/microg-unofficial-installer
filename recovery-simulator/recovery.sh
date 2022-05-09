@@ -166,7 +166,7 @@ FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || 
 "${CUSTOM_BUSYBOX}" cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" || fail_with_msg 'Failed to copy the flashable ZIP'
 "${CUSTOM_BUSYBOX}" unzip -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
 chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/update-binary'"
-"${CUSTOM_BUSYBOX:?}" --install || fail_with_msg 'Failed to install BusyBox'
+"${CUSTOM_BUSYBOX:?}" --install "${BASE_SIMULATION_PATH:?}/system/bin" || fail_with_msg 'Failed to install BusyBox'
 
 # Execute the script that will run the flashable zip
 recovery_flash_start "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
