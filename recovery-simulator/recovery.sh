@@ -161,6 +161,7 @@ export TZ
 export TMPDIR
 export CUSTOM_BUSYBOX="${BASE_SIMULATION_PATH:?}/system/bin/busybox"
 "${CUSTOM_BUSYBOX:?}" --install "${BASE_SIMULATION_PATH:?}/system/bin" || fail_with_msg 'Failed to install BusyBox'
+rm -f "${BASE_SIMULATION_PATH:?}/system/bin/su" "${BASE_SIMULATION_PATH:?}/system/bin/mount" "${BASE_SIMULATION_PATH:?}/system/bin/umount" "${BASE_SIMULATION_PATH:?}/system/bin/chown" || fail_with_msg 'Failed to remove potentially unsafe commands'
 
 # Prepare before execution
 export OVERRIDE_DIR
