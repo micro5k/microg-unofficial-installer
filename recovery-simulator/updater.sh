@@ -6,7 +6,7 @@
 override_applet()
 {
   # shellcheck disable=SC2139
-  alias "${1}"="${OVERRIDE_DIR}/${1}"  # This expands when defined, not when used (it is intended)
+  alias "${1}"="${OVERRIDE_DIR:?}/${1}"  # This expands when defined, not when used (it is intended)
   return "${?}"
 }
 
@@ -36,4 +36,4 @@ unset OVERRIDE_DIR
 export TEST_INSTALL=true
 
 # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
-. "${TMPDIR}/update-binary" || exit "${?}"
+. "${TMPDIR:?}/update-binary" || exit "${?}"
