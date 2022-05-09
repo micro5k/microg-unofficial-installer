@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
@@ -72,7 +71,7 @@ unset LC_TIME
 uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
 # Check dependencies
-CUSTOM_BUSYBOX="$(which busybox)" || fail_with_msg 'BusyBox is missing'
+_our_busybox="$(which busybox)" || fail_with_msg 'BusyBox is missing'
 
 # Get dir of this script
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT}")" || fail_with_msg 'Failed to get script dir'
@@ -133,7 +132,7 @@ zip -D -9 -X -UN=n -nw -q "${ANDROID_ROOT}/framework/framework-res.apk" 'Android
 rm -f "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
 
 mkdir -p "${TMPDIR}"
-cp -rf "${THIS_SCRIPT_DIR}/updater.sh" "${TMPDIR}/updater" || fail_with_msg 'Failed to copy the updater script'
+cp -pf -- "${THIS_SCRIPT_DIR}/updater.sh" "${TMPDIR}/updater" || fail_with_msg 'Failed to copy the updater script'
 chmod +x "${TMPDIR}/updater" || fail_with_msg "chmod failed on '${TMPDIR}/updater'"
 
 # Setup recovery output
@@ -158,7 +157,12 @@ export ANDROID_ROOT
 export ANDROID_PROPERTY_WORKSPACE
 export TZ
 export TMPDIR
-export CUSTOM_BUSYBOX
+if test "${uname_o_saved}" = 'MS/Windows'; then
+  cp -pf -- "${_our_busybox:?}" "${BASE_SIMULATION_PATH:?}/system/bin/busybox" || fail_with_msg 'Failed to copy BusyBox'
+  export CUSTOM_BUSYBOX="${BASE_SIMULATION_PATH:?}/system/bin/busybox"
+else
+  export CUSTOM_BUSYBOX="${_our_busybox:?}"
+fi
 
 # Prepare before execution
 export OVERRIDE_DIR
@@ -166,6 +170,7 @@ FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || 
 "${CUSTOM_BUSYBOX}" cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" || fail_with_msg 'Failed to copy the flashable ZIP'
 "${CUSTOM_BUSYBOX}" unzip -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
 chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/update-binary'"
+"${CUSTOM_BUSYBOX:?}" --install "${BASE_SIMULATION_PATH:?}/system/bin" || fail_with_msg 'Failed to install BusyBox'
 
 # Execute the script that will run the flashable zip
 recovery_flash_start "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
@@ -173,6 +178,9 @@ set +e
 "${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>>"${recovery_logs_dir}/recovery-stdout-stderr.log" 2>&1; STATUS="${?}"
 set -e
 recovery_flash_end "${STATUS}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
+
+# After execution
+"${CUSTOM_BUSYBOX:?}" --uninstall "${BASE_SIMULATION_PATH:?}/system/bin" || fail_with_msg 'Failed to uninstall BusyBox'
 
 # Close recovery output
 # shellcheck disable=SC3023
