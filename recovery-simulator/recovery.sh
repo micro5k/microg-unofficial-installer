@@ -142,9 +142,11 @@ recovery_fd=99
 recovery_logs_dir="${THIS_SCRIPT_DIR}/output"
 if test -e "/proc/self/fd/${recovery_fd}"; then fail_with_msg 'Recovery FD already exist'; fi
 mkdir -p "${recovery_logs_dir}"
-touch "${recovery_logs_dir}/recovery-output-raw.log"
+touch "${recovery_logs_dir}/recovery-output-raw.log" "${recovery_logs_dir}/recovery-stdout.log" "${recovery_logs_dir}/recovery-stderr.log"
 if test "${uname_o_saved}" != 'MS/Windows'; then
-  sudo chattr +aAd "${recovery_logs_dir}/recovery-output-raw.log" || fail_with_msg "chattr failed on 'recovery-output-raw.log'"
+  sudo chattr +aAdm "${recovery_logs_dir}/recovery-output-raw.log" || fail_with_msg "chattr failed on 'recovery-output-raw.log'"
+  sudo chattr +aAdm "${recovery_logs_dir}/recovery-stdout.log" || fail_with_msg "chattr failed on 'recovery-stdout.log'"
+  sudo chattr +aAdm "${recovery_logs_dir}/recovery-stderr.log" || fail_with_msg "chattr failed on 'recovery-stderr.log'"
 fi
 # shellcheck disable=SC3023
 exec 99>> "${recovery_logs_dir}/recovery-output-raw.log"
@@ -182,6 +184,8 @@ recovery_flash_end "${STATUS}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"
 exec 99>&-
 if test "${uname_o_saved}" != 'MS/Windows'; then
   sudo chattr -a "${recovery_logs_dir}/recovery-output-raw.log" || fail_with_msg "chattr failed on 'recovery-output-raw.log'"
+  sudo chattr -a "${recovery_logs_dir}/recovery-stdout.log" || fail_with_msg "chattr failed on 'recovery-stdout.log'"
+  sudo chattr -a "${recovery_logs_dir}/recovery-stderr.log" || fail_with_msg "chattr failed on 'recovery-stderr.log'"
 fi
 
 # Parse recovery output
