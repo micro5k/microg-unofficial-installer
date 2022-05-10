@@ -149,7 +149,7 @@ if test "${uname_o_saved}" != 'MS/Windows'; then
   sudo chattr +aAd "${recovery_logs_dir}/recovery-stderr.log" || fail_with_msg "chattr failed on 'recovery-stderr.log'"
 fi
 # shellcheck disable=SC3023
-exec 99> >(tee -a "${recovery_logs_dir}/recovery-output-raw.log")
+exec 99> >(tee -a "${recovery_logs_dir}/recovery-output-raw.log" || true)
 
 # Simulate the environment variables (part 2)
 PATH="${OVERRIDE_DIR}:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin:${PATH}"  # We have to keep the original folders inside PATH otherwise everything stop working
@@ -175,7 +175,7 @@ chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/
 # Execute the script that will run the flashable zip
 recovery_flash_start "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
 set +e
-"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1> >(tee -a "${recovery_logs_dir}/recovery-stdout.log") 2> >(tee -a "${recovery_logs_dir}/recovery-stderr.log" 1>&2); STATUS="${?}"
+"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1> >(tee -a "${recovery_logs_dir}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
 set -e
 recovery_flash_end "${STATUS}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
 
