@@ -12,7 +12,7 @@ env:
   # UPLOAD_BUILD_SCAN: true
 jobs:
   base-job:
-    name: "Base job"
+    name: "Coverage and testing"
     runs-on: ubuntu-latest
 
     steps:
@@ -57,11 +57,6 @@ jobs:
           echo 'RECOVERY OUTPUT'
           echo '==============='
           cat './recovery-simulator/output/recovery-output.log'
-          printf '\n\n'
-          echo '==============='
-          echo 'STDOUT / STDERR'
-          echo '==============='
-          cat './recovery-simulator/output/recovery-stdout-stderr.log'
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
         with:
