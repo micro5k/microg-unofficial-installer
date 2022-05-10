@@ -173,7 +173,7 @@ chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/
 # Execute the script that will run the flashable zip
 recovery_flash_start "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
 set +e
-"${CUSTOM_BUSYBOX}" ash "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>>"${recovery_logs_dir}/recovery-stdout-stderr.log" 2>&1; STATUS="${?}"
+"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1> >(tee -a "${recovery_logs_dir}/recovery-stdout.log") 2> >(tee -a "${recovery_logs_dir}/recovery-stderr.log" 1>&2); STATUS="${?}"
 set -e
 recovery_flash_end "${STATUS}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
 
