@@ -20,40 +20,35 @@ link_folder()
   ln -sf "${2}" "${1}" || mkdir -p "${1}" || fail_with_msg "Failed to link dir '${1}'"
 }
 
-ui_print()
-{
-  echo "ui_print ${1}"
-}
-
 recovery_flash_start()
 {
-  ui_print "I:Set page: 'install'"
-  ui_print "I:Set page: 'flash_confirm'"
-  ui_print "I:Set page: 'flash_zip'"
-  ui_print "I:operation_start: 'Flashing'"
-  ui_print "Installing zip file '${1}'"
-  #ui_print "Checking for MD5 file..."
-  #ui_print "MD5 matched for '${1}'."
-  ui_print "I:Update binary zip"
+  echo "I:Set page: 'install'"
+  echo "I:Set page: 'flash_confirm'"
+  echo "I:Set page: 'flash_zip'"
+  echo "I:operation_start: 'Flashing'"
+  echo "Installing zip file '${1}'"
+  #echo "Checking for MD5 file..."
+  #echo "MD5 matched for '${1}'."
+  echo "I:Update binary zip"
 }
 
 recovery_flash_end()
 {
   if test "${1}" -eq 0; then
-    ui_print "I:Updater process ended with RC=0"
+    echo "I:Updater process ended with RC=0"
   else
-    ui_print "Updater process ended with ERROR: ${1}"
-    ui_print "Error installing zip file '${2}'"
+    echo "Updater process ended with ERROR: ${1}"
+    echo "Error installing zip file '${2}'"
   fi
-  ui_print "Updating partition details..."
-  ui_print "...done"
-  ui_print "I:Set page: 'flash_done'"
+  echo "Updating partition details..."
+  echo "...done"
+  echo "I:Set page: 'flash_done'"
   if test "${1}" -eq 0; then
-    ui_print "I:operation_end - status=0"
+    echo "I:operation_end - status=0"
   else
-    ui_print "I:operation_end - status=1"
+    echo "I:operation_end - status=1"
   fi
-  ui_print ''
+  echo ''
 }
 
 if test -z "${1}"; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
@@ -173,11 +168,11 @@ FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || 
 chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/update-binary'"
 
 # Execute the script that will run the flashable zip
-recovery_flash_start "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
+echo "custom_flash_start ${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
 set +e
 "${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1> >(tee -a "${recovery_logs_dir}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
 set -e
-recovery_flash_end "${STATUS}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
+echo "custom_flash_end ${STATUS}" 1>&"${recovery_fd}"
 
 # Close recovery output
 # shellcheck disable=SC3023
@@ -189,20 +184,24 @@ if test "${uname_o_saved}" != 'MS/Windows'; then
 fi
 
 # Parse recovery output
-last_msg_printed=false
+_last_msg_printed=false
+_last_zip_name=''
 while IFS=' ' read -r ui_command text; do
   if test "${ui_command}" = 'ui_print'; then
-    if test "${last_msg_printed}" = true && test "${text}" = ''; then
-      last_msg_printed=false
+    if test "${_last_msg_printed}" = true && test "${text}" = ''; then
+      _last_msg_printed=false
     else
       echo "${text}"
-      last_msg_printed=true
+      _last_msg_printed=true
     fi
-  elif test "${ui_command}" = 'custom_std'; then
-    echo "${text}"
+  elif test "${ui_command}" = 'custom_flash_start'; then
+    _last_zip_name="${text}"
+    recovery_flash_start "${_last_zip_name}"
+  elif test "${ui_command}" = 'custom_flash_end'; then
+    recovery_flash_end "${text}" "${_last_zip_name}"
   else
     echo "> ${ui_command} ${text}"
-    last_msg_printed=false
+    _last_msg_printed=false
   fi
 done < "${recovery_logs_dir}/recovery-output-raw.log" > "${recovery_logs_dir}/recovery-output.log"
 
