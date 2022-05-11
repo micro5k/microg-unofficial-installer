@@ -137,14 +137,15 @@ recovery_fd=99
 recovery_logs_dir="${THIS_SCRIPT_DIR}/output"
 if test -e "/proc/self/fd/${recovery_fd}"; then fail_with_msg 'Recovery FD already exist'; fi
 mkdir -p "${recovery_logs_dir}"
-touch "${recovery_logs_dir}/recovery-output-raw.log" "${recovery_logs_dir}/recovery-stdout.log" "${recovery_logs_dir}/recovery-stderr.log"
+touch "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-output-raw.log" "${recovery_logs_dir}/recovery-stdout.log" "${recovery_logs_dir}/recovery-stderr.log"
 if test "${uname_o_saved}" != 'MS/Windows'; then
+  sudo chattr +aAd "${recovery_logs_dir}/recovery-raw.log" || fail_with_msg "chattr failed on 'recovery-raw.log'"
   sudo chattr +aAd "${recovery_logs_dir}/recovery-output-raw.log" || fail_with_msg "chattr failed on 'recovery-output-raw.log'"
   sudo chattr +aAd "${recovery_logs_dir}/recovery-stdout.log" || fail_with_msg "chattr failed on 'recovery-stdout.log'"
   sudo chattr +aAd "${recovery_logs_dir}/recovery-stderr.log" || fail_with_msg "chattr failed on 'recovery-stderr.log'"
 fi
 # shellcheck disable=SC3023
-exec 99> >(tee -a "${recovery_logs_dir}/recovery-output-raw.log" || true)
+exec 99> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-output-raw.log" || true)
 
 # Simulate the environment variables (part 2)
 PATH="${OVERRIDE_DIR}:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin:${PATH}"  # We have to keep the original folders inside PATH otherwise everything stop working
@@ -170,7 +171,7 @@ chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/
 # Execute the script that will run the flashable zip
 echo "custom_flash_start ${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
 set +e
-"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1> >(tee -a "${recovery_logs_dir}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
+"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
 set -e
 echo "custom_flash_end ${STATUS}" 1>&"${recovery_fd}"
 
@@ -178,32 +179,41 @@ echo "custom_flash_end ${STATUS}" 1>&"${recovery_fd}"
 # shellcheck disable=SC3023
 exec 99>&-
 if test "${uname_o_saved}" != 'MS/Windows'; then
+  sudo chattr -a "${recovery_logs_dir}/recovery-raw.log" || fail_with_msg "chattr failed on 'recovery-raw.log'"
   sudo chattr -a "${recovery_logs_dir}/recovery-output-raw.log" || fail_with_msg "chattr failed on 'recovery-output-raw.log'"
   sudo chattr -a "${recovery_logs_dir}/recovery-stdout.log" || fail_with_msg "chattr failed on 'recovery-stdout.log'"
   sudo chattr -a "${recovery_logs_dir}/recovery-stderr.log" || fail_with_msg "chattr failed on 'recovery-stderr.log'"
 fi
 
-# Parse recovery output
-_last_msg_printed=false
-_last_zip_name=''
-while IFS=' ' read -r ui_command text; do
-  if test "${ui_command}" = 'ui_print'; then
-    if test "${_last_msg_printed}" = true && test "${text}" = ''; then
+parse_recovery_output()
+{
+  _last_msg_printed=false
+  _last_zip_name=''
+  while IFS=' ' read -r ui_command text; do
+    if test "${ui_command}" = 'ui_print'; then
+      if test "${_last_msg_printed}" = true && test "${text}" = ''; then
+        _last_msg_printed=false
+      else
+        _last_msg_printed=true
+        echo "${text}"
+      fi
+    elif test "${ui_command}" = 'custom_flash_start'; then
       _last_msg_printed=false
+      _last_zip_name="${text}"
+      recovery_flash_start "${_last_zip_name}"
+    elif test "${ui_command}" = 'custom_flash_end'; then
+      _last_msg_printed=false
+      recovery_flash_end "${text}" "${_last_zip_name}"
     else
-      echo "${text}"
-      _last_msg_printed=true
+      _last_msg_printed=false
+      echo "> ${ui_command} ${text}"
     fi
-  elif test "${ui_command}" = 'custom_flash_start'; then
-    _last_zip_name="${text}"
-    recovery_flash_start "${_last_zip_name}"
-  elif test "${ui_command}" = 'custom_flash_end'; then
-    recovery_flash_end "${text}" "${_last_zip_name}"
-  else
-    echo "> ${ui_command} ${text}"
-    _last_msg_printed=false
-  fi
-done < "${recovery_logs_dir}/recovery-output-raw.log" > "${recovery_logs_dir}/recovery-output.log"
+  done < "${2}" > "${3}"
+}
+
+# Parse recovery output
+parse_recovery_output true "${recovery_logs_dir}/recovery-output-raw.log" "${recovery_logs_dir}/recovery-output.log"
+parse_recovery_output false "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery.log"
 
 # Final cleanup
 cd "${INIT_DIR}" || fail_with_msg 'Failed to change back the folder'
