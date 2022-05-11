@@ -56,7 +56,7 @@ jobs:
           echo '==============='
           echo 'RECOVERY OUTPUT'
           echo '==============='
-          cat './recovery-simulator/output/recovery-output.log'
+          cat './recovery-simulator/output/recovery.log'
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
         with:

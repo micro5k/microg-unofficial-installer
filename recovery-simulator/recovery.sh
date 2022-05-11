@@ -22,32 +22,56 @@ link_folder()
 
 recovery_flash_start()
 {
-  echo "I:Set page: 'install'"
-  echo "I:Set page: 'flash_confirm'"
-  echo "I:Set page: 'flash_zip'"
-  echo "I:operation_start: 'Flashing'"
-  echo "Installing zip file '${1}'"
-  #echo "Checking for MD5 file..."
-  #echo "MD5 matched for '${1}'."
-  echo "I:Update binary zip"
+  if test "${1}" = 'false'; then
+    echo "I:Set page: 'install'"
+    echo "I:Set page: 'flash_confirm'"
+    echo "I:Set page: 'flash_zip'"
+    echo "I:operation_start: 'Flashing'"
+  fi
+
+  echo "Installing zip file '${2}'"
+  echo "Checking for MD5 file..."
+  echo "Skipping MD5 check: no MD5 file found"
+  #echo "MD5 matched for '${2}'."
+
+  if test "${1}" = 'false'; then
+    echo "I:Update binary zip"
+  fi
 }
 
 recovery_flash_end()
 {
-  if test "${1}" -eq 0; then
+  if test "${2}" -ne 0; then
+    echo "Updater process ended with ERROR: ${2}"
+    if test "${1}" = 'false'; then
+      echo "I:Install took ... second(s)."
+    fi
+    echo "Error installing zip file '${3}'"
+  elif test "${1}" = 'false'; then
     echo "I:Updater process ended with RC=0"
-  else
-    echo "Updater process ended with ERROR: ${1}"
-    echo "Error installing zip file '${2}'"
+    echo "I:Install took ... second(s)."
   fi
+
   echo "Updating partition details..."
   echo "...done"
-  echo "I:Set page: 'flash_done'"
-  if test "${1}" -eq 0; then
-    echo "I:operation_end - status=0"
+
+  if test "${1}" = 'false'; then
+    echo "I:Set page: 'flash_done'"
+    if test "${2}" -eq 0; then
+      echo "I:operation_end - status=0"
+    else
+      echo "I:operation_end - status=1"
+    fi
+    echo "I:Set page: 'clear_vars'"
+
+    echo "I:Set page: 'copylog'"
+    echo "I:Set page: 'action_page'"
+    echo "I:operation_start: 'Copy Log'"
+    echo "I:Copying file /tmp/recovery.log to /sdcard1/recovery.log"
   else
-    echo "I:operation_end - status=1"
+    echo "Copied recovery log to /sdcard1/recovery.log"
   fi
+
   echo ''
 }
 
@@ -200,10 +224,10 @@ parse_recovery_output()
     elif test "${ui_command}" = 'custom_flash_start'; then
       _last_msg_printed=false
       _last_zip_name="${text}"
-      recovery_flash_start "${_last_zip_name}"
+      recovery_flash_start "${1}" "${_last_zip_name}"
     elif test "${ui_command}" = 'custom_flash_end'; then
       _last_msg_printed=false
-      recovery_flash_end "${text}" "${_last_zip_name}"
+      recovery_flash_end "${1}" "${text}" "${_last_zip_name}"
     else
       _last_msg_printed=false
       echo "> ${ui_command} ${text}"
