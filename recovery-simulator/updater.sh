@@ -16,7 +16,6 @@ unset FUNCNAME
 unset HOSTNAME
 unset LINENO
 unset OPTIND
-unset OLDPWD
 
 IFS=' 	
 '
