@@ -117,7 +117,6 @@ if test -z "${OUR_TEMP_DIR}"; then fail_with_msg 'Failed to create our temp dir'
 rm -rf "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
 # Setup the needed variables
-FLASHABLE_ZIP_PATH="$(realpath "${1}" 2>/dev/null)" || fail_with_msg 'Failed to get the flashable ZIP'
 BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"  # Internal var
 _our_overrider_dir="${THIS_SCRIPT_DIR}/override"  # Internal var
 INIT_DIR="$(pwd)"
@@ -191,42 +190,49 @@ restore_path()
 
 # Setup recovery output
 recovery_fd=99
-recovery_logs_dir="${THIS_SCRIPT_DIR}/output"
-if test -e "/proc/self/fd/${recovery_fd}"; then fail_with_msg 'Recovery FD already exist'; fi
-mkdir -p "${recovery_logs_dir}"
-touch "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-output-raw.log" "${recovery_logs_dir}/recovery-stdout.log" "${recovery_logs_dir}/recovery-stderr.log"
-if test "${uname_o_saved}" != 'MS/Windows'; then
-  sudo chattr +aAd "${recovery_logs_dir}/recovery-raw.log" || fail_with_msg "chattr failed on 'recovery-raw.log'"
-  sudo chattr +aAd "${recovery_logs_dir}/recovery-output-raw.log" || fail_with_msg "chattr failed on 'recovery-output-raw.log'"
-  sudo chattr +aAd "${recovery_logs_dir}/recovery-stdout.log" || fail_with_msg "chattr failed on 'recovery-stdout.log'"
-  sudo chattr +aAd "${recovery_logs_dir}/recovery-stderr.log" || fail_with_msg "chattr failed on 'recovery-stderr.log'"
+recovery_logs_dir="${THIS_SCRIPT_DIR:?}/output"
+if test -e "/proc/self/fd/${recovery_fd:?}"; then fail_with_msg 'Recovery FD already exist'; fi
+mkdir -p "${recovery_logs_dir:?}"
+touch "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-output-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" "${recovery_logs_dir:?}/recovery-stderr.log"
+if test "${uname_o_saved:?}" != 'MS/Windows'; then
+  sudo chattr +aAd "${recovery_logs_dir:?}/recovery-raw.log" || fail_with_msg "chattr failed on 'recovery-raw.log'"
+  sudo chattr +aAd "${recovery_logs_dir:?}/recovery-output-raw.log" || fail_with_msg "chattr failed on 'recovery-output-raw.log'"
+  sudo chattr +aAd "${recovery_logs_dir:?}/recovery-stdout.log" || fail_with_msg "chattr failed on 'recovery-stdout.log'"
+  sudo chattr +aAd "${recovery_logs_dir:?}/recovery-stderr.log" || fail_with_msg "chattr failed on 'recovery-stderr.log'"
 fi
 # shellcheck disable=SC3023
-exec 99> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-output-raw.log" || true)
-
-# Simulate the environment variables (part 2)
-simulate_env
-
-# Prepare before execution
-FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
-cp -f "${FLASHABLE_ZIP_PATH}" "${_android_sec_stor}/${FLASHABLE_ZIP_NAME}" || fail_with_msg 'Failed to copy the flashable ZIP'
-"${CUSTOM_BUSYBOX}" unzip -opq "${_android_sec_stor}/${FLASHABLE_ZIP_NAME}" 'META-INF/com/google/android/update-binary' > "${_android_tmp}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
+exec 99> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-output-raw.log" || true)
 
 # Execute the script that will run the flashable zip
-echo "custom_flash_start ${_android_sec_stor}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd:?}"
-set +e
-"${CUSTOM_BUSYBOX}" sh "${_android_tmp}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor}/${FLASHABLE_ZIP_NAME}" 1> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
-set -e
-echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
+echo "${FILES:?}" | while IFS='' read -r _current_zip_fullpath; do
+  if test -z "${_current_zip_fullpath}"; then continue; fi
+
+  # Simulate the environment variables
+  simulate_env
+
+  FLASHABLE_ZIP_NAME="$(basename "${_current_zip_fullpath:?}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
+  cp -f -- "${_current_zip_fullpath:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" || fail_with_msg 'Failed to copy the flashable ZIP'
+  "${CUSTOM_BUSYBOX:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_tmp:?}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
+
+  echo "custom_flash_start ${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1>&"${recovery_fd:?}"
+  set +e
+  "${CUSTOM_BUSYBOX:?}" sh "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
+  set -e
+  echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
+
+  restore_path
+  if test "${STATUS:?}" -ne 0; then return "${STATUS:?}"; fi
+done
+STATUS="${?}"
 
 # Close recovery output
 # shellcheck disable=SC3023
 exec 99>&-
-if test "${uname_o_saved}" != 'MS/Windows'; then
-  sudo chattr -a "${recovery_logs_dir}/recovery-raw.log" || fail_with_msg "chattr failed on 'recovery-raw.log'"
-  sudo chattr -a "${recovery_logs_dir}/recovery-output-raw.log" || fail_with_msg "chattr failed on 'recovery-output-raw.log'"
-  sudo chattr -a "${recovery_logs_dir}/recovery-stdout.log" || fail_with_msg "chattr failed on 'recovery-stdout.log'"
-  sudo chattr -a "${recovery_logs_dir}/recovery-stderr.log" || fail_with_msg "chattr failed on 'recovery-stderr.log'"
+if test "${uname_o_saved:?}" != 'MS/Windows'; then
+  sudo chattr -a "${recovery_logs_dir:?}/recovery-raw.log" || fail_with_msg "chattr failed on 'recovery-raw.log'"
+  sudo chattr -a "${recovery_logs_dir:?}/recovery-output-raw.log" || fail_with_msg "chattr failed on 'recovery-output-raw.log'"
+  sudo chattr -a "${recovery_logs_dir:?}/recovery-stdout.log" || fail_with_msg "chattr failed on 'recovery-stdout.log'"
+  sudo chattr -a "${recovery_logs_dir:?}/recovery-stderr.log" || fail_with_msg "chattr failed on 'recovery-stderr.log'"
 fi
 
 parse_recovery_output()
