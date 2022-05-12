@@ -23,6 +23,7 @@ create_junction()
 
 link_folder()
 {
+  # shellcheck disable=SC2310
   ln -sf "${2}" "${1}" || create_junction "${1}" "${2}" || mkdir -p "${1}" || fail_with_msg "Failed to link dir '${1}' to '${2}'"
 }
 
