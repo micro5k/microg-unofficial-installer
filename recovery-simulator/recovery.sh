@@ -8,7 +8,7 @@
 
 fail_with_msg()
 {
-  echo "${1}"
+  echo "${1:?}"
   exit 1
 }
 
@@ -19,43 +19,43 @@ set -e
 create_junction()
 {
   if test "${uname_o_saved}" != 'MS/Windows'; then return 1; fi
-  cmd.exe /C mklink /J "${1}" "${2}" || return "${?}"
+  cmd.exe /C mklink /J "${1:?}" "${2:?}"
 }
 
 link_folder()
 {
   # shellcheck disable=SC2310
-  ln -sf "${2}" "${1}" || create_junction "${1}" "${2}" || mkdir -p "${1}" || fail_with_msg "Failed to link dir '${1}' to '${2}'"
+  ln -sf "${2:?}" "${1:?}" 2>/dev/null || create_junction "${1:?}" "${2:?}" || mkdir -p "${1:?}" || fail_with_msg "Failed to link dir '${1:?}' to '${2:?}'"
 }
 
 recovery_flash_start()
 {
-  if test "${1}" = 'false'; then
+  if test "${1:?}" = 'false'; then
     echo "I:Set page: 'install'"
     echo "I:Set page: 'flash_confirm'"
     echo "I:Set page: 'flash_zip'"
     echo "I:operation_start: 'Flashing'"
   fi
 
-  echo "Installing zip file '${2}'"
+  echo "Installing zip file '${2:?}'"
   echo "Checking for MD5 file..."
   echo "Skipping MD5 check: no MD5 file found"
-  #echo "MD5 matched for '${2}'."
+  #echo "MD5 matched for '${2:?}'."
 
-  if test "${1}" = 'false'; then
+  if test "${1:?}" = 'false'; then
     echo "I:Update binary zip"
   fi
 }
 
 recovery_flash_end()
 {
-  if test "${2}" -ne 0; then
-    echo "Updater process ended with ERROR: ${2}"
-    if test "${1}" = 'false'; then
+  if test "${2:?}" -ne 0; then
+    echo "Updater process ended with ERROR: ${2:?}"
+    if test "${1:?}" = 'false'; then
       echo "I:Install took ... second(s)."
     fi
-    echo "Error installing zip file '${3}'"
-  elif test "${1}" = 'false'; then
+    echo "Error installing zip file '${3:?}'"
+  elif test "${1:?}" = 'false'; then
     echo "I:Updater process ended with RC=0"
     echo "I:Install took ... second(s)."
   fi
@@ -63,9 +63,9 @@ recovery_flash_end()
   echo "Updating partition details..."
   echo "...done"
 
-  if test "${1}" = 'false'; then
+  if test "${1:?}" = 'false'; then
     echo "I:Set page: 'flash_done'"
-    if test "${2}" -eq 0; then
+    if test "${2:?}" -eq 0; then
       echo "I:operation_end - status=0"
     else
       echo "I:operation_end - status=1"
@@ -141,8 +141,12 @@ mkdir -p "${ANDROID_ROOT}/bin"
 mkdir -p "${ANDROID_DATA}"
 mkdir -p "${EXTERNAL_STORAGE}"
 mkdir -p "${SECONDARY_STORAGE}"
+mkdir -p "${TMPDIR}"
+touch "${TMPDIR}/recovery.log"
+
 link_folder "${BASE_SIMULATION_PATH}/sbin" "${BASE_SIMULATION_PATH}/system/bin"
 link_folder "${BASE_SIMULATION_PATH}/sdcard" "${EXTERNAL_STORAGE}"
+
 cp -pf -- "${_our_busybox:?}" "${BASE_SIMULATION_PATH:?}/system/bin/busybox" || fail_with_msg 'Failed to copy BusyBox'
 
 {
@@ -160,7 +164,6 @@ mkdir -p "${ANDROID_ROOT}/framework"
 zip -D -9 -X -UN=n -nw -q "${ANDROID_ROOT}/framework/framework-res.apk" 'AndroidManifest.xml' || fail_with_msg 'Failed compressing framework-res.apk'
 rm -f "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
 
-mkdir -p "${TMPDIR}"
 cp -pf -- "${THIS_SCRIPT_DIR}/updater.sh" "${TMPDIR}/updater" || fail_with_msg 'Failed to copy the updater script'
 chmod +x "${TMPDIR}/updater" || fail_with_msg "chmod failed on '${TMPDIR}/updater'"
 
@@ -196,9 +199,8 @@ rm -f "${BASE_SIMULATION_PATH:?}/system/bin/su" "${BASE_SIMULATION_PATH:?}/syste
 # Prepare before execution
 export OVERRIDE_DIR
 FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
-"${CUSTOM_BUSYBOX}" cp -rf "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" || fail_with_msg 'Failed to copy the flashable ZIP'
+"${CUSTOM_BUSYBOX}" cp -f "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" || fail_with_msg 'Failed to copy the flashable ZIP'
 "${CUSTOM_BUSYBOX}" unzip -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
-chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/update-binary'"
 
 # Execute the script that will run the flashable zip
 echo "custom_flash_start ${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd:?}"
@@ -232,15 +234,15 @@ parse_recovery_output()
     elif test "${ui_command}" = 'custom_flash_start'; then
       _last_msg_printed=false
       _last_zip_name="${text}"
-      recovery_flash_start "${1}" "${_last_zip_name}"
+      recovery_flash_start "${1:?}" "${_last_zip_name:?}"
     elif test "${ui_command}" = 'custom_flash_end'; then
       _last_msg_printed=false
-      recovery_flash_end "${1}" "${text}" "${_last_zip_name}"
+      recovery_flash_end "${1:?}" "${text:?}" "${_last_zip_name:?}"
     else
       _last_msg_printed=false
       echo "> ${ui_command} ${text}"
     fi
-  done < "${2}" > "${3}"
+  done < "${2:?}" > "${3:?}"
 }
 
 # Parse recovery output
