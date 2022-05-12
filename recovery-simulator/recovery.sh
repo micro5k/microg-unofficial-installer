@@ -95,7 +95,7 @@ if ! "${ENV_RESETTED:-false}"; then
   exit 127
 fi
 unset ENV_RESETTED
-unset LC_TIME
+_backup_path="${PATH}"
 uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
 # Check dependencies
@@ -128,9 +128,9 @@ SECONDARY_STORAGE="${BASE_SIMULATION_PATH}/sdcard1"
 LD_LIBRARY_PATH=".:${BASE_SIMULATION_PATH}/sbin"
 ANDROID_DATA="${BASE_SIMULATION_PATH}/data"
 ANDROID_ROOT="${BASE_SIMULATION_PATH}/system"
-ANDROID_PROPERTY_WORKSPACE='21,32768'
-TZ='CET-1CEST,M3.5.0,M10.5.0'
 TMPDIR="${BASE_SIMULATION_PATH}/tmp"
+
+_android_path="${OVERRIDE_DIR}:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin:${_backup_path}"
 
 # Simulate the Android environment inside the temp folder
 cd "${BASE_SIMULATION_PATH}" || fail_with_msg 'Failed to change dir to the base simulation path'
@@ -168,6 +168,29 @@ rm -f "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
 cp -pf -- "${THIS_SCRIPT_DIR}/updater.sh" "${TMPDIR}/updater" || fail_with_msg 'Failed to copy the updater script'
 chmod +x "${TMPDIR}/updater" || fail_with_msg "chmod failed on '${TMPDIR}/updater'"
 
+simulate_env()
+{
+  export EXTERNAL_STORAGE
+  export SECONDARY_STORAGE
+  export LD_LIBRARY_PATH
+  export ANDROID_DATA
+  export PATH="${_android_path}"
+  export ANDROID_ROOT
+  export ANDROID_PROPERTY_WORKSPACE='21,32768'
+  export TZ='CET-1CEST,M3.5.0,M10.5.0'
+  export TMPDIR
+  export CUSTOM_BUSYBOX="${BASE_SIMULATION_PATH:?}/system/bin/busybox"
+  "${CUSTOM_BUSYBOX:?}" --install "${BASE_SIMULATION_PATH:?}/system/bin" || fail_with_msg 'Failed to install BusyBox'
+  rm -f "${BASE_SIMULATION_PATH:?}/system/bin/su" "${BASE_SIMULATION_PATH:?}/system/bin/mount" "${BASE_SIMULATION_PATH:?}/system/bin/umount" "${BASE_SIMULATION_PATH:?}/system/bin/chown" || fail_with_msg 'Failed to remove potentially unsafe commands'
+
+  export OVERRIDE_DIR
+}
+
+restore_path()
+{
+  export PATH="${_backup_path}"
+}
+
 # Setup recovery output
 recovery_fd=99
 recovery_logs_dir="${THIS_SCRIPT_DIR}/output"
@@ -184,21 +207,9 @@ fi
 exec 99> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-output-raw.log" || true)
 
 # Simulate the environment variables (part 2)
-PATH="${OVERRIDE_DIR}:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin:${PATH}"  # We have to keep the original folders inside PATH otherwise everything stop working
-export EXTERNAL_STORAGE
-export LD_LIBRARY_PATH
-export ANDROID_DATA
-export PATH
-export ANDROID_ROOT
-export ANDROID_PROPERTY_WORKSPACE
-export TZ
-export TMPDIR
-export CUSTOM_BUSYBOX="${BASE_SIMULATION_PATH:?}/system/bin/busybox"
-"${CUSTOM_BUSYBOX:?}" --install "${BASE_SIMULATION_PATH:?}/system/bin" || fail_with_msg 'Failed to install BusyBox'
-rm -f "${BASE_SIMULATION_PATH:?}/system/bin/su" "${BASE_SIMULATION_PATH:?}/system/bin/mount" "${BASE_SIMULATION_PATH:?}/system/bin/umount" "${BASE_SIMULATION_PATH:?}/system/bin/chown" || fail_with_msg 'Failed to remove potentially unsafe commands'
+simulate_env
 
 # Prepare before execution
-export OVERRIDE_DIR
 FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
 "${CUSTOM_BUSYBOX}" cp -f "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" || fail_with_msg 'Failed to copy the flashable ZIP'
 "${CUSTOM_BUSYBOX}" unzip -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
