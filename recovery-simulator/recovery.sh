@@ -19,7 +19,8 @@ set -e
 create_junction()
 {
   if test "${uname_o_saved}" != 'MS/Windows'; then return 1; fi
-  cmd.exe /C mklink /J "${1:?}" "${2:?}"
+  return 1
+  # cmd.exe /C mklink /J "${1:?}" "${2:?}"
 }
 
 link_folder()
