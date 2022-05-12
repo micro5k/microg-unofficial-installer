@@ -13,7 +13,8 @@ fail_with_msg()
 }
 
 # shellcheck disable=SC3040
-set -eo pipefail
+set -o pipefail
+set -e
 
 create_junction()
 {
