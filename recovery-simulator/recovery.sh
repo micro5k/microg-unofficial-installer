@@ -15,9 +15,16 @@ fail_with_msg()
   exit 1
 }
 
+create_junction()
+{
+  if test "${uname_o_saved}" != 'MS/Windows'; then return 1; fi
+  cmd.exe /C mklink /J "${1}" "${2}"
+  return "${?}"
+}
+
 link_folder()
 {
-  ln -sf "${2}" "${1}" || mkdir -p "${1}" || fail_with_msg "Failed to link dir '${1}'"
+  ln -sf "${2}" "${1}" || create_junction "${1}" "${2}" || mkdir -p "${1}" || fail_with_msg "Failed to link dir '${1}' to '${2}'"
 }
 
 recovery_flash_start()
