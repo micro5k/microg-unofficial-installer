@@ -18,8 +18,7 @@ fail_with_msg()
 create_junction()
 {
   if test "${uname_o_saved}" != 'MS/Windows'; then return 1; fi
-  cmd.exe /C mklink /J "${1}" "${2}"
-  return "${?}"
+  cmd.exe /C mklink /J "${1}" "${2}" || return "${?}"
 }
 
 link_folder()
@@ -200,11 +199,11 @@ FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || 
 chmod +x "${TMPDIR}/update-binary" || fail_with_msg "chmod failed on '${TMPDIR}/update-binary'"
 
 # Execute the script that will run the flashable zip
-echo "custom_flash_start ${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd}"
+echo "custom_flash_start ${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd:?}"
 set +e
-"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${recovery_fd}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
+"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${recovery_fd:?}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
 set -e
-echo "custom_flash_end ${STATUS}" 1>&"${recovery_fd}"
+echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
 
 # Close recovery output
 # shellcheck disable=SC3023
