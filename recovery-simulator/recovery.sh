@@ -118,36 +118,34 @@ rm -rf "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
 # Setup the needed variables
 FLASHABLE_ZIP_PATH="$(realpath "${1}" 2>/dev/null)" || fail_with_msg 'Failed to get the flashable ZIP'
-OVERRIDE_DIR="${THIS_SCRIPT_DIR}/override"
-BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"; mkdir -p "${BASE_SIMULATION_PATH}"  # Internal var
+BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"  # Internal var
+_our_overrider_dir="${THIS_SCRIPT_DIR}/override"  # Internal var
 INIT_DIR="$(pwd)"
 
-# Simulate the environment variables (part 1)
-EXTERNAL_STORAGE="${BASE_SIMULATION_PATH}/sdcard0"
-SECONDARY_STORAGE="${BASE_SIMULATION_PATH}/sdcard1"
-LD_LIBRARY_PATH=".:${BASE_SIMULATION_PATH}/sbin"
-ANDROID_DATA="${BASE_SIMULATION_PATH}/data"
-ANDROID_ROOT="${BASE_SIMULATION_PATH}/system"
-TMPDIR="${BASE_SIMULATION_PATH}/tmp"
+# Configure the Android recovery environment variables (they will be used later)
+_android_tmp="${BASE_SIMULATION_PATH}/tmp"
+_android_sys="${BASE_SIMULATION_PATH}/system"
+_android_data="${BASE_SIMULATION_PATH}/data"
+_android_ext_stor="${BASE_SIMULATION_PATH}/sdcard0"
+_android_sec_stor="${BASE_SIMULATION_PATH}/sdcard1"
+_android_path="${_our_overrider_dir}:${BASE_SIMULATION_PATH}/sbin:${_android_sys}/bin:${_backup_path}"
+_android_lib_path=".:${BASE_SIMULATION_PATH}/sbin"
 
-_android_path="${OVERRIDE_DIR}:${BASE_SIMULATION_PATH}/sbin:${ANDROID_ROOT}/bin:${_backup_path}"
-
-# Simulate the Android environment inside the temp folder
+# Simulate the Android recovery environment inside the temp folder
+mkdir -p "${BASE_SIMULATION_PATH}"
 cd "${BASE_SIMULATION_PATH}" || fail_with_msg 'Failed to change dir to the base simulation path'
-mkdir -p "${ANDROID_ROOT}"
-mkdir -p "${BASE_SIMULATION_PATH}/system/addon.d"
-mkdir -p "${BASE_SIMULATION_PATH}/system/priv-app"
-mkdir -p "${BASE_SIMULATION_PATH}/system/app"
-mkdir -p "${ANDROID_ROOT}/bin"
-mkdir -p "${ANDROID_DATA}"
-mkdir -p "${EXTERNAL_STORAGE}"
-mkdir -p "${SECONDARY_STORAGE}"
-mkdir -p "${TMPDIR}"
-touch "${TMPDIR}/recovery.log"
-
-link_folder "${BASE_SIMULATION_PATH}/sbin" "${BASE_SIMULATION_PATH}/system/bin"
-link_folder "${BASE_SIMULATION_PATH}/sdcard" "${EXTERNAL_STORAGE}"
-
+mkdir -p "${_android_tmp}"
+mkdir -p "${_android_sys}"
+mkdir -p "${_android_sys}/addon.d"
+mkdir -p "${_android_sys}/priv-app"
+mkdir -p "${_android_sys}/app"
+mkdir -p "${_android_sys}/bin"
+mkdir -p "${_android_data}"
+mkdir -p "${_android_ext_stor}"
+mkdir -p "${_android_sec_stor}"
+touch "${_android_tmp}/recovery.log"
+link_folder "${BASE_SIMULATION_PATH}/sbin" "${_android_sys}/bin"
+link_folder "${BASE_SIMULATION_PATH}/sdcard" "${_android_ext_stor}"
 cp -pf -- "${_our_busybox:?}" "${BASE_SIMULATION_PATH:?}/system/bin/busybox" || fail_with_msg 'Failed to copy BusyBox'
 
 {
@@ -157,33 +155,33 @@ cp -pf -- "${_our_busybox:?}" "${BASE_SIMULATION_PATH:?}/system/bin/busybox" || 
   echo 'ro.product.cpu.abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi'
   echo 'ro.product.cpu.abilist32=x86,armeabi-v7a,armeabi'
   echo 'ro.product.cpu.abilist64=x86_64,arm64-v8a'
-} > "${ANDROID_ROOT}/build.prop"
+} > "${_android_sys}/build.prop"
 
 touch "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
 printf 'a\0n\0d\0r\0o\0i\0d\0.\0p\0e\0r\0m\0i\0s\0s\0i\0o\0n\0.\0F\0A\0K\0E\0_\0P\0A\0C\0K\0A\0G\0E\0_\0S\0I\0G\0N\0A\0T\0U\0R\0E\0' > "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
-mkdir -p "${ANDROID_ROOT}/framework"
-zip -D -9 -X -UN=n -nw -q "${ANDROID_ROOT}/framework/framework-res.apk" 'AndroidManifest.xml' || fail_with_msg 'Failed compressing framework-res.apk'
-rm -f "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
+mkdir -p "${_android_sys}/framework"
+zip -D -9 -X -UN=n -nw -q "${_android_sys}/framework/framework-res.apk" 'AndroidManifest.xml' || fail_with_msg 'Failed compressing framework-res.apk'
+rm -f -- "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
 
-cp -pf -- "${THIS_SCRIPT_DIR}/updater.sh" "${TMPDIR}/updater" || fail_with_msg 'Failed to copy the updater script'
-chmod +x "${TMPDIR}/updater" || fail_with_msg "chmod failed on '${TMPDIR}/updater'"
+cp -pf -- "${THIS_SCRIPT_DIR}/updater.sh" "${_android_tmp}/updater" || fail_with_msg 'Failed to copy the updater script'
+chmod +x "${_android_tmp}/updater" || fail_with_msg "chmod failed on '${_android_tmp}/updater'"
 
 simulate_env()
 {
-  export EXTERNAL_STORAGE
-  export SECONDARY_STORAGE
-  export LD_LIBRARY_PATH
-  export ANDROID_DATA
-  export PATH="${_android_path}"
-  export ANDROID_ROOT
+  export EXTERNAL_STORAGE="${_android_ext_stor:?}"
+  export SECONDARY_STORAGE="${_android_sec_stor:?}"
+  export LD_LIBRARY_PATH="${_android_lib_path:?}"
+  export ANDROID_DATA="${_android_data:?}"
+  export PATH="${_android_path:?}"
+  export ANDROID_ROOT="${_android_sys:?}"
   export ANDROID_PROPERTY_WORKSPACE='21,32768'
   export TZ='CET-1CEST,M3.5.0,M10.5.0'
-  export TMPDIR
+  export TMPDIR="${_android_tmp:?}"
   export CUSTOM_BUSYBOX="${BASE_SIMULATION_PATH:?}/system/bin/busybox"
+  export OVERRIDE_DIR="${_our_overrider_dir:?}"
+
   "${CUSTOM_BUSYBOX:?}" --install "${BASE_SIMULATION_PATH:?}/system/bin" || fail_with_msg 'Failed to install BusyBox'
   rm -f "${BASE_SIMULATION_PATH:?}/system/bin/su" "${BASE_SIMULATION_PATH:?}/system/bin/mount" "${BASE_SIMULATION_PATH:?}/system/bin/umount" "${BASE_SIMULATION_PATH:?}/system/bin/chown" || fail_with_msg 'Failed to remove potentially unsafe commands'
-
-  export OVERRIDE_DIR
 }
 
 restore_path()
@@ -211,13 +209,13 @@ simulate_env
 
 # Prepare before execution
 FLASHABLE_ZIP_NAME="$("${CUSTOM_BUSYBOX}" basename "${FLASHABLE_ZIP_PATH}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
-"${CUSTOM_BUSYBOX}" cp -f "${FLASHABLE_ZIP_PATH}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" || fail_with_msg 'Failed to copy the flashable ZIP'
-"${CUSTOM_BUSYBOX}" unzip -opq "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 'META-INF/com/google/android/update-binary' > "${TMPDIR}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
+cp -f "${FLASHABLE_ZIP_PATH}" "${_android_sec_stor}/${FLASHABLE_ZIP_NAME}" || fail_with_msg 'Failed to copy the flashable ZIP'
+"${CUSTOM_BUSYBOX}" unzip -opq "${_android_sec_stor}/${FLASHABLE_ZIP_NAME}" 'META-INF/com/google/android/update-binary' > "${_android_tmp}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
 
 # Execute the script that will run the flashable zip
-echo "custom_flash_start ${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd:?}"
+echo "custom_flash_start ${_android_sec_stor}/${FLASHABLE_ZIP_NAME}" 1>&"${recovery_fd:?}"
 set +e
-"${CUSTOM_BUSYBOX}" sh "${TMPDIR}/updater" 3 "${recovery_fd:?}" "${SECONDARY_STORAGE}/${FLASHABLE_ZIP_NAME}" 1> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
+"${CUSTOM_BUSYBOX}" sh "${_android_tmp}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor}/${FLASHABLE_ZIP_NAME}" 1> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
 set -e
 echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
 
