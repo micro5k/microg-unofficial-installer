@@ -1,5 +1,5 @@
-# SPDX-FileCopyrightText: none
-# SPDX-License-Identifier: CC0-1.0
-# SPDX-FileType: OTHER
+SPDX-FileCopyrightText: none
+SPDX-License-Identifier: CC0-1.0
+SPDX-FileType: OTHER
 
-# Dummy file, the real script is inside update-binary
+Dummy file, the real script is inside update-binary
