@@ -14,9 +14,9 @@ Copyright: Copyright 2015 the original author or authors.
 License: Apache-2.0
 
 Files: zip-content/misc/busybox/busybox-*.bin
-Copyright: Copyright (C) tons of folks. See: https://github.com/yashdsaraf/busybox/raw/master/AUTHORS
+Copyright: Copyright (C) tons of folks. <https://github.com/yashdsaraf/busybox/raw/master/AUTHORS>
 License: GPL-2.0-only
-Comment: [Sources => 'https://github.com/yashdsaraf/busybox', Binary => 'https://github.com/yashdsaraf/bb-bot/releases']
+Comment: {"Sources" => "https://github.com/yashdsaraf/busybox", "Binary" => "https://github.com/yashdsaraf/bb-bot/releases"}
 
 License: Apache-2.0
  https://github.com/micro5k/microg-unofficial-installer/raw/main/LICENSES/Apache-2.0.txt
