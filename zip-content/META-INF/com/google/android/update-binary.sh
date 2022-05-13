@@ -6,6 +6,8 @@
 # shellcheck disable=SC3043
 # SC3043: In POSIX sh, local is undefined
 
+umask 022
+
 ### GLOBAL VARIABLES ###
 
 export DEBUG_LOG=0
