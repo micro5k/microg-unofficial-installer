@@ -203,7 +203,7 @@ fi
 # shellcheck disable=SC3023
 exec 99> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-output-raw.log" || true)
 
-flash_zip()
+flash_zips()
 {
   while IFS='' read -r _current_zip_fullpath; do
     if test -z "${_current_zip_fullpath}"; then continue; fi
@@ -226,8 +226,8 @@ flash_zip()
     if test "${STATUS:?}" -ne 0; then return "${STATUS:?}"; fi
   done
 }
-echo "${FILES:?}" | flash_zip
-STATUS="${?}"
+STATUS=0
+echo "${FILES:?}" | flash_zips || STATUS="${?}"
 
 # Close recovery output
 # shellcheck disable=SC3023
