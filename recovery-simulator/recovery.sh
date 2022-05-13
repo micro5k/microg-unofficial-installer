@@ -6,15 +6,15 @@
 # NOTE: This script simulate a real recovery but it relies on the flashable zip to use the suggested paths.
 # REALLY IMPORTANT: A misbehaving flashable zip can damage your real system.
 
+set -e
+# shellcheck disable=SC3040
+set -o pipefail || true
+
 fail_with_msg()
 {
   echo "${1:?}"
   exit 1
 }
-
-# shellcheck disable=SC3040
-set -o pipefail
-set -e
 
 create_junction()
 {
