@@ -212,7 +212,7 @@ fi
 detect_recovery_arch()
 {
   case "$(uname -m)" in
-    x86_64                    ) RECOVERY_ARCH='x86_64';;
+    x86_64 | x64              ) RECOVERY_ARCH='x86_64';;
     x86 | i686                ) RECOVERY_ARCH='x86';;
     aarch64 | arm64* | armv8* ) RECOVERY_ARCH='arm64-v8a';;
     armv7*                    ) RECOVERY_ARCH='armeabi-v7a';;
