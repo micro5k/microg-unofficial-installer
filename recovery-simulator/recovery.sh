@@ -190,8 +190,11 @@ simulate_env()
   export OVERRIDE_DIR="${_our_overrider_dir:?}"
 
   "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
+  # shellcheck disable=SC2310
   override_command mount || exit 123
+  # shellcheck disable=SC2310
   override_command umount || exit 123
+  # shellcheck disable=SC2310
   override_command chown || exit 123
 
   rm -f -- "${_android_sys:?}/bin/su" "${_android_sys:?}/bin/sudo" || fail_with_msg 'Failed to remove potentially unsafe commands'
