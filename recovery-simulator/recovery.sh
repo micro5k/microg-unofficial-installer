@@ -203,26 +203,30 @@ fi
 # shellcheck disable=SC3023
 exec 99> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-output-raw.log" || true)
 
-# Execute the script that will run the flashable zip
-echo "${FILES:?}" | while IFS='' read -r _current_zip_fullpath; do
-  if test -z "${_current_zip_fullpath}"; then continue; fi
+flash_zip()
+{
+  while IFS='' read -r _current_zip_fullpath; do
+    if test -z "${_current_zip_fullpath}"; then continue; fi
 
-  # Simulate the environment variables
-  simulate_env
+    # Simulate the environment variables
+    simulate_env
 
-  FLASHABLE_ZIP_NAME="$(basename "${_current_zip_fullpath:?}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
-  cp -f -- "${_current_zip_fullpath:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" || fail_with_msg 'Failed to copy the flashable ZIP'
-  "${CUSTOM_BUSYBOX:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_tmp:?}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
+    FLASHABLE_ZIP_NAME="$(basename "${_current_zip_fullpath:?}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
+    cp -f -- "${_current_zip_fullpath:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" || fail_with_msg 'Failed to copy the flashable ZIP'
+    "${CUSTOM_BUSYBOX:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_tmp:?}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
 
-  echo "custom_flash_start ${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1>&"${recovery_fd:?}"
-  set +e
-  "${CUSTOM_BUSYBOX:?}" sh "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
-  set -e
-  echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
+    echo "custom_flash_start ${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1>&"${recovery_fd:?}"
+    set +e
+    # Execute the script that will run the flashable zip
+    "${CUSTOM_BUSYBOX:?}" sh "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
+    set -e
+    echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
 
-  restore_path
-  if test "${STATUS:?}" -ne 0; then return "${STATUS:?}"; fi
-done
+    restore_path
+    if test "${STATUS:?}" -ne 0; then return "${STATUS:?}"; fi
+  done
+}
+echo "${FILES:?}" | flash_zip
 STATUS="${?}"
 
 # Close recovery output
