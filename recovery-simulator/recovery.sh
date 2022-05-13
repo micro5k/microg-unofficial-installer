@@ -167,6 +167,7 @@ chmod +x "${_android_tmp}/updater" || fail_with_msg "chmod failed on '${_android
 
 override_command()
 {
+  if ! test -e "${_our_overrider_dir:?}/${1:?}"; then return 1; fi
   unset -f -- "${1:?}" || true
   eval "${1:?}() { \"${_our_overrider_dir:?}/${1:?}\"; }" || return "${?}"  # This expands when defined, not when used (it is intended)
   # shellcheck disable=SC3045
