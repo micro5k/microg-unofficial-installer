@@ -165,6 +165,15 @@ rm -f -- "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
 cp -pf -- "${THIS_SCRIPT_DIR}/updater.sh" "${_android_tmp}/updater" || fail_with_msg 'Failed to copy the updater script'
 chmod +x "${_android_tmp}/updater" || fail_with_msg "chmod failed on '${_android_tmp}/updater'"
 
+override_command()
+{
+  unset -f -- "${1:?}" || true
+  eval "${1:?}() { \"${_our_overrider_dir:?}/${1:?}\"; }" || return "${?}"  # This expands when defined, not when used (it is intended)
+  # shellcheck disable=SC3045
+  export -f -- "${1:?}" 2>/dev/null || true
+  rm -f -- "${_android_sys:?}/bin/${1:?}"
+}
+
 simulate_env()
 {
   export EXTERNAL_STORAGE="${_android_ext_stor:?}"
@@ -179,8 +188,12 @@ simulate_env()
   export CUSTOM_BUSYBOX="${BASE_SIMULATION_PATH:?}/system/bin/busybox"
   export OVERRIDE_DIR="${_our_overrider_dir:?}"
 
-  "${CUSTOM_BUSYBOX:?}" --install "${BASE_SIMULATION_PATH:?}/system/bin" || fail_with_msg 'Failed to install BusyBox'
-  rm -f "${BASE_SIMULATION_PATH:?}/system/bin/su" "${BASE_SIMULATION_PATH:?}/system/bin/mount" "${BASE_SIMULATION_PATH:?}/system/bin/umount" "${BASE_SIMULATION_PATH:?}/system/bin/chown" || fail_with_msg 'Failed to remove potentially unsafe commands'
+  "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
+  override_command mount || exit 123
+  override_command umount || exit 123
+  override_command chown || exit 123
+
+  rm -f -- "${_android_sys:?}/bin/su" "${_android_sys:?}/bin/sudo" || fail_with_msg 'Failed to remove potentially unsafe commands'
 }
 
 restore_path()
