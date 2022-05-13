@@ -98,9 +98,7 @@ set_perm()
 {
   local uid="$1"; local gid="$2"; local mod="$3"
   shift 3
-  if test "${TEST_INSTALL:-false}" = 'false'; then
-    chown "${uid}:${gid}" "$@" || chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
-  fi
+  chown "${uid}:${gid}" "$@" || chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
   chmod "${mod}" "$@" || ui_error "chmod failed on: $*" 81
 }
 
@@ -108,9 +106,7 @@ set_perm_safe()
 {
   local uid="$1"; local gid="$2"; local mod="$3"
   shift 3
-  if test "${TEST_INSTALL:-false}" = 'false'; then
-    "${OUR_BB}" chown "${uid}:${gid}" "$@" || "${OUR_BB}" chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
-  fi
+  chown "${uid}:${gid}" "$@" || chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
   "${OUR_BB}" chmod "${mod}" "$@" || ui_error "chmod failed on: $*" 81
 }
 
