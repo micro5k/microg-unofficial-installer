@@ -227,6 +227,7 @@ flash_zips()
   done
 }
 STATUS=0
+# shellcheck disable=SC2310
 echo "${FILES:?}" | flash_zips || STATUS="${?}"
 
 # Close recovery output
