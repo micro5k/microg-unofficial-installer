@@ -5,9 +5,9 @@
 
 override_applet()
 {
-  # shellcheck disable=SC2139
-  alias "${1}"="${OVERRIDE_DIR:?}/${1}"  # This expands when defined, not when used (it is intended)
-  return "${?}"
+  eval "${1:?}() { \"${OVERRIDE_DIR:?}/${1:?}\"; }"  # This expands when defined, not when used (it is intended)
+  # shellcheck disable=SC3045
+  export -f "${1:?}" 2>/dev/null || true
 }
 
 unset OUR_TEMP_DIR
