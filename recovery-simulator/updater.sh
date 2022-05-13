@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
+set -x
+
 override_applet()
 {
-  eval "${1:?}() { \"${OVERRIDE_DIR:?}/${1:?}\"; }"  # This expands when defined, not when used (it is intended)
+  eval "${1:?}() { \"${OVERRIDE_DIR:?}/${1:?}\"; }" || return "${?}"  # This expands when defined, not when used (it is intended)
   # shellcheck disable=SC3045
   export -f "${1:?}" 2>/dev/null || true
 }
