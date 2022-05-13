@@ -216,9 +216,6 @@ search_ascii_string_as_utf16_in_file()
 # Permission related functions
 set_perm()
 {
-  echo "Debug: ${PATH}"
-  echo "Debug: $(which chown)"
-
   local uid="$1"; local gid="$2"; local mod="$3"
   shift 3
   # Quote: Previous versions of the chown utility used the dot (.) character to distinguish the group name; this has been changed to be a colon (:) character, so that user and group names may contain the dot character
