@@ -5,21 +5,9 @@
 # SPDX-FileType: SOURCE
 
 if test -n "$1"; then
-  echo "chown: $*"
+  echo "Dummy chown: $*"
   return 0 2>&- || exit 0
 fi
 
-cat <<'EOF'
-Usage: chown [-RhLHPcvf]... OWNER[<.|:>[GROUP]] FILE...
-
-Change the owner and/or group of each FILE to OWNER and/or GROUP
-
-        -R      Recurse
-        -h      Affect symlinks instead of symlink targets
-        -L      Traverse all symlinks to directories
-        -H      Traverse symlinks on command line only
-        -P      Don't traverse symlinks (default)
-        -c      List changed files
-        -v      List all files
-        -f      Hide errors
-EOF
+echo "chown: bad usage"
+return 1 2>&- || exit 1

@@ -228,6 +228,7 @@ flash_zips()
     if test -z "${_current_zip_fullpath}"; then continue; fi
 
     # Simulate the environment variables
+    # shellcheck disable=SC2310
     simulate_env || return "${?}"
 
     FLASHABLE_ZIP_NAME="$(basename "${_current_zip_fullpath:?}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
@@ -240,7 +241,9 @@ flash_zips()
     "${CUSTOM_BUSYBOX:?}" sh "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
     set -e
     echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
+    echo ''
 
+    # shellcheck disable=SC2310
     restore_path || return "${?}"
     if test "${STATUS:?}" -ne 0; then return "${STATUS:?}"; fi
   done
