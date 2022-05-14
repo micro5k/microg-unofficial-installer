@@ -19,8 +19,7 @@ fail_with_msg()
 create_junction()
 {
   if test "${uname_o_saved}" != 'MS/Windows'; then return 1; fi
-  return 1
-  # cmd.exe /C mklink /J "${1:?}" "${2:?}"
+  cmd.exe /D /S /C mklink /J "${1//\//\\}" "${2//\//\\}" 1>/dev/null
 }
 
 link_folder()
@@ -170,8 +169,11 @@ override_command()
   if ! test -e "${_our_overrider_dir:?}/${1:?}"; then return 1; fi
   unset -f -- "${1:?}" || true
   eval "${1:?}() { \"${_our_overrider_dir:?}/${1:?}\"; }" || return "${?}"  # This expands when defined, not when used (it is intended)
-  # shellcheck disable=SC3045
-  export -f -- "${1:?}" 2>/dev/null || true
+  if test "${uname_o_saved:?}" != 'MS/Windows'; then
+    # shellcheck disable=SC3045
+    export -f -- "${1:?}" 2>/dev/null || true
+  fi
+
   rm -f -- "${_android_sys:?}/bin/${1:?}"
 }
 
@@ -191,11 +193,11 @@ simulate_env()
 
   "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
   # shellcheck disable=SC2310
-  override_command mount || exit 123
+  override_command mount || return 123
   # shellcheck disable=SC2310
-  override_command umount || exit 123
+  override_command umount || return 123
   # shellcheck disable=SC2310
-  override_command chown || exit 123
+  override_command chown || return 123
 
   rm -f -- "${_android_sys:?}/bin/su" "${_android_sys:?}/bin/sudo" || fail_with_msg 'Failed to remove potentially unsafe commands'
 }
@@ -226,7 +228,7 @@ flash_zips()
     if test -z "${_current_zip_fullpath}"; then continue; fi
 
     # Simulate the environment variables
-    simulate_env
+    simulate_env || return "${?}"
 
     FLASHABLE_ZIP_NAME="$(basename "${_current_zip_fullpath:?}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
     cp -f -- "${_current_zip_fullpath:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" || fail_with_msg 'Failed to copy the flashable ZIP'
@@ -239,7 +241,7 @@ flash_zips()
     set -e
     echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
 
-    restore_path
+    restore_path || return "${?}"
     if test "${STATUS:?}" -ne 0; then return "${STATUS:?}"; fi
   done
 }
