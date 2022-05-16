@@ -87,34 +87,36 @@ recovery_flash_end()
 if test -z "$*"; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
 
 case "${1}" in
-  *'*.zip') fail_with_msg 'The flashable ZIP is missing';;
+  *'*.zip') fail_with_msg 'The flashable ZIP is missing, you have to build it before being able to test it';;
   *)
 esac
 
 # Reset environment
 if ! "${ENV_RESETTED:-false}"; then
-  THIS_SCRIPT="$(realpath "${0}" 2>&-)" || fail_with_msg 'Failed to get script filename'
+  THIS_SCRIPT="$(realpath "${0:?}" 2>&-)" || fail_with_msg 'Failed to get script filename'
   # Create the temp dir (must be done before resetting environment)
   OUR_TEMP_DIR="$(mktemp -d -t ANDR-RECOV-XXXXXX)" || fail_with_msg 'Failed to create our temp dir'
-  exec env -i ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT}" OUR_TEMP_DIR="${OUR_TEMP_DIR}" PATH="${PATH}" bash "${THIS_SCRIPT}" "$@" || fail_with_msg 'failed: exec'
+  exec env -i ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" PATH="${PATH:?}" bash "${THIS_SCRIPT:?}" "$@" || fail_with_msg 'failed: exec'
   exit 127
 fi
 unset ENV_RESETTED
-_backup_path="${PATH}"
+_backup_path="${PATH:?}"
 uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
 # Check dependencies
 _our_busybox="$(which busybox)" || fail_with_msg 'BusyBox is missing'
 
 # Get dir of this script
-THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT}")" || fail_with_msg 'Failed to get script dir'
+THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
 unset THIS_SCRIPT
 
+FILES=''
 newline='
 '
 for _current_file in "$@"
 do
-  FILES="${FILES}$(realpath "${_current_file}")${newline}" || fail_with_msg "Invalid filename: ${_current_file}"
+  if ! test -e "${_current_file:?}"; then fail_with_msg "Missing file: ${_current_file}"; fi
+  FILES="${FILES?}$(realpath "${_current_file:?}")${newline:?}" || fail_with_msg "Invalid filename: ${_current_file}"
 done
 
 # Ensure we have a path the the temp dir and empty it (should be already empty, but we must be sure)
