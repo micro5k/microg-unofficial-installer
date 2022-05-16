@@ -84,7 +84,12 @@ recovery_flash_end()
   echo ''
 }
 
-if test -z "${1}"; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
+if test -z "$*"; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
+
+case "${1}" in
+  *'*.zip') fail_with_msg 'The flashable ZIP is missing';;
+  *)
+esac
 
 # Reset environment
 if ! "${ENV_RESETTED:-false}"; then
