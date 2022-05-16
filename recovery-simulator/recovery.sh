@@ -19,6 +19,7 @@ fail_with_msg()
 create_junction()
 {
   if test "${uname_o_saved}" != 'MS/Windows'; then return 1; fi
+  # shellcheck disable=SC3060
   cmd.exe /D /S /C mklink /J "${1//\//\\}" "${2//\//\\}" 1>/dev/null
 }
 
@@ -169,10 +170,8 @@ override_command()
   if ! test -e "${_our_overrider_dir:?}/${1:?}"; then return 1; fi
   unset -f -- "${1:?}" || true
   eval "${1:?}() { \"${_our_overrider_dir:?}/${1:?}\"; }" || return "${?}"  # This expands when defined, not when used (it is intended)
-  if test "${uname_o_saved:?}" != 'MS/Windows'; then
-    # shellcheck disable=SC3045
-    export -f -- "${1:?}" 2>/dev/null || true
-  fi
+  # shellcheck disable=SC3045
+  export -f -- "${1:?}" 2>/dev/null | cat || true
 
   rm -f -- "${_android_sys:?}/bin/${1:?}"
 }
