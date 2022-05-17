@@ -198,15 +198,15 @@ choose()
 test "${DEBUG_LOG}" -eq 1 && enable_debug_log  # Enable file logging if needed
 
 ui_debug 'PRELOADER'
-if ! is_mounted '/tmp'; then
-  # Workaround: create and mount /tmp if it isn't already mounted
+if ! is_mounted "${BASE_TMP_PATH:?}"; then
+  # Workaround: create and mount the temp folder if it isn't already mounted
   MANUAL_TMP_MOUNT=1
-  ui_msg 'WARNING: Creating missing /tmp...'
-  if [ ! -e '/tmp' ]; then create_dir '/tmp'; fi
-  mount -t tmpfs -o rw tmpfs /tmp
-  set_perm 0 2000 0775 '/tmp'
+  ui_msg 'WARNING: Creating and mounting the missing temp folder...'
+  if [ ! -e "${BASE_TMP_PATH:?}" ]; then create_dir "${BASE_TMP_PATH:?}"; fi
+  mount -t tmpfs -o rw tmpfs "${BASE_TMP_PATH:?}"
+  set_perm 0 2000 0775 "${BASE_TMP_PATH:?}"
 
-  if ! is_mounted '/tmp'; then ui_error '/tmp is NOT mounted'; fi
+  if ! is_mounted "${BASE_TMP_PATH:?}"; then ui_error 'The temp folder CANNOT be mounted'; fi
 fi
 
 detect_recovery_arch()
@@ -329,7 +329,7 @@ delete_recursive_safe "${TMP_PATH}"
 test "${DEBUG_LOG}" -eq 1 && disable_debug_log  # Disable debug log and restore normal output
 
 if test "${MANUAL_TMP_MOUNT}" -ne 0; then
-  "${OUR_BB}" umount '/tmp' || ui_error "Failed to unmount '/tmp'"
+  "${OUR_BB}" umount "${BASE_TMP_PATH:?}" || ui_error 'Failed to unmount the temp folder'
 fi
 
 if test "${STATUS}" -ne 0; then ui_error "Installation script failed with error ${STATUS}" "${STATUS}"; fi
