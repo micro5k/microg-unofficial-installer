@@ -9,18 +9,19 @@ if test -n "$1"; then
   return 0 2>&- || exit 0
 fi
 
-cat <<'EOF'
+cat <<EOF
 rootfs on / type rootfs (rw,seclabel)
 tmpfs on /dev type tmpfs (rw,seclabel,nosuid,relatime,mode=755)
 devpts on /dev/pts type devpts (rw,seclabel,relatime,mode=600)
 proc on /proc type proc (rw,relatime)
 sysfs on /sys type sysfs (rw,seclabel,relatime)
 selinuxfs on /sys/fs/selinux type selinuxfs (rw,relatime)
-tmpfs on /tmp type tmpfs (rw,seclabel,relatime)
-/dev/block/mmcblk0p7 on /cache type ext4 (rw,seclabel,relatime,user_xattr,barrier=1,data=ordered)
-/dev/block/mmcblk0p11 on /sdcard0 type vfat (rw,relatime,fmask=0000,dmask=0000,allow_utime=0022,codepage=cp437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro)
-/dev/block/mmcblk0p11 on /and-sec type vfat (rw,relatime,fmask=0000,dmask=0000,allow_utime=0022,codepage=cp437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro)
-/dev/block/mmcblk1p1 on /sdcard1 type vfat (rw,relatime,fmask=0000,dmask=0000,allow_utime=0022,codepage=cp437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro)
-/dev/block/mmcblk0p10 on /data type ext4 (rw,seclabel,relatime,user_xattr,barrier=1,data=ordered)
-/dev/block/mmcblk0p9 on /system type ext4 (rw,seclabel,relatime,user_xattr,barrier=1,data=ordered)
+tmpfs on ${TMPDIR:?} type tmpfs (rw,seclabel,relatime)
+${TMPDIR:?} on /tmp type tmpfs (rw,seclabel,relatime)
+/dev/block/platform/msm_sdcc.1/by-name/userdata on /data type ext4 (rw,seclabel,relatime,data=ordered)
+/dev/block/platform/msm_sdcc.1/by-name/cache on /cache type ext4 (rw,seclabel,relatime,data=ordered)
+/dev/block/platform/msm_sdcc.1/by-name/sdcard0 on /sdcard0 type vfat (rw,relatime,errors=remount-ro)
+/dev/block/platform/msm_sdcc.1/by-name/sdcard1 on /sdcard1 type vfat (rw,relatime,errors=remount-ro)
+/dev/block/platform/msm_sdcc.1/by-name/system on ${ANDROID_ROOT:?} type ext4 (rw,seclabel,relatime,data=ordered)
+${ANDROID_ROOT:?} on /system type ext4 (rw,seclabel,relatime,data=ordered)
 EOF
