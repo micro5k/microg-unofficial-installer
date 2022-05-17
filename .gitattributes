@@ -36,6 +36,8 @@ build                              text eol=lf
 recovery-simulator/override/mount  text eol=lf
 recovery-simulator/override/umount text eol=lf
 recovery-simulator/override/chown  text eol=lf
+recovery-simulator/override/su     text eol=lf
+recovery-simulator/override/sudo   text eol=lf
 
 # Text
 *.rst           text eol=lf

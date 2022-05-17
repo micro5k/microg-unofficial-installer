@@ -27,6 +27,8 @@ export BB_OVERRIDE_APPLETS='su sudo mount umount chown' || exit 125
 override_command_fallback mount || exit 124
 override_command_fallback umount || exit 124
 override_command_fallback chown || exit 124
+override_command_fallback su || exit 124
+override_command_fallback sudo || exit 124
 
 unset -f override_command_fallback
 unset OVERRIDE_DIR

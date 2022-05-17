@@ -205,8 +205,10 @@ simulate_env()
   override_command umount || return 123
   # shellcheck disable=SC2310
   override_command chown || return 123
-
-  rm -f -- "${_android_sys:?}/bin/su" "${_android_sys:?}/bin/sudo" || fail_with_msg 'Failed to remove potentially unsafe commands'
+  # shellcheck disable=SC2310
+  override_command su || return 123
+  # shellcheck disable=SC2310
+  override_command sudo || return 123
 }
 
 restore_env()
