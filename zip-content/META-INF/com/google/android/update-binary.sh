@@ -88,7 +88,7 @@ ui_debug()
 is_mounted()
 {
   local _partition _mount_result
-  _partition="$(readlink -f "${1}")" || { _partition="${1}"; ui_warning "Failed to canonicalize '${1}'"; }
+  _partition="${1:?}"
   _mount_result="$(mount)" || { test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || ui_error 'is_mounted has failed'
 
   case "${_mount_result}" in
