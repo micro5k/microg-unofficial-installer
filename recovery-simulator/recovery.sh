@@ -19,14 +19,13 @@ fail_with_msg()
 create_junction()
 {
   if test "${uname_o_saved}" != 'MS/Windows'; then return 1; fi
-  # shellcheck disable=SC3060
-  cmd.exe /D /S /C mklink /J "${1//\//\\}" "${2//\//\\}" 1>/dev/null
+  jn -- "${1:?}" "${2:?}"
 }
 
 link_folder()
 {
   # shellcheck disable=SC2310
-  ln -sf "${2:?}" "${1:?}" 2>/dev/null || create_junction "${1:?}" "${2:?}" || mkdir -p "${1:?}" || fail_with_msg "Failed to link dir '${1:?}' to '${2:?}'"
+  ln -sf "${2:?}" "${1:?}" 2>/dev/null || create_junction "${2:?}" "${1:?}" || mkdir -p "${1:?}" || fail_with_msg "Failed to link dir '${1}' to '${2}'"
 }
 
 recovery_flash_start()
@@ -208,9 +207,10 @@ simulate_env()
   rm -f -- "${_android_sys:?}/bin/su" "${_android_sys:?}/bin/sudo" || fail_with_msg 'Failed to remove potentially unsafe commands'
 }
 
-restore_path()
+restore_env()
 {
   export PATH="${_backup_path}"
+  unset BB_OVERRIDE_APPLETS
 }
 
 # Setup recovery output
@@ -250,7 +250,7 @@ flash_zips()
     echo ''
 
     # shellcheck disable=SC2310
-    restore_path || return "${?}"
+    restore_env || return "${?}"
     if test "${STATUS:?}" -ne 0; then return "${STATUS:?}"; fi
   done
 }
