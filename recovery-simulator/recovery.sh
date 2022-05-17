@@ -19,7 +19,9 @@ fail_with_msg()
 create_junction()
 {
   if test "${uname_o_saved}" != 'MS/Windows'; then return 1; fi
-  jn -- "${1:?}" "${2:?}"
+  # shellcheck disable=SC3060
+  cmd.exe /D /S /C mklink /J "${2//\//\\}" "${1//\//\\}" 1>/dev/null
+  # jn -- "${1:?}" "${2:?}"
 }
 
 link_folder()
