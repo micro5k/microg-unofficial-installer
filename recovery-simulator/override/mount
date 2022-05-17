@@ -9,7 +9,7 @@ if test -n "$1"; then
   return 0 2>&- || exit 0
 fi
 
-cat <<EOF
+echo "\
 rootfs on / type rootfs (rw,seclabel)
 tmpfs on /dev type tmpfs (rw,seclabel,nosuid,relatime,mode=755)
 devpts on /dev/pts type devpts (rw,seclabel,relatime,mode=600)
@@ -23,5 +23,5 @@ ${TMPDIR:?} on /tmp type tmpfs (rw,seclabel,relatime)
 /dev/block/platform/msm_sdcc.1/by-name/sdcard0 on /sdcard0 type vfat (rw,relatime,errors=remount-ro)
 /dev/block/platform/msm_sdcc.1/by-name/sdcard1 on /sdcard1 type vfat (rw,relatime,errors=remount-ro)
 /dev/block/platform/msm_sdcc.1/by-name/system on ${ANDROID_ROOT:?} type ext4 (rw,seclabel,relatime,data=ordered)
-${ANDROID_ROOT:?} on /system type ext4 (rw,seclabel,relatime,data=ordered)
-EOF
+${ANDROID_ROOT:?} on /system type ext4 (rw,seclabel,relatime,data=ordered)\
+"
