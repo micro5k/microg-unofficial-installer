@@ -399,7 +399,7 @@ write_file_list()  # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output 
 # Input related functions
 check_key()
 {
-  case "$1" in
+  case "${1?}" in
   42)   # Vol +
     return 3;;
   21)   # Vol -
@@ -414,30 +414,30 @@ check_key()
 choose_timeout()
 {
   local key_code=1
-  timeout -t "$1" keycheck; key_code="$?"  # Timeout return 127 when it cannot execute the binary
-  if test "${key_code}" -eq 143; then
+  timeout -t "${1:?}" keycheck; key_code="${?}"  # Timeout return 127 when it cannot execute the binary
+  if test "${key_code?}" = '143'; then
     ui_msg 'Key code: No key pressed'
     return 0
-  elif test "${key_code}" -eq 127 || test "${key_code}" -eq 132; then
+  elif test "${key_code?}" = '127' || test "${key_code?}" = '132'; then
     ui_msg 'WARNING: Key detection failed'
     return 1
   fi
 
-  ui_msg "Key code: ${key_code}"
-  check_key "${key_code}"
-  return "$?"
+  ui_msg "Key code: ${key_code?}"
+  check_key "${key_code?}"
+  return "${?}"
 }
 
 choose()
 {
   local key_code=1
-  ui_msg "QUESTION: $1"
-  ui_msg "$2"
-  ui_msg "$3"
-  keycheck; key_code="$?"
-  ui_msg "Key code: ${key_code}"
-  check_key "${key_code}"
-  return "$?"
+  ui_msg "QUESTION: ${1:?}"
+  ui_msg "${2:?}"
+  ui_msg "${3:?}"
+  keycheck; key_code="${?}"
+  ui_msg "Key code: ${key_code?}"
+  check_key "${key_code?}"
+  return "${?}"
 }
 
 # Other
