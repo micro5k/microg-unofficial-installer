@@ -47,6 +47,7 @@ jobs:
       - name: "Execute code coverage"
         run: |
           # Executing code coverage...
+          sudo apt-get update
           sudo apt-get -qq -y install moreutils 1>/dev/null
           export OPENSOURCE_ONLY='true'
           bashcov './build.sh' # | TZ=UTC ts '[%H:%M:%S]'  # Timestamp disabled as it break GitHub notice
