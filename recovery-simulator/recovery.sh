@@ -176,7 +176,7 @@ override_command()
   rm -f -- "${_android_sys:?}/bin/${1:?}"
 
   unset -f -- "${1:?}" || true
-  eval " ${1:?}() { \"${_our_overrider_dir:?}/${1:?}\"; }" || return "${?}"  # This expands when defined, not when used
+  eval " ${1:?}() { '${_our_overrider_dir:?}/${1:?}' \"\${@}\"; }" || return "${?}"  # The folder expands when defined, not when used
   # shellcheck disable=SC3045
   export -f -- "${1:?}" 2>/dev/null | : || true
 }
