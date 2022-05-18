@@ -411,7 +411,7 @@ check_key()
   esac
 }
 
-choose_timeout()
+choose_binary_timeout()
 {
   local key_code=1
   timeout -t "${1:?}" keycheck; key_code="${?}"  # Timeout return 127 when it cannot execute the binary
@@ -428,7 +428,7 @@ choose_timeout()
   return "${?}"
 }
 
-choose()
+choose_binary()
 {
   local key_code=1
   ui_msg "QUESTION: ${1:?}"
