@@ -151,7 +151,7 @@ delete_recursive_safe()
 # Input related functions
 check_key()
 {
-  case "$1" in
+  case "${1?}" in
   42)   # Vol +
     return 3;;
   21)   # Vol -
@@ -163,33 +163,33 @@ check_key()
   esac
 }
 
-choose_timeout()
+choose_binary_timeout()
 {
   local key_code=1
-  timeout -t "$1" keycheck; key_code="$?"  # Timeout return 127 when it cannot execute the binary
-  if test "${key_code}" -eq 143; then
+  timeout -t "${1:?}" keycheck; key_code="${?}"  # Timeout return 127 when it cannot execute the binary
+  if test "${key_code?}" = '143'; then
     ui_msg 'Key code: No key pressed'
     return 0
-  elif test "${key_code}" -eq 127 || test "${key_code}" -eq 132; then
+  elif test "${key_code?}" = '127' || test "${key_code?}" = '132'; then
     ui_msg 'WARNING: Key detection failed'
     return 1
   fi
 
-  ui_msg "Key code: ${key_code}"
-  check_key "${key_code}"
-  return "$?"
+  ui_msg "Key code: ${key_code?}"
+  check_key "${key_code?}"
+  return "${?}"
 }
 
-choose()
+choose_binary()
 {
   local key_code=1
-  ui_msg "QUESTION: $1"
-  ui_msg "$2"
-  ui_msg "$3"
-  keycheck; key_code="$?"
-  ui_msg "Key code: ${key_code}"
-  check_key "${key_code}"
-  return "$?"
+  ui_msg "QUESTION: ${1:?}"
+  ui_msg "${2:?}"
+  ui_msg "${3:?}"
+  keycheck; key_code="${?}"
+  ui_msg "Key code: ${key_code?}"
+  check_key "${key_code?}"
+  return "${?}"
 }
 
 
@@ -304,14 +304,14 @@ if "${KEYCHECK_ENABLED}" && [ "${LIVE_SETUP}" -eq 0 ] && [ "${LIVE_SETUP_TIMEOUT
   ui_msg '---------------------------------------------------'
   ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
   ui_msg "Waiting input for ${LIVE_SETUP_TIMEOUT} seconds..."
-  choose_timeout "${LIVE_SETUP_TIMEOUT}"
-  if test "$?" -eq 3; then export LIVE_SETUP=1; fi
+  choose_binary_timeout "${LIVE_SETUP_TIMEOUT}"
+  if test "${?}" = '3'; then export LIVE_SETUP=1; fi
 fi
 
-if [ "${LIVE_SETUP}" -eq 1 ]; then
+if test "${LIVE_SETUP}" = '1'; then
   ui_msg 'LIVE SETUP ENABLED!'
-  if [ "${DEBUG_LOG}" -eq 0 ]; then
-    choose 'Do you want to enable the debug log?' '+) Yes' '-) No'; if [ "$?" -ne 2 ]; then export DEBUG_LOG=1; enable_debug_log; fi
+  if test "${DEBUG_LOG}" = '0'; then
+    choose_binary 'Do you want to enable the debug log?' '+) Yes' '-) No'; if test "${?}" = '3'; then export DEBUG_LOG=1; enable_debug_log; fi
   fi
 fi
 
