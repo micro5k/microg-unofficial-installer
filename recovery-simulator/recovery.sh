@@ -232,7 +232,7 @@ exec 99> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir
 
 flash_zips()
 {
-  for _current_zip_fullpath in "${@}"; do
+  for _current_zip_fullpath in "${@?}"; do
     # Simulate the environment variables
     # shellcheck disable=SC2310
     simulate_env || return "${?}"
