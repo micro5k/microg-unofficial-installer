@@ -212,6 +212,7 @@ restore_env()
 {
   export PATH="${_backup_path}"
   unset BB_OVERRIDE_APPLETS
+  unset -f -- mount umount chown su sudo || true
 }
 
 # Setup recovery output
