@@ -93,7 +93,7 @@ is_mounted()
 
   case "${_mount_result:?}" in
     *[[:blank:]]"${_partition:?}"[[:blank:]]*) return 0;;  # Mounted
-    *)                                                   # NOT mounted
+    *)                                                     # NOT mounted
   esac
   return 1  # NOT mounted
 }
@@ -163,6 +163,18 @@ check_key()
   esac
 }
 
+_choose_remapper()
+{
+  case "${1?}" in
+  '+')
+    return 3;;
+  '-')
+    return 2;;
+  *)
+    return 1;;
+  esac
+}
+
 choose_binary_timeout()
 {
   local key_code=1
@@ -180,6 +192,21 @@ choose_binary_timeout()
   return "${?}"
 }
 
+choose_timeout()
+{
+  local _key
+  # shellcheck disable=SC3045
+  IFS='' read -t"${1:?}" -n1 -r -s -- _key || { ui_warning 'Key detection failed'; return 1; }
+  if test "${_key}" = ''; then
+    ui_msg 'Key code: No key pressed'
+    return 0
+  else
+    ui_msg "Key press: ${_key:?}"
+  fi
+  _choose_remapper "${_key:?}"
+  return "${?}"
+}
+
 choose_binary()
 {
   local key_code=1
@@ -189,6 +216,24 @@ choose_binary()
   keycheck; key_code="${?}"
   ui_msg "Key code: ${key_code?}"
   check_key "${key_code?}"
+  return "${?}"
+}
+
+choose()
+{
+  local _key
+  ui_msg "QUESTION: ${1:?}"
+  ui_msg "${2:?}"
+  ui_msg "${3:?}"
+  # shellcheck disable=SC3045
+  IFS='' read -n1 -r -s -- _key || { ui_warning 'Key detection failed'; return 1; }
+  if test "${_key}" = ''; then
+    ui_msg 'Key code: No key pressed'
+    return 0
+  else
+    ui_msg "Key press: ${_key:?}"
+  fi
+  _choose_remapper "${_key:?}"
   return "${?}"
 }
 
@@ -202,7 +247,7 @@ if ! is_mounted "${BASE_TMP_PATH:?}"; then
   # Workaround: create and mount the temp folder if it isn't already mounted
   MANUAL_TMP_MOUNT=1
   ui_msg 'WARNING: Creating and mounting the missing temp folder...'
-  if [ ! -e "${BASE_TMP_PATH:?}" ]; then create_dir "${BASE_TMP_PATH:?}"; fi
+  if ! test -e "${BASE_TMP_PATH:?}"; then create_dir "${BASE_TMP_PATH:?}"; fi
   mount -t tmpfs -o rw tmpfs "${BASE_TMP_PATH:?}"
   set_perm 0 2000 0775 "${BASE_TMP_PATH:?}"
 
