@@ -83,14 +83,14 @@ recovery_flash_end()
   echo ''
 }
 
-if test -z "$*"; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
+if test -z "${*}"; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
 
 # Reset environment
 if ! "${ENV_RESETTED:-false}"; then
   THIS_SCRIPT="$(realpath "${0:?}" 2>&-)" || fail_with_msg 'Failed to get script filename'
   # Create the temp dir (must be done before resetting environment)
   OUR_TEMP_DIR="$(mktemp -d -t ANDR-RECOV-XXXXXX)" || fail_with_msg 'Failed to create our temp dir'
-  exec env -i ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" PATH="${PATH:?}" bash "${THIS_SCRIPT:?}" "$@" || fail_with_msg 'failed: exec'
+  exec env -i ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" PATH="${PATH:?}" bash "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   exit 127
 fi
 unset ENV_RESETTED
@@ -104,19 +104,18 @@ _our_busybox="$(which busybox)" || fail_with_msg 'BusyBox is missing'
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
 unset THIS_SCRIPT
 
-case "${1:?}" in
+case "${*?}" in
   *'*.zip') fail_with_msg 'The flashable ZIP is missing, you have to build it before being able to test it';;
   *)
 esac
 
-FILES=''
-newline='
-'
-for _current_file in "$@"
-do
-  if ! test -e "${_current_file:?}"; then fail_with_msg "Missing file: ${_current_file}"; fi
-  FILES="${FILES?}$(realpath "${_current_file:?}")${newline:?}" || fail_with_msg "Invalid filename: ${_current_file}"
+for param in "${@}"; do
+  shift
+  if ! test -f "${param:?Empty value passed}"; then fail_with_msg "Missing file: ${param}"; fi
+  param="$(realpath "${param:?}")" || fail_with_msg "Invalid filename: ${param}"
+  set -- "${@}" "${param:?}"
 done
+unset param
 
 # Ensure we have a path the the temp dir and empty it (should be already empty, but we must be sure)
 if test -z "${OUR_TEMP_DIR}"; then fail_with_msg 'Failed to create our temp dir'; fi
@@ -232,9 +231,7 @@ exec 99> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir
 
 flash_zips()
 {
-  while IFS='' read -r _current_zip_fullpath; do
-    if test -z "${_current_zip_fullpath}"; then continue; fi
-
+  for _current_zip_fullpath in "${@}"; do
     # Simulate the environment variables
     # shellcheck disable=SC2310
     simulate_env || return "${?}"
@@ -258,7 +255,7 @@ flash_zips()
 }
 STATUS=0
 # shellcheck disable=SC2310
-echo "${FILES:?}" | flash_zips || STATUS="${?}"
+flash_zips "${@}" || STATUS="${?}"
 
 # Close recovery output
 # shellcheck disable=SC3023
