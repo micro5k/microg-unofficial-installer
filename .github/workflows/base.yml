@@ -47,8 +47,7 @@ jobs:
       - name: "Execute code coverage"
         run: |
           # Executing code coverage...
-          sudo apt-get update
-          sudo apt-get -y install moreutils
+          sudo apt-get -qq -y install moreutils 1>/dev/null
           export OPENSOURCE_ONLY='true'
           bashcov './build.sh' # | TZ=UTC ts '[%H:%M:%S]'  # Timestamp disabled as it break GitHub notice
           # Testing zip installation...
@@ -81,6 +80,7 @@ jobs:
         run: |
           # Validating dep5
           if ! test -e './.reuse/dep5'; then exit 0; fi
+          sudo apt-get -qq update
           sudo apt-get -qq -y install cme 1> /dev/null
           status='0'
           cme check dpkg-copyright -file './.reuse/dep5' || status="${?}"
