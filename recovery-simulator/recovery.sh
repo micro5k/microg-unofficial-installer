@@ -87,7 +87,7 @@ if test -z "${*}"; then fail_with_msg 'You must pass the filename of the flashab
 
 # Reset environment
 if ! "${ENV_RESETTED:-false}"; then
-  THIS_SCRIPT="$(realpath "${0:?}" 2>&-)" || fail_with_msg 'Failed to get script filename'
+  THIS_SCRIPT="$(realpath "${0:?}" 2>/dev/null)" || fail_with_msg 'Failed to get script filename'
   # Create the temp dir (must be done before resetting environment)
   OUR_TEMP_DIR="$(mktemp -d -t ANDR-RECOV-XXXXXX)" || fail_with_msg 'Failed to create our temp dir'
   exec env -i ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" PATH="${PATH:?}" bash "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
