@@ -334,7 +334,7 @@ fi
 
 # Live setup isn't supported under continuous integration system
 # Live setup doesn't work when executed through Gradle
-if test "${CI:-false}" != 'false' || test "${APP_BASE_NAME:-false}" = 'gradlew' || test "${APP_NAME:-false}" = 'Gradle'; then
+if test "${CI:-false}" != 'false' || test "${APP_NAME:-false}" = 'Gradle'; then
   LIVE_SETUP_POSSIBLE=false
   LIVE_SETUP=0
 fi
