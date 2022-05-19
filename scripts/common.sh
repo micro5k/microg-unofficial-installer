@@ -52,8 +52,7 @@ compare_start_uname()
 
 change_title()
 {
-  # shellcheck disable=SC2154
-  if test -z "${CI}"; then printf '\033]0;%s\007\r' "${1}" && printf '%*s     \r' "${#1}" ''; fi
+  if test "${CI:-false}" != 'false'; then printf '\033]0;%s\007\r' "${1:?}" && printf '%*s     \r' "${#1}" ''; fi
 }
 
 simple_get_prop()
