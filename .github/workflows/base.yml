@@ -67,21 +67,3 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: "${{ github.workspace }}/coverage/codecov-result.json"
-
-  validator:
-    name: "Validate dep5"
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: "Check out code"
-        uses: actions/checkout@v3
-      - name: "Validate dep5"
-        shell: bash
-        run: |
-          # Validating dep5
-          if ! test -e './.reuse/dep5'; then exit 0; fi
-          sudo apt-get -qq update
-          sudo apt-get -qq -y install cme 1> /dev/null
-          status='0'
-          cme check dpkg-copyright -file './.reuse/dep5' || status="${?}"
-          if test "${status}" -eq 0; then echo 'Result: pass'; else echo 'Result: fail'; exit "${status}"; fi
