@@ -2,11 +2,18 @@
 # SPDX-FileCopyrightText: (c) 2021 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
-name: "Periodic security checks"
+name: "Periodic checks"
 on:
+  push:
+    paths:
+      - 'gradle/wrapper/gradle-wrapper.jar'
+      - '.reuse/dep5'
+  pull_request:
+    paths:
+      - 'gradle/wrapper/gradle-wrapper.jar'
+      - '.reuse/dep5'
   schedule:
     - cron: "0 0 * * 1"
-  pull_request:
   workflow_dispatch:
 jobs:
   base-job:
@@ -22,3 +29,21 @@ jobs:
         uses: gradle/wrapper-validation-action@master
       - name: "Gitleaks"
         uses: zricethezav/gitleaks-action@v1
+
+  dep5-validator:
+    name: "Validate dep5"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Check out code"
+        uses: actions/checkout@v3
+      - name: "Validate dep5"
+        shell: bash
+        run: |
+          # Validating dep5
+          if ! test -e './.reuse/dep5'; then exit 0; fi
+          sudo apt-get -qq update
+          sudo apt-get -qq -y install cme 1> /dev/null
+          status='0'
+          cme check dpkg-copyright -file './.reuse/dep5' || status="${?}"
+          if test "${status:?}" -eq 0; then echo 'Result: pass'; else echo 'Result: fail'; exit "${status:?}"; fi
