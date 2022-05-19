@@ -386,7 +386,7 @@ fi
 
 ui_debug ''
 ui_debug 'Starting installation script...'
-"${OUR_BB}" ash "${TMP_PATH}/install.sh" Preloader "${TMP_PATH}"; STATUS="$?"
+"${OUR_BB}" sh "${TMP_PATH}/install.sh" Preloader "${TMP_PATH}"; STATUS="$?"
 
 test -f "${TMP_PATH}/installed" || GENER_ERROR=1
 
