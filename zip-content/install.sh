@@ -120,7 +120,7 @@ ui_msg "Privileged apps: ${PRIVAPP_PATH}"
 if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi
 
 if test "${LIVE_SETUP}" -eq 1; then
-  choose_binary 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore'
+  choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore'
   if test "$?" -eq 3; then export MARKET='PlayStore'; else export MARKET='FakeStore'; fi
 fi
 
@@ -279,7 +279,7 @@ else
 fi
 
 if test "${LIVE_SETUP}" -eq 1; then
-  choose_binary 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
+  choose 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
   if test "$?" -eq 3; then reset_gms_data_of_all_apps; fi
 elif test "${RESET_GMS_DATA_OF_ALL_APPS}" -eq 1; then
   reset_gms_data_of_all_apps
