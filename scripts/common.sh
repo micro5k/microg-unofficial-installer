@@ -52,7 +52,7 @@ compare_start_uname()
 
 change_title()
 {
-  if test "${CI:-false}" != 'false'; then printf '\033]0;%s\007\r' "${1:?}" && printf '%*s     \r' "${#1}" ''; fi
+  if test "${CI:-false}" = 'false'; then printf '\033]0;%s\007\r' "${1:?}" && printf '%*s     \r' "${#1}" ''; fi
 }
 
 simple_get_prop()
