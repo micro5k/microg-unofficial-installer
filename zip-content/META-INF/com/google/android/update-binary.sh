@@ -24,7 +24,8 @@ MANUAL_TMP_MOUNT=0
 GENER_ERROR=0
 STATUS=1
 
-KEYCHECK_ENABLED=false
+LIVE_SETUP_POSSIBLE=false
+export KEYCHECK_ENABLED=false
 export BOOTMODE=false
 
 
@@ -219,7 +220,7 @@ choose_binary()
   return "${?}"
 }
 
-choose()
+choose_shell()
 {
   local _key
   ui_msg "QUESTION: ${1:?}"
@@ -234,6 +235,16 @@ choose()
     ui_msg "Key press: ${_key:?}"
   fi
   _choose_remapper "${_key:?}"
+  return "${?}"
+}
+
+choose()
+{
+  if "${KEYCHECK_ENABLED}"; then
+    choose_binary "${@}"
+  else
+    choose_shell "${@}"
+  fi
   return "${?}"
 }
 
@@ -271,6 +282,7 @@ OUR_BB="${BASE_TMP_PATH}/busybox"
 if test -n "${CUSTOM_BUSYBOX:-}" && test -e "${CUSTOM_BUSYBOX}"; then
   OUR_BB="${CUSTOM_BUSYBOX}"
   ui_debug "Using custom BusyBox... '${OUR_BB}'"
+  #LIVE_SETUP_POSSIBLE=true
 elif test "${RECOVERY_ARCH}" = 'x86_64'; then
   ui_debug 'Extracting 64-bit x86 BusyBox...'
   package_extract_file 'misc/busybox/busybox-x86_64.bin' "${OUR_BB}"
@@ -316,7 +328,13 @@ if test -e "${BASE_TMP_PATH}/keycheck"; then
   "${OUR_BB}" mv -f "${BASE_TMP_PATH}/keycheck" "${TMP_PATH}/bin/keycheck" || ui_error "Failed to move keycheck to the bin folder"
   # Give execution rights
   set_perm_safe 0 0 0755 "${TMP_PATH}/bin/keycheck"
+  LIVE_SETUP_POSSIBLE=true
   KEYCHECK_ENABLED=true
+fi
+
+if test "${CI:-false}" != 'false'; then
+  LIVE_SETUP_POSSIBLE=false
+  LIVE_SETUP=0
 fi
 
 # Extract scripts
@@ -345,18 +363,22 @@ if [ "${DEBUG_LOG_ENABLED}" -eq 1 ]; then export DEBUG_LOG=1; fi
 "${BOOTMODE}" || (ps -A 2>/dev/null | grep zygote | grep -v grep >/dev/null && BOOTMODE=true)
 
 # Live setup
-if "${KEYCHECK_ENABLED}" && [ "${LIVE_SETUP}" -eq 0 ] && [ "${LIVE_SETUP_TIMEOUT}" -ge 1 ]; then
+if "${LIVE_SETUP_POSSIBLE}" && test "${LIVE_SETUP}" -eq 0 && test "${LIVE_SETUP_TIMEOUT}" -ge 1; then
   ui_msg '---------------------------------------------------'
   ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
   ui_msg "Waiting input for ${LIVE_SETUP_TIMEOUT} seconds..."
-  choose_binary_timeout "${LIVE_SETUP_TIMEOUT}"
+  if "${KEYCHECK_ENABLED}"; then
+    choose_binary_timeout "${LIVE_SETUP_TIMEOUT}"
+  else
+    choose_timeout "${LIVE_SETUP_TIMEOUT}"
+  fi
   if test "${?}" = '3'; then export LIVE_SETUP=1; fi
 fi
 
 if test "${LIVE_SETUP}" = '1'; then
   ui_msg 'LIVE SETUP ENABLED!'
   if test "${DEBUG_LOG}" = '0'; then
-    choose_binary 'Do you want to enable the debug log?' '+) Yes' '-) No'; if test "${?}" = '3'; then export DEBUG_LOG=1; enable_debug_log; fi
+    choose 'Do you want to enable the debug log?' '+) Yes' '-) No'; if test "${?}" = '3'; then export DEBUG_LOG=1; enable_debug_log; fi
   fi
 fi
 
