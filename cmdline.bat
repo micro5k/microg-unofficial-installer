@@ -18,7 +18,7 @@ SET "PATHEXT=.SH;%PATHEXT%"
 SET "SCRIPT_DIR=%~dp0"
 
 CHCP 858 >nul || ECHO "Changing the codepage failed"
-"%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0scripts\common.sh'; alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=reset" "%~f0" %*
+"%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0scripts\common.sh'; unset JAVA_HOME; alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=reset" "%~f0" %*
 
 ENDLOCAL 2> nul
 TITLE %ComSpec% 2> nul
