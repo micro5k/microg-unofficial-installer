@@ -6,7 +6,7 @@
 override_command_fallback()
 {
   # shellcheck disable=SC2139
-  alias "${1:?}"="'${OVERRIDE_DIR:?}/${1:?}'" || return "${?}"  # This expands when defined, not when used
+  alias "${1:?}='${OVERRIDE_DIR:?}/${1:?}'" || return "${?}"  # This expands when defined, not when used
 }
 
 unset OUR_TEMP_DIR
