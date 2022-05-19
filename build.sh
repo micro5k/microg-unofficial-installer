@@ -183,10 +183,10 @@ echo ''
 sha256sum "${FILENAME}.zip" > "${OUT_DIR}/${FILENAME}.zip.sha256" || ui_error 'Failed to compute the sha256 hash'
 sha256_hash="$(cat "${OUT_DIR}/${FILENAME}.zip.sha256")" || ui_error 'Failed to display the sha256 hash'
 echo 'SHA-256:'
+echo "${sha256_hash:?}"
+
 if test "${GITHUB_JOB:-false}" != 'false'; then
-  echo "::notice::${sha256_hash}"
-else
-  echo "${sha256_hash}"
+  printf '\r::set-output name=sha256_hash::%s\n' "${sha256_hash:?}"  # Save hash for later use
 fi
 
 if test "${FAST_BUILD:-false}" = 'false'; then
