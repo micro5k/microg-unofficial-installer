@@ -91,16 +91,16 @@ if ! "${ENV_RESETTED:-false}"; then
   # Create the temp dir (must be done before resetting environment)
   OUR_TEMP_DIR="$(mktemp -d -t ANDR-RECOV-XXXXXX)" || fail_with_msg 'Failed to create our temp dir'
 
-  if test "${APP_BASE_NAME:-false}" = 'gradlew' || test "${APP_BASE_NAME:-false}" = 'gradlew.' || test "${APP_NAME:-false}" = 'Gradle'; then
+  if test "${APP_BASE_NAME:-false}" = 'gradlew' || test "${APP_BASE_NAME:-false}" = 'gradlew.'; then
     APP_NAME='Gradle'
-  else
-    APP_NAME=''
   fi
 
-  exec env -i ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" APP_NAME="${APP_NAME}" PATH="${PATH:?}" bash "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+  exec env -i ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" PATH="${PATH:?}" bash "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   exit 127
 fi
 unset ENV_RESETTED
+if test -z "${CI:-}"; then unset CI; fi
+if test -z "${APP_NAME:-}"; then unset APP_NAME; fi
 _backup_path="${PATH:?}"
 uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
