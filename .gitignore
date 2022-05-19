@@ -18,5 +18,6 @@ user.gradle
 # Local configuration files
 local.properties
 
-# Log Files
+# Code scanning and log files
+results.sarif
 *.log
