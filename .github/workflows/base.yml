@@ -45,6 +45,7 @@ jobs:
           # Installing Bashcov and Codecov...
           gem install bashcov codecov
       - name: "Execute code coverage"
+        id: "coverage"
         run: |
           # Executing code coverage...
           sudo apt-get -qq -y install moreutils 1>/dev/null
@@ -57,6 +58,10 @@ jobs:
           echo 'RECOVERY OUTPUT'
           echo '==============='
           cat './recovery-simulator/output/recovery-output.log'
+      - name: "SHA256"
+        run: |
+          # SHA256...
+          echo "${{ steps.coverage.outputs.sha256_hash }}"
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
         with:
