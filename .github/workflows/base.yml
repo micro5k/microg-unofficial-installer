@@ -50,7 +50,7 @@ jobs:
           # Executing code coverage...
           sudo apt-get -qq -y install moreutils 1>/dev/null
           export OPENSOURCE_ONLY='true'
-          bashcov './build.sh' # | TZ=UTC ts '[%H:%M:%S]'  # Timestamp disabled as it break GitHub notice
+          bashcov './build.sh' | TZ=UTC ts '[%H:%M:%S]'
           # Testing zip installation...
           bash './recovery-simulator/recovery.sh' ./output/*.zip
           printf '\n\n'
@@ -61,7 +61,8 @@ jobs:
       - name: "SHA256"
         run: |
           # SHA256...
-          echo "${{ steps.coverage.outputs.sha256_hash }}"
+          sha256_hash="${{ steps.coverage.outputs.sha256_hash }}"
+          echo "::notice::${sha256_hash:?}"
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
         with:
