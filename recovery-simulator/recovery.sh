@@ -77,7 +77,7 @@ recovery_flash_end()
     echo "I:operation_start: 'Copy Log'"
     echo "I:Copying file /tmp/recovery.log to /sdcard1/recovery.log"
   else
-    echo "Copied recovery log to /sdcard1/recovery.log"
+    echo "Copied recovery log to /sdcard1/recovery.log."
   fi
 
   echo ''
