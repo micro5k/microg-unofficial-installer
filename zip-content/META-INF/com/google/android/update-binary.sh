@@ -312,7 +312,7 @@ create_dir_safe "${TMP_PATH}"
 create_dir_safe "${TMP_PATH}/bin"
 
 PREVIOUS_PATH="${PATH}"
-DEVICE_MOUNT="$(which mount)"
+DEVICE_MOUNT="$(command -v -- mount)" || DEVICE_MOUNT=''
 export DEVICE_MOUNT
 
 if test "${TEST_INSTALL:-false}" = 'false'; then
