@@ -4,9 +4,13 @@
 # SPDX-FileType: SOURCE
 name: "Base"
 on:
-  - push
-  - pull_request
-  - workflow_dispatch
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+  pull_request:
+  workflow_dispatch:
 env:
   FAST_BUILD: true
   # UPLOAD_BUILD_SCAN: true
