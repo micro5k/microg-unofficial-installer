@@ -66,6 +66,8 @@ if test "${OPENSOURCE_ONLY:-false}" = 'false'; then . "${SCRIPT_DIR}/conf-2.sh";
 
 if ! is_oss_only_build_enabled && test "${OPENSOURCE_ONLY:-false}" != 'false'; then echo 'WARNING: The OSS only build is disabled'; change_title 'OSS only build is disabled'; return 0 2>&- || exit 0; fi
 
+_init_dir="$(pwd)" || ui_error 'Failed to read the current dir'
+
 # Check dependencies
 hash 'zip' 2>/dev/null || ui_error 'Zip is missing'
 hash 'java' 2>/dev/null || ui_error 'Java is missing'
@@ -196,7 +198,7 @@ if test "${FAST_BUILD:-false}" = 'false'; then
   cat "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to display the md5 hash'
 fi
 
-cd "${INIT_DIR}" || ui_error 'Failed to change back the folder'
+cd "${_init_dir:?}" || ui_error 'Failed to change back the folder'
 
 echo ''
 echo 'Done.'
