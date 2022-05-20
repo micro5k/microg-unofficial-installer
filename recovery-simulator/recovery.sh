@@ -105,7 +105,7 @@ _backup_path="${PATH:?}"
 uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
 # Check dependencies
-_our_busybox="$(which busybox)" || fail_with_msg 'BusyBox is missing'
+_our_busybox="$(command -v -- busybox)" || fail_with_msg 'BusyBox is missing'
 
 # Get dir of this script
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
