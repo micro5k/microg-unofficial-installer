@@ -41,7 +41,7 @@ build:
   artifacts:
     paths:
       - output/*.zip*
-    expire_in: 2 days
+    expire_in: 1 day
   only:
     - main
 
