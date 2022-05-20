@@ -9,7 +9,7 @@
 
 ### GLOBAL VARIABLES ###
 
-if test -z "${RECOVERY_PIPE}" || test -z "${ZIP_FILE}" || test -z "${TMP_PATH}"; then
+if test -z "${RECOVERY_PIPE:-}" || test -z "${OUTFD:-}" || test -z "${ZIP_FILE:-}" || test -z "${TMP_PATH:-}" || test -z "${DEBUG_LOG:-}"; then
   echo 'Some variables are NOT set.'
   exit 90
 fi
@@ -487,7 +487,7 @@ choose_shell()
 
 choose()
 {
-  if "${KEYCHECK_ENABLED}"; then
+  if "${KEYCHECK_ENABLED:?}"; then
     choose_binary "${@}"
   else
     choose_shell "${@}"
