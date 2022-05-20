@@ -20,4 +20,5 @@ local.properties
 
 # Code scanning and log files
 results.sarif
+coverage
 *.log
