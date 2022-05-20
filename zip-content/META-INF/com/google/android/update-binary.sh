@@ -282,7 +282,6 @@ OUR_BB="${BASE_TMP_PATH}/busybox"
 if test -n "${CUSTOM_BUSYBOX:-}" && test -e "${CUSTOM_BUSYBOX}"; then
   OUR_BB="${CUSTOM_BUSYBOX}"
   ui_debug "Using custom BusyBox... '${OUR_BB}'"
-  #LIVE_SETUP_POSSIBLE=true
 elif test "${RECOVERY_ARCH}" = 'x86_64'; then
   ui_debug 'Extracting 64-bit x86 BusyBox...'
   package_extract_file 'misc/busybox/busybox-x86_64.bin' "${OUR_BB}"
@@ -331,6 +330,9 @@ if test -e "${BASE_TMP_PATH}/keycheck"; then
   LIVE_SETUP_POSSIBLE=true
   KEYCHECK_ENABLED=true
 fi
+
+# Enable the binary-free live setup when inside the recovery simulator
+if test "${TEST_INSTALL:-false}" != 'false'; then LIVE_SETUP_POSSIBLE=true; KEYCHECK_ENABLED=false; fi
 
 # Live setup isn't supported under continuous integration system
 # Live setup doesn't work when executed through Gradle

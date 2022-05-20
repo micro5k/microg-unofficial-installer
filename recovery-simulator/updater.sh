@@ -33,7 +33,5 @@ override_command_fallback sudo || exit 124
 unset -f override_command_fallback
 unset OVERRIDE_DIR
 
-export TEST_INSTALL=true
-
 # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
 . "${TMPDIR:?}/update-binary" || exit "${?}"

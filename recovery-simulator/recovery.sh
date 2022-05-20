@@ -199,8 +199,11 @@ simulate_env()
   export ANDROID_PROPERTY_WORKSPACE='21,32768'
   export TZ='CET-1CEST,M3.5.0,M10.5.0'
   export TMPDIR="${_android_tmp:?}"
+
+  # Our custom variables
   export CUSTOM_BUSYBOX="${BASE_SIMULATION_PATH:?}/system/bin/busybox"
   export OVERRIDE_DIR="${_our_overrider_dir:?}"
+  export TEST_INSTALL=true
 
   "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
   # shellcheck disable=SC2310
