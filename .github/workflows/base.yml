@@ -68,6 +68,7 @@ jobs:
           sha256_hash="${{ steps.coverage.outputs.sha256_hash }}"
           echo "::notice::${sha256_hash:?}"
       - name: "Upload artifacts"
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@v3
         with:
           name: "microG unofficial installer OSS build (extract it)"
