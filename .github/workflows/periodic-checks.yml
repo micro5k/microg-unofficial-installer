@@ -8,10 +8,12 @@ on:
     paths:
       - 'gradle/wrapper/gradle-wrapper.jar'
       - '.reuse/dep5'
+      - '**codecov.yml'
   pull_request:
     paths:
       - 'gradle/wrapper/gradle-wrapper.jar'
       - '.reuse/dep5'
+      - '**codecov.yml'
   schedule:
     - cron: "0 0 * * 1"
   workflow_dispatch:
@@ -29,6 +31,22 @@ jobs:
         uses: gradle/wrapper-validation-action@master
       - name: "Gitleaks"
         uses: zricethezav/gitleaks-action@v1
+      - name: "Validate Codecov configuration"
+        shell: bash
+        run: |
+          # Validating Codecov configuration
+          codecovyml_path='${{ github.workspace }}/.codecov.yml'
+          if test -f "${codecovyml_path}"; then
+            status='0'
+            wget -qO- --post-file "${codecovyml_path:?}" https://codecov.io/validate || status="${?}"
+            if test "${status:?}" -eq 0; then echo 'Result: pass'; else echo 'Result: fail'; exit "${status:?}"; fi
+          fi
+          codecovyml_path='${{ github.workspace }}/codecov.yml'
+          if test -f "${codecovyml_path}"; then
+            status='0'
+            wget -qO- --post-file "${codecovyml_path:?}" https://codecov.io/validate || status="${?}"
+            if test "${status:?}" -eq 0; then echo 'Result: pass'; else echo 'Result: fail'; exit "${status:?}"; fi
+          fi
 
   dep5-validator:
     name: "Validate dep5"

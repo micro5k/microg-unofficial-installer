@@ -56,7 +56,7 @@ sast:
   artifacts:
     paths:
       - gl-sast-report.json
-    expire_in: 2 days
+    expire_in: 1 day
 
 after_script:
   - rm -f  "$GRADLE_USER_HOME/caches/modules-2/modules-2.lock"

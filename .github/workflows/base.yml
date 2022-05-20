@@ -27,19 +27,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: "Validate codecov.yml"
-        shell: bash
-        run: |
-          codecovyml_path='${{ github.workspace }}/.codecov.yml'
-          if test -f "${codecovyml_path}"; then
-            wget -qO- --post-file "${codecovyml_path}" https://codecov.io/validate \
-              || (echo 'NOT Valid!'; exit 1)
-          fi
-          codecovyml_path='${{ github.workspace }}/codecov.yml'
-          if test -f "${codecovyml_path}"; then
-            wget -qO- --post-file "${codecovyml_path}" https://codecov.io/validate \
-              || (echo 'NOT Valid!'; exit 1)
-          fi
       - name: "Set up Ruby"
         uses: ruby/setup-ruby@v1
         with:
