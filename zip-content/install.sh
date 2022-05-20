@@ -119,20 +119,20 @@ ui_msg "Privileged apps: ${PRIVAPP_PATH}"
 
 if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi
 
-if test "${LIVE_SETUP}" -eq 1; then
+if test "${LIVE_SETUP:?}" -eq 1; then
   choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore'
   if test "$?" -eq 3; then export MARKET='PlayStore'; else export MARKET='FakeStore'; fi
 fi
 
 if test "${MARKET}" = 'PlayStore'; then
-  if test "${PLAYSTORE_VERSION}" = 'auto'; then
+  if test "${PLAYSTORE_VERSION:?}" = 'auto'; then
     if test "${OLD_ANDROID}" != true; then
       MARKET_FILENAME="${MARKET}-recent.apk"
     else
       MARKET_FILENAME="${MARKET}-legacy.apk"
     fi
   else
-    MARKET_FILENAME="${MARKET}-${PLAYSTORE_VERSION}.apk"
+    MARKET_FILENAME="${MARKET}-${PLAYSTORE_VERSION:?}.apk"
   fi
 else
   MARKET_FILENAME="${MARKET}.apk"
@@ -200,7 +200,7 @@ fi
 
 # Handle variants
 if test "${API}" -ge 14; then
-  if test "${GMSCORE_VERSION}" = 'auto' && test "${CPU}" != 'armeabi'; then
+  if test "${GMSCORE_VERSION:?}" = 'auto' && test "${CPU}" != 'armeabi'; then
     move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
   else
     move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
@@ -209,7 +209,7 @@ else
   move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
 fi
 
-if test "${INSTALL_NEWPIPE}" -ne 0; then
+if test "${INSTALL_NEWPIPE:?}" -ne 0; then
   if test "${API}" -ge 19; then
     move_rename_file "${TMP_PATH}/files/variants/app/NewPipe.apk" "${TMP_PATH}/files/app/NewPipe.apk"
   elif test "${API}" -ge 16; then
@@ -278,10 +278,10 @@ else
   delete_recursive "${TMP_PATH}/files/etc/default-permissions"
 fi
 
-if test "${LIVE_SETUP}" -eq 1; then
+if test "${LIVE_SETUP:?}" -eq 1; then
   choose 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
   if test "$?" -eq 3; then reset_gms_data_of_all_apps; fi
-elif test "${RESET_GMS_DATA_OF_ALL_APPS}" -eq 1; then
+elif test "${RESET_GMS_DATA_OF_ALL_APPS:?}" -eq 1; then
   reset_gms_data_of_all_apps
 fi
 
