@@ -240,7 +240,7 @@ choose_shell()
 
 choose()
 {
-  if "${KEYCHECK_ENABLED}"; then
+  if "${KEYCHECK_ENABLED:?}"; then
     choose_binary "${@}"
   else
     choose_shell "${@}"
