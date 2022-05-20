@@ -63,6 +63,7 @@ jobs:
           echo '==============='
           cat './recovery-simulator/output/recovery-output.log'
       - name: "SHA256"
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
         run: |
           # SHA256...
           sha256_hash="${{ steps.coverage.outputs.sha256_hash }}"
