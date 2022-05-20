@@ -413,13 +413,13 @@ check_key()
 
 _choose_remapper()
 {
-  case "${1?}" in
-  '+')
+  case "${1:?}" in
+  '+')  # +
     return 3;;
-  '-')
+  '-')  # -
     return 2;;
-  *)
-    return 1;;
+  *)    # All other keys
+    return 0;;
   esac
 }
 
@@ -442,15 +442,24 @@ choose_binary_timeout()
 
 choose_timeout()
 {
-  local _key
+  local _key _status
+  _status='0'
+
   # shellcheck disable=SC3045
-  IFS='' read -t"${1:?}" -n1 -r -s -- _key || { ui_warning 'Key detection failed'; return 1; }
-  if test "${_key}" = ''; then
-    ui_msg 'Key code: No key pressed'
-    return 0
-  else
-    ui_msg "Key press: ${_key:?}"
-  fi
+  IFS='' read -t"${1:?}" -n1 -r -s -- _key || _status="${?}"
+  case "${_status}" in
+    0)        # 0: Command terminated successfully
+      ;;
+    1 | 142)  # 1: Command timed out on BusyBox, 142: Command timed out on Bash
+      ui_msg 'Key: No key pressed'
+      return 0;;
+    *)
+      ui_warning 'Key detection failed'
+      return 1;;
+  esac
+
+  if test "${_key?}" = ''; then ui_msg 'Key: Enter'; return 0; fi
+  ui_msg "Key: ${_key:?}"
   _choose_remapper "${_key:?}"
   return "${?}"
 }
