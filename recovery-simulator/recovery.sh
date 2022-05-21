@@ -139,7 +139,7 @@ _android_sys="${BASE_SIMULATION_PATH}/system"
 _android_data="${BASE_SIMULATION_PATH}/data"
 _android_ext_stor="${BASE_SIMULATION_PATH}/sdcard0"
 _android_sec_stor="${BASE_SIMULATION_PATH}/sdcard1"
-_android_path="${_our_overrider_dir}:${BASE_SIMULATION_PATH}/sbin:${_android_sys}/bin:${_backup_path}"
+_android_path="${_our_overrider_dir}:${BASE_SIMULATION_PATH}/sbin:${_android_sys}/bin"
 _android_lib_path=".:${BASE_SIMULATION_PATH}/sbin"
 
 # Simulate the Android recovery environment inside the temp folder
@@ -182,7 +182,7 @@ override_command()
   if ! test -e "${_our_overrider_dir:?}/${1:?}"; then return 1; fi
   rm -f -- "${_android_sys:?}/bin/${1:?}"
 
-  unset -f -- "${1:?}" || true
+  unset -f -- "${1:?}"
   eval " ${1:?}() { '${_our_overrider_dir:?}/${1:?}' \"\${@}\"; }" || return "${?}"  # The folder expands when defined, not when used
   # shellcheck disable=SC3045
   export -f -- "${1:?}" 2>/dev/null | : || true
@@ -222,7 +222,7 @@ restore_env()
 {
   export PATH="${_backup_path}"
   unset BB_OVERRIDE_APPLETS
-  unset -f -- mount umount chown su sudo || true
+  unset -f -- mount umount chown su sudo
 }
 
 # Setup recovery output
@@ -243,12 +243,13 @@ exec 99> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir
 flash_zips()
 {
   for _current_zip_fullpath in "${@?}"; do
+    FLASHABLE_ZIP_NAME="$(basename "${_current_zip_fullpath:?}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
+    cp -f -- "${_current_zip_fullpath:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" || fail_with_msg 'Failed to copy the flashable ZIP'
+
     # Simulate the environment variables
     # shellcheck disable=SC2310
     simulate_env || return "${?}"
 
-    FLASHABLE_ZIP_NAME="$(basename "${_current_zip_fullpath:?}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
-    cp -f -- "${_current_zip_fullpath:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" || fail_with_msg 'Failed to copy the flashable ZIP'
     "${CUSTOM_BUSYBOX:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_tmp:?}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
 
     echo "custom_flash_start ${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1>&"${recovery_fd:?}"
