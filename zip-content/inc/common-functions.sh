@@ -485,7 +485,7 @@ choose_shell()
   ui_msg "${3:?}"
   # shellcheck disable=SC3045
   IFS='' read -rsn1 -- _key || { ui_warning 'Key detection failed'; return 1; }
-  if test -z "${_key?}"; then _key='Enter'; fi;;
+  if test -z "${_key?}"; then _key='Enter'; fi
 
   ui_msg "Key press: ${_key:?}"
   _choose_remapper "${_key:?}"
