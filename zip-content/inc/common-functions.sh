@@ -400,26 +400,28 @@ write_file_list()  # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output 
 check_key()
 {
   case "${1?}" in
-  42)   # Vol +
-    return 3;;
-  21)   # Vol -
-    return 2;;
-  132)  # Error (example: Illegal instruction)
-    return 1;;
-  *)
-    return 0;;
+    42)   # Vol +
+      return 3;;
+    21)   # Vol -
+      return 2;;
+    132)  # Error (example: Illegal instruction)
+      return 1;;
+    *)
+      return 0;;
   esac
 }
 
 _choose_remapper()
 {
   case "${1:?}" in
-  '+')  # +
-    return 3;;
-  '-')  # -
-    return 2;;
-  *)    # All other keys
-    return 0;;
+    '+')  # +
+      return 3;;
+    '-')  # -
+      return 2;;
+    'Enter')
+      return 0;;
+    *)    # All other keys
+      return 0;;
   esac
 }
 
@@ -446,10 +448,10 @@ choose_timeout()
   _status='0'
 
   # shellcheck disable=SC3045
-  IFS='' read -t"${1:?}" -n1 -r -s -- _key || _status="${?}"
-  case "${_status}" in
+  IFS='' read -rsn1 -t"${1:?}" -- _key || _status="${?}"
+  case "${_status:?}" in
     0)        # 0: Command terminated successfully
-      ;;
+      if test -z "${_key?}"; then _key='Enter'; fi;;
     1 | 142)  # 1: Command timed out on BusyBox, 142: Command timed out on Bash
       ui_msg 'Key: No key pressed'
       return 0;;
@@ -458,7 +460,6 @@ choose_timeout()
       return 1;;
   esac
 
-  if test "${_key?}" = ''; then ui_msg 'Key: Enter'; return 0; fi
   ui_msg "Key: ${_key:?}"
   _choose_remapper "${_key:?}"
   return "${?}"
@@ -483,13 +484,10 @@ choose_shell()
   ui_msg "${2:?}"
   ui_msg "${3:?}"
   # shellcheck disable=SC3045
-  IFS='' read -n1 -r -s -- _key || { ui_warning 'Key detection failed'; return 1; }
-  if test "${_key}" = ''; then
-    ui_msg 'Key code: No key pressed'
-    return 0
-  else
-    ui_msg "Key press: ${_key:?}"
-  fi
+  IFS='' read -rsn1 -- _key || { ui_warning 'Key detection failed'; return 1; }
+  if test -z "${_key?}"; then _key='Enter'; fi;;
+
+  ui_msg "Key press: ${_key:?}"
   _choose_remapper "${_key:?}"
   return "${?}"
 }
