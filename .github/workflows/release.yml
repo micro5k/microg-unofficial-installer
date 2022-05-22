@@ -1,0 +1,37 @@
+---
+# SPDX-FileCopyrightText: (c) 2022 ale5000
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileType: SOURCE
+name: "Release"
+on:
+  push:
+    tags:
+      - "v*"
+permissions: {}
+jobs:
+  base-job:
+    name: "Release"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: "Check out code"
+        uses: actions/checkout@v3
+      - name: "Set up Java"
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: "Build"
+        shell: bash
+        run: |
+          # Building...
+          ./gradlew buildOtaOSS
+      - name: "Upload release"
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: "output/*.zip*"
+          replacesArtifacts: false
