@@ -11,9 +11,6 @@ on:
       - v*
   pull_request:
   workflow_dispatch:
-env:
-  FAST_BUILD: true
-  # UPLOAD_BUILD_SCAN: true
 jobs:
   base-job:
     name: "Coverage and testing"
