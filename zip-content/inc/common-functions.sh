@@ -42,6 +42,12 @@ ui_warning()
   _show_text_on_recovery "WARNING: ${1?}"
 }
 
+ui_msg_empty_line()
+{
+  if test "${DEBUG_LOG}" -ne 0; then echo ''; fi
+  _show_text_on_recovery ''
+}
+
 ui_msg()
 {
   if test "${DEBUG_LOG}" -ne 0; then echo "${1?}"; fi
