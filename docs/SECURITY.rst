@@ -21,4 +21,4 @@ Version Supported
 Reporting a Vulnerability
 -------------------------
 
-This is a flashable ZIP that must be installed manually, so security reports can be added directly here in the "Issues" section.
+This is a flashable ZIP that must be installed manually, so security reports can be added directly in the `Issues <https://github.com/micro5k/microg-unofficial-installer/issues>`_ section.
