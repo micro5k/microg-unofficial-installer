@@ -189,10 +189,11 @@ echo "${sha256_hash:?}"
 
 if test "${GITHUB_JOB:-false}" != 'false'; then
   printf '\r::set-output name=sha256_hash::%s\n' "${sha256_hash:?}"  # Save hash for later use
+else
+  echo ''
 fi
 
 if test "${FAST_BUILD:-false}" = 'false'; then
-  echo ''
   md5sum "${FILENAME}.zip" > "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to compute the md5 hash'
   echo 'MD5:'
   cat "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to display the md5 hash'
