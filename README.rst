@@ -25,7 +25,7 @@ This project is available on GitHub_, on GitLab_ as well as on XDA_.
 
 .. image:: https://liberapay.com/assets/widgets/donate.svg
    :alt: Donate using Liberapay
-   :target: https://liberapay.com/microg-by-ale5000/donate
+   :target: https://liberapay.com/microg-unofficial-by-ale5000/donate
 
 
 Release
