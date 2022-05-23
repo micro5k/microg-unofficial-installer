@@ -151,12 +151,12 @@ delete_recursive_safe()
 
 parse_busybox_version()
 {
-  head -n1 | grep -oE 'BusyBox v([0-9]+\.[0-9]+\.[0-9]+)' | cut -d 'v' -f 2
+  head -n1 | grep -oE 'BusyBox v[0-9]+\.[0-9]+\.[0-9]+' | cut -d 'v' -f 2
 }
 
 numerically_comparable_version()
 {
-  echo "${@}" | awk -F. '{ printf("%d%03d%03d%03d\n", $1, $2, $3, $4); }'
+  echo "${@:?}" | awk -F. '{ printf("%d%03d%03d%03d\n", $1, $2, $3, $4); }'
 }
 
 # Input related functions
@@ -194,7 +194,7 @@ choose_binary_timeout()
   local key_code=1
 
   _timeout_ver="$(timeout --help 2>&1 | parse_busybox_version)" || _timeout_ver=''
-  if test -z "${_timeout_ver?}" || test $(numerically_comparable_version "${_timeout_ver?}") -ge $(numerically_comparable_version "1.30.0"); then
+  if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version "1.30.0" || true)"; then
     timeout "${1:?}" keycheck; key_code="${?}"
   else
     timeout -t "${1:?}" keycheck; key_code="${?}"
