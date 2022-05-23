@@ -8,6 +8,9 @@
 
 umask 022
 
+# shellcheck disable=SC3040
+set -o pipefail || true
+
 ### GLOBAL VARIABLES ###
 
 export DEBUG_LOG=0
@@ -194,7 +197,7 @@ choose_binary_timeout()
   local key_code=1
 
   _timeout_ver="$(timeout --help 2>&1 | parse_busybox_version)" || _timeout_ver=''
-  if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version "1.30.0" || true)"; then
+  if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
     timeout "${1:?}" keycheck; key_code="${?}"
   else
     timeout -t "${1:?}" keycheck; key_code="${?}"
