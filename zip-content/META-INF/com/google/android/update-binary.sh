@@ -76,8 +76,8 @@ ui_warning()
 
 ui_msg()
 {
-  if test "${DEBUG_LOG}" -ne 0; then echo "${1?}"; fi
-  _show_text_on_recovery "${1?}"
+  if test "${DEBUG_LOG}" -ne 0; then echo "${1:?}"; fi
+  _show_text_on_recovery "${1:?}"
 }
 
 ui_debug()
