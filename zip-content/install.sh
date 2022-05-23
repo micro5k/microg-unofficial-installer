@@ -110,7 +110,7 @@ ui_msg 'microG unofficial installer'
 ui_msg "${install_version}"
 ui_msg '(by ale5000)'
 ui_msg '---------------------------'
-ui_msg ''
+ui_msg_empty_line
 ui_msg "API: ${API}"
 ui_msg "Detected CPU arch: ${CPU}"
 ui_msg "Detected 64-bit CPU arch: ${CPU64}"
@@ -146,8 +146,7 @@ if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATU
   FAKE_SIGN=true
 fi
 ui_msg "Fake signature: ${FAKE_SIGN}"
-
-ui_msg ''
+ui_msg_empty_line
 
 if test "${CPU}" = false && test "${CPU64}" = false; then
   ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
