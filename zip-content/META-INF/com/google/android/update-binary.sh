@@ -149,6 +149,16 @@ delete_recursive_safe()
   "${OUR_BB}" rm -rf "$@" || ui_error "Failed to delete files/folders" 86
 }
 
+parse_busybox_version()
+{
+  head -n1 | grep -oE 'BusyBox v([0-9]+\.[0-9]+\.[0-9]+)' | cut -d 'v' -f 2
+}
+
+numerically_comparable_version()
+{
+  echo "${@}" | awk -F. '{ printf("%d%03d%03d%03d\n", $1, $2, $3, $4); }'
+}
+
 # Input related functions
 check_key()
 {
@@ -180,8 +190,17 @@ _choose_remapper()
 
 choose_binary_timeout()
 {
+  local _timeout_ver
   local key_code=1
-  timeout -t "${1:?}" keycheck; key_code="${?}"  # Timeout return 127 when it cannot execute the binary
+
+  _timeout_ver="$(timeout --help 2>&1 | parse_busybox_version)" || _timeout_ver=''
+  if test -z "${_timeout_ver?}" || test $(numerically_comparable_version "${_timeout_ver?}") -ge $(numerically_comparable_version "1.30.0"); then
+    timeout "${1:?}" keycheck; key_code="${?}"
+  else
+    timeout -t "${1:?}" keycheck; key_code="${?}"
+  fi
+
+  # Timeout return 127 when it cannot execute the binary
   if test "${key_code?}" = '143'; then
     ui_msg 'Key code: No key pressed'
     return 0
