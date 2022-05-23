@@ -204,7 +204,7 @@ choose_binary_timeout()
     ui_msg 'Key code: No key pressed'
     return 0
   elif test "${key_code?}" = '127' || test "${key_code?}" = '132'; then
-    ui_msg 'WARNING: Key detection failed'
+    ui_warning 'Key detection failed'
     return 1
   fi
 
@@ -282,7 +282,7 @@ ui_debug 'PRELOADER'
 if ! is_mounted "${BASE_TMP_PATH:?}"; then
   # Workaround: create and mount the temp folder if it isn't already mounted
   MANUAL_TMP_MOUNT=1
-  ui_msg 'WARNING: Creating and mounting the missing temp folder...'
+  ui_warning 'Creating and mounting the missing temp folder...'
   if ! test -e "${BASE_TMP_PATH:?}"; then create_dir "${BASE_TMP_PATH:?}"; fi
   mount -t tmpfs -o rw tmpfs "${BASE_TMP_PATH:?}"
   set_perm 0 2000 0775 "${BASE_TMP_PATH:?}"
