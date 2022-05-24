@@ -131,7 +131,7 @@ rm -rf "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 # Setup the needed variables
 BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"  # Internal var
 _our_overrider_dir="${THIS_SCRIPT_DIR}/override"  # Internal var
-_init_dir="$(pwd)" || ui_error 'Failed to read the current dir'
+_init_dir="$(pwd)" || fail_with_msg 'Failed to read the current dir'
 
 # Configure the Android recovery environment variables (they will be used later)
 _android_tmp="${BASE_SIMULATION_PATH}/tmp"
@@ -310,7 +310,7 @@ parse_recovery_output true "${recovery_logs_dir}/recovery-output-raw.log" "${rec
 parse_recovery_output false "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery.log"
 
 # Final cleanup
-cd "${_init_dir:?}" || ui_error 'Failed to change back the folder'
+cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
 unset TMPDIR
 rm -rf -- "${OUR_TEMP_DIR:?}" &
 set +e
