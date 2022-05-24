@@ -4,5 +4,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-echo "su: bad usage"
+1>&2 echo "su: bad usage"
 return 1 2>&- || exit 1
