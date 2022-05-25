@@ -34,7 +34,7 @@ export BOOTMODE=false
 
 ### FUNCTIONS ###
 
-DEBUG_LOG_ENABLED=0
+export DEBUG_LOG_ENABLED=0
 enable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
