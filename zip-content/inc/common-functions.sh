@@ -530,6 +530,21 @@ remove_ext()
   echo "${str%.*}"
 }
 
+enable_debug_log()
+{
+  if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
+  DEBUG_LOG_ENABLED=1
+  exec 3>&1 4>&2  # Backup stdout and stderr
+  exec 1>>"${ZIP_PATH}/debug-a5k.log" 2>&1
+}
+
+disable_debug_log()
+{
+  if test "${DEBUG_LOG_ENABLED}" -eq 0; then return; fi
+  DEBUG_LOG_ENABLED=0
+  exec 1>&3 2>&4  # Restore stdout and stderr
+}
+
 # Test
 find_test()  # This is useful to test 'find' - if every file/folder, even the ones with spaces, is displayed in a single line then your version is good
 {
