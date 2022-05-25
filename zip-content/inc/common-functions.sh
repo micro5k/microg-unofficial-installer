@@ -535,7 +535,7 @@ enable_debug_log()
   if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
   DEBUG_LOG_ENABLED=1
   exec 3>&1 4>&2  # Backup stdout and stderr
-  exec 1>>"${ZIP_PATH}/debug-a5k.log" 2>&1
+  exec 1>>"${ZIP_PATH:?}/debug-a5k.log" 2>&1
 }
 
 disable_debug_log()
