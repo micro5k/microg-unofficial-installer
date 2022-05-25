@@ -425,7 +425,7 @@ _parse_input_event()
   if ! test -e "/dev/input/${1:?}"; then return 1; fi
   hexdump -n 14 -d 0< "/dev/input/${1:?}" | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
     if test "${key_down:?}" -ne 1; then return 2; fi
-    echo "${cur_button:?}" | awk '{printf "%d\n", $0;}' || return 1
+    echo "${cur_button:?}" | awk '{$0=int($0)}1' || return 1
     break
   done
 }
