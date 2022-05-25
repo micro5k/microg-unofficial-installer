@@ -399,6 +399,37 @@ write_file_list()  # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output 
 }
 
 # Input related functions
+_find_hardware_keys()
+{
+  if ! test -e '/proc/bus/input/devices'; then return 1; fi
+  local _last_device_name=''
+  while IFS=': ' read -r line_type full_line; do
+    if test "${line_type?}" = 'N'; then
+      _last_device_name="${full_line:?}"
+    elif test "${line_type?}" = 'H' && test "${_last_device_name?}" = 'Name="gpio-keys"'; then
+      local _not_found=1
+      echo "${full_line:?}" | cut -d '=' -f 2 | while IFS='' read -r my_line; do
+        for elem in ${my_line:?}; do
+          echo "${elem:?}" | grep -e '^event' && { _not_found=0; break; }
+        done
+        return "${_not_found:?}"
+      done
+      return "${?}"
+    fi
+  done < '/proc/bus/input/devices'
+  return 1
+}
+
+_parse_input_event()
+{
+  if ! test -e "/dev/input/${1:?}"; then return 1; fi
+  hexdump -n 14 -d 0< "/dev/input/${1:?}" | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
+    if test "${key_down:?}" -ne 1; then return 2; fi
+    echo "${cur_button:?}" | awk '{printf "%d\n", $0;}' || return 1
+    break
+  done
+}
+
 check_key()
 {
   case "${1?}" in
@@ -501,6 +532,25 @@ choose_shell()
   ui_msg "Key press: ${_key:?}"
   _choose_remapper "${_key:?}"
   return "${?}"
+}
+
+choose_input_event()
+{
+  local _key _hard_keys_event
+  ui_msg "QUESTION: ${1:?}"
+  ui_msg "${2:?}"
+  ui_msg "${3:?}"
+
+  _hard_keys_event="$(_find_hardware_keys)" || { ui_warning 'Key detection failed'; return 1; }
+  _key="$(_parse_input_event "${_hard_keys_event:?}")" || { ui_warning 'Key detection failed'; return 1; }
+
+  ui_msg "Key code: ${_key:?}"
+  # 102 Menu
+  # 114 Vol -
+  # 115 Vol +
+  # 116 Power
+  #_choose_input_event_remapper "${_key:?}"
+  #return "${?}"
 }
 
 choose()
