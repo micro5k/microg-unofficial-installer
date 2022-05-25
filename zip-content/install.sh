@@ -37,6 +37,26 @@ MARKET_FILENAME=''
 
 ### CODE ###
 
+# Live setup
+if "${LIVE_SETUP_POSSIBLE:?}" && test "${LIVE_SETUP:?}" -eq 0 && test "${LIVE_SETUP_TIMEOUT:?}" -ge 1; then
+  ui_msg '---------------------------------------------------'
+  ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
+  ui_msg "Waiting input for ${LIVE_SETUP_TIMEOUT} seconds..."
+  if "${KEYCHECK_ENABLED}"; then
+    choose_binary_timeout "${LIVE_SETUP_TIMEOUT}"
+  else
+    choose_timeout "${LIVE_SETUP_TIMEOUT}"
+  fi
+  if test "${?}" = '3'; then export LIVE_SETUP=1; fi
+fi
+
+if test "${LIVE_SETUP}" = '1'; then
+  ui_msg 'LIVE SETUP ENABLED!'
+  if test "${DEBUG_LOG}" = '0'; then
+    choose 'Do you want to enable the debug log?' '+) Yes' '-) No'; if test "${?}" = '3'; then export DEBUG_LOG=1; enable_debug_log; fi
+  fi
+fi
+
 SYS_INIT_STATUS=0
 
 if test -f "${ANDROID_ROOT:-/system_root/system}/build.prop"; then
