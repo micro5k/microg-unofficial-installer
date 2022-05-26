@@ -148,16 +148,6 @@ delete_recursive_safe()
   "${OUR_BB}" rm -rf "$@" || ui_error "Failed to delete files/folders" 86
 }
 
-parse_busybox_version()
-{
-  head -n1 | grep -oE 'BusyBox v[0-9]+\.[0-9]+\.[0-9]+' | cut -d 'v' -f 2
-}
-
-numerically_comparable_version()
-{
-  echo "${@:?}" | awk -F. '{ printf("%d%03d%03d%03d\n", $1, $2, $3, $4); }'
-}
-
 
 ### CODE ###
 
