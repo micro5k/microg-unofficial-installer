@@ -158,51 +158,50 @@ detect_recovery_arch()
 }
 detect_recovery_arch
 
-OUR_BB="${BASE_TMP_PATH}/busybox"
-if test -n "${CUSTOM_BUSYBOX:-}" && test -e "${CUSTOM_BUSYBOX}"; then
-  OUR_BB="${CUSTOM_BUSYBOX}"
-  ui_debug "Using custom BusyBox... '${OUR_BB}'"
+OUR_BB="${BASE_TMP_PATH:?}/busybox"
+if test -n "${CUSTOM_BUSYBOX:-}" && test -e "${CUSTOM_BUSYBOX:?}"; then
+  OUR_BB="${CUSTOM_BUSYBOX:?}"
+  ui_debug "Using custom BusyBox... '${OUR_BB:?}'"
 elif test "${RECOVERY_ARCH}" = 'x86_64'; then
   ui_debug 'Extracting 64-bit x86 BusyBox...'
-  package_extract_file 'misc/busybox/busybox-x86_64.bin' "${OUR_BB}"
+  package_extract_file 'misc/busybox/busybox-x86_64.bin' "${OUR_BB:?}"
 elif test "${RECOVERY_ARCH}" = 'x86'; then
   ui_debug 'Extracting x86 BusyBox...'
-  package_extract_file 'misc/busybox/busybox-x86.bin' "${OUR_BB}"
+  package_extract_file 'misc/busybox/busybox-x86.bin' "${OUR_BB:?}"
 elif test "${RECOVERY_ARCH}" = 'arm64-v8a'; then
   ui_debug 'Extracting 64-bit ARM BusyBox...'
-  package_extract_file 'misc/busybox/busybox-arm64.bin' "${OUR_BB}"
-  package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH}/keycheck"
+  package_extract_file 'misc/busybox/busybox-arm64.bin' "${OUR_BB:?}"
+  package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH:?}/keycheck"
 elif test "${RECOVERY_ARCH}" = 'armeabi-v7a' || test "${RECOVERY_ARCH}" = 'armeabi'; then
   ui_debug 'Extracting ARM BusyBox...'
-  package_extract_file 'misc/busybox/busybox-arm.bin' "${OUR_BB}"
-  package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH}/keycheck"
+  package_extract_file 'misc/busybox/busybox-arm.bin' "${OUR_BB:?}"
+  package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH:?}/keycheck"
 fi
-if ! test -e "${OUR_BB}"; then ui_error 'BusyBox not found'; fi
+if ! test -e "${OUR_BB:?}"; then ui_error 'BusyBox not found'; fi
 
 # Give execution rights (if needed)
-if test -z "${CUSTOM_BUSYBOX:-}" || test "${OUR_BB}" != "${CUSTOM_BUSYBOX}"; then
-  chmod +x "${OUR_BB}" || ui_error "chmod failed on '${OUR_BB}'" 81  # Needed to make working the "safe" functions
-  set_perm 0 0 0755 "${OUR_BB}"
+if test -z "${CUSTOM_BUSYBOX:-}" || test "${OUR_BB:?}" != "${CUSTOM_BUSYBOX:?}"; then
+  chmod +x "${OUR_BB:?}" || ui_error "chmod failed on '${OUR_BB:?}'" 81  # Needed to make working the "safe" functions
 fi
 
 PREVIOUS_PATH="${PATH}"
 DEVICE_MOUNT="$(command -v -- mount)" || DEVICE_MOUNT=''
 export DEVICE_MOUNT
 
-create_dir_safe "${TMP_PATH}/bin"
+create_dir_safe "${TMP_PATH:?}/bin"
 if test "${TEST_INSTALL:-false}" = 'false'; then
   # Clean search path so only internal BusyBox applets will be used
-  export PATH="${TMP_PATH}/bin"
+  export PATH="${TMP_PATH:?}/bin"
 
   # Temporarily setup BusyBox
-  "${OUR_BB}" --install -s "${TMP_PATH}/bin" || ui_error "Failed to setup BusyBox"
+  "${OUR_BB:?}" --install -s "${TMP_PATH:?}/bin" || ui_error "Failed to setup BusyBox"
 fi
 
 # Temporarily setup Keycheck
-if test -e "${BASE_TMP_PATH}/keycheck"; then
-  "${OUR_BB}" mv -f "${BASE_TMP_PATH}/keycheck" "${TMP_PATH}/bin/keycheck" || ui_error "Failed to move keycheck to the bin folder"
+if test -e "${BASE_TMP_PATH:?}/keycheck"; then
+  "${OUR_BB:?}" mv -f "${BASE_TMP_PATH:?}/keycheck" "${TMP_PATH:?}/bin/keycheck" || ui_error "Failed to move keycheck to the bin folder"
   # Give execution rights
-  set_perm_safe 0 0 0755 "${TMP_PATH}/bin/keycheck"
+  set_perm_safe 0 0 0755 "${TMP_PATH:?}/bin/keycheck"
   LIVE_SETUP_POSSIBLE=true
   KEYCHECK_ENABLED=true
 fi
@@ -219,18 +218,18 @@ fi
 
 # Extract scripts
 ui_debug 'Extracting scripts...'
-create_dir_safe "${TMP_PATH}/inc"
-package_extract_file_safe 'inc/common-functions.sh' "${TMP_PATH}/inc/common-functions.sh"
-package_extract_file_safe 'uninstall.sh' "${TMP_PATH}/uninstall.sh"
-package_extract_file_safe 'install.sh' "${TMP_PATH}/install.sh"
+create_dir_safe "${TMP_PATH:?}/inc"
+package_extract_file_safe 'inc/common-functions.sh' "${TMP_PATH:?}/inc/common-functions.sh"
+package_extract_file_safe 'uninstall.sh' "${TMP_PATH:?}/uninstall.sh"
+package_extract_file_safe 'install.sh' "${TMP_PATH:?}/install.sh"
 # Give execution rights
-set_perm_safe 0 0 0755 "${TMP_PATH}/inc/common-functions.sh"
-set_perm_safe 0 0 0755 "${TMP_PATH}/uninstall.sh"
-set_perm_safe 0 0 0755 "${TMP_PATH}/install.sh"
+set_perm_safe 0 0 0755 "${TMP_PATH:?}/inc/common-functions.sh"
+set_perm_safe 0 0 0755 "${TMP_PATH:?}/uninstall.sh"
+set_perm_safe 0 0 0755 "${TMP_PATH:?}/install.sh"
 
-package_extract_file_safe 'settings.conf' "${TMP_PATH}/default-settings.conf"
-# shellcheck source=SCRIPTDIR/../../../../settings.conf
-. "${TMP_PATH}/default-settings.conf"
+package_extract_file_safe 'settings.conf' "${TMP_PATH:?}/default-settings.conf"
+# shellcheck source=SCRIPTDIR/settings.conf
+. "${TMP_PATH:?}/default-settings.conf"
 test "${DEBUG_LOG}" -eq 1 && enable_debug_log  # Enable file logging if needed
 
 # If the debug log was enabled at startup (not in the settings or in the live setup) we cannot allow overriding it from the settings
@@ -244,21 +243,17 @@ if [ "${DEBUG_LOG_ENABLED}" -eq 1 ]; then export DEBUG_LOG=1; fi
 
 ui_debug ''
 ui_debug 'Starting installation script...'
-"${OUR_BB}" sh "${TMP_PATH}/install.sh" Preloader "${TMP_PATH}"; STATUS="$?"
+"${OUR_BB:?}" sh "${TMP_PATH:?}/install.sh" Preloader "${TMP_PATH:?}"; STATUS="$?"
 
-test -f "${TMP_PATH}/installed" || GENER_ERROR=1
+test -f "${TMP_PATH:?}/installed" || GENER_ERROR=1
 
-export PATH="${PREVIOUS_PATH}"
+export PATH="${PREVIOUS_PATH?}"
 
 #!!! UNSAFE ENVIRONMENT FROM HERE !!!#
 
 test "${DEBUG_LOG}" -eq 1 && disable_debug_log  # Disable debug log and restore normal output
 
-if test "${MANUAL_TMP_MOUNT}" -ne 0; then
-  "${OUR_BB}" umount "${BASE_TMP_PATH:?}" || ui_error 'Failed to unmount the temp folder'
-fi
+if test "${STATUS:?}" -ne 0; then ui_error "Installation script failed with error ${STATUS}" "${STATUS}"; fi
+if test "${GENER_ERROR:?}" -ne 0; then ui_error 'Installation failed with an unknown error'; fi
 
-if test "${STATUS}" -ne 0; then ui_error "Installation script failed with error ${STATUS}" "${STATUS}"; fi
-if test "${GENER_ERROR}" -ne 0; then ui_error 'Installation failed with an unknown error'; fi
-
-delete_safe "${BASE_TMP_PATH}/busybox"
+delete_safe "${BASE_TMP_PATH:?}/busybox"
