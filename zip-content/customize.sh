@@ -248,6 +248,7 @@ ui_debug 'Starting installation script...'
 test -f "${TMP_PATH:?}/installed" || GENER_ERROR=1
 
 export PATH="${PREVIOUS_PATH?}"
+"${OUR_BB:?}" find "${TMP_PATH:?}" -mindepth 1 ! -name 'customize.sh' -delete || ui_error 'Failed to delete temp files'
 
 #!!! UNSAFE ENVIRONMENT FROM HERE !!!#
 
