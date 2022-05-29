@@ -100,12 +100,18 @@ rm -rf "${TMP_PATH:?}" || ui_error "Failed to delete previous files"
 mkdir -p "${TMP_PATH:?}" || ui_error "Failed to create the temp folder"
 set_perm 0 0 0755 "${TMP_PATH:?}"
 
-package_extract_file 'customize.sh' "${TMP_PATH:?}/customize.sh"
+# Seed the RANDOM variable
+RANDOM="$$"
+
+_updatebin_our_main_script="${TMPDIR:-/tmp}/${RANDOM:?}-customize.sh"
+
+package_extract_file 'customize.sh' "${_updatebin_our_main_script:?}"
 # shellcheck source=SCRIPTDIR/../../../../customize.sh
-. "${TMP_PATH:?}/customize.sh"
+. "${_updatebin_our_main_script:?}" || ui_error "Failed to execute customize.sh"
+rm -f "${_updatebin_our_main_script:?}" || ui_error "Failed to delete customize.sh"
+
+unset _updatebin_our_main_script
 
 if test "${MANUAL_TMP_MOUNT}" -ne 0; then
   umount "${BASE_TMP_PATH:?}" || ui_error 'Failed to unmount the temp folder'
 fi
-
-rm -rf "${TMP_PATH:?}" || ui_error "Failed to delete temp files"
