@@ -103,11 +103,15 @@ set_perm 0 0 0755 "${TMP_PATH:?}"
 # Seed the RANDOM variable
 RANDOM="$$"
 
-_updatebin_our_main_script="${TMPDIR:-/tmp}/${RANDOM:?}-customize.sh"
+# shellcheck disable=SC3028
+{
+  if test "${RANDOM:?}" = "$$"; then ui_error "\$RANDOM is not supported"; fi  # Both BusyBox and Toybox support $RANDOM
+  _updatebin_our_main_script="${TMPDIR:-/tmp}/${RANDOM:?}-customize.sh"
+}
 
 package_extract_file 'customize.sh' "${_updatebin_our_main_script:?}"
 # shellcheck source=SCRIPTDIR/../../../../customize.sh
-. "${_updatebin_our_main_script:?}" || ui_error "Failed to execute customize.sh"
+. "${_updatebin_our_main_script:?}" || ui_error "Failed to source customize.sh"
 rm -f "${_updatebin_our_main_script:?}" || ui_error "Failed to delete customize.sh"
 
 unset _updatebin_our_main_script
