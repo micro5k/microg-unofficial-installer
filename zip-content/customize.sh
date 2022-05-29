@@ -6,6 +6,7 @@
 # shellcheck disable=SC3043
 # SC3043: In POSIX sh, local is undefined
 
+umask 022
 # shellcheck disable=SC3040
 set -o pipefail || true
 
@@ -16,6 +17,7 @@ export RECOVERY_API_VER="${1}"
 ZIP_PATH="$(dirname "${ZIPFILE:?}")"
 export ZIP_PATH
 
+BASE_TMP_PATH="${TMPDIR:-/tmp}"
 TMP_PATH="${TMPDIR:-/tmp}/custom-setup-a5k"
 
 GENER_ERROR=0
