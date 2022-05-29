@@ -17,7 +17,6 @@ export OUTFD="${2}"
 export RECOVERY_PIPE="/proc/self/fd/${2}"
 export ZIPFILE="${3:?}"
 BASE_TMP_PATH="${TMPDIR:-/tmp}"
-TMP_PATH="${TMPDIR:-/tmp}/custom-setup-a5k"
 MANUAL_TMP_MOUNT=0
 
 
@@ -82,9 +81,9 @@ package_extract_file()
 
 ### CODE ###
 
-ui_debug 'PRELOADER'
+ui_debug 'PRELOADER 1'
 
-if ! is_mounted "${BASE_TMP_PATH:?}"; then
+if test -z "${TMPDIR:-}" && ! is_mounted "${BASE_TMP_PATH:?}"; then
   # Workaround: create and mount the temp folder if it isn't already mounted
   MANUAL_TMP_MOUNT=1
   ui_warning 'Creating and mounting the missing temp folder...'
@@ -94,11 +93,6 @@ if ! is_mounted "${BASE_TMP_PATH:?}"; then
 
   if ! is_mounted "${BASE_TMP_PATH:?}"; then ui_error 'The temp folder CANNOT be mounted'; fi
 fi
-
-# Delete previous traces and setup our temp folder
-rm -rf "${TMP_PATH:?}" || ui_error "Failed to delete previous files"
-mkdir -p "${TMP_PATH:?}" || ui_error "Failed to create the temp folder"
-set_perm 0 0 0755 "${TMP_PATH:?}"
 
 # Seed the RANDOM variable
 RANDOM="$$"

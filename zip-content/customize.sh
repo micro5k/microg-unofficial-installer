@@ -16,6 +16,8 @@ export RECOVERY_API_VER="${1}"
 ZIP_PATH="$(dirname "${ZIPFILE:?}")"
 export ZIP_PATH
 
+TMP_PATH="${TMPDIR:-/tmp}/custom-setup-a5k"
+
 GENER_ERROR=0
 STATUS=1
 
@@ -143,7 +145,7 @@ delete_recursive_safe()
 
 ### CODE ###
 
-ui_debug 'PRELOADER'
+ui_debug 'PRELOADER 2'
 
 detect_recovery_arch()
 {
@@ -184,12 +186,17 @@ if test -z "${CUSTOM_BUSYBOX:-}" || test "${OUR_BB:?}" != "${CUSTOM_BUSYBOX:?}";
   chmod +x "${OUR_BB:?}" || ui_error "chmod failed on '${OUR_BB:?}'" 81  # Needed to make working the "safe" functions
 fi
 
+# Delete previous traces (if they exist) and setup our temp folder
+"${OUR_BB:?}" rm -rf "${TMP_PATH:?}" || ui_error "Failed to delete previous files"
+"${OUR_BB:?}" mkdir -p "${TMP_PATH:?}" || ui_error "Failed to create the temp folder"
+set_perm_safe 0 0 0755 "${TMP_PATH:?}"
+
 PREVIOUS_PATH="${PATH}"
 DEVICE_MOUNT="$(command -v -- mount)" || DEVICE_MOUNT=''
 export DEVICE_MOUNT
 
-create_dir_safe "${TMP_PATH:?}/bin"
 if test "${TEST_INSTALL:-false}" = 'false'; then
+  create_dir_safe "${TMP_PATH:?}/bin"
   # Clean search path so only internal BusyBox applets will be used
   export PATH="${TMP_PATH:?}/bin"
 
