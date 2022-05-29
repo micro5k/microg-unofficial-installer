@@ -15,7 +15,7 @@ set -o pipefail || true
 
 export OUTFD="${2}"
 export RECOVERY_PIPE="/proc/self/fd/${2}"
-export ZIP_FILE="${3}"
+export ZIPFILE="${3:?}"
 BASE_TMP_PATH="${TMPDIR:-/tmp}"
 TMP_PATH="${TMPDIR:-/tmp}/custom-setup-a5k"
 MANUAL_TMP_MOUNT=0
@@ -75,7 +75,7 @@ set_perm()
 
 package_extract_file()
 {
-  unzip -opq "${ZIP_FILE:?}" "${1:?}" > "${2:?}" || ui_error "Failed to extract the file '${1}' from this archive"
+  unzip -opq "${ZIPFILE:?}" "${1:?}" > "${2:?}" || ui_error "Failed to extract the file '${1}' from this archive"
   if ! test -e "${2:?}"; then ui_error "Failed to extract the file '${1}' from this archive"; fi
 }
 

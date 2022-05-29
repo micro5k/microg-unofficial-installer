@@ -13,7 +13,7 @@ set -o pipefail || true
 
 export DEBUG_LOG=0
 export RECOVERY_API_VER="${1}"
-ZIP_PATH="$(dirname "${ZIP_FILE:?}")"
+ZIP_PATH="$(dirname "${ZIPFILE:?}")"
 export ZIP_PATH
 
 GENER_ERROR=0
@@ -108,14 +108,14 @@ set_perm_safe()
 
 package_extract_file()
 {
-  unzip -opq "${ZIP_FILE}" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 82
-  if ! test -e "$2"; then ui_error "Failed to extract the file '$1' from this archive" 82; fi
+  unzip -opq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" || ui_error "Failed to extract the file '${1}' from this archive" 82
+  if ! test -e "${2:?}"; then ui_error "Failed to extract the file '${1}' from this archive" 82; fi
 }
 
 package_extract_file_safe()
 {
-  "${OUR_BB}" unzip -opq "${ZIP_FILE}" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 83
-  if ! test -e "$2"; then ui_error "Failed to extract the file '$1' from this archive" 83; fi
+  "${OUR_BB}" unzip -opq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" || ui_error "Failed to extract the file '${1}' from this archive" 83
+  if ! test -e "${2:?}"; then ui_error "Failed to extract the file '${1}' from this archive" 83; fi
 }
 
 create_dir()

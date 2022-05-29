@@ -9,7 +9,7 @@
 
 ### GLOBAL VARIABLES ###
 
-if test -z "${RECOVERY_PIPE:-}" || test -z "${OUTFD:-}" || test -z "${ZIP_FILE:-}" || test -z "${TMP_PATH:-}" || test -z "${DEBUG_LOG:-}"; then
+if test -z "${RECOVERY_PIPE:-}" || test -z "${OUTFD:-}" || test -z "${ZIPFILE:-}" || test -z "${TMP_PATH:-}" || test -z "${DEBUG_LOG:-}"; then
   echo 'Some variables are NOT set.'
   exit 90
 fi
@@ -237,17 +237,17 @@ set_std_perm_recursive()  # Use it only if you know your version of 'find' handl
 package_extract_file()
 {
   local dir
-  dir=$(dirname "$2")
-  mkdir -p "${dir}" || ui_error "Failed to create the dir '${dir}' for extraction" 94
-  set_perm 0 0 0755 "${dir}"
-  unzip -opq "${ZIP_FILE}" "$1" > "$2" || ui_error "Failed to extract the file '$1' from this archive" 94
+  dir="$(dirname "${2:?}")"
+  mkdir -p "${dir:?}" || ui_error "Failed to create the dir '${dir}' for extraction" 94
+  set_perm 0 0 0755 "${dir:?}"
+  unzip -opq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" || ui_error "Failed to extract the file '${1}' from this archive" 94
 }
 
 custom_package_extract_dir()
 {
-  mkdir -p "$2" || ui_error "Failed to create the dir '$2' for extraction" 95
-  set_perm 0 0 0755 "$2"
-  unzip -oq "${ZIP_FILE}" "$1/*" -d "$2" || ui_error "Failed to extract the dir '$1' from this archive" 95
+  mkdir -p "${2:?}" || ui_error "Failed to create the dir '${2}' for extraction" 95
+  set_perm 0 0 0755 "${2:?}"
+  unzip -oq "${ZIPFILE:?}" "${1:?}/*" -d "${2:?}" || ui_error "Failed to extract the dir '${1}' from this archive" 95
 }
 
 zip_extract_file()
