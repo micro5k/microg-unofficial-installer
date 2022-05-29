@@ -32,7 +32,7 @@ ui_error()
 {
   ERROR_CODE=79
   if test -n "${2}"; then ERROR_CODE="${2:?}"; fi
-  1>&2 echo "ERROR ${ERROR_CODE:?}: ${1:?}"
+  1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   _show_text_on_recovery "ERROR: ${1:?}"
   exit "${ERROR_CODE:?}"
 }
@@ -73,7 +73,7 @@ if test -z "${TMPDIR:-}" && ! _updatebin_is_mounted '/tmp'; then
   MANUAL_TMP_MOUNT=true
 
   # Workaround: create and mount the temp folder if it isn't already mounted
-  1>&2 echo 'WARNING: Creating and mounting the missing temp folder...'
+  1>&2 printf '\033[0;33m%s\033[0m\n' 'WARNING: Creating and mounting the missing temp folder...'
   _show_text_on_recovery 'WARNING: Creating and mounting the missing temp folder...'
   if ! test -e '/tmp'; then mkdir -p '/tmp' || ui_error 'Failed to create the temp folder'; fi
   set_perm 0 0 0755 '/tmp'
