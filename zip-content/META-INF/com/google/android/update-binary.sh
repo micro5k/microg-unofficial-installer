@@ -40,7 +40,7 @@ ui_error()
 _updatebin_is_mounted()
 {
   local _mount_result
-  _mount_result="$(mount 2>/dev/null)" || { test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || ui_error '_updatebin_is_mounted has failed'
+  { test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || _mount_result="$(mount 2>/dev/null)" || ui_error '_updatebin_is_mounted has failed'
 
   case "${_mount_result:?}" in
     *[[:blank:]]"${1:?}"[[:blank:]]*) return 0;;  # Mounted
