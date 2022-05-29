@@ -172,7 +172,7 @@ if ! test -e "${OUR_BB:?}"; then ui_error 'BusyBox not found'; fi
 
 # Give execution rights (if needed)
 if test -z "${CUSTOM_BUSYBOX:-}" || test "${OUR_BB:?}" != "${CUSTOM_BUSYBOX:?}"; then
-  chmod +x "${OUR_BB:?}" || ui_error "chmod failed on '${OUR_BB:?}'" 81  # Needed to make working the "safe" functions
+  chmod +x "${OUR_BB:?}" || ui_error "chmod failed on '${OUR_BB:?}'"  # Needed to make working the "safe" functions
 fi
 
 # Delete previous traces (if they exist) and setup our temp folder
@@ -191,15 +191,15 @@ if test "${TEST_INSTALL:-false}" = 'false'; then
 
   # Temporarily setup BusyBox
   "${OUR_BB:?}" --install -s "${TMP_PATH:?}/bin" || ui_error "Failed to setup BusyBox"
-fi
 
-# Temporarily setup Keycheck
-if test -e "${BASE_TMP_PATH:?}/keycheck"; then
-  "${OUR_BB:?}" mv -f "${BASE_TMP_PATH:?}/keycheck" "${TMP_PATH:?}/bin/keycheck" || ui_error "Failed to move keycheck to the bin folder"
-  # Give execution rights
-  set_perm_safe 0 0 0755 "${TMP_PATH:?}/bin/keycheck"
-  LIVE_SETUP_POSSIBLE=true
-  KEYCHECK_ENABLED=true
+  # Temporarily setup Keycheck
+  if test -e "${BASE_TMP_PATH:?}/keycheck"; then
+    "${OUR_BB:?}" mv -f "${BASE_TMP_PATH:?}/keycheck" "${TMP_PATH:?}/bin/keycheck" || ui_error "Failed to move keycheck to the bin folder"
+    # Give execution rights
+    "${OUR_BB:?}" chmod +x "${TMP_PATH:?}/bin/keycheck" || ui_error "chmod failed on keycheck"
+    LIVE_SETUP_POSSIBLE=true
+    KEYCHECK_ENABLED=true
+  fi
 fi
 
 # Enable the binary-free live setup when inside the recovery simulator
