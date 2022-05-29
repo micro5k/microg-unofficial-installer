@@ -440,7 +440,7 @@ check_key()
     132)  # Error (example: Illegal instruction)
       return 1;;
     *)
-      return 0;;
+      return 123;;
   esac
 }
 
@@ -454,7 +454,7 @@ _choose_remapper()
     'Enter')
       return 0;;
     *)    # All other keys
-      return 0;;
+      return 123;;
   esac
 }
 
@@ -510,9 +510,6 @@ choose_timeout()
 choose_binary()
 {
   local key_code=1
-  ui_msg "QUESTION: ${1:?}"
-  ui_msg "${2:?}"
-  ui_msg "${3:?}"
   keycheck; key_code="${?}"
   ui_msg "Key code: ${key_code?}"
   check_key "${key_code?}"
@@ -522,9 +519,6 @@ choose_binary()
 choose_shell()
 {
   local _key
-  ui_msg "QUESTION: ${1:?}"
-  ui_msg "${2:?}"
-  ui_msg "${3:?}"
   # shellcheck disable=SC3045
   IFS='' read -rsn1 -- _key || { ui_warning 'Key detection failed'; return 1; }
   if test -z "${_key?}"; then _key='Enter'; fi
@@ -537,10 +531,6 @@ choose_shell()
 choose_input_event()
 {
   local _key _hard_keys_event
-  ui_msg "QUESTION: ${1:?}"
-  ui_msg "${2:?}"
-  ui_msg "${3:?}"
-
   _hard_keys_event="$(_find_hardware_keys)" || { ui_warning 'Key detection failed'; return 1; }
   _key="$(_parse_input_event "${_hard_keys_event:?}")" || { ui_warning 'Key detection failed'; return 1; }
 
@@ -555,12 +545,24 @@ choose_input_event()
 
 choose()
 {
-  if "${KEYCHECK_ENABLED:?}"; then
-    choose_binary "${@}"
-  else
-    choose_shell "${@}"
-  fi
-  return "${?}"
+  local _last_status=0
+  while true; do
+    ui_msg "QUESTION: ${1:?}"
+    ui_msg "${2:?}"
+    ui_msg "${3:?}"
+    if "${KEYCHECK_ENABLED:?}"; then
+      choose_binary "${@}"
+    else
+      choose_shell "${@}"
+    fi
+    _last_status="${?}"
+    if test "${_last_status:?}" -eq 123; then
+      ui_msg 'Invalid choice!!!'
+    else
+      break
+    fi
+  done
+  return "${_last_status:?}"
 }
 
 # Other
