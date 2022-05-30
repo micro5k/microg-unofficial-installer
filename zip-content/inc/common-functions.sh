@@ -430,6 +430,33 @@ _parse_input_event()
   done
 }
 
+_timeout_exit_codes_remapper()
+{
+  case "${1:?}" in
+    124)  # Timed out
+      return 124;;
+    125)  # timeout command itself fails
+      ;;
+    126)  # COMMAND is found but cannot be invoked
+      ;;
+    127)  # COMMAND cannot be found
+      ;;
+    132)  # SIGILL signal (128+4) - Example: illegal instruction
+      ui_warning 'timeout returned SIGILL signal (128+4)'
+      return 1;;
+    137)  # SIGKILL signal (128+9) - Timed out but SIGTERM failed
+      ui_warning 'timeout returned SIGKILL signal (128+9)'
+      return 1;;
+    143)  # SIGTERM signal (128+15) - Timed out
+      return 124;;
+    *)    # All other keys
+      if test "${1:?}" -lt 128; then return "${1:?}"; fi;;  # Return codes of COMMAND
+  esac
+
+  ui_warning "timeout returned: ${1:?}"
+  return 1
+}
+
 check_key()
 {
   case "${1?}" in
@@ -465,16 +492,17 @@ choose_binary_timeout()
 
   _timeout_ver="$(timeout --help 2>&1 | parse_busybox_version)" || _timeout_ver=''
   if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
-    timeout "${1:?}" keycheck; key_code="${?}"
+    timeout "${1:?}" keycheck
   else
-    timeout -t "${1:?}" keycheck; key_code="${?}"
+    timeout -t "${1:?}" keycheck
   fi
+  _timeout_exit_codes_remapper "${?}"
+  key_code="${?}"
 
-  # Timeout return 127 when it cannot execute the binary
-  if test "${key_code?}" = '143'; then
+  if test "${key_code?}" = '124'; then
     ui_msg 'Key code: No key pressed'
     return 0
-  elif test "${key_code?}" = '127' || test "${key_code?}" = '132'; then
+  elif test "${key_code?}" = '1'; then
     ui_warning 'Key detection failed'
     return 1
   fi
