@@ -16,6 +16,7 @@ export LC_ALL=C
 export LANG=C
 
 unset LANGUAGE
+unset LC_CTYPE
 unset LC_MESSAGES
 unset UNZIP
 unset UNZIPOPT
