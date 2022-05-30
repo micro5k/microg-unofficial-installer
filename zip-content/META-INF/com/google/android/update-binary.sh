@@ -17,7 +17,9 @@ export RECOVERY_PIPE="/proc/self/fd/${2}"
 export ZIPFILE="${3:?}"
 
 
-### FUNCTIONS ###
+### FUNCTIONS AND CODE ###
+
+echo 'PRELOADER 1'
 
 _show_text_on_recovery()
 {
@@ -37,18 +39,6 @@ ui_error()
   exit "${ERROR_CODE:?}"
 }
 
-_updatebin_is_mounted()
-{
-  local _mount_result
-  { test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || _mount_result="$(mount 2>/dev/null)" || ui_error '_updatebin_is_mounted has failed'
-
-  case "${_mount_result:?}" in
-    *[[:blank:]]"${1:?}"[[:blank:]]*) return 0;;  # Mounted
-    *)                                            # NOT mounted
-  esac
-  return 1  # NOT mounted
-}
-
 set_perm()
 {
   local uid="${1:?}"; local gid="${2:?}"; local mod="${3:?}"
@@ -64,24 +54,36 @@ package_extract_file()
 }
 
 
-### CODE ###
+{
+  _updatebin_is_mounted()
+  {
+    local _mount_result
+    { test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || _mount_result="$(mount 2>/dev/null)" || ui_error '_updatebin_is_mounted has failed'
 
-echo 'PRELOADER 1'
+    case "${_mount_result:?}" in
+      *[[:blank:]]"${1:?}"[[:blank:]]*) return 0;;  # Mounted
+      *)                                            # NOT mounted
+    esac
+    return 1  # NOT mounted
+  }
 
-MANUAL_TMP_MOUNT=false
-if test -z "${TMPDIR:-}" && ! _updatebin_is_mounted '/tmp'; then
-  MANUAL_TMP_MOUNT=true
+  MANUAL_TMP_MOUNT=false
+  if test -z "${TMPDIR:-}" && ! _updatebin_is_mounted '/tmp'; then
+    MANUAL_TMP_MOUNT=true
 
-  # Workaround: create and mount the temp folder if it isn't already mounted
-  1>&2 printf '\033[0;33m%s\033[0m\n' 'WARNING: Creating and mounting the missing temp folder...'
-  _show_text_on_recovery 'WARNING: Creating and mounting the missing temp folder...'
-  if ! test -e '/tmp'; then mkdir -p '/tmp' || ui_error 'Failed to create the temp folder'; fi
-  set_perm 0 0 0755 '/tmp'
-  mount -t tmpfs -o rw tmpfs '/tmp'
-  set_perm 0 2000 0775 '/tmp'
+    # Workaround: create and mount the temp folder if it isn't already mounted
+    1>&2 printf '\033[0;33m%s\033[0m\n' 'WARNING: Creating and mounting the missing temp folder...'
+    _show_text_on_recovery 'WARNING: Creating and mounting the missing temp folder...'
+    if ! test -e '/tmp'; then mkdir -p '/tmp' || ui_error 'Failed to create the temp folder'; fi
+    set_perm 0 0 0755 '/tmp'
+    mount -t tmpfs -o rw tmpfs '/tmp'
+    set_perm 0 2000 0775 '/tmp'
 
-  if ! _updatebin_is_mounted '/tmp'; then ui_error 'The temp folder CANNOT be mounted'; fi
-fi
+    if ! _updatebin_is_mounted '/tmp'; then ui_error 'The temp folder CANNOT be mounted'; fi
+  fi
+
+  unset -f _updatebin_is_mounted
+}
 
 # Seed the RANDOM variable
 RANDOM="$$"
