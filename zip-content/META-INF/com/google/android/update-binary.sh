@@ -54,6 +54,7 @@ package_extract_file()
 }
 
 
+_updatebin_we_mounted_tmp=false
 {
   _updatebin_is_mounted()
   {
@@ -67,22 +68,21 @@ package_extract_file()
     return 1  # NOT mounted
   }
 
-  MANUAL_TMP_MOUNT=false
   if test -z "${TMPDIR:-}" && ! _updatebin_is_mounted '/tmp'; then
-    MANUAL_TMP_MOUNT=true
+    _updatebin_we_mounted_tmp=true
 
     # Workaround: create and mount the temp folder if it isn't already mounted
-    1>&2 printf '\033[0;33m%s\033[0m\n' 'WARNING: Creating and mounting the missing temp folder...'
-    _show_text_on_recovery 'WARNING: Creating and mounting the missing temp folder...'
-    if ! test -e '/tmp'; then mkdir -p '/tmp' || ui_error 'Failed to create the temp folder'; fi
+    1>&2 printf '\033[0;33m%s\033[0m\n' 'WARNING: Creating (if needed) and mounting the temp folder...'
+    _show_text_on_recovery 'WARNING: Creating (if needed) and mounting the temp folder...'
+    if test ! -e '/tmp'; then mkdir -p -- '/tmp' || ui_error 'Failed to create the temp folder'; fi
     set_perm 0 0 0755 '/tmp'
-    mount -t tmpfs -o rw tmpfs '/tmp'
+    mount -t tmpfs -o rw -- tmpfs '/tmp' || ui_error 'Failed to mount the temp folder'
     set_perm 0 2000 0775 '/tmp'
 
     if ! _updatebin_is_mounted '/tmp'; then ui_error 'The temp folder CANNOT be mounted'; fi
   fi
 
-  unset -f _updatebin_is_mounted
+  unset -f _updatebin_is_mounted || ui_error 'Failed to unset _updatebin_is_mounted'
 }
 
 # Seed the RANDOM variable
@@ -101,6 +101,6 @@ rm -f "${_updatebin_our_main_script:?}" || ui_error "Failed to delete customize.
 
 unset _updatebin_our_main_script
 
-if test "${MANUAL_TMP_MOUNT:?}" = true; then
+if test "${_updatebin_we_mounted_tmp:?}" = true; then
   umount '/tmp' || ui_error 'Failed to unmount the temp folder'
 fi
