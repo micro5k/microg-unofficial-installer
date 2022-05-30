@@ -432,4 +432,5 @@ if test "${SYS_INIT_STATUS}" = '1'; then
 fi
 
 touch "${TMP_PATH}/installed"
+set -x
 ui_msg 'Installation finished.'
