@@ -10,9 +10,12 @@ export LANG=en_US
 
 unset LANGUAGE
 unset LC_ALL
+unset LC_CTYPE
+unset LC_MESSAGES
 unset UNZIP
-unset UNZIP_OPTS
 unset UNZIPOPT
+unset UNZIP_OPTS
+unset CDPATH
 
 ### GLOBAL VARIABLES ###
 
