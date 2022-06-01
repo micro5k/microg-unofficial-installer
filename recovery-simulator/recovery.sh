@@ -177,12 +177,15 @@ rm -f -- "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
 cp -pf -- "${THIS_SCRIPT_DIR}/updater.sh" "${_android_tmp}/updater" || fail_with_msg 'Failed to copy the updater script'
 chmod +x "${_android_tmp}/updater" || fail_with_msg "chmod failed on '${_android_tmp}/updater'"
 
-# Detect whether "export -f" is supported
-# sellcheck disable=SC2216,SC3045
-test_export_f() { : | export -f -- test_export_f 2>/dev/null; return "${?}"; }
+# Detect whether "export -f" is supported (0 means supported)
 _is_export_f_supported=0
-test_export_f || _is_export_f_supported="${?}"
-unset -f test_export_f
+{
+  # shellcheck disable=SC2216,SC3045
+  test_export_f() { : | export -f -- test_export_f 2>/dev/null; return "${?}"; }
+  # shellcheck disable=SC2310
+  test_export_f || _is_export_f_supported="${?}"
+  unset -f test_export_f
+}
 
 override_command()
 {
@@ -192,7 +195,7 @@ override_command()
   unset -f -- "${1:?}"
   eval " ${1:?}() { '${_our_overrider_dir:?}/${1:?}' \"\${@}\"; }" || return "${?}"  # The folder expands when defined, not when used
 
-  if test "${_is_export_f_supported:?}" -eq 0; then  # NOTE: 0 means supported
+  if test "${_is_export_f_supported:?}" -eq 0; then
     # shellcheck disable=SC3045
     export -f -- "${1:?}"
   fi
