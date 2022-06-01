@@ -294,26 +294,22 @@ fi
 
 parse_recovery_output()
 {
-  _last_msg_printed=false
   _last_zip_name=''
-  while IFS=' ' read -r ui_command text; do
-    if test "${ui_command}" = 'ui_print'; then
-      if test "${_last_msg_printed}" = true && test "${text}" = ''; then
-        _last_msg_printed=false
-      else
-        _last_msg_printed=true
-        echo "${text}"
-      fi
-    elif test "${ui_command}" = 'custom_flash_start'; then
-      _last_msg_printed=false
-      _last_zip_name="${text}"
+  while IFS='' read -r full_line; do
+    ui_command=''
+    for elem in ${full_line?}; do
+      ui_command="${elem?}"
+      break
+    done
+    if test "${ui_command?}" = 'ui_print'; then
+      if test "${#full_line}" -gt 9; then echo "${full_line#ui_print }"; fi
+    elif test "${ui_command?}" = 'custom_flash_start'; then
+      _last_zip_name="${full_line#custom_flash_start }"
       recovery_flash_start "${1:?}" "${_last_zip_name:?}"
-    elif test "${ui_command}" = 'custom_flash_end'; then
-      _last_msg_printed=false
-      recovery_flash_end "${1:?}" "${text:?}" "${_last_zip_name:?}"
+    elif test "${ui_command?}" = 'custom_flash_end'; then
+      recovery_flash_end "${1:?}" "${full_line#custom_flash_end }" "${_last_zip_name:?}"
     else
-      _last_msg_printed=false
-      echo "> ${ui_command} ${text}"
+      echo "> ${full_line?}"
     fi
   done < "${2:?}" > "${3:?}"
 }
