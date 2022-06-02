@@ -203,6 +203,7 @@ ui_msg "Selected market app: ${MARKET_FILENAME}"
 
 # Verifying
 ui_msg_sameline_start 'Verifying... '
+ui_debug ''
 if verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" 'eefa9970925a69b6050d23dd7f42a9b1afadaadb' &&
    verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm.apk" 'dd5ed6eadc470b7b99379832dfe40b2e4e41ab59' &&
    verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
