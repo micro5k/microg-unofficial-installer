@@ -430,6 +430,21 @@ _parse_input_event()
   done
 }
 
+_timeout_compat()
+{
+  local _timeout_ver _timeout_secs
+
+  _timeout_ver="$(timeout --help 2>&1 | parse_busybox_version)" || _timeout_ver=''
+  _timeout_secs="${1:?}" || ui_error 'Missing "secs" parameter for _timeout_compat'
+  shift
+  if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
+    timeout -- "${_timeout_secs:?}" "${@:?}"
+  else
+    timeout -t "${_timeout_secs:?}" -- "${@:?}" 2>/dev/null
+  fi
+  return "${?}"
+}
+
 _timeout_exit_codes_remapper()
 {
   case "${1:?}" in
@@ -489,15 +504,9 @@ _choose_remapper()
 
 choose_keycheck_with_timeout()
 {
-  local _timeout_ver
   local key_code=1
 
-  _timeout_ver="$(timeout --help 2>&1 | parse_busybox_version)" || _timeout_ver=''
-  if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
-    timeout "${1:?}" keycheck
-  else
-    timeout -t "${1:?}" keycheck
-  fi
+  _timeout_compat "${1:?}" keycheck
   _timeout_exit_codes_remapper "${?}"
   key_code="${?}"
 
