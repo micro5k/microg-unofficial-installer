@@ -487,7 +487,7 @@ _choose_remapper()
   esac
 }
 
-choose_binary_timeout()
+choose_keycheck_with_timeout()
 {
   local _timeout_ver
   local key_code=1
@@ -514,7 +514,7 @@ choose_binary_timeout()
   return "${?}"
 }
 
-choose_timeout()
+choose_read_with_timeout()
 {
   local _key _status
   _status='0'
@@ -537,7 +537,7 @@ choose_timeout()
   return "${?}"
 }
 
-choose_binary()
+choose_keycheck()
 {
   local key_code=1
   keycheck; key_code="${?}"
@@ -547,7 +547,7 @@ choose_binary()
 }
 
 _esc_keycode="$(printf '\033')"
-choose_shell()
+choose_read()
 {
   local _key
   # shellcheck disable=SC3045
@@ -564,7 +564,7 @@ choose_shell()
   return "${?}"
 }
 
-choose_input_event()
+choose_inputevent()
 {
   local _key _hard_keys_event
   _hard_keys_event="$(_find_hardware_keys)" || { ui_warning 'Key detection failed'; return 1; }
@@ -575,7 +575,7 @@ choose_input_event()
   # 114 Vol -
   # 115 Vol +
   # 116 Power
-  #_choose_input_event_remapper "${_key:?}"
+  #_choose_inputevent_remapper "${_key:?}"
   #return "${?}"
 }
 
@@ -587,9 +587,9 @@ choose()
     ui_msg "${2:?}"
     ui_msg "${3:?}"
     if "${KEYCHECK_ENABLED:?}"; then
-      choose_binary "${@}"
+      choose_keycheck "${@}"
     else
-      choose_shell "${@}"
+      choose_read "${@}"
     fi
     _last_status="${?}"
     if test "${_last_status:?}" -eq 123; then
