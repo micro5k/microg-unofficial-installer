@@ -487,10 +487,10 @@ check_key()
 }
 
 _esc_keycode="$(printf '\033')"
-_choose_remapper()
+_choose_read_remapper()
 {
   local _key
-  _key="${1?}" || ui_error 'Missing parameter for _choose_remapper'
+  _key="${1?}" || ui_error 'Missing parameter for _choose_read_remapper'
   if test -z "${_key?}"; then _key='Enter'; elif test "${_key:?}" = "${_esc_keycode:?}"; then _key='ESC'; fi
   ui_msg "Key press: ${_key:?}"
 
@@ -556,7 +556,7 @@ choose_read_with_timeout()
       return 1;;
   esac
 
-  _choose_remapper "${_key?}"
+  _choose_read_remapper "${_key?}"
   return "${?}"
 }
 
@@ -567,7 +567,7 @@ choose_read()
   IFS='' read -rsn 1 -- _key || { ui_warning 'Key detection failed'; return 1; }
 
   clear
-  _choose_remapper "${_key?}"
+  _choose_read_remapper "${_key?}"
   return "${?}"
 }
 
