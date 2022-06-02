@@ -57,8 +57,9 @@ package_extract_file()
 }
 
 
-_updatebin_we_mounted_tmp=false
 {
+  _updatebin_we_mounted_tmp=false
+
   _updatebin_is_mounted()
   {
     local _mount_result
@@ -75,14 +76,16 @@ _updatebin_we_mounted_tmp=false
     _updatebin_we_mounted_tmp=true
 
     # Workaround: create and mount the temp folder if it isn't already mounted
-    1>&2 printf '\033[0;33m%s\033[0m\n' 'WARNING: Creating (if needed) and mounting the temp folder...'
     _show_text_on_recovery 'WARNING: Creating (if needed) and mounting the temp folder...'
+    1>&2 printf '\033[0;33m%s\033[0m\n' 'WARNING: Creating (if needed) and mounting the temp folder...'
     if test ! -e '/tmp'; then mkdir -p -- '/tmp' || ui_error 'Failed to create the temp folder'; fi
     set_perm 0 0 0755 '/tmp'
     mount -t tmpfs -o rw -- tmpfs '/tmp' || ui_error 'Failed to mount the temp folder'
     set_perm 0 2000 0775 '/tmp'
 
     if ! _updatebin_is_mounted '/tmp'; then ui_error 'The temp folder CANNOT be mounted'; fi
+  elif test ! -e "${TMPDIR:-/tmp}"; then
+    ui_error 'The temp folder is missing'
   fi
 
   unset -f _updatebin_is_mounted || ui_error 'Failed to unset _updatebin_is_mounted'
