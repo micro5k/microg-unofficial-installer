@@ -31,52 +31,52 @@ ui_error()
 {
   ERROR_CODE=91
   if test -n "${2}"; then ERROR_CODE="${2:?}"; fi
-  1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   _show_text_on_recovery "ERROR: ${1:?}"
+  1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   exit "${ERROR_CODE:?}"
 }
 
 ui_warning()
 {
-  1>&2 printf '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
   _show_text_on_recovery "WARNING: ${1:?}"
+  1>&2 printf '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
 }
 
 ui_msg_empty_line()
 {
-  if test "${DEBUG_LOG}" -ne 0; then echo ''; fi
   _show_text_on_recovery ' '
+  if test "${DEBUG_LOG}" -ne 0; then printf '\n'; fi
 }
 
 ui_msg()
 {
-  if test "${DEBUG_LOG}" -ne 0; then echo "${1:?}"; fi
   _show_text_on_recovery "${1:?}"
+  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1:?}"; fi
 }
 
 ui_msg_sameline_start()
 {
-  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1:?}"; fi
   if test -e "${RECOVERY_PIPE}"; then
     printf 'ui_print %s' "${1:?}" >> "${RECOVERY_PIPE:?}"
   else
     printf 'ui_print %s' "${1:?}" 1>&"${OUTFD:?}"
   fi
+  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1:?}"; fi
 }
 
 ui_msg_sameline_end()
 {
-  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1:?}"; fi
   if test -e "${RECOVERY_PIPE}"; then
     printf '%s\nui_print\n' "${1:?}" >> "${RECOVERY_PIPE:?}"
   else
     printf '%s\nui_print\n' "${1:?}" 1>&"${OUTFD:?}"
   fi
+  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1:?}"; fi
 }
 
 ui_debug()
 {
-  echo "${1?}"
+  printf '%s\n' "${1?}"
 }
 
 # Error checking functions
