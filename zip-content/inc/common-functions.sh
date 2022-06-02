@@ -474,13 +474,15 @@ check_key()
 _choose_remapper()
 {
   case "${1:?}" in
-    '+')  # +
+    '+')    # +
       return 3;;
-    '-')  # -
+    '-')    # -
       return 2;;
     'Enter')
       return 0;;
-    *)    # All other keys
+    'ESC')  # ESC or other special keys
+      ui_error 'Installation forcefully terminated' 143;;
+    *)      # All other keys
       return 123;;
   esac
 }
@@ -544,13 +546,19 @@ choose_binary()
   return "${?}"
 }
 
+_esc_keycode="$(printf '\033')"
 choose_shell()
 {
   local _key
   # shellcheck disable=SC3045
   IFS='' read -rsn1 -- _key || { ui_warning 'Key detection failed'; return 1; }
-  if test -z "${_key?}"; then _key='Enter'; fi
+  if test -z "${_key?}"; then
+    _key='Enter'
+  elif test "${_key?}" = "${_esc_keycode:?}"; then
+    _key='ESC'
+  fi
 
+  clear
   ui_msg "Key press: ${_key:?}"
   _choose_remapper "${_key:?}"
   return "${?}"
