@@ -41,19 +41,24 @@ MARKET_FILENAME=''
 ### CODE ###
 
 # Live setup
-if "${LIVE_SETUP_POSSIBLE:?}" && test "${LIVE_SETUP:?}" -eq 0 && test "${LIVE_SETUP_TIMEOUT:?}" -ge 1; then
-  ui_msg '---------------------------------------------------'
-  ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
-  ui_msg "Waiting input for ${LIVE_SETUP_TIMEOUT} seconds..."
-  if "${KEYCHECK_ENABLED}"; then
-    choose_binary_timeout "${LIVE_SETUP_TIMEOUT}"
-  else
-    choose_timeout "${LIVE_SETUP_TIMEOUT}"
+live_setup_enabled=false
+if test "${LIVE_SETUP_POSSIBLE:?}" = 'true'; then
+  if test "${LIVE_SETUP_DEFAULT:?}" != '0'; then
+    live_setup_enabled=true
+  elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
+    ui_msg '---------------------------------------------------'
+    ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
+    ui_msg "Waiting input for ${LIVE_SETUP_TIMEOUT} seconds..."
+    if "${KEYCHECK_ENABLED}"; then
+      choose_binary_timeout "${LIVE_SETUP_TIMEOUT}"
+    else
+      choose_timeout "${LIVE_SETUP_TIMEOUT}"
+    fi
+    if test "${?}" = '3'; then live_setup_enabled=true; fi
   fi
-  if test "${?}" = '3'; then export LIVE_SETUP=1; fi
 fi
 
-if test "${LIVE_SETUP}" = '1'; then
+if test "${live_setup_enabled:?}" = 'true'; then
   ui_msg 'LIVE SETUP ENABLED!'
   if test "${DEBUG_LOG}" = '0'; then
     choose 'Do you want to enable the debug log?' '+) Yes' '-) No'; if test "${?}" = '3'; then export DEBUG_LOG=1; enable_debug_log; fi
@@ -142,7 +147,7 @@ ui_msg "Privileged apps: ${PRIVAPP_PATH}"
 
 if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi
 
-if test "${LIVE_SETUP:?}" -eq 1; then
+if test "${live_setup_enabled:?}" = 'true'; then
   choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore'
   if test "$?" -eq 3; then export MARKET='PlayStore'; else export MARKET='FakeStore'; fi
 fi
@@ -300,7 +305,7 @@ else
   delete_recursive "${TMP_PATH}/files/etc/default-permissions"
 fi
 
-if test "${LIVE_SETUP:?}" -eq 1; then
+if test "${live_setup_enabled:?}" = 'true'; then
   choose 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
   if test "$?" -eq 3; then reset_gms_data_of_all_apps; fi
 elif test "${RESET_GMS_DATA_OF_ALL_APPS:?}" -eq 1; then

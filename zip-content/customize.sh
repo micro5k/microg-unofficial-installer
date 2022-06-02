@@ -209,7 +209,6 @@ if test "${TEST_INSTALL:-false}" != 'false'; then LIVE_SETUP_POSSIBLE=true; KEYC
 # Live setup doesn't work when executed through Gradle
 if test "${CI:-false}" != 'false' || test "${APP_NAME:-false}" = 'Gradle'; then
   LIVE_SETUP_POSSIBLE=false
-  LIVE_SETUP=0
 fi
 
 # Extract scripts
