@@ -486,9 +486,15 @@ check_key()
   esac
 }
 
+_esc_keycode="$(printf '\033')"
 _choose_remapper()
 {
-  case "${1:?}" in
+  local _key
+  _key="${1?}" || ui_error 'Missing parameter for _choose_remapper'
+  if test -z "${_key?}"; then _key='Enter'; elif test "${_key:?}" = "${_esc_keycode:?}"; then _key='ESC'; fi
+  ui_msg "Key press: ${_key:?}"
+
+  case "${_key:?}" in
     '+')    # +
       return 3;;
     '-')    # -
@@ -532,7 +538,6 @@ choose_keycheck()
   return "${?}"
 }
 
-_esc_keycode="$(printf '\033')"
 choose_read_with_timeout()
 {
   local _key _status
@@ -542,8 +547,8 @@ choose_read_with_timeout()
   IFS='' read -rsn 1 -t "${1:?}" -- _key || _status="${?}"
   case "${_status:?}" in
     0)        # 0: Command terminated successfully
-      if test -z "${_key?}"; then _key='Enter'; elif test "${_key?}" = "${_esc_keycode:?}"; then _key='ESC'; fi;;
-    1 | 142)  # 1: Command timed out on BusyBox, 142: Command timed out on Bash
+      ;;
+    1 | 142)  # 1: Command timed out on BusyBox / Toybox, 142: Command timed out on Bash
       ui_msg 'Key: No key pressed'
       return 0;;
     *)
@@ -551,8 +556,7 @@ choose_read_with_timeout()
       return 1;;
   esac
 
-  ui_msg "Key press: ${_key:?}"
-  _choose_remapper "${_key:?}"
+  _choose_remapper "${_key?}"
   return "${?}"
 }
 
@@ -561,11 +565,9 @@ choose_read()
   local _key
   # shellcheck disable=SC3045
   IFS='' read -rsn 1 -- _key || { ui_warning 'Key detection failed'; return 1; }
-  if test -z "${_key?}"; then _key='Enter'; elif test "${_key?}" = "${_esc_keycode:?}"; then _key='ESC'; fi
 
   clear
-  ui_msg "Key press: ${_key:?}"
-  _choose_remapper "${_key:?}"
+  _choose_remapper "${_key?}"
   return "${?}"
 }
 
