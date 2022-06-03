@@ -7,9 +7,6 @@ cache/
 output/
 recovery-simulator/output/
 
-# Files for the ART/Dalvik VM
-*.dex
-
 # Gradle files
 .gradle/
 build/
@@ -18,7 +15,10 @@ user.gradle
 # Local configuration files
 local.properties
 
-# Code scanning and log files
-results.sarif
-coverage
+# Code scanning, caches and log files
 *.log
+*.sarif
+*.dex
+coverage
+.DS_Store
+__pycache__/
