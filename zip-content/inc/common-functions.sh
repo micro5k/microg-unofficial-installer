@@ -430,21 +430,6 @@ _parse_input_event()
   done
 }
 
-_timeout_compat()
-{
-  local _timeout_ver _timeout_secs
-
-  _timeout_ver="$(timeout --help 2>&1 | parse_busybox_version)" || _timeout_ver=''
-  _timeout_secs="${1:?}" || ui_error 'Missing "secs" parameter for _timeout_compat'
-  shift
-  if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
-    timeout -- "${_timeout_secs:?}" "${@:?}"
-  else
-    timeout -t "${_timeout_secs:?}" -- "${@:?}" 2>/dev/null
-  fi
-  return "${?}"
-}
-
 _timeout_exit_codes_remapper()
 {
   case "${1:?}" in
@@ -472,18 +457,20 @@ _timeout_exit_codes_remapper()
   return 1
 }
 
-check_key()
+_timeout_compat()
 {
-  case "${1?}" in
-    42)   # Vol +
-      return 3;;
-    21)   # Vol -
-      return 2;;
-    132)  # Error (example: Illegal instruction)
-      return 1;;
-    *)
-      return 123;;
-  esac
+  local _timeout_ver _timeout_secs
+
+  _timeout_ver="$(timeout --help 2>&1 | parse_busybox_version)" || _timeout_ver=''
+  _timeout_secs="${1:?}" || ui_error 'Missing "secs" parameter for _timeout_compat'
+  shift
+  if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
+    timeout -- "${_timeout_secs:?}" "${@:?}"
+  else
+    timeout -t "${_timeout_secs:?}" -- "${@:?}" 2>/dev/null
+  fi
+  _timeout_exit_codes_remapper "${?}"
+  return "${?}"
 }
 
 _esc_keycode="$(printf '\033')"
@@ -508,33 +495,38 @@ _choose_read_remapper()
   esac
 }
 
+_keycheck_map_keycode_to_key()
+{
+  case "${1:?}" in
+    42)  # Vol +
+      printf '+';;
+    21)  # Vol -
+      printf '-';;
+    *)
+      return 1;;
+  esac
+}
+
 choose_keycheck_with_timeout()
 {
-  local key_code=1
+  local _key _status
+  _timeout_compat "${1:?}" keycheck; _status="${?}"
 
-  _timeout_compat "${1:?}" keycheck
-  _timeout_exit_codes_remapper "${?}"
-  key_code="${?}"
+  if test "${_status:?}" = '124'; then ui_msg 'Key: No key pressed'; return 0; fi
+  _key="$(_keycheck_map_keycode_to_key "${_status:?}")" || { ui_warning 'Key detection failed'; return 1; }
 
-  if test "${key_code?}" = '124'; then
-    ui_msg 'Key code: No key pressed'
-    return 0
-  elif test "${key_code?}" = '1'; then
-    ui_warning 'Key detection failed'
-    return 1
-  fi
-
-  ui_msg "Key code: ${key_code?}"
-  check_key "${key_code?}"
+  _choose_read_remapper "${_key:?}"
   return "${?}"
 }
 
 choose_keycheck()
 {
-  local key_code=1
-  keycheck; key_code="${?}"
-  ui_msg "Key code: ${key_code?}"
-  check_key "${key_code?}"
+  local _key _status
+  keycheck; _status="${?}"
+
+  _key="$(_keycheck_map_keycode_to_key "${_status:?}")" || { ui_warning 'Key detection failed'; return 1; }
+
+  _choose_read_remapper "${_key:?}"
   return "${?}"
 }
 
