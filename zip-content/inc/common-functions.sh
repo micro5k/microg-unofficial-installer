@@ -430,7 +430,7 @@ _parse_input_event()
   done
 }
 
-_timeout_exit_codes_remapper()
+_timeout_exit_code_remapper()
 {
   case "${1:?}" in
     124)  # Timed out
@@ -469,15 +469,15 @@ _timeout_compat()
   else
     timeout -t "${_timeout_secs:?}" -- "${@:?}" 2>/dev/null
   fi
-  _timeout_exit_codes_remapper "${?}"
+  _timeout_exit_code_remapper "${?}"
   return "${?}"
 }
 
 _esc_keycode="$(printf '\033')"
-_choose_read_remapper()
+_choose_remapper()
 {
   local _key
-  _key="${1?}" || ui_error 'Missing parameter for _choose_read_remapper'
+  _key="${1?}" || ui_error 'Missing parameter for _choose_remapper'
   if test -z "${_key?}"; then _key='Enter'; elif test "${_key:?}" = "${_esc_keycode:?}"; then _key='ESC'; fi
   ui_msg "Key press: ${_key:?}"
 
@@ -515,7 +515,7 @@ choose_keycheck_with_timeout()
   if test "${_status:?}" = '124'; then ui_msg 'Key: No key pressed'; return 0; fi
   _key="$(_keycheck_map_keycode_to_key "${_status:?}")" || { ui_warning 'Key detection failed'; return 1; }
 
-  _choose_read_remapper "${_key:?}"
+  _choose_remapper "${_key:?}"
   return "${?}"
 }
 
@@ -526,7 +526,7 @@ choose_keycheck()
 
   _key="$(_keycheck_map_keycode_to_key "${_status:?}")" || { ui_warning 'Key detection failed'; return 1; }
 
-  _choose_read_remapper "${_key:?}"
+  _choose_remapper "${_key:?}"
   return "${?}"
 }
 
@@ -548,7 +548,7 @@ choose_read_with_timeout()
       return 1;;
   esac
 
-  _choose_read_remapper "${_key?}"
+  _choose_remapper "${_key?}"
   return "${?}"
 }
 
@@ -559,7 +559,7 @@ choose_read()
   IFS='' read -rsn 1 -- _key || { ui_warning 'Key detection failed'; return 1; }
 
   clear
-  _choose_read_remapper "${_key?}"
+  _choose_remapper "${_key?}"
   return "${?}"
 }
 
