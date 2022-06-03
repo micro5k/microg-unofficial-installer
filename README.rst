@@ -52,6 +52,10 @@ Copyright
 
 Code analysis
 -------------
+.. image:: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-linting.yml/badge.svg
+   :alt: Code linting
+   :target: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-linting.yml
+
 .. image:: https://app.codacy.com/project/badge/Grade/892e0ecec7b744ad8f26b97b30d552f1
    :alt: Codacy Badge
    :target: https://www.codacy.com/gh/micro5k/microg-unofficial-installer/dashboard
