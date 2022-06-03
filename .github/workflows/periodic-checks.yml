@@ -30,7 +30,7 @@ jobs:
       - name: "Gradle Wrapper validation"
         uses: gradle/wrapper-validation-action@master
       - name: "Gitleaks"
-        uses: zricethezav/gitleaks-action@v1
+        uses: zricethezav/gitleaks-action@v2.0.0
       - name: "Validate Codecov configuration"
         shell: bash
         run: |
