@@ -10,7 +10,6 @@ override_command_fallback()
 }
 
 unset OUR_TEMP_DIR
-unset BB_GLOBBING
 unset FUNCNAME
 unset HOSTNAME
 unset LINENO
