@@ -537,15 +537,14 @@ choose_read_with_timeout()
 
   # shellcheck disable=SC3045
   IFS='' read -rsn 1 -t "${1:?}" -- _key || _status="${?}"
+
   case "${_status:?}" in
-    0)        # 0: Command terminated successfully
+    0) # Command terminated successfully
       ;;
-    1 | 142)  # 1: Command timed out on BusyBox / Toybox, 142: Command timed out on Bash
-      ui_msg 'Key: No key pressed'
-      return 0;;
+    1 | 142) # 1 => Command timed out on BusyBox / Toybox; 142 => Command timed out on Bash
+      ui_msg 'Key: No key pressed'; return 0;;
     *)
-      ui_warning 'Key detection failed'
-      return 1;;
+      ui_warning 'Key detection failed'; return 1;;
   esac
 
   _choose_remapper "${_key?}"

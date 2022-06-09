@@ -34,6 +34,7 @@ override_command_fallback chown || exit 124
 override_command_fallback su || exit 124
 override_command_fallback sudo || exit 124
 
+unset -f function_exists
 unset -f override_command_fallback
 unset OVERRIDE_DIR
 
