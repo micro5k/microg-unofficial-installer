@@ -20,6 +20,7 @@ export ZIPFILE="${3:?}"
 ### FUNCTIONS AND CODE ###
 
 echo 'PRELOADER 1'
+unset -f -- abort
 
 _show_text_on_recovery()
 {
@@ -54,6 +55,7 @@ package_extract_file()
 }
 
 
+# Workaround: Create (if needed) and mount the temp folder if it isn't already mounted
 {
   _updatebin_we_mounted_tmp=false
 
@@ -72,11 +74,13 @@ package_extract_file()
   if test -z "${TMPDIR:-}" && ! _updatebin_is_mounted '/tmp'; then
     _updatebin_we_mounted_tmp=true
 
-    # Workaround: create and mount the temp folder if it isn't already mounted
     _show_text_on_recovery 'WARNING: Creating (if needed) and mounting the temp folder...'
     1>&2 printf '\033[0;33m%s\033[0m\n' 'WARNING: Creating (if needed) and mounting the temp folder...'
-    if test ! -e '/tmp'; then mkdir -p -- '/tmp' || ui_error 'Failed to create the temp folder'; fi
-    set_perm 0 0 0755 '/tmp'
+    if test ! -e '/tmp'; then
+      mkdir -p -- '/tmp' || ui_error 'Failed to create the temp folder'
+      set_perm 0 0 0755 '/tmp'
+    fi
+    
     mount -t tmpfs -o rw -- tmpfs '/tmp' || ui_error 'Failed to mount the temp folder'
     set_perm 0 2000 0775 '/tmp'
 

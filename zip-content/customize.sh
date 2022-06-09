@@ -9,8 +9,14 @@
 set -u
 # shellcheck disable=SC3040
 set -o pipefail || true
-
 umask 022
+
+
+### PREVENTIVE CHECKS ###
+
+if test -z "${OUTFD:-}"; then 1>&2 printf '%s\n' 'Missing OUTFD variable'; abort 'Missing OUTFD variable' 2>/dev/null || exit 1; fi
+if test -z "${ZIPFILE:-}"; then ui_error 'Missing ZIPFILE variable'; fi
+if test ! -e "${TMPDIR:-/tmp}"; then ui_error 'Missing temp folder'; fi
 
 
 ### GLOBAL VARIABLES ###
@@ -70,7 +76,7 @@ ui_error()
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
   1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   _show_text_on_recovery "ERROR: ${1:?}"
-  exit "${ERROR_CODE:?}"
+  abort '' 2>/dev/null || exit "${ERROR_CODE:?}"
 }
 
 ui_warning()
