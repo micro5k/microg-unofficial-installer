@@ -20,7 +20,7 @@ export ZIPFILE="${3:?}"
 ### FUNCTIONS AND CODE ###
 
 echo 'PRELOADER 1'
-unset -f -- abort
+unset -f abort
 
 _show_text_on_recovery()
 {
@@ -80,7 +80,7 @@ package_extract_file()
       mkdir -p -- '/tmp' || ui_error 'Failed to create the temp folder'
       set_perm 0 0 0755 '/tmp'
     fi
-    
+
     mount -t tmpfs -o rw -- tmpfs '/tmp' || ui_error 'Failed to mount the temp folder'
     set_perm 0 2000 0775 '/tmp'
 
@@ -105,7 +105,6 @@ package_extract_file 'customize.sh' "${_updatebin_our_main_script:?}"
 # shellcheck source=SCRIPTDIR/../../../../customize.sh
 . "${_updatebin_our_main_script:?}" || ui_error "Failed to source customize.sh"
 rm -f "${_updatebin_our_main_script:?}" || ui_error "Failed to delete customize.sh"
-
 unset _updatebin_our_main_script
 
 if test "${_updatebin_we_mounted_tmp:?}" = true; then
