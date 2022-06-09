@@ -402,9 +402,9 @@ create_dir "${USED_SETTINGS_PATH}"
 {
   echo '# SPDX-FileCopyrightText: none'
   echo '# SPDX-License-Identifier: CC0-1.0'
-  echo '# SPDX-FileType: SOURCE'
+  echo '# SPDX-FileType: OTHER'
   echo ''
-  echo 'install.type=recovery'
+  echo 'install.type=flashable-zip'
   echo "install.version.code=${install_version_code}"
   echo "install.version=${install_version}"
   echo "market.app=${MARKET}"
