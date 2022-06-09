@@ -230,8 +230,8 @@ fi
 ui_debug 'Extracting scripts...'
 create_dir_safe "${TMP_PATH:?}/inc"
 package_extract_file_safe 'inc/common-functions.sh' "${TMP_PATH:?}/inc/common-functions.sh"
-package_extract_file_safe 'uninstall.sh' "${TMP_PATH:?}/uninstall.sh"
-package_extract_file_safe 'install.sh' "${TMP_PATH:?}/install.sh"
+package_extract_file_safe 'scripts/uninstall.sh' "${TMP_PATH:?}/uninstall.sh"
+package_extract_file_safe 'scripts/install.sh' "${TMP_PATH:?}/install.sh"
 # Give execution rights
 set_perm_safe 0 0 0755 "${TMP_PATH:?}/inc/common-functions.sh"
 set_perm_safe 0 0 0755 "${TMP_PATH:?}/uninstall.sh"
