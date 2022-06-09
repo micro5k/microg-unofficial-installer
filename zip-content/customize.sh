@@ -178,11 +178,11 @@ elif test "${RECOVERY_ARCH}" = 'x86'; then
 elif test "${RECOVERY_ARCH}" = 'arm64-v8a'; then
   ui_debug 'Extracting 64-bit ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm64.bin' "${OUR_BB:?}"
-  package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH:?}/keycheck"
+  package_extract_file 'misc/keycheck/keycheck-arm.bin' "${BASE_TMP_PATH:?}/keycheck"
 elif test "${RECOVERY_ARCH}" = 'armeabi-v7a' || test "${RECOVERY_ARCH}" = 'armeabi'; then
   ui_debug 'Extracting ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm.bin' "${OUR_BB:?}"
-  package_extract_file 'misc/keycheck/keycheck-arm' "${BASE_TMP_PATH:?}/keycheck"
+  package_extract_file 'misc/keycheck/keycheck-arm.bin' "${BASE_TMP_PATH:?}/keycheck"
 fi
 if ! test -e "${OUR_BB:?}"; then ui_error 'BusyBox not found'; fi
 

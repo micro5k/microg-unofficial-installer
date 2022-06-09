@@ -108,7 +108,7 @@ if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
   done
   STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
-  dl_file 'misc/keycheck' 'keycheck-arm' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
+  dl_file 'misc/keycheck' 'keycheck-arm.bin' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
 else
   echo 'Skipped not OSS files!'
 fi
@@ -135,7 +135,7 @@ else
   STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
   mkdir -p "${TEMP_DIR}/zip-content/misc/keycheck"
-  cp -f "${SCRIPT_DIR}/cache/misc/keycheck/keycheck-arm" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
+  cp -f "${SCRIPT_DIR}/cache/misc/keycheck/keycheck-arm.bin" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
 fi
 
 # Remove the cache folder only if it is empty
