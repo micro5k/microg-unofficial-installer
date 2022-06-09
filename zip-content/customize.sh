@@ -31,6 +31,12 @@ export KEYCHECK_ENABLED=false
 export BOOTMODE=false
 
 
+### FOR MAGISK ###
+
+SKIPUNZIP=1
+export SKIPUNZIP
+
+
 ### FUNCTIONS ###
 
 export DEBUG_LOG_ENABLED=0
