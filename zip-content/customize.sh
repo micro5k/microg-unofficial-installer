@@ -17,6 +17,7 @@ umask 022
 if test -z "${OUTFD:-}"; then 1>&2 printf '%s\n' 'Missing OUTFD variable'; abort 'Missing OUTFD variable' 2>/dev/null || exit 1; fi
 if test -z "${ZIPFILE:-}"; then ui_error 'Missing ZIPFILE variable'; fi
 if test ! -e "${TMPDIR:-/tmp}"; then ui_error 'Missing temp folder'; fi
+unset REPLACE
 
 
 ### GLOBAL VARIABLES ###
