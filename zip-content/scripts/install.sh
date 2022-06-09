@@ -34,7 +34,7 @@ MARKET_FILENAME=''
 
 ### FUNCTIONS ###
 
-# shellcheck source=SCRIPTDIR/inc/common-functions.sh
+# shellcheck source=SCRIPTDIR/../inc/common-functions.sh
 . "${TMP_PATH}/inc/common-functions.sh"
 
 
