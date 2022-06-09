@@ -259,8 +259,7 @@ flash_zips()
     FLASHABLE_ZIP_NAME="$(basename "${_current_zip_fullpath:?}")" || fail_with_msg 'Failed to get the filename of the flashable ZIP'
     cp -f -- "${_current_zip_fullpath:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" || fail_with_msg 'Failed to copy the flashable ZIP'
 
-    # Simulate the environment variables
-    # shellcheck disable=SC2310
+    # Simulate the environment variables of a real recovery
     simulate_env || return "${?}"
 
     "${CUSTOM_BUSYBOX:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_tmp:?}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
@@ -273,7 +272,6 @@ flash_zips()
     echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
     echo ''
 
-    # shellcheck disable=SC2310
     restore_env || return "${?}"
     if test "${STATUS:?}" -ne 0; then return "${STATUS:?}"; fi
   done
