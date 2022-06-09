@@ -7,15 +7,12 @@
 # SC3043: In POSIX sh, local is undefined
 
 set -u
-# shellcheck disable=SC3040
-set -o pipefail || true
-
 umask 022
 
 
 ### GLOBAL VARIABLES ###
 
-export OUTFD="${2}"
+export OUTFD="${2:?}"
 export RECOVERY_PIPE="/proc/self/fd/${2}"
 export ZIPFILE="${3:?}"
 
