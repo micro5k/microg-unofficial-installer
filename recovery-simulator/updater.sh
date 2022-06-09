@@ -3,6 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
+function_exists()
+{
+  LC_ALL=C type "${1:?}" 2>/dev/null | grep -Fq -- 'is a function'
+}
+
 override_command_fallback()
 {
   # shellcheck disable=SC2139
