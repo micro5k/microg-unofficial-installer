@@ -155,8 +155,8 @@ mkdir -p "${_android_data}"
 mkdir -p "${_android_ext_stor}"
 mkdir -p "${_android_sec_stor}"
 touch "${_android_tmp}/recovery.log"
-link_folder "${BASE_SIMULATION_PATH}/sbin" "${_android_sys}/bin"
-link_folder "${BASE_SIMULATION_PATH}/sdcard" "${_android_ext_stor}"
+link_folder "${BASE_SIMULATION_PATH:?}/sbin" "${_android_sys:?}/bin"
+link_folder "${BASE_SIMULATION_PATH:?}/sdcard" "${_android_ext_stor:?}"
 cp -pf -- "${_our_busybox:?}" "${BASE_SIMULATION_PATH:?}/system/bin/busybox" || fail_with_msg 'Failed to copy BusyBox'
 
 {
@@ -166,16 +166,16 @@ cp -pf -- "${_our_busybox:?}" "${BASE_SIMULATION_PATH:?}/system/bin/busybox" || 
   echo 'ro.product.cpu.abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi'
   echo 'ro.product.cpu.abilist32=x86,armeabi-v7a,armeabi'
   echo 'ro.product.cpu.abilist64=x86_64,arm64-v8a'
-} > "${_android_sys}/build.prop"
+} 1> "${_android_sys:?}/build.prop"
 
-touch "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
-printf 'a\0n\0d\0r\0o\0i\0d\0.\0p\0e\0r\0m\0i\0s\0s\0i\0o\0n\0.\0F\0A\0K\0E\0_\0P\0A\0C\0K\0A\0G\0E\0_\0S\0I\0G\0N\0A\0T\0U\0R\0E\0' > "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
-mkdir -p "${_android_sys}/framework"
-zip -D -9 -X -UN=n -nw -q "${_android_sys}/framework/framework-res.apk" 'AndroidManifest.xml' || fail_with_msg 'Failed compressing framework-res.apk'
-rm -f -- "${BASE_SIMULATION_PATH}/AndroidManifest.xml"
+touch "${BASE_SIMULATION_PATH:?}/AndroidManifest.xml"
+printf 'a\0n\0d\0r\0o\0i\0d\0.\0p\0e\0r\0m\0i\0s\0s\0i\0o\0n\0.\0F\0A\0K\0E\0_\0P\0A\0C\0K\0A\0G\0E\0_\0S\0I\0G\0N\0A\0T\0U\0R\0E\0' 1> "${BASE_SIMULATION_PATH:?}/AndroidManifest.xml"
+mkdir -p "${_android_sys:?}/framework"
+zip -D -9 -X -UN=n -nw -q "${_android_sys:?}/framework/framework-res.apk" 'AndroidManifest.xml' || fail_with_msg 'Failed compressing framework-res.apk'
+rm -f -- "${BASE_SIMULATION_PATH:?}/AndroidManifest.xml"
 
-cp -pf -- "${THIS_SCRIPT_DIR}/updater.sh" "${_android_tmp}/updater" || fail_with_msg 'Failed to copy the updater script'
-chmod +x "${_android_tmp}/updater" || fail_with_msg "chmod failed on '${_android_tmp}/updater'"
+cp -pf -- "${THIS_SCRIPT_DIR:?}/updater.sh" "${_android_tmp:?}/updater" || fail_with_msg 'Failed to copy the updater script'
+chmod +x "${_android_tmp:?}/updater" || fail_with_msg "chmod failed on '${_android_tmp}/updater'"
 
 # Detect whether "export -f" is supported (0 means supported)
 _is_export_f_supported=0
@@ -268,7 +268,8 @@ flash_zips()
     echo "custom_flash_start ${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1>&"${recovery_fd:?}"
     set +e
     # Execute the script that will run the flashable zip
-    "${CUSTOM_BUSYBOX:?}" sh -- "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true); STATUS="${?}"
+    "${CUSTOM_BUSYBOX:?}" sh -- "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
+    STATUS="${?}"
     set -e
     echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
     echo ''
@@ -311,7 +312,7 @@ parse_recovery_output()
     else
       echo "> ${full_line?}"
     fi
-  done < "${2:?}" > "${3:?}"
+  done < "${2:?}" 1> "${3:?}"
 }
 
 # Parse recovery output
