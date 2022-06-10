@@ -2,5 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 # SPDX-FileType: OTHER
 
-# Enable all optional warnings
+# Follow source statements even when the file is not specified as input
+external-sources=true
+# Enable all optional checks
 enable=all
