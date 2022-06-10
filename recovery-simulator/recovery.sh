@@ -95,7 +95,11 @@ if ! "${ENV_RESETTED:-false}"; then
     APP_NAME='Gradle'
   fi
 
-  exec -- env -i -- ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+  if test "${COVERAGE:-false}" = 'false'; then
+    exec -- env -i -- ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+  else
+    exec -- env -i -- ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+  fi
   exit 127
 fi
 unset ENV_RESETTED
@@ -106,6 +110,9 @@ uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
 # Check dependencies
 _our_busybox="$(command -v -- busybox)" || fail_with_msg 'BusyBox is missing'
+if test "${COVERAGE:-false}" != 'false'; then
+  COVERAGE="$(command -v -- bashcov)" || fail_with_msg 'Bashcov is missing'
+fi
 
 # Get dir of this script
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
@@ -177,6 +184,10 @@ rm -f -- "${BASE_SIMULATION_PATH:?}/AndroidManifest.xml"
 cp -pf -- "${THIS_SCRIPT_DIR:?}/updater.sh" "${_android_tmp:?}/updater" || fail_with_msg 'Failed to copy the updater script'
 chmod +x "${_android_tmp:?}/updater" || fail_with_msg "chmod failed on '${_android_tmp}/updater'"
 
+if test "${COVERAGE:-false}" != 'false'; then
+  cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
+fi
+
 # Detect whether "export -f" is supported (0 means supported)
 _is_export_f_supported=0
 {
@@ -219,6 +230,10 @@ simulate_env()
   export TEST_INSTALL=true
 
   "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
+  if test "${COVERAGE:-false}" != 'false'; then
+    cp -pf -- "${COVERAGE:?}" "${_android_sys:?}/bin/bashcov" || fail_with_msg 'Failed to copy Bashcov'
+  fi
+
   # shellcheck disable=SC2310
   override_command mount || return 123
   # shellcheck disable=SC2310
@@ -268,7 +283,11 @@ flash_zips()
     echo "custom_flash_start ${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1>&"${recovery_fd:?}"
     set +e
     # Execute the script that will run the flashable zip
-    "${CUSTOM_BUSYBOX:?}" sh -- "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
+    if test "${COVERAGE:-false}" = 'false'; then
+      "${CUSTOM_BUSYBOX:?}" sh -- "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
+    else
+      bashcov -- "${THIS_SCRIPT_DIR:?}/updater.sh" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
+    fi
     STATUS="${?}"
     set -e
     echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
