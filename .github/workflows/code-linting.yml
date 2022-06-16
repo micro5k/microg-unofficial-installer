@@ -35,7 +35,7 @@ jobs:
       - name: "Check out code"
         uses: actions/checkout@v3
       - name: "Run Codacy analysis"
-        uses: codacy/codacy-analysis-cli-action@4.0.2
+        uses: codacy/codacy-analysis-cli-action@v4.1.0
         with:
           # Check https://github.com/codacy/codacy-analysis-cli#project-token to get your project token from your Codacy repository
           # You can also omit the token and run the tools that support default configurations
