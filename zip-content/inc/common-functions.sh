@@ -29,16 +29,16 @@ _show_text_on_recovery()
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
 
-  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1?}"; fi
+  if test "${DEBUG_LOG:?}" -ne 0; then printf '%s\n' "${1?}"; fi
 }
 
 ui_error()
 {
   ERROR_CODE=91
-  if test -n "${2}"; then ERROR_CODE="${2:?}"; fi
+  if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
   _show_text_on_recovery "ERROR: ${1:?}"
   1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
-  exit "${ERROR_CODE:?}"
+  abort '' 2>/dev/null || exit "${ERROR_CODE:?}"
 }
 
 ui_warning()
