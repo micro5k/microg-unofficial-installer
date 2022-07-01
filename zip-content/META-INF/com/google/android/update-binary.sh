@@ -111,6 +111,7 @@ _updatebin_we_mounted_tmp=false
   if test ! -e "${TMPDIR:?}"; then
     ui_error 'The temp folder is missing'
   fi
+  export TMPDIR
 }
 
 # Seed the RANDOM variable
