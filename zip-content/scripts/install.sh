@@ -96,11 +96,15 @@ install_version="$(simple_get_prop 'version' "${TMP_PATH}/module.prop")" || ui_e
 install_version_code="$(simple_get_prop 'versionCode' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version code'
 
 INSTALLATION_SETTINGS_FILE="${install_id}.prop"
-
-PRIVAPP_PATH="${SYS_PATH}/app"
-if test -e "${SYS_PATH}/priv-app"; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi  # Detect the position of the privileged apps folder
-
 API=$(build_getprop 'build\.version\.sdk')
+
+if test "${API}" -ge 19; then  # KitKat or higher
+  PRIVAPP_PATH="${SYS_PATH}/priv-app"
+else
+  PRIVAPP_PATH="${SYS_PATH}/app"
+fi
+if test ! -e "${PRIVAPP_PATH:?}"; then ui_error 'The priv-app folder does NOT exist'; fi
+
 if test "${API}" -ge 21; then
   :  ### New Android versions
 elif test "${API}" -ge 19; then
