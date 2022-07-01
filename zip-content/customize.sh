@@ -15,9 +15,12 @@ umask 022
 ### PREVENTIVE CHECKS ###
 
 DEBUG_LOG=0
+if test -z "${BOOTMODE:-}"; then 1>&2 printf '%s\n' 'Missing BOOTMODE variable'; abort 'Missing BOOTMODE variable' 2>/dev/null || exit 1; fi
 if test -z "${OUTFD:-}"; then 1>&2 printf '%s\n' 'Missing OUTFD variable'; abort 'Missing OUTFD variable' 2>/dev/null || exit 1; fi
 if test -z "${ZIPFILE:-}"; then ui_error 'Missing ZIPFILE variable'; fi
 if test -z "${TMPDIR:-}" || test ! -e "${TMPDIR:?}"; then ui_error 'The temp folder is missing (2)'; fi
+export BOOTMODE
+export OUTFD
 export ZIPFILE
 export TMPDIR
 unset REPLACE
@@ -252,12 +255,6 @@ test "${DEBUG_LOG}" -eq 1 && enable_debug_log  # Enable file logging if needed
 
 # If the debug log was enabled at startup (not in the settings or in the live setup) we cannot allow overriding it from the settings
 if [ "${DEBUG_LOG_ENABLED}" -eq 1 ]; then export DEBUG_LOG=1; fi
-
-# Detect boot mode
-# shellcheck disable=SC2009
-(ps | grep zygote | grep -v grep >/dev/null) && BOOTMODE=true
-# shellcheck disable=SC2009
-"${BOOTMODE}" || (ps -A 2>/dev/null | grep zygote | grep -v grep >/dev/null && BOOTMODE=true)
 
 ui_debug ''
 ui_debug 'Starting installation script...'
