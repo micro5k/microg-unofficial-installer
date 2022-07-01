@@ -71,9 +71,9 @@ _show_text_on_recovery()
     printf '%s\n' "${1?}"
     return
   elif test -e "${RECOVERY_PIPE:?}"; then
-    printf 'ui_print %s\nui_print \n' "${1?}" >> "${RECOVERY_PIPE:?}"
+    printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
   else
-    printf 'ui_print %s\nui_print \n' "${1?}" 1>&"${OUTFD:?}"
+    printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
 
   if test "${DEBUG_LOG:?}" -ne 0; then printf '%s\n' "${1?}"; fi
@@ -101,7 +101,7 @@ ui_msg()
 
 ui_debug()
 {
-  printf "%s\n" "${1?}"
+  printf '%s\n' "${1?}"
 }
 
 set_perm()
