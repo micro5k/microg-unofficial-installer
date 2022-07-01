@@ -83,7 +83,14 @@ _updatebin_we_mounted_tmp=false
     return 1  # NOT mounted
   }
 
-  if test -z "${TMPDIR:-}" && ! _updatebin_is_mounted '/tmp'; then
+  TMPDIR="${TMPDIR:-}"
+  if test -n "${TMPDIR?}"; then
+    :  # Already ready
+  elif _updatebin_is_mounted '/tmp'; then
+    TMPDIR='/tmp'
+  elif _updatebin_is_mounted '/dev/tmp'; then
+    TMPDIR='/dev/tmp'
+  else
     _updatebin_we_mounted_tmp=true
 
     _show_text_on_recovery 'WARNING: Creating (if needed) and mounting the temp folder...'
@@ -97,11 +104,13 @@ _updatebin_we_mounted_tmp=false
     set_perm 0 2000 0775 '/tmp'
 
     if ! _updatebin_is_mounted '/tmp'; then ui_error 'The temp folder CANNOT be mounted'; fi
-  elif test ! -e "${TMPDIR:-/tmp}"; then
+    TMPDIR='/tmp'
+  fi
+  unset -f _updatebin_is_mounted || ui_error 'Failed to unset _updatebin_is_mounted'
+
+  if test ! -e "${TMPDIR:?}"; then
     ui_error 'The temp folder is missing'
   fi
-
-  unset -f _updatebin_is_mounted || ui_error 'Failed to unset _updatebin_is_mounted'
 }
 
 # Seed the RANDOM variable
@@ -110,7 +119,7 @@ RANDOM="$$"
 # shellcheck disable=SC3028
 {
   if test "${RANDOM:?}" = "$$"; then ui_error "\$RANDOM is not supported"; fi  # Both BusyBox and Toybox support $RANDOM
-  _updatebin_our_main_script="${TMPDIR:-/tmp}/${RANDOM:?}-customize.sh"
+  _updatebin_our_main_script="${TMPDIR:?}/${RANDOM:?}-customize.sh"
 }
 
 package_extract_file 'customize.sh' "${_updatebin_our_main_script:?}"
