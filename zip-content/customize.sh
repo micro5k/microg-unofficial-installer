@@ -14,6 +14,7 @@ umask 022
 
 ### PREVENTIVE CHECKS ###
 
+DEBUG_LOG=0
 if test -z "${OUTFD:-}"; then 1>&2 printf '%s\n' 'Missing OUTFD variable'; abort 'Missing OUTFD variable' 2>/dev/null || exit 1; fi
 if test -z "${ZIPFILE:-}"; then ui_error 'Missing ZIPFILE variable'; fi
 if test -z "${TMPDIR:-}" || test ! -e "${TMPDIR:?}"; then ui_error 'The temp folder is missing (2)'; fi
@@ -24,7 +25,7 @@ unset REPLACE
 
 ### GLOBAL VARIABLES ###
 
-export DEBUG_LOG=0
+export DEBUG_LOG
 export RECOVERY_API_VER="${1}"
 ZIP_PATH="$(dirname "${ZIPFILE:?}")"
 export ZIP_PATH
@@ -66,37 +67,41 @@ disable_debug_log()
 
 _show_text_on_recovery()
 {
-  if test -e "${RECOVERY_PIPE:?}"; then
+  if test "${BOOTMODE:?}" = 'true'; then
+    printf "%s\n" "${1?}"
+    return
+  elif test -e "${RECOVERY_PIPE:?}"; then
     printf "ui_print %s\nui_print \n" "${1?}" >> "${RECOVERY_PIPE:?}"
   else
     printf "ui_print %s\nui_print \n" "${1?}" 1>&"${OUTFD:?}"
   fi
+
+  if test "${DEBUG_LOG:?}" -ne 0; then printf "%s\n" "${1?}"; fi
 }
 
 ui_error()
 {
   ERROR_CODE=79
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
-  1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   _show_text_on_recovery "ERROR: ${1:?}"
+  1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   abort '' 2>/dev/null || exit "${ERROR_CODE:?}"
 }
 
 ui_warning()
 {
-  1>&2 printf '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
   _show_text_on_recovery "WARNING: ${1:?}"
+  1>&2 printf '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
 }
 
 ui_msg()
 {
-  if test "${DEBUG_LOG}" -ne 0; then echo "${1:?}"; fi
   _show_text_on_recovery "${1:?}"
 }
 
 ui_debug()
 {
-  echo "${1?}"
+  printf "%s\n" "${1?}"
 }
 
 set_perm()
