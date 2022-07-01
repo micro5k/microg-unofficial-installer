@@ -164,6 +164,7 @@ else
   MARKET_FILENAME="${MARKET}.apk"
 fi
 
+if test ! -e "${SYS_PATH:?}/framework/framework-res.apk"; then ui_error "The file '${SYS_PATH:?}/framework/framework-res.apk' does NOT exist"; fi
 zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH}/framework-res"
 XML_MANIFEST="${TMP_PATH}/framework-res/AndroidManifest.xml"
 # Detect the presence of the fake signature permission
