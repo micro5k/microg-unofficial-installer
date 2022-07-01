@@ -13,18 +13,17 @@ umask 022
 ### GLOBAL VARIABLES ###
 
 export OUTFD="${2:?}"
-export RECOVERY_PIPE="/proc/self/fd/${2}"
+export RECOVERY_PIPE="/proc/self/fd/${2:?}"
 export ZIPFILE="${3:?}"
 
 
 ### FUNCTIONS AND CODE ###
 
 echo 'PRELOADER 1'
-unset -f abort
 
 _show_text_on_recovery()
 {
-  if test -e "${RECOVERY_PIPE:?}"; then
+  if test -e "/proc/self/fd/${2:?}"; then
     printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
   else
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
