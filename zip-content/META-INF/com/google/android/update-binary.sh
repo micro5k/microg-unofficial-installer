@@ -13,7 +13,6 @@ umask 022
 ### GLOBAL VARIABLES ###
 
 export OUTFD="${2:?}"
-export RECOVERY_PIPE="/proc/self/fd/${2:?}"
 export ZIPFILE="${3:?}"
 
 

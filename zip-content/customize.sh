@@ -17,10 +17,14 @@ umask 022
 DEBUG_LOG=0
 if test -z "${BOOTMODE:-}"; then 1>&2 printf '%s\n' 'Missing BOOTMODE variable'; abort 'Missing BOOTMODE variable' 2>/dev/null || exit 1; fi
 if test -z "${OUTFD:-}"; then 1>&2 printf '%s\n' 'Missing OUTFD variable'; abort 'Missing OUTFD variable' 2>/dev/null || exit 1; fi
+RECOVERY_PIPE="/proc/self/fd/${OUTFD:?}"
 if test -z "${ZIPFILE:-}"; then ui_error 'Missing ZIPFILE variable'; fi
 if test -z "${TMPDIR:-}" || test ! -e "${TMPDIR:?}"; then ui_error 'The temp folder is missing (2)'; fi
+
+export DEBUG_LOG
 export BOOTMODE
 export OUTFD
+export RECOVERY_PIPE
 export ZIPFILE
 export TMPDIR
 unset REPLACE
@@ -34,7 +38,6 @@ export SKIPUNZIP
 
 ### GLOBAL VARIABLES ###
 
-export DEBUG_LOG
 export RECOVERY_API_VER="${1}"
 ZIP_PATH="$(dirname "${ZIPFILE:?}")"
 export ZIP_PATH
