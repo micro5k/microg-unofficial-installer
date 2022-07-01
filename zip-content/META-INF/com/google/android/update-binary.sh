@@ -36,7 +36,7 @@ _updatebin_detect_bootmode()
 _show_text_on_recovery()
 {
   if test "${BOOTMODE:?}" = 'true'; then
-    printf "%s\n" "${1?}"
+    printf '%s\n' "${1?}"
     return
   elif test -e "/proc/self/fd/${OUTFD:?}"; then
     printf 'ui_print %s\nui_print\n' "${1?}" >> "/proc/self/fd/${OUTFD:?}"
