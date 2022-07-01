@@ -170,6 +170,8 @@ detect_recovery_arch()
     aarch64 | arm64* | armv8* ) RECOVERY_ARCH='arm64-v8a';;
     armv7*                    ) RECOVERY_ARCH='armeabi-v7a';;
     armv6* | armv5*           ) RECOVERY_ARCH='armeabi';;
+    #mips64                    ) RECOVERY_ARCH='mips64';;
+    #mips                      ) RECOVERY_ARCH='mips';;
     *) ui_error "Unsupported architecture: $(uname -m || true)"
   esac
 }
