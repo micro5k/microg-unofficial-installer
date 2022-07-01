@@ -26,6 +26,12 @@ export TMPDIR
 unset REPLACE
 
 
+### MAGISK VARIABLES ###
+
+SKIPUNZIP=1
+export SKIPUNZIP
+
+
 ### GLOBAL VARIABLES ###
 
 export DEBUG_LOG
@@ -42,12 +48,6 @@ STATUS=1
 export LIVE_SETUP_POSSIBLE=false
 export KEYCHECK_ENABLED=false
 export BOOTMODE=false
-
-
-### MAGISK VARIABLES ###
-
-SKIPUNZIP=1
-export SKIPUNZIP
 
 
 ### FUNCTIONS ###
