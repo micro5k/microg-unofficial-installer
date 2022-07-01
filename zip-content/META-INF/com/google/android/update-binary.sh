@@ -35,7 +35,10 @@ _updatebin_detect_bootmode()
 
 _show_text_on_recovery()
 {
-  if test -e "/proc/self/fd/${OUTFD:?}"; then
+  if test "${BOOTMODE:?}" = 'true'; then
+    printf "%s\n" "${1?}"
+    return
+  elif test -e "/proc/self/fd/${OUTFD:?}"; then
     printf 'ui_print %s\nui_print\n' "${1?}" >> "/proc/self/fd/${OUTFD:?}"
   else
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
@@ -46,9 +49,9 @@ ui_error()
 {
   ERROR_CODE=79
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
-  if test "${BOOTMODE:?}" != 'true'; then _show_text_on_recovery "ERROR: ${1:?}"; fi
+  _show_text_on_recovery "ERROR: ${1:?}"
   1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
-  exit "${ERROR_CODE:?}"
+  abort '' 2>/dev/null || exit "${ERROR_CODE:?}"
 }
 
 set_perm()
