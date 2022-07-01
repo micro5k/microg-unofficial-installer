@@ -20,11 +20,16 @@ fi
 # Message related functions
 _show_text_on_recovery()
 {
-  if test -e "${RECOVERY_PIPE:?}"; then
+  if test "${BOOTMODE:?}" = 'true'; then
+    printf '%s\n' "${1?}"
+    return
+  elif test -e "${RECOVERY_PIPE:?}"; then
     printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
   else
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
+
+  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1?}"; fi
 }
 
 ui_error()
@@ -45,13 +50,11 @@ ui_warning()
 ui_msg_empty_line()
 {
   _show_text_on_recovery ' '
-  if test "${DEBUG_LOG}" -ne 0; then printf '\n'; fi
 }
 
 ui_msg()
 {
   _show_text_on_recovery "${1:?}"
-  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1:?}"; fi
 }
 
 ui_msg_sameline_start()
