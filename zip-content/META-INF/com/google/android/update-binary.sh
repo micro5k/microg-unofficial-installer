@@ -21,10 +21,22 @@ export ZIPFILE="${3:?}"
 
 echo 'PRELOADER 1'
 
+# Detect whether we are in boot mode
+_updatebin_detect_bootmode()
+{
+  if test -n "${BOOTMODE:-}"; then return; fi
+  BOOTMODE=false
+  # shellcheck disable=SC2009
+  ps | grep zygote | grep -qv grep && BOOTMODE=true
+  # shellcheck disable=SC2009
+  "${BOOTMODE:?}" || { ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE=true; }
+  export BOOTMODE
+}
+
 _show_text_on_recovery()
 {
-  if test -e "/proc/self/fd/${2:?}"; then
-    printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
+  if test -e "/proc/self/fd/${OUTFD:?}"; then
+    printf 'ui_print %s\nui_print\n' "${1?}" >> "/proc/self/fd/${OUTFD:?}"
   else
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
@@ -34,7 +46,7 @@ ui_error()
 {
   ERROR_CODE=79
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
-  _show_text_on_recovery "ERROR: ${1:?}"
+  if test "${BOOTMODE:?}" != 'true'; then _show_text_on_recovery "ERROR: ${1:?}"; fi
   1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   exit "${ERROR_CODE:?}"
 }
@@ -54,10 +66,11 @@ package_extract_file()
 }
 
 
+_updatebin_detect_bootmode
+_updatebin_we_mounted_tmp=false
+
 # Workaround: Create (if needed) and mount the temp folder if it isn't already mounted
 {
-  _updatebin_we_mounted_tmp=false
-
   _updatebin_is_mounted()
   {
     local _mount_result
