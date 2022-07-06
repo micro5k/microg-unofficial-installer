@@ -34,15 +34,6 @@ jobs:
     steps:
       - name: "Check out code"
         uses: actions/checkout@v3
-      - name: "Run SonarCloud scan"
-        uses: SonarSource/sonarcloud-github-action@v1.6
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.exclusions=build.gradle
-            -Dsonar.verbose=true
       - name: "Run Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
         with:
@@ -59,3 +50,27 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: results.sarif
+
+  sonarcloud:
+    permissions:
+      contents: read
+    name: "SonarCloud"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Check out code"
+        uses: actions/checkout@v3
+      - name: "Remove build.gradle"
+        shell: bash
+        run: |
+          # Removing build.gradle...
+          rm -f build.gradle
+      - name: "Run SonarCloud scan"
+        uses: SonarSource/sonarcloud-github-action@v1.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.exclusions=build.gradle
+            -Dsonar.verbose=true
