@@ -34,6 +34,11 @@ jobs:
     steps:
       - name: "Check out code"
         uses: actions/checkout@v3
+      - name: "Run SonarCloud scan"
+        uses: SonarSource/sonarcloud-github-action@v1.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: "Run Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
         with:
