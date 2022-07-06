@@ -39,6 +39,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            # -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.exclusions=build.gradle
+            -Dsonar.verbose=true
       - name: "Run Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
         with:
