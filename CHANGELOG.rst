@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 -------------------
 - Click above to see all the changes.
 
-`1.1.0`_ beta - 2022-04-28
+`1.1.0-beta`_ - 2022-04-28
 ---------------------------
 - Added support for Android up to 13
 - Improve system partition mounting
@@ -23,15 +23,15 @@ All notable changes to this project will be documented in this file.
 - You can now test the zip installation on PC using "gradlew installTest" (tested on Linux and Windows)
 Full changelog will appear later
 
-`1.0.34`_ beta - 2019-07-07
+`1.0.34-beta`_ - 2019-07-07
 ---------------------------
 Changelog will appear later
 
-`1.0.33`_ beta - 2018-12-04
+`1.0.33-beta`_ - 2018-12-04
 ---------------------------
 Changelog will appear later
 
-`1.0.32`_ beta - 2018-11-01
+`1.0.32-beta`_ - 2018-11-01
 ---------------------------
 - Updated microG Service Core to 0.2.6.13280
 - Updated Déjà Vu Location Service to 1.1.9
@@ -41,7 +41,7 @@ Changelog will appear later
 - Install default permissions xml files only if needed
 - Install priv-app permissions whitelist on Android 8 and higher
 
-`1.0.31`_ beta - 2018-08-28
+`1.0.31-beta`_ - 2018-08-28
 ---------------------------
 - Initial work regarding reproducible builds of the installer zip file
 - Updated BusyBox for Android to 1.29.1-YDS-201807291348
@@ -52,7 +52,7 @@ Changelog will appear later
 - Switched from vendor/lib to system/lib for lib installation on old devices so it is easier to setup
 - Updated microG Service Core to 0.2.5.12879
 
-`1.0.30`_ alpha - Unreleased
+`1.0.30-alpha`_ - Unreleased
 ----------------------------
 - Add support for building the installer under macOS (untested)
 - Auto-grant signature spoofing permission to microG, thanks to @lazerl0rd
@@ -65,7 +65,7 @@ Changelog will appear later
 - Updated Mozilla UnifiedNlp Backend to 1.4.0
 - Updated Déjà Vu Location Service to 1.1.8
 
-1.0.29 beta - 2018-04-11
+1.0.29-beta - 2018-04-11
 ------------------------
 - Switched signing tool to zipsigner (thanks to `@topjohnwu <https://github.com/topjohnwu>`_)
 - Highly improved debug logging
@@ -77,7 +77,7 @@ Changelog will appear later
 - Always grant network access to microG GmsCore
 - Removed F-Droid Privileged Extension, it will be in a separate package in the future
 
-1.0.28 alpha - Unreleased
+1.0.28-alpha - Unreleased
 -------------------------
 - Improved debug logging
 - Updated BusyBox for Android to 1.28.0-YDS-201801031253
@@ -88,7 +88,7 @@ Changelog will appear later
 - Updated Déjà Vu Location Service to 1.1.5
 - Updated NewPipe to 0.11.6
 
-1.0.27 beta
+1.0.27-beta
 -----------
 - Updated microG Service Core to 0.2.4-108
 - Updated Déjà Vu Location Service to 1.0.7
@@ -99,7 +99,7 @@ Changelog will appear later
 - Improved GApps / microG removal
 - Automatically create folders on the device if missing
 
-1.0.26 alpha
+1.0.26-alpha
 ------------
 - Added NewPipe 0.11.1 (as replacement for YouTube)
 - Automatically disable battery optimizations for microG GmsCore
@@ -109,17 +109,17 @@ Changelog will appear later
 - Almost fully rewritten the GApps / microG uninstaller
 - Now it also clean app updates
 
-1.0.24 alpha
+1.0.24-alpha
 ------------
 - Updated microG Service Core to 0.2.4-107
 
-1.0.23 alpha
+1.0.23-alpha
 ------------
 - Added Déjà Vu Location Service 1.0.2
 - Now the list of files to backup for the survival script are generated dynamically so all files are preserved in all cases
 - Refactored code
 
-1.0.22 beta
+1.0.22-beta
 -----------
 - Updated microG Service Core to 0.2.4-105
 - Updated F-Droid Privileged Extension to 0.2.7
@@ -128,20 +128,20 @@ Changelog will appear later
 - Allow to configure the live setup timeout
 - Allow to configure the version of the market app to install
 
-1.0.21 beta
+1.0.21-beta
 -----------
 - Added FakeStore 0.0.2
 - Added support for live setup (currently limited to ARM phones)
 - Added selection of the market app to install in the live setup
 - Improved robustness
 
-1.0.20 alpha
+1.0.20-alpha
 ------------
 - Added default permissions
 - Reset permissions on dirty installations
 - Remove conflicting location providers
 
-1.0.19 alpha
+1.0.19-alpha
 ------------
 - Released sources on GitHub
 - Changed signing process to fix a problem with Dingdong Recovery and maybe other old recoveries
@@ -149,9 +149,9 @@ Changelog will appear later
 
 
 .. _Dev: https://github.com/micro5k/microg-unofficial-installer/compare/v1.1.0-beta...HEAD
-.. _1.1.0: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.34-beta...v1.1.0-beta
-.. _1.0.34: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.33-beta...v1.0.34-beta
-.. _1.0.33: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.32-beta...v1.0.33-beta
-.. _1.0.32: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.31-beta...v1.0.32-beta
-.. _1.0.31: https://github.com/micro5k/microg-unofficial-installer/compare/fd8c10cf26d51a2cbdfa48f9cc17d8f69a3af8e6...v1.0.31-beta
-.. _1.0.30: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.29-beta...fd8c10cf26d51a2cbdfa48f9cc17d8f69a3af8e6
+.. _1.1.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.34-beta...v1.1.0-beta
+.. _1.0.34-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.33-beta...v1.0.34-beta
+.. _1.0.33-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.32-beta...v1.0.33-beta
+.. _1.0.32-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.31-beta...v1.0.32-beta
+.. _1.0.31-beta: https://github.com/micro5k/microg-unofficial-installer/compare/fd8c10cf26d51a2cbdfa48f9cc17d8f69a3af8e6...v1.0.31-beta
+.. _1.0.30-alpha: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.29-beta...fd8c10cf26d51a2cbdfa48f9cc17d8f69a3af8e6
