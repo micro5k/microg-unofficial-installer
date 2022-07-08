@@ -143,7 +143,7 @@ Changelog will appear later
 
 1.0.19 alpha
 ------------
-- Released sources on Github
+- Released sources on GitHub
 - Changed signing process to fix a problem with Dingdong Recovery and maybe other old recoveries.
 - More consistency checks and improved error handling
 
