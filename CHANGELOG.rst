@@ -10,12 +10,12 @@ Changelog
 All notable changes to this project will be documented in this file.
 
 
-`Dev`_ - Unreleased
--------------------
+`Unreleased`_
+-------------
 - Click above to see all the changes.
 
 `1.1.0-beta`_ - 2022-04-28
----------------------------
+--------------------------
 - Added support for Android up to 13
 - Improve system partition mounting
 - Mount partitions only if they aren't already mounted
@@ -148,7 +148,7 @@ Changelog will appear later
 - More consistency checks and improved error handling
 
 
-.. _Dev: https://github.com/micro5k/microg-unofficial-installer/compare/v1.1.0-beta...HEAD
+.. _Unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.1.0-beta...HEAD
 .. _1.1.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.34-beta...v1.1.0-beta
 .. _1.0.34-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.33-beta...v1.0.34-beta
 .. _1.0.33-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.32-beta...v1.0.33-beta
