@@ -33,28 +33,24 @@ Changelog will appear later
 
 `1.0.32`_ beta - 2018-11-01
 ---------------------------
-- Added also a Bitcoin address for receiving donations
 - Updated microG Service Core to 0.2.6.13280
 - Updated Déjà Vu Location Service to 1.1.9
 - Switched to a custom build of microG DroidGuard Helper to fix SafetyNet Attestation
 - Preset F-Droid repositories
 - Updated NewPipe to 0.14.2
-- Install default permissions file only if needed
-- Updated default permissions
-- Install privapp permissions whitelist on Android 8 and higher
-- Minor changes
+- Install default permissions xml files only if needed
+- Install priv-app permissions whitelist on Android 8 and higher
 
 `1.0.31`_ beta - 2018-08-28
 ---------------------------
-- Initial work regarding reproducible builds of the installer zip file (untested)
+- Initial work regarding reproducible builds of the installer zip file
 - Updated BusyBox for Android to 1.29.1-YDS-201807291348
 - Added an option to skip the installation of NewPipe, ref #8
-- Switched to using a 64-bit BusyBox on a 64-bit device
+- Switched to using a 64-bit BusyBox on a 64-bit devices
 - Switched to a more error proof method for creating the file list, ref: #9
 - Check also armeabi-v7a in the CPU detection for BusyBox
-- Switched from vendor/lib to system/lib so it is easier to setup
+- Switched from vendor/lib to system/lib for lib installation on old devices so it is easier to setup
 - Updated microG Service Core to 0.2.5.12879
-- Minor changes
 
 `1.0.30`_ alpha - Unreleased
 ----------------------------
@@ -68,11 +64,10 @@ Changelog will appear later
 - Updated NewPipe to 0.13.7
 - Updated Mozilla UnifiedNlp Backend to 1.4.0
 - Updated Déjà Vu Location Service to 1.1.8
-- Minor changes
 
 1.0.29 beta - 2018-04-11
 ------------------------
-- Switched signing tool to zipsigner (thanks `@topjohnwu <https://github.com/topjohnwu>`_)
+- Switched signing tool to zipsigner (thanks to `@topjohnwu <https://github.com/topjohnwu>`_)
 - Highly improved debug logging
 - Improved compatibility of the build script
 - Check the presence of the ROM before installing
@@ -81,7 +76,6 @@ Changelog will appear later
 - Updated BusyBox for Windows to 1.29.0-FRP-2121-ga316078ad (2018-04-09)
 - Always grant network access to microG GmsCore
 - Removed F-Droid Privileged Extension, it will be in a separate package in the future
-- Minor changes and fixes
 
 1.0.28 alpha - Unreleased
 -------------------------
@@ -94,7 +88,6 @@ Changelog will appear later
 - Updated microG Service Core to 0.2.4-111
 - Updated Déjà Vu Location Service to 1.1.5
 - Updated NewPipe to 0.11.6
-- Minor changes and fixes
 
 1.0.27 beta
 -----------
@@ -106,11 +99,10 @@ Changelog will appear later
 - Improved removal of AMAP location service
 - Improved GApps / microG removal
 - Automatically create folders on the device if missing
-- Minor changes
 
 1.0.26 alpha
 ------------
-- Added NewPipe 0.11.1 (YouTube replacement)
+- Added NewPipe 0.11.1 (as replacement for YouTube)
 - Automatically disable battery optimizations for microG GmsCore
 - Updated Mozilla UnifiedNlp Backend to 1.3.3
 - Updated Déjà Vu Location Service to 1.0.4
@@ -127,18 +119,15 @@ Changelog will appear later
 - Added Déjà Vu Location Service 1.0.2
 - Now the list of files to backup for the survival script are generated dynamically so all files are preserved in all cases
 - Refactored code
-- Many fixes and optimizations
 
 1.0.22 beta
 -----------
 - Updated microG Service Core to 0.2.4-105
 - Updated F-Droid Privileged Extension to 0.2.7
-- Added Google Play Store 7.1.25.I-all
-- Install recent Play Store on Android 5+
+- Install recent market app on Android 5+
 - Improved debug logging
 - Allow to configure the live setup timeout
-- Allow to configure the Play Store version to install
-- Minor changes
+- Allow to configure the version of the market app to install
 
 1.0.21 beta
 -----------
@@ -146,21 +135,18 @@ Changelog will appear later
 - Added support for live setup (currently limited to ARM phones)
 - Added selection of the market app to install in the live setup
 - Improved robustness
-- Various minor improvements
 
 1.0.20 alpha
 ------------
 - Added default permissions
 - Reset permissions on dirty installations
 - Remove conflicting location providers
-- Other changes
 
 1.0.19 alpha
 ------------
 - Released sources on Github
 - Changed signing process to fix a problem with Dingdong Recovery and maybe other old recoveries.
 - More consistency checks and improved error handling
-- Minor changes
 
 
 .. _Dev: https://github.com/micro5k/microg-unofficial-installer/compare/v1.1.0-beta...HEAD
