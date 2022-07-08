@@ -84,7 +84,6 @@ Changelog will appear later
 - Updated BusyBox for Windows to 1.29.0-FRP-2001-gd9c5d3c61 (2018-03-27)
 - Improved GApps / microG removal
 - Added dalvik-cache cleaning
-- No longer remove GooglePartnerSetup since some ROMs may need it
 - Updated microG Service Core to 0.2.4-111
 - Updated Déjà Vu Location Service to 1.1.5
 - Updated NewPipe to 0.11.6
