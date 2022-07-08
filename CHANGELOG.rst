@@ -10,11 +10,11 @@ Changelog
 All notable changes to this project will be documented in this file.
 
 
-`Dev`_ (Unreleased)
+`Dev`_ - Unreleased
 -------------------
 - Click above to see all the changes.
 
-`1.1.0`_ beta (2022-04-28)
+`1.1.0`_ beta - 2022-04-28
 ---------------------------
 - Added support for Android up to 13
 - Improve system partition mounting
@@ -23,15 +23,15 @@ All notable changes to this project will be documented in this file.
 - You can now test the zip installation on PC using "gradlew installTest" (tested on Linux and Windows)
 Full changelog will appear later
 
-`1.0.34`_ beta (2019-07-07)
+`1.0.34`_ beta - 2019-07-07
 ---------------------------
 Changelog will appear later
 
-`1.0.33`_ beta (2018-12-04)
+`1.0.33`_ beta - 2018-12-04
 ---------------------------
 Changelog will appear later
 
-`1.0.32`_ beta (2018-11-01)
+`1.0.32`_ beta - 2018-11-01
 ---------------------------
 - Added also a Bitcoin address for receiving donations
 - Updated microG Service Core to 0.2.6.13280
@@ -44,7 +44,7 @@ Changelog will appear later
 - Install privapp permissions whitelist on Android 8 and higher
 - Minor changes
 
-`1.0.31`_ beta (2018-08-28)
+`1.0.31`_ beta - 2018-08-28
 ---------------------------
 - Initial work regarding reproducible builds of the installer zip file (untested)
 - Updated BusyBox for Android to 1.29.1-YDS-201807291348
@@ -56,7 +56,7 @@ Changelog will appear later
 - Updated microG Service Core to 0.2.5.12879
 - Minor changes
 
-`1.0.30`_ alpha (Unreleased)
+`1.0.30`_ alpha - Unreleased
 ----------------------------
 - Add support for building the installer under macOS (untested)
 - Auto-grant signature spoofing permission to microG, thanks to @lazerl0rd
@@ -70,7 +70,7 @@ Changelog will appear later
 - Updated Déjà Vu Location Service to 1.1.8
 - Minor changes
 
-1.0.29 beta (2018-04-11)
+1.0.29 beta - 2018-04-11
 ------------------------
 - Switched signing tool to zipsigner (thanks `@topjohnwu <https://github.com/topjohnwu>`_)
 - Highly improved debug logging
@@ -83,7 +83,7 @@ Changelog will appear later
 - Removed F-Droid Privileged Extension, it will be in a separate package in the future
 - Minor changes and fixes
 
-1.0.28 alpha (Unreleased)
+1.0.28 alpha - Unreleased
 -------------------------
 - Improved debug logging
 - Updated BusyBox for Android to 1.28.0-YDS-201801031253
