@@ -131,9 +131,10 @@ for param in "${@}"; do
 done
 unset param
 
-# Ensure we have a path the the temp dir and empty it (should be already empty, but we must be sure)
-if test -z "${OUR_TEMP_DIR}"; then fail_with_msg 'Failed to create our temp dir'; fi
-rm -rf "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
+# Ensure we have a path for the temp dir and empty it (should be already empty, but we must be sure)
+test -n "${OUR_TEMP_DIR:-}" || fail_with_msg 'Failed to get a temp dir'
+mkdir -p -- "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to create our temp dir'
+rm -rf -- "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
 # Setup the needed variables
 BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"  # Internal var
