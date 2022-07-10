@@ -482,7 +482,9 @@ _choose_remapper()
   local _key
   _key="${1?}" || ui_error 'Missing parameter for _choose_remapper'
   if test -z "${_key?}"; then _key='Enter'; elif test "${_key:?}" = "${_esc_keycode:?}"; then _key='ESC'; fi
+  ui_msg_empty_line
   ui_msg "Key press: ${_key:?}"
+  ui_msg_empty_line
 
   case "${_key:?}" in
     '+')    # +
