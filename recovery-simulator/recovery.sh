@@ -342,6 +342,6 @@ parse_recovery_output false "${recovery_logs_dir}/recovery-raw.log" "${recovery_
 # Final cleanup
 cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
 unset TMPDIR
-rm -rf -- "${OUR_TEMP_DIR:?}" &
+#rm -rf -- "${OUR_TEMP_DIR:?}" &
 set +e
 if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi

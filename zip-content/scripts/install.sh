@@ -222,6 +222,7 @@ if verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" 'eefa997
    verify_sha1 "${TMP_PATH}/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053' &&
    { test ! -e "${TMP_PATH}/files/variants/PlayStore-recent.apk" || verify_sha1 "${TMP_PATH}/files/variants/PlayStore-recent.apk" '6c60fa863dd7befef49082c0dcf6278947a09333'; } &&
    { test ! -e "${TMP_PATH}/files/variants/PlayStore-legacy.apk" || verify_sha1 "${TMP_PATH}/files/variants/PlayStore-legacy.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'; } &&
+   { test ! -e "${TMP_PATH}/files/variants/AndroidAuto.apk" || verify_sha1 "${TMP_PATH}/files/variants/AndroidAuto.apk" '70ca5318fc24b462f1da045e7639260c63db252e'; } &&
    verify_sha1 "${TMP_PATH}/files/variants/FakeStore.apk" '1028f11133ec0a9a41fcd6615837124b61abd251'
 then
   ui_msg_sameline_end 'OK'
@@ -247,6 +248,12 @@ if test "${INSTALL_NEWPIPE:?}" -ne 0; then
     move_rename_file "${TMP_PATH}/files/variants/app/NewPipe.apk" "${TMP_PATH}/files/app/NewPipe.apk"
   elif test "${API}" -ge 16; then
     move_rename_file "${TMP_PATH}/files/variants/app/NewPipeLegacy.apk" "${TMP_PATH}/files/app/NewPipe.apk"
+  fi
+fi
+
+if test "${INSTALL_ANDROID_AUTO:?}" -ne 0; then
+  if test "${API}" -ge 23; then
+    move_rename_file "${TMP_PATH}/files/variants/AndroidAuto.apk" "${TMP_PATH}/files/priv-app/AndroidAuto.apk"
   fi
 fi
 
