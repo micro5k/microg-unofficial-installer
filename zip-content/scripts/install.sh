@@ -142,11 +142,11 @@ ui_msg '(by ale5000)'
 ui_msg '---------------------------'
 ui_msg_empty_line
 ui_msg "Boot mode: ${BOOTMODE:?}"
-ui_msg "API: ${API:?}"
-ui_msg "Detected 32-bit CPU arch: ${CPU:?}"
-ui_msg "Detected 64-bit CPU arch: ${CPU64:?}"
+ui_msg "Android API: ${API:?}"
+ui_msg "Main 64-bit CPU arch: ${CPU64:?}"
+ui_msg "Main 32-bit CPU arch: ${CPU:?}"
 ui_msg "System path: ${SYS_PATH:?}"
-ui_msg "Privileged apps: ${PRIVAPP_PATH:?}"
+ui_msg "Priv-app path: ${PRIVAPP_PATH:?}"
 
 if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi
 
@@ -253,7 +253,7 @@ fi
 
 if test "${INSTALL_ANDROID_AUTO:?}" -ne 0; then
   if test "${API}" -ge 23; then
-    move_rename_file "${TMP_PATH}/files/variants/AndroidAuto.apk" "${TMP_PATH}/files/priv-app/AndroidAuto.apk"
+    move_rename_file "${TMP_PATH}/files/variants/AndroidAuto.apk" "${TMP_PATH}/files/priv-app/AndroidAutoStubPrebuilt.apk"
   fi
 fi
 
