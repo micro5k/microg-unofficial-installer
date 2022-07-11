@@ -40,6 +40,7 @@ ChromeHomePage|com.android.partnerbrowsercustomizations.tmobile
 ConfigUpdater|com.google.android.configupdater
 GmsCore|com.google.android.gms
 GoogleFeedback|com.google.android.feedback
+BetaFeedback|com.google.android.apps.betterbug
 GoogleLoginService|com.google.android.gsf.login
 GoogleOneTimeInitializer|com.google.android.onetimeinitializer
 GoogleServicesFramework|com.google.android.gsf
@@ -70,6 +71,7 @@ GmsDroidGuard|
 NewPipe|org.schabi.newpipe
 NewPipeLegacy|org.schabi.newpipelegacy
 YouTube|com.google.android.youtube
+YouTubeMusicPrebuilt|com.google.android.apps.youtube.music
 
 |com.qualcomm.location
 AMAPNetworkLocation|com.amap.android.location
@@ -96,6 +98,7 @@ AndroidAutoFullPrebuilt|
 
 WhisperPush|org.whispersystems.whisperpush
 
+PrebuiltGoogleTelemetryTvp|com.google.mainline.telemetry
 HwAps|com.huawei.android.hwaps
 HwPowerGenieEngine3|com.huawei.powergenie
 EOF
@@ -151,6 +154,21 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete_recursive "${SYS_PATH}/app/${FILENAME}"
     delete_recursive "${SYS_PATH}/app/${FILENAME}.apk"
     delete_recursive "${SYS_PATH}/app/${FILENAME}.odex"
+
+    delete_recursive "${SYS_PATH}/system_ext/priv-app/${FILENAME}"
+    delete_recursive "${SYS_PATH}/system_ext/app/${FILENAME}"
+    delete_recursive "/system_ext/priv-app/${FILENAME}"
+    delete_recursive "/system_ext/app/${FILENAME}"
+
+    delete_recursive "${SYS_PATH}/product/priv-app/${FILENAME}"
+    delete_recursive "${SYS_PATH}/product/app/${FILENAME}"
+    delete_recursive "/product/priv-app/${FILENAME}"
+    delete_recursive "/product/app/${FILENAME}"
+
+    delete_recursive "${SYS_PATH}/vendor/priv-app/${FILENAME}"
+    delete_recursive "${SYS_PATH}/vendor/app/${FILENAME}"
+    delete_recursive "/vendor/priv-app/${FILENAME}"
+    delete_recursive "/vendor/app/${FILENAME}"
 
     delete_recursive_wildcard /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
     delete_recursive_wildcard /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
