@@ -89,8 +89,9 @@ MozillaNlpBackend|
 NominatimGeocoderBackend|org.microg.nlp.backend.nominatim
 NominatimNlpBackend|
 
-AndroidAutoStubPrebuilt|com.google.android.projection.gearhead
-AndroidAuto|
+AndroidAuto|com.google.android.projection.gearhead
+AndroidAutoStubPrebuilt|
+AndroidAutoFullPrebuilt|
 |com.google.android.gms.car
 
 WhisperPush|org.whispersystems.whisperpush
