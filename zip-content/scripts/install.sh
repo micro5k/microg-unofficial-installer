@@ -251,10 +251,11 @@ if test "${INSTALL_NEWPIPE:?}" -ne 0; then
   fi
 fi
 
-if test "${INSTALL_ANDROID_AUTO:?}" -ne 0; then
-  if test "${API}" -ge 23; then
-    move_rename_file "${TMP_PATH}/files/variants/AndroidAuto.apk" "${TMP_PATH}/files/priv-app/AndroidAutoStubPrebuilt.apk"
-  fi
+if test "${API}" -ge 23 && test "${INSTALL_ANDROID_AUTO:?}" -ne 0; then
+  move_rename_file "${TMP_PATH}/files/variants/AndroidAuto.apk" "${TMP_PATH}/files/priv-app/AndroidAutoStubPrebuilt.apk"
+else
+  delete "${TMP_PATH}/files/variants/AndroidAuto.apk"
+  delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-com.google.android.projection.gearhead.xml"
 fi
 
 # Extracting libs
