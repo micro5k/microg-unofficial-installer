@@ -23,5 +23,7 @@
         <permission name="android.permission.MODIFY_DAY_NIGHT_MODE" />
         <permission name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
         <permission name="android.permission.START_ACTIVITIES_FROM_BACKGROUND" />
+        <permission name="android.permission.TOGGLE_AUTOMOTIVE_PROJECTION" />
+        <permission name="android.permission.UPDATE_APP_OPS_STATS" />
     </privapp-permissions>
 </permissions>
