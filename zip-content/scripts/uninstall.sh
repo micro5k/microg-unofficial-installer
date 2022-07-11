@@ -240,6 +240,7 @@ delete_recursive_wildcard "${SYS_PATH}"/etc/default-permissions/microg-*-permiss
 delete_recursive "${SYS_PATH}"/etc/permissions/features.xml
 delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google.xml
 delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google-p.xml
+#delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google-se.xml
 delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-microg.xml
 
 delete_recursive "${SYS_PATH}"/etc/sysconfig/features.xml
