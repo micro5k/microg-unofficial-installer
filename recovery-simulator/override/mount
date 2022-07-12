@@ -24,4 +24,7 @@ ${TMPDIR:?} on /tmp type tmpfs (rw,seclabel,relatime)
 /dev/block/platform/msm_sdcc.1/by-name/sdcard1 on /sdcard1 type vfat (rw,relatime,errors=remount-ro)
 /dev/block/platform/msm_sdcc.1/by-name/system on ${ANDROID_ROOT:?} type ext4 (rw,seclabel,relatime,data=ordered)
 ${ANDROID_ROOT:?} on /system type ext4 (rw,seclabel,relatime,data=ordered)\
+/system/system_ext on /system_ext type ext4 (rw,seclabel,relatime,data=ordered)\
+/system/product on /product type ext4 (rw,seclabel,relatime,data=ordered)\
+/system/vendor on /vendor type ext4 (rw,seclabel,relatime,data=ordered)\
 "
