@@ -112,6 +112,12 @@ mount_partition_silent()
   return 0  # Never fail
 }
 
+unmount()
+{
+  umount "${1:?}" || ui_warning "Failed to unmount '${1}'"
+  return 0  # Never fail
+}
+
 is_mounted()
 {
   local _partition _mount_result
@@ -123,6 +129,45 @@ is_mounted()
     *)                                                     # NOT mounted
   esac
   return 1  # NOT mounted
+}
+
+_mount_if_needed_silent()
+{
+  if is_mounted "${1:?}"; then return 1; fi
+
+  mount_partition_silent "${1:?}"
+  is_mounted "${1:?}"
+  return "${?}"
+}
+
+UNMOUNT_SYS_EXT=0
+UNMOUNT_PRODUCT=0
+UNMOUNT_VENDOR=0
+mount_extra_partitions_silent()
+{
+  ! _mount_if_needed_silent '/system_ext'
+  UNMOUNT_SYS_EXT="${?}"
+  ! _mount_if_needed_silent '/product'
+  UNMOUNT_PRODUCT="${?}"
+  ! _mount_if_needed_silent '/vendor'
+  UNMOUNT_VENDOR="${?}"
+
+  return 0  # Never fail
+}
+
+unmount_extra_partitions()
+{
+  if test "${UNMOUNT_SYS_EXT:?}" = '1'; then
+    unmount '/system_ext'
+  fi
+  if test "${UNMOUNT_PRODUCT:?}" = '1'; then
+    unmount '/product'
+  fi
+  if test "${UNMOUNT_VENDOR:?}" = '1'; then
+    unmount '/vendor'
+  fi
+
+  return 0  # Never fail
 }
 
 ensure_system_is_mounted()
@@ -156,11 +201,6 @@ remount_read_write()
 remount_read_only()
 {
   mount -o remount,ro "$1" "$1"
-}
-
-unmount()
-{
-  umount "$1" || ui_warning "Failed to unmount '$1'"
 }
 
 # Getprop related functions
