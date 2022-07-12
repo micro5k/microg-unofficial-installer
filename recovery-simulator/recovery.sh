@@ -139,6 +139,7 @@ rm -rf -- "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 # Setup the needed variables
 BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"  # Internal var
 _our_overrider_dir="${THIS_SCRIPT_DIR}/override"  # Internal var
+_our_overrider_script="${THIS_SCRIPT_DIR}/inc/configure-overrides.sh"  # Internal var
 _init_dir="$(pwd)" || fail_with_msg 'Failed to read the current dir'
 
 # Configure the Android recovery environment variables (they will be used later)
@@ -228,6 +229,7 @@ simulate_env()
   # Our custom variables
   export CUSTOM_BUSYBOX="${BASE_SIMULATION_PATH:?}/system/bin/busybox"
   export OVERRIDE_DIR="${_our_overrider_dir:?}"
+  export RS_OVERRIDE_SCRIPT="${_our_overrider_script:?}"
   export TEST_INSTALL=true
 
   "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
