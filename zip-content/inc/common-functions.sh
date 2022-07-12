@@ -123,8 +123,10 @@ unmount()
 
 is_mounted()
 {
-  local _partition _mount_result
-  _partition="$(readlink -f "${1:?}")" || { _partition="${1:?}"; ui_warning "Failed to canonicalize '${1}'"; }
+  local _partition _mount_result _silent
+  _silent="${2:-false}"
+  _partition="$(readlink -f "${1:?}")" || { _partition="${1:?}"; if test "${_silent:?}" = false; then ui_warning "Failed to canonicalize '${1}'"; fi; }
+
   { test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || _mount_result="$(mount 2>/dev/null)" || { test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"; } || ui_error 'is_mounted has failed'
 
   case "${_mount_result:?}" in
@@ -136,7 +138,7 @@ is_mounted()
 
 _mount_if_needed_silent()
 {
-  if is_mounted "${1:?}"; then return 1; fi
+  if is_mounted "${1:?}" true; then return 1; fi
 
   mount_partition_silent "${1:?}"
   is_mounted "${1:?}"
