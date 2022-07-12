@@ -299,7 +299,9 @@ if test "${API}" -ge 23; then
   fi
 fi
 
+set -x
 mount_extra_partitions_silent
+set +x
 
 # Clean previous installations
 delete "${SYS_PATH}/etc/zips/${install_id}.prop"
