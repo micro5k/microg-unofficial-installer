@@ -293,10 +293,14 @@ if test "${API}" -ge 23; then
   fi
 fi
 
+mount_extra_partitions_silent
+
 # Clean previous installations
 delete "${SYS_PATH}/etc/zips/${install_id}.prop"
 # shellcheck source=SCRIPTDIR/uninstall.sh
 . "${TMP_PATH}/uninstall.sh"
+
+unmount_extra_partitions
 
 # Configuring default Android permissions
 if test "${API}" -ge 23; then
