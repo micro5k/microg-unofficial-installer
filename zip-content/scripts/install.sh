@@ -38,6 +38,12 @@ MARKET_FILENAME=''
 
 ### CODE ###
 
+# Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
+if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
+  # shellcheck source=SCRIPTDIR/../../recovery-simulator/inc/configure-overrides.sh
+  . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
+fi
+
 # Live setup
 live_setup_enabled=false
 if test "${LIVE_SETUP_POSSIBLE:?}" = 'true'; then
