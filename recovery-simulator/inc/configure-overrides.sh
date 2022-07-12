@@ -11,7 +11,7 @@ fi
 rs_function_exists()
 {
   # shellcheck disable=SC2312
-  LC_ALL=C type -- "${1:?}" 2>/dev/null | grep -Fq -- 'is a function'
+  LC_ALL=C type "${1:?}" 2>/dev/null | grep -Fq -- 'is a function'
   return "${?}"
 }
 
