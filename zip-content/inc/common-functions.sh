@@ -97,9 +97,19 @@ validate_return_code_warning()
 mount_partition()
 {
   local partition
-  partition="$(readlink -f "${1}")" || { partition="${1}"; ui_warning "Failed to canonicalize '${1}'"; }
+  partition="$(readlink -f "${1:?}")" || { partition="${1:?}"; ui_warning "Failed to canonicalize '${1}'"; }
 
-  mount "${partition}" || ui_warning "Failed to mount '${1}'"
+  mount "${partition:?}" || ui_warning "Failed to mount '${1}'"
+  return 0  # Never fail
+}
+
+mount_partition_silent()
+{
+  local partition
+  partition="$(readlink -f "${1:?}")" || { partition="${1:?}"; ui_warning "Failed to canonicalize '${1}'"; }
+
+  mount "${partition:?}" 2>/dev/null || true
+  return 0  # Never fail
 }
 
 is_mounted()
