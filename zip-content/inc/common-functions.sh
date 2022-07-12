@@ -127,7 +127,7 @@ is_mounted()
   _silent="${2:-false}"
   _partition="$(readlink -f "${1:?}")" || { _partition="${1:?}"; if test "${_silent:?}" = false; then ui_warning "Failed to canonicalize '${1}'"; fi; }
 
-  { test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || _mount_result="$(mount 2>/dev/null)" || { test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"; } || ui_error 'is_mounted has failed'
+  { test "${TEST_INSTALL:-false}" = 'false' && test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || _mount_result="$(mount 2>/dev/null)" || { test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"; } || ui_error 'is_mounted has failed'
 
   case "${_mount_result:?}" in
     *[[:blank:]]"${_partition:?}"[[:blank:]]*) return 0;;  # Mounted
