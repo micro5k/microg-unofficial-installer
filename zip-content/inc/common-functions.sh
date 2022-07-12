@@ -99,7 +99,7 @@ mount_partition()
   local partition
   partition="$(readlink -f "${1:?}")" || { partition="${1:?}"; ui_warning "Failed to canonicalize '${1}'"; }
 
-  mount "${partition:?}" || ui_warning "Failed to mount '${1}'"
+  mount "${partition:?}" || ui_warning "Failed to mount '${partition}'"
   return 0  # Never fail
 }
 
@@ -114,7 +114,10 @@ mount_partition_silent()
 
 unmount()
 {
-  umount "${1:?}" || ui_warning "Failed to unmount '${1}'"
+  local partition
+  partition="$(readlink -f "${1:?}")" || { partition="${1:?}"; ui_warning "Failed to canonicalize '${1}'"; }
+
+  umount "${partition:?}" || ui_warning "Failed to unmount '${partition}'"
   return 0  # Never fail
 }
 
