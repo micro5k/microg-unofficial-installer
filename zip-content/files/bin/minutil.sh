@@ -33,6 +33,6 @@ case "${1}" in
     echo "MinUtil
 Various utility functions.
 
--r | --reinstall-package		Reinstall package as if it were installed from Play Store and grant it all permissions"
+-r | --reinstall-package PACKAGE_NAME			Reinstall package as if it were installed from Play Store and grant it all permissions, example: minutil -r org.schabi.newpipe"
   ;;
 esac
