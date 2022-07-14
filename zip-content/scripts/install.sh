@@ -154,7 +154,23 @@ ui_msg "Main 32-bit CPU arch: ${CPU:?}"
 ui_msg "System path: ${SYS_PATH:?}"
 ui_msg "Priv-app path: ${PRIVAPP_PATH:?}"
 
+if test ! -e "${SYS_PATH:?}/framework/framework-res.apk"; then ui_error "The file '${SYS_PATH:?}/framework/framework-res.apk' does NOT exist"; fi
+zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH}/framework-res"
+XML_MANIFEST="${TMP_PATH}/framework-res/AndroidManifest.xml"
+# Detect the presence of the fake signature permission
+# Note: It won't detect it if signature spoofing doesn't require a permission, but it is still fine for our case
+if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "${XML_MANIFEST}"; then
+  FAKE_SIGN=true
+fi
+ui_msg "Fake signature: ${FAKE_SIGN}"
+ui_msg_empty_line
+
 if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi
+
+if test "${CPU}" = false && test "${CPU64}" = false; then
+  ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
+fi
+
 
 if test "${live_setup_enabled:?}" = 'true'; then
   choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore'
@@ -173,21 +189,6 @@ if test "${MARKET}" = 'PlayStore'; then
   fi
 else
   MARKET_FILENAME="${MARKET}.apk"
-fi
-
-if test ! -e "${SYS_PATH:?}/framework/framework-res.apk"; then ui_error "The file '${SYS_PATH:?}/framework/framework-res.apk' does NOT exist"; fi
-zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH}/framework-res"
-XML_MANIFEST="${TMP_PATH}/framework-res/AndroidManifest.xml"
-# Detect the presence of the fake signature permission
-# Note: It won't detect it if signature spoofing doesn't require a permission, but it is still fine for our case
-if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "${XML_MANIFEST}" || search_ascii_string_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "${XML_MANIFEST}"; then
-  FAKE_SIGN=true
-fi
-ui_msg "Fake signature: ${FAKE_SIGN}"
-ui_msg_empty_line
-
-if test "${CPU}" = false && test "${CPU64}" = false; then
-  ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
 fi
 
 # Check the existance of the libraries folders
