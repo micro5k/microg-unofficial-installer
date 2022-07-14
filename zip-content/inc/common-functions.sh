@@ -638,7 +638,6 @@ choose_inputevent()
 choose()
 {
   local _last_status=0
-  ui_msg_empty_line
   while true; do
     ui_msg "QUESTION: ${1:?}"
     ui_msg "${2:?}"
