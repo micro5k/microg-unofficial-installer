@@ -249,9 +249,13 @@ else
   move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
 fi
 
-if test "${API}" -ge 16 && test "${live_setup_enabled:?}" = 'true'; then
-  choose 'Do you want to install NewPipe?' '+) Yes' '-) No'
-  if test "$?" -eq 3; then INSTALL_NEWPIPE='1'; else INSTALL_NEWPIPE='0'; fi
+if test "${API}" -ge 16; then
+  if test "${live_setup_enabled:?}" = 'true'; then
+    choose 'Do you want to install NewPipe?' '+) Yes' '-) No'
+    if test "$?" -eq 3; then INSTALL_NEWPIPE='1'; else INSTALL_NEWPIPE='0'; fi
+  fi
+else
+  INSTALL_NEWPIPE='0'
 fi
 if test "${INSTALL_NEWPIPE:?}" -ne 0; then
   if test "${API}" -ge 19; then
@@ -261,11 +265,15 @@ if test "${INSTALL_NEWPIPE:?}" -ne 0; then
   fi
 fi
 
-if test "${API}" -ge 23 && test "${live_setup_enabled:?}" = 'true' && test -f "${TMP_PATH}/files/variants/AndroidAuto.apk"; then
-  choose 'Do you want to install Android Auto stub?' '+) Yes' '-) No'
-  if test "$?" -eq 3; then INSTALL_ANDROID_AUTO='1'; else INSTALL_ANDROID_AUTO='0'; fi
+if test "${API}" -ge 23 && test -f "${TMP_PATH}/files/variants/AndroidAuto.apk"; then
+  if test "${live_setup_enabled:?}" = 'true'; then
+    choose 'Do you want to install Android Auto stub?' '+) Yes' '-) No'
+    if test "$?" -eq 3; then INSTALL_ANDROID_AUTO='1'; else INSTALL_ANDROID_AUTO='0'; fi
+  fi
+else
+  INSTALL_ANDROID_AUTO='0'
 fi
-if test "${API}" -ge 23 && test "${INSTALL_ANDROID_AUTO:?}" -ne 0 && test -f "${TMP_PATH}/files/variants/AndroidAuto.apk"; then
+if test "${INSTALL_ANDROID_AUTO:?}" -ne 0; then
   move_rename_file "${TMP_PATH}/files/variants/AndroidAuto.apk" "${TMP_PATH}/files/priv-app/AndroidAutoStubPrebuilt.apk"
 else
   delete "${TMP_PATH}/files/variants/AndroidAuto.apk"
