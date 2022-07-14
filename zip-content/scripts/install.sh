@@ -339,7 +339,17 @@ if test "${API}" -ge 23; then
   if test "${FAKE_SIGN}" = true; then
     echo '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true" />' > "${TMP_PATH}/fake-sign-perm.dat"
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' "${TMP_PATH}/fake-sign-perm.dat"
+    replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' "${TMP_PATH}/fake-sign-perm.dat"
   fi
+
+  if test "{MARKET_FILENAME:?}" = 'FakeStore.apk'; then
+    delete "${TMP_PATH}/files/etc/default-permissions/PlayStore-permissions.xml"
+    move_rename_file "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions" "${TMP_PATH}/files/etc/default-permissions/com.android.vending-permissions.xml"
+  else
+    delete "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions.xml"
+    move_rename_file "${TMP_PATH}/files/etc/default-permissions/PlayStore-permissions.xml" "${TMP_PATH}/files/etc/default-permissions/com.android.vending-permissions.xml"
+  fi
+
   copy_dir_content "${TMP_PATH}/files/etc/default-permissions" "${SYS_PATH}/etc/default-permissions"
 else
   delete_recursive "${TMP_PATH}/files/etc/default-permissions"

@@ -7,10 +7,8 @@
     This file contains permissions to be granted by default.
     Default permissions are granted to special platform components and to apps that are approved to get default grants.
     The special components are apps that are expected to work out-of-the-box as they provide core use cases.
-    Fixed permissions cannot be controlled by the user and need a special approval.
+    Fixed permissions cannot be controlled by the user.
     Typically these are to ensure either legally mandated functions or the app is considered a part of the OS.
-
-    Granting these permissions could prevent issues on some ROMs or on non-clean installations.
 -->
 
 <exceptions>
@@ -32,20 +30,6 @@
         <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false" />
         <!-- Draw over other apps -->
         <permission name="android.permission.SYSTEM_ALERT_WINDOW" fixed="false" />
-        <!-- Signature spoofing -->
-        <!-- %FAKE_PACKAGE_SIGNATURE% -->
-    </exception>
-
-    <exception package="com.android.vending" sha256-cert-digest="F0:FD:6C:5B:41:0F:25:CB:25:C3:B5:33:46:C8:97:2F:AE:30:F8:EE:74:11:DF:91:04:80:AD:6B:2D:60:DB:83">
-        <!-- Account / Contacts -->
-        <permission name="android.permission.GET_ACCOUNTS" fixed="false" />
-        <permission name="android.permission.READ_CONTACTS" fixed="false" />
-        <!-- Location -->
-        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false" />
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
-        <!-- Storage -->
-        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false" />
-        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false" />
         <!-- Signature spoofing -->
         <!-- %FAKE_PACKAGE_SIGNATURE% -->
     </exception>
