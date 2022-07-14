@@ -342,7 +342,7 @@ if test "${API}" -ge 23; then
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' "${TMP_PATH}/fake-sign-perm.dat"
   fi
 
-  if test "{MARKET_FILENAME:?}" = 'FakeStore.apk'; then
+  if test "${MARKET_FILENAME:?}" = 'FakeStore.apk'; then
     delete "${TMP_PATH}/files/etc/default-permissions/PlayStore-permissions.xml"
     move_rename_file "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions" "${TMP_PATH}/files/etc/default-permissions/com.android.vending-permissions.xml"
   else
