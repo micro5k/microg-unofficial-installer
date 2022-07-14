@@ -106,7 +106,7 @@ mount_partition()
 mount_partition_silent()
 {
   local partition
-  partition="$(readlink -f "${1:?}")" || { partition="${1:?}"; ui_warning "Failed to canonicalize '${1}'"; }
+  partition="$(readlink -f "${1:?}")" || { partition="${1:?}"; }
 
   mount "${partition:?}" 2>/dev/null || true
   return 0  # Never fail
@@ -141,7 +141,7 @@ _mount_if_needed_silent()
   if is_mounted "${1:?}" true; then return 1; fi
 
   mount_partition_silent "${1:?}"
-  is_mounted "${1:?}"
+  is_mounted "${1:?}" true
   return "${?}"
 }
 
