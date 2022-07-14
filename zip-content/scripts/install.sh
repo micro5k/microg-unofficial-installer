@@ -471,6 +471,13 @@ if test -e "${SYS_PATH}/addon.d"; then
   fi
 fi
 
+if test "${API}" -ge 23; then
+  ui_msg 'Installing utilities...'
+  set_perm 0 2000 0755 "${TMP_PATH}/files/bin/minutil.sh"
+  move_rename_file "${TMP_PATH}/files/bin/minutil.sh" "${TMP_PATH}/files/bin/minutil"
+  copy_dir_content "${TMP_PATH}/files/bin" "${SYS_PATH}/bin"
+fi
+
 if test "${SYS_INIT_STATUS}" = '1'; then
   if test -e '/system_root'; then unmount '/system_root'; fi
   if test -e '/system'; then unmount '/system'; fi
