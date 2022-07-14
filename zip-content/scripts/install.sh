@@ -344,7 +344,7 @@ if test "${API}" -ge 23; then
 
   if test "${MARKET_FILENAME:?}" = 'FakeStore.apk'; then
     delete "${TMP_PATH}/files/etc/default-permissions/PlayStore-permissions.xml"
-    move_rename_file "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions" "${TMP_PATH}/files/etc/default-permissions/com.android.vending-permissions.xml"
+    move_rename_file "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions.xml" "${TMP_PATH}/files/etc/default-permissions/com.android.vending-permissions.xml"
   else
     delete "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions.xml"
     move_rename_file "${TMP_PATH}/files/etc/default-permissions/PlayStore-permissions.xml" "${TMP_PATH}/files/etc/default-permissions/com.android.vending-permissions.xml"
@@ -415,6 +415,7 @@ copy_dir_content "${TMP_PATH}/files/app" "${SYS_PATH}/app"
 copy_dir_content "${TMP_PATH}/files/framework" "${SYS_PATH}/framework"
 if test "${API}" -lt 26; then
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml"
+  delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-com.google.android.projection.gearhead.xml"
 else
   if test "${FAKE_SIGN}" = true; then
     echo '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />' > "${TMP_PATH}/fake-sign-perm.dat"
