@@ -9,7 +9,7 @@ set -o posix 2>/dev/null || true
 # shellcheck disable=SC3040
 set -o pipefail || true
 
-if test "$(whoami)" != 'shell' && test "$(whoami)" != 'root'; then
+if test "$(whoami || true)" != 'shell' && test "$(whoami || true)" != 'root'; then
   echo 'ERROR: You must execute it as either ADB or root'
   exit 1
 fi
