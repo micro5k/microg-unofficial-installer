@@ -38,9 +38,28 @@ _minutil_find_package()
   pm path -- "${1:?}" | cut -d ':' -f 2 || return 1
 }
 
-_minutil_create_install_session()
+_minutil_create_reinstall_session()
 {
-  pm install-create -i 'com.android.vending' -r -g -- | grep -F -e 'Success: created install session' -- | grep -oE -e '[0-9]+' --
+  pm install-create -i 'com.android.vending' -r -g -- | grep -F -e 'Success: created install session' | grep -oE -e '[0-9]+'
+  return "${?}"
+}
+
+_minutil_reinstall_split_package()
+{
+  _install_sid="$(_minutil_create_reinstall_session)"
+  _file_index=0
+  echo "${1:?}" | while IFS='' read -r _file; do
+    if test -e "${_file:?}"; then
+      pm install-write -- "${_install_sid:?}" "${_file_index:?}" "${_file:?}" || { echo 'ERROR: Split package reinstall failed'; pm install-abandon "${_install_sid:?}"; return 3; }
+      _file_index="$((_file_index+1))"
+    else
+      echo 'ERROR: Split package is missing'
+      pm install-abandon "${_install_sid:?}"
+      return 4
+    fi
+  done || return "${?}"
+
+  pm install-commit "${_install_sid:?}"
   return "${?}"
 }
 
