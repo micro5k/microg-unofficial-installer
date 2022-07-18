@@ -49,6 +49,8 @@ minutil_reinstall_package()
 
 minutil_remove_all_accounts()
 {
+  mount /data 2>/dev/null || true
+
   # shellcheck disable=2310
   _list_account_files | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
