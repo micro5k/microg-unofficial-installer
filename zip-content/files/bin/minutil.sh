@@ -14,11 +14,6 @@ if test "$(whoami || true)" != 'shell' && test "$(whoami || true)" != 'root'; th
   exit 1
 fi
 
-_minutil_find_package()
-{
-  pm path -- "${1:?}" | cut -d ':' -f 2 || return 1
-}
-
 _list_account_files()
 {
   cat <<'EOF'
@@ -36,6 +31,17 @@ _list_account_files()
 /data/system/sync/accounts.xml
 /data/system/sync/status.bin
 EOF
+}
+
+_minutil_find_package()
+{
+  pm path -- "${1:?}" | cut -d ':' -f 2 || return 1
+}
+
+_minutil_create_install_session()
+{
+  pm install-create -i 'com.android.vending' -r -g -- | grep -F -e 'Success: created install session' -- | grep -oE -e '[0-9]+' --
+  return "${?}"
 }
 
 minutil_reinstall_package()
