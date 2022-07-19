@@ -89,6 +89,8 @@ minutil_reinstall_package()
   _is_caller_adb_or_root || return 1
 
   echo "Reinstalling ${1:?}..."
+  command -v -- pm 1>/dev/null || { echo 'ERROR: Package manager is NOT available'; return 1; }
+
   _package_path="$(_minutil_find_package "${1:?}")" || { echo "ERROR: Package '${1?}' not found"; return 2; }
   _apk_count="$(echo "${_package_path:?}" | wc -l --)"
   if test "${_apk_count:?}" -ge 2; then
@@ -96,7 +98,8 @@ minutil_reinstall_package()
   else
     pm install -i 'com.android.vending' -r -g -- "${_package_path:?}" || { echo 'ERROR: Package reinstall failed'; return 3; }
   fi
-  unset _package_path
+
+  unset _package_path _apk_count
   echo "Package ${1:?} reinstalled."
 }
 
@@ -129,3 +132,5 @@ Various utility functions.
 -i | --reinstall-package PACKAGE_NAME		Reinstall package as if it were installed from Play Store and grant it all permissions, example: minutil -i org.schabi.newpipe
 --remove-all-accounts				Remove all accounts from the device';;
 esac
+
+exit "${?}"
