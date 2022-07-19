@@ -3,11 +3,21 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
+# shellcheck disable=SC2310
+
 set -e
 # shellcheck disable=SC3040
 set -o posix 2>/dev/null || true
 # shellcheck disable=SC3040
 set -o pipefail || true
+
+case "${0:?}" in
+  *\.sh);;
+  *sh)
+    echo 'ERROR: MinUtil cannot be sourced'
+    exit 1;;
+  *);;
+esac
 
 _is_caller_adb_or_root()
 {
@@ -57,7 +67,6 @@ _minutil_create_reinstall_session()
 
 _minutil_reinstall_split_package()
 {
-  # shellcheck disable=SC2310
   _install_sid="$(_minutil_create_reinstall_session)" || return "${?}"
   _file_index=0
   echo "${1:?}" | while IFS='' read -r _file; do
@@ -77,11 +86,9 @@ _minutil_reinstall_split_package()
 
 minutil_reinstall_package()
 {
-  # shellcheck disable=SC2310
   _is_caller_adb_or_root || return 1
 
   echo "Reinstalling ${1:?}..."
-  # shellcheck disable=2310
   _package_path="$(_minutil_find_package "${1:?}")" || { echo "ERROR: Package '${1?}' not found"; return 2; }
   _apk_count="$(echo "${_package_path:?}" | wc -l --)"
   if test "${_apk_count:?}" -ge 2; then
@@ -95,11 +102,9 @@ minutil_reinstall_package()
 
 minutil_remove_all_accounts()
 {
-  # shellcheck disable=SC2310
   _is_caller_root || return 1
   mount /data 2>/dev/null || true
 
-  # shellcheck disable=2310
   _list_account_files | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
       echo "Deleting '${_file:?}'..."
