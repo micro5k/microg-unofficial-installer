@@ -9,10 +9,21 @@ set -o posix 2>/dev/null || true
 # shellcheck disable=SC3040
 set -o pipefail || true
 
-if test "$(whoami || true)" != 'shell' && test "$(whoami || true)" != 'root'; then
-  echo 'ERROR: You must execute it as either ADB or root'
-  exit 1
-fi
+_is_caller_adb_or_root()
+{
+  if test "$(whoami || true)" != 'shell' && test "$(whoami || true)" != 'root'; then
+    echo 'ERROR: You must execute it as either ADB or root'
+    exit 1
+  fi
+}
+
+_is_caller_root()
+{
+  if test "$(whoami || true)" != 'root'; then
+    echo 'ERROR: You must execute it as root'
+    exit 1
+  fi
+}
 
 _list_account_files()
 {
@@ -46,7 +57,7 @@ _minutil_create_reinstall_session()
 
 _minutil_reinstall_split_package()
 {
-  _install_sid="$(_minutil_create_reinstall_session)"
+  _install_sid="$(_minutil_create_reinstall_session)" || return "${?}"
   _file_index=0
   echo "${1:?}" | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
@@ -65,6 +76,8 @@ _minutil_reinstall_split_package()
 
 minutil_reinstall_package()
 {
+  _is_caller_adb_or_root || return 1
+
   # shellcheck disable=2310
   _package_path="$(_minutil_find_package "${1:?}")" || { echo "ERROR: Package '${1?}' not found"; return 2; }
   _apk_count="$(echo "${_package_path:?}" | wc -l --)"
@@ -80,6 +93,7 @@ minutil_reinstall_package()
 
 minutil_remove_all_accounts()
 {
+  _is_caller_root || return 1
   mount /data 2>/dev/null || true
 
   # shellcheck disable=2310
