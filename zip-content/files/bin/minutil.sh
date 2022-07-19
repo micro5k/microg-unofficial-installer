@@ -62,7 +62,7 @@ _minutil_reinstall_split_package()
   _file_index=0
   echo "${1:?}" | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
-      pm install-write -- "${_install_sid:?}" "${_file_index:?}" "${_file:?}" || { echo 'ERROR: Split package reinstall failed'; pm install-abandon "${_install_sid:?}"; return 3; }
+      pm install-write -- "${_install_sid:?}" "${_file_index:?}" "${_file:?}" || { pm install-abandon "${_install_sid:?}"; return 3; }
       _file_index="$((_file_index+1))"
     else
       echo 'ERROR: Split package is missing'
@@ -80,12 +80,12 @@ minutil_reinstall_package()
   # shellcheck disable=SC2310
   _is_caller_adb_or_root || return 1
 
+  echo "Reinstalling ${1:?}..."
   # shellcheck disable=2310
   _package_path="$(_minutil_find_package "${1:?}")" || { echo "ERROR: Package '${1?}' not found"; return 2; }
   _apk_count="$(echo "${_package_path:?}" | wc -l --)"
   if test "${_apk_count:?}" -ge 2; then
-    echo "ERROR: Split APKs aren't yet supported"
-    return 9
+    _minutil_reinstall_split_package "${_package_path:?}" || { _status="${?}"; echo 'ERROR: Split package reinstall failed'; return "${_status:?}"; }
   else
     pm install -i 'com.android.vending' -r -g -- "${_package_path:?}" || { echo 'ERROR: Package reinstall failed'; return 3; }
   fi
