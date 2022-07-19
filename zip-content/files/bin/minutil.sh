@@ -57,6 +57,7 @@ _minutil_create_reinstall_session()
 
 _minutil_reinstall_split_package()
 {
+  # shellcheck disable=SC2310
   _install_sid="$(_minutil_create_reinstall_session)" || return "${?}"
   _file_index=0
   echo "${1:?}" | while IFS='' read -r _file; do
@@ -76,6 +77,7 @@ _minutil_reinstall_split_package()
 
 minutil_reinstall_package()
 {
+  # shellcheck disable=SC2310
   _is_caller_adb_or_root || return 1
 
   # shellcheck disable=2310
@@ -93,6 +95,7 @@ minutil_reinstall_package()
 
 minutil_remove_all_accounts()
 {
+  # shellcheck disable=SC2310
   _is_caller_root || return 1
   mount /data 2>/dev/null || true
 
