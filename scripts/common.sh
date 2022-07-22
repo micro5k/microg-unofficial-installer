@@ -120,8 +120,8 @@ dl_file()
     fi
 
     if test "${_status:?}" != 0; then
-      if test -n "${6?}"; then
-        dl_file "${1:?}" "${2:?}" "${3:?}" "${4:?}" "${6:?}"
+      if test -n "${6:-}"; then
+        dl_file "${1:?}" "${2:?}" "${3:?}" '0' "${6:?}"
       else
         ui_error "Failed to download the file => 'cache/${1?}/${2?}'"
       fi
