@@ -118,6 +118,7 @@ cp -rf "${SCRIPT_DIR}/zip-content" "${TEMP_DIR}/" || ui_error 'Failed to copy da
 cp -rf "${SCRIPT_DIR}/"LICENSES* "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the licenses folder to the temp dir'
 cp -f "${SCRIPT_DIR}/LICENSE.rst" "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
 cp -f "${SCRIPT_DIR}/LIC-ADDITION.rst" "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
+mkdir -p "${TEMP_DIR}/zip-content/docs"
 cp -f "${SCRIPT_DIR}/CHANGELOG.rst" "${TEMP_DIR}/zip-content/docs/" || ui_error 'Failed to copy the changelog to the temp dir'
 
 # Do not ship currently unused binaries and unused files
