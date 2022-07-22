@@ -80,15 +80,55 @@ corrupted_file()
 }
 
 WGET_CMD='wget'
+
+# 1 => URL; 2 => Referer; 3 => Output
+dl_generic()
+{
+  "${WGET_CMD:?}" -c -O "${3:?}" -U 'Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0' --header 'Accept: text/html,*/*;q=0.9' --header 'Accept-Language: en-US,en;q=0.8' --header "Referer: ${2:?}" -- "${1:?}" || return "${?}"
+}
+
+# 1 => URL; 2 => Referer; 3 => Pattern
+get_link_from_html()
+{
+  "${WGET_CMD:?}" -q -O- -U 'Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0' --header 'Accept: text/html,*/*;q=0.9' --header 'Accept-Language: en-US,en;q=0.8' --header "Referer: ${2:?}" -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
+}
+
 dl_file()
 {
   if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
 
+  local _status _url _referrer _result
+  _status=0
+  _url="${5:?}"
+
   if ! test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then
-    mkdir -p "${SCRIPT_DIR:?}/cache/$1"
-    "${WGET_CMD}" -c -O "${SCRIPT_DIR:?}/cache/$1/$2" -U 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0' "$4" || { if test -n "$5"; then dl_file "$1" "$2" "$3" "$5"; else ui_error "Failed to download the file => 'cache/$1/$2'."; fi; }
+    mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
+    if test "${4?}" = '0'; then
+      _referrer='https://duckduckgo.com/'
+      dl_generic "${_url:?}" "${_referrer:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+    elif test "${4?}" = '1'; then
+      _referrer='https://www.apkmirror.com/'
+      _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton.*\"\shref=\"[^"]+\"')" || return "${?}"
+
+      _referrer="${_url:?}"; _url="https://www.apkmirror.com${_result:?}"
+      _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.+href=\"[^"]+\"')" || return "${?}"
+
+      _referrer="${_url:?}"; _url="https://www.apkmirror.com${_result:?}"
+      dl_generic "${_url:?}" "${_referrer:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+    else
+      ui_error "Invalid download type => '${4?}'"
+    fi
+
+    if test "${_status:?}" != 0; then
+      if test -n "${6?}"; then
+        dl_file "${1:?}" "${2:?}" "${3:?}" "${4:?}" "${6:?}"
+      else
+        ui_error "Failed to download the file => 'cache/${1?}/${2?}'"
+      fi
+    fi
     echo ''
   fi
+
   verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || corrupted_file "${SCRIPT_DIR:?}/cache/$1/$2"
 }
 
