@@ -93,28 +93,34 @@ get_link_from_html()
   "${WGET_CMD:?}" -q -O- -U 'Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0' --header 'Accept: text/html,*/*;q=0.9' --header 'Accept-Language: en-US,en;q=0.8' --header "Referer: ${2:?}" -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
 }
 
+dl_type_one()
+{
+  local _url _referrer _result
+
+  _referrer="${2:?}/"; _url="${1:?}"
+  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton.*\"\shref=\"[^"]+\"')" || return "${?}"
+
+  _referrer="${_url:?}"; _url="${2:?}${_result:?}"
+  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.+href=\"[^"]+\"')" || return "${?}"
+
+  _referrer="${_url:?}"; _url="${2:?}${_result:?}"
+  dl_generic "${_url:?}" "${_referrer:?}" "${3:?}" || return "${?}"
+}
+
 dl_file()
 {
   if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
 
-  local _status _url _referrer _result
+  local _status _url
   _status=0
   _url="${5:?}"
 
   if ! test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
     if test "${4?}" = '0'; then
-      _referrer='https://duckduckgo.com/'
-      dl_generic "${_url:?}" "${_referrer:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+      dl_generic "${_url:?}" 'https://duckduckgo.com/' "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
     elif test "${4?}" = '1'; then
-      _referrer='https://www.apkmirror.com/'
-      _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton.*\"\shref=\"[^"]+\"')" || return "${?}"
-
-      _referrer="${_url:?}"; _url="https://www.apkmirror.com${_result:?}"
-      _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.+href=\"[^"]+\"')" || return "${?}"
-
-      _referrer="${_url:?}"; _url="https://www.apkmirror.com${_result:?}"
-      dl_generic "${_url:?}" "${_referrer:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+      dl_type_one "${_url:?}" 'https://www.apkmirror.com' "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
     else
       ui_error "Invalid download type => '${4?}'"
     fi
