@@ -79,18 +79,22 @@ corrupted_file()
   ui_error "The file '$1' is corrupted."
 }
 
+
 WGET_CMD='wget'
+DEFAULT_UA='Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0'
+DEFAULT_REFERRER='https://duckduckgo.com/'
+readonly WGET_CMD DEFAULT_UA DEFAULT_REFERRER
 
 # 1 => URL; 2 => Referer; 3 => Output
 dl_generic()
 {
-  "${WGET_CMD:?}" -c -O "${3:?}" -U 'Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0' --header 'Accept: text/html,*/*;q=0.9' --header 'Accept-Language: en-US,en;q=0.8' --header "Referer: ${2:?}" -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" -c -O "${3:?}" -U "${DEFAULT_UA:?}" --header 'Accept: text/html,*/*;q=0.9' --header 'Accept-Language: en-US,en;q=0.8' --header "Referer: ${2:?}" -- "${1:?}" || return "${?}"
 }
 
 # 1 => URL; 2 => Referer; 3 => Pattern
 get_link_from_html()
 {
-  "${WGET_CMD:?}" -q -O- -U 'Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0' --header 'Accept: text/html,*/*;q=0.9' --header 'Accept-Language: en-US,en;q=0.8' --header "Referer: ${2:?}" -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
+  "${WGET_CMD:?}" -q -O- -U "${DEFAULT_UA:?}" --header 'Accept: text/html,*/*;q=0.9' --header 'Accept-Language: en-US,en;q=0.8' --header "Referer: ${2:?}" -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
 }
 
 dl_type_one()
@@ -120,12 +124,12 @@ dl_file()
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
 
     case "${_base_url:?}" in
-      *'://''www.apk''mirror.com')
+      *'://''w''w''w''.apk''mirror.com')
         echo 'DL type 1'
         dl_type_one "${_url:?}" "${_base_url:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       'https://'?*)
         echo 'DL type 0'
-        dl_generic "${_url:?}" 'https://duckduckgo.com/' "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+        dl_generic "${_url:?}" "${DEFAULT_REFERRER:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)
         ui_error "Invalid download url => '${_url:?}'";;
     esac
