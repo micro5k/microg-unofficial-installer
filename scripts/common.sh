@@ -117,7 +117,7 @@ dl_file()
 
   local _status _url _base_url
   _status=0
-  _url="${5:?}" || return "${?}"
+  _url="${4:?}" || return "${?}"
   _base_url="$(echo "${_url:?}" | cut -d '/' -f 1,2,3)" || return "${?}"
 
   if ! test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then
@@ -135,8 +135,8 @@ dl_file()
     esac
 
     if test "${_status:?}" != 0; then
-      if test -n "${6:-}"; then
-        dl_file "${1:?}" "${2:?}" "${3:?}" '0' "${6:?}"
+      if test -n "${5:-}"; then
+        dl_file "${1:?}" "${2:?}" "${3:?}" "${5:?}"
       else
         ui_error "Failed to download the file => 'cache/${1?}/${2?}'"
       fi

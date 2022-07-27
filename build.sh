@@ -98,17 +98,17 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS
 mkdir -p "${SCRIPT_DIR}/cache"
 
 oss_files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL DL_MIRROR _; do
-  dl_file "${LOCAL_PATH}" "${LOCAL_FILENAME}" "${DL_HASH}" "${DL_TYPE}" "${DL_URL}" "${DL_MIRROR}" || return "${?}"
+  dl_file "${LOCAL_PATH}" "${LOCAL_FILENAME}" "${DL_HASH}" "${DL_URL}" "${DL_MIRROR}" || return "${?}"
 done
 STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
 if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
-  files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH DL_HASH DL_TYPE DL_URL DL_MIRROR _; do
-    dl_file "${LOCAL_PATH}" "${LOCAL_FILENAME}" "${DL_HASH}" "${DL_TYPE}" "${DL_URL}" "${DL_MIRROR}" || return "${?}"
+  files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL DL_MIRROR _; do
+    dl_file "${LOCAL_PATH}" "${LOCAL_FILENAME}" "${DL_HASH}" "${DL_URL}" "${DL_MIRROR}" || return "${?}"
   done
   STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
-  dl_file 'misc/keycheck' 'keycheck-arm.bin' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' '0' 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
+  dl_file 'misc/keycheck' 'keycheck-arm.bin' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
 else
   echo 'Skipped not OSS files!'
 fi
