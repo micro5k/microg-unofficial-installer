@@ -111,19 +111,24 @@ dl_file()
 {
   if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
 
-  local _status _url
+  local _status _url _base_url
   _status=0
-  _url="${5:?}"
+  _url="${5:?}" || return "${?}"
+  _base_url="$(echo "${_url:?}" | cut -d '/' -f 1,2,3)" || return "${?}"
 
   if ! test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
-    if test "${4?}" = '0'; then
-      dl_generic "${_url:?}" 'https://duckduckgo.com/' "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
-    elif test "${4?}" = '1'; then
-      dl_type_one "${_url:?}" 'https://www.apkmirror.com' "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
-    else
-      ui_error "Invalid download type => '${4?}'"
-    fi
+
+    case "${_base_url:?}" in
+      *'://''www.apk''mirror.com')
+        echo 'DL type 1'
+        dl_type_one "${_url:?}" "${_base_url:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+      'https://'?*)
+        echo 'DL type 0'
+        dl_generic "${_url:?}" 'https://duckduckgo.com/' "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+      *)
+        ui_error "Invalid download url => '${_url:?}'";;
+    esac
 
     if test "${_status:?}" != 0; then
       if test -n "${6:-}"; then
