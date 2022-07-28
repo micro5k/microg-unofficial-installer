@@ -33,15 +33,20 @@ stages:
   - build
   - test
   # - execute
-  # - package
 
-build:
+build-ota-oss:
   stage: build
   script: "./gradlew buildOtaOSS | TZ=UTC ts '[%H:%M:%S]'"
   artifacts:
     paths:
       - output/*.zip*
     expire_in: 1 day
+  only:
+    - main
+
+build-ota:
+  stage: build
+  script: "./gradlew buildOta | TZ=UTC ts '[%H:%M:%S]'"
   only:
     - main
 
