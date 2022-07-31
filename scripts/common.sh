@@ -41,6 +41,11 @@ ui_error()
   exit 1
 }
 
+WGET_CMD='wget'
+DEFAULT_UA='Mozilla/5.0 (Linux x86_64; rv:103.0) Gecko/20100101 Firefox/103.0'
+DEFAULT_REFERRER='https://duckduckgo.com/'
+readonly WGET_CMD DEFAULT_UA DEFAULT_REFERRER
+
 _uname_saved="$(uname)"
 compare_start_uname()
 {
@@ -78,12 +83,6 @@ corrupted_file()
   rm -f -- "$1" || echo 'Failed to remove the corrupted file.'
   ui_error "The file '$1' is corrupted."
 }
-
-
-WGET_CMD='wget'
-DEFAULT_UA='Mozilla/5.0 (Linux x86_64; rv:103.0) Gecko/20100101 Firefox/103.0'
-DEFAULT_REFERRER='https://duckduckgo.com/'
-readonly WGET_CMD DEFAULT_UA DEFAULT_REFERRER
 
 # 1 => URL; 2 => Referer; 3 => Output
 dl_generic()
