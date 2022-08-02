@@ -315,6 +315,9 @@ if test "${uname_o_saved:?}" != 'MS/Windows'; then
   sudo chattr -a "${recovery_logs_dir:?}/recovery-stderr.log" || fail_with_msg "chattr failed on 'recovery-stderr.log'"
 fi
 
+# List installed files
+ls -ARFl --color -- "${BASE_SIMULATION_PATH}" || true
+
 parse_recovery_output()
 {
   _last_zip_name=''
