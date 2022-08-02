@@ -316,7 +316,7 @@ if test "${uname_o_saved:?}" != 'MS/Windows'; then
 fi
 
 # List installed files
-ls -ARFl --color -- "${BASE_SIMULATION_PATH}" || true
+ls -ARFl --color=always -- "${BASE_SIMULATION_PATH}" || true
 
 parse_recovery_output()
 {
