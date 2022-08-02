@@ -279,6 +279,7 @@ if test "${INSTALL_ANDROID_AUTO:?}" -ne 0; then
 else
   delete "${TMP_PATH}/files/variants/AndroidAuto.apk"
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-com.google.android.projection.gearhead.xml"
+  delete "${TMP_PATH}/files/etc/default-permissions/AndroidAuto-permissions.xml"
 fi
 
 # Extracting libs
