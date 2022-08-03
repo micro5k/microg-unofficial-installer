@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- SPDX-FileCopyrightText: (c) 2016 ale5000
-     SPDX-License-Identifier: Apache-2.0
-     SPDX-FileType: SOURCE
+<!--
+    SPDX-FileCopyrightText: (c) 2016 ale5000
+    SPDX-License-Identifier: Apache-2.0
+    SPDX-FileType: SOURCE
 -->
 
 <config>
@@ -18,9 +19,6 @@
     <!-- These are the packages that are white-listed to be able to retrieve location even when user location settings are off, for emergency purposes -->
     <allow-ignore-location-settings package="com.google.android.gms" />
 
-    <!-- These are the packages that are white-listed to be able to run in the background while in power save mode (but not whitelisted from device idle modes) -->
-    <allow-in-power-save-except-idle package="com.android.vending" />
-
     <!-- These are the action strings of broadcasts which are whitelisted to be delivered anonymously even to apps which target O+ -->
     <allow-implicit-broadcast action="com.google.android.checkin.CHECKIN_COMPLETE" />
     <allow-implicit-broadcast action="com.google.gservices.intent.action.GSERVICES_CHANGED" />
@@ -36,6 +34,8 @@
     <!-- These are the packages that are white-listed to be able to run as system user -->
     <system-user-whitelisted-app package="com.google.android.gms" />
     <system-user-whitelisted-app package="com.android.vending" />
+
+    <system-user-blacklisted-app package="com.google.android.googlequicksearchbox" />
 
     <!-- Specify the explicit set of other applications whose app data directories are accessible by other applications -->
     <app-data-isolation-whitelisted-app package="com.google.android.gms" />
