@@ -12,8 +12,9 @@ set -o posix 2>/dev/null || true
 set -o pipefail || true
 
 case "${0:?}" in
-  *\.sh);;
-  *sh)
+  *'.sh')
+    ;;
+  *'sh')
     echo 'ERROR: MinUtil cannot be sourced'
     exit 1;;
   *);;
