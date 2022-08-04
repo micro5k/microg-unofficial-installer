@@ -9,6 +9,7 @@
     <!-- These are the packages that are white-listed to be able to run in the background while in power save mode -->
     <allow-in-power-save package="com.google.android.gms" />
     <allow-in-power-save package="com.google.android.ims" />
+    <allow-in-power-save package="com.google.android.volta" />
     <!-- These are the packages that are white-listed to be able to run in the background while in data-usage save mode -->
     <allow-in-data-usage-save package="com.google.android.gms" />
     <allow-in-data-usage-save package="com.google.android.ims" />
@@ -27,6 +28,7 @@
 
     <!-- These are the packages that handle URLs to their websites by default -->
     <app-link package="com.android.vending" />
+    <!-- %CUSTOM_APP_LINKS% -->
 
     <!-- These are the packages that are exempted from private API blacklisting -->
     <hidden-api-whitelisted-app package="com.google.android.gms" />
