@@ -10,7 +10,6 @@ export BB_OVERRIDE_APPLETS='mount umount chown su sudo' || exit 125
 . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
 
 unset OUR_TEMP_DIR
-unset FUNCNAME
 unset HOSTNAME
 unset HOSTTYPE
 unset MACHTYPE
