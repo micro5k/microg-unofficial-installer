@@ -33,8 +33,8 @@ case "${1}" in
     list_files | while read -r FILE REPLACEMENT; do
       if test -z "${FILE?}"; then continue; fi
       R=''
-      [ -n "${REPLACEMENT?}" ] && R="${S:?}/${REPLACEMENT:?}"
-      [ -f "${C:?}/${S:?}/${FILE:?}" ] && restore_file "${S:?}/${FILE:?}" "${R?}"
+      test -n "${REPLACEMENT?}" && R="${S:?}/${REPLACEMENT:?}"
+      test -f "${C:?}/${S:?}/${FILE:?}" && restore_file "${S:?}/${FILE:?}" "${R?}"
     done
     echo 'Done.'
   ;;
