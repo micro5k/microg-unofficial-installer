@@ -18,23 +18,23 @@ cat <<'EOF'
 EOF
 }
 
-case "$1" in
+case "${1}" in
   backup)
     echo 'Backup of microG unofficial installer in progress...'
     list_files | while read -r FILE _; do
-      if test -z "${FILE}"; then continue; fi
-      echo " ${S:?}/${FILE}"
-      backup_file "${S:?}/${FILE}"
+      if test -z "${FILE?}"; then continue; fi
+      echo " ${S:?}/${FILE:?}"
+      backup_file "${S:?}/${FILE:?}"
     done
     echo 'Done.'
   ;;
   restore)
     echo 'Restore of microG unofficial installer in progress...'
     list_files | while read -r FILE REPLACEMENT; do
-      if test -z "${FILE}"; then continue; fi
-      R=""
-      [ -n "${REPLACEMENT}" ] && R="${S:?}/${REPLACEMENT}"
-      [ -f "${C:?}/${S:?}/${FILE}" ] && restore_file "${S:?}/${FILE}" "${R}"
+      if test -z "${FILE?}"; then continue; fi
+      R=''
+      [ -n "${REPLACEMENT?}" ] && R="${S:?}/${REPLACEMENT:?}"
+      [ -f "${C:?}/${S:?}/${FILE:?}" ] && restore_file "${S:?}/${FILE:?}" "${R?}"
     done
     echo 'Done.'
   ;;
@@ -51,4 +51,6 @@ case "$1" in
     # Stub
   ;;
   *)
+    echo 'ERROR'
+  ;;
 esac
