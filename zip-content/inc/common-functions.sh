@@ -7,12 +7,14 @@
 # shellcheck disable=SC3043
 # SC3043: In POSIX sh, local is undefined
 
-### GLOBAL VARIABLES ###
+### PREVENTIVE CHECKS ###
 
 if test -z "${RECOVERY_PIPE:-}" || test -z "${OUTFD:-}" || test -z "${ZIPFILE:-}" || test -z "${TMP_PATH:-}" || test -z "${DEBUG_LOG:-}"; then
   echo 'Some variables are NOT set.'
   exit 90
 fi
+
+mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions temp folder'
 
 
 ### FUNCTIONS ###
@@ -251,6 +253,15 @@ replace_line_in_file()  # $1 => File to process  $2 => Line to replace  $3 => Fi
 {
   sed -i "/$2/r $3" "$1" || ui_error "Failed to replace (1) a line in the file => '$1'" 92
   sed -i "/$2/d" "$1" || ui_error "Failed to replace (2) a line in the file => '$1'" 92
+}
+
+replace_line_in_file2()  # $1 => File to process  $2 => Line to replace  $3 => Replacement text
+{
+  rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
+  echo "${3:?}" > "${TMP_PATH:?}/func-tmp/replacement-string.dat" || ui_error "Failed to replace (1) a line in the file => '${1}'" 92
+  sed -i -e "/${2:?}/r ${TMP_PATH:?}/func-tmp/replacement-string.dat" -- "${1:?}" || ui_error "Failed to replace (2) a line in the file => '${1}'" 92
+  sed -i -e "/${2:?}/d" -- "${1:?}" || ui_error "Failed to replace (3) a line in the file => '${1}'" 92
+  rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
 }
 
 search_string_in_file()
