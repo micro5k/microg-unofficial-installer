@@ -261,9 +261,10 @@ fi
 if test "${INSTALL_NEWPIPE:?}" -ne 0; then
   if test "${API}" -ge 19; then
     move_rename_file "${TMP_PATH}/files/variants/app/NewPipe.apk" "${TMP_PATH}/files/app/NewPipe.apk"
-  elif test "${API}" -ge 16; then
+  else
     move_rename_file "${TMP_PATH}/files/variants/app/NewPipeLegacy.apk" "${TMP_PATH}/files/app/NewPipe.apk"
   fi
+  replace_line_in_file "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS% -->' '    <app-link package="org.schabi.newpipe" />'
 fi
 
 if test "${API}" -ge 23 && test -f "${TMP_PATH}/files/variants/AndroidAuto.apk"; then
