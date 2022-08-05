@@ -249,13 +249,13 @@ replace_slash_with_at()
   echo "${result}"
 }
 
-replace_line_in_file()  # $1 => File to process  $2 => Line to replace  $3 => File to read for replacement text
+replace_line_in_file_with_file()  # $1 => File to process  $2 => Line to replace  $3 => File to read for replacement text
 {
-  sed -i "/$2/r $3" "$1" || ui_error "Failed to replace (1) a line in the file => '$1'" 92
-  sed -i "/$2/d" "$1" || ui_error "Failed to replace (2) a line in the file => '$1'" 92
+  sed -i -e "/${2:?}/r ${3:?}" -- "${1:?}" || ui_error "Failed to replace (1) a line in the file => '$1'" 92
+  sed -i -e "/${2:?}/d" -- "${1:?}" || ui_error "Failed to replace (2) a line in the file => '$1'" 92
 }
 
-replace_line_in_file2()  # $1 => File to process  $2 => Line to replace  $3 => Replacement text
+replace_line_in_file()  # $1 => File to process  $2 => Line to replace  $3 => Replacement text
 {
   rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
   echo "${3:?}" > "${TMP_PATH:?}/func-tmp/replacement-string.dat" || ui_error "Failed to replace (1) a line in the file => '${1}'" 92
