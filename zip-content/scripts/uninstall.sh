@@ -236,17 +236,20 @@ delete_recursive "${SYS_PATH}"/etc/default-permissions/contacts-calendar-sync.xm
 delete_recursive "${SYS_PATH}"/etc/default-permissions/opengapps-permissions.xml
 delete_recursive "${SYS_PATH}"/etc/default-permissions/unifiednlp-permissions.xml
 delete_recursive "${SYS_PATH}"/etc/default-permissions/microg-permissions.xml
+delete_recursive "${SYS_PATH}"/etc/default-permissions/permissions-com.google.android.gms.xml
 delete_recursive_wildcard "${SYS_PATH}"/etc/default-permissions/microg-*-permissions.xml
 
 delete_recursive "${SYS_PATH}"/etc/permissions/features.xml
 delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google.xml
 delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google-p.xml
 #delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google-se.xml
+delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-org.microG.xml
 delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-microg.xml
 
 delete_recursive "${SYS_PATH}"/etc/sysconfig/features.xml
 delete_recursive "${SYS_PATH}"/etc/sysconfig/google.xml
 delete_recursive "${SYS_PATH}"/etc/sysconfig/google_build.xml
+delete_recursive "${SYS_PATH}"/etc/sysconfig/org.microG.xml
 delete_recursive "${SYS_PATH}"/etc/sysconfig/microg.xml
 delete_recursive_wildcard "${SYS_PATH}"/etc/sysconfig/microg-*.xml
 
