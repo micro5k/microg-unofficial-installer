@@ -20,9 +20,6 @@
     <!-- These are the packages that are white-listed to be able to retrieve location even when user location settings are off, for emergency purposes -->
     <allow-ignore-location-settings package="com.google.android.gms" />
 
-    <!-- These are the packages that are white-listed to be able to run in the background while in power save mode (but not whitelisted from device idle modes) -->
-    <allow-in-power-save-except-idle package="com.google.android.projection.gearhead" />
-
     <!-- These are the action strings of broadcasts which are whitelisted to be delivered anonymously even to apps which target O+ -->
     <allow-implicit-broadcast action="com.google.android.checkin.CHECKIN_COMPLETE" />
     <allow-implicit-broadcast action="com.google.gservices.intent.action.GSERVICES_CHANGED" />
