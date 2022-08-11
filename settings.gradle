@@ -3,7 +3,7 @@
 // SPDX-FileType: SOURCE
 
 plugins {
-    id 'com.gradle.enterprise' version '3.10.3'  /* New name of com.gradle.build-scan */
+    id 'com.gradle.enterprise' version '3.11.1'  /* New name of com.gradle.build-scan */
 }
 
 rootProject.name = 'microG unofficial installer'
