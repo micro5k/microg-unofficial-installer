@@ -32,6 +32,7 @@ unset JAVA_TOOL_OPTIONS
 unset _JAVA_OPTIONS
 unset CDPATH
 
+if test -n "${HOME:-}"; then HOME="$(realpath "${HOME:?}")" || return 1 2>&- || exit 1; fi
 SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || return 1 2>&- || exit 1
 
 ui_error()
