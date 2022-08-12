@@ -10,9 +10,9 @@ SETLOCAL 2> nul
 REM Fix the working directory when using "Run as administrator"
 IF "%CD%" == "%windir%\system32" CD /D "%~dp0"
 
+SET "PATH=.;%PATH%"
 IF EXIST "%ProgramFiles(x86)%\GnuWin32\bin" SET "PATH=%ProgramFiles(x86)%\GnuWin32\bin;%PATH%"
 IF EXIST "%ProgramFiles%\GnuWin32\bin" SET "PATH=%ProgramFiles%\GnuWin32\bin;%PATH%"
-SET "PATH=.;%PATH%"
 IF EXIST "%~dp0tools\win" SET "PATH=%~dp0tools\win;%PATH%"
 SET "PATHEXT=.SH;%PATHEXT%"
 SET "HOME=%~dp0"
