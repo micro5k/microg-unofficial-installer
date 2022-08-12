@@ -15,6 +15,7 @@ IF EXIST "%ProgramFiles%\GnuWin32\bin" SET "PATH=%ProgramFiles%\GnuWin32\bin;%PA
 SET "PATH=.;%PATH%"
 IF EXIST "%~dp0tools\win" SET "PATH=%~dp0tools\win;%PATH%"
 SET "PATHEXT=.SH;%PATHEXT%"
+SET "HOME=%~dp0"
 SET "SCRIPT_DIR=%~dp0"
 
 CHCP 858 >nul || ECHO "Changing the codepage failed"
