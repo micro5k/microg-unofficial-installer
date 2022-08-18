@@ -16,17 +16,17 @@ gradleEnterprise.buildScan {
 
 void configure() {
     defaultTasks 'tasks'
+    rootProject.buildDir = "${projectDir}/output"
 
     Properties props = new Properties()
-    file('zip-content/module.prop').withInputStream { props.load(it) }
+    file("${projectDir}/zip-content/module.prop").withInputStream { props.load(it) }
 
-    description = props.getProperty('description')
-    version = props.getProperty('version').trim()
-    archivesBaseName = props.getProperty('id')
+    String description = props.getProperty('description')
+    String version = props.getProperty('version').trim()
+    String archivesBaseName = props.getProperty('id')
     //ext.isBeta = version.endsWith('-beta')
     //ext.isAlpha = version.endsWith('-alpha')
     //ext.isSnapshot = version.endsWith('-snapshot')
-    rootProject.buildDir = "${projectDir}/output"
 
     println 'Version: ' + version
     println 'OS: ' + System.properties['os.name']
@@ -60,8 +60,8 @@ tasks.register('buildOta', Exec) {
 
     doFirst {
         println 'Building the flashable OTA zip with Gradle...'
-        executable "${projectDir}/build" + getScriptExt()
         environment OPENSOURCE_ONLY: 'false'
+        executable "${projectDir}/build" + getScriptExt()
     }
 }
 
@@ -71,8 +71,8 @@ tasks.register('buildOtaOSS', Exec) {
 
     doFirst {
         println 'Building the flashable OTA zip (open-source components only) with Gradle...'
-        executable "${projectDir}/build" + getScriptExt()
         environment OPENSOURCE_ONLY: 'true'
+        executable "${projectDir}/build" + getScriptExt()
     }
 }
 tasks.named('build').configure {
