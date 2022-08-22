@@ -46,7 +46,7 @@ build-ota-oss:
 
 build-ota:
   stage: build
-  script: "./gradlew buildOta | TZ=UTC ts '[%H:%M:%S]'"
+  script: "./gradlew buildOta"
   only:
     - main
 
