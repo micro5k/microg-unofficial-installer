@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: CC0-1.0
 // SPDX-FileType: SOURCE
 
+buildscript {
+    apply from: "${rootProject.projectDir}/dependencies.gradle"
+}
+
 plugins {
-    id 'com.gradle.enterprise' version '3.11.1'  /* New name of com.gradle.build-scan */
+    id 'com.gradle.enterprise' version "${gradleBuildScanVersion}"  /* New name of com.gradle.build-scan */
 }
 
 rootProject.name = 'microG unofficial installer'
