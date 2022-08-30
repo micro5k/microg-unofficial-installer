@@ -50,7 +50,6 @@ STATUS=1
 
 export LIVE_SETUP_POSSIBLE=false
 export KEYCHECK_ENABLED=false
-export BOOTMODE=false
 
 
 ### FUNCTIONS ###
