@@ -146,7 +146,6 @@ ui_msg 'microG unofficial installer'
 ui_msg "${install_version}"
 ui_msg '(by ale5000)'
 ui_msg '---------------------------'
-ui_msg_empty_line
 ui_msg "Boot mode: ${BOOTMODE:?}"
 ui_msg "Recovery API ver: ${RECOVERY_API_VER:-}"
 ui_msg_empty_line
