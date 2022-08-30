@@ -85,6 +85,7 @@ tasks.named('build').configure {
 
 tasks.register('installTest', Exec) {
     group 'verification'
+    mustRunAfter build, buildOta, buildOtaOSS
 
     doFirst {
         executable "${projectDir}/recovery-simulator/recovery" + getScriptExt()
