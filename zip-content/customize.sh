@@ -38,7 +38,7 @@ export SKIPUNZIP
 
 ### GLOBAL VARIABLES ###
 
-export RECOVERY_API_VER="${1}"
+export RECOVERY_API_VER="${1:-}"
 ZIP_PATH="$(dirname "${ZIPFILE:?}")"
 export ZIP_PATH
 
