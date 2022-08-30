@@ -103,10 +103,10 @@ dl_type_one()
 
   _referrer="${2:?}/"; _url="${1:?}"
   _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton.*\"\shref=\"[^"]+\"')" || return "${?}"
-
+  sleep 0.2
   _referrer="${_url:?}"; _url="${2:?}${_result:?}"
   _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.+href=\"[^"]+\"')" || return "${?}"
-
+  sleep 0.2
   _referrer="${_url:?}"; _url="${2:?}${_result:?}"
   dl_generic "${_url:?}" "${_referrer:?}" "${3:?}" || return "${?}"
 }
@@ -117,17 +117,17 @@ dl_file()
 
   local _status _url _base_url
   _status=0
-  _url="${4:?}" || return "${?}"
+  _url="https://${4:?}" || return "${?}"
   _base_url="$(echo "${_url:?}" | cut -d '/' -f 1,2,3)" || return "${?}"
 
   if ! test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
 
     case "${_base_url:?}" in
-      *'://''w''w''w''.apk''mirror.com')
+      ?????'://''w''w''w''.apk''mirror.com')
         echo 'DL type 1'
         dl_type_one "${_url:?}" "${_base_url:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
-      'https://'?*)
+      ?????'://'????*)
         echo 'DL type 0'
         dl_generic "${_url:?}" "${DEFAULT_REFERRER:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)

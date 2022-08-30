@@ -108,7 +108,7 @@ if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
   done
   STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
-  dl_file 'misc/keycheck' 'keycheck-arm.bin' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'https://github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
+  dl_file 'misc/keycheck' 'keycheck-arm.bin' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
 else
   echo 'Skipped not OSS files!'
 fi
