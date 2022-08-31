@@ -3,7 +3,7 @@
 // SPDX-FileType: SOURCE
 
 buildscript {
-    apply from: "${rootProject.projectDir}/dependencies.gradle"
+    apply from: 'dependencies.gradle'
 }
 
 plugins {
