@@ -6,6 +6,14 @@
 # NOTE: This script simulate a real recovery but it relies on the flashable zip to use the suggested paths.
 # REALLY IMPORTANT: A misbehaving flashable zip can damage your real system.
 
+# Auto-enable xtrace on shells that do NOT support SHELLOPTS
+# shellcheck disable=SC3028
+case ":${SHELLOPTS:-}:" in
+  *':xtrace:'*)
+    set -x;;
+  *);;
+esac
+
 set -e
 # shellcheck disable=SC3040
 set -o pipefail || true
@@ -96,9 +104,9 @@ if ! "${ENV_RESETTED:-false}"; then
   fi
 
   if test "${COVERAGE:-false}" = 'false'; then
-    exec -- env -i -- ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   else
-    exec -- env -i -- ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   fi
   exit 127
 fi
