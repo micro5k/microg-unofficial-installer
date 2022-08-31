@@ -43,7 +43,7 @@ ui_error()
 }
 
 WGET_CMD='wget'
-DEFAULT_UA='Mozilla/5.0 (Linux x86_64; rv:103.0) Gecko/20100101 Firefox/103.0'
+DEFAULT_UA='Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0'
 DEFAULT_REFERRER='https://duckduckgo.com/'
 readonly WGET_CMD DEFAULT_UA DEFAULT_REFERRER
 
