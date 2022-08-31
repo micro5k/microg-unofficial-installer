@@ -6,13 +6,12 @@
 # NOTE: This script simulate a real recovery but it relies on the flashable zip to use the suggested paths.
 # REALLY IMPORTANT: A misbehaving flashable zip can damage your real system.
 
-# Auto-enable xtrace on shells that do NOT support SHELLOPTS
-# shellcheck disable=SC3028
-case ":${SHELLOPTS:-}:" in *':xtrace:'*) set -x; COVERAGE='true';; *);; esac
-
 set -e
 # shellcheck disable=SC3040
 set -o pipefail || true
+
+# shellcheck disable=SC3028
+case ":${SHELLOPTS:-}:" in *':xtrace:'*) set -x; COVERAGE='true';; *);; esac  # Auto-enable `set -x` for shells that do NOT support SHELLOPTS
 
 fail_with_msg()
 {
