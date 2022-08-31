@@ -109,7 +109,7 @@ _backup_path="${PATH:?}"
 uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
 # Check dependencies
-_our_busybox="$(command -v -- busybox)" || fail_with_msg 'BusyBox is missing'
+_our_busybox="$(env -- which -- busybox)" || fail_with_msg 'BusyBox is missing'
 if test "${COVERAGE:-false}" != 'false'; then
   COVERAGE="$(command -v -- bashcov)" || fail_with_msg 'Bashcov is missing'
 fi
