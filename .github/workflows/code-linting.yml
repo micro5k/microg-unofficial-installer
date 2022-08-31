@@ -22,7 +22,7 @@ jobs:
       - name: "ShellChecker"
         uses: a5k-actions/shellchecker@v0
         with:
-          ignore-files: "gradlew"
+          ignore-files: "gradlew|.simplecov"
 
   codacy:
     permissions:
