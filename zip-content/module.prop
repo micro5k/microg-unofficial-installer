@@ -10,4 +10,5 @@ versionCode=1
 author=ale5000
 description=microG unofficial installer is a flashable zip made to simplify the installation of microG.
 support=https://github.com/micro5k/microg-unofficial-installer/issues
-minSdk=9
+minApi=9
+maxApi=33
