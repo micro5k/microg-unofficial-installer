@@ -26,8 +26,13 @@
     <allow-implicit-broadcast action="com.google.gservices.intent.action.GSERVICES_OVERRIDE" />
     <allow-implicit-broadcast action="com.google.android.c2dm.intent.RECEIVE" />
 
+    <allow-implicit-broadcast action="android.intent.action.ACTION_POWER_CONNECTED" />
+    <allow-implicit-broadcast action="android.intent.action.ACTION_POWER_DISCONNECTED" />
+
     <!-- These are the packages that handle URLs to their websites by default -->
     <app-link package="com.android.vending" />
+    <app-link package="com.google.android.gms" />
+    <app-link package="com.google.android.projection.gearhead" />
     <!-- %CUSTOM_APP_LINKS% -->
 
     <!-- These are the packages that are exempted from private API blacklisting -->
