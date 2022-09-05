@@ -88,13 +88,13 @@ corrupted_file()
 # 1 => URL; 2 => Referer; 3 => Output
 dl_generic()
 {
-  "${WGET_CMD:?}" -c -O "${3:?}" -U "${DEFAULT_UA:?}" --no-cache --header 'Accept: text/html,*/*;q=0.9' --header 'Accept-Language: en-US,en;q=0.8' --header "Referer: ${2:?}" -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" -c -O "${3:?}" -U "${DEFAULT_UA:?}" --no-cache --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' --header 'Accept-Language: en-US,en;q=0.5' --header "Referer: ${2:?}" -- "${1:?}" || return "${?}"
 }
 
 # 1 => URL; 2 => Referer; 3 => Pattern
 get_link_from_html()
 {
-  "${WGET_CMD:?}" -q -O- -U "${DEFAULT_UA:?}" --no-cache --header 'Accept: text/html,*/*;q=0.9' --header 'Accept-Language: en-US,en;q=0.8' --header "Referer: ${2:?}" -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
+  "${WGET_CMD:?}" -q -O- -U "${DEFAULT_UA:?}" --no-cache --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' --header 'Accept-Language: en-US,en;q=0.5' --header "Referer: ${2:?}" -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
 }
 
 dl_type_one()
