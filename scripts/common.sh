@@ -87,13 +87,13 @@ corrupted_file()
   ui_error "The file '$1' is corrupted."
 }
 
-# 1 => URL; 2 => Referer; 3 => Output
+# 1 => URL; 2 => Referrer; 3 => Output
 dl_generic()
 {
   "${WGET_CMD:?}" -c -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header 'Accept-Language: en-US,en;q=0.5' --header "Referer: ${2:?}" --no-cache -- "${1:?}" || return "${?}"
 }
 
-# 1 => URL; 2 => Referer; 3 => Pattern
+# 1 => URL; 2 => Referrer; 3 => Pattern
 get_link_from_html()
 {
   "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header 'Accept-Language: en-US,en;q=0.5' --header "Referer: ${2:?}" --no-cache -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
