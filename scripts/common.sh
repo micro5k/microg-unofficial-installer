@@ -133,7 +133,7 @@ dl_file()
         echo 'DL type 0'
         dl_generic "${_url:?}" "${DL_PROTOCOL:?}://${DL_REFERRER_DOMAIN:?}/${DL_REFERRER_PATH?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)
-        ui_error "Invalid download url => '${_url:?}'";;
+        ui_error "Invalid download URL => '${_url?}'";;
     esac
 
     if test "${_status:?}" != 0; then
