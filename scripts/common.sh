@@ -42,10 +42,10 @@ ui_error()
   exit 1
 }
 
-WGET_CMD='wget'
-DEFAULT_UA='Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0'
-DEFAULT_REFERRER='https://duckduckgo.com/'
-readonly WGET_CMD DEFAULT_UA DEFAULT_REFERRER
+readonly WGET_CMD='wget'
+readonly DL_PROTOCOL='https'
+readonly DEFAULT_UA='Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0'
+readonly DEFAULT_REFERRER='https://duckduckgo.com/'
 
 _uname_saved="$(uname)"
 compare_start_uname()
@@ -117,17 +117,17 @@ dl_file()
 
   local _status _url _base_url
   _status=0
-  _url="https://${4:?}" || return "${?}"
+  _url="${DL_PROTOCOL:?}://${4:?}" || return "${?}"
   _base_url="$(echo "${_url:?}" | cut -d '/' -f 1,2,3)" || return "${?}"
 
   if ! test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
 
     case "${_base_url:?}" in
-      ?????'://''w''w''w''.apk''mirror.com')
+      "${DL_PROTOCOL:?}://"'w''w''w.''apk''mirror.com')
         echo 'DL type 1'
         dl_type_one "${_url:?}" "${_base_url:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
-      ?????'://'????*)
+      "${DL_PROTOCOL:?}://"????*)
         echo 'DL type 0'
         dl_generic "${_url:?}" "${DEFAULT_REFERRER:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)
