@@ -70,6 +70,11 @@ simple_get_prop()
   grep -F "${1}=" "${2}" | head -n1 | cut -d '=' -f 2
 }
 
+get_base_url()
+{
+  echo "${1:?}" | cut -d '/' -f 1,2,3 || return "${?}"
+}
+
 verify_sha1()
 {
   local file_name="$1"
@@ -102,15 +107,16 @@ get_link_from_html()
 
 dl_type_one()
 {
-  local _url _referrer _result
+  local _url _base_url _referrer _result
+  _base_url="$(get_base_url "${2:?}")" || return "${?}"
 
   _referrer="${2:?}"; _url="${1:?}"
   _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton.*\"\shref=\"[^"]+\"')" || return "${?}"
   sleep 0.2
-  _referrer="${_url:?}"; _url="${2:?}${_result:?}"
+  _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
   _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.+href=\"[^"]+\"')" || return "${?}"
   sleep 0.2
-  _referrer="${_url:?}"; _url="${2:?}${_result:?}"
+  _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
   dl_generic "${_url:?}" "${_referrer:?}" "${3:?}" || return "${?}"
 }
 
@@ -121,7 +127,7 @@ dl_file()
   local _status _url _base_url
   _status=0
   _url="${DL_PROTOCOL:?}://${4:?}" || return "${?}"
-  _base_url="$(echo "${_url:?}" | cut -d '/' -f 1,2,3)" || return "${?}"
+  _base_url="$(get_base_url "${_url:?}")" || return "${?}"
 
   if ! test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
