@@ -251,6 +251,9 @@ else
   move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
 fi
 
+#setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app'
+#setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app'
+
 if test "${API}" -ge 16; then
   if test "${live_setup_enabled:?}" = 'true'; then
     choose 'Do you want to install NewPipe?' '+) Yes' '-) No'

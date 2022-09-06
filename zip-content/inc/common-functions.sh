@@ -429,6 +429,28 @@ delete_dir_if_empty()
   fi
 }
 
+file_get_first_line_that_start_with()
+{
+  grep -m 1 -e "^${1:?}" -- "${2:?}" || return "${?}"
+}
+
+setup_app()  # $1 => Default setting  $2 => Name  $3 => Filename  $4 => Folder
+{
+  local _install _app_conf
+  _install="${1:-0}"
+  _app_conf="$(file_get_first_line_that_start_with "${4:?}/${3:?}|" "${TMP_PATH}/files/system-apps/file-list.dat")"
+  # INCOMPLETE
+
+  if test "${live_setup_enabled:?}" = 'true'; then
+    choose "Do you want to install ${2:?}?" '+) Yes' '-) No'
+    if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
+  fi
+
+  if test "${_install:?}" -ne 0; then
+    move_rename_file "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${3:?}.apk"
+  fi
+}
+
 list_files()  # $1 => Folder to scan  $2 => Prefix to remove
 {
   test -d "$1" || return
