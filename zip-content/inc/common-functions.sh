@@ -429,7 +429,7 @@ delete_dir_if_empty()
   fi
 }
 
-list_files()  # $1 => Folder to scan   $2 => Prefix to remove
+list_files()  # $1 => Folder to scan  $2 => Prefix to remove
 {
   test -d "$1" || return
   for entry in "$1"/*; do
