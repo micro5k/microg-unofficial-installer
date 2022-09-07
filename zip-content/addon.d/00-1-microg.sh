@@ -1,8 +1,8 @@
 #!/sbin/sh
 # ADDOND_VERSION=3
 
-# SPDX-FileCopyrightText: (c) 2016 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: none
+# SPDX-License-Identifier: CC0-1.0
 # SPDX-FileType: SOURCE
 
 # INFO: This script backup and restore microG during ROM upgrades
@@ -51,6 +51,6 @@ case "${1}" in
     # Stub
   ;;
   *)
-    echo 'ERROR'
+    echo 'ERROR: addon.d unknown phase'
   ;;
 esac
