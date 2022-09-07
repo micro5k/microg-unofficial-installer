@@ -1,4 +1,5 @@
 #!/sbin/sh
+-*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
@@ -7,6 +8,8 @@
 # SC3043: In POSIX sh, local is undefined
 
 set -u
+# shellcheck disable=SC3040
+set -o pipefail || true
 umask 022
 
 
@@ -117,11 +120,11 @@ _updatebin_we_mounted_tmp=false
 }
 
 # Seed the RANDOM variable
-RANDOM="$$"
+RANDOM="${$:?}${$:?}"
 
 # shellcheck disable=SC3028
 {
-  if test "${RANDOM:?}" = "$$"; then ui_error "\$RANDOM is not supported"; fi  # Both BusyBox and Toybox support $RANDOM
+  if test "${RANDOM:?}" = "${$:?}${$:?}"; then ui_error "\$RANDOM is not supported"; fi  # Both BusyBox and Toybox support $RANDOM
   _updatebin_our_main_script="${TMPDIR:?}/${RANDOM:?}-customize.sh"
 }
 
