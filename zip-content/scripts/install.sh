@@ -220,8 +220,8 @@ if verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" '0dd8b7c
    verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm.apk" 'dd5ed6eadc470b7b99379832dfe40b2e4e41ab59' &&
    verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
    verify_sha1 "${TMP_PATH}/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
-   verify_sha1 "${TMP_PATH}/files/variants/app/NewPipe.apk" 'd5281149bdeac2ac41f570fda71eb91504cd9c3e' &&
-   verify_sha1 "${TMP_PATH}/files/variants/app/NewPipeLegacy.apk" '95413ee2bf576e4c7b0bdc9e9e79fd2187d444a9' &&
+   verify_sha1 "${TMP_PATH}/files/system-apps/app/NewPipe.apk" 'd5281149bdeac2ac41f570fda71eb91504cd9c3e' &&
+   verify_sha1 "${TMP_PATH}/files/system-apps/app/NewPipeLegacy.apk" '95413ee2bf576e4c7b0bdc9e9e79fd2187d444a9' &&
    verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '9a6ffed69c510a06a719a2d52c3fd49218f71806' &&
    verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'b853c1b177b611310219cc6571576bd455fa3e9e' &&
    verify_sha1 "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
@@ -251,25 +251,8 @@ else
   move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
 fi
 
-#setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app'
-#setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app'
-
-if test "${API}" -ge 16; then
-  if test "${live_setup_enabled:?}" = 'true'; then
-    choose 'Do you want to install NewPipe?' '+) Yes' '-) No'
-    if test "$?" -eq 3; then INSTALL_NEWPIPE='1'; else INSTALL_NEWPIPE='0'; fi
-  fi
-else
-  INSTALL_NEWPIPE='0'
-fi
-if test "${INSTALL_NEWPIPE:?}" -ne 0; then
-  if test "${API}" -ge 19; then
-    move_rename_file "${TMP_PATH}/files/variants/app/NewPipe.apk" "${TMP_PATH}/files/app/NewPipe.apk"
-  else
-    move_rename_file "${TMP_PATH}/files/variants/app/NewPipeLegacy.apk" "${TMP_PATH}/files/app/NewPipe.apk"
-  fi
-  replace_line_in_file "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS% -->' '    <app-link package="org.schabi.newpipe" />'
-fi
+setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' && replace_line_in_file "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS% -->' '    <app-link package="org.schabi.newpipelegacy" />'
+setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' && replace_line_in_file "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS% -->' '    <app-link package="org.schabi.newpipe" />'
 
 if test "${API}" -ge 23 && test -f "${TMP_PATH}/files/variants/AndroidAuto.apk"; then
   if test "${live_setup_enabled:?}" = 'true'; then

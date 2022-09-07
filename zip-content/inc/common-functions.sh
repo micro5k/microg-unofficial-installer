@@ -449,7 +449,8 @@ string_split()
 # @arg $3 string Filename of the app
 # @arg $4 string Folder of the app
 #
-# @exitcode 0 If successful.
+# @exitcode 0 If installed.
+# @exitcode 1 If NOT installed.
 setup_app()
 {
   local _install _app_conf _min_sdk _max_sdk
@@ -459,18 +460,20 @@ setup_app()
   _max_sdk="$(string_split "${_app_conf:?}" 3)" || ui_error "Failed to get max SDK for '${2}'"
   _output_name="$(string_split "${_app_conf:?}" 4)" || ui_error "Failed to get output name for '${2}'"
 
-  if test "${API:?}" -ge "${_min_sdk:?}" && test "${API:?}" -le "${_max_sdk:-99}"; then
+  if test "${API:?}" -ge "${_min_sdk:?}" && test "${API:?}" -le "${_max_sdk:-99}" && test -f "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk"; then
     if test "${live_setup_enabled:?}" = 'true'; then
       choose "Do you want to install ${2:?}?" '+) Yes' '-) No'
       if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
     fi
 
     if test "${_install:?}" -ne 0; then
-      echo move_rename_file "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${_output_name:?}.apk"
+      move_rename_file "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${_output_name:?}.apk" && return 0
     fi
   else
     ui_debug "Skipped: ${2:?}"
   fi
+
+  return 1
 }
 
 list_files()  # $1 => Folder to scan  $2 => Prefix to remove
