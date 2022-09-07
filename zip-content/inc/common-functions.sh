@@ -1,4 +1,6 @@
 #!/sbin/sh
+# @file common-functions.sh
+# @brief A library with common functions used during flashable ZIP installation.
 
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -439,7 +441,16 @@ string_split()
   printf '%s' "${1:?}" | cut -d '|' -sf "${2:?}" || return "${?}"
 }
 
-setup_app()  # $1 => Default setting  $2 => Name  $3 => Filename  $4 => Folder
+# @description Setup an app for later installation.
+# (it automatically installs it depending on the SDK)
+#
+# @arg $1 integer Default installation setting
+# @arg $2 string Name of the app
+# @arg $3 string Filename of the app
+# @arg $4 string Folder of the app
+#
+# @exitcode 0 If successful.
+setup_app()
 {
   local _install _app_conf _min_sdk _max_sdk
   _install="${1:-0}"
