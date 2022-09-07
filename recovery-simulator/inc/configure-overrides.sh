@@ -1,6 +1,6 @@
 #!/sbin/sh
-# SPDX-FileCopyrightText: (c) 2022 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: none
+# SPDX-License-Identifier: CC0-1.0
 # SPDX-FileType: SOURCE
 
 if test -z "${OVERRIDE_DIR:-}" || test -z "${BB_OVERRIDE_APPLETS:-}"; then
