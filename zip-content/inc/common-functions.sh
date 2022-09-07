@@ -442,7 +442,7 @@ string_split()
 }
 
 # @description Setup an app for later installation.
-# (it automatically installs it depending on the SDK)
+# (it automatically handle the SDK compatibility)
 #
 # @arg $1 integer Default installation setting
 # @arg $2 string Name of the app
