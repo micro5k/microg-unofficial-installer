@@ -97,14 +97,14 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS
 # Download files if they are missing
 mkdir -p "${SCRIPT_DIR}/cache"
 
-oss_files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL DL_MIRROR _; do
-  dl_file "${LOCAL_PATH}" "${LOCAL_FILENAME}" "${DL_HASH}" "${DL_URL}" "${DL_MIRROR}" || return "${?}"
+oss_files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _ _ _ DL_HASH DL_URL DL_MIRROR _; do
+  dl_file "${LOCAL_PATH}" "${LOCAL_FILENAME}.apk" "${DL_HASH}" "${DL_URL}" "${DL_MIRROR}" || return "${?}"
 done
 STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
 if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
-  files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH DL_HASH DL_URL DL_MIRROR _; do
-    dl_file "${LOCAL_PATH}" "${LOCAL_FILENAME}" "${DL_HASH}" "${DL_URL}" "${DL_MIRROR}" || return "${?}"
+  files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _ _ _ DL_HASH DL_URL DL_MIRROR _; do
+    dl_file "${LOCAL_PATH}" "${LOCAL_FILENAME}.apk" "${DL_HASH}" "${DL_URL}" "${DL_MIRROR}" || return "${?}"
   done
   STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
@@ -129,9 +129,10 @@ rm -f "${TEMP_DIR}/zip-content/LICENSES/Info-ZIP.txt" || ui_error 'Failed to del
 if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
   printf '%s\n%s\n\n%s\n' '# SPDX-FileCopyrightText: none' '# SPDX-License-Identifier: CC0-1.0' 'Include only Open source components.' > "${TEMP_DIR}/zip-content/OPENSOURCE-ONLY" || ui_error 'Failed to create the OPENSOURCE-ONLY file'
 else
-  files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _; do
+  files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH MIN_API MAX_API FINAL_FILENAME FILE_HASH _; do
     mkdir -p "${TEMP_DIR}/zip-content/${LOCAL_PATH}"
-    cp -f "${SCRIPT_DIR}/cache/${LOCAL_PATH}/${LOCAL_FILENAME}" "${TEMP_DIR}/zip-content/${LOCAL_PATH}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}'"
+    cp -f "${SCRIPT_DIR}/cache/${LOCAL_PATH}/${LOCAL_FILENAME}.apk" "${TEMP_DIR}/zip-content/${LOCAL_PATH}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}.apk'"
+    printf '%s\n' "${LOCAL_PATH:?}/${LOCAL_FILENAME:?}|${MIN_API:?}|${MAX_API?}|${FINAL_FILENAME:?}|${FILE_HASH:?}" >> "${TEMP_DIR:?}/zip-content/files/system-apps/file-list.dat"
   done
   STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
