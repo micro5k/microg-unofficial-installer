@@ -251,10 +251,8 @@ else
   move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
 fi
 
-setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' \
-&& replace_line_in_file "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS% -->' '    <app-link package="org.schabi.newpipelegacy" />'
-setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' \
-&& replace_line_in_file "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS% -->' '    <app-link package="org.schabi.newpipe" />'
+setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' 'org.schabi.newpipelegacy'
+setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' 'org.schabi.newpipe'
 
 if test "${API}" -ge 23 && test -f "${TMP_PATH}/files/variants/AndroidAuto.apk"; then
   if test "${live_setup_enabled:?}" = 'true'; then
