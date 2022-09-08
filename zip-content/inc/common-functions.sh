@@ -260,6 +260,14 @@ replace_line_in_file()  # $1 => File to process  $2 => Line to replace  $3 => Re
   rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
 }
 
+add_line_in_file()  # $1 => File to process  $2 => Line to find  $3 => Text to add
+{
+  rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
+  echo "${3:?}" > "${TMP_PATH:?}/func-tmp/replacement-string.dat" || ui_error "Failed to replace (1) a line in the file => '${1}'" 92
+  sed -i -e "/${2:?}/r ${TMP_PATH:?}/func-tmp/replacement-string.dat" -- "${1:?}" || ui_error "Failed to replace (2) a line in the file => '${1}'" 92
+  rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
+}
+
 replace_line_in_file_with_file()  # $1 => File to process  $2 => Line to replace  $3 => File to read for replacement text
 {
   sed -i -e "/${2:?}/r ${3:?}" -- "${1:?}" || ui_error "Failed to replace (1) a line in the file => '$1'" 92
@@ -444,10 +452,11 @@ string_split()
 # @description Setup an app for later installation.
 # (it automatically handle the SDK compatibility)
 #
-# @arg $1 integer Default installation setting
+# @arg $1 integer Default installation setting (default 0)
 # @arg $2 string Name of the app
 # @arg $3 string Filename of the app
 # @arg $4 string Folder of the app
+# @arg $5 string Auto-enable URL handling (default false)
 #
 # @exitcode 0 If installed.
 # @exitcode 1 If NOT installed.
@@ -459,6 +468,7 @@ setup_app()
   _min_sdk="$(string_split "${_app_conf:?}" 2)" || ui_error "Failed to get min SDK for '${2}'"
   _max_sdk="$(string_split "${_app_conf:?}" 3)" || ui_error "Failed to get max SDK for '${2}'"
   _output_name="$(string_split "${_app_conf:?}" 4)" || ui_error "Failed to get output name for '${2}'"
+  _url_handling="${5:-false}"
 
   if test "${API:?}" -ge "${_min_sdk:?}" && test "${API:?}" -le "${_max_sdk:-99}" && test -f "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk"; then
     if test "${live_setup_enabled:?}" = 'true'; then
@@ -467,6 +477,9 @@ setup_app()
     fi
 
     if test "${_install:?}" -ne 0; then
+      if test "${_url_handling:?}" != 'false'; then
+        add_line_in_file "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS% -->' "    <app-link package=\"${_url_handling:?}\" />" || ui_error "Failed to auto-enable URL handling for '${2}'"
+      fi
       move_rename_file "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${_output_name:?}.apk" && return 0
     fi
   else
