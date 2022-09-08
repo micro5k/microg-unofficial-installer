@@ -260,11 +260,11 @@ replace_line_in_file()  # $1 => File to process  $2 => Line to replace  $3 => Re
   rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
 }
 
-add_line_in_file()  # $1 => File to process  $2 => Line to find  $3 => Text to add
+add_line_in_file_after_string()  # $1 => File to process  $2 => String to find  $3 => Text to add
 {
   rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
-  echo "${3:?}" > "${TMP_PATH:?}/func-tmp/replacement-string.dat" || ui_error "Failed to replace (1) a line in the file => '${1}'" 92
-  sed -i -e "/${2:?}/r ${TMP_PATH:?}/func-tmp/replacement-string.dat" -- "${1:?}" || ui_error "Failed to replace (2) a line in the file => '${1}'" 92
+  printf '%s' "${3:?}" > "${TMP_PATH:?}/func-tmp/replacement-string.dat" || ui_error "Failed to replace (1) a line in the file => '${1}'" 92
+  sed -i -be "/${2:?}/r ${TMP_PATH:?}/func-tmp/replacement-string.dat" -- "${1:?}" || ui_error "Failed to replace (2) a line in the file => '${1}'" 92
   rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
 }
 
@@ -478,7 +478,7 @@ setup_app()
 
     if test "${_install:?}" -ne 0; then
       if test "${_url_handling:?}" != 'false'; then
-        add_line_in_file "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS% -->' "    <app-link package=\"${_url_handling:?}\" />" || ui_error "Failed to auto-enable URL handling for '${2}'"
+        add_line_in_file_after_string "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_url_handling:?}\" />" || ui_error "Failed to auto-enable URL handling for '${2}'"
       fi
       move_rename_file "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${_output_name:?}.apk" && return 0
     fi

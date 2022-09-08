@@ -33,7 +33,8 @@
     <app-link package="com.android.vending" />
     <app-link package="com.google.android.gms" />
     <app-link package="com.google.android.projection.gearhead" />
-    <!-- %CUSTOM_APP_LINKS% -->
+    <!-- %CUSTOM_APP_LINKS-START% -->
+    <!-- %CUSTOM_APP_LINKS-END% -->
 
     <!-- These are the packages that are exempted from private API blacklisting -->
     <hidden-api-whitelisted-app package="com.google.android.gms" />
