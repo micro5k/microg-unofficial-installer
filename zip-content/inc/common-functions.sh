@@ -456,7 +456,7 @@ string_split()
 # @arg $2 string Name of the app
 # @arg $3 string Filename of the app
 # @arg $4 string Folder of the app
-# @arg $5 string Auto-enable URL handling (default false)
+# @arg $5 boolean Auto-enable URL handling (default false)
 #
 # @exitcode 0 If installed.
 # @exitcode 1 If NOT installed.
@@ -468,6 +468,7 @@ setup_app()
   _min_sdk="$(string_split "${_app_conf:?}" 2)" || ui_error "Failed to get min SDK for '${2}'"
   _max_sdk="$(string_split "${_app_conf:?}" 3)" || ui_error "Failed to get max SDK for '${2}'"
   _output_name="$(string_split "${_app_conf:?}" 4)" || ui_error "Failed to get output name for '${2}'"
+  _internal_name="$(string_split "${_app_conf:?}" 5)" || ui_error "Failed to get internal name for '${2}'"
   _url_handling="${5:-false}"
 
   if test "${API:?}" -ge "${_min_sdk:?}" && test "${API:?}" -le "${_max_sdk:-99}" && test -f "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk"; then
@@ -478,7 +479,7 @@ setup_app()
 
     if test "${_install:?}" -ne 0; then
       if test "${_url_handling:?}" != 'false'; then
-        add_line_in_file_after_string "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_url_handling:?}\" />" || ui_error "Failed to auto-enable URL handling for '${2}'"
+        add_line_in_file_after_string "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${2}'"
       fi
       move_rename_file "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${_output_name:?}.apk" && return 0
     fi
