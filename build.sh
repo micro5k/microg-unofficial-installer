@@ -203,6 +203,9 @@ fi
 
 cd "${_init_dir:?}" || ui_error 'Failed to change back the folder'
 
+# Ring bell
+printf '%b' '\007' || true
+
 echo ''
 echo 'Done.'
 change_title 'Done'
