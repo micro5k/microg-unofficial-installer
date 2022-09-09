@@ -264,7 +264,7 @@ add_line_in_file_after_string()  # $1 => File to process  $2 => String to find  
 {
   rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
   printf '%s' "${3:?}" > "${TMP_PATH:?}/func-tmp/replacement-string.dat" || ui_error "Failed to replace (1) a line in the file => '${1}'" 92
-  sed -i -be "/${2:?}/r ${TMP_PATH:?}/func-tmp/replacement-string.dat" -- "${1:?}" || ui_error "Failed to replace (2) a line in the file => '${1}'" 92
+  sed -i -e "/${2:?}/r ${TMP_PATH:?}/func-tmp/replacement-string.dat" -- "${1:?}" || ui_error "Failed to replace (2) a line in the file => '${1}'" 92
   rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
 }
 
