@@ -254,18 +254,11 @@ fi
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' 'true'
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' 'true'
 
-if test "${API}" -ge 23 && test -f "${TMP_PATH}/files/variants/AndroidAuto.apk"; then
-  if test "${live_setup_enabled:?}" = 'true'; then
-    choose 'Do you want to install Android Auto stub?' '+) Yes' '-) No'
-    if test "$?" -eq 3; then INSTALL_ANDROID_AUTO='1'; else INSTALL_ANDROID_AUTO='0'; fi
-  fi
+create_dir "${TMP_PATH}/files/system-apps/priv-app"
+test -f "${TMP_PATH}/files/variants/AndroidAuto.apk" && move_rename_file "${TMP_PATH}/files/variants/AndroidAuto.apk" "${TMP_PATH}/files/system-apps/priv-app/AndroidAuto.apk"
+if setup_app "${INSTALL_ANDROID_AUTO:?}" 'Android Auto stub' 'AndroidAuto' 'priv-app' 'true'; then
+  :
 else
-  INSTALL_ANDROID_AUTO='0'
-fi
-if test "${INSTALL_ANDROID_AUTO:?}" -ne 0; then
-  move_rename_file "${TMP_PATH}/files/variants/AndroidAuto.apk" "${TMP_PATH}/files/priv-app/AndroidAutoStubPrebuilt.apk"
-else
-  delete "${TMP_PATH}/files/variants/AndroidAuto.apk"
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-com.google.android.projection.gearhead.xml"
   delete "${TMP_PATH}/files/etc/default-permissions/AndroidAuto-permissions.xml"
 fi
