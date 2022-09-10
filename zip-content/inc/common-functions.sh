@@ -457,6 +457,7 @@ string_split()
 # @arg $3 string Filename of the app
 # @arg $4 string Folder of the app
 # @arg $5 boolean Auto-enable URL handling (default false)
+# @arg $6 boolean Live setup is allowed (default true)
 #
 # @exitcode 0 If installed.
 # @exitcode 1 If NOT installed.
@@ -471,9 +472,10 @@ setup_app()
   _output_name="$(string_split "${_app_conf:?}" 4)" || ui_error "Failed to get output name for '${2}'"
   _internal_name="$(string_split "${_app_conf:?}" 5)" || ui_error "Failed to get internal name for '${2}'"
   _url_handling="${5:-false}"
+  _live_setup="${6:-true}"
 
   if test "${API:?}" -ge "${_min_api:?}" && test "${API:?}" -le "${_max_api:-99}"; then
-    if test "${live_setup_enabled:?}" = 'true'; then
+    if test "${_live_setup:?}" = 'true' && test "${live_setup_enabled:?}" = 'true'; then
       choose "Do you want to install ${2:?}?" '+) Yes' '-) No'
       if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
     fi

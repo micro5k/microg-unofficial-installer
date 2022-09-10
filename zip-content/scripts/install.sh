@@ -206,7 +206,7 @@ if verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" '0dd8b7c
    { test ! -e "${TMP_PATH}/files/system-apps/priv-app/PlayStoreLegacy.apk" || verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/PlayStoreLegacy.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'; } &&
    { test ! -e "${TMP_PATH}/files/system-apps/priv-app/PlayStore.apk" || verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/PlayStore.apk" '6c60fa863dd7befef49082c0dcf6278947a09333'; } &&
    { test ! -e "${TMP_PATH}/files/system-apps/priv-app/AndroidAuto.apk" || verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/AndroidAuto.apk" '70ca5318fc24b462f1da045e7639260c63db252e'; } &&
-   verify_sha1 "${TMP_PATH}/files/variants/FakeStore.apk" '1028f11133ec0a9a41fcd6615837124b61abd251'
+   verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/FakeStore.apk" '1028f11133ec0a9a41fcd6615837124b61abd251'
 then
   ui_msg_sameline_end 'OK'
 else
@@ -233,7 +233,7 @@ setup_app "${INSTALL_PLAYSTORE:?}" 'Google Play Store' 'PlayStore' 'priv-app' 't
 market_is_fakestore='false'
 if ! test -f "${TMP_PATH}/files/priv-app/Phonesky.apk"; then
   market_is_fakestore='true'
-  move_rename_file "${TMP_PATH}/files/variants/FakeStore.apk" "${TMP_PATH}/files/priv-app/Phonesky.apk"
+  setup_app 1 'FakeStore' 'FakeStore' 'priv-app' false false
 fi
 
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' 'true'
