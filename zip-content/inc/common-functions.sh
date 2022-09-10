@@ -463,6 +463,7 @@ string_split()
 setup_app()
 {
   local _install _app_conf _min_sdk _max_sdk
+  if test ! -f "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk"; then return 1; fi
   _install="${1:-0}"
   _app_conf="$(file_get_first_line_that_start_with "${4:?}/${3:?}|" "${TMP_PATH}/files/system-apps/file-list.dat")" || ui_error "Failed to get app config for '${2}'"
   _min_sdk="$(string_split "${_app_conf:?}" 2)" || ui_error "Failed to get min SDK for '${2}'"
@@ -471,7 +472,7 @@ setup_app()
   _internal_name="$(string_split "${_app_conf:?}" 5)" || ui_error "Failed to get internal name for '${2}'"
   _url_handling="${5:-false}"
 
-  if test "${API:?}" -ge "${_min_sdk:?}" && test "${API:?}" -le "${_max_sdk:-99}" && test -f "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk"; then
+  if test "${API:?}" -ge "${_min_sdk:?}" && test "${API:?}" -le "${_max_sdk:-99}"; then
     if test "${live_setup_enabled:?}" = 'true'; then
       choose "Do you want to install ${2:?}?" '+) Yes' '-) No'
       if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
