@@ -203,9 +203,9 @@ if verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" '0dd8b7c
    ###verify_sha1 "${TMP_PATH}/files/app/PlayGames.apk" 'c99c27053bf518dd3d08449e9478b43de0da50ed' &&
    verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7' &&
    verify_sha1 "${TMP_PATH}/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053' &&
-   { test ! -e "${TMP_PATH}/files/variants/PlayStore-recent.apk" || verify_sha1 "${TMP_PATH}/files/variants/PlayStore-recent.apk" '6c60fa863dd7befef49082c0dcf6278947a09333'; } &&
-   { test ! -e "${TMP_PATH}/files/variants/PlayStore-legacy.apk" || verify_sha1 "${TMP_PATH}/files/variants/PlayStore-legacy.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'; } &&
-   { test ! -e "${TMP_PATH}/files/variants/AndroidAuto.apk" || verify_sha1 "${TMP_PATH}/files/variants/AndroidAuto.apk" '70ca5318fc24b462f1da045e7639260c63db252e'; } &&
+   { test ! -e "${TMP_PATH}/files/system-apps/priv-app/PlayStore-recent.apk" || verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/PlayStore-recent.apk" '6c60fa863dd7befef49082c0dcf6278947a09333'; } &&
+   { test ! -e "${TMP_PATH}/files/system-apps/priv-app/PlayStore-legacy.apk" || verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/PlayStore-legacy.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'; } &&
+   { test ! -e "${TMP_PATH}/files/system-apps/priv-app/AndroidAuto.apk" || verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/AndroidAuto.apk" '70ca5318fc24b462f1da045e7639260c63db252e'; } &&
    verify_sha1 "${TMP_PATH}/files/variants/FakeStore.apk" '1028f11133ec0a9a41fcd6615837124b61abd251'
 then
   ui_msg_sameline_end 'OK'
