@@ -484,6 +484,8 @@ setup_app()
         add_line_in_file_after_string "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${2}'"
       fi
       move_rename_file "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${_output_name:?}.apk" && return 0
+    else
+      ui_debug "Disabling: ${2:?}"
     fi
   else
     ui_debug "Skipping: ${2:?}"
