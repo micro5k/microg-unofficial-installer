@@ -30,7 +30,6 @@
     <allow-implicit-broadcast action="android.intent.action.ACTION_POWER_DISCONNECTED" />
 
     <!-- These are the packages that handle URLs to their websites by default -->
-    <app-link package="com.android.vending" />
     <app-link package="com.google.android.gms" />
     <!-- %CUSTOM_APP_LINKS-START% -->
     <!-- %CUSTOM_APP_LINKS-END% -->

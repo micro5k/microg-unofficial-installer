@@ -226,9 +226,6 @@ else
   move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
 fi
 
-create_dir "${TMP_PATH}/files/system-apps/priv-app"
-test -f "${TMP_PATH}/files/variants/PlayStore-legacy.apk" && move_rename_file "${TMP_PATH}/files/variants/PlayStore-legacy.apk" "${TMP_PATH}/files/system-apps/priv-app/PlayStore-legacy.apk"
-test -f "${TMP_PATH}/files/variants/PlayStore-recent.apk" && move_rename_file "${TMP_PATH}/files/variants/PlayStore-recent.apk" "${TMP_PATH}/files/system-apps/priv-app/PlayStore-recent.apk"
 setup_app "${INSTALL_PLAYSTORE:?}" 'Google Play Store (legacy)' 'PlayStore-legacy' 'priv-app' 'true'
 setup_app "${INSTALL_PLAYSTORE:?}" 'Google Play Store' 'PlayStore-recent' 'priv-app' 'true'
 
@@ -242,7 +239,6 @@ fi
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' 'true'
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' 'true'
 
-test -f "${TMP_PATH}/files/variants/AndroidAuto.apk" && move_rename_file "${TMP_PATH}/files/variants/AndroidAuto.apk" "${TMP_PATH}/files/system-apps/priv-app/AndroidAuto.apk"
 if setup_app "${INSTALL_ANDROID_AUTO:?}" 'Android Auto stub' 'AndroidAuto' 'priv-app' 'true'; then
   :
 else
