@@ -172,26 +172,6 @@ if test "${CPU}" = false && test "${CPU64}" = false; then
   ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
 fi
 
-
-if test "${live_setup_enabled:?}" = 'true'; then
-  choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore'
-  if test "$?" -eq 3; then export MARKET='PlayStore'; else export MARKET='FakeStore'; fi
-fi
-
-if test "${MARKET}" = 'PlayStore'; then
-  if test "${PLAYSTORE_VERSION:?}" = 'auto'; then
-    if test "${OLD_ANDROID}" != true; then
-      MARKET_FILENAME="${MARKET}-recent.apk"
-    else
-      MARKET_FILENAME="${MARKET}-legacy.apk"
-    fi
-  else
-    MARKET_FILENAME="${MARKET}-${PLAYSTORE_VERSION:?}.apk"
-  fi
-else
-  MARKET_FILENAME="${MARKET}.apk"
-fi
-
 # Check the existance of the libraries folders
 if test "${OLD_ANDROID}" = true; then
   if test "${CPU}" != false && ! test -e "${SYS_PATH}/lib"; then create_dir "${SYS_PATH}/lib"; fi
@@ -208,10 +188,6 @@ ui_debug 'Setting up permissions...'
 set_std_perm_recursive "${TMP_PATH}/files"
 set_std_perm_recursive "${TMP_PATH}/addon.d"
 set_perm 0 0 0755 "${TMP_PATH}/addon.d/00-1-microg.sh"
-
-# Fallback to FakeStore if the selected market is missing
-if ! test -f "${TMP_PATH}/files/variants/${MARKET_FILENAME}"; then MARKET_FILENAME='FakeStore.apk'; fi
-ui_msg "Selected market app: ${MARKET_FILENAME}"
 
 # Verifying
 ui_msg_sameline_start 'Verifying... '
@@ -250,6 +226,29 @@ if test "${API}" -ge 14; then
 else
   move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
 fi
+
+if test "${live_setup_enabled:?}" = 'true'; then
+  choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore'
+  if test "$?" -eq 3; then export MARKET='PlayStore'; else export MARKET='FakeStore'; fi
+fi
+
+if test "${MARKET}" = 'PlayStore'; then
+  if test "${PLAYSTORE_VERSION:?}" = 'auto'; then
+    if test "${OLD_ANDROID}" != true; then
+      MARKET_FILENAME="${MARKET}-recent.apk"
+    else
+      MARKET_FILENAME="${MARKET}-legacy.apk"
+    fi
+  else
+    MARKET_FILENAME="${MARKET}-${PLAYSTORE_VERSION:?}.apk"
+  fi
+else
+  MARKET_FILENAME="${MARKET}.apk"
+fi
+
+# Fallback to FakeStore if the selected market is missing
+if ! test -f "${TMP_PATH}/files/variants/${MARKET_FILENAME}"; then MARKET_FILENAME='FakeStore.apk'; fi
+ui_msg "Selected market app: ${MARKET_FILENAME}"
 
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' 'true'
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' 'true'
