@@ -47,8 +47,6 @@ readonly DL_UA='Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
 readonly DL_PROTOCOL='https'
 readonly DL_WEB_PREFIX='www.'
-readonly DL_REFERRER_DOMAIN='duckduckgo.com'
-readonly DL_REFERRER_PATH=''
 
 _uname_saved="$(uname)"
 compare_start_uname()
@@ -138,7 +136,7 @@ dl_file()
         dl_type_one "${_url:?}" "${_base_url:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       "${DL_PROTOCOL:?}://"????*)
         echo 'DL type 0'
-        dl_generic "${_url:?}" "${DL_PROTOCOL:?}://${DL_REFERRER_DOMAIN:?}/${DL_REFERRER_PATH?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+        dl_generic "${_url:?}" "${_base_url:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)
         ui_error "Invalid download URL => '${_url?}'";;
     esac
