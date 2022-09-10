@@ -463,7 +463,7 @@ string_split()
 # @exitcode 1 If NOT installed.
 setup_app()
 {
-  local _install _app_conf _min_api _max_api
+  local _install _app_conf _min_api _max_api _output_name _internal_name _url_handling _live_setup
   if test ! -f "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk"; then return 1; fi
   _install="${1:-0}"
   _app_conf="$(file_get_first_line_that_start_with "${4:?}/${3:?}|" "${TMP_PATH}/files/system-apps/file-list.dat")" || ui_error "Failed to get app config for '${2}'"
