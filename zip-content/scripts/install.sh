@@ -27,7 +27,6 @@ LEGACY_ANDROID=false
 OLD_ANDROID=false
 FAKE_SIGN=false
 SYS_PATH=''
-MARKET_FILENAME=''
 
 
 ### FUNCTIONS ###
@@ -227,33 +226,22 @@ else
   move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
 fi
 
-if test "${live_setup_enabled:?}" = 'true'; then
-  choose 'What market app do you want to install?' '+) Google Play Store' '-) FakeStore'
-  if test "$?" -eq 3; then export MARKET='PlayStore'; else export MARKET='FakeStore'; fi
-fi
-
-if test "${MARKET}" = 'PlayStore'; then
-  if test "${PLAYSTORE_VERSION:?}" = 'auto'; then
-    if test "${OLD_ANDROID}" != true; then
-      MARKET_FILENAME="${MARKET}-recent.apk"
-    else
-      MARKET_FILENAME="${MARKET}-legacy.apk"
-    fi
-  else
-    MARKET_FILENAME="${MARKET}-${PLAYSTORE_VERSION:?}.apk"
-  fi
-else
-  MARKET_FILENAME="${MARKET}.apk"
-fi
+create_dir "${TMP_PATH}/files/system-apps/priv-app"
+test -f "${TMP_PATH}/files/variants/PlayStore-legacy.apk" && move_rename_file "${TMP_PATH}/files/variants/PlayStore-legacy.apk" "${TMP_PATH}/files/system-apps/priv-app/PlayStore-legacy.apk"
+test -f "${TMP_PATH}/files/variants/PlayStore-recent.apk" && move_rename_file "${TMP_PATH}/files/variants/PlayStore-recent.apk" "${TMP_PATH}/files/system-apps/priv-app/PlayStore-recent.apk"
+setup_app "${INSTALL_PLAYSTORE:?}" 'Google Play Store (legacy)' 'PlayStore-legacy' 'priv-app' 'true'
+setup_app "${INSTALL_PLAYSTORE:?}" 'Google Play Store' 'PlayStore-recent' 'priv-app' 'true'
 
 # Fallback to FakeStore if the selected market is missing
-if ! test -f "${TMP_PATH}/files/variants/${MARKET_FILENAME}"; then MARKET_FILENAME='FakeStore.apk'; fi
-ui_msg "Selected market app: ${MARKET_FILENAME}"
+market_is_fakestore='false'
+if ! test -f "${TMP_PATH}/files/priv-app/Phonesky.apk"; then
+  market_is_fakestore='true'
+  move_rename_file "${TMP_PATH}/files/variants/FakeStore.apk" "${TMP_PATH}/files/priv-app/Phonesky.apk"
+fi
 
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' 'true'
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' 'true'
 
-create_dir "${TMP_PATH}/files/system-apps/priv-app"
 test -f "${TMP_PATH}/files/variants/AndroidAuto.apk" && move_rename_file "${TMP_PATH}/files/variants/AndroidAuto.apk" "${TMP_PATH}/files/system-apps/priv-app/AndroidAuto.apk"
 if setup_app "${INSTALL_ANDROID_AUTO:?}" 'Android Auto stub' 'AndroidAuto' 'priv-app' 'true'; then
   :
@@ -322,7 +310,7 @@ if test "${API}" -ge 23; then
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true" />'
   fi
 
-  if test "${MARKET_FILENAME:?}" = 'FakeStore.apk'; then
+  if test "${market_is_fakestore:?}" = 'true'; then
     delete "${TMP_PATH}/files/etc/default-permissions/PlayStore-permissions.xml"
     move_rename_file "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions.xml" "${TMP_PATH}/files/etc/default-permissions/com.android.vending-permissions.xml"
   else
@@ -352,12 +340,10 @@ if test "${LEGACY_ANDROID}" = true; then
   move_dir_content "${TMP_PATH}/files/app-legacy" "${TMP_PATH}/files/app"
 fi
 delete_recursive "${TMP_PATH}/files/app-legacy"
+delete_recursive "${TMP_PATH}/files/variants"
 
 if test "${API}" -lt 21; then delete "${TMP_PATH}/files/etc/sysconfig/google.xml"; fi
 if test "${API}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; fi
-
-move_rename_file "${TMP_PATH}/files/variants/${MARKET_FILENAME}" "${TMP_PATH}/files/priv-app/Phonesky.apk"
-delete_recursive "${TMP_PATH}/files/variants"
 
 if test "${OLD_ANDROID}" != true; then
   # Move apps into subdirs
@@ -435,17 +421,17 @@ create_dir "${USED_SETTINGS_PATH}"
   echo 'install.type=flashable-zip'
   echo "install.version.code=${install_version_code}"
   echo "install.version=${install_version}"
-  echo "market.app=${MARKET}"
-} > "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
-set_perm 0 0 0640 "${USED_SETTINGS_PATH}/${INSTALLATION_SETTINGS_FILE}"
+  echo "fakestore=${market_is_fakestore:?}"
+} > "${USED_SETTINGS_PATH:?}/${INSTALLATION_SETTINGS_FILE:?}"
+set_perm 0 0 0640 "${USED_SETTINGS_PATH:?}/${INSTALLATION_SETTINGS_FILE:?}"
 
-create_dir "${SYS_PATH}/etc/zips"
-set_perm 0 0 0750 "${SYS_PATH}/etc/zips"
+create_dir "${SYS_PATH:?}/etc/zips"
+set_perm 0 0 0750 "${SYS_PATH:?}/etc/zips"
 
-copy_dir_content "${USED_SETTINGS_PATH}" "${SYS_PATH}/etc/zips"
+copy_dir_content "${USED_SETTINGS_PATH:?}" "${SYS_PATH:?}/etc/zips"
 
 # Clean legacy file
-delete "${SYS_PATH}/etc/zips/ug.prop"
+delete "${SYS_PATH:?}/etc/zips/ug.prop"
 
 # Install survival script
 if test -e "${SYS_PATH}/addon.d"; then
