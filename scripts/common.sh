@@ -68,6 +68,11 @@ simple_get_prop()
   grep -F "${1}=" "${2}" | head -n1 | cut -d '=' -f 2
 }
 
+get_domain_from_url()
+{
+  echo "${1:?}" | cut -d '/' -f 3 || return "${?}"
+}
+
 get_base_url()
 {
   echo "${1:?}" | cut -d '/' -f 1,2,3 || return "${?}"
@@ -141,29 +146,30 @@ dl_type_two()
   dl_generic_with_cookies "${_url:?}" "${_url:?}" "${3:?}" || return "${?}"
   rm -rf "${TEMP_DIR:?}/dl-temp"
 }
+
 dl_file()
 {
   if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
 
   printf '%s\n' "Downloading ${2:?}..."
-  local _status _url _base_url
+  local _status _url _domain
   _status=0
   _url="${DL_PROTOCOL:?}://${4:?}" || return "${?}"
-  _base_url="$(get_base_url "${_url:?}")" || return "${?}"
+  _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
 
   if ! test -e "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}"; then
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
 
-    case "${_base_url:?}" in
-      "${DL_PROTOCOL:?}://"*'.go''file''.io')
+    case "${_domain:?}" in
+      *\.'go''file''.io')
         echo 'DL type 2'
-        dl_type_two "${_url:?}" "${_base_url:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
-      "${DL_PROTOCOL:?}://${DL_WEB_PREFIX:?}"'apk''mirror''.com')
+        dl_type_two "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+      "${DL_WEB_PREFIX:?}"'apk''mirror''.com')
         echo 'DL type 1'
-        dl_type_one "${_url:?}" "${_base_url:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
-      "${DL_PROTOCOL:?}://"????*)
+        dl_type_one "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+      ????*)
         echo 'DL type 0'
-        dl_generic "${_url:?}" "${_base_url:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+        dl_generic "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)
         ui_error "Invalid download URL => '${_url?}'";;
     esac
