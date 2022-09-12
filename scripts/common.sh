@@ -143,6 +143,7 @@ dl_file()
 
     if test "${_status:?}" != 0; then
       if test -n "${5:-}"; then
+        printf '%s' 'Main download failed, trying the mirror...'
         dl_file "${1:?}" "${2:?}" "${3:?}" "${5:?}"
       else
         ui_error "Failed to download the file => 'cache/${1?}/${2?}'"
