@@ -103,6 +103,19 @@ get_link_from_html()
   "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header 'Accept-Language: en-US,en;q=0.5' --header "Referer: ${2:?}" --no-cache -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
 }
 
+# 1 => URL; 2 => Referrer
+get_cookies_from_html()
+{
+  mkdir -p "${TEMP_DIR:?}/dl-temp" || return "${?}"
+  "${WGET_CMD:?}" -qS -O "${TEMP_DIR:?}/dl-temp/dummy" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header 'Accept-Language: en-US,en;q=0.5' --header "Referer: ${2:?}" --keep-session-cookies --save-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
+}
+
+# 1 => URL; 2 => Referrer; 3 => Output
+dl_generic_with_cookies()
+{
+  "${WGET_CMD:?}" -qS -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header 'Accept-Language: en-US,en;q=0.5' --header "Referer: ${2:?}" --load-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
+}
+
 dl_type_one()
 {
   local _url _base_url _referrer _result
@@ -118,6 +131,16 @@ dl_type_one()
   dl_generic "${_url:?}" "${_referrer:?}" "${3:?}" || return "${?}"
 }
 
+dl_type_two()
+{
+  local _url _referrer
+
+  _referrer="${2:?}"; _url="${1:?}"
+  get_cookies_from_html "${_url:?}" "${_referrer:?}" || return "${?}"
+  sleep 0.2
+  dl_generic_with_cookies "${_url:?}" "${_url:?}" "${3:?}" || return "${?}"
+  rm -rf "${TEMP_DIR:?}/dl-temp"
+}
 dl_file()
 {
   if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
@@ -132,6 +155,9 @@ dl_file()
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
 
     case "${_base_url:?}" in
+      "${DL_PROTOCOL:?}://"*'.go''file''.io')
+        echo 'DL type 2'
+        dl_type_two "${_url:?}" "${_base_url:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       "${DL_PROTOCOL:?}://${DL_WEB_PREFIX:?}"'apk''mirror''.com')
         echo 'DL type 1'
         dl_type_one "${_url:?}" "${_base_url:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
