@@ -122,12 +122,13 @@ dl_file()
 {
   if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
 
+  printf '%s\n' "Downloading ${2:?}..."
   local _status _url _base_url
   _status=0
   _url="${DL_PROTOCOL:?}://${4:?}" || return "${?}"
   _base_url="$(get_base_url "${_url:?}")" || return "${?}"
 
-  if ! test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then
+  if ! test -e "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}"; then
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
 
     case "${_base_url:?}" in
@@ -143,7 +144,7 @@ dl_file()
 
     if test "${_status:?}" != 0; then
       if test -n "${5:-}"; then
-        printf '%s' 'Main download failed, trying the mirror...'
+        printf '%s\n' 'Main download failed, trying the mirror...'
         dl_file "${1:?}" "${2:?}" "${3:?}" "${5:?}"
       else
         ui_error "Failed to download the file => 'cache/${1?}/${2?}'"
