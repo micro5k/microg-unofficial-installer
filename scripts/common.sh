@@ -71,7 +71,7 @@ simple_get_prop()
 
 get_domain_from_url()
 {
-  echo "${1:?}" | cut -d '/' -f 3 || return "${?}"
+  echo "${1:?}" | cut -sd '/' -f 3 || return "${?}"
 }
 
 get_base_url()
@@ -162,8 +162,9 @@ dl_type_two()
 
   _url="${1:?}" || return "${?}"
   _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
+  _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || return "${?}"
 
-  _token="$(get_JSON_value_from_webpage "${DL_PROTOCOL:?}://${_domain:?}/createAccount" 'token')" || return "${?}"
+  _token="$(get_JSON_value_from_webpage "${DL_PROTOCOL:?}://api.${_base_dm:?}/createAccount" 'token')" || return "${?}"
   sleep 0.2
   dl_generic_with_cookie "${_url:?}" 'account''Token='"${_token:?}" "${3:?}" || return "${?}"
   sleep 0.2
