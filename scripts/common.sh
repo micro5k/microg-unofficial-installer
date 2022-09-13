@@ -45,6 +45,7 @@ ui_error()
 readonly WGET_CMD='wget'
 readonly DL_UA='Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0'
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
 readonly DL_PROTOCOL='https'
 readonly DL_WEB_PREFIX='www.'
 
@@ -99,26 +100,26 @@ corrupted_file()
 # 1 => URL; 2 => Referrer; 3 => Output
 dl_generic()
 {
-  "${WGET_CMD:?}" -c -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header 'Accept-Language: en-US,en;q=0.5' --header "Referer: ${2:?}" --no-cache -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" -c -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --no-cache -- "${1:?}" || return "${?}"
 }
 
 # 1 => URL; 2 => Referrer; 3 => Pattern
 get_link_from_html()
 {
-  "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header 'Accept-Language: en-US,en;q=0.5' --header "Referer: ${2:?}" --no-cache -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
+  "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --no-cache -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
 }
 
 # 1 => URL; 2 => Referrer
 get_cookies_from_html()
 {
   mkdir -p "${TEMP_DIR:?}/dl-temp" || return "${?}"
-  "${WGET_CMD:?}" -qS -O "${TEMP_DIR:?}/dl-temp/dummy" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header 'Accept-Language: en-US,en;q=0.5' --header "Referer: ${2:?}" --keep-session-cookies --save-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" -qS -O "${TEMP_DIR:?}/dl-temp/dummy" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --keep-session-cookies --save-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
 }
 
 # 1 => URL; 2 => Referrer; 3 => Output
 dl_generic_with_cookies()
 {
-  "${WGET_CMD:?}" -qS -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header 'Accept-Language: en-US,en;q=0.5' --header "Referer: ${2:?}" --load-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" -qS -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --load-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
 }
 
 dl_type_one()
