@@ -109,11 +109,29 @@ get_link_from_html()
   "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --no-cache -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
 }
 
+# 1 => URL; 2 => Name to find; 3 => Referrer
+get_JSON_value_from_webpage_with_referrer()
+{
+  "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${3:?}" -- "${1:?}" | grep -Eom 1 -e "\"${2:?}\""'\s*:\s*"([^"]+)' | grep -Eom 1 -e ':\s*"([^"]+)' | grep -Eom 1 -e '"([^"]+)' | cut -c '2-' || return "${?}"
+}
+
+# 1 => URL; 2 => Name to find
+get_JSON_value_from_webpage()
+{
+  "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" | grep -Eom 1 -e "\"${2:?}\""'\s*:\s*"([^"]+)' | grep -Eom 1 -e ':\s*"([^"]+)' | grep -Eom 1 -e '"([^"]+)' | cut -c '2-' || return "${?}"
+}
+
 # 1 => URL; 2 => Referrer
 get_cookies_from_html()
 {
   mkdir -p "${TEMP_DIR:?}/dl-temp" || return "${?}"
   "${WGET_CMD:?}" -qS -O "${TEMP_DIR:?}/dl-temp/dummy" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --keep-session-cookies --save-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
+}
+
+# 1 => URL; 2 => Cookie; 3 => Output
+dl_generic_with_cookie()
+{
+  "${WGET_CMD:?}" -q -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Cookie: ${2:?}" -- "${1:?}" || return "${?}"
 }
 
 # 1 => URL; 2 => Referrer; 3 => Output
@@ -135,17 +153,20 @@ dl_type_one()
   sleep 0.2
   _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
   dl_generic "${_url:?}" "${_referrer:?}" "${3:?}" || return "${?}"
+  sleep 0.2
 }
 
 dl_type_two()
 {
-  local _url _referrer
+  local _url _domain
 
-  _referrer="${2:?}"; _url="${1:?}"
-  get_cookies_from_html "${_url:?}" "${_referrer:?}" || return "${?}"
+  _url="${1:?}" || return "${?}"
+  _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
+
+  _token="$(get_JSON_value_from_webpage "${DL_PROTOCOL:?}://${_domain:?}/createAccount" 'token')" || return "${?}"
   sleep 0.2
-  dl_generic_with_cookies "${_url:?}" "${_url:?}" "${3:?}" || return "${?}"
-  rm -rf "${TEMP_DIR:?}/dl-temp"
+  dl_generic_with_cookie "${_url:?}" 'account''Token='"${_token:?}" "${3:?}" || return "${?}"
+  sleep 0.2
 }
 
 dl_file()
