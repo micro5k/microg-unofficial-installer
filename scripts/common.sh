@@ -185,13 +185,13 @@ dl_file()
 
     case "${_domain:?}" in
       *\.'go''file''.io')
-        echo 'DL type 2'
+        echo 'DL type 2...'
         dl_type_two "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       "${DL_WEB_PREFIX:?}"'apk''mirror''.com')
-        echo 'DL type 1'
+        echo 'DL type 1...'
         dl_type_one "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       ????*)
-        echo 'DL type 0'
+        echo 'DL type 0...'
         dl_generic "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)
         ui_error "Invalid download URL => '${_url?}'";;
@@ -199,8 +199,9 @@ dl_file()
 
     if test "${_status:?}" != 0; then
       if test -n "${5:-}"; then
-        printf '%s ' 'Main download failed, trying the mirror...'
+        printf '%s ' 'download failed, trying a mirror...'
         dl_file "${1:?}" "${2:?}" "${3:?}" "${5:?}"
+        return "${?}"
       else
         ui_error "Failed to download the file => 'cache/${1?}/${2?}'"
       fi
