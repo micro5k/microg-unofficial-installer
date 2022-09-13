@@ -174,7 +174,7 @@ dl_file()
 {
   if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
 
-  printf '%s\n' "Downloading ${2:?}..."
+  printf '%s\n' "Checking ${2:?}..."
   local _status _url _domain
   _status=0
   _url="${DL_PROTOCOL:?}://${4:?}" || return "${?}"
@@ -185,13 +185,13 @@ dl_file()
 
     case "${_domain:?}" in
       *\.'go''file''.io')
-        echo 'DL type 2...'
+        echo ' DL type 2...'
         dl_type_two "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       "${DL_WEB_PREFIX:?}"'apk''mirror''.com')
-        echo 'DL type 1...'
+        echo ' DL type 1...'
         dl_type_one "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       ????*)
-        echo 'DL type 0...'
+        echo ' DL type 0...'
         dl_generic "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)
         ui_error "Invalid download URL => '${_url?}'";;
@@ -199,7 +199,7 @@ dl_file()
 
     if test "${_status:?}" != 0; then
       if test -n "${5:-}"; then
-        printf '%s ' 'download failed, trying a mirror...'
+        printf ' %s\n' 'Download failed, trying a mirror...'
         dl_file "${1:?}" "${2:?}" "${3:?}" "${5:?}"
         return "${?}"
       else
