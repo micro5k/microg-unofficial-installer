@@ -106,7 +106,7 @@ dl_generic()
 # 1 => URL; 2 => Referrer; 3 => Pattern
 get_link_from_html()
 {
-  "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --no-cache -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
+  "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
 }
 
 # 1 => URL; 2 => Name to find; 3 => Referrer
@@ -137,7 +137,7 @@ dl_generic_with_cookie()
 # 1 => URL; 2 => Referrer; 3 => Output
 dl_generic_with_cookies()
 {
-  "${WGET_CMD:?}" -qS -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --load-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" -q -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --load-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
 }
 
 dl_type_one()
