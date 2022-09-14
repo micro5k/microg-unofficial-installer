@@ -121,23 +121,10 @@ get_JSON_value_from_webpage()
   "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" | grep -Eom 1 -e "\"${2:?}\""'\s*:\s*"([^"]+)' | grep -Eom 1 -e ':\s*"([^"]+)' | grep -Eom 1 -e '"([^"]+)' | cut -c '2-' || return "${?}"
 }
 
-# 1 => URL; 2 => Referrer
-get_cookies_from_html()
-{
-  mkdir -p "${TEMP_DIR:?}/dl-temp" || return "${?}"
-  "${WGET_CMD:?}" -qS -O "${TEMP_DIR:?}/dl-temp/dummy" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --keep-session-cookies --save-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
-}
-
 # 1 => URL; 2 => Cookie; 3 => Output
 dl_generic_with_cookie()
 {
   "${WGET_CMD:?}" -q -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Cookie: ${2:?}" -- "${1:?}" || return "${?}"
-}
-
-# 1 => URL; 2 => Referrer; 3 => Output
-dl_generic_with_cookies()
-{
-  "${WGET_CMD:?}" -q -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --load-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
 }
 
 # 1 => URL
@@ -176,7 +163,7 @@ dl_type_two()
   _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
   _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || return "${?}"
 
-  _loc_code="$(get_location_header_from_request ${_url:?} | cut -sd '/' -f '5')" || return "${?}"
+  _loc_code="$(get_location_header_from_request "${_url:?}" | cut -sd '/' -f '5')" || return "${?}"
   sleep 0.2
   _other_code="$(get_JSON_value_from_webpage "${DL_PROTOCOL:?}://api.${_base_dm:?}/createAccount" 'token')" || return "${?}"
   sleep 0.2
