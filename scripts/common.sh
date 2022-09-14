@@ -149,21 +149,27 @@ dl_type_one()
   sleep 0.2
 }
 
+report_failure()
+{
+  printf '%s\n' " Failed at '${2}' with return code: ${1:?}"
+  return "${1:?}"
+}
+
 dl_type_two()
 {
   local _url _domain
 
-  _url="${1:?}" || return "${?}"
-  _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
-  _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || return "${?}"
+  _url="${1:?}" || { report_failure "${?}"; return "${?}"; }
+  _domain="$(get_domain_from_url "${_url:?}")" || { report_failure "${?}"; return "${?}"; }
+  _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || { report_failure "${?}"; return "${?}"; }
 
-  _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -sd '/' -f '5')" || return "${?}"
+  _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -sd '/' -f '5')" || { report_failure "${?}" 'get location'; return "${?}"; }
   sleep 0.2
-  _other_code="$(get_JSON_value_from_ajax_request "${DL_PROT:?}api.${_base_dm:?}/createAccount" "${DL_PROT:?}${_base_dm:?}" 'token')" || return "${?}"
+  _other_code="$(get_JSON_value_from_ajax_request "${DL_PROT:?}api.${_base_dm:?}/createAccount" "${DL_PROT:?}${_base_dm:?}" 'token')" || { report_failure "${?}" 'get JSON'; return "${?}"; }
   sleep 0.2
-  send_empty_ajax_request "${DL_PROT:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}&websiteToken=12345" "${DL_PROT:?}${_base_dm:?}" || return "${?}"
+  send_empty_ajax_request "${DL_PROT:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}&websiteToken=12345" "${DL_PROT:?}${_base_dm:?}" || { report_failure "${?}" 'get content'; return "${?}"; }
   sleep 0.3
-  dl_generic_with_cookie "${_url:?}" 'account''Token='"${_other_code:?}" "${3:?}" || return "${?}"
+  dl_generic_with_cookie "${_url:?}" 'account''Token='"${_other_code:?}" "${3:?}" || { report_failure "${?}" 'dl'; return "${?}"; }
   if test "${CI:-false}" = 'false'; then sleep 0.3; else sleep 2; fi
 }
 
@@ -196,7 +202,7 @@ dl_file()
 
     if test "${_status:?}" != 0; then
       if test -n "${5:-}"; then
-        printf '%s ' 'Download failed, trying a mirror...'
+        printf '%s\n' 'Download failed, trying a mirror...'
         dl_file "${1:?}" "${2:?}" "${3:?}" "${5:?}"
         return "${?}"
       else
