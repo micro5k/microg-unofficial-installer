@@ -163,12 +163,10 @@ dl_type_two()
   _domain="$(get_domain_from_url "${_url:?}")" || { report_failure "${?}"; return "${?}"; }
   _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || { report_failure "${?}"; return "${?}"; }
 
-  printf '%s\n' '1:'
-  "${WGET_CMD:?}" --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${_url:?}" 2>&1  # Debug
-  printf '%s' '2: ' 
-  "${WGET_CMD:?}" --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${_url:?}" 2>&1 | grep -Eom 1 -e 'Location:\s*[^\r\n]+'  # Debug
-  printf '%s' '3: ' 
-  "${WGET_CMD:?}" --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${_url:?}" 2>&1 | grep -Eom 1 -e 'Location:\s*[^\r\n]+' | cut -sd '/' -f '5'  # Debug
+  _loc_code="$(get_location_header_from_http_request "${_url:?}")" || { echo "Failed 1, ${_loc_code}"; return 1; }
+  echo "1, ${_loc_code}";
+  _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -sd '/' -f '5')" || { echo "Failed 2, ${_loc_code}"; return 1; }
+  echo "2, ${_loc_code}";
   return 1
   _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -sd '/' -f '5')" || { report_failure "${?}" 'get location'; return "${?}"; }
   sleep 0.2
