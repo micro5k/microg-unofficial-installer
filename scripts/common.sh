@@ -46,7 +46,7 @@ readonly WGET_CMD='wget'
 readonly DL_UA='Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0'
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
 readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
-readonly DL_PROTOCOL='https'
+readonly DL_PROTOCOL='https://'
 readonly DL_WEB_PREFIX='www.'
 
 _uname_saved="$(uname)"
@@ -109,12 +109,6 @@ get_link_from_html()
   "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" -- "${1:?}" | grep -Eo -e "${3:?}" | grep -Eo -e '\"[^"]+\"$' | tr -d '"' || return "${?}"
 }
 
-# 1 => URL; 2 => Name to find; 3 => Referrer
-get_JSON_value_from_webpage_with_referrer()
-{
-  "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${3:?}" -- "${1:?}" | grep -Eom 1 -e "\"${2:?}\""'\s*:\s*"([^"]+)' | grep -Eom 1 -e ':\s*"([^"]+)' | grep -Eom 1 -e '"([^"]+)' | cut -c '2-' || return "${?}"
-}
-
 # 1 => URL; 2 => Origin header; 3 => Name to find
 get_JSON_value_from_ajax_request()
 {
@@ -165,9 +159,9 @@ dl_type_two()
 
   _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -sd '/' -f '5')" || return "${?}"
   sleep 0.2
-  _other_code="$(get_JSON_value_from_ajax_request "${DL_PROTOCOL:?}://api.${_base_dm:?}/createAccount" "${DL_PROTOCOL:?}://${_base_dm:?}" 'token')" || return "${?}"
+  _other_code="$(get_JSON_value_from_ajax_request "${DL_PROTOCOL:?}api.${_base_dm:?}/createAccount" "${DL_PROTOCOL:?}${_base_dm:?}" 'token')" || return "${?}"
   sleep 0.2
-  send_empty_ajax_request "${DL_PROTOCOL:?}://api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}&websiteToken=12345" "${DL_PROTOCOL:?}://${_base_dm:?}" || return "${?}"
+  send_empty_ajax_request "${DL_PROTOCOL:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}&websiteToken=12345" "${DL_PROTOCOL:?}${_base_dm:?}" || return "${?}"
   sleep 0.3
   dl_generic_with_cookie "${_url:?}" 'account''Token='"${_other_code:?}" "${3:?}" || return "${?}"
   if test "${CI:-false}" = 'false'; then sleep 0.3; else sleep 2; fi
@@ -180,7 +174,7 @@ dl_file()
   printf '%s ' "Checking ${2?}..."
   local _status _url _domain
   _status=0
-  _url="${DL_PROTOCOL:?}://${4:?}" || return "${?}"
+  _url="${DL_PROTOCOL:?}${4:?}" || return "${?}"
   _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
 
   if ! test -e "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}"; then
@@ -189,13 +183,13 @@ dl_file()
     case "${_domain:?}" in
       *\.'go''file''.io')
         printf '%s ' 'DL type 2...'
-        dl_type_two "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+        dl_type_two "${_url:?}" "${DL_PROTOCOL:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       "${DL_WEB_PREFIX:?}"'apk''mirror''.com')
         printf '%s ' 'DL type 1...'
-        dl_type_one "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+        dl_type_one "${_url:?}" "${DL_PROTOCOL:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       ????*)
         printf '%s ' 'DL type 0...'
-        dl_generic "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+        dl_generic "${_url:?}" "${DL_PROTOCOL:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)
         ui_error "Invalid download URL => '${_url?}'";;
     esac
