@@ -115,10 +115,10 @@ get_JSON_value_from_webpage_with_referrer()
   "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${3:?}" -- "${1:?}" | grep -Eom 1 -e "\"${2:?}\""'\s*:\s*"([^"]+)' | grep -Eom 1 -e ':\s*"([^"]+)' | grep -Eom 1 -e '"([^"]+)' | cut -c '2-' || return "${?}"
 }
 
-# 1 => URL; 2 => Name to find
-get_JSON_value_from_webpage()
+# 1 => URL; 2 => Origin header; 3 => Name to find
+get_JSON_value_from_ajax_request()
 {
-  "${WGET_CMD:?}" -q -O- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" | grep -Eom 1 -e "\"${2:?}\""'\s*:\s*"([^"]+)' | grep -Eom 1 -e ':\s*"([^"]+)' | grep -Eom 1 -e '"([^"]+)' | cut -c '2-' || return "${?}"
+  "${WGET_CMD:?}" -qO '-' -U "${DL_UA:?}" --header 'Accept: */*' --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Origin: ${2:?}" -- "${1:?}" | grep -Eom 1 -e "\"${3:?}\""'\s*:\s*"([^"]+)' | grep -Eom 1 -e ':\s*"([^"]+)' | grep -Eom 1 -e '"([^"]+)' | cut -c '2-' || return "${?}"
 }
 
 # 1 => URL; 2 => Cookie; 3 => Output
@@ -128,15 +128,15 @@ dl_generic_with_cookie()
 }
 
 # 1 => URL
-get_location_header_from_request()
+get_location_header_from_http_request()
 {
   "${WGET_CMD:?}" -qS -O '/dev/null' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" 2>&1 | grep -Eom 1 -e 'Location:\s*[^\r\n]+' | head -n '1' || return "${?}"
 }
 
-# 1 => URL, # 2 => Origin header
+# 1 => URL; # 2 => Origin header
 send_empty_ajax_request()
 {
-  "${WGET_CMD:?}" --spider -q -U "${DL_UA:?}" --header 'Accept: */*' --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Origin: ${2:?}" -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" --spider -qO '-' -U "${DL_UA:?}" --header 'Accept: */*' --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Origin: ${2:?}" -- "${1:?}" || return "${?}"
 }
 
 dl_type_one()
@@ -163,14 +163,14 @@ dl_type_two()
   _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
   _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || return "${?}"
 
-  _loc_code="$(get_location_header_from_request "${_url:?}" | cut -sd '/' -f '5')" || return "${?}"
+  _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -sd '/' -f '5')" || return "${?}"
   sleep 0.2
-  _other_code="$(get_JSON_value_from_webpage "${DL_PROTOCOL:?}://api.${_base_dm:?}/createAccount" 'token')" || return "${?}"
+  _other_code="$(get_JSON_value_from_ajax_request "${DL_PROTOCOL:?}://api.${_base_dm:?}/createAccount" "${DL_PROTOCOL:?}://${_base_dm:?}" 'token')" || return "${?}"
   sleep 0.2
   send_empty_ajax_request "${DL_PROTOCOL:?}://api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}&websiteToken=12345" "${DL_PROTOCOL:?}://${_base_dm:?}" || return "${?}"
   sleep 0.3
   dl_generic_with_cookie "${_url:?}" 'account''Token='"${_other_code:?}" "${3:?}" || return "${?}"
-  sleep 0.2
+  if test "${CI:-false}" = 'false'; then sleep 0.3; else sleep 2; fi
 }
 
 dl_file()
