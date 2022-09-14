@@ -163,6 +163,8 @@ dl_type_two()
   _domain="$(get_domain_from_url "${_url:?}")" || { report_failure "${?}"; return "${?}"; }
   _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || { report_failure "${?}"; return "${?}"; }
 
+  "${WGET_CMD:?}" --spider -SO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${_url:?}"  # Debug
+  return 1
   _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -sd '/' -f '5')" || { report_failure "${?}" 'get location'; return "${?}"; }
   sleep 0.2
   _other_code="$(get_JSON_value_from_ajax_request "${DL_PROT:?}api.${_base_dm:?}/createAccount" "${DL_PROT:?}${_base_dm:?}" 'token')" || { report_failure "${?}" 'get JSON'; return "${?}"; }
