@@ -124,7 +124,7 @@ dl_generic_with_cookie()
 # 1 => URL
 get_location_header_from_http_request()
 {
-  "${WGET_CMD:?}" -qS -O '/dev/null' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" 2>&1 | grep -Eom 1 -e 'Location:\s*[^\r\n]+' | head -n '1' || return "${?}"
+  "${WGET_CMD:?}" --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" 2>&1 | grep -Eom 1 -e 'Location:\s*[^\r\n]+' | head -n '1' || return "${?}"
 }
 
 # 1 => URL; # 2 => Origin header
@@ -210,7 +210,6 @@ dl_file()
         ui_error "Failed to download the file => 'cache/${1?}/${2?}'"
       fi
     fi
-    echo ''
   fi
 
   verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || corrupted_file "${SCRIPT_DIR:?}/cache/$1/$2"
