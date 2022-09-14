@@ -124,7 +124,7 @@ dl_generic_with_cookie()
 # 1 => URL
 get_location_header_from_http_request()
 {
-  "${WGET_CMD:?}" --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" 2>&1 | grep -Eom 1 -e 'Location:\s*[^\r\n]+' | head -n '1' || return "${?}"
+  "${WGET_CMD:?}" --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" 2>&1 | { grep -Eom 1 -e 'Location:\s*[^\r\n]+' || true; } | head -n '1' || return "${?}"
 }
 
 # 1 => URL; # 2 => Origin header
@@ -162,11 +162,6 @@ dl_type_two()
   _url="${1:?}" || { report_failure "${?}"; return "${?}"; }
   _domain="$(get_domain_from_url "${_url:?}")" || { report_failure "${?}"; return "${?}"; }
   _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || { report_failure "${?}"; return "${?}"; }
-
-  "${WGET_CMD:?}" --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${_url:?}" 2>&1 || { echo "Failed 1"; return 1; }
-  "${WGET_CMD:?}" --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${_url:?}" 2>&1 | grep -Eom 1 -e 'Location:\s*[^\r\n]+' || { echo "Failed 2"; return 1; }
-  "${WGET_CMD:?}" --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${_url:?}" 2>&1 | grep -Eom 1 -e 'Location:\s*[^\r\n]+' | head -n '1' || { echo "Failed 3"; return 1; }
-  return 1
 
   _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -sd '/' -f '5')" || { report_failure "${?}" 'get location'; return "${?}"; }
   sleep 0.2
