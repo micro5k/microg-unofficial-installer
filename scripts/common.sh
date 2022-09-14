@@ -100,7 +100,7 @@ corrupted_file()
 # 1 => URL; 2 => Referrer; 3 => Output
 dl_generic()
 {
-  "${WGET_CMD:?}" -c -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --no-cache -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" -q -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --no-cache -- "${1:?}" || return "${?}"
 }
 
 # 1 => URL; 2 => Referrer; 3 => Pattern
@@ -140,6 +140,18 @@ dl_generic_with_cookies()
   "${WGET_CMD:?}" -q -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Referer: ${2:?}" --load-cookies "${TEMP_DIR:?}/dl-temp/cc.dat" -- "${1:?}" || return "${?}"
 }
 
+# 1 => URL
+get_location_header_from_request()
+{
+  "${WGET_CMD:?}" -qS -O '/dev/null' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" 2>&1 | grep -Eom 1 -e 'Location:\s*[^\r\n]+' | head -n '1' || return "${?}"
+}
+
+# 1 => URL, # 2 => Origin header
+send_empty_ajax_request()
+{
+  "${WGET_CMD:?}" --spider -q -U "${DL_UA:?}" --header 'Accept: */*' --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Origin: ${2:?}" -- "${1:?}" || return "${?}"
+}
+
 dl_type_one()
 {
   local _url _base_url _referrer _result
@@ -164,9 +176,13 @@ dl_type_two()
   _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
   _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || return "${?}"
 
-  _token="$(get_JSON_value_from_webpage "${DL_PROTOCOL:?}://api.${_base_dm:?}/createAccount" 'token')" || return "${?}"
+  _loc_code="$(get_location_header_from_request ${_url:?} | cut -sd '/' -f '5')" || return "${?}"
   sleep 0.2
-  dl_generic_with_cookie "${_url:?}" 'account''Token='"${_token:?}" "${3:?}" || return "${?}"
+  _other_code="$(get_JSON_value_from_webpage "${DL_PROTOCOL:?}://api.${_base_dm:?}/createAccount" 'token')" || return "${?}"
+  sleep 0.2
+  send_empty_ajax_request "${DL_PROTOCOL:?}://api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}&websiteToken=12345" "${DL_PROTOCOL:?}://${_base_dm:?}" || return "${?}"
+  sleep 0.3
+  dl_generic_with_cookie "${_url:?}" 'account''Token='"${_other_code:?}" "${3:?}" || return "${?}"
   sleep 0.2
 }
 
@@ -174,7 +190,7 @@ dl_file()
 {
   if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
 
-  printf '%s\n' "Checking ${2:?}..."
+  printf '%s ' "Checking ${2?}..."
   local _status _url _domain
   _status=0
   _url="${DL_PROTOCOL:?}://${4:?}" || return "${?}"
@@ -185,13 +201,13 @@ dl_file()
 
     case "${_domain:?}" in
       *\.'go''file''.io')
-        echo ' DL type 2...'
+        printf '%s ' 'DL type 2...'
         dl_type_two "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       "${DL_WEB_PREFIX:?}"'apk''mirror''.com')
-        echo ' DL type 1...'
+        printf '%s ' 'DL type 1...'
         dl_type_one "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       ????*)
-        echo ' DL type 0...'
+        printf '%s ' 'DL type 0...'
         dl_generic "${_url:?}" "${DL_PROTOCOL:?}://${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)
         ui_error "Invalid download URL => '${_url?}'";;
@@ -199,10 +215,11 @@ dl_file()
 
     if test "${_status:?}" != 0; then
       if test -n "${5:-}"; then
-        printf ' %s\n' 'Download failed, trying a mirror...'
+        printf '%s ' 'Download failed, trying a mirror...'
         dl_file "${1:?}" "${2:?}" "${3:?}" "${5:?}"
         return "${?}"
       else
+        printf '%s\n' 'Download failed'
         ui_error "Failed to download the file => 'cache/${1?}/${2?}'"
       fi
     fi
@@ -210,6 +227,7 @@ dl_file()
   fi
 
   verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || corrupted_file "${SCRIPT_DIR:?}/cache/$1/$2"
+  printf '%s\n' 'OK'
 }
 
 # Detect OS and set OS specific info
