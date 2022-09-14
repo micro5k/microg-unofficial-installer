@@ -203,12 +203,12 @@ fi
 
 cd "${_init_dir:?}" || ui_error 'Failed to change back the folder'
 
-# Ring bell
-printf '%b' '\007' || true
-
 echo ''
 echo 'Done.'
 change_title 'Done'
+
+# Ring bell
+if test "${CI:-false}" = 'false'; then printf '%b' '\007'; fi
 
 #wait "${pid}"
 set +e
