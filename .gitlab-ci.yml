@@ -21,7 +21,7 @@ cache:
 
 before_script:
   - export GRADLE_USER_HOME="$PWD/.gradle"
-  - apk add bash moreutils wget zip~=3.0
+  - apk add bash moreutils grep wget zip~=3.0
 
 include:
   # - template: Security/Dependency-Scanning.gitlab-ci.yml
