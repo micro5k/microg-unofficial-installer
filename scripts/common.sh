@@ -146,7 +146,6 @@ dl_type_one()
   sleep 0.2
   _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
   dl_generic "${_url:?}" "${_referrer:?}" "${3:?}" || return "${?}"
-  sleep 0.2
 }
 
 report_failure()
@@ -170,7 +169,6 @@ dl_type_two()
   send_empty_ajax_request "${DL_PROT:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}&websiteToken=12345" "${DL_PROT:?}${_base_dm:?}" || { report_failure "${?}" 'get content'; return "${?}"; }
   sleep 0.3
   dl_generic_with_cookie "${_url:?}" 'account''Token='"${_other_code:?}" "${3:?}" || { report_failure "${?}" 'dl'; return "${?}"; }
-  if test "${CI:-false}" = 'false'; then sleep 0.3; else sleep 2; fi
 }
 
 dl_file()
@@ -186,6 +184,7 @@ dl_file()
   if ! test -e "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}"; then
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
 
+    if test "${CI:-false}" = 'false'; then sleep 0.5; else sleep 3; fi
     case "${_domain:?}" in
       *\.'go''file''.io')
         printf '%s ' 'DL type 2...'
