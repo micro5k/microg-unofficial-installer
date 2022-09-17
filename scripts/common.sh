@@ -133,42 +133,52 @@ send_empty_ajax_request()
   "${WGET_CMD:?}" --spider -qO '-' -U "${DL_UA:?}" --header 'Accept: */*' --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Origin: ${2:?}" -- "${1:?}" || return "${?}"
 }
 
-dl_type_one()
+report_failure_one()
 {
-  local _url _base_url _referrer _result
-  _base_url="$(get_base_url "${2:?}")" || return "${?}"
-
-  _referrer="${2:?}"; _url="${1:?}"
-  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton.*\"\shref=\"[^"]+\"')" || return "${?}"
-  sleep 0.2
-  _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
-  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.+href=\"[^"]+\"')" || return "${?}"
-  sleep 0.2
-  _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
-  dl_generic "${_url:?}" "${_referrer:?}" "${3:?}" || return "${?}"
+  readonly DL_TYPE_1_FAILED='true'
+  printf '%s - ' "Failed at '${2}' with ret. code ${1:?}"
+  return "${1:?}"
 }
 
-report_failure()
+dl_type_one()
 {
-  printf '%s\n' " Failed at '${2}' with return code: ${1:?}"
+  if test "${DL_TYPE_1_FAILED:-false}" != 'false'; then return 128; fi
+  local _url _base_url _referrer _result
+  _base_url="$(get_base_url "${2:?}")" || { report_failure_one "${?}"; return "${?}"; }
+
+  _referrer="${2:?}"; _url="${1:?}"
+  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton.*\"\shref=\"[^"]+\"')" || { report_failure_two "${?}" 'get link 1'; return "${?}"; }
+  sleep 0.2
+  _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
+  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.+href=\"[^"]+\"')" || { report_failure_two "${?}" 'get link 2'; return "${?}"; }
+  sleep 0.2
+  _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
+  dl_generic "${_url:?}" "${_referrer:?}" "${3:?}" || { report_failure_two "${?}" 'dl'; return "${?}"; }
+}
+
+report_failure_two()
+{
+  readonly DL_TYPE_2_FAILED='true'
+  printf '%s - ' "Failed at '${2}' with ret. code ${1:?}"
   return "${1:?}"
 }
 
 dl_type_two()
 {
+  if test "${DL_TYPE_2_FAILED:-false}" != 'false'; then return 128; fi
   local _url _domain
 
-  _url="${1:?}" || { report_failure "${?}"; return "${?}"; }
-  _domain="$(get_domain_from_url "${_url:?}")" || { report_failure "${?}"; return "${?}"; }
-  _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || { report_failure "${?}"; return "${?}"; }
+  _url="${1:?}" || { report_failure_two "${?}"; return "${?}"; }
+  _domain="$(get_domain_from_url "${_url:?}")" || { report_failure_two "${?}"; return "${?}"; }
+  _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || { report_failure_two "${?}"; return "${?}"; }
 
-  _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -sd '/' -f '5')" || { report_failure "${?}" 'get location'; return "${?}"; }
+  _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -sd '/' -f '5')" || { report_failure_two "${?}" 'get location'; return "${?}"; }
   sleep 0.2
-  _other_code="$(get_JSON_value_from_ajax_request "${DL_PROT:?}api.${_base_dm:?}/createAccount" "${DL_PROT:?}${_base_dm:?}" 'token')" || { report_failure "${?}" 'get JSON'; return "${?}"; }
+  _other_code="$(get_JSON_value_from_ajax_request "${DL_PROT:?}api.${_base_dm:?}/createAccount" "${DL_PROT:?}${_base_dm:?}" 'token')" || { report_failure_two "${?}" 'get JSON'; return "${?}"; }
   sleep 0.2
-  send_empty_ajax_request "${DL_PROT:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}&websiteToken=12345" "${DL_PROT:?}${_base_dm:?}" || { report_failure "${?}" 'get content'; return "${?}"; }
+  send_empty_ajax_request "${DL_PROT:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}&websiteToken=12345" "${DL_PROT:?}${_base_dm:?}" || { report_failure_two "${?}" 'get content'; return "${?}"; }
   sleep 0.3
-  dl_generic_with_cookie "${_url:?}" 'account''Token='"${_other_code:?}" "${3:?}" || { report_failure "${?}" 'dl'; return "${?}"; }
+  dl_generic_with_cookie "${_url:?}" 'account''Token='"${_other_code:?}" "${3:?}" || { report_failure_two "${?}" 'dl'; return "${?}"; }
 }
 
 dl_file()
@@ -187,13 +197,13 @@ dl_file()
     if test "${CI:-false}" = 'false'; then sleep 0.5; else sleep 3; fi
     case "${_domain:?}" in
       *\.'go''file''.io')
-        printf '%s ' 'DL type 2...'
+        printf '%s ' 'DL type 2:'
         dl_type_two "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       "${DL_WEB_PREFIX:?}"'apk''mirror''.com')
-        printf '%s ' 'DL type 1...'
+        printf '%s ' 'DL type 1:'
         dl_type_one "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       ????*)
-        printf '%s ' 'DL type 0...'
+        printf '%s ' 'DL type 0:'
         dl_generic "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)
         ui_error "Invalid download URL => '${_url?}'";;
