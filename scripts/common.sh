@@ -197,13 +197,13 @@ dl_file()
     if test "${CI:-false}" = 'false'; then sleep 0.5; else sleep 3; fi
     case "${_domain:?}" in
       *\.'go''file''.io')
-        printf '%s ' 'DL type 2:'
+        printf '\n %s: ' 'DL type 2'
         dl_type_two "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       "${DL_WEB_PREFIX:?}"'apk''mirror''.com')
-        printf '%s ' 'DL type 1:'
+        printf '\n %s: ' 'DL type 1:'
         dl_type_one "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       ????*)
-        printf '%s ' 'DL type 0:'
+        printf '\n %s: ' 'DL type 0:'
         dl_generic "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
       *)
         ui_error "Invalid download URL => '${_url?}'";;
