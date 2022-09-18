@@ -144,16 +144,17 @@ dl_type_one()
 {
   if test "${DL_TYPE_1_FAILED:-false}" != 'false'; then return 128; fi
   local _url _base_url _referrer _result
+
   _base_url="$(get_base_url "${2:?}")" || { report_failure_one "${?}"; return "${?}"; }
 
   _referrer="${2:?}"; _url="${1:?}"
-  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton.*\"\shref=\"[^"]+\"')" || { report_failure_two "${?}" 'get link 1'; return "${?}"; }
+  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton.*\"\shref=\"[^"]+\"')" || { report_failure_one "${?}" 'get link 1'; return "${?}"; }
   sleep 0.2
   _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
-  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.+href=\"[^"]+\"')" || { report_failure_two "${?}" 'get link 2'; return "${?}"; }
+  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.+href=\"[^"]+\"')" || { report_failure_one "${?}" 'get link 2'; return "${?}"; }
   sleep 0.2
   _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
-  dl_generic "${_url:?}" "${_referrer:?}" "${3:?}" || { report_failure_two "${?}" 'dl'; return "${?}"; }
+  dl_generic "${_url:?}" "${_referrer:?}" "${3:?}" || { report_failure_one "${?}" 'dl'; return "${?}"; }
 }
 
 report_failure_two()
