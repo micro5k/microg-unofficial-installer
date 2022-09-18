@@ -136,7 +136,7 @@ send_empty_ajax_request()
 report_failure_one()
 {
   readonly DL_TYPE_1_FAILED='true'
-  printf '%s - ' "Failed at '${2}' with ret. code ${1:?}"
+  #printf '%s - ' "Failed at '${2}' with ret. code ${1:?}"
   return "${1:?}"
 }
 
