@@ -97,6 +97,8 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS
 # Download files if they are missing
 mkdir -p "${SCRIPT_DIR}/cache"
 
+shopt -s lastpipe 2>/dev/null || true
+
 oss_files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _ _ _ _ DL_HASH DL_URL DL_MIRROR _; do
   dl_file "${LOCAL_PATH:?}" "${LOCAL_FILENAME:?}.apk" "${DL_HASH:?}" "${DL_URL:?}" "${DL_MIRROR}" || return "${?}"
 done
@@ -112,6 +114,8 @@ if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
 else
   echo 'Skipped not OSS files!'
 fi
+
+shopt -u lastpipe 2>/dev/null || true
 
 # Copy data
 cp -rf "${SCRIPT_DIR}/zip-content" "${TEMP_DIR}/" || ui_error 'Failed to copy data to the temp dir'
