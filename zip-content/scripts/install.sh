@@ -191,9 +191,9 @@ set_perm 0 0 0755 "${TMP_PATH}/addon.d/00-1-microg.sh"
 # Verifying
 ui_msg_sameline_start 'Verifying... '
 ui_debug ''
-if verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" '2b2a6db1b977617dfa25ed0829a0d268a463e87b' &&
-   verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm.apk" 'dd5ed6eadc470b7b99379832dfe40b2e4e41ab59' &&
-   verify_sha1 "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
+if verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/GmsCore-mapbox.apk" '2b2a6db1b977617dfa25ed0829a0d268a463e87b' &&
+   verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/GmsCore-vtm.apk" 'dd5ed6eadc470b7b99379832dfe40b2e4e41ab59' &&
+   verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/GmsCore-vtm-legacy.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
    verify_sha1 "${TMP_PATH}/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '9a6ffed69c510a06a719a2d52c3fd49218f71806' &&
    verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'b853c1b177b611310219cc6571576bd455fa3e9e' &&
@@ -215,15 +215,11 @@ else
   sleep 1
 fi
 
-# Handle variants
-if test "${API}" -ge 14; then
-  if test "${GMSCORE_VERSION:?}" = 'auto' && test "${CPU}" != 'armeabi'; then
-    move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-mapbox.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
-  else
-    move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
-  fi
+setup_app 1 'microG Services Core (vtm-legacy)' 'GmsCore-vtm-legacy' 'priv-app' false false
+if test "${GMSCORE_VERSION:?}" = 'auto' && test "${CPU}" != 'armeabi'; then
+  setup_app 1 'microG Services Core' 'GmsCore-mapbox' 'priv-app' false false
 else
-  move_rename_file "${TMP_PATH}/files/variants/priv-app/GmsCore-vtm-legacy.apk" "${TMP_PATH}/files/priv-app/GmsCore.apk"
+  setup_app 1 'microG Services Core (vtm)' 'GmsCore-vtm' 'priv-app' false false
 fi
 
 setup_app "${INSTALL_PLAYSTORE:?}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' 'true'
