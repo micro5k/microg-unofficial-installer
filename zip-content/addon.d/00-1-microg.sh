@@ -7,7 +7,7 @@
 
 # INFO: This script backup and restore microG during ROM upgrades
 
-# NOTE: The file come from: https://github.com/LineageOS/android_vendor_lineage/blob/master/prebuilt/common/bin/backuptool.functions
+# NOTE: The file come from: https://github.com/LineageOS/android_vendor_lineage/blob/HEAD/prebuilt/common/bin/backuptool.functions
 # shellcheck source=/dev/null
 . '/tmp/backuptool.functions'
 
