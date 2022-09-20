@@ -463,7 +463,7 @@ string_split()
 # @exitcode 1 If NOT installed.
 setup_app()
 {
-  local _install _app_conf _min_api _max_api _output_name _internal_name _url_handling _live_setup
+  local _install _app_conf _min_api _max_api _output_name _internal_name _file_hash _url_handling _live_setup
   if test ! -f "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk"; then return 1; fi
   _install="${1:-0}"
   _app_conf="$(file_get_first_line_that_start_with "${4:?}/${3:?}|" "${TMP_PATH}/files/system-apps/file-list.dat")" || ui_error "Failed to get app config for '${2}'"
@@ -471,6 +471,7 @@ setup_app()
   _max_api="$(string_split "${_app_conf:?}" 3)" || ui_error "Failed to get max API for '${2}'"
   _output_name="$(string_split "${_app_conf:?}" 4)" || ui_error "Failed to get output name for '${2}'"
   _internal_name="$(string_split "${_app_conf:?}" 5)" || ui_error "Failed to get internal name for '${2}'"
+  _file_hash="$(string_split "${_app_conf:?}" 6)" || ui_error "Failed to get the hash of '${2}'"
   _url_handling="${5:-false}"
   _live_setup="${6:-true}"
 
@@ -482,6 +483,7 @@ setup_app()
 
     if test "${_install:?}" -ne 0; then
       ui_debug "Enabling: ${2?}"
+      verify_sha1 "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${_file_hash:?}" || ui_error "Failed hash verification of '${2}'"
       if test "${_url_handling:?}" != 'false'; then
         add_line_in_file_after_string "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${2}'"
       fi

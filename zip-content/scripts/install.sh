@@ -191,22 +191,13 @@ set_perm 0 0 0755 "${TMP_PATH}/addon.d/00-1-microg.sh"
 # Verifying
 ui_msg_sameline_start 'Verifying... '
 ui_debug ''
-if verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/GmsCore-mapbox.apk" '2b2a6db1b977617dfa25ed0829a0d268a463e87b' &&
-   verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/GmsCore-vtm.apk" 'dd5ed6eadc470b7b99379832dfe40b2e4e41ab59' &&
-   verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/GmsCore-vtm-legacy.apk" 'da538490beadc760a7a8519ec5ed367f19ae8d7b' &&
-   verify_sha1 "${TMP_PATH}/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
+if verify_sha1 "${TMP_PATH}/files/priv-app/GoogleServicesFramework.apk" 'f9907df2e2c8fd20cd2e928821641fa01fca09ce' &&
    verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '9a6ffed69c510a06a719a2d52c3fd49218f71806' &&
    verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'b853c1b177b611310219cc6571576bd455fa3e9e' &&
    verify_sha1 "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
    ###verify_sha1 "${TMP_PATH}/files/app/PlayGames.apk" 'c99c27053bf518dd3d08449e9478b43de0da50ed' &&
    verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7' &&
-   verify_sha1 "${TMP_PATH}/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053' &&
-   verify_sha1 "${TMP_PATH}/files/system-apps/app/NewPipeLegacy.apk" '95413ee2bf576e4c7b0bdc9e9e79fd2187d444a9' &&
-   verify_sha1 "${TMP_PATH}/files/system-apps/app/NewPipe.apk" 'd5281149bdeac2ac41f570fda71eb91504cd9c3e' &&
-   { test ! -e "${TMP_PATH}/files/system-apps/priv-app/PlayStoreLegacy.apk" || verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/PlayStoreLegacy.apk" 'd78b377db43a2bc0570f37b2dd0efa4ec0b95746'; } &&
-   { test ! -e "${TMP_PATH}/files/system-apps/priv-app/PlayStore.apk" || verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/PlayStore.apk" '6c60fa863dd7befef49082c0dcf6278947a09333'; } &&
-   { test ! -e "${TMP_PATH}/files/system-apps/priv-app/AndroidAuto.apk" || verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/AndroidAuto.apk" '70ca5318fc24b462f1da045e7639260c63db252e'; } &&
-   verify_sha1 "${TMP_PATH}/files/system-apps/priv-app/FakeStore.apk" '1028f11133ec0a9a41fcd6615837124b61abd251'
+   verify_sha1 "${TMP_PATH}/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053'
 then
   ui_msg_sameline_end 'OK'
 else
