@@ -483,7 +483,11 @@ setup_app()
 
     if test "${_install:?}" -ne 0; then
       ui_debug "Enabling: ${2?}"
+
+      ui_msg_sameline_start 'Verifying... '
       verify_sha1 "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${_file_hash:?}" || ui_error "Failed hash verification of '${2}'"
+      ui_msg_sameline_end 'OK'
+
       if test "${_url_handling:?}" != 'false'; then
         add_line_in_file_after_string "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${2}'"
       fi
