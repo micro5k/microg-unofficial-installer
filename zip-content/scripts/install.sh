@@ -213,8 +213,8 @@ else
   setup_app 1 'microG Services Core (vtm)' 'GmsCore-vtm' 'priv-app' false false
 fi
 
-setup_app "${INSTALL_PLAYSTORE:?}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' 'true'
-setup_app "${INSTALL_PLAYSTORE:?}" 'Google Play Store' 'PlayStore' 'priv-app' 'true'
+setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' 'true'
+setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' 'true'
 
 # Fallback to FakeStore if the selected market is missing
 market_is_fakestore='false'
@@ -226,7 +226,7 @@ fi
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' 'true'
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' 'true'
 
-if setup_app "${INSTALL_ANDROID_AUTO:?}" 'Android Auto stub' 'AndroidAuto' 'priv-app' 'true'; then
+if setup_app "${INSTALL_ANDROIDAUTO:-}" 'Android Auto stub' 'AndroidAuto' 'priv-app' 'true'; then
   :
 else
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-com.google.android.projection.gearhead.xml"
