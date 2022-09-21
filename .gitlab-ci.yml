@@ -7,13 +7,12 @@ image: "openjdk:17-jdk-alpine"
 variables:
   GIT_DEPTH: "1"
   FAST_BUILD: "true"
-  # UPLOAD_BUILD_SCAN: "true"
 
 cache:
   key:
     files:
       - gradle/wrapper/gradle-wrapper.properties
-    prefix: $CI_JOB_NAME
+    prefix: "$CI_JOB_NAME"
   paths:
     - cache/
     - .gradle/caches/
@@ -22,8 +21,8 @@ cache:
   when: "always"
 
 before_script:
-  - export GRADLE_USER_HOME="$PWD/.gradle"
-  - apk add bash moreutils grep wget zip~=3.0
+  - export GRADLE_USER_HOME="${PWD:?}/.gradle"
+  - apk add bash grep wget zip~=3.0
 
 include:
   # - template: Security/Dependency-Scanning.gitlab-ci.yml
@@ -34,11 +33,10 @@ include:
 stages:
   - build
   - test
-  # - execute
 
 build-ota-oss:
   stage: build
-  script: "./gradlew buildOtaOSS | TZ=UTC ts '[%H:%M:%S]'"
+  script: "./gradlew buildOtaOSS"
   artifacts:
     paths:
       - output/*.zip*
