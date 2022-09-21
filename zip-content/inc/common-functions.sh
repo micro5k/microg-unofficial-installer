@@ -453,18 +453,18 @@ string_split()
 # (it automatically handle the API compatibility)
 #
 # @arg $1 integer Default installation setting (default 0)
-# @arg $2 string Name of the app
+# @arg $2 string Vanity name of the app
 # @arg $3 string Filename of the app
 # @arg $4 string Folder of the app
 # @arg $5 boolean Auto-enable URL handling (default false)
-# @arg $6 boolean Live setup is allowed (default true)
+# @arg $6 boolean Is the installation of this app optional? (default true)
 #
 # @exitcode 0 If installed.
 # @exitcode 1 If NOT installed.
 setup_app()
 {
-  local _install _app_conf _min_api _max_api _output_name _internal_name _file_hash _url_handling _live_setup
-  if test ! -f "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk"; then return 1; fi
+  local _install _app_conf _min_api _max_api _output_name _internal_name _file_hash _url_handling _optional
+  if test "${6:-true}" = 'true' && test ! -f "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk"; then return 1; fi
   _install="${1:-0}"
   _app_conf="$(file_get_first_line_that_start_with "${4:?}/${3:?}|" "${TMP_PATH}/files/system-apps/file-list.dat")" || ui_error "Failed to get app config for '${2}'"
   _min_api="$(string_split "${_app_conf:?}" 2)" || ui_error "Failed to get min API for '${2}'"
@@ -473,15 +473,15 @@ setup_app()
   _internal_name="$(string_split "${_app_conf:?}" 5)" || ui_error "Failed to get internal name for '${2}'"
   _file_hash="$(string_split "${_app_conf:?}" 6)" || ui_error "Failed to get the hash of '${2}'"
   _url_handling="${5:-false}"
-  _live_setup="${6:-true}"
+  _optional="${6:-true}"
 
   if test "${API:?}" -ge "${_min_api:?}" && test "${API:?}" -le "${_max_api:-99}"; then
-    if test "${_live_setup:?}" = 'true' && test "${live_setup_enabled:?}" = 'true'; then
+    if test "${_optional:?}" = 'true' && test "${live_setup_enabled:?}" = 'true'; then
       choose "Do you want to install ${2:?}?" '+) Yes' '-) No'
       if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
     fi
 
-    if test "${_install:?}" -ne 0; then
+    if test "${_install:?}" -ne 0 || test "${_optional:?}" != 'true'; then
       ui_msg "Enabling: ${2?}"
 
       ui_msg_sameline_start 'Verifying... '; ui_debug ''
