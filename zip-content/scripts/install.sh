@@ -185,7 +185,7 @@ custom_package_extract_dir 'addon.d' "${TMP_PATH}"
 # Setting up permissions
 ui_debug 'Setting up permissions...'
 set_std_perm_recursive "${TMP_PATH}/files"
-set_std_perm_recursive "${TMP_PATH}/addon.d"
+if test -e "${TMP_PATH}/addon.d"; then set_std_perm_recursive "${TMP_PATH}/addon.d"; fi
 set_perm 0 0 0755 "${TMP_PATH}/addon.d/00-1-microg.sh"
 
 # Verifying
@@ -195,7 +195,6 @@ if verify_sha1 "${TMP_PATH}/files/priv-app/GoogleServicesFramework.apk" 'f9907df
    verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '9a6ffed69c510a06a719a2d52c3fd49218f71806' &&
    verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'b853c1b177b611310219cc6571576bd455fa3e9e' &&
    verify_sha1 "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
-   ###verify_sha1 "${TMP_PATH}/files/app/PlayGames.apk" 'c99c27053bf518dd3d08449e9478b43de0da50ed' &&
    verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7' &&
    verify_sha1 "${TMP_PATH}/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053'
 then
@@ -213,20 +212,21 @@ else
   setup_app 1 'microG Services Core (vtm)' 'GmsCore-vtm' 'priv-app' false false
 fi
 
-setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' 'true'
-setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' 'true'
+setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; app_1_is_installed="${?}"
+setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' true; app_2_is_installed="${?}"
 
 # Fallback to FakeStore if the selected market is missing
 market_is_fakestore='false'
-if ! test -f "${TMP_PATH}/files/priv-app/Phonesky.apk"; then
+if { test "${app_1_is_installed:?}" -ne 0 && test "${app_2_is_installed:?}" -ne 0; } || test ! -f "${TMP_PATH}/files/priv-app/Phonesky.apk"; then
   market_is_fakestore='true'
   setup_app 1 'FakeStore' 'FakeStore' 'priv-app' false false
 fi
+unset app_1_is_installed app_2_is_installed
 
-setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' 'true'
-setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' 'true'
+setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
+setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' true
 
-if setup_app "${INSTALL_ANDROIDAUTO:-}" 'Android Auto stub' 'AndroidAuto' 'priv-app' 'true'; then
+if setup_app "${INSTALL_ANDROIDAUTO:-}" 'Android Auto stub' 'AndroidAuto' 'priv-app' true; then
   :
 else
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-com.google.android.projection.gearhead.xml"
@@ -330,18 +330,22 @@ if test "${API}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; 
 
 if test "${OLD_ANDROID}" != true; then
   # Move apps into subdirs
-  for entry in "${TMP_PATH}/files/priv-app"/*; do
-    path_without_ext=$(remove_ext "${entry}")
+  if test -e "${TMP_PATH}/files/priv-app"; then
+    for entry in "${TMP_PATH}/files/priv-app"/*; do
+      path_without_ext=$(remove_ext "${entry}")
 
-    create_dir "${path_without_ext}"
-    mv -f "${entry}" "${path_without_ext}"/
-  done
-  for entry in "${TMP_PATH}/files/app"/*; do
-    path_without_ext=$(remove_ext "${entry}")
+      create_dir "${path_without_ext}"
+      mv -f "${entry}" "${path_without_ext}"/
+    done
+  fi
+  if test -e "${TMP_PATH}/files/app"; then
+    for entry in "${TMP_PATH}/files/app"/*; do
+      path_without_ext=$(remove_ext "${entry}")
 
-    create_dir "${path_without_ext}"
-    mv -f "${entry}" "${path_without_ext}"/
-  done
+      create_dir "${path_without_ext}"
+      mv -f "${entry}" "${path_without_ext}"/
+    done
+  fi
 
   # The name of the following architectures remain unchanged: x86, x86_64, mips, mips64
   move_rename_dir "${TMP_PATH}/libs/lib/arm64-v8a" "${TMP_PATH}/libs/lib/arm64"
