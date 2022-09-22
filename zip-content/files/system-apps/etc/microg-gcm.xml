@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SPDX-FileCopyrightText: none
+    SPDX-License-Identifier: CC0-1.0
+    SPDX-FileType: SOURCE
+-->
+
+<map>
+    <boolean name="checkin_enable_service" value="true" />
+    <boolean name="gcm_enable_mcs_service" value="true" />
+    <set name="location_backends">
+        <string>org.microg.nlp.backend.ichnaea/org.microg.nlp.backend.ichnaea.BackendService/6ad8bcb1300536d2157d144f6b77cb09551048bd78aaf91522c4ab12ec2c526d</string>
+    </set>
+    <set name="geocoder_backends">
+        <string>org.microg.nlp.backend.nominatim/org.microg.nlp.backend.nominatim.BackendService/44226aa6b4ff69627283a28348976371558f039561f776208da08c294286d5d2</string>
+    </set>
+</map>

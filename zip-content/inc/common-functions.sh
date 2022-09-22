@@ -382,6 +382,7 @@ copy_dir_content()
 
 copy_file()
 {
+  create_dir "$2"
   cp -pf "$1" "$2"/ || ui_error "Failed to copy the file '$1' to '$2'" 99
 }
 

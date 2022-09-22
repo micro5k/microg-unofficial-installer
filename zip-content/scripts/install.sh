@@ -223,6 +223,13 @@ if { test "${app_1_is_installed:?}" -ne 0 && test "${app_2_is_installed:?}" -ne 
 fi
 unset app_1_is_installed app_2_is_installed
 
+if test "${market_is_fakestore:?}" = 'true'; then
+  move_rename_file "${TMP_PATH}/files/system-apps/etc/microg.xml" "${TMP_PATH}/files/etc/microg.xml"
+else
+  move_rename_file "${TMP_PATH}/files/system-apps/etc/microg-gcm.xml" "${TMP_PATH}/files/etc/microg.xml"
+fi
+copy_file "${TMP_PATH}/files/etc/microg.xml" "${SYS_PATH}/etc"
+
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' true
 
