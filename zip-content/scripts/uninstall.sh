@@ -236,6 +236,7 @@ delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-microg-*.sh
 delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-unifiednlp.sh
 delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-mapsapi.sh
 delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-gapps.sh
+delete_recursive "${SYS_PATH}"/addon.d/80-fdroid.sh
 
 delete_recursive "${SYS_PATH}"/etc/default-permissions/google-permissions.xml
 delete_recursive "${SYS_PATH}"/etc/default-permissions/phonesky-permissions.xml
@@ -252,6 +253,7 @@ delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google-p.xml
 #delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google-se.xml
 delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-org.microG.xml
 delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-microg.xml
+delete_recursive "${SYS_PATH}"/etc/permissions/permissions_org.fdroid.fdroid.privileged.xml
 
 delete_recursive "${SYS_PATH}"/etc/sysconfig/features.xml
 delete_recursive "${SYS_PATH}"/etc/sysconfig/google.xml
@@ -262,7 +264,6 @@ delete_recursive_wildcard "${SYS_PATH}"/etc/sysconfig/microg-*.xml
 
 delete_recursive "${SYS_PATH}"/etc/preferred-apps/google.xml
 
-delete_recursive "${SYS_PATH}"/etc/permissions/permissions_org.fdroid.fdroid.privileged.xml
 delete_recursive "${SYS_PATH}"/etc/org.fdroid.fdroid/additional_repos.xml
 
 if test -e "${SYS_PATH}/etc/zips"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH}/etc/zips"; fi
