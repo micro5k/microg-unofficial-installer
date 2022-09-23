@@ -231,9 +231,7 @@ else
 fi
 copy_file "${TMP_PATH}/files/etc/microg.xml" "${SYS_PATH}/etc"
 
-if setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'; then
-  move_rename_file "${TMP_PATH}/files/system-apps/etc/permissions/privapp-permissions-FDroidPrivilegedExtension.xml" "${TMP_PATH}/files/etc/permissions/privapp-permissions-FDroidPrivilegedExtension.xml"
-fi
+setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
 
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
 setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' true
