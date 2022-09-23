@@ -489,10 +489,14 @@ setup_app()
       verify_sha1 "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${_file_hash:?}" || ui_error "Failed hash verification of '${2}'"
       ui_msg_sameline_end 'OK'
 
+      if test "${4:?}" = 'priv-app' && test "${API:?}" -ge 26 && test -f "${TMP_PATH}/files/system-apps/etc/permissions/privapp-permissions-${3:?}.xml"; then
+        create_dir "${TMP_PATH}/files/etc/permissions" || ui_error "Failed to create the permissions folder for '${2}'"
+        move_rename_file "${TMP_PATH}/files/system-apps/etc/permissions/privapp-permissions-${3:?}.xml" "${TMP_PATH}/files/etc/permissions/privapp-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the priv-app xml of '${2}'"
+      fi
       if test "${_url_handling:?}" != 'false'; then
         add_line_in_file_after_string "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${2}'"
       fi
-      create_dir "${TMP_PATH}/files/${4:?}" || ui_error "Failed to create folder for '${2}'"
+      create_dir "${TMP_PATH}/files/${4:?}" || ui_error "Failed to create the folder for '${2}'"
       move_rename_file "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${2}'"
       return 0
     else
