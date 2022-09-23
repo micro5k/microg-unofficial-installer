@@ -42,7 +42,9 @@
 
     <!-- These are the packages that are white-listed to be able to run as system user -->
     <system-user-whitelisted-app package="com.google.android.gms" />
+    <system-user-whitelisted-app package="com.google.android.gms.policy_auth" />
     <system-user-whitelisted-app package="com.android.vending" />
+    <system-user-whitelisted-app package="com.google.android.play.games" />
     <system-user-whitelisted-app package="org.fdroid.fdroid.privileged" />
 
     <system-user-blacklisted-app package="com.google.android.googlequicksearchbox" />
