@@ -10,9 +10,11 @@
     <allow-in-power-save package="com.google.android.gms" />
     <allow-in-power-save package="com.google.android.ims" />
     <allow-in-power-save package="com.google.android.volta" />
+
     <!-- These are the packages that are white-listed to be able to run in the background while in data-usage save mode -->
     <allow-in-data-usage-save package="com.google.android.gms" />
     <allow-in-data-usage-save package="com.google.android.ims" />
+
     <!-- These are the packages that are white-listed to be able to run background location without throttling -->
     <allow-unthrottled-location package="com.google.android.gms" />
     <allow-unthrottled-location package="org.microg.nlp.backend.ichnaea" />
@@ -25,6 +27,7 @@
     <allow-implicit-broadcast action="com.google.gservices.intent.action.GSERVICES_CHANGED" />
     <allow-implicit-broadcast action="com.google.gservices.intent.action.GSERVICES_OVERRIDE" />
     <allow-implicit-broadcast action="com.google.android.c2dm.intent.RECEIVE" />
+    <allow-implicit-broadcast action="com.google.android.onetimeinitializer.ONE_TIME_INITIALIZED" />
 
     <allow-implicit-broadcast action="android.intent.action.ACTION_POWER_CONNECTED" />
     <allow-implicit-broadcast action="android.intent.action.ACTION_POWER_DISCONNECTED" />
