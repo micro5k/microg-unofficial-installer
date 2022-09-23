@@ -229,7 +229,6 @@ if test "${market_is_fakestore:?}" = 'true'; then
 else
   move_rename_file "${TMP_PATH}/files/system-apps/etc/microg-gcm.xml" "${TMP_PATH}/files/etc/microg.xml"
 fi
-copy_file "${TMP_PATH}/files/etc/microg.xml" "${SYS_PATH}/etc"
 
 setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
 
@@ -373,6 +372,7 @@ fi
 
 # Installing
 ui_msg 'Installing...'
+copy_file "${TMP_PATH}/files/etc/microg.xml" "${SYS_PATH}/etc"
 copy_dir_content "${TMP_PATH}/files/priv-app" "${PRIVAPP_PATH}"
 copy_dir_content "${TMP_PATH}/files/app" "${SYS_PATH}/app"
 copy_dir_content "${TMP_PATH}/files/framework" "${SYS_PATH}/framework"
