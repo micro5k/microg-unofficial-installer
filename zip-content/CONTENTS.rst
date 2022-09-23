@@ -30,6 +30,8 @@ Apps
 +----------------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
 | `microG Service Core 0.2.6.13280-vtm <files/system-apps/priv-app/GmsCore-vtm-legacy.apk>`_ (Android < 4) |       |       |         |            |         |     |fire|      |
 +----------------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
+| `microG Services Framework Proxy 0.1.0 <files/system-apps/priv-app/GoogleServicesFramework.apk>`_        | 2.3.3 |       | |star|  |            |         |     |fire|      |
++----------------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
 | `F-Droid Privileged Extension 0.2.13 <files/system-apps/priv-app/FDroidPrivilegedExtension.apk>`_        |  2.2  |       | |star|  |            |         |     |fire|      |
 +----------------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
 | `NewPipe 0.23.3 <files/system-apps/app/NewPipe.apk>`_                                                    |  4.4  |       | |star|  |            |         |     |fire|      |
@@ -46,8 +48,6 @@ Apps
 
 Common
 ------
-- **files/priv-app/GoogleServicesFramework.apk** => microG Services Framework Proxy 0.1.0 |star| |fire|
-
 - **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.12 |star| |fire|
 - **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.5.0 |star| |fire|
 - **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star| |fire|
