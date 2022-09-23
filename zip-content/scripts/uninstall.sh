@@ -69,6 +69,11 @@ PlayStore|
 DroidGuard|org.microg.gms.droidguard
 GmsDroidGuard|
 
+FDroidPrivilegedExtension|org.fdroid.fdroid.privileged
+F-DroidPrivilegedExtension|
+FDroidPrivileged|
+FDroidPriv|
+
 NewPipe|org.schabi.newpipe
 NewPipeLegacy|org.schabi.newpipelegacy
 YouTube|com.google.android.youtube
@@ -255,6 +260,7 @@ delete_recursive_wildcard "${SYS_PATH}"/etc/sysconfig/microg-*.xml
 
 delete_recursive "${SYS_PATH}"/etc/preferred-apps/google.xml
 
+delete_recursive "${SYS_PATH}"/etc/permissions/permissions_org.fdroid.fdroid.privileged.xml
 delete_recursive "${SYS_PATH}"/etc/org.fdroid.fdroid/additional_repos.xml
 
 if test -e "${SYS_PATH}/etc/zips"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH}/etc/zips"; fi
