@@ -170,10 +170,9 @@ mkdir -p "${_android_sec_stor}"
 touch "${_android_tmp}/recovery.log"
 link_folder "${BASE_SIMULATION_PATH:?}/sbin" "${_android_sys:?}/bin"
 link_folder "${BASE_SIMULATION_PATH:?}/sdcard" "${_android_ext_stor:?}"
-cp -pf -- "${_our_busybox:?}" "${BASE_SIMULATION_PATH:?}/system/bin/busybox" || fail_with_msg 'Failed to copy BusyBox'
 
 {
-  echo 'ro.build.version.sdk=25'
+  echo 'ro.build.version.sdk=26'
   echo 'ro.product.cpu.abi=x86_64'
   echo 'ro.product.cpu.abi2=armeabi-v7a'
   echo 'ro.product.cpu.abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi'
@@ -220,6 +219,11 @@ override_command()
 
 simulate_env()
 {
+  cp -pf -- "${_our_busybox:?}" "${BASE_SIMULATION_PATH:?}/system/bin/busybox" || fail_with_msg 'Failed to copy BusyBox'
+  if test "${COVERAGE:-false}" != 'false'; then
+    cp -pf -- "${COVERAGE:?}" "${_android_sys:?}/bin/bashcov" || fail_with_msg 'Failed to copy Bashcov'
+  fi
+
   export EXTERNAL_STORAGE="${_android_ext_stor:?}"
   export SECONDARY_STORAGE="${_android_sec_stor:?}"
   export LD_LIBRARY_PATH="${_android_lib_path:?}"
@@ -237,9 +241,6 @@ simulate_env()
   export TEST_INSTALL=true
 
   "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
-  if test "${COVERAGE:-false}" != 'false'; then
-    cp -pf -- "${COVERAGE:?}" "${_android_sys:?}/bin/bashcov" || fail_with_msg 'Failed to copy Bashcov'
-  fi
 
   # shellcheck disable=SC2310
   override_command mount || return 123
@@ -255,6 +256,7 @@ simulate_env()
 
 restore_env()
 {
+  "${_our_busybox:?}" --uninstall "${CUSTOM_BUSYBOX:?}" || true
   export PATH="${_backup_path}"
   unset BB_OVERRIDE_APPLETS
   unset -f -- mount umount chown su sudo
