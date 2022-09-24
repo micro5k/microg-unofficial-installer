@@ -256,7 +256,7 @@ simulate_env()
 
 restore_env()
 {
-  "${_our_busybox:?}" --uninstall "${CUSTOM_BUSYBOX:?}" || true
+  "${_our_busybox:?}" --uninstall "${CUSTOM_BUSYBOX:?}" 2>/dev/null || true
   export PATH="${_backup_path}"
   unset BB_OVERRIDE_APPLETS
   unset -f -- mount umount chown su sudo
