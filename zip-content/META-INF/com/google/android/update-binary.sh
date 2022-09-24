@@ -128,6 +128,8 @@ RANDOM="${$:?}${$:?}"
   _updatebin_our_main_script="${TMPDIR:?}/${RANDOM:?}-customize.sh"
 }
 
+UNKNOWN_ERROR=1
+
 package_extract_file 'customize.sh' "${_updatebin_our_main_script:?}"
 # shellcheck source=SCRIPTDIR/../../../../customize.sh
 . "${_updatebin_our_main_script:?}" || ui_error "Failed to source customize.sh"
@@ -137,3 +139,5 @@ unset _updatebin_our_main_script
 if test "${_updatebin_we_mounted_tmp:?}" = true; then
   umount '/tmp' || ui_error 'Failed to unmount the temp folder'
 fi
+
+if test "${UNKNOWN_ERROR:?}" -ne 0; then ui_error 'Installation failed with an unknown error'; fi
