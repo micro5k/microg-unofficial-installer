@@ -381,7 +381,6 @@ copy_dir_content "${TMP_PATH}/files/app" "${SYS_PATH}/app"
 copy_dir_content "${TMP_PATH}/files/framework" "${SYS_PATH}/framework"
 if test "${API}" -lt 26; then
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml"
-  delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-com.google.android.projection.gearhead.xml"
 else
   if test "${FAKE_SIGN}" = true; then
     replace_line_in_file "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
