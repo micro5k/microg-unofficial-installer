@@ -128,6 +128,7 @@ RANDOM="${$:?}${$:?}"
   _updatebin_our_main_script="${TMPDIR:?}/${RANDOM:?}-customize.sh"
 }
 
+STATUS=1
 UNKNOWN_ERROR=1
 
 package_extract_file 'customize.sh' "${_updatebin_our_main_script:?}"
@@ -140,4 +141,5 @@ if test "${_updatebin_we_mounted_tmp:?}" = true; then
   umount '/tmp' || ui_error 'Failed to unmount the temp folder'
 fi
 
+if test "${STATUS:?}" -ne 0; then ui_error "Installation script failed with error ${STATUS}" "${STATUS}"; fi
 if test "${UNKNOWN_ERROR:?}" -ne 0; then ui_error 'Installation failed with an unknown error'; fi
