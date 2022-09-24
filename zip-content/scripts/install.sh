@@ -238,7 +238,6 @@ setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' true
 if setup_app "${INSTALL_ANDROIDAUTO:-}" 'Android Auto stub' 'AndroidAuto' 'priv-app' true; then
   :
 else
-  delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-com.google.android.projection.gearhead.xml"
   delete "${TMP_PATH}/files/etc/default-permissions/AndroidAuto-permissions.xml"
 fi
 
