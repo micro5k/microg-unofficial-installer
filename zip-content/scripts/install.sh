@@ -172,7 +172,7 @@ if test "${CPU}" = false && test "${CPU64}" = false; then
 fi
 
 # Check the existance of the libraries folders
-if test "${OLD_ANDROID}" = true; then
+if test "${OLD_ANDROID}" = true && test "${API:?}" -ge 9; then
   if test "${CPU}" != false && ! test -e "${SYS_PATH}/lib"; then create_dir "${SYS_PATH}/lib"; fi
   if test "${CPU64}" != false && ! test -e "${SYS_PATH}/lib64"; then create_dir "${SYS_PATH}/lib64"; fi
 fi
@@ -242,13 +242,17 @@ else
 fi
 
 # Extracting libs
-ui_msg 'Extracting libs...'
-create_dir "${TMP_PATH}/libs"
-zip_extract_dir "${TMP_PATH}/files/priv-app/GmsCore.apk" 'lib' "${TMP_PATH}/libs"
+if test "${API:?}" -ge 9; then 
+  ui_msg 'Extracting libs...'
+  create_dir "${TMP_PATH}/libs"
+  zip_extract_dir "${TMP_PATH}/files/priv-app/GmsCore.apk" 'lib' "${TMP_PATH}/libs"
+fi
 
 # Setting up libs permissions
-ui_debug 'Setting up libs permissions...'
-set_std_perm_recursive "${TMP_PATH}/libs"
+if test "${API:?}" -ge 9; then 
+  ui_debug 'Setting up libs permissions...'
+  set_std_perm_recursive "${TMP_PATH}/libs"
+fi
 
 # MOUNT /data PARTITION
 DATA_INIT_STATUS=0
@@ -389,7 +393,7 @@ if test "${API}" -ge 21; then
 fi
 copy_dir_content "${TMP_PATH}/files/etc/org.fdroid.fdroid" "${SYS_PATH}/etc/org.fdroid.fdroid"
 
-if test "${OLD_ANDROID}" = true; then
+if test "${OLD_ANDROID}" = true && test "${API:?}" -ge 9; then
   if test "${CPU}" != false; then
     copy_dir_content "${TMP_PATH}/libs/lib/${CPU}" "${SYS_PATH}/lib"
   fi
