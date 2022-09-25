@@ -177,13 +177,18 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete_recursive "/vendor/priv-app/${FILENAME}"
     delete_recursive "/vendor/app/${FILENAME}"
 
+    # Current xml paths
+    delete_recursive "${SYS_PATH}/etc/permissions/privapp-permissions-${FILENAME:?}.xml"
+    delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${FILENAME:?}.xml"
+    # Legacy xml paths
+    delete_recursive "${SYS_PATH}/etc/default-permissions/${FILENAME:?}-permissions.xml"
+
+    # Dalvik cache
     delete_recursive_wildcard /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
     delete_recursive_wildcard /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
     delete_recursive_wildcard /data/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
   fi
   if test -n "${INTERNAL_NAME}"; then
-    delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME}.xml"
-    delete_recursive "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME}.xml"
     delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
     delete_recursive "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME}.xml"
     delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}"
@@ -192,6 +197,13 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
     delete_recursive_wildcard "/data/app/${INTERNAL_NAME}"-*
     delete_recursive_wildcard "/mnt/asec/${INTERNAL_NAME}"-*
+
+    # Legacy xml paths
+    delete_recursive "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
+
+    # Other installers
+    delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
+    delete_recursive "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
   fi
 done
 STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi

@@ -493,6 +493,10 @@ setup_app()
         create_dir "${TMP_PATH}/files/etc/permissions" || ui_error "Failed to create the permissions folder for '${2}'"
         move_rename_file "${TMP_PATH}/files/system-apps/etc/permissions/privapp-permissions-${3:?}.xml" "${TMP_PATH}/files/etc/permissions/privapp-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the priv-app xml of '${2}'"
       fi
+      if test "${API:?}" -ge 23 && test -f "${TMP_PATH}/files/system-apps/etc/default-permissions/default-permissions-${3:?}.xml"; then
+        create_dir "${TMP_PATH}/files/etc/default-permissions" || ui_error "Failed to create the default permissions folder for '${2}'"
+        move_rename_file "${TMP_PATH}/files/system-apps/etc/default-permissions/default-permissions-${3:?}.xml" "${TMP_PATH}/files/etc/default-permissions/default-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the default permissions xml of '${2}'"
+      fi
       if test "${_url_handling:?}" != 'false'; then
         add_line_in_file_after_string "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${2}'"
       fi
