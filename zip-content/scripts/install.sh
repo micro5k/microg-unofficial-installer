@@ -369,12 +369,19 @@ if test "${OLD_ANDROID}" != true; then
   move_dir_content "${TMP_PATH}/libs/lib" "${TMP_PATH}/files/priv-app/GmsCore/lib"
 fi
 
+if test "${API}" -lt 9; then
+  delete "${TMP_PATH}/files/framework/com.google.android.maps.jar"
+  delete "${TMP_PATH}/files/etc/permissions/com.google.android.maps.xml"
+fi
+delete_dir_if_empty "${TMP_PATH}/files/framework"
+
 # Installing
 ui_msg 'Installing...'
-copy_file "${TMP_PATH}/files/etc/microg.xml" "${SYS_PATH}/etc"
+if test -e "${TMP_PATH}/files/etc/microg.xml"; then copy_file "${TMP_PATH}/files/etc/microg.xml" "${SYS_PATH}/etc"; fi
+if test -e "${TMP_PATH}/files/etc/org.fdroid.fdroid"; then copy_dir_content "${TMP_PATH}/files/etc/org.fdroid.fdroid" "${SYS_PATH}/etc/org.fdroid.fdroid"; fi
 copy_dir_content "${TMP_PATH}/files/priv-app" "${PRIVAPP_PATH}"
 copy_dir_content "${TMP_PATH}/files/app" "${SYS_PATH}/app"
-copy_dir_content "${TMP_PATH}/files/framework" "${SYS_PATH}/framework"
+
 if test "${API}" -lt 26; then
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml"
 else
@@ -382,11 +389,13 @@ else
     replace_line_in_file "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
   fi
 fi
-copy_dir_content "${TMP_PATH}/files/etc/permissions" "${SYS_PATH}/etc/permissions"
+delete_dir_if_empty "${TMP_PATH}/files/etc/permissions"
+if test -e "${TMP_PATH}/files/etc/permissions"; then copy_dir_content "${TMP_PATH}/files/etc/permissions" "${SYS_PATH}/etc/permissions"; fi
+if test -e "${TMP_PATH}/files/framework"; then copy_dir_content "${TMP_PATH}/files/framework" "${SYS_PATH}/framework"; fi
+
 if test "${API}" -ge 21; then
   copy_dir_content "${TMP_PATH}/files/etc/sysconfig" "${SYS_PATH}/etc/sysconfig"
 fi
-copy_dir_content "${TMP_PATH}/files/etc/org.fdroid.fdroid" "${SYS_PATH}/etc/org.fdroid.fdroid"
 
 if test "${OLD_ANDROID}" = true && test "${API:?}" -ge 9; then
   if test "${CPU}" != false; then
