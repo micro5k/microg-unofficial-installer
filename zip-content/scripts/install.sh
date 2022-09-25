@@ -194,8 +194,7 @@ ui_debug ''
 if verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '9a6ffed69c510a06a719a2d52c3fd49218f71806' &&
    verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'b853c1b177b611310219cc6571576bd455fa3e9e' &&
    verify_sha1 "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
-   verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7' &&
-   verify_sha1 "${TMP_PATH}/files/app-legacy/LegacyNetworkLocation.apk" '8121295640985fad6c5b98890a156aafd18c2053'
+   verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7'
 then
   ui_msg_sameline_end 'OK'
 else
@@ -203,6 +202,8 @@ else
   ui_error 'Verification failed'
   sleep 1
 fi
+
+setup_app 1 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
 
 setup_app 1 'microG Services Core (vtm-legacy)' 'GmsCore-vtm-legacy' 'priv-app' false false
 if test "${GMSCORE_VERSION:?}" = 'auto' && test "${CPU}" != 'armeabi'; then
@@ -320,12 +321,6 @@ if test "${DATA_INIT_STATUS}" = '1'; then unmount '/data'; fi
 
 # Preparing
 ui_msg 'Preparing...'
-
-if test "${LEGACY_ANDROID}" = true; then
-  move_dir_content "${TMP_PATH}/files/app-legacy" "${TMP_PATH}/files/app"
-fi
-delete_recursive "${TMP_PATH}/files/app-legacy"
-delete_recursive "${TMP_PATH}/files/variants"
 
 if test "${API}" -lt 21; then delete "${TMP_PATH}/files/etc/sysconfig/google.xml"; fi
 if test "${API}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; fi
