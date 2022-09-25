@@ -298,15 +298,9 @@ if test "${API}" -ge 23; then
   fi
   if test "${FAKE_SIGN}" = true; then
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true" />'
-    replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true" />'
-  fi
-
-  if test "${market_is_fakestore:?}" = 'true'; then
-    delete "${TMP_PATH}/files/etc/default-permissions/PlayStore-permissions.xml"
-    move_rename_file "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions.xml" "${TMP_PATH}/files/etc/default-permissions/com.android.vending-permissions.xml"
-  else
-    delete "${TMP_PATH}/files/etc/default-permissions/FakeStore-permissions.xml"
-    move_rename_file "${TMP_PATH}/files/etc/default-permissions/PlayStore-permissions.xml" "${TMP_PATH}/files/etc/default-permissions/com.android.vending-permissions.xml"
+    if test -e "${TMP_PATH}/files/etc/default-permissions/default-permissions-Phonesky.xml"; then
+      replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/default-permissions-Phonesky.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="true" />'
+    fi
   fi
 
   copy_dir_content "${TMP_PATH}/files/etc/default-permissions" "${SYS_PATH}/etc/default-permissions"
