@@ -200,10 +200,9 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
 
     # Legacy xml paths
     delete_recursive "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
-
     # Other installers
-    delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
     delete_recursive "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
+    delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
   fi
 done
 STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
