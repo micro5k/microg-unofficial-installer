@@ -23,7 +23,6 @@ TMP_PATH="$2"
 CPU=false
 CPU64=false
 LEGACY_ARM=false
-LEGACY_ANDROID=false
 OLD_ANDROID=false
 FAKE_SIGN=false
 SYS_PATH=''
@@ -115,7 +114,6 @@ if test "${API}" -ge 21; then
 elif test "${API}" -ge 19; then
   OLD_ANDROID=true
 elif test "${API}" -ge 9; then
-  LEGACY_ANDROID=true
   OLD_ANDROID=true
 elif test "${API}" -ge 1; then
   ui_error 'Your Android version is too old'
@@ -428,9 +426,9 @@ delete "${SYS_PATH:?}/etc/zips/ug.prop"
 
 # Install survival script
 if test -e "${SYS_PATH}/addon.d"; then
-  if test "${LEGACY_ANDROID}" = true; then
+  if test "${API:?}" -lt 19; then
     :  ### Skip it
-  elif test "${OLD_ANDROID}" = true; then
+  elif test "${API:?}" -lt 21; then
     :  ### Not ready yet
   else
     ui_msg 'Installing survival script...'
