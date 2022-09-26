@@ -193,6 +193,9 @@ else
   sleep 1
 fi
 
+# Preparing
+ui_msg 'Preparing...'
+
 # Check the existance of the libraries folders
 if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
   if test "${CPU}" != false && test ! -e "${SYS_PATH}/lib"; then create_dir "${SYS_PATH}/lib"; fi
@@ -329,11 +332,13 @@ fi
 # UNMOUNT /data PARTITION
 if test "${DATA_INIT_STATUS}" = '1'; then unmount '/data'; fi
 
-# Preparing
-ui_msg 'Preparing...'
+# Preparing 2
+ui_msg 'Preparing 2...'
 
 if test "${API:?}" -lt 21; then delete "${TMP_PATH}/files/etc/sysconfig/google.xml"; fi
 if test "${API:?}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; fi
+if test "${API:?}" -lt 10; then delete "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk"; fi
+if test "${API:?}" -lt 9; then delete "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk"; fi
 
 if test "${API:?}" -ge 21; then
   # Move apps into subdirs
