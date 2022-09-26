@@ -276,6 +276,16 @@ fi
 mount_extra_partitions_silent
 
 # Clean previous installations
+if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
+  if test "${CPU}" != false; then
+    delete "${SYS_PATH:?}/lib/libvtm-jni.so"
+    delete "${SYS_PATH:?}/lib/libconscrypt_jni.so"
+  fi
+  if test "${CPU64}" != false; then
+    delete "${SYS_PATH:?}/lib64/libvtm-jni.so"
+    delete "${SYS_PATH:?}/lib64/libconscrypt_jni.so"
+  fi
+fi
 delete "${SYS_PATH}/etc/zips/${install_id}.prop"
 # shellcheck source=SCRIPTDIR/uninstall.sh
 . "${TMP_PATH}/uninstall.sh"
