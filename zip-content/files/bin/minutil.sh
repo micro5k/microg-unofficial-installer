@@ -117,7 +117,7 @@ minutil_remove_all_accounts()
       rm -f -- "${_file}" || return 1
     fi
   done || { echo 'ERROR: Failed to delete accounts'; return 4; }
-  echo "All accounts deleted."
+  echo "All accounts deleted. Now restart the device!!!"
 }
 
 
