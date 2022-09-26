@@ -125,6 +125,14 @@ cp -f "${SCRIPT_DIR}/LIC-ADDITION.rst" "${TEMP_DIR}/zip-content/" || ui_error 'F
 mkdir -p "${TEMP_DIR}/zip-content/docs"
 cp -f "${SCRIPT_DIR}/CHANGELOG.rst" "${TEMP_DIR}/zip-content/docs/" || ui_error 'Failed to copy the changelog to the temp dir'
 
+if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
+  mv -f "${TEMP_DIR}/zip-content/settings-oss.conf" "${TEMP_DIR}/zip-content/settings.conf" || ui_error 'Failed to choose the settings file'
+else
+  mv -f "${TEMP_DIR}/zip-content/settings-full.conf" "${TEMP_DIR}/zip-content/settings.conf" || ui_error 'Failed to choose the settings file'
+fi
+rm -f "${TEMP_DIR}/zip-content/settings-oss.conf"
+rm -f "${TEMP_DIR}/zip-content/settings-full.conf"
+
 # Do not ship currently unused binaries and unused files
 rm -rf "${TEMP_DIR}/zip-content/misc/aapt" || ui_error 'Failed to delete unused files in the temp dir'
 rm -f "${TEMP_DIR}/zip-content/misc/busybox/busybox-"mips* || ui_error 'Failed to delete unused files in the temp dir'
