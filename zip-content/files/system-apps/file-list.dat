@@ -7,3 +7,4 @@ priv-app/FDroidPrivilegedExtension|8||FDroidPrivilegedExtension|org.fdroid.fdroi
 app/LegacyNetworkLocation|9|18|NetworkLocation|com.google.android.location|8121295640985fad6c5b98890a156aafd18c2053
 app/NewPipeLegacy|16|18|NewPipe|org.schabi.newpipelegacy|95413ee2bf576e4c7b0bdc9e9e79fd2187d444a9
 app/NewPipeOld|19|20|NewPipe|org.schabi.newpipe|d5281149bdeac2ac41f570fda71eb91504cd9c3e
+app/NewPipe|21||NewPipe|org.schabi.newpipe|93c128ae9d401efecc9136302f7cd62a502b397d
