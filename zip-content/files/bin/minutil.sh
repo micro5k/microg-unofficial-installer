@@ -62,15 +62,11 @@ _minutil_find_package()
   pm path -- "${1:?}" | cut -d ':' -f 2 || return 1
 }
 
-_minutil_create_reinstall_session()
-{
-  pm install-create -i 'com.android.vending' -r -g -- | grep -F -e 'Success: created install session' | grep -oE -e '[0-9]+'
-  return "${?}"
-}
-
 _minutil_reinstall_split_package()
 {
-  _install_sid="$(_minutil_create_reinstall_session)" || return "${?}"
+  _is_caller_adb_or_root || return 1
+
+  _install_sid="$(pm install-create -i 'com.android.vending' -r -g -- | grep -F -e 'Success: created install session' | grep -oE -e '[0-9]+')" || return "${?}"
   _file_index=0
   echo "${1:?}" | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
@@ -83,8 +79,7 @@ _minutil_reinstall_split_package()
     fi
   done || return "${?}"
 
-  pm install-commit "${_install_sid:?}"
-  return "${?}"
+  pm install-commit "${_install_sid:?}" || return "${?}"
 }
 
 minutil_reinstall_package()
