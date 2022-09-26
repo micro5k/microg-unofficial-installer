@@ -110,7 +110,7 @@ if test ! -e "${PRIVAPP_PATH:?}"; then ui_error 'The priv-app folder does NOT ex
 
 if test "${API}" -ge 21; then
   :  ### New Android versions
-elif test "${API}" -ge 9; then
+elif test "${API}" -ge 8; then
   :
 elif test "${API}" -ge 1; then
   ui_error 'Your Android version is too old'
@@ -339,6 +339,7 @@ if test "${API:?}" -lt 21; then delete "${TMP_PATH}/files/etc/sysconfig/google.x
 if test "${API:?}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; fi
 if test "${API:?}" -lt 10; then delete "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk"; fi
 if test "${API:?}" -lt 9; then delete "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk"; fi
+delete_dir_if_empty "${TMP_PATH}/files/app"
 
 if test "${API:?}" -ge 21; then
   # Move apps into subdirs
@@ -383,8 +384,8 @@ delete_dir_if_empty "${TMP_PATH}/files/framework"
 ui_msg 'Installing...'
 if test -e "${TMP_PATH}/files/etc/microg.xml"; then copy_file "${TMP_PATH}/files/etc/microg.xml" "${SYS_PATH}/etc"; fi
 if test -e "${TMP_PATH}/files/etc/org.fdroid.fdroid"; then copy_dir_content "${TMP_PATH}/files/etc/org.fdroid.fdroid" "${SYS_PATH}/etc/org.fdroid.fdroid"; fi
-copy_dir_content "${TMP_PATH}/files/priv-app" "${PRIVAPP_PATH}"
-copy_dir_content "${TMP_PATH}/files/app" "${SYS_PATH}/app"
+if test -e "${TMP_PATH}/files/app"; then copy_dir_content "${TMP_PATH}/files/app" "${SYS_PATH}/app"; fi
+if test -e "${TMP_PATH}/files/priv-app"; then copy_dir_content "${TMP_PATH}/files/priv-app" "${PRIVAPP_PATH}"; fi
 
 if test "${API}" -lt 26; then
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml"
