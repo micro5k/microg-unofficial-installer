@@ -23,7 +23,6 @@ TMP_PATH="$2"
 CPU=false
 CPU64=false
 LEGACY_ARM=false
-OLD_ANDROID=false
 FAKE_SIGN=false
 SYS_PATH=''
 
@@ -111,10 +110,8 @@ if test ! -e "${PRIVAPP_PATH:?}"; then ui_error 'The priv-app folder does NOT ex
 
 if test "${API}" -ge 21; then
   :  ### New Android versions
-elif test "${API}" -ge 19; then
-  OLD_ANDROID=true
 elif test "${API}" -ge 9; then
-  OLD_ANDROID=true
+  :
 elif test "${API}" -ge 1; then
   ui_error 'Your Android version is too old'
 else
