@@ -26,7 +26,7 @@ _is_caller_adb_or_root()
 {
   if test "$(whoami || true)" != 'shell' && test "$(whoami || true)" != 'root'; then
     echo 'ERROR: You must execute it as either ADB or root'
-    exit 1
+    return 1
   fi
 }
 
@@ -34,7 +34,7 @@ _is_caller_root()
 {
   if test "$(whoami || true)" != 'root'; then
     echo 'ERROR: You must execute it as root'
-    exit 1
+    return 1
   fi
 }
 
