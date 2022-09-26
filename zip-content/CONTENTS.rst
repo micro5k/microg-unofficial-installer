@@ -30,6 +30,8 @@ Apps
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
 | `F-Droid Privileged Extension 0.2.13 <files/system-apps/priv-app/FDroidPrivilegedExtension.apk>`_ |  2.2  |       | |star|  |            |         |     |fire|      |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
+| `UnifiedNlp (legacy) 1.6.8 <files/system-apps/app/LegacyNetworkLocation.apk>`_                    |  2.3  | 4.3.1 |         |            | |fire|  |                 |
++---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
 | `NewPipe Legacy 0.20.8 <files/system-apps/app/NewPipeLegacy.apk>`_                                |  4.1  | 4.3.1 |         |            | |fire|  |                 |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
 | `NewPipe 0.23.3 <files/system-apps/app/NewPipe.apk>`_                                             |  4.4  |       | |star|  |            |         |     |fire|      |
@@ -53,11 +55,6 @@ Common
 - **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star| |fire|
 
 - **files/framework/com.google.android.maps.jar** => microG Maps API v1 0.1.0 |fire|
-
-
-Android 2.3 - 4.3.1
--------------------
-- **files/app-legacy/LegacyNetworkLocation.apk** => UnifiedNlp (legacy) 1.6.8 |star| |fire|
 
 
 Scripts
