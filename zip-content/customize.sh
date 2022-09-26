@@ -251,7 +251,7 @@ set_perm_safe 0 0 0755 "${TMP_PATH:?}/uninstall.sh"
 set_perm_safe 0 0 0755 "${TMP_PATH:?}/install.sh"
 
 package_extract_file_safe 'settings.conf' "${TMP_PATH:?}/default-settings.conf"
-# shellcheck source=SCRIPTDIR/settings.conf
+# shellcheck source=SCRIPTDIR/settings-full.conf
 . "${TMP_PATH:?}/default-settings.conf"
 test "${DEBUG_LOG}" -eq 1 && enable_debug_log  # Enable file logging if needed
 
