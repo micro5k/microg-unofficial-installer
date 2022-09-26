@@ -169,12 +169,6 @@ if test "${CPU}" = false && test "${CPU64}" = false; then
   ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
 fi
 
-# Check the existance of the libraries folders
-if test "${OLD_ANDROID}" = true && test "${API:?}" -ge 9; then
-  if test "${CPU}" != false && ! test -e "${SYS_PATH}/lib"; then create_dir "${SYS_PATH}/lib"; fi
-  if test "${CPU64}" != false && ! test -e "${SYS_PATH}/lib64"; then create_dir "${SYS_PATH}/lib64"; fi
-fi
-
 # Extracting
 ui_msg 'Extracting...'
 custom_package_extract_dir 'files' "${TMP_PATH}"
@@ -199,6 +193,12 @@ else
   ui_msg_sameline_end 'ERROR'
   ui_error 'Verification failed'
   sleep 1
+fi
+
+# Check the existance of the libraries folders
+if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
+  if test "${CPU}" != false && test ! -e "${SYS_PATH}/lib"; then create_dir "${SYS_PATH}/lib"; fi
+  if test "${CPU64}" != false && test ! -e "${SYS_PATH}/lib64"; then create_dir "${SYS_PATH}/lib64"; fi
 fi
 
 setup_app 1 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
@@ -320,10 +320,10 @@ if test "${DATA_INIT_STATUS}" = '1'; then unmount '/data'; fi
 # Preparing
 ui_msg 'Preparing...'
 
-if test "${API}" -lt 21; then delete "${TMP_PATH}/files/etc/sysconfig/google.xml"; fi
-if test "${API}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; fi
+if test "${API:?}" -lt 21; then delete "${TMP_PATH}/files/etc/sysconfig/google.xml"; fi
+if test "${API:?}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; fi
 
-if test "${OLD_ANDROID}" != true; then
+if test "${API:?}" -ge 21; then
   # Move apps into subdirs
   if test -e "${TMP_PATH}/files/priv-app"; then
     for entry in "${TMP_PATH}/files/priv-app"/*; do
@@ -356,7 +356,7 @@ if test "${OLD_ANDROID}" != true; then
   move_dir_content "${TMP_PATH}/libs/lib" "${TMP_PATH}/files/priv-app/GmsCore/lib"
 fi
 
-if test "${API}" -lt 9; then
+if test "${API:?}" -lt 9; then
   delete "${TMP_PATH}/files/framework/com.google.android.maps.jar"
   delete "${TMP_PATH}/files/etc/permissions/com.google.android.maps.xml"
 fi
@@ -384,19 +384,12 @@ if test "${API}" -ge 21; then
   copy_dir_content "${TMP_PATH}/files/etc/sysconfig" "${SYS_PATH}/etc/sysconfig"
 fi
 
-if test "${OLD_ANDROID}" = true && test "${API:?}" -ge 9; then
+if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
   if test "${CPU}" != false; then
     copy_dir_content "${TMP_PATH}/libs/lib/${CPU}" "${SYS_PATH}/lib"
   fi
   if test "${CPU64}" != false; then
     copy_dir_content "${TMP_PATH}/libs/lib/${CPU64}" "${SYS_PATH}/lib64"
-  fi
-
-  if test -e "${SYS_PATH}/vendor/lib/libvtm-jni.so"; then
-    delete "${SYS_PATH}/vendor/lib/libvtm-jni.so"
-  fi
-  if test -e "${SYS_PATH}/vendor/lib64/libvtm-jni.so"; then
-    delete "${SYS_PATH}/vendor/lib64/libvtm-jni.so"
   fi
 fi
 delete_recursive "${TMP_PATH}/libs"
