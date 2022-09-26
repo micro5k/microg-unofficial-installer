@@ -99,7 +99,7 @@ install_version="$(simple_get_prop 'version' "${TMP_PATH}/module.prop")" || ui_e
 install_version_code="$(simple_get_prop 'versionCode' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version code'
 
 INSTALLATION_SETTINGS_FILE="${install_id}.prop"
-API=$(build_getprop 'build\.version\.sdk')
+API="$(build_getprop 'build\.version\.sdk')"; readonly API
 
 if test "${API}" -ge 19; then  # KitKat or higher
   PRIVAPP_PATH="${SYS_PATH}/priv-app"
