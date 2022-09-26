@@ -6,4 +6,4 @@ priv-app/FakeStore|9||Phonesky|com.android.vending|aabe0cfc0b12072bba877e75796eb
 priv-app/FDroidPrivilegedExtension|8||FDroidPrivilegedExtension|org.fdroid.fdroid.privileged|cb05a14c986f7c470c0eeb2b3f57c27fe2a72a23
 app/LegacyNetworkLocation|9|18|NetworkLocation|com.google.android.location|8121295640985fad6c5b98890a156aafd18c2053
 app/NewPipeLegacy|16|18|NewPipe|org.schabi.newpipelegacy|95413ee2bf576e4c7b0bdc9e9e79fd2187d444a9
-app/NewPipe|19||NewPipe|org.schabi.newpipe|d5281149bdeac2ac41f570fda71eb91504cd9c3e
+app/NewPipeOld|19|20|NewPipe|org.schabi.newpipe|d5281149bdeac2ac41f570fda71eb91504cd9c3e
