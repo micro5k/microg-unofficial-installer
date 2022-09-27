@@ -11,5 +11,5 @@ author=ale5000
 description=microG unofficial installer is a flashable zip made to simplify the installation of microG.
 support=https://github.com/micro5k/microg-unofficial-installer/issues
 donate=https://liberapay.com/microg-unofficial-by-ale5000/donate
-minApi=9
+minApi=8
 maxApi=33
