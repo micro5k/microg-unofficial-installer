@@ -9,6 +9,7 @@
 
 <permissions>
     <privapp-permissions package="com.google.android.projection.gearhead" sha256-cert-digest="FD:B0:0C:43:DB:DE:8B:51:CB:31:2A:A8:1D:3B:5F:A1:77:13:AD:B9:4B:28:F5:98:D7:7F:8E:B8:9D:AC:EE:DF">
+        <permission name="android.permission.ACTIVITY_EMBEDDING" />
         <permission name="android.permission.BLUETOOTH_PRIVILEGED" />
         <permission name="android.permission.CALL_PRIVILEGED" />
         <permission name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />

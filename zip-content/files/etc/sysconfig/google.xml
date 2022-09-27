@@ -36,6 +36,7 @@
 
     <!-- These are the packages that are exempted from private API blacklisting -->
     <hidden-api-whitelisted-app package="com.google.android.gms" />
+    <hidden-api-whitelisted-app package="com.google.android.projection.gearhead" />
 
     <!-- These are the packages that are white-listed to be able to run as system user -->
     <system-user-whitelisted-app package="com.google.android.gms" />

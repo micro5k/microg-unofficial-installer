@@ -25,6 +25,9 @@
         <permission name="android.permission.CALL_PHONE" fixed="false" />
         <permission name="android.permission.READ_CALL_LOG" fixed="false" whitelisted="true" />
         <permission name="android.permission.READ_PHONE_STATE" fixed="false" />
+        <!-- Bluetooth -->
+        <permission name="android.permission.BLUETOOTH_CONNECT" fixed="false" />
+        <permission name="android.permission.BLUETOOTH_SCAN" fixed="false" />
         <!-- Draw over other apps -->
         <permission name="android.permission.SYSTEM_ALERT_WINDOW" fixed="false" />
         <!-- Modify system settings -->
