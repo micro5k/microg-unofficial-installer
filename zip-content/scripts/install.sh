@@ -169,14 +169,14 @@ fi
 
 # Extracting
 ui_msg 'Extracting...'
-custom_package_extract_dir 'files' "${TMP_PATH}"
-custom_package_extract_dir 'addon.d' "${TMP_PATH}"
+custom_package_extract_dir 'files' "${TMP_PATH:?}"
+custom_package_extract_dir 'addon.d' "${TMP_PATH:?}"
 
 # Setting up permissions
 ui_debug 'Setting up permissions...'
-set_std_perm_recursive "${TMP_PATH}/files"
-if test -e "${TMP_PATH}/addon.d"; then set_std_perm_recursive "${TMP_PATH}/addon.d"; fi
-set_perm 0 0 0755 "${TMP_PATH}/addon.d/00-1-microg.sh"
+set_std_perm_recursive "${TMP_PATH:?}/files"
+if test -e "${TMP_PATH:?}/addon.d"; then set_std_perm_recursive "${TMP_PATH:?}/addon.d"; fi
+set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
 
 # Verifying
 ui_msg_sameline_start 'Verifying... '
@@ -198,8 +198,8 @@ ui_msg 'Preparing...'
 
 # Check the existance of the libraries folders
 if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
-  if test "${CPU}" != false && test ! -e "${SYS_PATH}/lib"; then create_dir "${SYS_PATH}/lib"; fi
-  if test "${CPU64}" != false && test ! -e "${SYS_PATH}/lib64"; then create_dir "${SYS_PATH}/lib64"; fi
+  if test "${CPU}" != false && test ! -e "${SYS_PATH:?}/lib"; then create_dir "${SYS_PATH:?}/lib"; fi
+  if test "${CPU64}" != false && test ! -e "${SYS_PATH:?}/lib64"; then create_dir "${SYS_PATH:?}/lib64"; fi
 fi
 
 setup_app 1 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
@@ -225,9 +225,9 @@ fi
 unset app_1_is_installed app_2_is_installed
 
 if test "${market_is_fakestore:?}" = 'true'; then
-  move_rename_file "${TMP_PATH}/files/system-apps/etc/microg.xml" "${TMP_PATH}/files/etc/microg.xml"
+  move_rename_file "${TMP_PATH:?}/files/system-apps/etc/microg.xml" "${TMP_PATH:?}/files/etc/microg.xml"
 else
-  move_rename_file "${TMP_PATH}/files/system-apps/etc/microg-gcm.xml" "${TMP_PATH}/files/etc/microg.xml"
+  move_rename_file "${TMP_PATH:?}/files/system-apps/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
 fi
 
 setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
@@ -241,14 +241,14 @@ setup_app "${INSTALL_ANDROIDAUTO:-}" 'Android Auto stub' 'AndroidAuto' 'priv-app
 # Extracting libs
 if test "${API:?}" -ge 9; then 
   ui_msg 'Extracting libs...'
-  create_dir "${TMP_PATH}/libs"
-  zip_extract_dir "${TMP_PATH}/files/priv-app/GmsCore.apk" 'lib' "${TMP_PATH}/libs"
+  create_dir "${TMP_PATH:?}/libs"
+  zip_extract_dir "${TMP_PATH:?}/files/priv-app/GmsCore.apk" 'lib' "${TMP_PATH:?}/libs"
 fi
 
 # Setting up libs permissions
 if test "${API:?}" -ge 9; then 
   ui_debug 'Setting up libs permissions...'
-  set_std_perm_recursive "${TMP_PATH}/libs"
+  set_std_perm_recursive "${TMP_PATH:?}/libs"
 fi
 
 # MOUNT /data PARTITION
@@ -294,9 +294,9 @@ if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
     delete "${SYS_PATH:?}/lib64/libconscrypt_gmscore_jni.so"
   fi
 fi
-delete "${SYS_PATH}/etc/zips/${install_id}.prop"
+delete "${SYS_PATH:?}/etc/zips/${install_id:?}.prop"
 # shellcheck source=SCRIPTDIR/uninstall.sh
-. "${TMP_PATH}/uninstall.sh"
+. "${TMP_PATH:?}/uninstall.sh"
 
 unmount_extra_partitions
 
@@ -340,20 +340,20 @@ if test "${API:?}" -lt 21; then delete "${TMP_PATH}/files/etc/sysconfig/google.x
 if test "${API:?}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; fi
 if test "${API:?}" -lt 10; then delete "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk"; fi
 if test "${API:?}" -lt 9; then delete "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk"; fi
-delete_dir_if_empty "${TMP_PATH}/files/app"
+delete_dir_if_empty "${TMP_PATH:?}/files/app"
 
 if test "${API:?}" -ge 21; then
   # Move apps into subdirs
-  if test -e "${TMP_PATH}/files/priv-app"; then
-    for entry in "${TMP_PATH}/files/priv-app"/*; do
+  if test -e "${TMP_PATH:?}/files/priv-app"; then
+    for entry in "${TMP_PATH:?}/files/priv-app"/*; do
       path_without_ext=$(remove_ext "${entry}")
 
       create_dir "${path_without_ext}"
       mv -f "${entry}" "${path_without_ext}"/
     done
   fi
-  if test -e "${TMP_PATH}/files/app"; then
-    for entry in "${TMP_PATH}/files/app"/*; do
+  if test -e "${TMP_PATH:?}/files/app"; then
+    for entry in "${TMP_PATH:?}/files/app"/*; do
       path_without_ext=$(remove_ext "${entry}")
 
       create_dir "${path_without_ext}"
@@ -376,45 +376,46 @@ if test "${API:?}" -ge 21; then
 fi
 
 if test "${API:?}" -lt 9; then
-  delete "${TMP_PATH}/files/framework/com.google.android.maps.jar"
-  delete "${TMP_PATH}/files/etc/permissions/com.google.android.maps.xml"
+  delete "${TMP_PATH:?}/files/framework/com.google.android.maps.jar"
+  delete "${TMP_PATH:?}/files/etc/permissions/com.google.android.maps.xml"
 fi
-delete_dir_if_empty "${TMP_PATH}/files/framework"
+delete_dir_if_empty "${TMP_PATH:?}/files/framework"
 
 # Installing
 ui_msg 'Installing...'
-if test -e "${TMP_PATH}/files/etc/microg.xml"; then copy_file "${TMP_PATH}/files/etc/microg.xml" "${SYS_PATH}/etc"; fi
-if test -e "${TMP_PATH}/files/etc/org.fdroid.fdroid"; then copy_dir_content "${TMP_PATH}/files/etc/org.fdroid.fdroid" "${SYS_PATH}/etc/org.fdroid.fdroid"; fi
-if test -e "${TMP_PATH}/files/app"; then copy_dir_content "${TMP_PATH}/files/app" "${SYS_PATH}/app"; fi
-if test -e "${TMP_PATH}/files/priv-app"; then copy_dir_content "${TMP_PATH}/files/priv-app" "${PRIVAPP_PATH}"; fi
+if test -e "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg.xml" "${SYS_PATH:?}/etc"; fi
+if test -e "${TMP_PATH:?}/files/etc/org.fdroid.fdroid"; then copy_dir_content "${TMP_PATH:?}/files/etc/org.fdroid.fdroid" "${SYS_PATH:?}/etc/org.fdroid.fdroid"; fi
+if test -e "${TMP_PATH:?}/files/app"; then copy_dir_content "${TMP_PATH:?}/files/app" "${SYS_PATH:?}/app"; fi
+if test -e "${TMP_PATH:?}/files/priv-app"; then copy_dir_content "${TMP_PATH:?}/files/priv-app" "${PRIVAPP_PATH:?}"; fi
 
-if test "${API}" -lt 26; then
+if test "${API:?}" -lt 26; then
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml"
 else
   if test "${FAKE_SIGN}" = true; then
     replace_line_in_file "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
   fi
 fi
-delete_dir_if_empty "${TMP_PATH}/files/etc/permissions"
-if test -e "${TMP_PATH}/files/etc/permissions"; then copy_dir_content "${TMP_PATH}/files/etc/permissions" "${SYS_PATH}/etc/permissions"; fi
-if test -e "${TMP_PATH}/files/framework"; then copy_dir_content "${TMP_PATH}/files/framework" "${SYS_PATH}/framework"; fi
+delete_dir_if_empty "${TMP_PATH:?}/files/etc/permissions"
+delete_dir_if_empty "${TMP_PATH:?}/files/etc"
+if test -e "${TMP_PATH:?}/files/etc/permissions"; then copy_dir_content "${TMP_PATH:?}/files/etc/permissions" "${SYS_PATH:?}/etc/permissions"; fi
+if test -e "${TMP_PATH:?}/files/framework"; then copy_dir_content "${TMP_PATH:?}/files/framework" "${SYS_PATH:?}/framework"; fi
 
-if test "${API}" -ge 21; then
-  copy_dir_content "${TMP_PATH}/files/etc/sysconfig" "${SYS_PATH}/etc/sysconfig"
+if test "${API:?}" -ge 21; then
+  copy_dir_content "${TMP_PATH:?}/files/etc/sysconfig" "${SYS_PATH:?}/etc/sysconfig"
 fi
 
 if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
   if test "${CPU}" != false; then
-    copy_dir_content "${TMP_PATH}/libs/lib/${CPU}" "${SYS_PATH}/lib"
+    copy_dir_content "${TMP_PATH:?}/libs/lib/${CPU}" "${SYS_PATH:?}/lib"
   fi
   if test "${CPU64}" != false; then
-    copy_dir_content "${TMP_PATH}/libs/lib/${CPU64}" "${SYS_PATH}/lib64"
+    copy_dir_content "${TMP_PATH:?}/libs/lib/${CPU64}" "${SYS_PATH:?}/lib64"
   fi
 fi
-delete_recursive "${TMP_PATH}/libs"
+delete_recursive "${TMP_PATH:?}/libs"
 
-USED_SETTINGS_PATH="${TMP_PATH}/files/etc/zips"
-create_dir "${USED_SETTINGS_PATH}"
+USED_SETTINGS_PATH="${TMP_PATH:?}/files/etc/zips"
+create_dir "${USED_SETTINGS_PATH:?}"
 
 {
   echo '# SPDX-FileCopyrightText: none'
@@ -437,7 +438,7 @@ copy_dir_content "${USED_SETTINGS_PATH:?}" "${SYS_PATH:?}/etc/zips"
 delete "${SYS_PATH:?}/etc/zips/ug.prop"
 
 # Install survival script
-if test -e "${SYS_PATH}/addon.d"; then
+if test -e "${SYS_PATH:?}/addon.d"; then
   if test "${API:?}" -lt 19; then
     :  ### Skip it
   elif test "${API:?}" -lt 21; then
@@ -450,11 +451,11 @@ if test -e "${SYS_PATH}/addon.d"; then
   fi
 fi
 
-if test "${API}" -ge 23; then
+if test "${API:?}" -ge 23; then
   ui_msg 'Installing utilities...'
-  set_perm 0 2000 0755 "${TMP_PATH}/files/bin/minutil.sh"
-  move_rename_file "${TMP_PATH}/files/bin/minutil.sh" "${TMP_PATH}/files/bin/minutil"
-  copy_dir_content "${TMP_PATH}/files/bin" "${SYS_PATH}/bin"
+  set_perm 0 2000 0755 "${TMP_PATH:?}/files/bin/minutil.sh"
+  move_rename_file "${TMP_PATH:?}/files/bin/minutil.sh" "${TMP_PATH:?}/files/bin/minutil"
+  copy_dir_content "${TMP_PATH:?}/files/bin" "${SYS_PATH:?}/bin"
 fi
 
 if test "${SYS_INIT_STATUS}" = '1'; then
