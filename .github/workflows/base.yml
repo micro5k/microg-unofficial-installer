@@ -23,8 +23,8 @@ jobs:
       - name: "Set up Java"
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: "temurin"
+          java-version: "17"
       - name: "Set up Ruby"
         uses: ruby/setup-ruby@v1
         with:
@@ -36,22 +36,23 @@ jobs:
       - name: "Execute code coverage"
         id: "coverage"
         run: |
-          # Executing code coverage...
-          #sudo apt-get -qq -y install moreutils 1>/dev/null
+          ### Executing code coverage...
+          workspace_path = '${{ github.workspace }}'; readonly workspace_path
           export OPENSOURCE_ONLY='true'
-          bashcov './build.sh'  # To timestamp the output pipe it to: TZ=UTC ts '[%H:%M:%S]'
-          # Testing zip installation...
-          bash './recovery-simulator/recovery.sh' ./output/*.zip
+          #sudo apt-get -qq -y install moreutils 1>/dev/null
+          bashcov "${workspace_path:?}/build.sh"  # To timestamp the output pipe it to: TZ=UTC ts '[%H:%M:%S]'
+          ### Testing zip installation...
+          bash "${workspace_path:?}/recovery-simulator/recovery.sh" "${workspace_path:?}"/output/*.zip
           printf '\n\n'
           echo '==============='
           echo 'RECOVERY OUTPUT'
           echo '==============='
-          cat './recovery-simulator/output/recovery-output.log'
+          cat "${workspace_path:?}/recovery-simulator/output/recovery-output.log"
       - name: "SHA256"
         if: "${{ github.event_name != 'pull_request' }}"
         run: |
           # SHA256...
-          sha256_hash='${{ steps.coverage.outputs.sha256_hash }}'
+          sha256_hash='${{ steps.coverage.outputs.sha256_hash }}'; readonly sha256_hash
           echo "::notice::${sha256_hash:?}"
       - name: "Upload artifacts"
         if: "${{ github.ref == 'refs/heads/main' && github.repository_owner == 'micro5k' }}"
