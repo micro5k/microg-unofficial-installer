@@ -3,17 +3,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 name: "Release"
+permissions: {}
 on:
   push:
     tags:
       - "v*"
-permissions: {}
 jobs:
   base-job:
     name: "Release"
-    runs-on: ubuntu-latest
     permissions:
       contents: write
+    runs-on: ubuntu-latest
 
     steps:
       - name: "Check out code"
@@ -21,14 +21,16 @@ jobs:
       - name: "Set up Java"
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: "temurin"
+          java-version: "17"
       - name: "Build"
         shell: bash
         run: |
-          # Building...
-          ./gradlew buildOtaOSS
+          ### Building...
+          workspace_path='${{ github.workspace }}'; readonly workspace_path
+          "${workspace_path:?}/gradlew" buildOtaOSS
       - name: "Upload release"
+        if: "${{ github.repository_owner == 'micro5k' }}"
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
