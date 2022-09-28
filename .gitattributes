@@ -52,6 +52,10 @@ gradlew         text eol=lf
 *.gradle        text eol=lf
 *.properties    text eol=lf
 
+# Other files
+Appfile         text eol=lf
+Fastfile        text eol=lf
+
 # Binaries
 *.exe           binary
 *.bin           binary
