@@ -1,0 +1,1 @@
+microG unofficial installer is a flashable zip made to simplify the installation of microG.
