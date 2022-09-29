@@ -1,1 +1,1 @@
-It is a flashable zip made to simplify the installation of microG.
+It is an installer made to simplify the installation of microG.
