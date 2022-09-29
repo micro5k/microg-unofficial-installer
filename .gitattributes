@@ -4,32 +4,40 @@
 
 * text=auto
 
-*.gitattributes text eol=lf
-*.gitignore     text eol=lf
-*.gitmodules    text eol=lf
+*.gitattributes   text eol=lf
+*.gitignore       text eol=lf
+*.gitmodules      text eol=lf
 
-*.yml           text eol=lf
-*.xml           text eol=lf
-*.json          text eol=lf
-*.dis           text eol=lf
-.simplecov      text eol=lf
-.shellcheckrc   text eol=lf
+*.yml             text eol=lf
+*.xml             text eol=lf
+*.json            text eol=lf
+*.dis             text eol=lf
+.simplecov        text eol=lf
+.shellcheckrc     text eol=lf
 
-.reuse/dep5     text eol=lf
-*.license       text eol=lf
-*.spdx          text eol=lf
+.reuse/dep5       text eol=lf
+*.license         text eol=lf
+*.spdx            text eol=lf
 
 # Batch scripts
-*.bat           text eol=crlf
+*.bat             text eol=crlf
+
+# Text
+*.rst             text eol=lf
+*.md              text eol=lf
+*.txt             text eol=lf
+
+# Textual data
+*.dat             text eol=lf
 
 # Our files
-*.prop          text eol=lf
-*.conf          text eol=lf
-*.bats          text eol=lf
-*.sh            text eol=lf
-*.ash           text eol=lf
-*.bash          text eol=lf
-*.py            text eol=lf
+*.prop            text eol=lf
+*.conf            text eol=lf
+*.bats            text eol=lf
+*.sh              text eol=lf
+*.ash             text eol=lf
+*.bash            text eol=lf
+*.py              text eol=lf
 
 # Our custom files
 build                              text eol=lf
@@ -39,28 +47,20 @@ recovery-simulator/override/chown  text eol=lf
 recovery-simulator/override/su     text eol=lf
 recovery-simulator/override/sudo   text eol=lf
 
-# Text
-*.rst           text eol=lf
-*.md            text eol=lf
-*.txt           text eol=lf
-
-# Textual data
-*.dat           text eol=lf
-
 # Gradle files
-gradlew         text eol=lf
-*.gradle        text eol=lf
-*.properties    text eol=lf
+gradlew           text eol=lf
+*.gradle          text eol=lf
+*.properties      text eol=lf
 
 # Other files
-Appfile         text eol=lf
-Fastfile        text eol=lf
+fastlane/Appfile  text eol=lf
+fastlane/Fastfile text eol=lf
 
 # Binaries
-*.exe           binary
-*.bin           binary
-*.apk           binary
-*.jar           binary
-*.gz            binary
-*.png           binary
-*.jpg           binary
+*.exe             binary
+*.bin             binary
+*.apk             binary
+*.jar             binary
+*.gz              binary
+*.png             binary
+*.jpg             binary
