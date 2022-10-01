@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- SPDX-FileCopyrightText: (c) 2016 ale5000
-     SPDX-License-Identifier: Apache-2.0
-     SPDX-FileType: SOURCE
+<!--
+    SPDX-FileCopyrightText: (c) 2016 ale5000
+    SPDX-License-Identifier: Apache-2.0
+    SPDX-FileType: SOURCE
 -->
 
 <config>
@@ -18,11 +19,11 @@
     <feature name="com.google.android.feature.PIXEL_2021_MIDYEAR_EXPERIENCE" />
     <feature name="com.google.android.feature.PIXEL_2022_EXPERIENCE" />
 
+    <feature name="com.google.android.feature.TURBO_PRELOAD" />
     <feature name="com.google.android.feature.NEXT_GENERATION_ASSISTANT" />
     <feature name="com.google.android.feature.GLOBAL_ASSIST_TRIGGERING" />
-    <feature name="com.google.android.feature.TURBO_PRELOAD" />
-    <feature name="com.google.android.apps.photos.PIXEL_2019_PRELOAD" />
     <feature name="com.google.android.apps.dialer.SUPPORTED" />
+    <feature name="com.google.android.apps.photos.PIXEL_2019_PRELOAD" />
 
     <feature name="com.nvidia.feature.shield" />
     <feature name="android.software.live_wallpaper" />
