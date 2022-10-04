@@ -4,6 +4,7 @@
 
 * text=auto
 
+docs/CODEOWNERS   text eol=lf
 *.gitattributes   text eol=lf
 *.gitignore       text eol=lf
 *.gitmodules      text eol=lf
