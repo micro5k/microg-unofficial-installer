@@ -20,6 +20,8 @@ gradleEnterprise.buildScan {
 }
 
 void configure() {
+    println name
+
     defaultTasks 'tasks'
     rootProject.buildDir = "${projectDir}/output"
 

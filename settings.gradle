@@ -4,7 +4,7 @@
 // SPDX-FileType: SOURCE
 
 buildscript {
-    apply from: "${rootProject.projectDir}/dependencies.gradle"
+    apply from: 'dependencies.gradle'
 }
 
 plugins {
@@ -12,6 +12,3 @@ plugins {
 }
 
 rootProject.name = 'microG unofficial installer'
-println rootProject.name
-
-//gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS  /* Always enable stack trace */
