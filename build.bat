@@ -5,6 +5,7 @@
 @echo off
 
 SETLOCAL 2> nul
+CHCP 65001 >nul || ECHO "Changing the codepage failed"
 "%~dp0tools\win\busybox.exe" ash "%~dp0build.sh" %*
 ENDLOCAL 2> nul
 SET "EXIT_CODE=%ERRORLEVEL%"
