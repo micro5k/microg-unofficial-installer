@@ -64,7 +64,10 @@ change_title 'Building the flashable OTA zip...'
 # shellcheck source=SCRIPTDIR/conf-2.sh
 if test "${OPENSOURCE_ONLY:-false}" = 'false'; then . "${SCRIPT_DIR}/conf-2.sh"; fi
 
-if ! is_oss_only_build_enabled && test "${OPENSOURCE_ONLY:-false}" != 'false'; then echo 'WARNING: The OSS only build is disabled'; change_title 'OSS only build is disabled'; return 0 2>&- || exit 0; fi
+if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
+  if ! is_oss_only_build_enabled; then echo 'WARNING: The OSS only build is disabled'; change_title 'OSS only build is disabled'; return 0 2>&- || exit 0; fi
+  if test ! -f "${SCRIPT_DIR:?}/zip-content/settings-oss.conf"; then ui_error 'The settings file is missing'; fi
+fi
 
 _init_dir="$(pwd)" || ui_error 'Failed to read the current dir'
 
