@@ -116,6 +116,8 @@ framework_uninstall_list()
 {
 cat <<'EOF'
 com.google.android.maps|
+com.qti.location.sdk|
+izat.xt.srv|
 EOF
 }
 
@@ -201,6 +203,7 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     # Legacy xml paths
     delete_recursive "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
     # Other installers
+    delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME:?}.xml"
     delete_recursive "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
     delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
   fi
@@ -213,6 +216,10 @@ framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
     delete_recursive "${SYS_PATH}/framework/${INTERNAL_NAME}.jar"
     delete_recursive "${SYS_PATH}/framework/${INTERNAL_NAME}.odex"
     delete_recursive_wildcard "${SYS_PATH}/framework/oat"/*/"${INTERNAL_NAME}.odex"
+    delete_recursive_wildcard /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME}".jar*@classes*
+    delete_recursive_wildcard /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME}".odex*@classes*
+    delete_recursive_wildcard /data/dalvik-cache/system@framework@"${INTERNAL_NAME}".jar*@classes*
+    delete_recursive_wildcard /data/dalvik-cache/system@framework@"${INTERNAL_NAME}".odex*@classes*
   fi
 done
 STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
