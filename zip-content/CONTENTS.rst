@@ -9,6 +9,9 @@ CONTENTS
 .. |star| replace:: ⭐️
 .. |fire| replace:: 🔥
 .. |boom| replace:: 💥
+.. |green-yes| replace:: ✅
+.. |red-no| replace:: ❌
+
 
 Apps
 ----
@@ -18,25 +21,25 @@ Apps
 |                                                Application                                        +-------+-------+---------+------------+---------+-----------------+
 |                                                                                                   |  Min  |  Max  | F-Droid | Play Store | F-Droid | Original author |
 +===================================================================================================+=======+=======+=========+============+=========+=================+
-| `microG Service Core 0.2.6.13280-vtm <files/system-apps/priv-app/GmsCore-vtm-legacy.apk>`_        |  2.3  | 3.2.6 |         |            |         |     |fire|      |
+| `microG Service Core 0.2.6.13280-vtm <files/system-apps/priv-app/GmsCore-vtm-legacy.apk>`_        |  2.3  | 3.2.6 |         |  |red-no|  |         |     |fire|      |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
-| `microG Service Core 0.2.13.203915-vtm <files/system-apps/priv-app/GmsCore-vtm.apk>`_             |  4.0  |       |         |            |         |     |fire|      |
+| `microG Service Core 0.2.13.203915-vtm <files/system-apps/priv-app/GmsCore-vtm.apk>`_             |  4.0  |       |         |  |red-no|  |         |     |fire|      |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
-| `microG Service Core 0.2.24.223616-59 (4cd7c92) <files/system-apps/priv-app/GmsCore-mapbox.apk>`_ |  4.0  |       | |star|  |            |         |     |fire|      |
+| `microG Service Core 0.2.24.223616-59 (4cd7c92) <files/system-apps/priv-app/GmsCore-mapbox.apk>`_ |  4.0  |       | |star|  |  |red-no|  |         |     |fire|      |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
-| `microG Services Framework Proxy 0.1.0 <files/system-apps/priv-app/GoogleServicesFramework.apk>`_ | 2.3.3 |       | |star|  |            |         |     |fire|      |
+| `microG Services Framework Proxy 0.1.0 <files/system-apps/priv-app/GoogleServicesFramework.apk>`_ | 2.3.3 |       | |star|  |  |red-no|  |         |     |fire|      |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
-| `FakeStore 0.1.0 <files/system-apps/priv-app/FakeStore.apk>`_                                     |  2.3  |       | |star|  |            |         |     |fire|      |
+| `FakeStore 0.1.0 <files/system-apps/priv-app/FakeStore.apk>`_                                     |  2.3  |       | |star|  |  |red-no|  |         |     |fire|      |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
-| `F-Droid Privileged Extension 0.2.13 <files/system-apps/priv-app/FDroidPrivilegedExtension.apk>`_ |  2.2  |       | |star|  |            | |fire|  |     |fire|      |
+| `F-Droid Privileged Extension 0.2.13 <files/system-apps/priv-app/FDroidPrivilegedExtension.apk>`_ |  2.2  |       | |star|  |  |red-no|  | |fire|  |     |fire|      |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
-| `UnifiedNlp (legacy) 1.6.8 <files/system-apps/app/LegacyNetworkLocation.apk>`_                    |  2.3  | 4.3.1 | |star|  |            | |fire|  |                 |
+| `UnifiedNlp (legacy) 1.6.8 <files/system-apps/app/LegacyNetworkLocation.apk>`_                    |  2.3  | 4.3.1 | |star|  |  |red-no|  | |fire|  |                 |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
-| `NewPipe Legacy 0.20.8 <files/system-apps/app/NewPipeLegacy.apk>`_                                |  4.1  | 4.3.1 |         |            | |fire|  |                 |
+| `NewPipe Legacy 0.20.8 <files/system-apps/app/NewPipeLegacy.apk>`_                                |  4.1  | 4.3.1 |         |  |red-no|  | |fire|  |                 |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
-| `NewPipe (old) 0.23.3 <files/system-apps/app/NewPipeOld.apk>`_                                    |  4.4  | 4.4.4 |         |            |         |     |fire|      |
+| `NewPipe (old) 0.23.3 <files/system-apps/app/NewPipeOld.apk>`_                                    |  4.4  | 4.4.4 |         |  |red-no|  |         |     |fire|      |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
-| `NewPipe 0.24.0 <files/system-apps/app/NewPipe.apk>`_                                             |  5.0  |       | |star|  |            |         |     |fire|      |
+| `NewPipe 0.24.0 <files/system-apps/app/NewPipe.apk>`_                                             |  5.0  |       | |star|  |  |red-no|  |         |     |fire|      |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
 | [#]_ Google Play Store 5.1.11 (80310011) - nodpi                                                  |  2.3  | 5.1.1 |         |   |star|   |         |     |fire|      |
 +---------------------------------------------------------------------------------------------------+-------+-------+---------+------------+---------+-----------------+
