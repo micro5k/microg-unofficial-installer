@@ -212,14 +212,14 @@ STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
 framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
   if test -n "${INTERNAL_NAME}"; then
-    delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
-    delete_recursive "${SYS_PATH}/framework/${INTERNAL_NAME}.jar"
-    delete_recursive "${SYS_PATH}/framework/${INTERNAL_NAME}.odex"
-    delete_recursive_wildcard "${SYS_PATH}/framework/oat"/*/"${INTERNAL_NAME}.odex"
-    delete_recursive_wildcard /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME}".jar*@classes*
-    delete_recursive_wildcard /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME}".odex*@classes*
-    delete_recursive_wildcard /data/dalvik-cache/system@framework@"${INTERNAL_NAME}".jar*@classes*
-    delete_recursive_wildcard /data/dalvik-cache/system@framework@"${INTERNAL_NAME}".odex*@classes*
+    delete_recursive "${SYS_PATH:?}/etc/permissions/${INTERNAL_NAME:?}.xml"
+    delete_recursive "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.jar"
+    delete_recursive "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.odex"
+    delete_recursive_wildcard "${SYS_PATH:?}"/framework/oat/*/"${INTERNAL_NAME}:?".odex
+    delete_recursive_wildcard /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".jar@classes*
+    delete_recursive_wildcard /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".odex@classes*
+    delete_recursive_wildcard /data/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".jar@classes*
+    delete_recursive_wildcard /data/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".odex@classes*
   fi
 done
 STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
