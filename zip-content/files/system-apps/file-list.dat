@@ -1,5 +1,5 @@
-priv-app/GmsCore-vtm-legacy|9|13|GmsCore|com.google.android.gms|da538490beadc760a7a8519ec5ed367f19ae8d7b
-priv-app/GmsCore-vtm|14||GmsCore|com.google.android.gms|dd5ed6eadc470b7b99379832dfe40b2e4e41ab59
+priv-app/GmsCoreVtmLegacy|9|13|GmsCore|com.google.android.gms|da538490beadc760a7a8519ec5ed367f19ae8d7b
+priv-app/GmsCoreVtm|14||GmsCore|com.google.android.gms|dd5ed6eadc470b7b99379832dfe40b2e4e41ab59
 priv-app/GmsCore-mapbox|14||GmsCore|com.google.android.gms|5429600f3668fde3e0bfedec8b3610956c005e8b
 priv-app/GoogleServicesFramework|10||GoogleServicesFramework|com.google.android.gsf|f9907df2e2c8fd20cd2e928821641fa01fca09ce
 priv-app/FakeStore|9||Phonesky|com.android.vending|aabe0cfc0b12072bba877e75796ebcb9c6f9e062
