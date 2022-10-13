@@ -54,10 +54,10 @@ _uname_saved="$(uname)"
 compare_start_uname()
 {
   case "${_uname_saved}" in
-    "$1"*) return 0;;  # Found
-    *)                 # NOT found
+    "$1"*) return 0 ;; # Found
+    *) ;;              # NOT found
   esac
-  return 1  # NOT found
+  return 1 # NOT found
 }
 
 change_title()
