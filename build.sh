@@ -36,7 +36,8 @@ detect_script_dir()
   local this_script
 
   # shellcheck disable=SC3028,SC2128
-  if test "${#BASH_SOURCE}" -ge 1; then this_script="${BASH_SOURCE}"  # Expanding an array without an index gives the first element (it is intended)
+  if test "${#BASH_SOURCE}" -ge 1; then
+    this_script="${BASH_SOURCE}" # Expanding an array without an index gives the first element (it is intended)
   else
     # shellcheck disable=SC3043
     local current_shell
@@ -49,7 +50,7 @@ detect_script_dir()
   fi
   unset last_command
 
-  this_script="$(realpath "${this_script}" 2>/dev/null)" || return 1
+  this_script="$(realpath "${this_script}" 2> /dev/null)" || return 1
   SCRIPT_DIR="$(dirname "${this_script}")" || return 1
 }
 detect_script_dir || return 1 2>&- || exit 1
