@@ -5,7 +5,7 @@
 # shellcheck disable=SC2310
 # SC2310: This function is invoked in an 'if' condition so set -e will be disabled
 
-last_command="${_}"  # IMPORTANT: This line must be at the start of the script before any other command otherwise it will not work
+last_command="${_}" # IMPORTANT: This line must be at the start of the script before any other command otherwise it will not work
 
 # shellcheck disable=SC3040
 set -eo pipefail
@@ -65,15 +65,19 @@ change_title 'Building the flashable OTA zip...'
 if test "${OPENSOURCE_ONLY:-false}" = 'false'; then . "${SCRIPT_DIR}/conf-2.sh"; fi
 
 if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
-  if ! is_oss_only_build_enabled; then echo 'WARNING: The OSS only build is disabled'; change_title 'OSS only build is disabled'; return 0 2>&- || exit 0; fi
+  if ! is_oss_only_build_enabled; then
+    echo 'WARNING: The OSS only build is disabled'
+    change_title 'OSS only build is disabled'
+    return 0 2>&- || exit 0
+  fi
   if test ! -f "${SCRIPT_DIR:?}/zip-content/settings-oss.conf"; then ui_error 'The settings file is missing'; fi
 fi
 
 _init_dir="$(pwd)" || ui_error 'Failed to read the current dir'
 
 # Check dependencies
-hash 'zip' 2>/dev/null || ui_error 'Zip is missing'
-hash 'java' 2>/dev/null || ui_error 'Java is missing'
+hash 'zip' 2> /dev/null || ui_error 'Zip is missing'
+hash 'java' 2> /dev/null || ui_error 'Java is missing'
 
 # Create the output dir
 OUT_DIR="${SCRIPT_DIR}/output"
@@ -100,25 +104,27 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS
 # Download files if they are missing
 mkdir -p "${SCRIPT_DIR}/cache"
 
-shopt -s lastpipe 2>/dev/null || true
+shopt -s lastpipe 2> /dev/null || true
 
 oss_files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _ _ _ _ DL_HASH DL_URL DL_MIRROR _; do
   dl_file "${LOCAL_PATH:?}" "${LOCAL_FILENAME:?}.apk" "${DL_HASH:?}" "${DL_URL:?}" "${DL_MIRROR}" || return "${?}"
 done
-STATUS="$?"; if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
+STATUS="$?"
+if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
 if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
   files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _ _ _ _ DL_HASH DL_URL DL_MIRROR _; do
     dl_file "${LOCAL_PATH:?}" "${LOCAL_FILENAME:?}.apk" "${DL_HASH:?}" "${DL_URL:?}" "${DL_MIRROR}" || return "${?}"
   done
-  STATUS="$?"; if test "${STATUS:?}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
+  STATUS="$?"
+  if test "${STATUS:?}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
   dl_file 'misc/keycheck' 'keycheck-arm.bin' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
 else
   echo 'Skipped not OSS files!'
 fi
 
-shopt -u lastpipe 2>/dev/null || true
+shopt -u lastpipe 2> /dev/null || true
 
 # Copy data
 cp -rf "${SCRIPT_DIR}/zip-content" "${TEMP_DIR}/" || ui_error 'Failed to copy data to the temp dir'
@@ -149,7 +155,8 @@ else
     cp -f -- "${SCRIPT_DIR:?}/cache/${LOCAL_PATH:?}/${LOCAL_FILENAME:?}.apk" "${TEMP_DIR:?}/zip-content/files/system-apps/${LOCAL_PATH:?}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}.apk'"
     printf '%s\n' "${LOCAL_PATH:?}/${LOCAL_FILENAME:?}|${MIN_API:?}|${MAX_API?}|${FINAL_FILENAME:?}|${INTERNAL_NAME:?}|${FILE_HASH:?}" >> "${TEMP_DIR:?}/zip-content/files/system-apps/file-list.dat"
   done
-  STATUS="$?"; if test "${STATUS:?}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
+  STATUS="$?"
+  if test "${STATUS:?}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
   mkdir -p "${TEMP_DIR}/zip-content/misc/keycheck"
   cp -f "${SCRIPT_DIR}/cache/misc/keycheck/keycheck-arm.bin" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
@@ -205,7 +212,7 @@ echo 'SHA-256:'
 echo "${sha256_hash:?}" || ui_error 'Failed to display the sha256 hash'
 
 if test "${GITHUB_JOB:-false}" != 'false'; then
-  printf '\r::set-output name=sha256_hash::%s\n' "${sha256_hash:?}"  # Save hash for later use
+  printf '\r::set-output name=sha256_hash::%s\n' "${sha256_hash:?}" # Save hash for later use
 else
   echo ''
 fi
