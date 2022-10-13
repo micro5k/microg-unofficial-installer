@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: none
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileType: OTHER
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+shell_variant = posix
+switch_case_indent = true
+
+[*.bat]
+end_of_line = crlf
+
+[*.xml]
+indent_size = 4
