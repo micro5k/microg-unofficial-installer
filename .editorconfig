@@ -19,6 +19,7 @@ curly_bracket_next_line = true
 
 shell_variant = posix
 switch_case_indent = true
+space_redirects = true
 function_next_line = true
 
 [*.bat]
@@ -26,3 +27,6 @@ end_of_line = crlf
 
 [*.xml]
 indent_size = 4
+
+[{cache,output,.git,.gradle,.ash_history}]
+ignore = true
