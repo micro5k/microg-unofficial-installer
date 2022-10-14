@@ -11,7 +11,13 @@ set -e
 set -o pipefail || true
 
 # shellcheck disable=SC3028
-case ":${SHELLOPTS:-}:" in *':xtrace:'*) set -x; COVERAGE='true';; *);; esac  # Auto-enable `set -x` for shells that do NOT support SHELLOPTS
+case ":${SHELLOPTS:-}:" in
+  *':xtrace:'*) # Auto-enable `set -x` for shells that do NOT support SHELLOPTS
+    set -x
+    COVERAGE='true'
+    ;;
+  *) ;;
+esac
 
 fail_with_msg()
 {
@@ -28,7 +34,7 @@ create_junction()
 link_folder()
 {
   # shellcheck disable=SC2310
-  ln -sf "${2:?}" "${1:?}" 2>/dev/null || create_junction "${2:?}" "${1:?}" || mkdir -p "${1:?}" || fail_with_msg "Failed to link dir '${1}' to '${2}'"
+  ln -sf "${2:?}" "${1:?}" 2> /dev/null || create_junction "${2:?}" "${1:?}" || mkdir -p "${1:?}" || fail_with_msg "Failed to link dir '${1}' to '${2}'"
 }
 
 recovery_flash_start()
@@ -90,7 +96,7 @@ if test -z "${*}"; then fail_with_msg 'You must pass the filename of the flashab
 
 # Reset environment
 if ! "${ENV_RESETTED:-false}"; then
-  THIS_SCRIPT="$(realpath "${0:?}" 2>/dev/null)" || fail_with_msg 'Failed to get script filename'
+  THIS_SCRIPT="$(realpath "${0:?}" 2> /dev/null)" || fail_with_msg 'Failed to get script filename'
   # Create the temp dir (must be done before resetting environment)
   OUR_TEMP_DIR="$(mktemp -d -t ANDR-RECOV-XXXXXX)" || fail_with_msg 'Failed to create our temp dir'
 
@@ -123,8 +129,8 @@ THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get 
 unset THIS_SCRIPT
 
 case "${*?}" in
-  *'*.zip') fail_with_msg 'The flashable ZIP is missing, you have to build it before being able to test it';;
-  *)
+  *'*.zip') fail_with_msg 'The flashable ZIP is missing, you have to build it before being able to test it' ;;
+  *) ;;
 esac
 
 for param in "${@}"; do
@@ -141,9 +147,9 @@ mkdir -p -- "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to create our temp dir'
 rm -rf -- "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
 # Setup the needed variables
-BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"  # Internal var
-_our_overrider_dir="${THIS_SCRIPT_DIR}/override"  # Internal var
-_our_overrider_script="${THIS_SCRIPT_DIR}/inc/configure-overrides.sh"  # Internal var
+BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"                           # Internal var
+_our_overrider_dir="${THIS_SCRIPT_DIR}/override"                      # Internal var
+_our_overrider_script="${THIS_SCRIPT_DIR}/inc/configure-overrides.sh" # Internal var
 _init_dir="$(pwd)" || fail_with_msg 'Failed to read the current dir'
 
 # Configure the Android recovery environment variables (they will be used later)
@@ -196,8 +202,12 @@ fi
 # Detect whether "export -f" is supported (0 means supported)
 _is_export_f_supported=0
 {
-  # shellcheck disable=SC2216,SC3045
-  test_export_f() { : | export -f -- test_export_f 2>/dev/null; return "${?}"; }
+  test_export_f()
+  {
+    # shellcheck disable=SC2216,SC3045
+    : | export -f -- test_export_f 2> /dev/null
+    return "${?}"
+  }
   # shellcheck disable=SC2310
   test_export_f || _is_export_f_supported="${?}"
   unset -f test_export_f
@@ -209,7 +219,7 @@ override_command()
   rm -f -- "${_android_sys:?}/bin/${1:?}"
 
   unset -f -- "${1:?}"
-  eval " ${1:?}() { '${_our_overrider_dir:?}/${1:?}' \"\${@}\"; }" || return "${?}"  # The folder expands when defined, not when used
+  eval " ${1:?}() { '${_our_overrider_dir:?}/${1:?}' \"\${@}\"; }" || return "${?}" # The folder expands when defined, not when used
 
   if test "${_is_export_f_supported:?}" -eq 0; then
     # shellcheck disable=SC3045
@@ -256,7 +266,7 @@ simulate_env()
 
 restore_env()
 {
-  "${_our_busybox:?}" --uninstall "${CUSTOM_BUSYBOX:?}" 2>/dev/null || true
+  "${_our_busybox:?}" --uninstall "${CUSTOM_BUSYBOX:?}" 2> /dev/null || true
   export PATH="${_backup_path}"
   unset BB_OVERRIDE_APPLETS
   unset -f -- mount umount chown su sudo
