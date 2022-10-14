@@ -661,21 +661,11 @@ _choose_remapper()
   ui_msg_empty_line
 
   case "${_key:?}" in
-    '+')   # +
-      return 3
-      ;;
-    '-')   # -
-      return 2
-      ;;
-    'Enter')
-      return 0
-      ;;
-    'ESC') # ESC or other special keys
-      ui_error 'Installation forcefully terminated' 143
-      ;;
-    *)     # All other keys
-      return 123
-      ;;
+    '+') return 3 ;;                                            # + key
+    '-') return 2 ;;                                            # - key
+    'Enter') return 0 ;;                                        # Enter key
+    'ESC') ui_error 'Installation forcefully terminated' 143 ;; # ESC or other special keys
+    *) return 123 ;;                                            # All other keys
   esac
 }
 
