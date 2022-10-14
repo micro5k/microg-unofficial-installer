@@ -16,11 +16,11 @@ umask 022
 
 DEBUG_LOG=0
 if test -z "${BOOTMODE:-}"; then
-  printf 1>&2 '%s\n' 'Missing BOOTMODE variable'
+  1>&2 printf '%s\n' 'Missing BOOTMODE variable'
   abort 'Missing BOOTMODE variable' 2> /dev/null || exit 1
 fi
 if test -z "${OUTFD:-}"; then
-  printf 1>&2 '%s\n' 'Missing OUTFD variable'
+  1>&2 printf '%s\n' 'Missing OUTFD variable'
   abort 'Missing OUTFD variable' 2> /dev/null || exit 1
 fi
 RECOVERY_PIPE="/proc/self/fd/${OUTFD:?}"
