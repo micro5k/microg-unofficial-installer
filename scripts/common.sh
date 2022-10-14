@@ -38,7 +38,7 @@ SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || return 1 2>&- || exit 1
 
 ui_error()
 {
-  >&2 echo "ERROR: $1"
+  1>&2 echo "ERROR: $1"
   test -n "$2" && exit "$2"
   exit 1
 }
@@ -86,10 +86,10 @@ verify_sha1()
   local hash="$2"
   local file_hash
 
-  if test ! -f "${file_name}"; then return 1; fi  # Failed
+  if test ! -f "${file_name}"; then return 1; fi # Failed
   file_hash="$(sha1sum "${file_name}" | cut -d ' ' -f 1)"
-  if test -z "${file_hash}" || test "${hash}" != "${file_hash}"; then return 1; fi  # Failed
-  return 0  # Success
+  if test -z "${file_hash}" || test "${hash}" != "${file_hash}"; then return 1; fi # Failed
+  return 0                                                                         # Success
 }
 
 corrupted_file()
@@ -146,7 +146,10 @@ dl_type_one()
   if test "${DL_TYPE_1_FAILED:-false}" != 'false'; then return 128; fi
   local _url _base_url _referrer _result
 
-  _base_url="$(get_base_url "${2:?}")" || { report_failure_one "${?}"; return "${?}"; }
+  _base_url="$(get_base_url "${2:?}")" || {
+    report_failure_one "${?}"
+    return "${?}"
+  }
 
   _referrer="${2:?}"; _url="${1:?}"
   _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton.*\"\shref=\"[^"]+\"')" || { report_failure_one "${?}" 'get link 1'; return "${?}"; }
@@ -200,15 +203,19 @@ dl_file()
     case "${_domain:?}" in
       *\.'go''file''.io')
         printf '\n %s: ' 'DL type 2'
-        dl_type_two "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+        dl_type_two "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+        ;;
       "${DL_WEB_PREFIX:?}"'apk''mirror''.com')
         printf '\n %s: ' 'DL type 1'
-        dl_type_one "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+        dl_type_one "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+        ;;
       ????*)
         printf '\n %s: ' 'DL type 0'
-        dl_generic "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}";;
+        dl_generic "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+        ;;
       *)
-        ui_error "Invalid download URL => '${_url?}'";;
+        ui_error "Invalid download URL => '${_url?}'"
+        ;;
     esac
 
     if test "${_status:?}" != 0; then
@@ -236,9 +243,9 @@ if compare_start_uname 'Linux'; then
 elif compare_start_uname 'Windows_NT' || compare_start_uname 'MINGW32_NT-' || compare_start_uname 'MINGW64_NT-'; then
   PLATFORM='win'
   if test "${_uname_o_saved}" = 'Msys'; then
-    :            # MSYS under Windows
+    :           # MSYS under Windows
   else
-    PATHSEP=';'  # BusyBox under Windows
+    PATHSEP=';' # BusyBox under Windows
   fi
 elif compare_start_uname 'Darwin'; then
   PLATFORM='macos'
@@ -249,7 +256,7 @@ else
 fi
 
 # Set some environment variables
-PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$'  # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
+PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
 PROMPT_COMMAND=
 
 TOOLS_DIR="${SCRIPT_DIR:?}${SEP}tools${SEP}${PLATFORM}"
