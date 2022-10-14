@@ -22,6 +22,9 @@ switch_case_indent = true
 space_redirects = true
 function_next_line = true
 
+[zip-content/customize.sh]
+keep_padding = true
+
 [*.bat]
 end_of_line = crlf
 
