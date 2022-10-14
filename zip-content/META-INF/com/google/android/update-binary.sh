@@ -30,7 +30,7 @@ _updatebin_detect_bootmode()
   ps | grep zygote | grep -qv grep && BOOTMODE=true
   # shellcheck disable=SC2009
   "${BOOTMODE:?}" || {
-    ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE=true
+    ps -A 2> /dev/null | grep zygote | grep -qv grep && BOOTMODE=true
   }
   export BOOTMODE
 }
@@ -53,7 +53,7 @@ ui_error()
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
   _show_text_on_recovery "ERROR: ${1:?}"
   1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
-  abort '' 2>/dev/null || exit "${ERROR_CODE:?}"
+  abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
 }
 
 set_perm()
@@ -82,7 +82,7 @@ _updatebin_we_mounted_tmp=false
     local _mount_result
     {
       test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"
-    } || _mount_result="$(mount 2>/dev/null)" || ui_error '_updatebin_is_mounted has failed'
+    } || _mount_result="$(mount 2> /dev/null)" || ui_error '_updatebin_is_mounted has failed'
 
     case "${_mount_result:?}" in
       *[[:blank:]]"${1:?}"[[:blank:]]*) return 0 ;; # Mounted

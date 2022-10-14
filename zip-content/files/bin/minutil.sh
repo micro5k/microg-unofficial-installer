@@ -9,7 +9,7 @@
 
 set -e
 # shellcheck disable=SC3040
-set -o posix 2>/dev/null || true
+set -o posix 2> /dev/null || true
 # shellcheck disable=SC3040
 set -o pipefail || true
 
@@ -40,7 +40,7 @@ _is_caller_root()
 
 _list_account_files()
 {
-  cat <<'EOF'
+  cat << 'EOF'
 /data/system_de/0/accounts_de.db
 /data/system_de/0/accounts_de.db-journal
 /data/system_ce/0/accounts_ce.db
@@ -90,7 +90,7 @@ minutil_reinstall_package()
   _is_caller_adb_or_root || return 1
 
   echo "Reinstalling ${1:?}..."
-  command -v -- pm 1>/dev/null || {
+  command -v -- pm 1> /dev/null || {
     echo 'ERROR: Package manager is NOT available'
     return 1
   }
@@ -120,7 +120,7 @@ minutil_reinstall_package()
 minutil_remove_all_accounts()
 {
   _is_caller_root || return 1
-  mount /data 2>/dev/null || true
+  mount /data 2> /dev/null || true
 
   _list_account_files | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
