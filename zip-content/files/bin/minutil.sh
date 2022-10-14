@@ -14,12 +14,12 @@ set -o posix 2>/dev/null || true
 set -o pipefail || true
 
 case "${0:?}" in
-  *'.sh')
-    ;;
+  *'.sh') ;;
   *'sh')
     echo 'ERROR: MinUtil cannot be sourced'
-    exit 1;;
-  *);;
+    exit 1
+    ;;
+  *) ;;
 esac
 
 _is_caller_adb_or_root()
@@ -70,8 +70,11 @@ _minutil_reinstall_split_package()
   _file_index=0
   echo "${1:?}" | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
-      pm install-write -- "${_install_sid:?}" "${_file_index:?}" "${_file:?}" || { pm install-abandon "${_install_sid:?}"; return 3; }
-      _file_index="$((_file_index+1))"
+      pm install-write -- "${_install_sid:?}" "${_file_index:?}" "${_file:?}" || {
+        pm install-abandon "${_install_sid:?}"
+        return 3
+      }
+      _file_index="$((_file_index + 1))"
     else
       echo 'ERROR: Split package is missing'
       pm install-abandon "${_install_sid:?}"
@@ -87,14 +90,27 @@ minutil_reinstall_package()
   _is_caller_adb_or_root || return 1
 
   echo "Reinstalling ${1:?}..."
-  command -v -- pm 1>/dev/null || { echo 'ERROR: Package manager is NOT available'; return 1; }
+  command -v -- pm 1>/dev/null || {
+    echo 'ERROR: Package manager is NOT available'
+    return 1
+  }
 
-  _package_path="$(_minutil_find_package "${1:?}")" || { echo "ERROR: Package '${1?}' not found"; return 2; }
+  _package_path="$(_minutil_find_package "${1:?}")" || {
+    echo "ERROR: Package '${1?}' not found"
+    return 2
+  }
   _apk_count="$(echo "${_package_path:?}" | wc -l --)"
   if test "${_apk_count:?}" -ge 2; then
-    _minutil_reinstall_split_package "${_package_path:?}" || { _status="${?}"; echo 'ERROR: Split package reinstall failed'; return "${_status:?}"; }
+    _minutil_reinstall_split_package "${_package_path:?}" || {
+      _status="${?}"
+      echo 'ERROR: Split package reinstall failed'
+      return "${_status:?}"
+    }
   else
-    pm install -i 'com.android.vending' -r -g -- "${_package_path:?}" || { echo 'ERROR: Package reinstall failed'; return 3; }
+    pm install -i 'com.android.vending' -r -g -- "${_package_path:?}" || {
+      echo 'ERROR: Package reinstall failed'
+      return 3
+    }
   fi
 
   unset _package_path _apk_count
@@ -111,24 +127,30 @@ minutil_remove_all_accounts()
       echo "Deleting '${_file:?}'..."
       rm -f -- "${_file}" || return 1
     fi
-  done || { echo 'ERROR: Failed to delete accounts'; return 4; }
+  done || {
+    echo 'ERROR: Failed to delete accounts'
+    return 4
+  }
+
   echo "All accounts deleted. Now restart the device!!!"
 }
 
-
 case "${1}" in
-  -i | --reinstall-package )
-    minutil_reinstall_package "${2:?}";;
+  -i | --reinstall-package)
+    minutil_reinstall_package "${2:?}"
+    ;;
 
-  --remove-all-accounts )
-    minutil_remove_all_accounts;;
+  --remove-all-accounts)
+    minutil_remove_all_accounts
+    ;;
 
-  * )
+  *)
     echo 'MinUtil
 Various utility functions.
 
 -i | --reinstall-package PACKAGE_NAME		Reinstall package as if it were installed from Play Store and grant it all permissions, example: minutil -i org.schabi.newpipe
---remove-all-accounts				Remove all accounts from the device';;
+--remove-all-accounts				Remove all accounts from the device'
+    ;;
 esac
 
 exit "${?}"

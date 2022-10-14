@@ -12,12 +12,17 @@ set -u
 set -o pipefail || true
 umask 022
 
-
 ### PREVENTIVE CHECKS ###
 
 DEBUG_LOG=0
-if test -z "${BOOTMODE:-}"; then 1>&2 printf '%s\n' 'Missing BOOTMODE variable'; abort 'Missing BOOTMODE variable' 2>/dev/null || exit 1; fi
-if test -z "${OUTFD:-}"; then 1>&2 printf '%s\n' 'Missing OUTFD variable'; abort 'Missing OUTFD variable' 2>/dev/null || exit 1; fi
+if test -z "${BOOTMODE:-}"; then
+  1>&2 printf '%s\n' 'Missing BOOTMODE variable'
+  abort 'Missing BOOTMODE variable' 2>/dev/null || exit 1
+fi
+if test -z "${OUTFD:-}"; then
+  1>&2 printf '%s\n' 'Missing OUTFD variable'
+  abort 'Missing OUTFD variable' 2>/dev/null || exit 1
+fi
 RECOVERY_PIPE="/proc/self/fd/${OUTFD:?}"
 if test -z "${ZIPFILE:-}"; then ui_error 'Missing ZIPFILE variable'; fi
 if test -z "${TMPDIR:-}" || test ! -e "${TMPDIR:?}"; then ui_error 'The temp folder is missing (2)'; fi
@@ -30,12 +35,10 @@ export ZIPFILE
 export TMPDIR
 unset REPLACE
 
-
 ### MAGISK VARIABLES ###
 
 SKIPUNZIP=1
 export SKIPUNZIP
-
 
 ### GLOBAL VARIABLES ###
 
@@ -49,7 +52,6 @@ TMP_PATH="${TMPDIR:?}/custom-setup-a5k"
 export LIVE_SETUP_POSSIBLE=false
 export KEYCHECK_ENABLED=false
 
-
 ### FUNCTIONS ###
 
 export DEBUG_LOG_ENABLED=0
@@ -57,7 +59,7 @@ enable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
   DEBUG_LOG_ENABLED=1
-  exec 3>&1 4>&2  # Backup stdout and stderr
+  exec 3>&1 4>&2 # Backup stdout and stderr
   exec 1>>"${ZIP_PATH}/debug-a5k.log" 2>&1
 }
 
@@ -65,7 +67,7 @@ disable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -eq 0; then return; fi
   DEBUG_LOG_ENABLED=0
-  exec 1>&3 2>&4  # Restore stdout and stderr
+  exec 1>&3 2>&4 # Restore stdout and stderr
 }
 
 _show_text_on_recovery()
@@ -109,7 +111,9 @@ ui_debug()
 
 set_perm()
 {
-  local uid="$1"; local gid="$2"; local mod="$3"
+  local uid="$1"
+  local gid="$2"
+  local mod="$3"
   shift 3
   chown "${uid}:${gid}" "$@" || chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
   chmod "${mod}" "$@" || ui_error "chmod failed on: $*" 81
@@ -117,7 +121,9 @@ set_perm()
 
 set_perm_safe()
 {
-  local uid="$1"; local gid="$2"; local mod="$3"
+  local uid="$1"
+  local gid="$2"
+  local mod="$3"
   shift 3
   chown "${uid}:${gid}" "$@" || chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
   "${OUR_BB}" chmod "${mod}" "$@" || ui_error "chmod failed on: $*" 81
@@ -157,7 +163,6 @@ delete_recursive_safe()
   "${OUR_BB}" rm -rf "$@" || ui_error "Failed to delete files/folders" 86
 }
 
-
 ### CODE ###
 
 ui_debug 'PRELOADER 2'
@@ -165,14 +170,14 @@ ui_debug 'PRELOADER 2'
 detect_recovery_arch()
 {
   case "$(uname -m)" in
-    x86_64 | x64                       ) RECOVERY_ARCH='x86_64';;
-    x86 | x86abi | i686 | i586         ) RECOVERY_ARCH='x86';;
-    aarch64 | arm64* | armv9* | armv8* ) RECOVERY_ARCH='arm64-v8a';;
-    armv7*                             ) RECOVERY_ARCH='armeabi-v7a';;
-    armv6* | armv5*                    ) RECOVERY_ARCH='armeabi';;
-    #mips64                             ) RECOVERY_ARCH='mips64';;
-    #mips                               ) RECOVERY_ARCH='mips';;
-    *) ui_error "Unsupported architecture: $(uname -m || true)"
+    x86_64 | x64                       ) RECOVERY_ARCH='x86_64' ;;
+    x86 | x86abi | i686 | i586         ) RECOVERY_ARCH='x86' ;;
+    aarch64 | arm64* | armv9* | armv8* ) RECOVERY_ARCH='arm64-v8a' ;;
+    armv7*                             ) RECOVERY_ARCH='armeabi-v7a' ;;
+    armv6* | armv5*                    ) RECOVERY_ARCH='armeabi' ;;
+    #mips64                             ) RECOVERY_ARCH='mips64' ;;
+    #mips                               ) RECOVERY_ARCH='mips' ;;
+    *) ui_error "Unsupported architecture: $(uname -m || true)" ;;
   esac
 }
 detect_recovery_arch
@@ -200,7 +205,7 @@ if ! test -e "${OUR_BB:?}"; then ui_error 'BusyBox not found'; fi
 
 # Give execution rights (if needed)
 if test -z "${CUSTOM_BUSYBOX:-}" || test "${OUR_BB:?}" != "${CUSTOM_BUSYBOX:?}"; then
-  chmod +x "${OUR_BB:?}" || ui_error "chmod failed on '${OUR_BB:?}'"  # Needed to make working the "safe" functions
+  chmod +x "${OUR_BB:?}" || ui_error "chmod failed on '${OUR_BB:?}'" # Needed to make working the "safe" functions
 fi
 
 # Delete previous traces (if they exist) and setup our temp folder
@@ -231,7 +236,10 @@ if test "${TEST_INSTALL:-false}" = 'false'; then
 fi
 
 # Enable the binary-free live setup when inside the recovery simulator
-if test "${TEST_INSTALL:-false}" != 'false'; then LIVE_SETUP_POSSIBLE=true; KEYCHECK_ENABLED=false; fi
+if test "${TEST_INSTALL:-false}" != 'false'; then
+  LIVE_SETUP_POSSIBLE=true
+  KEYCHECK_ENABLED=false
+fi
 
 # Live setup isn't supported under continuous integration system
 # Live setup doesn't work when executed through Gradle
@@ -253,14 +261,15 @@ set_perm_safe 0 0 0755 "${TMP_PATH:?}/install.sh"
 package_extract_file_safe 'settings.conf' "${TMP_PATH:?}/default-settings.conf"
 # shellcheck source=SCRIPTDIR/settings-full.conf
 . "${TMP_PATH:?}/default-settings.conf"
-test "${DEBUG_LOG}" -eq 1 && enable_debug_log  # Enable file logging if needed
+test "${DEBUG_LOG}" -eq 1 && enable_debug_log # Enable file logging if needed
 
 # If the debug log was enabled at startup (not in the settings or in the live setup) we cannot allow overriding it from the settings
 if [ "${DEBUG_LOG_ENABLED}" -eq 1 ]; then export DEBUG_LOG=1; fi
 
 ui_debug ''
 ui_debug 'Starting installation script...'
-"${OUR_BB:?}" sh "${TMP_PATH:?}/install.sh" Preloader "${TMP_PATH:?}"; export STATUS="${?}"
+"${OUR_BB:?}" sh "${TMP_PATH:?}/install.sh" Preloader "${TMP_PATH:?}"
+export STATUS="${?}"
 if test -f "${TMP_PATH:?}/installed"; then export UNKNOWN_ERROR=0; else export UNKNOWN_ERROR=1; fi
 
 export PATH="${PREVIOUS_PATH?}"
@@ -268,5 +277,5 @@ delete_recursive_safe "${TMP_PATH:?}"
 
 #!!! UNSAFE ENVIRONMENT FROM HERE !!!#
 
-test "${DEBUG_LOG}" -eq 1 && disable_debug_log  # Disable debug log and restore normal output
+test "${DEBUG_LOG}" -eq 1 && disable_debug_log # Disable debug log and restore normal output
 delete_safe "${BASE_TMP_PATH:?}/busybox"

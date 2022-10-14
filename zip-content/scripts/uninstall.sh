@@ -9,13 +9,13 @@
 
 list_app_filenames()
 {
-cat <<'EOF'
+  cat <<'EOF'
 EOF
 }
 
 list_app_data_to_remove()
 {
-cat <<'EOF'
+  cat <<'EOF'
 com.mgoogle.android.gms
 com.google.android.feedback
 com.google.android.gsf.login
@@ -35,7 +35,7 @@ EOF
 
 uninstall_list()
 {
-cat <<'EOF'
+  cat <<'EOF'
 ChromeHomePage|com.android.partnerbrowsercustomizations.tmobile
 ConfigUpdater|com.google.android.configupdater
 GmsCore|com.google.android.gms
@@ -114,7 +114,7 @@ EOF
 
 framework_uninstall_list()
 {
-cat <<'EOF'
+  cat <<'EOF'
 com.google.android.maps|
 com.qti.location.sdk|
 izat.xt.srv|
@@ -208,7 +208,8 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
   fi
 done
-STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
+STATUS="$?"
+if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
 framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
   if test -n "${INTERNAL_NAME}"; then
@@ -222,7 +223,8 @@ framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
     delete_recursive_wildcard /data/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".odex@classes*
   fi
 done
-STATUS="$?"; if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
+STATUS="$?"
+if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
 list_app_filenames | while read -r FILENAME; do
   if [[ -z "${FILENAME}" ]]; then continue; fi

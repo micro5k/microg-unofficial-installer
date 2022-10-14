@@ -13,7 +13,7 @@
 
 list_files()
 {
-cat <<'EOF'
+  cat <<'EOF'
 %PLACEHOLDER-1%
 EOF
 }
@@ -27,7 +27,7 @@ case "${1}" in
       backup_file "${S:?}/${FILE:?}"
     done
     echo 'Done.'
-  ;;
+    ;;
   restore)
     echo 'Restore of microG unofficial installer in progress...'
     list_files | while read -r FILE REPLACEMENT; do
@@ -37,20 +37,20 @@ case "${1}" in
       test -f "${C:?}/${S:?}/${FILE:?}" && restore_file "${S:?}/${FILE:?}" "${R?}"
     done
     echo 'Done.'
-  ;;
+    ;;
   pre-backup)
     # Stub
-  ;;
+    ;;
   post-backup)
     # Stub
-  ;;
+    ;;
   pre-restore)
     # Stub
-  ;;
+    ;;
   post-restore)
     # Stub
-  ;;
+    ;;
   *)
-    echo 'ERROR: addon.d unknown phase'
-  ;;
+    echo 'WARNING: addon.d unknown phase'
+    ;;
 esac

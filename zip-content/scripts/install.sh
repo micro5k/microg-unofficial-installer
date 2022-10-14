@@ -26,12 +26,10 @@ LEGACY_ARM=false
 FAKE_SIGN=false
 SYS_PATH=''
 
-
 ### FUNCTIONS ###
 
 # shellcheck source=SCRIPTDIR/../inc/common-functions.sh
 . "${TMP_PATH}/inc/common-functions.sh"
-
 
 ### CODE ###
 
@@ -62,7 +60,11 @@ fi
 if test "${live_setup_enabled:?}" = 'true'; then
   ui_msg 'LIVE SETUP ENABLED!'
   if test "${DEBUG_LOG}" = '0'; then
-    choose 'Do you want to enable the debug log?' '+) Yes' '-) No'; if test "${?}" = '3'; then export DEBUG_LOG=1; enable_debug_log; fi
+    choose 'Do you want to enable the debug log?' '+) Yes' '-) No'
+    if test "${?}" = '3'; then
+      export DEBUG_LOG=1
+      enable_debug_log
+    fi
   fi
 fi
 
@@ -92,16 +94,17 @@ else
   fi
 fi
 
-cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop"  # Cache the file for faster access
+cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop" # Cache the file for faster access
 package_extract_file 'module.prop' "${TMP_PATH}/module.prop"
 install_id="$(simple_get_prop 'id' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse id string'
 install_version="$(simple_get_prop 'version' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version string'
 install_version_code="$(simple_get_prop 'versionCode' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version code'
 
 INSTALLATION_SETTINGS_FILE="${install_id}.prop"
-API="$(build_getprop 'build\.version\.sdk')"; readonly API
+API="$(build_getprop 'build\.version\.sdk')"
+readonly API
 
-if test "${API}" -ge 19; then  # KitKat or higher
+if test "${API}" -ge 19; then # KitKat or higher
   PRIVAPP_PATH="${SYS_PATH}/priv-app"
 else
   PRIVAPP_PATH="${SYS_PATH}/app"
@@ -109,7 +112,7 @@ fi
 if test ! -e "${PRIVAPP_PATH:?}"; then ui_error 'The priv-app folder does NOT exist'; fi
 
 if test "${API}" -ge 21; then
-  :  ### New Android versions
+  : ### New Android versions
 elif test "${API}" -ge 8; then
   :
 elif test "${API}" -ge 1; then
@@ -182,10 +185,9 @@ set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
 ui_msg_sameline_start 'Verifying... '
 ui_debug ''
 if verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '9a6ffed69c510a06a719a2d52c3fd49218f71806' &&
-   verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'b853c1b177b611310219cc6571576bd455fa3e9e' &&
-   verify_sha1 "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
-   verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7'
-then
+  verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'b853c1b177b611310219cc6571576bd455fa3e9e' &&
+  verify_sha1 "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
+  verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7'; then
   ui_msg_sameline_end 'OK'
 else
   ui_msg_sameline_end 'ERROR'
@@ -213,8 +215,10 @@ fi
 
 setup_app 1 'microG Services Framework Proxy' 'GoogleServicesFramework' 'priv-app' false false
 
-setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; app_1_is_installed="${?}"
-setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' true; app_2_is_installed="${?}"
+setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true
+app_1_is_installed="${?}"
+setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' true
+app_2_is_installed="${?}"
 
 # Fallback to FakeStore if the selected market is missing
 market_is_fakestore='false'
@@ -239,14 +243,14 @@ setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' true
 setup_app "${INSTALL_ANDROIDAUTO:-}" 'Android Auto stub' 'AndroidAuto' 'priv-app' true
 
 # Extracting libs
-if test "${API:?}" -ge 9; then 
+if test "${API:?}" -ge 9; then
   ui_msg 'Extracting libs...'
   create_dir "${TMP_PATH:?}/libs"
   zip_extract_dir "${TMP_PATH:?}/files/priv-app/GmsCore.apk" 'lib' "${TMP_PATH:?}/libs"
 fi
 
 # Setting up libs permissions
-if test "${API:?}" -ge 9; then 
+if test "${API:?}" -ge 9; then
   ui_debug 'Setting up libs permissions...'
   set_std_perm_recursive "${TMP_PATH:?}/libs"
 fi
@@ -308,7 +312,7 @@ if test "${API}" -ge 23; then
     create_dir "${SYS_PATH}/etc/default-permissions"
   fi
 
-  if test "${API}" -ge 29; then  # Android 10+
+  if test "${API}" -ge 29; then # Android 10+
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %ACCESS_BACKGROUND_LOCATION% -->' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
   fi
   if test "${FAKE_SIGN}" = true; then
@@ -440,9 +444,9 @@ delete "${SYS_PATH:?}/etc/zips/ug.prop"
 # Install survival script
 if test -e "${SYS_PATH:?}/addon.d"; then
   if test "${API:?}" -lt 19; then
-    :  ### Skip it
+    : ### Skip it
   elif test "${API:?}" -lt 21; then
-    :  ### Not ready yet
+    : ### Not ready yet
   else
     ui_msg 'Installing survival script...'
     write_file_list "${TMP_PATH}/files" "${TMP_PATH}/files/" "${TMP_PATH}/backup-filelist.lst"

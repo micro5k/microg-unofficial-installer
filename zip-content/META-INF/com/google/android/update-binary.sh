@@ -12,12 +12,10 @@ set -u
 set -o pipefail || true
 umask 022
 
-
 ### GLOBAL VARIABLES ###
 
 export OUTFD="${2:?}"
 export ZIPFILE="${3:?}"
-
 
 ### FUNCTIONS AND CODE ###
 
@@ -31,7 +29,9 @@ _updatebin_detect_bootmode()
   # shellcheck disable=SC2009
   ps | grep zygote | grep -qv grep && BOOTMODE=true
   # shellcheck disable=SC2009
-  "${BOOTMODE:?}" || { ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE=true; }
+  "${BOOTMODE:?}" || {
+    ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE=true
+  }
   export BOOTMODE
 }
 
@@ -58,7 +58,9 @@ ui_error()
 
 set_perm()
 {
-  local uid="${1:?}"; local gid="${2:?}"; local mod="${3:?}"
+  local uid="${1:?}"
+  local gid="${2:?}"
+  local mod="${3:?}"
   shift 3
   chown "${uid:?}:${gid:?}" "${@:?}" || chown "${uid:?}.${gid:?}" "${@:?}" || ui_error "chown failed on: $*"
   chmod "${mod:?}" "${@:?}" || ui_error "chmod failed on: $*"
@@ -70,7 +72,6 @@ package_extract_file()
   if ! test -e "${2:?}"; then ui_error "Failed to extract the file '${1}' from this archive"; fi
 }
 
-
 _updatebin_detect_bootmode
 _updatebin_we_mounted_tmp=false
 
@@ -79,18 +80,20 @@ _updatebin_we_mounted_tmp=false
   _updatebin_is_mounted()
   {
     local _mount_result
-    { test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || _mount_result="$(mount 2>/dev/null)" || ui_error '_updatebin_is_mounted has failed'
+    {
+      test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"
+    } || _mount_result="$(mount 2>/dev/null)" || ui_error '_updatebin_is_mounted has failed'
 
     case "${_mount_result:?}" in
-      *[[:blank:]]"${1:?}"[[:blank:]]*) return 0;;  # Mounted
-      *)                                            # NOT mounted
+      *[[:blank:]]"${1:?}"[[:blank:]]*) return 0 ;; # Mounted
+      *) ;;                                         # NOT mounted
     esac
-    return 1  # NOT mounted
+    return 1 # NOT mounted
   }
 
   TMPDIR="${TMPDIR:-}"
   if test -n "${TMPDIR?}"; then
-    :  # Already ready
+    : # Already ready
   elif _updatebin_is_mounted '/tmp'; then
     TMPDIR='/tmp'
   elif _updatebin_is_mounted '/dev/tmp'; then
@@ -124,7 +127,7 @@ RANDOM="${$:?}${$:?}"
 
 # shellcheck disable=SC3028
 {
-  if test "${RANDOM:?}" = "${$:?}${$:?}"; then ui_error "\$RANDOM is not supported"; fi  # Both BusyBox and Toybox support $RANDOM
+  if test "${RANDOM:?}" = "${$:?}${$:?}"; then ui_error "\$RANDOM is not supported"; fi # Both BusyBox and Toybox support $RANDOM
   _updatebin_our_main_script="${TMPDIR:?}/${RANDOM:?}-customize.sh"
 }
 
