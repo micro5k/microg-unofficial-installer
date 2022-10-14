@@ -18,7 +18,6 @@ fi
 
 mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions temp folder'
 
-
 ### FUNCTIONS ###
 
 # Message related functions
@@ -42,7 +41,7 @@ ui_error()
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
   _show_text_on_recovery "ERROR: ${1:?}"
   1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
-  abort '' 2>/dev/null || exit "${ERROR_CODE:?}"
+  abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
 }
 
 ui_warning()
@@ -101,43 +100,54 @@ validate_return_code_warning()
 mount_partition()
 {
   local partition
-  partition="$(readlink -f "${1:?}")" || { partition="${1:?}"; ui_warning "Failed to canonicalize '${1}'"; }
+  partition="$(readlink -f "${1:?}")" || {
+    partition="${1:?}"
+    ui_warning "Failed to canonicalize '${1}'"
+  }
 
   mount "${partition:?}" || ui_warning "Failed to mount '${partition}'"
-  return 0  # Never fail
+  return 0 # Never fail
 }
 
 mount_partition_silent()
 {
   local partition
-  partition="$(readlink -f "${1:?}")" || { partition="${1:?}"; }
+  partition="$(readlink -f "${1:?}")" || {
+    partition="${1:?}"
+  }
 
-  mount "${partition:?}" 2>/dev/null || true
-  return 0  # Never fail
+  mount "${partition:?}" 2> /dev/null || true
+  return 0 # Never fail
 }
 
 unmount()
 {
   local partition
-  partition="$(readlink -f "${1:?}")" || { partition="${1:?}"; ui_warning "Failed to canonicalize '${1}'"; }
+  partition="$(readlink -f "${1:?}")" || {
+    partition="${1:?}"
+    ui_warning "Failed to canonicalize '${1}'"
+  }
 
   umount "${partition:?}" || ui_warning "Failed to unmount '${partition}'"
-  return 0  # Never fail
+  return 0 # Never fail
 }
 
 is_mounted()
 {
   local _partition _mount_result _silent
   _silent="${2:-false}"
-  _partition="$(readlink -f "${1:?}")" || { _partition="${1:?}"; if test "${_silent:?}" = false; then ui_warning "Failed to canonicalize '${1}'"; fi; }
+  _partition="$(readlink -f "${1:?}")" || {
+    _partition="${1:?}"
+    if test "${_silent:?}" = false; then ui_warning "Failed to canonicalize '${1}'"; fi
+  }
 
-  { test "${TEST_INSTALL:-false}" = 'false' && test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || _mount_result="$(mount 2>/dev/null)" || { test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"; } || ui_error 'is_mounted has failed'
+  { test "${TEST_INSTALL:-false}" = 'false' && test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || _mount_result="$(mount 2> /dev/null)" || { test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"; } || ui_error 'is_mounted has failed'
 
   case "${_mount_result:?}" in
-    *[[:blank:]]"${_partition:?}"[[:blank:]]*) return 0;;  # Mounted
-    *)                                                     # NOT mounted
+    *[[:blank:]]"${_partition:?}"[[:blank:]]*) return 0 ;; # Mounted
+    *) ;;                                                  # NOT mounted
   esac
-  return 1  # NOT mounted
+  return 1 # NOT mounted
 }
 
 _mount_if_needed_silent()
@@ -161,7 +171,7 @@ mount_extra_partitions_silent()
   ! _mount_if_needed_silent '/vendor'
   UNMOUNT_VENDOR="${?}"
 
-  return 0  # Never fail
+  return 0 # Never fail
 }
 
 unmount_extra_partitions()
@@ -176,7 +186,7 @@ unmount_extra_partitions()
     unmount '/vendor'
   fi
 
-  return 0  # Never fail
+  return 0 # Never fail
 }
 
 ensure_system_is_mounted()
@@ -185,7 +195,7 @@ ensure_system_is_mounted()
     mount '/system'
     if ! is_mounted '/system'; then ui_error '/system cannot be mounted'; fi
   fi
-  return 0;  # OK
+  return 0 # OK
 }
 
 is_mounted_read_write()
@@ -197,9 +207,9 @@ get_mount_status()
 {
   local mount_line
   mount_line="$(mount | grep " $1 " | head -n1)"
-  if test -z "${mount_line}"; then return 1; fi  # NOT mounted
-  if echo "${mount_line}" | grep -qi -e "[(\s,]rw[\s,)]"; then return 0; fi  # Mounted read-write (RW)
-  return 2  # Mounted read-only (RO)
+  if test -z "${mount_line}"; then return 1; fi                             # NOT mounted
+  if echo "${mount_line}" | grep -qi -e "[(\s,]rw[\s,)]"; then return 0; fi # Mounted read-write (RW)
+  return 2                                                                  # Mounted read-only (RO)
 }
 
 remount_read_write()
@@ -232,10 +242,10 @@ simple_get_prop()
 is_substring()
 {
   case "$2" in
-    *"$1"*) return 0;;  # Found
-    *)                  # NOT found
+    *"$1"*) return 0 ;; # Found
+    *) ;;               # NOT found
   esac
-  return 1  # NOT found
+  return 1 # NOT found
 }
 
 replace_string()
@@ -251,8 +261,8 @@ replace_slash_with_at()
   echo "${result}"
 }
 
-replace_line_in_file()  # $1 => File to process  $2 => Line to replace  $3 => Replacement text
-{
+replace_line_in_file()
+{ # $1 => File to process  $2 => Line to replace  $3 => Replacement text
   rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
   echo "${3:?}" > "${TMP_PATH:?}/func-tmp/replacement-string.dat" || ui_error "Failed to replace (1) a line in the file => '${1}'" 92
   sed -i -e "/${2:?}/r ${TMP_PATH:?}/func-tmp/replacement-string.dat" -- "${1:?}" || ui_error "Failed to replace (2) a line in the file => '${1}'" 92
@@ -260,52 +270,54 @@ replace_line_in_file()  # $1 => File to process  $2 => Line to replace  $3 => Re
   rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
 }
 
-add_line_in_file_after_string()  # $1 => File to process  $2 => String to find  $3 => Text to add
-{
+add_line_in_file_after_string()
+{ # $1 => File to process  $2 => String to find  $3 => Text to add
   rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
   printf '%s' "${3:?}" > "${TMP_PATH:?}/func-tmp/replacement-string.dat" || ui_error "Failed to replace (1) a line in the file => '${1}'" 92
   sed -i -e "/${2:?}/r ${TMP_PATH:?}/func-tmp/replacement-string.dat" -- "${1:?}" || ui_error "Failed to replace (2) a line in the file => '${1}'" 92
   rm -f -- "${TMP_PATH:?}/func-tmp/replacement-string.dat"
 }
 
-replace_line_in_file_with_file()  # $1 => File to process  $2 => Line to replace  $3 => File to read for replacement text
-{
+replace_line_in_file_with_file()
+{ # $1 => File to process  $2 => Line to replace  $3 => File to read for replacement text
   sed -i -e "/${2:?}/r ${3:?}" -- "${1:?}" || ui_error "Failed to replace (1) a line in the file => '$1'" 92
   sed -i -e "/${2:?}/d" -- "${1:?}" || ui_error "Failed to replace (2) a line in the file => '$1'" 92
 }
 
 search_string_in_file()
 {
-  grep -qF "$1" "$2" && return 0  # Found
-  return 1  # NOT found
+  grep -qF "$1" "$2" && return 0 # Found
+  return 1                       # NOT found
 }
 
 search_ascii_string_in_file()
 {
-  LC_ALL=C grep -qF "$1" "$2" && return 0  # Found
-  return 1  # NOT found
+  LC_ALL=C grep -qF "$1" "$2" && return 0 # Found
+  return 1                                # NOT found
 }
 
 search_ascii_string_as_utf16_in_file()
 {
   local SEARCH_STRING
   SEARCH_STRING="$(printf '%s' "${1}" | od -A n -t x1 | LC_ALL=C tr -d '\n' | LC_ALL=C sed -e 's/^ //g;s/ /00/g')"
-  od -A n -t x1 "$2" | LC_ALL=C tr -d ' \n' | LC_ALL=C grep -qF "${SEARCH_STRING}" && return 0  # Found
-  return 1  # NOT found
+  od -A n -t x1 "$2" | LC_ALL=C tr -d ' \n' | LC_ALL=C grep -qF "${SEARCH_STRING}" && return 0 # Found
+  return 1                                                                                     # NOT found
 }
 
 # Permission related functions
 set_perm()
 {
-  local uid="$1"; local gid="$2"; local mod="$3"
+  local uid="$1"
+  local gid="$2"
+  local mod="$3"
   shift 3
   # Quote: Previous versions of the chown utility used the dot (.) character to distinguish the group name; this has been changed to be a colon (:) character, so that user and group names may contain the dot character
   chown "${uid}:${gid}" "$@" || chown "${uid}.${gid}" "$@" || ui_error "chown failed on: $*" 81
   chmod "${mod}" "$@" || ui_error "chmod failed on: $*" 81
 }
 
-set_std_perm_recursive()  # Use it only if you know your version of 'find' handle spaces correctly
-{
+set_std_perm_recursive()
+{ # Use it only if you know your version of 'find' handle spaces correctly
   find "$1" -type d -exec chmod 0755 '{}' + -o -type f -exec chmod 0644 '{}' +
   validate_return_code "$?" 'Failed to set permissions recursively'
 }
@@ -354,7 +366,10 @@ reset_gms_data_of_all_apps()
 # Hash related functions
 verify_sha1()
 {
-  if ! test -e "$1"; then ui_debug "The file to verify is missing => '$1'"; return 1; fi  # Failed
+  if ! test -e "$1"; then
+    ui_debug "The file to verify is missing => '$1'"
+    return 1 # Failed
+  fi
   ui_debug "$1"
 
   local file_name="$1"
@@ -362,13 +377,13 @@ verify_sha1()
   local file_hash
 
   file_hash="$(sha1sum "${file_name}" | cut -d ' ' -f 1)"
-  if test -z "${file_hash}" || test "${hash}" != "${file_hash}"; then return 1; fi  # Failed
-  return 0  # Success
+  if test -z "${file_hash}" || test "${hash}" != "${file_hash}"; then return 1; fi # Failed
+  return 0                                                                         # Success
 }
 
 # File / folder related functions
-create_dir() # Ensure dir exists
-{
+create_dir()
+{ # Ensure dir exists
   test -d "$1" && return
   mkdir -p "$1" || ui_error "Failed to create the dir '$1'" 97
   set_perm 0 0 0755 "$1"
@@ -485,7 +500,8 @@ setup_app()
     if test "${_install:?}" -ne 0 || test "${_optional:?}" != 'true'; then
       ui_msg "Enabling: ${2?}"
 
-      ui_msg_sameline_start 'Verifying... '; ui_debug ''
+      ui_msg_sameline_start 'Verifying... '
+      ui_debug ''
       verify_sha1 "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${_file_hash:?}" || ui_error "Failed hash verification of '${2}'"
       ui_msg_sameline_end 'OK'
 
@@ -513,8 +529,8 @@ setup_app()
   return 1
 }
 
-list_files()  # $1 => Folder to scan  $2 => Prefix to remove
-{
+list_files()
+{ # $1 => Folder to scan  $2 => Prefix to remove
   test -d "$1" || return
   for entry in "$1"/*; do
     if test -d "${entry}"; then
@@ -526,8 +542,8 @@ list_files()  # $1 => Folder to scan  $2 => Prefix to remove
   done
 }
 
-append_file_list()  # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output filename
-{
+append_file_list()
+{ # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output filename
   local dir="$1"
   test -d "${dir}" || return
 
@@ -543,8 +559,8 @@ append_file_list()  # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output
   done
 }
 
-write_file_list()  # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output filename
-{
+write_file_list()
+{ # $1 => Folder to scan  $2 => Prefix to remove  $3 => Output filename
   delete "$3"
   append_file_list "$@"
 }
@@ -561,7 +577,10 @@ _find_hardware_keys()
       local _not_found=1
       echo "${full_line:?}" | cut -d '=' -f 2 | while IFS='' read -r my_line; do
         for elem in ${my_line:?}; do
-          echo "${elem:?}" | grep -e '^event' && { _not_found=0; break; }
+          echo "${elem:?}" | grep -e '^event' && {
+            _not_found=0
+            break
+          }
         done
         return "${_not_found:?}"
       done
@@ -584,24 +603,31 @@ _parse_input_event()
 _timeout_exit_code_remapper()
 {
   case "${1:?}" in
-    124)  # Timed out
-      return 124;;
-    125)  # timeout command itself fails
+    124) # Timed out
+      return 124
       ;;
-    126)  # COMMAND is found but cannot be invoked
+    125) # The timeout command itself fails
       ;;
-    127)  # COMMAND cannot be found
+    126) # COMMAND is found but cannot be invoked
       ;;
-    132)  # SIGILL signal (128+4) - Example: illegal instruction
+    127) # COMMAND cannot be found
+      ;;
+    132) # SIGILL signal (128+4) - Example: illegal instruction
       ui_warning 'timeout returned SIGILL signal (128+4)'
-      return 1;;
-    137)  # SIGKILL signal (128+9) - Timed out but SIGTERM failed
+      return 1
+      ;;
+    137) # SIGKILL signal (128+9) - Timed out but SIGTERM failed
       ui_warning 'timeout returned SIGKILL signal (128+9)'
-      return 1;;
-    143)  # SIGTERM signal (128+15) - Timed out
-      return 124;;
-    *)    # All other keys
-      if test "${1:?}" -lt 128; then return "${1:?}"; fi;;  # Return codes of COMMAND
+      return 1
+      ;;
+    143) # SIGTERM signal (128+15) - Timed out
+      return 124
+      ;;
+    *)   # All other keys
+      if test "${1:?}" -lt 128; then
+        return "${1:?}" # Return code of the COMMAND
+      fi
+      ;;
   esac
 
   ui_warning "timeout returned: ${1:?}"
@@ -618,7 +644,7 @@ _timeout_compat()
   if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
     timeout -- "${_timeout_secs:?}" "${@:?}"
   else
-    timeout -t "${_timeout_secs:?}" -- "${@:?}" 2>/dev/null
+    timeout -t "${_timeout_secs:?}" -- "${@:?}" 2> /dev/null
   fi
   _timeout_exit_code_remapper "${?}"
   return "${?}"
@@ -635,38 +661,53 @@ _choose_remapper()
   ui_msg_empty_line
 
   case "${_key:?}" in
-    '+')    # +
-      return 3;;
-    '-')    # -
-      return 2;;
+    '+')   # +
+      return 3
+      ;;
+    '-')   # -
+      return 2
+      ;;
     'Enter')
-      return 0;;
-    'ESC')  # ESC or other special keys
-      ui_error 'Installation forcefully terminated' 143;;
-    *)      # All other keys
-      return 123;;
+      return 0
+      ;;
+    'ESC') # ESC or other special keys
+      ui_error 'Installation forcefully terminated' 143
+      ;;
+    *)     # All other keys
+      return 123
+      ;;
   esac
 }
 
 _keycheck_map_keycode_to_key()
 {
   case "${1:?}" in
-    42)  # Vol +
-      printf '+';;
-    21)  # Vol -
-      printf '-';;
+    42) # Vol +
+      printf '+'
+      ;;
+    21) # Vol -
+      printf '-'
+      ;;
     *)
-      return 1;;
+      return 1
+      ;;
   esac
 }
 
 choose_keycheck_with_timeout()
 {
   local _key _status
-  _timeout_compat "${1:?}" keycheck; _status="${?}"
+  _timeout_compat "${1:?}" keycheck
+  _status="${?}"
 
-  if test "${_status:?}" = '124'; then ui_msg 'Key: No key pressed'; return 0; fi
-  _key="$(_keycheck_map_keycode_to_key "${_status:?}")" || { ui_warning 'Key detection failed'; return 1; }
+  if test "${_status:?}" = '124'; then
+    ui_msg 'Key: No key pressed'
+    return 0
+  fi
+  _key="$(_keycheck_map_keycode_to_key "${_status:?}")" || {
+    ui_warning 'Key detection failed'
+    return 1
+  }
 
   _choose_remapper "${_key:?}"
   return "${?}"
@@ -675,9 +716,13 @@ choose_keycheck_with_timeout()
 choose_keycheck()
 {
   local _key _status
-  keycheck; _status="${?}"
+  keycheck
+  _status="${?}"
 
-  _key="$(_keycheck_map_keycode_to_key "${_status:?}")" || { ui_warning 'Key detection failed'; return 1; }
+  _key="$(_keycheck_map_keycode_to_key "${_status:?}")" || {
+    ui_warning 'Key detection failed'
+    return 1
+  }
 
   _choose_remapper "${_key:?}"
   return "${?}"
@@ -695,9 +740,13 @@ choose_read_with_timeout()
     0) # Command terminated successfully
       ;;
     1 | 142) # 1 => Command timed out on BusyBox / Toybox; 142 => Command timed out on Bash
-      ui_msg 'Key: No key pressed'; return 0;;
+      ui_msg 'Key: No key pressed'
+      return 0
+      ;;
     *)
-      ui_warning 'Key detection failed'; return 1;;
+      ui_warning 'Key detection failed'
+      return 1
+      ;;
   esac
 
   _choose_remapper "${_key?}"
@@ -708,7 +757,10 @@ choose_read()
 {
   local _key
   # shellcheck disable=SC3045
-  IFS='' read -rsn 1 -- _key || { ui_warning 'Key detection failed'; return 1; }
+  IFS='' read -rsn 1 -- _key || {
+    ui_warning 'Key detection failed'
+    return 1
+  }
 
   clear
   _choose_remapper "${_key?}"
@@ -718,8 +770,14 @@ choose_read()
 choose_inputevent()
 {
   local _key _hard_keys_event
-  _hard_keys_event="$(_find_hardware_keys)" || { ui_warning 'Key detection failed'; return 1; }
-  _key="$(_parse_input_event "${_hard_keys_event:?}")" || { ui_warning 'Key detection failed'; return 1; }
+  _hard_keys_event="$(_find_hardware_keys)" || {
+    ui_warning 'Key detection failed'
+    return 1
+  }
+  _key="$(_parse_input_event "${_hard_keys_event:?}")" || {
+    ui_warning 'Key detection failed'
+    return 1
+  }
 
   ui_msg "Key code: ${_key:?}"
   # 102 Menu
@@ -773,19 +831,19 @@ enable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
   DEBUG_LOG_ENABLED=1
-  exec 3>&1 4>&2  # Backup stdout and stderr
-  exec 1>>"${ZIP_PATH:?}/debug-a5k.log" 2>&1
+  exec 3>&1 4>&2 # Backup stdout and stderr
+  exec 1>> "${ZIP_PATH:?}/debug-a5k.log" 2>&1
 }
 
 disable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -eq 0; then return; fi
   DEBUG_LOG_ENABLED=0
-  exec 1>&3 2>&4  # Restore stdout and stderr
+  exec 1>&3 2>&4 # Restore stdout and stderr
 }
 
-# Test
-find_test()  # This is useful to test 'find' - if every file/folder, even the ones with spaces, is displayed in a single line then your version is good
+# Find test: this is useful to test 'find' - if every file/folder, even the ones with spaces, is displayed in a single line then your version is good
+find_test()
 {
   find "$1" -type d -exec echo 'FOLDER:' '{}' ';' -o -type f -exec echo 'FILE:' '{}' ';' | while read -r x; do echo "${x}"; done
 }
