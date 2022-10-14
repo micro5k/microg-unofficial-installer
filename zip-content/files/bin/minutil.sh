@@ -153,4 +153,4 @@ Various utility functions.
     ;;
 esac
 
-exit "${?}"
+\exit "${?}"
