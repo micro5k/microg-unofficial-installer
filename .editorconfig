@@ -28,5 +28,5 @@ end_of_line = crlf
 [*.xml]
 indent_size = 4
 
-[{cache,output,.git,.gradle,.ash_history}]
+[{cache,output,gradlew,.git,.gradle,.ash_history}]
 ignore = true

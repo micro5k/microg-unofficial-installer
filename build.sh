@@ -12,7 +12,7 @@ set -eo pipefail
 # shellcheck disable=SC3044
 shopt -s inherit_errexit 2> /dev/null || true
 
-cat <<'LICENSE'
+cat << 'LICENSE'
   SPDX-FileCopyrightText: (c) 2016-2019, 2021-2022 ale5000
 
   This program is free software: you can redistribute it and/or modify
@@ -44,9 +44,14 @@ detect_script_dir()
     # shellcheck disable=SC2009
     current_shell="$(ps -o 'pid,comm' | grep -Fw "$$" | while IFS=' ' read -r _ current_shell; do echo "${current_shell}"; done || true)"
 
-    if test -n "$0" && test -n "${current_shell}" && test "$0" != "${current_shell}" && test "$0" != "-${current_shell}"; then this_script="$0"
-    elif test -n "${last_command}"; then this_script="${last_command}"
-    else echo 'ERROR: The script filename cannot be found'; return 1; fi
+    if test -n "$0" && test -n "${current_shell}" && test "$0" != "${current_shell}" && test "$0" != "-${current_shell}"; then
+      this_script="$0"
+    elif test -n "${last_command}"; then
+      this_script="${last_command}"
+    else
+      echo 'ERROR: The script filename cannot be found'
+      return 1
+    fi
   fi
   unset last_command
 
