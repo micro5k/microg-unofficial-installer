@@ -31,7 +31,7 @@ indent_size = 4
 [zip-content/customize.sh]
 keep_padding = true
 
-[recovery-simulator/recovery.sh]
+[{build.sh,recovery-simulator/recovery.sh}]
 shell_variant = bash
 
 [{cache,output,gradlew,.git,.gradle,.ash_history}]
