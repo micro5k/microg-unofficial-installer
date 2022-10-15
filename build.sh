@@ -111,11 +111,11 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS
 # Download files if they are missing
 mkdir -p "${SCRIPT_DIR}/cache"
 
-# shellcheck disable=SC2312
+# shellcheck disable=SC3001,SC2312
 dl_list < <(oss_files_to_download || ui_error 'Missing download list') || ui_error 'Failed to download the necessary files'
 
 if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
-  # shellcheck disable=SC2312
+  # shellcheck disable=SC3001,SC2312
   dl_list < <(files_to_download || ui_error 'Missing download list') || ui_error 'Failed to download the necessary files'
 
   dl_file 'misc/keycheck' 'keycheck-arm.bin' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
