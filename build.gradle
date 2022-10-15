@@ -37,6 +37,10 @@ void configure() {
 
     println 'Version: ' + version
     println 'OS: ' + System.properties['os.name']
+
+    if(JavaVersion.current() < JavaVersion.VERSION_11) {
+        throw new GradleException('This build must be run with Java 11 or later')
+    }
 }
 configure()
 
