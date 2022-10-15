@@ -234,6 +234,13 @@ dl_file()
   printf '%s\n' 'OK'
 }
 
+dl_list()
+{
+  while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _ _ _ _ DL_HASH DL_URL DL_MIRROR _; do
+    dl_file "${LOCAL_PATH:?}" "${LOCAL_FILENAME:?}.apk" "${DL_HASH:?}" "${DL_URL:?}" "${DL_MIRROR?}" || return "${?}"
+  done || return "${?}"
+}
+
 # Detect OS and set OS specific info
 SEP='/'
 PATHSEP=':'

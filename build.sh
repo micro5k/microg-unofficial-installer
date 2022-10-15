@@ -110,27 +110,15 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS
 # Download files if they are missing
 mkdir -p "${SCRIPT_DIR}/cache"
 
-shopt -s lastpipe 2> /dev/null || true
-
-oss_files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _ _ _ _ DL_HASH DL_URL DL_MIRROR _; do
-  dl_file "${LOCAL_PATH:?}" "${LOCAL_FILENAME:?}.apk" "${DL_HASH:?}" "${DL_URL:?}" "${DL_MIRROR}" || return "${?}"
-done
-STATUS="$?"
-if test "${STATUS}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
+dl_list < <(oss_files_to_download || ui_error 'Missing download list') || ui_error 'Failed to download the necessary files'
 
 if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
-  files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _ _ _ _ DL_HASH DL_URL DL_MIRROR _; do
-    dl_file "${LOCAL_PATH:?}" "${LOCAL_FILENAME:?}.apk" "${DL_HASH:?}" "${DL_URL:?}" "${DL_MIRROR}" || return "${?}"
-  done
-  STATUS="$?"
-  if test "${STATUS:?}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
+  dl_list < <(files_to_download || ui_error 'Missing download list') || ui_error 'Failed to download the necessary files'
 
   dl_file 'misc/keycheck' 'keycheck-arm.bin' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
 else
   echo 'Skipped not OSS files!'
 fi
-
-shopt -u lastpipe 2> /dev/null || true
 
 # Copy data
 cp -rf "${SCRIPT_DIR}/zip-content" "${TEMP_DIR}/" || ui_error 'Failed to copy data to the temp dir'
