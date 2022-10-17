@@ -4,7 +4,7 @@
 # SPDX-FileType: SOURCE
 name: SPDX license overview
 
-on: [ push, pull_request ]
+on: [push, pull_request]
 
 jobs:
   lint:
@@ -16,8 +16,8 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v2
         with:
-          distribution: 'zulu'
-          java-version: '11'
+          distribution: "temurin"
+          java-version: "17"
       - name: Create spdx file
         uses: philips-software/spdx-action@v0.8.0
         with:
