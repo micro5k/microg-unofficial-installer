@@ -614,7 +614,7 @@ _timeout_exit_code_remapper()
       ;;
     132) # SIGILL signal (128+4) - Example: illegal instruction
       ui_warning 'timeout returned SIGILL signal (128+4)'
-      return 1
+      return 132
       ;;
     137) # SIGKILL signal (128+9) - Timed out but SIGTERM failed
       ui_warning 'timeout returned SIGKILL signal (128+9)'
@@ -690,9 +690,12 @@ choose_keycheck_with_timeout()
   _timeout_compat "${1:?}" keycheck
   _status="${?}"
 
-  if test "${_status:?}" = '124'; then
+  if test "${_status:?}" -eq 124; then
     ui_msg 'Key: No key pressed'
     return 0
+  elif test "${_status:?}" -eq 132; then
+    : #export KEYCHECK_ENABLED=false
+    #choose_inputevent
   fi
   _key="$(_keycheck_map_keycode_to_key "${_status:?}")" || {
     ui_warning 'Key detection failed'
