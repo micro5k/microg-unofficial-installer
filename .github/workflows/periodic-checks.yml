@@ -6,14 +6,14 @@ name: "Periodic checks"
 on:
   push:
     paths:
-      - 'gradle/wrapper/gradle-wrapper.jar'
-      - '.reuse/dep5'
-      - '**codecov.yml'
+      - "gradle/wrapper/gradle-wrapper.jar"
+      - ".reuse/dep5"
+      - "**codecov.yml"
   pull_request:
     paths:
-      - 'gradle/wrapper/gradle-wrapper.jar'
-      - '.reuse/dep5'
-      - '**codecov.yml'
+      - "gradle/wrapper/gradle-wrapper.jar"
+      - ".reuse/dep5"
+      - "**codecov.yml"
   schedule:
     - cron: "0 0 * * 1"
   workflow_dispatch:
