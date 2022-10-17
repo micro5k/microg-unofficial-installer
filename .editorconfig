@@ -4,6 +4,9 @@
 
 root = true
 
+[{cache,output,gradlew,.git,.gradle,.ash_history}]
+ignore = true
+
 [*]
 charset = utf-8
 end_of_line = lf
@@ -22,17 +25,17 @@ switch_case_indent = true
 space_redirects = true
 function_next_line = true
 
-[*.bat]
-end_of_line = crlf
+[*.{yml,yaml}]
+quote_type = double
 
 [*.xml]
 indent_size = 4
+
+[*.bat]
+end_of_line = crlf
 
 [zip-content/customize.sh]
 keep_padding = true
 
 [{build.sh,recovery-simulator/recovery.sh}]
 shell_variant = bash
-
-[{cache,output,gradlew,.git,.gradle,.ash_history}]
-ignore = true
