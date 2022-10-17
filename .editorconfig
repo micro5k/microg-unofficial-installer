@@ -4,7 +4,10 @@
 
 root = true
 
-[{cache,output,gradlew,.git,.gradle,.ash_history}]
+[{cache,output,gradlew,gradlew.bat,.git,.gradle,.ash_history}]
+ignore = true
+
+[*.{jar,apk,bin,exe}]
 ignore = true
 
 [*]
