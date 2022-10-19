@@ -209,9 +209,7 @@ echo 'SHA-256:'
 echo "${sha256_hash:?}" || ui_error 'Failed to display the sha256 hash'
 
 if test "${GITHUB_JOB:-false}" != 'false'; then
-  printf '\r::set-output name=sha256_hash::%s\n' "${sha256_hash:?}" # Save hash for later use
-else
-  echo ''
+  printf 'sha256_hash=%s\n' "${sha256_hash:?}" >> "${GITHUB_OUTPUT:?}" # Save hash for later use
 fi
 
 if test "${FAST_BUILD:-false}" = 'false'; then
