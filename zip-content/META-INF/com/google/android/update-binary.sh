@@ -52,7 +52,7 @@ ui_error()
   ERROR_CODE=79
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
   _show_text_on_recovery "ERROR: ${1:?}"
-  1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
 }
 
@@ -102,7 +102,7 @@ _updatebin_we_mounted_tmp=false
     _updatebin_we_mounted_tmp=true
 
     _show_text_on_recovery 'WARNING: Creating (if needed) and mounting the temp folder...'
-    1>&2 printf '\033[0;33m%s\033[0m\n' 'WARNING: Creating (if needed) and mounting the temp folder...'
+    printf 1>&2 '\033[0;33m%s\033[0m\n' 'WARNING: Creating (if needed) and mounting the temp folder...'
     if test ! -e '/tmp'; then
       mkdir -p -- '/tmp' || ui_error 'Failed to create the temp folder'
       set_perm 0 0 0755 '/tmp'
