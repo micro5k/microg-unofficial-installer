@@ -9,5 +9,5 @@ if test -n "$1"; then
   return 0 2>&- || exit 0
 fi
 
-1>&2 echo "umount: bad usage"
+echo 1>&2 "umount: bad usage"
 return 1 2>&- || exit 1
