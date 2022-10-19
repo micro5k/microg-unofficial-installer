@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 - Added support for Android up to 13
 - Improve system partition mounting
 - Mount partitions only if they aren't already mounted
-- Zip builds are now reproducible (tested on Linux and Windows with Java 17)
+- Zip builds are now reproducible (with Java 11 or later)
 - You can now test the zip installation on PC using "gradlew installTest" (tested on Linux and Windows)
 Full changelog will appear later
 
