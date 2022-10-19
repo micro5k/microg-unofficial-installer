@@ -40,14 +40,14 @@ ui_error()
   ERROR_CODE=91
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
   _show_text_on_recovery "ERROR: ${1:?}"
-  1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
 }
 
 ui_warning()
 {
   _show_text_on_recovery "WARNING: ${1:?}"
-  1>&2 printf '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
+  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
 }
 
 ui_msg_empty_line()
@@ -623,7 +623,7 @@ _timeout_exit_code_remapper()
     143) # SIGTERM signal (128+15) - Timed out
       return 124
       ;;
-    *)   # All other keys
+    *) ### All other keys
       if test "${1:?}" -lt 128; then
         return "${1:?}" # Return code of the COMMAND
       fi
