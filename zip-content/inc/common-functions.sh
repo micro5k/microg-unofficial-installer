@@ -248,10 +248,9 @@ is_substring()
   return 1 # NOT found
 }
 
-replace_string()
+replace_string_global()
 {
-  # shellcheck disable=SC3060
-  echo "${1//$2/$3}"
+  printf '%s' "${1:?}" | sed -e "s@${2:?}@${3:?}@g" || return "${?}" # Note: pattern and replacement cannot contain @
 }
 
 replace_slash_with_at()
