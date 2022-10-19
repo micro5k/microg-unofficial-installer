@@ -16,11 +16,11 @@ umask 022
 
 DEBUG_LOG=0
 if test -z "${BOOTMODE:-}"; then
-  1>&2 printf '%s\n' 'Missing BOOTMODE variable'
+  printf 1>&2 '%s\n' 'Missing BOOTMODE variable'
   abort 'Missing BOOTMODE variable' 2> /dev/null || exit 1
 fi
 if test -z "${OUTFD:-}"; then
-  1>&2 printf '%s\n' 'Missing OUTFD variable'
+  printf 1>&2 '%s\n' 'Missing OUTFD variable'
   abort 'Missing OUTFD variable' 2> /dev/null || exit 1
 fi
 RECOVERY_PIPE="/proc/self/fd/${OUTFD:?}"
@@ -89,14 +89,14 @@ ui_error()
   ERROR_CODE=79
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
   _show_text_on_recovery "ERROR: ${1:?}"
-  1>&2 printf '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
 }
 
 ui_warning()
 {
   _show_text_on_recovery "WARNING: ${1:?}"
-  1>&2 printf '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
+  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
 }
 
 ui_msg()
