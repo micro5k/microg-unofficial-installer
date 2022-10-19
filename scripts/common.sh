@@ -38,7 +38,7 @@ SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || return 1 2>&- || exit 1
 
 ui_error()
 {
-  1>&2 echo "ERROR: $1"
+  echo 1>&2 "ERROR: $1"
   test -n "$2" && exit "$2"
   exit 1
 }
@@ -125,7 +125,7 @@ dl_generic_with_cookie()
 # 1 => URL
 get_location_header_from_http_request()
 {
-  { 2>&1 "${WGET_CMD:?}" --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" || true; } | grep -aom 1 -e 'Location:[[:space:]]*[^[:cntrl:]]*$' | head -n '1' || return "${?}"
+  { "${WGET_CMD:?}" 2>&1 --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" || true; } | grep -aom 1 -e 'Location:[[:space:]]*[^[:cntrl:]]*$' | head -n '1' || return "${?}"
 }
 
 # 1 => URL; # 2 => Origin header
@@ -188,7 +188,7 @@ dl_type_two()
 
 dl_file()
 {
-  if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi  # Preventive check to silently remove corrupted/invalid files
+  if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi # Preventive check to silently remove corrupted/invalid files
 
   printf '%s ' "Checking ${2?}..."
   local _status _url _domain
