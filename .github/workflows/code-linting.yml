@@ -14,9 +14,9 @@ on:
   workflow_dispatch:
 jobs:
   shellchecker:
-    permissions: {}
     name: "ShellChecker"
     runs-on: ubuntu-latest
+    permissions: {}
 
     steps:
       - name: "Check out code"
