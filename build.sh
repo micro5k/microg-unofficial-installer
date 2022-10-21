@@ -224,14 +224,14 @@ echo ''
 echo 'Done.'
 change_title 'Done'
 
-# Ring bell
-if test "${CI:-false}" = 'false'; then printf '%b' '\007'; fi
-
 #wait "${pid}"
 set +e
 
-# Pause on Windows if not executed through Gradle
-if test "${PLATFORM:?}" == 'win' && test "${APP_BASE_NAME:-false}" != 'gradlew' && test "${APP_BASE_NAME:-false}" != 'gradlew.'; then
+# Ring bell
+if test "${CI:-false}" = 'false'; then printf '%b' '\007' || true; fi
+
+# Pause
+if test "${CI:-false}" = 'false' && test "${APP_BASE_NAME:-false}" != 'gradlew' && test "${APP_BASE_NAME:-false}" != 'gradlew.'; then
   # shellcheck disable=SC3045
   read -rsn 1 -p 'Press any key to continue...' || true
   printf '\n' || true
