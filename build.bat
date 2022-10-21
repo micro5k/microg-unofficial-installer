@@ -16,6 +16,4 @@ CHCP 65001 1> nul || ECHO "Changing the codepage failed"
 ENDLOCAL 2> nul
 
 SET "EXIT_CODE=%ERRORLEVEL%"
-
-IF NOT "%APP_BASE_NAME%" == "gradlew" PAUSE 1> nul
 IF %EXIT_CODE% NEQ 0 EXIT /B %EXIT_CODE%
