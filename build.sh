@@ -7,8 +7,12 @@
 
 last_command="${_}" # IMPORTANT: This line must be at the start of the script before any other command otherwise it will not work
 
+set -e
 # shellcheck disable=SC3040
-set -eo pipefail
+set -o posix 2> /dev/null || true
+# shellcheck disable=SC3040
+set -o pipefail || true
+
 # shellcheck disable=SC3044
 shopt -s inherit_errexit 2> /dev/null || true
 
