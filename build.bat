@@ -10,12 +10,12 @@ IF "%CD%" == "%windir%\system32" CD /D "%~dp0"
 
 SET "LANG=C.UTF-8"
 
-CHCP 65001 >nul || ECHO "Changing the codepage failed"
+CHCP 65001 1> nul || ECHO "Changing the codepage failed"
 "%~dp0tools\win\busybox.exe" ash "%~dp0build.sh" %*
 
 ENDLOCAL 2> nul
 
 SET "EXIT_CODE=%ERRORLEVEL%"
 
-IF NOT "%APP_BASE_NAME%" == "gradlew" PAUSE > nul
+IF NOT "%APP_BASE_NAME%" == "gradlew" PAUSE 1> nul
 IF %EXIT_CODE% NEQ 0 EXIT /B %EXIT_CODE%
