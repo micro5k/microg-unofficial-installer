@@ -22,7 +22,7 @@ SET "SCRIPT_DIR=%~dp0"
 SET "BASH_VERSION=5.0.17(1)-release"
 SET "BASH_VERSINFO=5"
 
-CHCP 65001 >nul || ECHO "Changing the codepage failed"
+CHCP 65001 1> nul || ECHO "Changing the codepage failed"
 "%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0scripts\common.sh'; unset JAVA_HOME; alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=reset" "%~f0" %*
 
 TITLE %ComSpec% 2> nul
