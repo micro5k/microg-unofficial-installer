@@ -12,7 +12,6 @@ set -e
 set -o posix 2> /dev/null || true
 # shellcheck disable=SC3040
 set -o pipefail || true
-
 # shellcheck disable=SC3044
 shopt -s inherit_errexit 2> /dev/null || true
 
@@ -115,6 +114,9 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS
 # Download files if they are missing
 mkdir -p "${SCRIPT_DIR}/cache"
 
+# shellcheck disable=SC3040
+set +o posix 2> /dev/null || true
+
 # shellcheck disable=SC3001,SC2312
 dl_list < <(oss_files_to_download || ui_error 'Missing download list') || ui_error 'Failed to download the necessary files'
 
@@ -126,6 +128,9 @@ if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
 else
   echo 'Skipped not OSS files!'
 fi
+
+# shellcheck disable=SC3040
+set -o posix 2> /dev/null || true
 
 # Copy data
 cp -rf "${SCRIPT_DIR}/zip-content" "${TEMP_DIR}/" || ui_error 'Failed to copy data to the temp dir'
