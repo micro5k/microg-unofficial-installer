@@ -8,6 +8,8 @@
 
 set -e
 # shellcheck disable=SC3040
+set -o posix 2> /dev/null || true
+# shellcheck disable=SC3040
 set -o pipefail || true
 
 # shellcheck disable=SC3028
