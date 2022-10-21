@@ -95,6 +95,7 @@ tasks.register('installTest', Exec) {
     mustRunAfter build, buildOta, buildOtaOSS
 
     doFirst {
+        environment BB_GLOBBING: '1'
         executable "${projectDir}/recovery-simulator/recovery" + getScriptExt()
         args "${projectDir}/output/*.zip"
     }
