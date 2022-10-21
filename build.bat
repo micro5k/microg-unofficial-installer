@@ -3,13 +3,13 @@
 @REM SPDX-FileType: SOURCE
 
 @echo off
+SETLOCAL 2> nul
 
 REM Fix the working directory when using "Run as administrator"
 IF "%CD%" == "%windir%\system32" CD /D "%~dp0"
 
 SET "LANG=C.UTF-8"
 
-SETLOCAL 2> nul
 CHCP 65001 >nul || ECHO "Changing the codepage failed"
 "%~dp0tools\win\busybox.exe" ash "%~dp0build.sh" %*
 ENDLOCAL 2> nul
