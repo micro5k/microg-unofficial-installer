@@ -3,9 +3,8 @@
 @REM SPDX-FileType: SOURCE
 
 @echo off
-
-TITLE Command-line 2> nul
 SETLOCAL 2> nul
+TITLE Command-line 2> nul
 
 REM Fix the working directory when using "Run as administrator"
 IF "%CD%" == "%windir%\system32" CD /D "%~dp0"
@@ -26,5 +25,5 @@ SET "BASH_VERSINFO=5"
 CHCP 65001 >nul || ECHO "Changing the codepage failed"
 "%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0scripts\common.sh'; unset JAVA_HOME; alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=reset" "%~f0" %*
 
-ENDLOCAL 2> nul
 TITLE %ComSpec% 2> nul
+ENDLOCAL 2> nul
