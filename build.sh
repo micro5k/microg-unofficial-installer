@@ -224,11 +224,12 @@ echo ''
 echo 'Done.'
 change_title 'Done'
 
-#wait "${pid}"
 set +e
 
 # Ring bell
 if test "${CI:-false}" = 'false'; then printf '%b' '\007' || true; fi
+
+#wait "${pid:?}" || true
 
 # Pause
 if test "${CI:-false}" = 'false' && test "${APP_BASE_NAME:-false}" != 'gradlew' && test "${APP_BASE_NAME:-false}" != 'gradlew.'; then
