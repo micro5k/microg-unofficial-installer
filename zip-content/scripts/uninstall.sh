@@ -46,7 +46,7 @@ GoogleOneTimeInitializer|com.google.android.onetimeinitializer
 GoogleServicesFramework|com.google.android.gsf
 |com.mgoogle.android.gms
 PlayGames|com.google.android.play.games
-Velvet|com.google.android.googlequicksearchbox
+Velvet|
 
 GmsCore_update|
 GmsCoreSetupPrebuilt|
