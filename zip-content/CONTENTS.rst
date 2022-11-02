@@ -57,6 +57,9 @@ Note
 .. [#] <files/system-apps/priv-app/PlayStore.apk>
 .. [#] <files/system-apps/priv-app/AndroidAuto.apk>
 
+..
+   https://microg.org/dl/core-nightly.apk
+
 
 Common
 ------
