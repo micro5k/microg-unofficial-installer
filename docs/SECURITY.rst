@@ -10,15 +10,15 @@ Security Policy
 Supported Versions
 ------------------
 
-======= ====================
+======= =========
 Version Supported
-======= ====================
-1.1.x   |:white_check_mark:|
-< 1.1   |:x:|
-======= ====================
+======= =========
+1.1.x      ✔
+< 1.1      ❌
+======= =========
 
 
 Reporting a Vulnerability
 -------------------------
 
-This is a flashable ZIP that must be installed manually, so security reports can be added directly in the `Issues <https://github.com/micro5k/microg-unofficial-installer/issues>`_ section.
+This is a flashable ZIP that must be installed manually, so security reports can be added directly in the `Issues <./../../../issues>`_ section.
