@@ -151,13 +151,7 @@ if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
 uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY _; do
   if test -n "${INTERNAL_NAME}"; then
-    delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
-    delete_recursive "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME}.xml"
-    delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}"
-    delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
-    delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}"
-    delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
-    if test "${DEL_SYS_APPS_ONLY:-false}" = false || test -e "${PRIVAPP_PATH}/${FILENAME}" || test -e "${SYS_PATH}/app/${FILENAME}"; then
+    if test "${DEL_SYS_APPS_ONLY:-false}" = false || test -e "${PRIVAPP_PATH:?}/${FILENAME:?}" || test -e "${SYS_PATH:?}/app/${FILENAME:?}"; then
       delete_recursive "/data/app/${INTERNAL_NAME}"
       delete_recursive "/data/app/${INTERNAL_NAME}.apk"
       delete_recursive_wildcard "/data/app/${INTERNAL_NAME}"-*
@@ -165,6 +159,14 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
       delete_recursive "/mnt/asec/${INTERNAL_NAME}.apk"
       delete_recursive_wildcard "/mnt/asec/${INTERNAL_NAME}"-*
     fi
+    # Check also /data/app-private /data/app-asec /data/preload
+
+    delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
+    delete_recursive "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME}.xml"
+    delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}"
+    delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
+    delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}"
+    delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
 
     # Legacy xml paths
     delete_recursive "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
