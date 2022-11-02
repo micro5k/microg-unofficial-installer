@@ -40,7 +40,7 @@ GoogleOneTimeInitializer|com.google.android.onetimeinitializer
 GoogleServicesFramework|com.google.android.gsf
 |com.mgoogle.android.gms
 PlayGames|com.google.android.play.games
-Velvet|
+Velvet|com.google.android.googlequicksearchbox|true
 
 GmsCore_update|
 GmsCoreSetupPrebuilt|
@@ -149,7 +149,7 @@ fi
 INTERNAL_MEMORY_PATH='/sdcard0'
 if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
-uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
+uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY _; do
   if test -n "${INTERNAL_NAME}"; then
     delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
     delete_recursive "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME}.xml"
@@ -157,8 +157,14 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
     delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}"
     delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
-    delete_recursive_wildcard "/data/app/${INTERNAL_NAME}"-*
-    delete_recursive_wildcard "/mnt/asec/${INTERNAL_NAME}"-*
+    if test "${DEL_SYS_APPS_ONLY:-false}" = false || test -e "${PRIVAPP_PATH}/${FILENAME}" || test -e "${SYS_PATH}/app/${FILENAME}"; then
+      delete_recursive "/data/app/${INTERNAL_NAME}"
+      delete_recursive "/data/app/${INTERNAL_NAME}.apk"
+      delete_recursive_wildcard "/data/app/${INTERNAL_NAME}"-*
+      delete_recursive "/mnt/asec/${INTERNAL_NAME}"
+      delete_recursive "/mnt/asec/${INTERNAL_NAME}.apk"
+      delete_recursive_wildcard "/mnt/asec/${INTERNAL_NAME}"-*
+    fi
 
     # Legacy xml paths
     delete_recursive "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
