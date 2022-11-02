@@ -28,14 +28,14 @@ switch_case_indent = true
 space_redirects = true
 function_next_line = true
 
-[*.{yml,yaml}]
-quote_type = double
+[*.bat]
+end_of_line = crlf
 
 [*.xml]
 indent_size = 4
 
-[*.bat]
-end_of_line = crlf
+[*.{yml,yaml,rst,md}]
+quote_type = double
 
 [zip-content/customize.sh]
 keep_padding = true
