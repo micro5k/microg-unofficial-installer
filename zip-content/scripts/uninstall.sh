@@ -91,6 +91,10 @@ MozillaNlpBackend|
 NominatimGeocoderBackend|org.microg.nlp.backend.nominatim
 NominatimNlpBackend|
 
+VollaNlpRRO|com.volla.overlay.nlp
+VollaNlp|com.volla.nlp
+VollaGSMNlp|com.volla.gsmnlp
+
 AndroidAutoStubPrebuilt|com.google.android.projection.gearhead
 AndroidAutoFullPrebuilt|
 AndroidAutoPrebuiltStub|
