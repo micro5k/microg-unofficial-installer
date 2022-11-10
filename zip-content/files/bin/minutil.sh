@@ -17,7 +17,7 @@ case "${0:?}" in
   *'.sh') ;;
   *'sh')
     echo 'ERROR: MinUtil cannot be sourced'
-    exit 1
+    \exit 1
     ;;
   *) ;;
 esac
