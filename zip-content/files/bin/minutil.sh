@@ -121,6 +121,10 @@ minutil_remove_all_accounts()
 {
   _is_caller_root || return 1
   mount /data 2> /dev/null || true
+  test -e '/data' || {
+    echo 'ERROR: /data NOT found'
+    return 1
+  }
 
   _list_account_files | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
