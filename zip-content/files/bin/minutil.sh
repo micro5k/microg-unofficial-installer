@@ -16,7 +16,7 @@ set -o pipefail || true
 case "${0:?}" in
   *'.sh') ;;
   *'sh')
-    echo 'ERROR: MinUtil cannot be sourced'
+    \echo 'ERROR: MinUtil cannot be sourced'
     \exit 1
     ;;
   *) ;;
@@ -33,26 +33,27 @@ esac
   \unset getopt_test
 }
 
-if minutil_args="$(getopt -n 'MinUtil' -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -- "${@}")" && test "${minutil_args:-}" != ' --'; then
-  eval set -- "${minutil_args:?}" || \exit 1
+if minutil_args="$(\getopt -n 'MinUtil' -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -- "${@}")" && \test "${minutil_args:-}" != ' --'; then
+  \eval ' \set' '--' "${minutil_args:?}" || \exit 1
 else
-  set -- '--help' '--' || \exit 1
+  \printf '\n'
+  \set -- '--help' '--' || \exit 1
 fi
-unset minutil_args
+\unset minutil_args
 
 _is_caller_adb_or_root()
 {
-  if test "$(whoami || true)" != 'shell' && test "$(whoami || true)" != 'root'; then
-    echo 'ERROR: You must execute it as either ADB or root'
-    return 1
+  if \test "$(\whoami || true)" != 'shell' && \test "$(\whoami || true)" != 'root'; then
+    \echo 'ERROR: You must execute it as either ADB or root'
+    \return 1
   fi
 }
 
 _is_caller_root()
 {
-  if test "$(whoami || true)" != 'root'; then
-    echo 'ERROR: You must execute it as root'
-    return 1
+  if \test "$(\whoami || true)" != 'root'; then
+    \echo 'ERROR: You must execute it as root'
+    \return 1
   fi
 }
 
@@ -82,7 +83,7 @@ _minutil_find_package()
 
 _minutil_reinstall_split_package()
 {
-  _is_caller_adb_or_root || return 1
+  \_is_caller_adb_or_root || \return 1
 
   _install_sid="$(pm install-create -i 'com.android.vending' -r -g -- | grep -F -e 'Success: created install session' | grep -oE -e '[0-9]+')" || return "${?}"
   _file_index=0
@@ -105,7 +106,7 @@ _minutil_reinstall_split_package()
 
 minutil_reinstall_package()
 {
-  _is_caller_adb_or_root || return 1
+  \_is_caller_adb_or_root || \return 1
 
   echo "Reinstalling ${1:?}..."
   command -v -- pm 1> /dev/null || {
@@ -137,7 +138,7 @@ minutil_reinstall_package()
 
 minutil_remove_all_accounts()
 {
-  _is_caller_root || return 1
+  \_is_caller_root || \return 1
   mount /data 2> /dev/null || true
   test -e '/data' || {
     echo 'ERROR: /data NOT found'
@@ -160,12 +161,12 @@ minutil_remove_all_accounts()
 while true; do
   case "${1}" in
     -i | --reinstall-package)
-      minutil_reinstall_package "${2:?}"
+      \minutil_reinstall_package "${2:?}"
       shift
       ;;
 
     --remove-all-accounts)
-      minutil_remove_all_accounts
+      \minutil_remove_all_accounts
       ;;
 
     --)
