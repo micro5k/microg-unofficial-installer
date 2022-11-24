@@ -22,6 +22,13 @@ case "${0:?}" in
   *) ;;
 esac
 
+if minutil_args="$(getopt -n 'MinUtil' -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -- "${@}")" && test "${minutil_args:-}" != ' --'; then
+  eval set -- "${minutil_args:?}" || \exit 1
+else
+  set -- '--help' '--' || \exit 1
+fi
+unset minutil_args
+
 _is_caller_adb_or_root()
 {
   if test "$(whoami || true)" != 'shell' && test "$(whoami || true)" != 'root'; then
@@ -139,22 +146,31 @@ minutil_remove_all_accounts()
   echo "All accounts deleted. Now restart the device!!!"
 }
 
-case "${1}" in
-  -i | --reinstall-package)
-    minutil_reinstall_package "${2:?}"
-    ;;
+while true; do
+  case "${1}" in
+    -i | --reinstall-package)
+      minutil_reinstall_package "${2:?}"
+      shift
+      ;;
 
-  --remove-all-accounts)
-    minutil_remove_all_accounts
-    ;;
+    --remove-all-accounts)
+      minutil_remove_all_accounts
+      ;;
 
-  *)
-    echo 'MinUtil
+    --)
+      break
+      ;;
+
+    *) # This include also -h and --help
+      echo 'MinUtil
 Various utility functions.
 
 -i | --reinstall-package PACKAGE_NAME		Reinstall package as if it were installed from Play Store and grant it all permissions, example: minutil -i org.schabi.newpipe
 --remove-all-accounts				Remove all accounts from the device'
-    ;;
-esac
+      ;;
+  esac
+
+  shift
+done
 
 \exit "${?}"
