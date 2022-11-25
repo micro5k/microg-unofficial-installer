@@ -27,13 +27,13 @@ esac
   getopt_test='0'
   \getopt -T -- || getopt_test="${?}"
   if \test "${getopt_test:?}" != '4'; then
-    \printf 'ERROR: Limited getopt\n'
+    \printf 'ERROR: Limited or missing getopt\n'
     \exit 1
   fi
   \unset getopt_test
 }
 
-if minutil_args="$(\getopt -n 'MinUtil' -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -- "${@}")" && \test "${minutil_args:-}" != ' --'; then
+if minutil_args="$(\unset POSIXLY_CORRECT; \getopt -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -n 'MinUtil' -- "${@}")" && \test "${minutil_args:-}" != ' --'; then
   \eval ' \set' '--' "${minutil_args:?}" || \exit 1
 else
   \printf '\n'
