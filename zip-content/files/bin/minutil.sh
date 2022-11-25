@@ -33,7 +33,7 @@ esac
   \unset getopt_test
 }
 
-if minutil_args="$(\unset POSIXLY_CORRECT; \getopt -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -n 'MinUtil' -- "${@}")" && \test "${minutil_args:-}" != ' --'; then
+if minutil_args="$(\unset POSIXLY_CORRECT; \getopt -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -s 'sh' -n 'MinUtil' -- "${@}")" && \test "${minutil_args:-}" != ' --'; then
   \eval ' \set' '--' "${minutil_args:?}" || \exit 1
 else
   \printf '\n'
