@@ -20,23 +20,28 @@ case "${0:?}" in
   *) ;;
 esac
 
+_minutil_check_getopt()
 {
   \unset GETOPT_COMPATIBLE
   getopt_test='0'
-  \getopt -T -- || getopt_test="${?}"
+  \getopt -T -- 2> /dev/null || getopt_test="${?}"
   if \test "${getopt_test:?}" != '4'; then
-    \printf 'ERROR: Limited or missing getopt\n'
-    \exit 1
+    \printf 1>&2 '\033[0;33m%s\033[0m\n' 'WARNING: Limited or missing getopt'
+    \return 1
   fi
   \unset getopt_test
+
+  return 0
 }
 
-if minutil_args="$(\unset POSIXLY_CORRECT; \getopt -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -n 'MinUtil' -- "${@}")" && \test "${minutil_args:-}" != ' --'; then
-  \eval ' \set' '--' "${minutil_args:?}" || \exit 1
-else
-  \set -- '--help' '--' || \exit 1
+if \_minutil_check_getopt; then
+  if minutil_args="$(\unset POSIXLY_CORRECT; \getopt -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -n 'MinUtil' -- "${@}")" && \test "${minutil_args:-}" != ' --'; then
+    \eval ' \set' '--' "${minutil_args:?}" || \exit 1
+  else
+    \set -- '--help' '--' || \exit 1
+  fi
+  \unset minutil_args
 fi
-\unset minutil_args
 
 _is_caller_adb_or_root()
 {
@@ -173,6 +178,9 @@ while true; do
 
     --)
       break
+      ;;
+
+    '')
       ;;
 
     *)
