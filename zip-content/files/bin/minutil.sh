@@ -1,6 +1,4 @@
 #!/system/bin/sh
-# -*- coding: utf-8 -*-
-
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
@@ -36,7 +34,6 @@ esac
 if minutil_args="$(\unset POSIXLY_CORRECT; \getopt -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -n 'MinUtil' -- "${@}")" && \test "${minutil_args:-}" != ' --'; then
   \eval ' \set' '--' "${minutil_args:?}" || \exit 1
 else
-  \printf '\n'
   \set -- '--help' '--' || \exit 1
 fi
 \unset minutil_args
@@ -158,8 +155,13 @@ minutil_remove_all_accounts()
   echo "All accounts deleted. Now restart the device!!!"
 }
 
+_minutil_display_help='false'
 while true; do
   case "${1}" in
+    -h | --help)
+      _minutil_display_help='true'
+      ;;
+
     -i | --reinstall-package)
       \minutil_reinstall_package "${2:?}"
       shift
@@ -173,16 +175,20 @@ while true; do
       break
       ;;
 
-    *) # This include also -h and --help
-      echo 'MinUtil
+    *)
+      _minutil_display_help='true'
+      printf 'MinUtil: invalid option -- %s\n' "'${1#-}'"
+      ;;
+  esac
+  shift || break
+done
+
+if test "${_minutil_display_help:?}" = 'true'; then
+  printf '\n%s\n' 'MinUtil
 Various utility functions.
 
 -i | --reinstall-package PACKAGE_NAME		Reinstall package as if it were installed from Play Store and grant it all permissions, example: minutil -i org.schabi.newpipe
 --remove-all-accounts				Remove all accounts from the device'
-      ;;
-  esac
-
-  shift
-done
+fi
 
 \exit "${?}"
