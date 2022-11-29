@@ -163,7 +163,7 @@ minutil_remove_all_accounts()
 _minutil_display_help='false'
 while true; do
   case "${1}" in
-    -h | --help)
+    -h | --help | -\?)
       _minutil_display_help='true'
       ;;
 
@@ -181,7 +181,7 @@ while true; do
       ;;
 
     '')
-      ;;
+      ;; # Ignore empty parameters
 
     *)
       _minutil_display_help='true'
