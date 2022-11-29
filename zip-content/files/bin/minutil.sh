@@ -14,11 +14,16 @@ set -o pipefail || true
 case "${0:?}" in
   *'.sh') ;;
   *'sh')
-    \echo 'ERROR: MinUtil cannot be sourced'
+    \printf 1>&2 '\033[1;31m%s\033[0m\n' 'ERROR: MinUtil cannot be sourced'
     \exit 1
     ;;
   *) ;;
 esac
+
+_minutil_error()
+{
+  \printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*?}"
+}
 
 _minutil_check_getopt()
 {
@@ -48,7 +53,7 @@ fi
 _is_caller_adb_or_root()
 {
   if \test "$(\whoami || true)" != 'shell' && \test "$(\whoami || true)" != 'root'; then
-    \echo 'ERROR: You must execute it as either ADB or root'
+    \_minutil_error 'You must execute it as either ADB or root'
     \return 1
   fi
 }
@@ -56,7 +61,7 @@ _is_caller_adb_or_root()
 _is_caller_root()
 {
   if \test "$(\whoami || true)" != 'root'; then
-    \echo 'ERROR: You must execute it as root'
+    \_minutil_error 'You must execute it as root'
     \return 1
   fi
 }
@@ -99,7 +104,7 @@ _minutil_reinstall_split_package()
       }
       _file_index="$((_file_index + 1))"
     else
-      echo 'ERROR: Split package is missing'
+      _minutil_error 'Split package is missing'
       pm install-abandon "${_install_sid:?}"
       return 4
     fi
@@ -114,24 +119,24 @@ minutil_reinstall_package()
 
   echo "Reinstalling ${1:?}..."
   command -v -- pm 1> /dev/null || {
-    echo 'ERROR: Package manager is NOT available'
+    _minutil_error 'Package manager is NOT available'
     return 1
   }
 
   _package_path="$(_minutil_find_package "${1:?}")" || {
-    echo "ERROR: Package '${1?}' not found"
+    _minutil_error "Package '${1?}' not found"
     return 2
   }
   _apk_count="$(echo "${_package_path:?}" | wc -l --)"
   if test "${_apk_count:?}" -ge 2; then
     _minutil_reinstall_split_package "${_package_path:?}" || {
       _status="${?}"
-      echo 'ERROR: Split package reinstall failed'
+      _minutil_error 'Split package reinstall failed'
       return "${_status:?}"
     }
   else
     pm install -i 'com.android.vending' -r -g -- "${_package_path:?}" || {
-      echo 'ERROR: Package reinstall failed'
+      _minutil_error 'Package reinstall failed'
       return 3
     }
   fi
@@ -145,7 +150,7 @@ minutil_remove_all_accounts()
   \_is_caller_root || \return 1
   mount /data 2> /dev/null || true
   test -e '/data' || {
-    echo 'ERROR: /data NOT found'
+    _minutil_error '/data NOT found'
     return 1
   }
 
@@ -155,7 +160,7 @@ minutil_remove_all_accounts()
       rm -f -- "${_file}" || return 1
     fi
   done || {
-    echo 'ERROR: Failed to delete accounts'
+    _minutil_error 'Failed to delete accounts'
     return 4
   }
 
