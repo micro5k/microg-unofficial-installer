@@ -192,10 +192,10 @@ while true; do
 
     *)
       _minutil_display_help='true'
-      printf 'MinUtil: invalid option -- %s\n' "'${1#-}'"
+      \printf 1>&2 'MinUtil: invalid option -- %s\n' "'${1#-}'"
       ;;
   esac
-  shift || break
+  \shift || \break
 done
 
 if test "${_minutil_display_help:?}" = 'true'; then
