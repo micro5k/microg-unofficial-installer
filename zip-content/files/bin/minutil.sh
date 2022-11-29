@@ -40,6 +40,16 @@ _minutil_check_getopt()
 }
 
 if \_minutil_check_getopt; then
+  for param in "${@}"; do
+    \shift
+    if \test "${param?}" = '-?'; then # Workaround for getopt issues with the question mark
+      \set -- "${@}" '-h' || \exit 1
+    else
+      \set -- "${@}" "${param?}" || \exit 1
+    fi
+  done
+  \unset param
+
   if minutil_args="$(\unset POSIXLY_CORRECT; \getopt -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -n 'MinUtil' -- "${@}")" && \test "${minutil_args:?}" != ' --'; then
     \eval ' \set' '--' "${minutil_args:?}" || \exit 1
   else
