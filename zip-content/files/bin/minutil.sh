@@ -41,6 +41,8 @@ if \_minutil_check_getopt; then
     \set -- '--help' '--' || \exit 1
   fi
   \unset minutil_args
+elif \test "${*}" = ''; then
+  \set -- '--help' '--' || \exit 1
 fi
 
 _is_caller_adb_or_root()
