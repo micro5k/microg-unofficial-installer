@@ -188,25 +188,27 @@ minutil_media_rescan()
   }
 
   am broadcast -a 'android.intent.action.BOOT_COMPLETED' -n 'com.android.providers.media/.MediaScannerReceiver' || {
-    _minutil_error 'Media rescanning failed'
+    _minutil_error 'Media rescanning failed!'
     return 3
   }
+  echo "Done!"
 }
 
 minutil_manual_media_rescan()
 {
   \_is_caller_adb_or_root || \return 1
 
-  echo "Manual media rescanning..."
+  echo "Manual media rescanning (it may take a while)..."
   command -v -- am 1> /dev/null || {
     _minutil_error 'Activity manager is NOT available'
     return 1
   }
 
-  find /storage/* -type d '(' -path '/storage/emulated/*/Android' -o -path '/storage/*/Android' ')' -prune -o -type f -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d \"file://${*:?}\"' _ '{}' ';' 2> /dev/null || {
-    _minutil_error 'Manual media rescanning failed'
+  find /storage/* -type d '(' -path '/storage/emulated/*/Android' -o -path '/storage/*/Android' ')' -prune -o -type f -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "\"file://${*:?}\"" 1> /dev/null' _ '{}' ';' 2> /dev/null || {
+    _minutil_error 'Manual media rescanning failed!'
     return 3
   }
+  echo "Done!"
 }
 
 _minutil_display_help='false'
