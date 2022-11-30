@@ -204,7 +204,7 @@ minutil_manual_media_rescan()
     return 1
   }
 
-  find /storage/* -type d '(' -path '/storage/emulated/*/Android' -o -path '/storage/*/Android' ')' -prune -o -type f -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "\"file://${*:?}\"" 1> /dev/null' _ '{}' ';' 2> /dev/null || {
+  find /storage/* -type d '(' -path '/storage/emulated/*/Android' -o -path '/storage/*/Android' ')' -prune -o -type f -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "\"file://${*:?}\"" 1>&-' _ '{}' ';' || {
     _minutil_error 'Manual media rescanning failed!'
     return 3
   }
@@ -247,7 +247,7 @@ while true; do
       \printf 1>&2 'MinUtil: invalid option -- %s\n' "'${1#-}'"
       ;;
   esac
-  \shift || \break
+  \shift 2> /dev/null || \break
 done
 
 if test "${_minutil_display_help:?}" = 'true'; then
