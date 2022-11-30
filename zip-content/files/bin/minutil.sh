@@ -203,7 +203,7 @@ minutil_manual_media_rescan()
     return 1
   }
 
-  find /storage/* -type d -path '/storage/*/Android/data' -prune -o -type f -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d \"file://${*:?}\"' _ '{}' ';' 2> /dev/null || {
+  find /storage/* -type d '(' -path '/storage/emulated/*/Android' -o -path '/storage/*/Android' ')' -prune -o -type f -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d \"file://${*:?}\"' _ '{}' ';' 2> /dev/null || {
     _minutil_error 'Manual media rescanning failed'
     return 3
   }
