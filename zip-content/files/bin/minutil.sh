@@ -50,7 +50,10 @@ if \_minutil_check_getopt; then
   done
   \unset param
 
-  if minutil_args="$(\unset POSIXLY_CORRECT; \getopt -o 'i:sh' -l 'help,reinstall-package:,remove-all-accounts,rescan-media' -n 'MinUtil' -- "${@}")" && \test "${minutil_args:?}" != ' --'; then
+  if minutil_args="$(
+    \unset POSIXLY_CORRECT
+    \getopt -o 'i:sh' -l 'help,reinstall-package:,remove-all-accounts,rescan-media' -n 'MinUtil' -- "${@}"
+  )" && \test "${minutil_args:?}" != ' --'; then
     \eval ' \set' '--' "${minutil_args:?}" || \exit 1
   else
     \set -- '--help' '--' || \exit 1
@@ -237,8 +240,7 @@ while true; do
       break
       ;;
 
-    '')
-      ;; # Ignore empty parameters
+    '') ;; # Ignore empty parameters
 
     *)
       _minutil_display_help='true'
