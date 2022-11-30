@@ -50,7 +50,7 @@ if \_minutil_check_getopt; then
   done
   \unset param
 
-  if minutil_args="$(\unset POSIXLY_CORRECT; \getopt -o 'hi:' -l 'help,reinstall-package:,remove-all-accounts' -n 'MinUtil' -- "${@}")" && \test "${minutil_args:?}" != ' --'; then
+  if minutil_args="$(\unset POSIXLY_CORRECT; \getopt -o 'i:sh' -l 'help,reinstall-package:,remove-all-accounts,rescan-media' -n 'MinUtil' -- "${@}")" && \test "${minutil_args:?}" != ' --'; then
     \eval ' \set' '--' "${minutil_args:?}" || \exit 1
   else
     \set -- '--help' '--' || \exit 1
@@ -177,6 +177,19 @@ minutil_remove_all_accounts()
   echo "All accounts deleted. Now restart the device!!!"
 }
 
+minutil_rescan_media()
+{
+  \_is_caller_root || \return 1
+
+  echo "Rescanning..."
+  command -v -- am 1> /dev/null || {
+    _minutil_error 'Activity manager is NOT available'
+    return 1
+  }
+
+  am broadcast -a 'android.intent.action.BOOT_COMPLETED' -n 'com.android.providers.media/.MediaScannerReceiver' || return "${?}"
+}
+
 _minutil_display_help='false'
 while true; do
   case "${1}" in
@@ -191,6 +204,10 @@ while true; do
 
     --remove-all-accounts)
       \minutil_remove_all_accounts
+      ;;
+
+    -s | --rescan-media)
+      \minutil_rescan_media
       ;;
 
     --)
