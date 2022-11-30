@@ -177,17 +177,36 @@ minutil_remove_all_accounts()
   echo "All accounts deleted. Now restart the device!!!"
 }
 
-minutil_rescan_media()
+minutil_media_rescan()
 {
   \_is_caller_root || \return 1
 
-  echo "Rescanning..."
+  echo "Media rescanning..."
   command -v -- am 1> /dev/null || {
     _minutil_error 'Activity manager is NOT available'
     return 1
   }
 
-  am broadcast -a 'android.intent.action.BOOT_COMPLETED' -n 'com.android.providers.media/.MediaScannerReceiver' || return "${?}"
+  am broadcast -a 'android.intent.action.BOOT_COMPLETED' -n 'com.android.providers.media/.MediaScannerReceiver' || {
+    _minutil_error 'Media rescanning failed'
+    return 3
+  }
+}
+
+minutil_manual_media_rescan()
+{
+  \_is_caller_adb_or_root || \return 1
+
+  echo "Manual media rescanning..."
+  command -v -- am 1> /dev/null || {
+    _minutil_error 'Activity manager is NOT available'
+    return 1
+  }
+
+  find /storage/* -type d -path '/storage/*/Android/data' -prune -o -type f -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d \"file://${*:?}\"' _ '{}' ';' 2> /dev/null || {
+    _minutil_error 'Manual media rescanning failed'
+    return 3
+  }
 }
 
 _minutil_display_help='false'
@@ -207,7 +226,11 @@ while true; do
       ;;
 
     -s | --rescan-media)
-      \minutil_rescan_media
+      if \test "$(\whoami || true)" = 'root'; then
+        \minutil_media_rescan
+      else
+        \minutil_manual_media_rescan
+      fi
       ;;
 
     --)
