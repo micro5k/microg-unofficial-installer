@@ -53,15 +53,15 @@ if \_minutil_check_getopt; then
 
   if minutil_args="$(
     \unset POSIXLY_CORRECT
-    \getopt -o 'hi:s' -l 'help,reinstall-package:,remove-all-accounts,rescan-storage' -n 'MinUtil' -- "${@}"
+    \getopt -o 'hsi:' -l 'help,remove-all-accounts,rescan-storage,reinstall-package:' -n 'MinUtil' -- "${@}"
   )" && \test "${minutil_args:?}" != ' --'; then
     \eval ' \set' '--' "${minutil_args:?}" || \exit 1
   else
     \set -- '--help' '--' || \exit 1
   fi
   \unset minutil_args
-elif \test "${*}" = ''; then
-  \set -- '--help' '--' || \exit 1
+elif \test "${*?}" = ''; then
+  _minutil_display_help='true'
 fi
 
 _is_caller_adb_or_root()
@@ -244,7 +244,7 @@ while true; do
 
     *)
       _minutil_display_help='true'
-      \printf 1>&2 'MinUtil: invalid option -- %s\n' "'${1#-}'"
+      \printf 1>&2 'MinUtil: invalid option -- %s\n' "'${1#-}'" || true
       ;;
   esac
   \shift 2> /dev/null || \break
@@ -258,9 +258,9 @@ MinUtil - Minimal utilities
 Usage: %s [OPTIONS] [--]
 
 	-h,--help				Show this help
-	-i,--reinstall-package PACKAGE_NAME	Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions
 	--remove-all-accounts			Remove all accounts from the device
 	-s,--rescan-storage			Rescan storage to find file changes
+	-i,--reinstall-package PACKAGE_NAME	Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions
 
 Examples:
 
