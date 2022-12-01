@@ -251,11 +251,22 @@ while true; do
 done
 
 if test "${_minutil_display_help:?}" = 'true'; then
-  printf '\n%s\n' 'MinUtil
+  printf '
+MinUtil
 Various utility functions.
 
--i | --reinstall-package PACKAGE_NAME		Reinstall package as if it were installed from Play Store and grant it all permissions, example: minutil -i org.schabi.newpipe
---remove-all-accounts				Remove all accounts from the device'
+Usage: minutil [OPTIONS] [--]
+
+	-h,--help				This guide
+	-i,--reinstall-package PACKAGE_NAME	Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions
+	--remove-all-accounts			Remove all accounts from the device
+	-s,--rescan-media			Rescan storage to find file changes
+
+Examples:
+
+minutil -i org.schabi.newpipe
+minutil --rescan-media
+\n'
 fi
 
 \exit "${?}"
