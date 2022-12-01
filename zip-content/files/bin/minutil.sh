@@ -39,11 +39,12 @@ _minutil_check_getopt()
   return 0
 }
 
+_minutil_display_help='false'
 if \_minutil_check_getopt; then
   for param in "${@}"; do
     \shift
     if \test "${param?}" = '-?'; then # Workaround for getopt issues with the question mark
-      \set -- "${@}" '-h' || \exit 1
+      _minutil_display_help='true'
     else
       \set -- "${@}" "${param?}" || \exit 1
     fi
@@ -212,7 +213,6 @@ minutil_manual_media_rescan()
   return 0
 }
 
-_minutil_display_help='false'
 while true; do
   case "${1}" in
     -h | --help | -\?)
