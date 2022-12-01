@@ -215,6 +215,12 @@ minutil_manual_media_rescan()
     return 1
   }
 
+  # First check if the broadcast is working
+  am broadcast -a 'android.intent.action.MEDIA_SCANNER_SCAN_FILE' -d '"file:///storage"' 1>&- || {
+    _minutil_error 'Manual media rescanning failed!'
+    return 3
+  }
+
   find /storage/* -type d '(' -path '/storage/emulated/*/Android' -o -path '/storage/*/Android' ')' -prune -o -mtime -2 -type f -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "\"file://${*:?}\"" 1>&-' _ '{}' ';' || true
   echo "Done!"
   return 0
