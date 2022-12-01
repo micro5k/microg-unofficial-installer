@@ -257,7 +257,7 @@ MinUtil - Minimal utilities
 
 Usage: %s [OPTIONS] [--]
 
-	-h,--help				This guide
+	-h,--help				Show this help
 	-i,--reinstall-package PACKAGE_NAME	Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions
 	--remove-all-accounts			Remove all accounts from the device
 	-s,--rescan-storage			Rescan storage to find file changes
