@@ -60,7 +60,7 @@ if \_minutil_check_getopt; then
     \set -- '--help' '--' || \exit 1
   fi
   \unset minutil_args
-elif \test "${*?}" = ''; then
+elif \test "${*}" = ''; then
   _minutil_display_help='true'
 fi
 
