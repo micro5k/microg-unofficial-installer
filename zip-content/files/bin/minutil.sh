@@ -251,11 +251,11 @@ while true; do
 done
 
 if test "${_minutil_display_help:?}" = 'true'; then
-  printf '
-MinUtil
-Various utility functions.
+  _minutil_script_name="$(\basename "${0:?}")" || \exit 1
+  printf "
+MinUtil - Minimal utilities
 
-Usage: minutil [OPTIONS] [--]
+Usage: ${_minutil_script_name:?} [OPTIONS] [--]
 
 	-h,--help				This guide
 	-i,--reinstall-package PACKAGE_NAME	Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions
@@ -264,9 +264,9 @@ Usage: minutil [OPTIONS] [--]
 
 Examples:
 
-minutil -i org.schabi.newpipe
-minutil --rescan-media
-\n'
+${_minutil_script_name:?} -i org.schabi.newpipe
+${_minutil_script_name:?} --rescan-media
+\n"
 fi
 
 \exit "${?}"
