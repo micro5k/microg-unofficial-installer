@@ -73,6 +73,11 @@ if \test -z "${*:-}" || \test "${*:-}" = '--'; then
   _minutil_display_help='true'
 fi
 
+_minutil_aligned_print()
+{
+  printf '\t%-37s %s\n' "${@:?}"
+}
+
 _is_caller_adb_or_root()
 {
   if \test "${_minutil_current_user?}" != 'shell' && \test "${_minutil_current_user?}" != 'root'; then
@@ -277,21 +282,19 @@ if test "${_minutil_display_help:?}" = 'true'; then
   if test "${_minutil_newline:-false}" != 'false'; then printf '\n'; fi
   _minutil_script_name="$(\basename "${0:?}")" || \exit 1
 
-  printf "\
-MinUtil - Minimal utilities
+  printf '%s\n\nUsage: %s [OPTIONS] [--]\n\n'					'MinUtil - Minimal utilities' "${_minutil_script_name:?}"
 
-Usage: %s [OPTIONS] [--]
+  _minutil_aligned_print '-h,-?,--help'							'Show this help'
+  _minutil_aligned_print '--remove-all-accounts'				'Remove all accounts from the device'
+  _minutil_aligned_print '-s,--rescan-storage'					'Rescan storage to find file changes'
+  _minutil_aligned_print '-i,--reinstall-package PACKAGE_NAME'	'Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions'
 
-	-h,-?,--help				Show this help
-	--remove-all-accounts			Remove all accounts from the device
-	-s,--rescan-storage			Rescan storage to find file changes
-	-i,--reinstall-package PACKAGE_NAME	Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions
-
+  printf '
 Examples:
 
 %s -i org.schabi.newpipe
 %s --rescan-storage
-\n" "${_minutil_script_name:?}" "${_minutil_script_name:?}" "${_minutil_script_name:?}"
+\n' "${_minutil_script_name:?}" "${_minutil_script_name:?}"
 
 fi
 
