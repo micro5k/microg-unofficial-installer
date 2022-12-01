@@ -52,7 +52,7 @@ if \_minutil_check_getopt; then
 
   if minutil_args="$(
     \unset POSIXLY_CORRECT
-    \getopt -o 'i:sh' -l 'help,reinstall-package:,remove-all-accounts,rescan-media' -n 'MinUtil' -- "${@}"
+    \getopt -o 'hi:s' -l 'help,reinstall-package:,remove-all-accounts,rescan-storage' -n 'MinUtil' -- "${@}"
   )" && \test "${minutil_args:?}" != ' --'; then
     \eval ' \set' '--' "${minutil_args:?}" || \exit 1
   else
@@ -228,7 +228,7 @@ while true; do
       \minutil_remove_all_accounts
       ;;
 
-    -s | --rescan-media)
+    -s | --rescan-storage)
       if \test "$(\whoami || true)" = 'root'; then
         \minutil_media_rescan
       else
@@ -260,12 +260,12 @@ Usage: %s [OPTIONS] [--]
 	-h,--help				This guide
 	-i,--reinstall-package PACKAGE_NAME	Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions
 	--remove-all-accounts			Remove all accounts from the device
-	-s,--rescan-media			Rescan storage to find file changes
+	-s,--rescan-storage			Rescan storage to find file changes
 
 Examples:
 
 %s -i org.schabi.newpipe
-%s --rescan-media
+%s --rescan-storage
 \n' "${_minutil_script_name:?}" "${_minutil_script_name:?}" "${_minutil_script_name:?}"
 fi
 
