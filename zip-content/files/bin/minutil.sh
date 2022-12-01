@@ -39,6 +39,13 @@ _minutil_check_getopt()
   return 0
 }
 
+_minutil_current_user="$(\whoami)" || \exit 1
+\readonly _minutil_current_user
+if \test "$(\id -un || \true)" != "${_minutil_current_user?}"; then
+  \_minutil_error 'Invalid user!!!'
+  \exit 1
+fi
+
 _minutil_display_help='false'
 if \_minutil_check_getopt; then
   for param in "${@}"; do
@@ -66,7 +73,7 @@ fi
 
 _is_caller_adb_or_root()
 {
-  if \test "$(\whoami || true)" != 'shell' && \test "$(\whoami || true)" != 'root'; then
+  if \test "${_minutil_current_user?}" != 'shell' && \test "${_minutil_current_user?}" != 'root'; then
     \_minutil_error 'You must execute it as either ADB or root'
     \return 1
   fi
@@ -74,7 +81,7 @@ _is_caller_adb_or_root()
 
 _is_caller_root()
 {
-  if \test "$(\whoami || true)" != 'root'; then
+  if \test "${_minutil_current_user?}" != 'root'; then
     \_minutil_error 'You must execute it as root'
     \return 1
   fi
@@ -229,7 +236,7 @@ while true; do
       ;;
 
     -s | --rescan-storage)
-      if \test "$(\whoami || true)" = 'root'; then
+      if \test "${_minutil_current_user?}" = 'root'; then
         \minutil_media_rescan
       else
         \minutil_manual_media_rescan
@@ -263,7 +270,7 @@ MinUtil - Minimal utilities
 
 Usage: %s [OPTIONS] [--]
 
-	-h,--help				Show this help
+	-h,-?,--help				Show this help
 	--remove-all-accounts			Remove all accounts from the device
 	-s,--rescan-storage			Rescan storage to find file changes
 	-i,--reinstall-package PACKAGE_NAME	Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions
