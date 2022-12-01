@@ -282,7 +282,9 @@ if test "${_minutil_display_help:?}" = 'true'; then
   if test "${_minutil_newline:-false}" != 'false'; then printf '\n'; fi
   _minutil_script_name="$(\basename "${0:?}")" || \exit 1
 
-  printf '%s\n\nUsage: %s [OPTIONS] [--]\n\n'					'MinUtil - Minimal utilities' "${_minutil_script_name:?}"
+  printf '%s\n'   'MinUtil v0.3 - Minimal utilities'
+  printf '%s\n\n' 'Licensed under GPLv3+'
+  printf 'Usage: %s [OPTIONS] [--]\n\n' "${_minutil_script_name:?}"
 
   _minutil_aligned_print '-h,-?,--help'							'Show this help'
   _minutil_aligned_print '--remove-all-accounts'				'Remove all accounts from the device'
