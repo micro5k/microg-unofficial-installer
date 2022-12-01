@@ -31,7 +31,7 @@ _minutil_check_getopt()
   getopt_test='0'
   \getopt -T -- 2> /dev/null || getopt_test="${?}"
   if \test "${getopt_test:?}" != '4'; then
-    \printf 1>&2 '\033[0;33m%s\033[0m\n' 'WARNING: Limited or missing getopt'
+    \printf 1>&2 '\033[0;33m%s\033[0m\n\n' 'WARNING: Limited or missing getopt'
     \return 1
   fi
   \unset getopt_test
@@ -61,13 +61,15 @@ if \_minutil_check_getopt; then
   if minutil_args="$(
     \unset POSIXLY_CORRECT
     \getopt -o 'hsi:' -l 'help,remove-all-accounts,rescan-storage,reinstall-package:' -n 'MinUtil' -- "${@}"
-  )" && \test "${minutil_args:?}" != ' --'; then
-    \eval ' \set' '--' "${minutil_args:?}" || \exit 1
+  )"; then
+    \eval ' \set' '--' "${minutil_args?}" || \exit 1
   else
     \set -- '--help' '--' || \exit 1
+    \printf '\n'
   fi
   \unset minutil_args
-elif \test -z "${*:-}"; then
+fi
+if \test -z "${*:-}" || \test "${*:-}" = '--'; then
   _minutil_display_help='true'
 fi
 
@@ -257,7 +259,7 @@ while true; do
 
     *)
       _minutil_display_help='true'
-      \printf 1>&2 'MinUtil: invalid option -- %s\n' "'${1#-}'" || true
+      \printf 1>&2 'MinUtil: invalid option -- %s\n\n' "'${1#-}'" || true
       ;;
   esac
 
@@ -271,7 +273,7 @@ done
 
 if test "${_minutil_display_help:?}" = 'true'; then
   _minutil_script_name="$(\basename "${0:?}")" || \exit 1
-  printf '
+  printf "\
 MinUtil - Minimal utilities
 
 Usage: %s [OPTIONS] [--]
@@ -285,7 +287,7 @@ Examples:
 
 %s -i org.schabi.newpipe
 %s --rescan-storage
-\n' "${_minutil_script_name:?}" "${_minutil_script_name:?}" "${_minutil_script_name:?}"
+\n" "${_minutil_script_name:?}" "${_minutil_script_name:?}" "${_minutil_script_name:?}"
 fi
 
 \exit "${?}"
