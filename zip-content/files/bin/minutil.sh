@@ -65,7 +65,7 @@ if \_minutil_check_getopt; then
     \eval ' \set' '--' "${minutil_args?}" || \exit 1
   else
     \set -- '--help' '--' || \exit 1
-    \printf '\n'
+    _minutil_newline='true'
   fi
   \unset minutil_args
 fi
@@ -259,7 +259,8 @@ while true; do
 
     *)
       _minutil_display_help='true'
-      \printf 1>&2 'MinUtil: invalid option -- %s\n\n' "'${1#-}'" || true
+      _minutil_newline='true'
+      \printf 1>&2 'MinUtil: invalid option -- %s\n' "'${1#-}'" || true
       ;;
   esac
 
@@ -272,7 +273,10 @@ while true; do
 done
 
 if test "${_minutil_display_help:?}" = 'true'; then
+
+  if test "${_minutil_newline:-false}" != 'false'; then printf '\n'; fi
   _minutil_script_name="$(\basename "${0:?}")" || \exit 1
+
   printf "\
 MinUtil - Minimal utilities
 
@@ -288,6 +292,7 @@ Examples:
 %s -i org.schabi.newpipe
 %s --rescan-storage
 \n" "${_minutil_script_name:?}" "${_minutil_script_name:?}" "${_minutil_script_name:?}"
+
 fi
 
 \exit "${?}"
