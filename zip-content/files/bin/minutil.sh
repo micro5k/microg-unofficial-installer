@@ -247,7 +247,13 @@ while true; do
       \printf 1>&2 'MinUtil: invalid option -- %s\n' "'${1#-}'" || true
       ;;
   esac
-  \shift 2> /dev/null || \break
+
+  # Note: 'shift' with nothing to shift cause some shells to exit and it can't be avoided so check it before using
+  if \test "${#:?}" -gt 0; then
+    \shift 2> /dev/null || \break
+  else
+    \break
+  fi
 done
 
 if test "${_minutil_display_help:?}" = 'true'; then
