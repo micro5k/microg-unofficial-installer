@@ -11,21 +11,42 @@ set -o posix 2> /dev/null || true
 # shellcheck disable=SC3040
 set -o pipefail || true
 
-readonly MINUTIL_NAME='MinUtil'
-readonly MINUTIL_VERSION='0.3'
+MINUTIL_NAME='MinUtil'
+MINUTIL_VERSION='0.3'
 
-case "${0:?}" in
-  *'.sh') ;;
-  *'sh')
-    \printf 1>&2 '\033[1;31m%s\033[0m\n' 'ERROR: MinUtil cannot be sourced'
+### PREVENTIVE CHECKS ###
+
+_minutil_initialize()
+{
+  case "${0:?}" in
+    *'.sh') ;; # $0 => minutil.sh
+    *'sh')     # $0 => sh | ash | bash | ...sh
+      \printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: Cannot be sourced"
+      \exit 1
+      ;;
+    *) ;;
+  esac
+
+  _minutil_current_user="$(\whoami)" || \exit 1
+  \readonly _minutil_current_user
+  if \test -z "${_minutil_current_user?}" || \test "$(\id -un || \true)" != "${_minutil_current_user?}"; then
+    \printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: Invalid user"
     \exit 1
-    ;;
-  *) ;;
-esac
+  fi
+}
+\readonly MINUTIL_NAME MINUTIL_VERSION
+\_minutil_initialize
+
+### BASE FUNCTIONS ###
 
 _minutil_error()
 {
-  \printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*?}"
+  \printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: ${*?}"
+}
+
+_minutil_warn()
+{
+  \printf 1>&2 '\033[0;33m%s\033[0m\n\n' "WARNING: ${*?}"
 }
 
 _minutil_aligned_print()
@@ -55,7 +76,7 @@ _minutil_check_getopt()
   getopt_test='0'
   \getopt -T -- 2> /dev/null || getopt_test="${?}"
   if \test "${getopt_test:?}" != '4'; then
-    \printf 1>&2 '\033[0;33m%s\033[0m\n\n' 'WARNING: Limited or missing getopt'
+    \_minutil_warn 'Limited or missing getopt'
     \return 1
   fi
   \unset getopt_test
@@ -63,12 +84,7 @@ _minutil_check_getopt()
   return 0
 }
 
-_minutil_current_user="$(\whoami)" || \exit 1
-\readonly _minutil_current_user
-if \test "$(\id -un || \true)" != "${_minutil_current_user?}"; then
-  \_minutil_error 'Invalid user!!!'
-  \exit 1
-fi
+### FUNCTIONS AND CODE ###
 
 _minutil_display_help='false'
 if \_minutil_check_getopt; then
