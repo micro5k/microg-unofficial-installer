@@ -11,6 +11,9 @@ set -o posix 2> /dev/null || true
 # shellcheck disable=SC3040
 set -o pipefail || true
 
+readonly MINUTIL_NAME='MinUtil'
+readonly MINUTIL_VERSION='0.3'
+
 case "${0:?}" in
   *'.sh') ;;
   *'sh')
@@ -23,6 +26,27 @@ esac
 _minutil_error()
 {
   \printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*?}"
+}
+
+_minutil_aligned_print()
+{
+  printf '\t%-37s %s\n' "${@:?}"
+}
+
+_is_caller_adb_or_root()
+{
+  if \test "${_minutil_current_user?}" != 'shell' && \test "${_minutil_current_user?}" != 'root'; then
+    \_minutil_error 'You must execute it as either ADB or root'
+    \return 1
+  fi
+}
+
+_is_caller_root()
+{
+  if \test "${_minutil_current_user?}" != 'root'; then
+    \_minutil_error 'You must execute it as root'
+    \return 1
+  fi
 }
 
 _minutil_check_getopt()
@@ -72,27 +96,6 @@ fi
 if \test -z "${*:-}" || \test "${*:-}" = '--'; then
   _minutil_display_help='true'
 fi
-
-_minutil_aligned_print()
-{
-  printf '\t%-37s %s\n' "${@:?}"
-}
-
-_is_caller_adb_or_root()
-{
-  if \test "${_minutil_current_user?}" != 'shell' && \test "${_minutil_current_user?}" != 'root'; then
-    \_minutil_error 'You must execute it as either ADB or root'
-    \return 1
-  fi
-}
-
-_is_caller_root()
-{
-  if \test "${_minutil_current_user?}" != 'root'; then
-    \_minutil_error 'You must execute it as root'
-    \return 1
-  fi
-}
 
 _list_account_files()
 {
@@ -286,7 +289,7 @@ if test "${_minutil_display_help:?}" = 'true'; then
   if test "${_minutil_newline:-false}" != 'false'; then printf '\n'; fi
   _minutil_script_name="$(\basename "${0:?}")" || \exit 1
 
-  printf '%s\n'   'MinUtil v0.3 - Minimal utilities'
+  printf '%s\n'   "${MINUTIL_NAME:?} v${MINUTIL_VERSION:?} - Minimal utilities"
   printf '%s\n\n' 'Licensed under GPLv3+'
   printf 'Usage: %s [OPTIONS] [--]\n\n' "${_minutil_script_name:?}"
 
