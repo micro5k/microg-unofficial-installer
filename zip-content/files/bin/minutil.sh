@@ -54,6 +54,24 @@ _minutil_aligned_print()
   printf '\t%-37s %s\n' "${@:?}"
 }
 
+_is_caller_user_0()
+{
+  case "${_minutil_current_user?}" in
+    'u0_a'*) return 0 ;;
+    *) ;;
+  esac
+
+  return 1
+}
+
+_is_caller_adb_or_root_or_user_0()
+{
+  if \test "${_minutil_current_user?}" != 'shell' && \test "${_minutil_current_user?}" != 'root' && ! _is_caller_user_0; then
+    \_minutil_error 'You must execute it as either ADB or root or user 0'
+    \return 1
+  fi
+}
+
 _is_caller_adb_or_root()
 {
   if \test "${_minutil_current_user?}" != 'shell' && \test "${_minutil_current_user?}" != 'root'; then
@@ -247,7 +265,7 @@ minutil_manual_media_rescan()
     return 3
   }
 
-  if test -e '/storage/emulated';then 
+  if test -e '/storage/emulated'; then
     find -- /storage/emulated/* -type 'd' '(' -path '/storage/emulated/*/Android' -o -path '/storage/emulated/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "\"file://${*:?}\"" 1>&-' _ '{}' ';' || true
   else
     find -- /storage/* -type 'd' '(' -path '/storage/*/Android' -o -path '/storage/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "\"file://${*:?}\"" 1>&-' _ '{}' ';' || true
@@ -305,7 +323,7 @@ if test "${_minutil_display_help:?}" = 'true'; then
   if test "${_minutil_newline:-false}" != 'false'; then printf '\n'; fi
   _minutil_script_name="$(\basename "${0:?}")" || \exit 1
 
-  printf '%s\n'   "${MINUTIL_NAME:?} v${MINUTIL_VERSION:?} - Minimal utilities"
+  printf '%s\n' "${MINUTIL_NAME:?} v${MINUTIL_VERSION:?} - Minimal utilities"
   printf '%s\n\n' 'Licensed under GPLv3+'
   printf 'Usage: %s [OPTIONS] [--]\n\n' "${_minutil_script_name:?}"
 
