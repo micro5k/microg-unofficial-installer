@@ -479,9 +479,9 @@ string_split()
 setup_app()
 {
   local _install _app_conf _min_api _max_api _output_name _internal_name _file_hash _url_handling _optional
-  if test "${6:-true}" = 'true' && test ! -f "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk"; then return 1; fi
+  if test "${6:-true}" = 'true' && test ! -f "${TMP_PATH}/origin/${4:?}/${3:?}.apk"; then return 1; fi
   _install="${1:-0}"
-  _app_conf="$(file_get_first_line_that_start_with "${4:?}/${3:?}|" "${TMP_PATH}/files/system-apps/file-list.dat")" || ui_error "Failed to get app config for '${2}'"
+  _app_conf="$(file_get_first_line_that_start_with "${4:?}/${3:?}|" "${TMP_PATH}/origin/file-list.dat")" || ui_error "Failed to get app config for '${2}'"
   _min_api="$(string_split "${_app_conf:?}" 2)" || ui_error "Failed to get min API for '${2}'"
   _max_api="$(string_split "${_app_conf:?}" 3)" || ui_error "Failed to get max API for '${2}'"
   _output_name="$(string_split "${_app_conf:?}" 4)" || ui_error "Failed to get output name for '${2}'"
@@ -501,22 +501,22 @@ setup_app()
 
       ui_msg_sameline_start 'Verifying... '
       ui_debug ''
-      verify_sha1 "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${_file_hash:?}" || ui_error "Failed hash verification of '${2}'"
+      verify_sha1 "${TMP_PATH}/origin/${4:?}/${3:?}.apk" "${_file_hash:?}" || ui_error "Failed hash verification of '${2}'"
       ui_msg_sameline_end 'OK'
 
-      if test "${4:?}" = 'priv-app' && test "${API:?}" -ge 26 && test -f "${TMP_PATH}/files/system-apps/etc/permissions/privapp-permissions-${3:?}.xml"; then
+      if test "${4:?}" = 'priv-app' && test "${API:?}" -ge 26 && test -f "${TMP_PATH}/origin/etc/permissions/privapp-permissions-${3:?}.xml"; then
         create_dir "${TMP_PATH}/files/etc/permissions" || ui_error "Failed to create the permissions folder for '${2}'"
-        move_rename_file "${TMP_PATH}/files/system-apps/etc/permissions/privapp-permissions-${3:?}.xml" "${TMP_PATH}/files/etc/permissions/privapp-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the priv-app xml of '${2}'"
+        move_rename_file "${TMP_PATH}/origin/etc/permissions/privapp-permissions-${3:?}.xml" "${TMP_PATH}/files/etc/permissions/privapp-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the priv-app xml of '${2}'"
       fi
-      if test "${API:?}" -ge 23 && test -f "${TMP_PATH}/files/system-apps/etc/default-permissions/default-permissions-${3:?}.xml"; then
+      if test "${API:?}" -ge 23 && test -f "${TMP_PATH}/origin/etc/default-permissions/default-permissions-${3:?}.xml"; then
         create_dir "${TMP_PATH}/files/etc/default-permissions" || ui_error "Failed to create the default permissions folder for '${2}'"
-        move_rename_file "${TMP_PATH}/files/system-apps/etc/default-permissions/default-permissions-${3:?}.xml" "${TMP_PATH}/files/etc/default-permissions/default-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the default permissions xml of '${2}'"
+        move_rename_file "${TMP_PATH}/origin/etc/default-permissions/default-permissions-${3:?}.xml" "${TMP_PATH}/files/etc/default-permissions/default-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the default permissions xml of '${2}'"
       fi
       if test "${_url_handling:?}" != 'false'; then
         add_line_in_file_after_string "${TMP_PATH}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${2}'"
       fi
       create_dir "${TMP_PATH}/files/${4:?}" || ui_error "Failed to create the folder for '${2}'"
-      move_rename_file "${TMP_PATH}/files/system-apps/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${2}'"
+      move_rename_file "${TMP_PATH}/origin/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${2}'"
       return 0
     else
       ui_debug "Disabling: ${2?}"

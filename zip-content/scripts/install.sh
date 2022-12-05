@@ -172,11 +172,13 @@ fi
 
 # Extracting
 ui_msg 'Extracting...'
+custom_package_extract_dir 'origin' "${TMP_PATH:?}"
 custom_package_extract_dir 'files' "${TMP_PATH:?}"
 custom_package_extract_dir 'addon.d' "${TMP_PATH:?}"
 
 # Setting up permissions
 ui_debug 'Setting up permissions...'
+set_std_perm_recursive "${TMP_PATH:?}/origin"
 set_std_perm_recursive "${TMP_PATH:?}/files"
 if test -e "${TMP_PATH:?}/addon.d"; then set_std_perm_recursive "${TMP_PATH:?}/addon.d"; fi
 set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
@@ -229,9 +231,9 @@ fi
 unset app_1_is_installed app_2_is_installed
 
 if test "${market_is_fakestore:?}" = 'true'; then
-  move_rename_file "${TMP_PATH:?}/files/system-apps/etc/microg.xml" "${TMP_PATH:?}/files/etc/microg.xml"
+  move_rename_file "${TMP_PATH:?}/origin/etc/microg.xml" "${TMP_PATH:?}/files/etc/microg.xml"
 else
-  move_rename_file "${TMP_PATH:?}/files/system-apps/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
+  move_rename_file "${TMP_PATH:?}/origin/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
 fi
 
 setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
