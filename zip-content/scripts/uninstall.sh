@@ -232,7 +232,7 @@ done
 STATUS="$?"
 if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
-list_app_data_to_remove | while read -r FILENAME; do
+list_app_data_to_remove | while IFS='|' read -r FILENAME; do
   if [[ -z "${FILENAME}" ]]; then continue; fi
   delete_recursive "/data/data/${FILENAME}"
   delete_recursive_wildcard '/data/user'/*/"${FILENAME}"
