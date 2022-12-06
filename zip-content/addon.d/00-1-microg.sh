@@ -20,23 +20,23 @@ EOF
 
 case "${1}" in
   backup)
-    echo 'Backup of microG unofficial installer in progress...'
-    list_files | while read -r FILE _; do
+    printf '%s\n' 'Backup of microG unofficial installer in progress...'
+    list_files | while IFS='|' read -r FILE _; do
       if test -z "${FILE?}"; then continue; fi
-      echo " ${S:?}/${FILE:?}"
+      printf ' %s\n' "${S:?}/${FILE:?}"
       backup_file "${S:?}/${FILE:?}"
     done
-    echo 'Done.'
+    printf '%s\n' 'Done.'
     ;;
   restore)
-    echo 'Restore of microG unofficial installer in progress...'
-    list_files | while read -r FILE REPLACEMENT; do
+    printf '%s\n' 'Restore of microG unofficial installer in progress...'
+    list_files | while IFS='|' read -r FILE REPLACEMENT; do
       if test -z "${FILE?}"; then continue; fi
       R=''
       test -n "${REPLACEMENT?}" && R="${S:?}/${REPLACEMENT:?}"
       test -f "${C:?}/${S:?}/${FILE:?}" && restore_file "${S:?}/${FILE:?}" "${R?}"
     done
-    echo 'Done.'
+    printf '%s\n' 'Done.'
     ;;
   pre-backup)
     # Stub
@@ -51,6 +51,6 @@ case "${1}" in
     # Stub
     ;;
   *)
-    echo 'WARNING: addon.d unknown phase'
+    printf 1>&2 'WARNING: addon.d unknown phase\n'
     ;;
 esac
