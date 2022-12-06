@@ -443,6 +443,13 @@ copy_dir_content "${USED_SETTINGS_PATH:?}" "${SYS_PATH:?}/etc/zips"
 # Clean legacy file
 delete "${SYS_PATH:?}/etc/zips/ug.prop"
 
+if test "${API:?}" -ge 23; then
+  ui_msg 'Installing utilities...'
+  set_perm 0 2000 0755 "${TMP_PATH:?}/files/bin/minutil.sh"
+  move_rename_file "${TMP_PATH:?}/files/bin/minutil.sh" "${TMP_PATH:?}/files/bin/minutil"
+  copy_dir_content "${TMP_PATH:?}/files/bin" "${SYS_PATH:?}/bin"
+fi
+
 # Install survival script
 if test -e "${SYS_PATH:?}/addon.d"; then
   if test "${API:?}" -lt 19; then
@@ -455,13 +462,6 @@ if test -e "${SYS_PATH:?}/addon.d"; then
     replace_line_in_file_with_file "${TMP_PATH}/addon.d/00-1-microg.sh" '%PLACEHOLDER-1%' "${TMP_PATH}/backup-filelist.lst"
     copy_file "${TMP_PATH}/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
   fi
-fi
-
-if test "${API:?}" -ge 23; then
-  ui_msg 'Installing utilities...'
-  set_perm 0 2000 0755 "${TMP_PATH:?}/files/bin/minutil.sh"
-  move_rename_file "${TMP_PATH:?}/files/bin/minutil.sh" "${TMP_PATH:?}/files/bin/minutil"
-  copy_dir_content "${TMP_PATH:?}/files/bin" "${SYS_PATH:?}/bin"
 fi
 
 if test "${SYS_INIT_STATUS}" = '1'; then
