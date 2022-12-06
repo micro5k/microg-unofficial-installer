@@ -276,8 +276,11 @@ delete_recursive "${SYS_PATH}"/etc/preferred-apps/google.xml
 delete_recursive "${SYS_PATH}/etc/org.fdroid.fdroid/additional_repos.xml"
 delete_recursive "${SYS_PATH}/etc/microg.xml"
 
-if test -e "${SYS_PATH}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH}/etc/org.fdroid.fdroid"; fi
-if test -e "${SYS_PATH}/etc/zips"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH}/etc/zips"; fi
+# Legacy file
+delete_recursive "${SYS_PATH:?}/etc/zips/ug.prop"
+
+if test -e "${SYS_PATH:?}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/org.fdroid.fdroid"; fi
+if test -e "${SYS_PATH:?}/etc/zips"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/zips"; fi
 
 if [[ -z "${INSTALLER}" ]]; then
   ui_debug 'Done.'
