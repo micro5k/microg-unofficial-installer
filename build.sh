@@ -111,6 +111,13 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS
 # shellcheck source=SCRIPTDIR/addition.sh
 . "${SCRIPT_DIR}/addition.sh"
 
+# Verify files in the files list to avoid creating broken packages
+while IFS='|' read -r LOCAL_FILENAME _ _ _ _ FILE_HASH _; do
+  printf '.'
+  verify_sha1 "${SCRIPT_DIR:?}/zip-content/origin/${LOCAL_FILENAME:?}.apk" "${FILE_HASH:?}" || ui_error "Verification of '${LOCAL_FILENAME:-}' failed"
+done 0< "${SCRIPT_DIR:?}/zip-content/origin/file-list.dat"
+printf '\n'
+
 # Download files if they are missing
 mkdir -p "${SCRIPT_DIR}/cache"
 
@@ -167,6 +174,8 @@ else
   mkdir -p "${TEMP_DIR}/zip-content/misc/keycheck"
   cp -f "${SCRIPT_DIR}/cache/misc/keycheck/keycheck-arm.bin" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
 fi
+
+printf '\n'
 
 # Remove the cache folder only if it is empty
 rmdir --ignore-fail-on-non-empty "${SCRIPT_DIR}/cache" || ui_error 'Failed to remove the empty cache folder'
