@@ -115,7 +115,7 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS
 while IFS='|' read -r LOCAL_FILENAME _ _ _ _ FILE_HASH _; do
   printf '.'
   verify_sha1 "${SCRIPT_DIR:?}/zip-content/origin/${LOCAL_FILENAME:?}.apk" "${FILE_HASH:?}" || ui_error "Verification of '${LOCAL_FILENAME:-}' failed"
-done 0< "${SCRIPT_DIR:?}/zip-content/origin/file-list.dat"
+done 0< "${SCRIPT_DIR:?}/zip-content/origin/file-list.dat" || ui_error 'Failed to open the list of files to verify'
 printf '\n'
 
 # Download files if they are missing
