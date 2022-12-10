@@ -260,7 +260,7 @@ minutil_manual_media_rescan()
   }
 
   # First check if the broadcast is working
-  am broadcast -a 'android.intent.action.MEDIA_SCANNER_SCAN_FILE' -d '"file:///storage"' 1>&- || {
+  am broadcast -a 'android.intent.action.MEDIA_SCANNER_SCAN_FILE' 1>&- || {
     _minutil_error 'Manual media rescanning failed!'
     return 3
   }
