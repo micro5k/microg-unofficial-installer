@@ -163,7 +163,7 @@ track_init()
 
 delete_tracked()
 {
-  for filename in "${@}"; do
+  for filename in "${@?}"; do
     if test -e "${filename?}"; then
       REALLY_DELETED='true'
       ui_debug "Deleting '${filename?}'...."
