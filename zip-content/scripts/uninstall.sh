@@ -120,9 +120,15 @@ EOF
 }
 
 if [[ -z "${INSTALLER}" ]]; then
+  ui_error()
+  {
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
+    exit 1
+  }
+
   ui_debug()
   {
-    echo "$1"
+    printf '%s\n' "${1?}"
   }
 
   delete_recursive()
@@ -149,6 +155,22 @@ if [[ -z "${INSTALLER}" ]]; then
   PRIVAPP_PATH="${SYS_PATH}/app"
   if [[ -d "${SYS_PATH}/priv-app" ]]; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi
 fi
+
+track_init()
+{
+  REALLY_DELETED='false'
+}
+
+delete_tracked()
+{
+  for filename in "${@}"; do
+    if test -e "${filename?}"; then
+      REALLY_DELETED='true'
+      ui_debug "Deleting '${filename?}'...."
+      rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders'
+    fi
+  done
+}
 
 INTERNAL_MEMORY_PATH='/sdcard0'
 if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
