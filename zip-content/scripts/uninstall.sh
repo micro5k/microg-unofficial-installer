@@ -161,6 +161,14 @@ track_init()
   REALLY_DELETED='false'
 }
 
+track_really_deleted()
+{
+  if test "${REALLY_DELETED:?}" = 'true'; then
+    return 0
+  fi
+  return 1
+}
+
 delete_tracked()
 {
   for filename in "${@?}"; do
