@@ -184,23 +184,15 @@ INTERNAL_MEMORY_PATH='/sdcard0'
 if [[ -e '/mnt/sdcard' ]]; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
 uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY _; do
-  if test -n "${INTERNAL_NAME}"; then
-    if test "${DEL_SYS_APPS_ONLY:-false}" = false || test -e "${PRIVAPP_PATH:?}/${FILENAME:?}" || test -e "${SYS_PATH:?}/app/${FILENAME:?}"; then
-      delete_recursive "/data/app/${INTERNAL_NAME}"
-      delete_recursive "/data/app/${INTERNAL_NAME}.apk"
-      delete_recursive_wildcard "/data/app/${INTERNAL_NAME}"-*
-      delete_recursive "/mnt/asec/${INTERNAL_NAME}"
-      delete_recursive "/mnt/asec/${INTERNAL_NAME}.apk"
-      delete_recursive_wildcard "/mnt/asec/${INTERNAL_NAME}"-*
-    fi
-    # Check also /data/app-private /data/app-asec /data/preload
+  track_init
 
+  if test -n "${INTERNAL_NAME}"; then
     delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
     delete_recursive "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME}.xml"
-    delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}"
-    delete_recursive "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
-    delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}"
-    delete_recursive "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
+    delete_tracked "${PRIVAPP_PATH}/${INTERNAL_NAME}"
+    delete_tracked "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
+    delete_tracked "${SYS_PATH}/app/${INTERNAL_NAME}"
+    delete_tracked "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
 
     # Legacy xml paths
     delete_recursive "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
@@ -209,28 +201,29 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete_recursive "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
     delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
   fi
+
   if test -n "${FILENAME}"; then
-    delete_recursive "${PRIVAPP_PATH}/${FILENAME}"
-    delete_recursive "${PRIVAPP_PATH}/${FILENAME}.apk"
-    delete_recursive "${PRIVAPP_PATH}/${FILENAME}.odex"
-    delete_recursive "${SYS_PATH}/app/${FILENAME}"
-    delete_recursive "${SYS_PATH}/app/${FILENAME}.apk"
-    delete_recursive "${SYS_PATH}/app/${FILENAME}.odex"
+    delete_tracked "${PRIVAPP_PATH}/${FILENAME}"
+    delete_tracked "${PRIVAPP_PATH}/${FILENAME}.apk"
+    delete_tracked "${PRIVAPP_PATH}/${FILENAME}.odex"
+    delete_tracked "${SYS_PATH}/app/${FILENAME}"
+    delete_tracked "${SYS_PATH}/app/${FILENAME}.apk"
+    delete_tracked "${SYS_PATH}/app/${FILENAME}.odex"
 
-    delete_recursive "${SYS_PATH}/system_ext/priv-app/${FILENAME}"
-    delete_recursive "${SYS_PATH}/system_ext/app/${FILENAME}"
-    delete_recursive "/system_ext/priv-app/${FILENAME}"
-    delete_recursive "/system_ext/app/${FILENAME}"
+    delete_tracked "${SYS_PATH}/system_ext/priv-app/${FILENAME}"
+    delete_tracked "${SYS_PATH}/system_ext/app/${FILENAME}"
+    delete_tracked "/system_ext/priv-app/${FILENAME}"
+    delete_tracked "/system_ext/app/${FILENAME}"
 
-    delete_recursive "${SYS_PATH}/product/priv-app/${FILENAME}"
-    delete_recursive "${SYS_PATH}/product/app/${FILENAME}"
-    delete_recursive "/product/priv-app/${FILENAME}"
-    delete_recursive "/product/app/${FILENAME}"
+    delete_tracked "${SYS_PATH}/product/priv-app/${FILENAME}"
+    delete_tracked "${SYS_PATH}/product/app/${FILENAME}"
+    delete_tracked "/product/priv-app/${FILENAME}"
+    delete_tracked "/product/app/${FILENAME}"
 
-    delete_recursive "${SYS_PATH}/vendor/priv-app/${FILENAME}"
-    delete_recursive "${SYS_PATH}/vendor/app/${FILENAME}"
-    delete_recursive "/vendor/priv-app/${FILENAME}"
-    delete_recursive "/vendor/app/${FILENAME}"
+    delete_tracked "${SYS_PATH}/vendor/priv-app/${FILENAME}"
+    delete_tracked "${SYS_PATH}/vendor/app/${FILENAME}"
+    delete_tracked "/vendor/priv-app/${FILENAME}"
+    delete_tracked "/vendor/app/${FILENAME}"
 
     # Current xml paths
     delete_recursive "${SYS_PATH}/etc/permissions/privapp-permissions-${FILENAME:?}.xml"
@@ -242,6 +235,18 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete_recursive_wildcard /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
     delete_recursive_wildcard /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
     delete_recursive_wildcard /data/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
+  fi
+
+  if test -n "${INTERNAL_NAME}"; then
+    if test "${DEL_SYS_APPS_ONLY:-false}" = false || track_really_deleted; then
+      delete_recursive "/data/app/${INTERNAL_NAME}"
+      delete_recursive "/data/app/${INTERNAL_NAME}.apk"
+      delete_recursive_wildcard "/data/app/${INTERNAL_NAME}"-*
+      delete_recursive "/mnt/asec/${INTERNAL_NAME}"
+      delete_recursive "/mnt/asec/${INTERNAL_NAME}.apk"
+      delete_recursive_wildcard "/mnt/asec/${INTERNAL_NAME}"-*
+    fi
+    # Check also /data/app-private /data/app-asec /data/preload
   fi
 done
 STATUS="$?"
