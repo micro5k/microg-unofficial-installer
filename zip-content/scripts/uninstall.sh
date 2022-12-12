@@ -95,10 +95,10 @@ VollaNlpRRO|com.volla.overlay.nlp
 VollaNlp|com.volla.nlp
 VollaGSMNlp|com.volla.gsmnlp
 
-AndroidAutoStubPrebuilt|com.google.android.projection.gearhead
-AndroidAutoFullPrebuilt|
+AndroidAuto|com.google.android.projection.gearhead
 AndroidAutoPrebuiltStub|
-AndroidAuto|
+AndroidAutoStubPrebuilt|
+AndroidAutoFullPrebuilt|
 |com.google.android.gms.car
 
 WhisperPush|org.whispersystems.whisperpush
