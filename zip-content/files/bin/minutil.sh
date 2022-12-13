@@ -210,6 +210,23 @@ minutil_reinstall_package()
   echo "Package ${1:?} reinstalled."
 }
 
+minutil_force_GCM_reconnection()
+{
+  \_is_caller_adb_or_root || \return 1
+
+  echo "GCM reconnection..."
+  command -v -- am 1> /dev/null || {
+    _minutil_error 'Activity manager is NOT available'
+    return 1
+  }
+
+  am broadcast -a 'org.microg.gms.gcm.FORCE_TRY_RECONNECT' -n 'com.google.android.gms/org.microg.gms.gcm.TriggerReceiver' || {
+    _minutil_error 'GCM reconnection failed!'
+    return 3
+  }
+  echo "Done!"
+}
+
 minutil_remove_all_accounts()
 {
   \_is_caller_root || \return 1
