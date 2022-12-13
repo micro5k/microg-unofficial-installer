@@ -1,9 +1,13 @@
-# -*- coding: utf-8; mode: conf-unix -*-
+# mode: conf-unix -*-
 # SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
 # SPDX-FileType: OTHER
 
 # Follow source statements even when the file is not specified as input
 external-sources=true
+
 # Enable all optional checks
 enable=all
+
+# Disable "Command appears to be unreachable" check
+disable=SC2317
