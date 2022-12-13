@@ -250,6 +250,6 @@ if test "${CI:-false}" = 'false'; then printf '%b' '\007' || true; fi
 # Pause
 if test "${CI:-false}" = 'false' && test "${APP_BASE_NAME:-false}" != 'gradlew' && test "${APP_BASE_NAME:-false}" != 'gradlew.'; then
   # shellcheck disable=SC3045
-  IFS='' read -rsn 1 -p 'Press any key to continue...' || true
+  IFS='' read -rsn 1 -p 'Press any key to continue...' _ || true
   printf '\n' || true
 fi
