@@ -147,6 +147,119 @@ Changelog will appear later
 - Changed signing process to fix a problem with Dingdong Recovery and maybe other old recoveries
 - More consistency checks and improved error handling
 
+1.0.18-alpha
+------------
+- Updated microG Service Core to 0.2.4-103
+- Updated Nominatim Geocoder Backend to 1.2.2
+- Switched BusyBox binaries to the `ones <https://forum.xda-developers.com/showthread.php?t=3348543>`_ compiled by @YashdSaraf (BusyBox is used only during the installation, nothing on the device is altered)
+- Completely removed the disabler code for Play Store self update since it wasn't a clean method
+- Improved the internal GApps remover
+- GApps remover now also remove MIUI specific files
+
+1.0.17-beta
+-----------
+- Downgraded microG Service Core to 0.2.4-81 on Android < 5 (workaround for bug `#379 <https://github.com/microg/GmsCore/issues/379>`_)
+- Added a workaround for recoveries without /tmp
+- Updated microG DroidGuard Helper to 0.1.0-10
+- Updated F-Droid Privileged Extension to 0.2.5
+
+1.0.16-alpha
+------------
+- Updated microG Service Core to 0.2.4-92
+- Validate some return codes and show proper error if needed
+- The lib folder is now created automatically if missing
+
+1.0.15-pre-alpha
+----------------
+- Rewritten the update-binary as shell script to improve compatibility with all devices
+- Updated F-Droid Privileged Extension to 0.2.4
+
+1.0.14-alpha
+------------
+- Updated microG Service Core to 0.2.4-81
+- file_getprop is no longer used
+- Fixed support for system root image
+- Minor changes
+
+1.0.13-alpha
+------------
+- Added support for devices with system root image (untested)
+- Updated F-Droid Privileged Extension to 0.2.2
+- Switch the apk name of F-Droid Privileged Extension to the official one
+- F-Droid Privileged Extension is now installed on all Android versions
+- Minor changes
+
+1.0.12-alpha
+------------
+- Added microG DroidGuard Helper 0.1.0-4
+- Added more components to the survival script, not yet complete (only Android 5+)
+
+1.0.11-alpha
+------------
+- Added a survival script (not complete)
+- Updated microG Service Core to 0.2.4-79
+- Updated Nominatim Geocoder Backend to 1.2.1
+
+1.0.10-beta
+-----------
+- Reverted blocking of Play Store self update on Android 5+ since it is not reliable
+- Updated microG Service Core to 0.2.4-64
+- Updated Nominatim Geocoder Backend to 1.2.0
+- Added F-Droid Privileged Extension 0.2 (only Android < 5)
+
+1.0.9-beta
+----------
+- Play Store self update is now blocked on all Android versions
+- Avoid possible problems that could happen if the Play Store was already updated before flashing the zip
+
+1.0.8-beta
+----------
+- Play Store self update is now blocked (only Android 5+)
+
+1.0.7-beta
+----------
+- Downgraded Google Play Store to 5.1.11 (this fix the crash when searching)
+
+1.0.6-beta
+----------
+- Updated microG Service Core to 0.2.4-50
+- Updated UnifiedNlp (legacy) to 1.6.8
+- Added support for devices with x86_64 CPU (untested)
+
+1.0.5-beta
+----------
+- Verify hash of extracted files before installing them
+- Fixed installation of 64-bit libraries on old Android versions
+
+1.0.4-alpha
+-----------
+- Total rewrite of the code for installing libraries
+- Added support for 64-bit ARM
+- Added UnifiedNlp (legacy) 1.6.7 (only for Android < 4.4)
+
+1.0.3-alpha
+-----------
+- Major rewrite of the installation script to add support for newer Android versions (big thanks to `@JanJabko <https://forum.xda-developers.com/m/7275198/>`_ for the phone)
+- Updated microG Service Core to 0.2.4-39
+- Updated Google Play Store to 5.4.12
+- Minimum API version back to 9
+
+1.0.2-beta
+----------
+- Updated microG Service Core to 0.2.4-20
+- Minimum API version bumped to 10
+
+1.0.1-beta
+----------
+- Added support for x86
+- Improved CPU detection
+- Improved Android version checking
+- Improved error reporting
+
+1.0.0-alpha
+-----------
+- Initial release
+
 
 .. _Unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.1.0-beta...HEAD
 .. _1.1.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.34-beta...v1.1.0-beta
