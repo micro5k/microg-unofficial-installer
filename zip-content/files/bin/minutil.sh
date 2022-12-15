@@ -118,7 +118,7 @@ if \_minutil_check_getopt; then
 
   if minutil_args="$(
     \unset POSIXLY_CORRECT
-    \getopt -o 'hsi:' -l 'help,remove-all-accounts,rescan-storage,reinstall-package:' -n 'MinUtil' -- "${@}"
+    \getopt -o 'hsi:' -l 'help,remove-all-accounts,rescan-storage,force-gcm-reconnection,reinstall-package:' -n 'MinUtil' -- "${@}"
   )"; then
     \eval ' \set' '--' "${minutil_args?}" || \exit 1
   else
@@ -314,6 +314,10 @@ while true; do
       fi
       ;;
 
+    --force-gcm-reconnection)
+      \minutil_force_gcm_reconnection
+      ;;
+
     -r | --reset-gms-data)
       echo 'Not yet supported'
       ;;
@@ -353,8 +357,9 @@ if test "${_minutil_display_help:?}" = 'true'; then
   printf 'Usage: %s [OPTIONS] [--]\n\n' "${_minutil_script_name:?}"
 
   _minutil_aligned_print '-h,-?,--help'							'Show this help'
-  _minutil_aligned_print '--remove-all-accounts'				'Remove all accounts from the device'
   _minutil_aligned_print '-s,--rescan-storage'					'Rescan storage to find file changes'
+  _minutil_aligned_print '--remove-all-accounts'				'Remove all accounts from the device'
+  _minutil_aligned_print '--force-gcm-reconnection'
   _minutil_aligned_print '-i,--reinstall-package PACKAGE_NAME'	'Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions'
 
   printf '
