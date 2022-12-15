@@ -210,7 +210,7 @@ minutil_reinstall_package()
   echo "Package ${1:?} reinstalled."
 }
 
-minutil_force_GCM_reconnection()
+minutil_force_gcm_reconnection()
 {
   \_is_caller_adb_or_root || \return 1
 
@@ -312,6 +312,14 @@ while true; do
       else
         \minutil_manual_media_rescan
       fi
+      ;;
+
+    -r | --reset-gms-data)
+      echo 'Not yet supported'
+      ;;
+
+    -R | --reset-permissions)
+      echo 'Not yet supported'
       ;;
 
     --)
