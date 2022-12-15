@@ -92,9 +92,9 @@ _updatebin_we_mounted_tmp=false
   }
 
   TMPDIR="${TMPDIR:-}"
-  if test -n "${TMPDIR?}" && test -e "${TMPDIR:?}"; then
+  if test -n "${TMPDIR?}" && test -w "${TMPDIR:?}"; then
     : # Already ready
-  elif test -e '/tmp' && _updatebin_is_mounted '/tmp'; then
+  elif test -w '/tmp' && _updatebin_is_mounted '/tmp'; then
     TMPDIR='/tmp'
   elif test -e '/dev' && _updatebin_is_mounted '/dev'; then
     mkdir -p -- '/dev/tmp' || ui_error 'Failed to create the temp folder'
