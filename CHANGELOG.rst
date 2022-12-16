@@ -16,12 +16,27 @@ All notable changes to this project will be documented in this file.
 
 `1.1.0-beta`_ - 2022-04-28
 --------------------------
-- Added support for Android up to 13
-- Improve system partition mounting
-- Mount partitions only if they aren't already mounted
+- Improve Dalvik cache cleaning
+- Fix the detection of system partition on some devices
+- Rewritten architecture detection to improve compatibility
+- Update NewPipe Legacy to 0.20.8
+- Switch NewPipe from the F-Droid version to the official version
+- Improved compatibility with various apps
+- Remove microG DroidGuard Helper as it is no longer needed
+- Update Déjà Vu Location Service to 1.1.12
+- Update XML files for newer Android versions
+- Update microG Service Core (VTM) to 0.2.13.203915-vtm
+- Update microG Service Core (Mapbox) to 0.2.24.214816
+- Remove apps that break GCM
+- Improve location updates
+- Insert the android.permission.ACCESS_BACKGROUND_LOCATION in XML files only if needed
 - Zip builds are now reproducible (with Java 11 or later)
+- Made some changes for future Magisk support
 - You can now test the zip installation on PC using "gradlew installTest" (tested on Linux and Windows)
-Full changelog will appear later
+- Mount / unmount partitions only if they weren't already mounted
+- Update NewPipe to 0.22.2
+- Improve system partition mounting / unmounting
+- Added support for Android up to 13
 
 `1.0.34-beta`_ - 2019-07-07
 ---------------------------
