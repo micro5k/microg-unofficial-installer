@@ -25,7 +25,20 @@ Full changelog will appear later
 
 `1.0.34-beta`_ - 2019-07-07
 ---------------------------
-Changelog will appear later
+- Rewritten the uninstaller
+- Improved microG / GApps removal
+- Only insert the fake signature permission in priv-app permissions whitelist if the ROM support it
+- Added Play Store permissions to priv-app permissions whitelist
+- Added option to reset GMS data of all apps
+- Include the option to reset GMS data of all apps in live setup
+- Improved sysconfig
+- Properly uninstall Maps APIv1 on odexed ROMs
+- Updated microG Service Core for legacy devices to 0.2.6.13280
+- Update microG Service Core to 0.2.8.17785-2-vtm-8a0010a
+- Add the Mapbox version of microG GmsCore and make it default on supported devices
+- Update Déjà Vu Location Service to 1.1.11
+- Update NewPipe to 0.16.2
+- Add NewPipe Legacy for legacy devices
 
 `1.0.33-beta`_ - 2018-12-04
 ---------------------------
