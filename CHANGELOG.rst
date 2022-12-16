@@ -48,7 +48,7 @@ All notable changes to this project will be documented in this file.
 - Include the option to reset GMS data of all apps in live setup
 - Improved sysconfig
 - Properly uninstall Maps APIv1 on odexed ROMs
-- Updated microG Service Core for legacy devices to 0.2.6.13280
+- Update microG Service Core for legacy devices to 0.2.6.13280
 - Update microG Service Core to 0.2.8.17785-2-vtm-8a0010a
 - Add the Mapbox version of microG GmsCore and make it default on supported devices
 - Update Déjà Vu Location Service to 1.1.11
