@@ -29,7 +29,11 @@ Changelog will appear later
 
 `1.0.33-beta`_ - 2018-12-04
 ---------------------------
-Changelog will appear later
+- Fixed architecture detection error on some recoveries
+- Fixed empty ABI list on some recoveries
+- Allow building through Gradle
+- Added the possibility to build a zip with only open-source components
+- Test the integrity of the generated zip after build
 
 `1.0.32-beta`_ - 2018-11-01
 ---------------------------
