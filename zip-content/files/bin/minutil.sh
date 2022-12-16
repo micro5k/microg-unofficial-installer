@@ -283,9 +283,12 @@ minutil_manual_media_rescan()
   }
 
   if test -e '/storage/emulated'; then
-    find -- /storage/emulated/* -type 'd' '(' -path '/storage/emulated/*/Android' -o -path '/storage/emulated/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "'\''file://${*:?}'\''" 1>&-' _ '{}' ';' || true
+    find -- /storage/emulated/* -type 'd' '(' -path '/storage/emulated/*/Android' -o -path '/storage/emulated/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${*:?}" 1>&-' _ '{}' ';' || true
+  elif test -e '/storage'; then
+    find -- /storage/* -type 'd' '(' -path '/storage/*/Android' -o -path '/storage/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${*:?}" 1>&-' _ '{}' ';' || true
   else
-    find -- /storage/* -type 'd' '(' -path '/storage/*/Android' -o -path '/storage/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "'\''file://${*:?}'\''" 1>&-' _ '{}' ';' || true
+    _minutil_error 'Manual media rescanning failed!'
+    return 3
   fi
   echo "Done!"
   return 0
