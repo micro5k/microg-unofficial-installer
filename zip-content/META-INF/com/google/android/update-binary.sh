@@ -5,10 +5,8 @@
 
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
-set -u
-# shellcheck disable=SC3040
-set -o pipefail || true
-umask 022
+set -u || exit 1
+umask 022 || exit 1
 
 ### GLOBAL VARIABLES ###
 
