@@ -12,7 +12,6 @@ SET "LANG=C.UTF-8"
 CHCP 65001 1> nul || ECHO "Changing the codepage failed"
 
 SET "PATH=.;%PATH%"
-IF EXIST "%~dp0tools\win" SET "PATH=%~dp0tools\win;%PATH%"
 SET "PATHEXT=.SH;%PATHEXT%"
 SET "HOME=%~dp0"
 SET "SCRIPT_DIR=%~dp0"
