@@ -19,6 +19,6 @@ SET "SCRIPT_DIR=%~dp0"
 SET "BASH_VERSION=5.0.17(1)-release"
 SET "BASH_VERSINFO=5"
 
-"%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0scripts\common.sh' || exit 1; change_title 'Command-line'; unset JAVA_HOME; alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=reset" "%~f0" %*
+"%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0scripts\common.sh' || exit 1; change_title 'Command-line'; unset JAVA_HOME; alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias cls=reset" "ash" %*
 
 ENDLOCAL 2> nul
