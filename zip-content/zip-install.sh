@@ -5,7 +5,15 @@
 
 umask 022 || exit 1
 
-test -n "${1:-}" || { printf 'ERROR: %s\n' 'You must specify the ZIP file to install'; exit 2; }
+if test "$(whoami || true)" != 'root'; then
+  printf 'ERROR: %s\n' 'You must execute it as root'
+  exit 2
+fi
+
+if test -z "${1:-}" || test ! -e "${1:?}"; then
+  printf 'ERROR: %s\n' 'You must specify the ZIP file to install'
+  exit 2
+fi
 ZIPFILE="$(realpath -- "${1:?}")" || ZIPFILE="$(readlink -f -- "${1:?}")" || exit 2
 
 TMPDIR="${TMPDIR:-}"
