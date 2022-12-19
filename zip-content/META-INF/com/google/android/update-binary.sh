@@ -3,8 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-# shellcheck disable=SC3043
-# SC3043: In POSIX sh, local is undefined
+# shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 set -u
 # shellcheck disable=SC3040
