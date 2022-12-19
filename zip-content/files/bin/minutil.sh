@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-# shellcheck disable=SC2310
+# shellcheck disable=SC2310 # This function is invoked in an 'if' condition so set -e will be disabled
 
 set -e
 # shellcheck disable=SC3040
