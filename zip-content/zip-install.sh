@@ -40,7 +40,7 @@ sh -- "${SCRIPT_NAME:?}" 3 1 "${ZIPFILE:?}" || STATUS="${?}"
 
 rm -f -- "${SCRIPT_NAME:?}" || true
 if test "${TMPDIR:?}" = '/dev/tmp'; then
-  rmdir --ignore-fail-on-non-empty -- "${TMPDIR:?}" || true
+  rmdir "${TMPDIR:?}" 2> /dev/null || true
 fi
 
 if test "${STATUS:-1}" != '0'; then
