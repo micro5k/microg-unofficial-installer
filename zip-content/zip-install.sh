@@ -26,8 +26,16 @@ export TMPDIR
 
 SCRIPT_NAME="${TMPDIR:?}/update-binary.sh" || exit 5
 unzip -pq "${ZIPFILE:?}" 'META-INF/com/google/android/update-binary' 1> "${SCRIPT_NAME:?}" || { printf 'ERROR: %s\n' 'Failed to extract update-binary'; exit 6; }
-sh -- "${SCRIPT_NAME:?}" 3 1 "${ZIPFILE:?}" || { printf 'ERROR: %s\n' 'ZIP installation failed'; exit 7; }
+
+STATUS=0
+sh -- "${SCRIPT_NAME:?}" 3 1 "${ZIPFILE:?}" || STATUS="${?}"
+
 rm -f -- "${SCRIPT_NAME:?}" || true
 if test "${TMPDIR:?}" = '/dev/tmp'; then
   rmdir --ignore-fail-on-non-empty -- "${TMPDIR:?}" || true
+fi
+
+if test "${STATUS:-1}" != '0'; then
+  printf 'ERROR: %s\n' 'ZIP installation failed'
+  exit "${STATUS:-1}"
 fi
