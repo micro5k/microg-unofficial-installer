@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043
 # SC3043: In POSIX sh, local is undefined
 
-if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTIONS_INCLUDED=true; fi
+if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTIONS_INCLUDED='true'; fi
 
 # shellcheck disable=SC3040
 set -o pipefail || true
@@ -63,6 +63,21 @@ compare_start_uname()
 change_title()
 {
   if test "${CI:-false}" = 'false'; then printf '\033]0;%s\007\r' "${1:?}" && printf '%*s     \r' "${#1}" ''; fi
+  A5K_LAST_TITLE="${1:?}"
+  export A5K_LAST_TITLE
+}
+
+save_last_title()
+{
+  A5K_SAVED_TITLE="${A5K_LAST_TITLE:-}"
+  export A5K_SAVED_TITLE
+}
+
+restore_saved_title_if_exist()
+{
+  if test -n "${A5K_SAVED_TITLE:-}"; then
+    change_title "${A5K_SAVED_TITLE:?}"
+  fi
 }
 
 simple_get_prop()
