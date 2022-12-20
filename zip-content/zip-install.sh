@@ -29,7 +29,7 @@ _clean_at_exit()
   fi
 }
 unset SCRIPT_NAME
-trap ' _clean_at_exit' 0 2 3 6 15 ERR
+trap ' _clean_at_exit' 0 2 3 6 15
 
 TMPDIR="${TMPDIR:-}"
 if test -n "${TMPDIR:-}" && test -w "${TMPDIR:?}"; then
@@ -56,7 +56,7 @@ sh -- "${SCRIPT_NAME:?}" 3 1 "${ZIPFILE:?}" || STATUS="${?}"
 _clean_at_exit
 
 # Already cleaned, so unset traps
-trap - 0 2 3 6 15 ERR
+trap - 0 2 3 6 15 || true
 
 if test "${STATUS:-1}" != '0'; then
   printf 'ERROR: %s\n' 'ZIP installation failed'
