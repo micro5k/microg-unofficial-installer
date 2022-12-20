@@ -62,6 +62,7 @@ detect_script_dir || return 1 2>&- || exit 1
 # shellcheck source=SCRIPTDIR/scripts/common.sh
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${SCRIPT_DIR}/scripts/common.sh"; fi
 
+save_last_title
 change_title 'Building the flashable OTA zip...'
 
 # shellcheck source=SCRIPTDIR/conf-1.sh
@@ -251,3 +252,4 @@ if test "${CI:-false}" = 'false' && test "${APP_BASE_NAME:-false}" != 'gradlew' 
   IFS='' read -rsn 1 -p 'Press any key to continue...' _ || true
   printf '\n' || true
 fi
+restore_saved_title_if_exist
