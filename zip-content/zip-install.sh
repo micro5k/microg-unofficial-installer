@@ -16,6 +16,19 @@ if test -z "${1:-}" || test ! -e "${1:?}"; then
 fi
 ZIPFILE="$(realpath -- "${1:?}")" || ZIPFILE="$(readlink -f -- "${1:?}")" || exit 2
 
+_clean_at_exit()
+{
+  if test -n "${SCRIPT_NAME:-}" && test -e "${SCRIPT_NAME:?}"; then
+    rm -f -- "${SCRIPT_NAME:?}" || true
+  fi
+  unset SCRIPT_NAME
+  if test "${TMPDIR:-}" = '/dev/tmp' && test -e "${TMPDIR:?}"; then
+    # Legacy versions of rmdir doesn't accept any parameter (not even --)
+    rmdir "${TMPDIR:?}" 2> /dev/null || true
+  fi
+  unset TMPDIR
+}
+
 TMPDIR="${TMPDIR:-}"
 if test -n "${TMPDIR:-}" && test -w "${TMPDIR:?}"; then
   : # Already ready
@@ -38,10 +51,7 @@ unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/update-binary' 1> "${SC
 STATUS=0
 sh -- "${SCRIPT_NAME:?}" 3 1 "${ZIPFILE:?}" || STATUS="${?}"
 
-rm -f -- "${SCRIPT_NAME:?}" || true
-if test "${TMPDIR:?}" = '/dev/tmp'; then
-  rmdir "${TMPDIR:?}" 2> /dev/null || true
-fi
+_clean_at_exit
 
 if test "${STATUS:-1}" != '0'; then
   printf 'ERROR: %s\n' 'ZIP installation failed'
