@@ -15,11 +15,15 @@ if test "$(whoami || true)" != 'root'; then
   exit 2
 fi
 
-if test -z "${1:-}" || test ! -e "${1:?}"; then
+if test -z "${1:-}"; then
   ui_show_error 'You must specify the ZIP file to install'
-  exit 2
+  exit 3
 fi
-ZIPFILE="$(realpath -- "${1:?}")" || ZIPFILE="$(readlink -f -- "${1:?}")" || exit 2
+ZIPFILE="$(realpath -- "${1:?}")" || ZIPFILE="$(readlink -f -- "${1:?}")" || exit 4
+if test ! -e "${ZIPFILE:?}"; then
+  ui_show_error "The selected ZIP file doesn't exist => '${ZIPFILE:-}'"
+  exit 4
+fi
 
 _clean_at_exit()
 {
@@ -42,18 +46,19 @@ if test -n "${TMPDIR:-}" && test -w "${TMPDIR:?}"; then
 elif test -w '/tmp'; then
   TMPDIR='/tmp'
 elif test -e '/dev'; then
-  mkdir -p -- '/dev/tmp' || { ui_show_error 'Failed to create a temp folder'; exit 3; }
+  mkdir -p -- '/dev/tmp' || { ui_show_error 'Failed to create a temp folder'; exit 5; }
   TMPDIR='/dev/tmp'
 fi
 
 if test -z "${TMPDIR:-}" || test ! -w "${TMPDIR:?}"; then
   ui_show_error 'Unable to create a temp folder'
-  exit 4
+  exit 6
 fi
 export TMPDIR
 
-SCRIPT_NAME="${TMPDIR:?}/update-binary.sh" || exit 5
-unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/update-binary' 1> "${SCRIPT_NAME:?}" || { ui_show_error 'Failed to extract update-binary'; exit 6; }
+SCRIPT_NAME="${TMPDIR:?}/update-binary.sh" || exit 7
+unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/update-binary' 1> "${SCRIPT_NAME:?}" || { ui_show_error 'Failed to extract update-binary'; exit 8; }
+test -e "${SCRIPT_NAME:?}" || { ui_show_error 'Failed to extract update-binary (2)'; exit 9; }
 
 STATUS=0
 sh -- "${SCRIPT_NAME:?}" 3 1 "${ZIPFILE:?}" || STATUS="${?}"
