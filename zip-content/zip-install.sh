@@ -25,9 +25,11 @@ _clean_at_exit()
   if test "${TMPDIR:-}" = '/dev/tmp' && test -e "${TMPDIR:?}"; then
     # Legacy versions of rmdir doesn't accept any parameter (not even --)
     rmdir "${TMPDIR:?}" 2> /dev/null || true
+    unset TMPDIR
   fi
-  unset TMPDIR
 }
+unset SCRIPT_NAME
+trap ' _clean_at_exit' 0 2 3 6 15 ERR
 
 TMPDIR="${TMPDIR:-}"
 if test -n "${TMPDIR:-}" && test -w "${TMPDIR:?}"; then
@@ -52,6 +54,9 @@ STATUS=0
 sh -- "${SCRIPT_NAME:?}" 3 1 "${ZIPFILE:?}" || STATUS="${?}"
 
 _clean_at_exit
+
+# Already cleaned, so unset traps
+trap - 0 2 3 6 15 ERR
 
 if test "${STATUS:-1}" != '0'; then
   printf 'ERROR: %s\n' 'ZIP installation failed'
