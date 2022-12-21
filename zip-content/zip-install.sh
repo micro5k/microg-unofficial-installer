@@ -28,7 +28,7 @@ fi
 _clean_at_exit()
 {
   if test -n "${SCRIPT_NAME:-}" && test -e "${SCRIPT_NAME:?}"; then
-    rm -f -- "${SCRIPT_NAME:?}" || true
+    rm -f "${SCRIPT_NAME:?}" || true
   fi
   unset SCRIPT_NAME
   if test "${TMPDIR:-}" = '/dev/tmp' && test -e "${TMPDIR:?}"; then
