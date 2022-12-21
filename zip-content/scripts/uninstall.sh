@@ -314,8 +314,8 @@ delete_recursive "${SYS_PATH}/etc/microg.xml"
 # Legacy file
 delete_recursive "${SYS_PATH:?}/etc/zips/ug.prop"
 
-if test -e "${SYS_PATH:?}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/org.fdroid.fdroid"; fi
-if test -e "${SYS_PATH:?}/etc/zips"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/zips"; fi
+if test -e "${SYS_PATH:?}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/org.fdroid.fdroid" || true; fi
+if test -e "${SYS_PATH:?}/etc/zips"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/zips" || true; fi
 
 if [[ -z "${INSTALLER}" ]]; then
   ui_debug 'Done.'
