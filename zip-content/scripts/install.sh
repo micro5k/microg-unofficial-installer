@@ -1,5 +1,4 @@
 #!/sbin/sh
-
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
@@ -14,6 +13,9 @@ unset UNZIP
 unset UNZIPOPT
 unset UNZIP_OPTS
 unset CDPATH
+
+# shellcheck disable=SC3040
+set -o pipefail || true
 
 ### GLOBAL VARIABLES ###
 

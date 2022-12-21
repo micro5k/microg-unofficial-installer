@@ -18,7 +18,7 @@ export ZIPFILE="${3:?}"
 echo 'PRELOADER 1'
 
 # Detect whether we are in boot mode
-_updatebin_detect_bootmode()
+_ub_detect_bootmode()
 {
   if test -n "${BOOTMODE:-}"; then return; fi
   BOOTMODE=false
@@ -68,17 +68,17 @@ package_extract_file()
   if ! test -e "${2:?}"; then ui_error "Failed to extract the file '${1}' from this archive"; fi
 }
 
-_updatebin_detect_bootmode
-_updatebin_we_mounted_tmp=false
+_ub_detect_bootmode
+_ub_we_mounted_tmp=false
 
 # Workaround: Create (if needed) and mount the temp folder if it isn't already mounted
 {
-  _updatebin_is_mounted()
+  _ub_is_mounted()
   {
     local _mount_result
     {
       test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"
-    } || _mount_result="$(mount 2> /dev/null)" || ui_error '_updatebin_is_mounted has failed'
+    } || _mount_result="$(mount 2> /dev/null)" || ui_error '_ub_is_mounted has failed'
 
     case "${_mount_result:?}" in
       *[[:blank:]]"${1:?}"[[:blank:]]*) return 0 ;; # Mounted
@@ -90,14 +90,14 @@ _updatebin_we_mounted_tmp=false
   TMPDIR="${TMPDIR:-}"
   if test -n "${TMPDIR?}" && test -w "${TMPDIR:?}"; then
     : # Already ready
-  elif test -w '/tmp' && _updatebin_is_mounted '/tmp'; then
+  elif test -w '/tmp' && _ub_is_mounted '/tmp'; then
     TMPDIR='/tmp'
-  elif test -e '/dev' && _updatebin_is_mounted '/dev'; then
+  elif test -e '/dev' && _ub_is_mounted '/dev'; then
     mkdir -p -- '/dev/tmp' || ui_error 'Failed to create the temp folder'
     set_perm 0 0 0755 '/dev/tmp'
     TMPDIR='/dev/tmp'
   else
-    _updatebin_we_mounted_tmp=true
+    _ub_we_mounted_tmp=true
 
     _show_text_on_recovery 'WARNING: Creating (if needed) and mounting the temp folder...'
     printf 1>&2 '\033[0;33m%s\033[0m\n' 'WARNING: Creating (if needed) and mounting the temp folder...'
@@ -109,10 +109,10 @@ _updatebin_we_mounted_tmp=false
     mount -t tmpfs -o rw -- tmpfs '/tmp' || ui_error 'Failed to mount the temp folder'
     set_perm 0 2000 0775 '/tmp'
 
-    if ! _updatebin_is_mounted '/tmp'; then ui_error 'The temp folder CANNOT be mounted'; fi
+    if ! _ub_is_mounted '/tmp'; then ui_error 'The temp folder CANNOT be mounted'; fi
     TMPDIR='/tmp'
   fi
-  unset -f _updatebin_is_mounted || ui_error 'Failed to unset _updatebin_is_mounted'
+  unset -f _ub_is_mounted || ui_error 'Failed to unset _ub_is_mounted'
 
   if test ! -e "${TMPDIR:?}"; then
     ui_error 'The temp folder is missing'
@@ -126,19 +126,19 @@ RANDOM="${$:?}${$:?}"
 # shellcheck disable=SC3028
 {
   if test "${RANDOM:?}" = "${$:?}${$:?}"; then ui_error "\$RANDOM is not supported"; fi # Both BusyBox and Toybox support $RANDOM
-  _updatebin_our_main_script="${TMPDIR:?}/${RANDOM:?}-customize.sh"
+  _ub_our_main_script="${TMPDIR:?}/${RANDOM:?}-customize.sh"
 }
 
 STATUS=1
 UNKNOWN_ERROR=1
 
-package_extract_file 'customize.sh' "${_updatebin_our_main_script:?}"
+package_extract_file 'customize.sh' "${_ub_our_main_script:?}"
 # shellcheck source=SCRIPTDIR/../../../../customize.sh
-. "${_updatebin_our_main_script:?}" || ui_error "Failed to source customize.sh"
-rm -f "${_updatebin_our_main_script:?}" || ui_error "Failed to delete customize.sh"
-unset _updatebin_our_main_script
+. "${_ub_our_main_script:?}" || ui_error "Failed to source customize.sh"
+rm -f "${_ub_our_main_script:?}" || ui_error "Failed to delete customize.sh"
+unset _ub_our_main_script
 
-if test "${_updatebin_we_mounted_tmp:?}" = true; then
+if test "${_ub_we_mounted_tmp:?}" = true; then
   umount '/tmp' || ui_error 'Failed to unmount the temp folder'
 fi
 
