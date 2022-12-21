@@ -62,7 +62,10 @@ ui_msg()
 
 ui_msg_sameline_start()
 {
-  if test -e "${RECOVERY_PIPE}"; then
+  if test "${BOOTMODE:?}" = 'true'; then
+    printf '%s ' "${1:?}"
+    return
+  elif test -e "${RECOVERY_PIPE:?}"; then
     printf 'ui_print %s' "${1:?}" >> "${RECOVERY_PIPE:?}"
   else
     printf 'ui_print %s' "${1:?}" 1>&"${OUTFD:?}"
@@ -72,7 +75,10 @@ ui_msg_sameline_start()
 
 ui_msg_sameline_end()
 {
-  if test -e "${RECOVERY_PIPE}"; then
+  if test "${BOOTMODE:?}" = 'true'; then
+    printf '%s\n' "${1:?}"
+    return
+  elif test -e "${RECOVERY_PIPE:?}"; then
     printf '%s\nui_print\n' "${1:?}" >> "${RECOVERY_PIPE:?}"
   else
     printf '%s\nui_print\n' "${1:?}" 1>&"${OUTFD:?}"
