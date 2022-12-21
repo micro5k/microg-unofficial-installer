@@ -72,3 +72,5 @@ if test "${STATUS:-1}" != '0'; then
   ui_show_error 'ZIP installation failed'
   exit "${STATUS:-1}"
 fi
+
+printf '\033[1;32m%s\033[0m\n' 'The ZIP installation is completed, now restart your device!!!'
