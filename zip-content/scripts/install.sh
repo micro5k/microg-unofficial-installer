@@ -264,6 +264,8 @@ if test "${API:?}" -ge 9; then
   set_std_perm_recursive "${TMP_PATH:?}/libs"
 fi
 
+delete "${TMP_PATH:?}/origin"
+
 # MOUNT /data PARTITION
 DATA_INIT_STATUS=0
 if test "${TEST_INSTALL:-false}" = 'false' && ! is_mounted '/data'; then
