@@ -5,7 +5,7 @@
 
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
-set -u || exit 1
+set -u || true
 umask 022 || exit 1
 
 ### GLOBAL VARIABLES ###
