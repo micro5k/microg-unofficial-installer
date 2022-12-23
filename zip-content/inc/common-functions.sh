@@ -223,7 +223,7 @@ get_mount_status()
 
 remount_read_write()
 {
-  mount -o 'remount,rw' "${1:?}" || mount -o 'remount,rw' "${1:?}" "${1:?}" || ui_error "Remounting of '${1:-}' failed"
+  mount -o 'remount,rw' -- "${1:?}" || mount -o 'remount,rw' -- "${1:?}" "${1:?}" || ui_error "Remounting of '${1:-}' failed"
 }
 
 remount_read_only()

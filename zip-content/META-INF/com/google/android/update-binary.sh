@@ -93,8 +93,8 @@ _ub_we_mounted_tmp=false
   elif test -w '/tmp' && _ub_is_mounted '/tmp'; then
     TMPDIR='/tmp'
   elif test -e '/dev' && _ub_is_mounted '/dev'; then
-    mkdir -p -- '/dev/tmp' || ui_error 'Failed to create the temp folder'
-    set_perm 0 0 0755 '/dev/tmp'
+    mkdir -p '/dev/tmp' || ui_error 'Failed to create the temp folder'
+    set_perm 0 0 01775 '/dev/tmp'
     TMPDIR='/dev/tmp'
   else
     _ub_we_mounted_tmp=true
@@ -102,14 +102,14 @@ _ub_we_mounted_tmp=false
     _show_text_on_recovery 'WARNING: Creating (if needed) and mounting the temp folder...'
     printf 1>&2 '\033[0;33m%s\033[0m\n' 'WARNING: Creating (if needed) and mounting the temp folder...'
     if test ! -e '/tmp'; then
-      mkdir -p -- '/tmp' || ui_error 'Failed to create the temp folder'
+      mkdir -p '/tmp' || ui_error 'Failed to create the temp folder'
       set_perm 0 0 0755 '/tmp'
     fi
 
     mount -t tmpfs -o rw -- tmpfs '/tmp' || ui_error 'Failed to mount the temp folder'
-    set_perm 0 2000 0775 '/tmp'
-
     if ! _ub_is_mounted '/tmp'; then ui_error 'The temp folder CANNOT be mounted'; fi
+    set_perm 0 0 01775 '/tmp'
+
     TMPDIR='/tmp'
   fi
   unset -f _ub_is_mounted || ui_error 'Failed to unset _ub_is_mounted'

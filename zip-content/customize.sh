@@ -226,7 +226,7 @@ if test "${TEST_INSTALL:-false}" = 'false'; then
   if test -e "${BASE_TMP_PATH:?}/keycheck"; then
     "${OUR_BB:?}" mv -f "${BASE_TMP_PATH:?}/keycheck" "${TMP_PATH:?}/bin/keycheck" || ui_error "Failed to move keycheck to the bin folder"
     # Give execution rights
-    "${OUR_BB:?}" chmod +x "${TMP_PATH:?}/bin/keycheck" || ui_error "chmod failed on keycheck"
+    "${OUR_BB:?}" chmod 0755 "${TMP_PATH:?}/bin/keycheck" || ui_error "chmod failed on keycheck"
     LIVE_SETUP_POSSIBLE=true
     KEYCHECK_ENABLED=true
   fi

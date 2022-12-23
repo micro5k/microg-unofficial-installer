@@ -47,6 +47,7 @@ elif test -w '/tmp'; then
   TMPDIR='/tmp'
 elif test -e '/dev'; then
   mkdir -p '/dev/tmp' || { ui_show_error 'Failed to create a temp folder'; exit 5; }
+  chmod 01775 '/dev/tmp' || { ui_show_error "chmod failed on '/dev/tmp'"; exit 5; }
   TMPDIR='/dev/tmp'
 fi
 
