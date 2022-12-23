@@ -46,8 +46,11 @@ ui_error()
 
 ui_warning()
 {
-  _show_text_on_recovery "WARNING: ${1:?}"
-  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
+  if test "${BOOTMODE:?}" = 'true'; then
+    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
+  else
+    _show_text_on_recovery "WARNING: ${1:?}"
+  fi
 }
 
 ui_msg_empty_line()
