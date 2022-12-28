@@ -109,11 +109,13 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS
 . "${SCRIPT_DIR}/addition.sh"
 
 # Verify files in the files list to avoid creating broken packages
-while IFS='|' read -r LOCAL_FILENAME _ _ _ _ FILE_HASH _; do
-  printf '.'
-  verify_sha1 "${SCRIPT_DIR:?}/zip-content/origin/${LOCAL_FILENAME:?}.apk" "${FILE_HASH:?}" || ui_error "Verification of '${LOCAL_FILENAME:-}' failed"
-done 0< "${SCRIPT_DIR:?}/zip-content/origin/file-list.dat" || ui_error 'Failed to open the list of files to verify'
-printf '\n'
+if test -e "${SCRIPT_DIR:?}/zip-content/origin/file-list.dat"; then
+  while IFS='|' read -r LOCAL_FILENAME _ _ _ _ FILE_HASH _; do
+    printf '.'
+    verify_sha1 "${SCRIPT_DIR:?}/zip-content/origin/${LOCAL_FILENAME:?}.apk" "${FILE_HASH:?}" || ui_error "Verification of '${LOCAL_FILENAME:-}' failed"
+  done 0< "${SCRIPT_DIR:?}/zip-content/origin/file-list.dat" || ui_error 'Failed to open the list of files to verify'
+  printf '\n'
+fi
 
 # Download files if they are missing
 mkdir -p "${SCRIPT_DIR}/cache"
