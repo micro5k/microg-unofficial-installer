@@ -4,7 +4,6 @@
 # SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
 # SPDX-FileType: SOURCE
-# INFO: This script backup and restore microG during ROM upgrades
 
 # NOTE: The following file come from: https://github.com/LineageOS/android_vendor_lineage/blob/HEAD/prebuilt/common/bin/backuptool.functions
 # shellcheck source=/dev/null

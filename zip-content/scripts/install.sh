@@ -476,5 +476,5 @@ if test "${SYS_INIT_STATUS}" = '1'; then
   if test -e '/system'; then unmount '/system'; fi
 fi
 
-touch "${TMP_PATH}/installed"
+touch "${TMP_PATH:?}/installed"
 ui_msg 'Installation finished.'
