@@ -200,6 +200,13 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME:?}.xml"
     delete_recursive "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
     delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
+
+    # App libs
+    delete_recursive_wildcard /data/app-lib/"${INTERNAL_NAME:?}"-*
+
+    # Dalvik cache
+    delete_recursive_wildcard /data/dalvik-cache/*/data@app@"${INTERNAL_NAME:?}"-*@classes*
+    delete_recursive_wildcard /data/dalvik-cache/data@app@"${INTERNAL_NAME:?}"-*@classes*
   fi
 
   if test -n "${FILENAME}"; then
@@ -234,6 +241,7 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     # Dalvik cache
     delete_recursive_wildcard /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
     delete_recursive_wildcard /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
+    delete_recursive_wildcard /data/dalvik-cache/system@priv-app@"${FILENAME}"[@\.]*@classes*
     delete_recursive_wildcard /data/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
   fi
 
@@ -258,6 +266,8 @@ framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
     delete_recursive "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.jar"
     delete_recursive "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.odex"
     delete_recursive_wildcard "${SYS_PATH:?}"/framework/oat/*/"${INTERNAL_NAME}:?".odex
+
+    # Dalvik cache
     delete_recursive_wildcard /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".jar@classes*
     delete_recursive_wildcard /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".odex@classes*
     delete_recursive_wildcard /data/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".jar@classes*
