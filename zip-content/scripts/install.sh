@@ -422,10 +422,12 @@ fi
 
 if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
   if test "${CPU}" != false; then
-    copy_dir_content "${TMP_PATH:?}/libs/lib/${CPU}" "${SYS_PATH:?}/lib"
+    move_rename_dir "${TMP_PATH:?}/libs/lib/${CPU}" "${TMP_PATH:?}/files/lib"
+    copy_dir_content "${TMP_PATH:?}/files/lib" "${SYS_PATH:?}/lib"
   fi
   if test "${CPU64}" != false; then
-    copy_dir_content "${TMP_PATH:?}/libs/lib/${CPU64}" "${SYS_PATH:?}/lib64"
+    move_rename_dir "${TMP_PATH:?}/libs/lib/${CPU64}" "${TMP_PATH:?}/files/lib64"
+    copy_dir_content "${TMP_PATH:?}/files/lib64" "${SYS_PATH:?}/lib64"
   fi
 fi
 delete_recursive "${TMP_PATH:?}/libs"
@@ -459,16 +461,10 @@ fi
 
 # Install survival script
 if test -e "${SYS_PATH:?}/addon.d"; then
-  if test "${API:?}" -lt 19; then
-    : ### Skip it
-  elif test "${API:?}" -lt 21; then
-    : ### Not ready yet
-  else
-    ui_msg 'Installing survival script...'
-    write_file_list "${TMP_PATH}/files" "${TMP_PATH}/files/" "${TMP_PATH}/backup-filelist.lst"
-    replace_line_in_file_with_file "${TMP_PATH}/addon.d/00-1-microg.sh" '%PLACEHOLDER-1%' "${TMP_PATH}/backup-filelist.lst"
-    copy_file "${TMP_PATH}/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
-  fi
+  ui_msg 'Installing survival script...'
+  write_file_list "${TMP_PATH}/files" "${TMP_PATH}/files/" "${TMP_PATH}/backup-filelist.lst"
+  replace_line_in_file_with_file "${TMP_PATH}/addon.d/00-1-microg.sh" '%PLACEHOLDER-1%' "${TMP_PATH}/backup-filelist.lst"
+  copy_file "${TMP_PATH}/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
 fi
 
 if test "${SYS_INIT_STATUS}" = '1'; then
