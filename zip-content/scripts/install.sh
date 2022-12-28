@@ -302,12 +302,14 @@ if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
     delete "${SYS_PATH:?}/lib/libmapbox-gl.so"
     delete "${SYS_PATH:?}/lib/libconscrypt_jni.so"
     delete "${SYS_PATH:?}/lib/libconscrypt_gmscore_jni.so"
+    delete "${SYS_PATH:?}/lib/libcronet".*."so"
   fi
   if test "${CPU64}" != false; then
     delete "${SYS_PATH:?}/lib64/libvtm-jni.so"
     delete "${SYS_PATH:?}/lib64/libmapbox-gl.so"
     delete "${SYS_PATH:?}/lib64/libconscrypt_jni.so"
     delete "${SYS_PATH:?}/lib64/libconscrypt_gmscore_jni.so"
+    delete "${SYS_PATH:?}/lib64/libcronet".*."so"
   fi
 fi
 delete "${SYS_PATH:?}/etc/zips/${install_id:?}.prop"
@@ -352,7 +354,6 @@ if test "${DATA_INIT_STATUS}" = '1'; then unmount '/data'; fi
 # Preparing 2
 ui_msg 'Preparing 2...'
 
-if test "${API:?}" -lt 21; then delete "${TMP_PATH}/files/etc/sysconfig/google.xml"; fi
 if test "${API:?}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; fi
 if test "${API:?}" -lt 10; then delete "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk"; fi
 if test "${API:?}" -lt 9; then delete "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk"; fi
@@ -412,13 +413,15 @@ else
   fi
 fi
 delete_dir_if_empty "${TMP_PATH:?}/files/etc/permissions"
-delete_dir_if_empty "${TMP_PATH:?}/files/etc"
 if test -e "${TMP_PATH:?}/files/etc/permissions"; then copy_dir_content "${TMP_PATH:?}/files/etc/permissions" "${SYS_PATH:?}/etc/permissions"; fi
 if test -e "${TMP_PATH:?}/files/framework"; then copy_dir_content "${TMP_PATH:?}/files/framework" "${SYS_PATH:?}/framework"; fi
 
 if test "${API:?}" -ge 21; then
   copy_dir_content "${TMP_PATH:?}/files/etc/sysconfig" "${SYS_PATH:?}/etc/sysconfig"
+else
+  delete_recursive "${TMP_PATH:?}/files/etc/sysconfig"
 fi
+delete_dir_if_empty "${TMP_PATH:?}/files/etc"
 
 if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
   if test "${CPU}" != false; then
