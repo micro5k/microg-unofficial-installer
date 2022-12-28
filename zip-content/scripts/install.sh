@@ -421,6 +421,7 @@ if test "${API:?}" -ge 21; then
 else
   delete_recursive "${TMP_PATH:?}/files/etc/sysconfig"
 fi
+
 delete_dir_if_empty "${TMP_PATH:?}/files/etc"
 
 if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
@@ -460,6 +461,8 @@ if test "${API:?}" -ge 23; then
   set_perm 0 2000 0755 "${TMP_PATH:?}/files/bin/minutil.sh"
   move_rename_file "${TMP_PATH:?}/files/bin/minutil.sh" "${TMP_PATH:?}/files/bin/minutil"
   copy_dir_content "${TMP_PATH:?}/files/bin" "${SYS_PATH:?}/bin"
+else
+  delete_recursive "${TMP_PATH:?}/files/bin"
 fi
 
 # Install survival script
