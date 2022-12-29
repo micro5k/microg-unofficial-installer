@@ -473,7 +473,7 @@ if test -e "${SYS_PATH:?}/addon.d"; then
   copy_file "${TMP_PATH}/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
 fi
 
-if test "${SYS_INIT_STATUS}" = '1'; then
+if test "${SYS_INIT_STATUS:?}" = '1'; then
   if test -e '/system_root'; then unmount '/system_root'; fi
   if test -e '/system'; then unmount '/system'; fi
 fi
