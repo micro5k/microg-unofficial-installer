@@ -1,11 +1,9 @@
 #!/sbin/sh
-# shellcheck disable=SC3010
-
-# SC3010: In POSIX sh, [[ ]] is undefined
-
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
+
+# shellcheck disable=SC3010 # In POSIX sh, [[ ]] is undefined
 
 list_app_data_to_remove()
 {
