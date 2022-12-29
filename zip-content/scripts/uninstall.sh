@@ -139,12 +139,12 @@ if [[ -z "${INSTALLER}" ]]; then
     fi
   }
 
-  delete_recursive_wildcard()
+  delete()
   {
-    for filename in "$@"; do
-      if test -e "${filename}"; then
-        ui_debug "Deleting '${filename}'...."
-        rm -rf -- "${filename:?}" || ui_debug "Failed to delete files/folders"
+    for filename in "${@?}"; do
+      if test -e "${filename?}"; then
+        ui_debug "Deleting '${filename?}'...."
+        rm -rf -- "${filename:?}" || ui_debug 'Failed to delete files/folders'
       fi
     done
   }
@@ -202,11 +202,11 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
 
     # App libs
-    delete_recursive_wildcard /data/app-lib/"${INTERNAL_NAME:?}"-*
+    delete /data/app-lib/"${INTERNAL_NAME:?}"-*
 
     # Dalvik cache
-    delete_recursive_wildcard /data/dalvik-cache/*/data@app@"${INTERNAL_NAME:?}"-*@classes*
-    delete_recursive_wildcard /data/dalvik-cache/data@app@"${INTERNAL_NAME:?}"-*@classes*
+    delete /data/dalvik-cache/*/data@app@"${INTERNAL_NAME:?}"-*@classes*
+    delete /data/dalvik-cache/data@app@"${INTERNAL_NAME:?}"-*@classes*
   fi
 
   if test -n "${FILENAME}"; then
@@ -239,20 +239,20 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete_recursive "${SYS_PATH}/etc/default-permissions/${FILENAME:?}-permissions.xml"
 
     # Dalvik cache
-    delete_recursive_wildcard /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
-    delete_recursive_wildcard /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
-    delete_recursive_wildcard /data/dalvik-cache/system@priv-app@"${FILENAME}"[@\.]*@classes*
-    delete_recursive_wildcard /data/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
+    delete /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
+    delete /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
+    delete /data/dalvik-cache/system@priv-app@"${FILENAME}"[@\.]*@classes*
+    delete /data/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
   fi
 
   if test -n "${INTERNAL_NAME}"; then
     if test "${DEL_SYS_APPS_ONLY:-false}" = false || track_really_deleted; then
       delete_recursive "/data/app/${INTERNAL_NAME}"
       delete_recursive "/data/app/${INTERNAL_NAME}.apk"
-      delete_recursive_wildcard "/data/app/${INTERNAL_NAME}"-*
+      delete "/data/app/${INTERNAL_NAME}"-*
       delete_recursive "/mnt/asec/${INTERNAL_NAME}"
       delete_recursive "/mnt/asec/${INTERNAL_NAME}.apk"
-      delete_recursive_wildcard "/mnt/asec/${INTERNAL_NAME}"-*
+      delete "/mnt/asec/${INTERNAL_NAME}"-*
     fi
     # Check also /data/app-private /data/app-asec /data/preload
   fi
@@ -265,13 +265,13 @@ framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
     delete_recursive "${SYS_PATH:?}/etc/permissions/${INTERNAL_NAME:?}.xml"
     delete_recursive "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.jar"
     delete_recursive "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.odex"
-    delete_recursive_wildcard "${SYS_PATH:?}"/framework/oat/*/"${INTERNAL_NAME}:?".odex
+    delete "${SYS_PATH:?}"/framework/oat/*/"${INTERNAL_NAME}:?".odex
 
     # Dalvik cache
-    delete_recursive_wildcard /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".jar@classes*
-    delete_recursive_wildcard /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".odex@classes*
-    delete_recursive_wildcard /data/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".jar@classes*
-    delete_recursive_wildcard /data/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".odex@classes*
+    delete /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".jar@classes*
+    delete /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".odex@classes*
+    delete /data/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".jar@classes*
+    delete /data/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".odex@classes*
   fi
 done
 STATUS="$?"
@@ -280,16 +280,16 @@ if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 list_app_data_to_remove | while IFS='|' read -r FILENAME; do
   if [[ -z "${FILENAME}" ]]; then continue; fi
   delete_recursive "/data/data/${FILENAME}"
-  delete_recursive_wildcard '/data/user'/*/"${FILENAME}"
-  delete_recursive_wildcard '/data/user_de'/*/"${FILENAME}"
+  delete '/data/user'/*/"${FILENAME}"
+  delete '/data/user_de'/*/"${FILENAME}"
   delete_recursive "${INTERNAL_MEMORY_PATH}/Android/data/${FILENAME}"
 done
 
-delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-microg.sh
-delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-microg-*.sh
-delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-unifiednlp.sh
-delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-mapsapi.sh
-delete_recursive_wildcard "${SYS_PATH}"/addon.d/*-gapps.sh
+delete "${SYS_PATH}"/addon.d/*-microg.sh
+delete "${SYS_PATH}"/addon.d/*-microg-*.sh
+delete "${SYS_PATH}"/addon.d/*-unifiednlp.sh
+delete "${SYS_PATH}"/addon.d/*-mapsapi.sh
+delete "${SYS_PATH}"/addon.d/*-gapps.sh
 delete_recursive "${SYS_PATH}"/addon.d/80-fdroid.sh
 
 delete_recursive "${SYS_PATH}"/etc/default-permissions/google-permissions.xml
@@ -299,7 +299,7 @@ delete_recursive "${SYS_PATH}"/etc/default-permissions/opengapps-permissions.xml
 delete_recursive "${SYS_PATH}"/etc/default-permissions/unifiednlp-permissions.xml
 delete_recursive "${SYS_PATH}"/etc/default-permissions/microg-permissions.xml
 delete_recursive "${SYS_PATH}"/etc/default-permissions/permissions-com.google.android.gms.xml
-delete_recursive_wildcard "${SYS_PATH}"/etc/default-permissions/microg-*-permissions.xml
+delete "${SYS_PATH}"/etc/default-permissions/microg-*-permissions.xml
 
 delete_recursive "${SYS_PATH}"/etc/permissions/features.xml
 delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google.xml
@@ -314,7 +314,7 @@ delete_recursive "${SYS_PATH}"/etc/sysconfig/google.xml
 delete_recursive "${SYS_PATH}"/etc/sysconfig/google_build.xml
 delete_recursive "${SYS_PATH}"/etc/sysconfig/org.microG.xml
 delete_recursive "${SYS_PATH}"/etc/sysconfig/microg.xml
-delete_recursive_wildcard "${SYS_PATH}"/etc/sysconfig/microg-*.xml
+delete "${SYS_PATH}"/etc/sysconfig/microg-*.xml
 
 delete_recursive "${SYS_PATH}"/etc/preferred-apps/google.xml
 
