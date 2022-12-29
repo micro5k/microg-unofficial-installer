@@ -46,8 +46,14 @@ if test -n "${TMPDIR:-}" && test -w "${TMPDIR:?}"; then
 elif test -w '/tmp'; then
   TMPDIR='/tmp'
 elif test -e '/dev'; then
-  mkdir -p '/dev/tmp' || { ui_show_error 'Failed to create a temp folder'; exit 5; }
-  chmod 01775 '/dev/tmp' || { ui_show_error "chmod failed on '/dev/tmp'"; exit 5; }
+  mkdir -p '/dev/tmp' || {
+    ui_show_error 'Failed to create a temp folder'
+    exit 5
+  }
+  chmod 01775 '/dev/tmp' || {
+    ui_show_error "chmod failed on '/dev/tmp'"
+    exit 5
+  }
   TMPDIR='/dev/tmp'
 fi
 
@@ -58,8 +64,14 @@ fi
 export TMPDIR
 
 SCRIPT_NAME="${TMPDIR:?}/update-binary.sh" || exit 7
-unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/update-binary' 1> "${SCRIPT_NAME:?}" || { ui_show_error 'Failed to extract update-binary'; exit 8; }
-test -e "${SCRIPT_NAME:?}" || { ui_show_error 'Failed to extract update-binary (2)'; exit 9; }
+unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/update-binary' 1> "${SCRIPT_NAME:?}" || {
+  ui_show_error 'Failed to extract update-binary'
+  exit 8
+}
+test -e "${SCRIPT_NAME:?}" || {
+  ui_show_error 'Failed to extract update-binary (2)'
+  exit 9
+}
 
 STATUS=0
 sh -- "${SCRIPT_NAME:?}" 3 1 "${ZIPFILE:?}" || STATUS="${?}"

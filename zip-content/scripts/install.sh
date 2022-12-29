@@ -232,7 +232,9 @@ app_2_is_installed="${?}"
 
 # Fallback to FakeStore if the selected market is missing
 market_is_fakestore='false'
-if { test "${app_1_is_installed:?}" -ne 0 && test "${app_2_is_installed:?}" -ne 0; } || test ! -f "${TMP_PATH}/files/priv-app/Phonesky.apk"; then
+if {
+  test "${app_1_is_installed:?}" -ne 0 && test "${app_2_is_installed:?}" -ne 0
+} || test ! -f "${TMP_PATH}/files/priv-app/Phonesky.apk"; then
   market_is_fakestore='true'
   setup_app 1 'FakeStore' 'FakeStore' 'priv-app' false false
 fi
