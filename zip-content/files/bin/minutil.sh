@@ -149,14 +149,14 @@ EOF
 
 _minutil_find_package()
 {
-  pm path -- "${1:?}" | cut -d ':' -f 2 || return 1
+  pm path "${1:?}" 2> /dev/null | cut -d ':' -f 2 || return 1
 }
 
 _minutil_reinstall_split_package()
 {
   \_is_caller_adb_or_root || \return 1
 
-  _install_sid="$(pm install-create -i 'com.android.vending' -r -g -- | grep -F -e 'Success: created install session' | grep -oE -e '[0-9]+')" || return "${?}"
+  _install_sid="$(pm install-create -i 'com.android.vending' -r -g | grep -F -e 'Success: created install session' | grep -oE -e '[0-9]+')" || return "${?}"
   _file_index=0
   echo "${1:?}" | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
@@ -179,17 +179,17 @@ minutil_reinstall_package()
 {
   \_is_caller_adb_or_root || \return 1
 
-  echo "Reinstalling ${1:?}..."
-  command -v -- pm 1> /dev/null || {
+  echo "Reinstalling ${1?}..."
+  command -v pm 1> /dev/null || {
     _minutil_error 'Package manager is NOT available'
     return 1
   }
 
-  _package_path="$(_minutil_find_package "${1:?}")" || {
+  if ! _package_path="$(_minutil_find_package "${1:?}")" || test -z "${_package_path?}"; then
     _minutil_error "Package '${1?}' not found"
     return 2
-  }
-  _apk_count="$(echo "${_package_path:?}" | wc -l --)"
+  fi
+  _apk_count="$(echo "${_package_path:?}" | wc -l)"
   if test "${_apk_count:?}" -ge 2; then
     _minutil_reinstall_split_package "${_package_path:?}" || {
       _status="${?}"
@@ -197,6 +197,10 @@ minutil_reinstall_package()
       return "${_status:?}"
     }
   else
+    if test ! -e "${_package_path:?}"; then
+      _minutil_error "Package '${1?}' found but file missing"
+      return 2
+    fi
     pm install -i 'com.android.vending' -r -g -- "${_package_path:?}" || {
       _minutil_error 'Package reinstall failed'
       return 3
@@ -298,7 +302,7 @@ while true; do
       ;;
 
     -i | --reinstall-package)
-      \minutil_reinstall_package "${2:?}"
+      \minutil_reinstall_package "${2:?Package name not specified}"
       shift
       ;;
 
