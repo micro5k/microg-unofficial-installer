@@ -216,7 +216,7 @@ minutil_force_gcm_reconnection()
   \_is_caller_adb_or_root || \return 1
 
   echo "GCM reconnection..."
-  command -v -- am 1> /dev/null || {
+  command -v am 1> /dev/null || {
     _minutil_error 'Activity manager is NOT available'
     return 1
   }
@@ -255,7 +255,7 @@ minutil_media_rescan()
   \_is_caller_root || \return 1
 
   echo "Media rescanning..."
-  command -v -- am 1> /dev/null || {
+  command -v am 1> /dev/null || {
     _minutil_error 'Activity manager is NOT available'
     return 1
   }
@@ -272,7 +272,7 @@ minutil_manual_media_rescan()
   \_is_caller_adb_or_root || \return 1
 
   echo "Manual media rescanning..."
-  command -v -- am 1> /dev/null || {
+  command -v am 1> /dev/null || {
     _minutil_error 'Activity manager is NOT available'
     return 1
   }
@@ -284,9 +284,9 @@ minutil_manual_media_rescan()
   }
 
   if test -e '/storage/emulated'; then
-    find -- /storage/emulated/* -type 'd' '(' -path '/storage/emulated/*/Android' -o -path '/storage/emulated/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${*:?}" 1>&-' _ '{}' ';' || true
+    find /storage/emulated/* -type 'd' '(' -path '/storage/emulated/*/Android' -o -path '/storage/emulated/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' ! -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${*:?}" 1>&-' _ '{}' ';' || true
   elif test -e '/storage'; then
-    find -- /storage/* -type 'd' '(' -path '/storage/*/Android' -o -path '/storage/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' -not -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${*:?}" 1>&-' _ '{}' ';' || true
+    find /storage/* -type 'd' '(' -path '/storage/*/Android' -o -path '/storage/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' ! -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${*:?}" 1>&-' _ '{}' ';' || true
   else
     _minutil_error 'Manual media rescanning failed!'
     return 3
