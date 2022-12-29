@@ -7,7 +7,7 @@
 
 # NOTE: The following file come from: https://github.com/LineageOS/android_vendor_lineage/blob/HEAD/prebuilt/common/bin/backuptool.functions
 # shellcheck source=/dev/null
-. '/tmp/backuptool.functions'
+. '/tmp/backuptool.functions' || { printf 1>&2 'ERROR: Failed to source backuptool.functions\n'; return 9; }
 
 list_files()
 {
