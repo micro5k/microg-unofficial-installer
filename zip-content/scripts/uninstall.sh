@@ -129,14 +129,6 @@ if [[ -z "${INSTALLER}" ]]; then
     printf '%s\n' "${1?}"
   }
 
-  delete_recursive()
-  {
-    if test -e "$1"; then
-      ui_debug "Deleting '$1'..."
-      rm -rf -- "$1" || ui_debug "Failed to delete files/folders"
-    fi
-  }
-
   delete()
   {
     for filename in "${@?}"; do
@@ -185,19 +177,19 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
   track_init
 
   if test -n "${INTERNAL_NAME}"; then
-    delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
-    delete_recursive "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME}.xml"
+    delete "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
+    delete "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME}.xml"
     delete_tracked "${PRIVAPP_PATH}/${INTERNAL_NAME}"
     delete_tracked "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
     delete_tracked "${SYS_PATH}/app/${INTERNAL_NAME}"
     delete_tracked "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
 
     # Legacy xml paths
-    delete_recursive "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
+    delete "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
     # Other installers
-    delete_recursive "${SYS_PATH}/etc/permissions/${INTERNAL_NAME:?}.xml"
-    delete_recursive "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
-    delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH}/etc/permissions/${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
 
     # App libs
     delete /data/app-lib/"${INTERNAL_NAME:?}"-*
@@ -231,10 +223,10 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete_tracked "/vendor/app/${FILENAME}"
 
     # Current xml paths
-    delete_recursive "${SYS_PATH}/etc/permissions/privapp-permissions-${FILENAME:?}.xml"
-    delete_recursive "${SYS_PATH}/etc/default-permissions/default-permissions-${FILENAME:?}.xml"
+    delete "${SYS_PATH}/etc/permissions/privapp-permissions-${FILENAME:?}.xml"
+    delete "${SYS_PATH}/etc/default-permissions/default-permissions-${FILENAME:?}.xml"
     # Legacy xml paths
-    delete_recursive "${SYS_PATH}/etc/default-permissions/${FILENAME:?}-permissions.xml"
+    delete "${SYS_PATH}/etc/default-permissions/${FILENAME:?}-permissions.xml"
 
     # Dalvik cache
     delete /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
@@ -245,11 +237,11 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
 
   if test -n "${INTERNAL_NAME}"; then
     if test "${DEL_SYS_APPS_ONLY:-false}" = false || track_really_deleted; then
-      delete_recursive "/data/app/${INTERNAL_NAME}"
-      delete_recursive "/data/app/${INTERNAL_NAME}.apk"
+      delete "/data/app/${INTERNAL_NAME}"
+      delete "/data/app/${INTERNAL_NAME}.apk"
       delete "/data/app/${INTERNAL_NAME}"-*
-      delete_recursive "/mnt/asec/${INTERNAL_NAME}"
-      delete_recursive "/mnt/asec/${INTERNAL_NAME}.apk"
+      delete "/mnt/asec/${INTERNAL_NAME}"
+      delete "/mnt/asec/${INTERNAL_NAME}.apk"
       delete "/mnt/asec/${INTERNAL_NAME}"-*
     fi
     # Check also /data/app-private /data/app-asec /data/preload
@@ -260,9 +252,9 @@ if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
 framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
   if test -n "${INTERNAL_NAME}"; then
-    delete_recursive "${SYS_PATH:?}/etc/permissions/${INTERNAL_NAME:?}.xml"
-    delete_recursive "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.jar"
-    delete_recursive "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.odex"
+    delete "${SYS_PATH:?}/etc/permissions/${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.jar"
+    delete "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.odex"
     delete "${SYS_PATH:?}"/framework/oat/*/"${INTERNAL_NAME}:?".odex
 
     # Dalvik cache
@@ -277,10 +269,10 @@ if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
 list_app_data_to_remove | while IFS='|' read -r FILENAME; do
   if [[ -z "${FILENAME}" ]]; then continue; fi
-  delete_recursive "/data/data/${FILENAME}"
+  delete "/data/data/${FILENAME}"
   delete '/data/user'/*/"${FILENAME}"
   delete '/data/user_de'/*/"${FILENAME}"
-  delete_recursive "${INTERNAL_MEMORY_PATH}/Android/data/${FILENAME}"
+  delete "${INTERNAL_MEMORY_PATH}/Android/data/${FILENAME}"
 done
 
 delete "${SYS_PATH}"/addon.d/*-microg.sh
@@ -288,39 +280,39 @@ delete "${SYS_PATH}"/addon.d/*-microg-*.sh
 delete "${SYS_PATH}"/addon.d/*-unifiednlp.sh
 delete "${SYS_PATH}"/addon.d/*-mapsapi.sh
 delete "${SYS_PATH}"/addon.d/*-gapps.sh
-delete_recursive "${SYS_PATH}"/addon.d/80-fdroid.sh
+delete "${SYS_PATH}"/addon.d/80-fdroid.sh
 
-delete_recursive "${SYS_PATH}"/etc/default-permissions/google-permissions.xml
-delete_recursive "${SYS_PATH}"/etc/default-permissions/phonesky-permissions.xml
-delete_recursive "${SYS_PATH}"/etc/default-permissions/contacts-calendar-sync.xml
-delete_recursive "${SYS_PATH}"/etc/default-permissions/opengapps-permissions.xml
-delete_recursive "${SYS_PATH}"/etc/default-permissions/unifiednlp-permissions.xml
-delete_recursive "${SYS_PATH}"/etc/default-permissions/microg-permissions.xml
-delete_recursive "${SYS_PATH}"/etc/default-permissions/permissions-com.google.android.gms.xml
+delete "${SYS_PATH}"/etc/default-permissions/google-permissions.xml
+delete "${SYS_PATH}"/etc/default-permissions/phonesky-permissions.xml
+delete "${SYS_PATH}"/etc/default-permissions/contacts-calendar-sync.xml
+delete "${SYS_PATH}"/etc/default-permissions/opengapps-permissions.xml
+delete "${SYS_PATH}"/etc/default-permissions/unifiednlp-permissions.xml
+delete "${SYS_PATH}"/etc/default-permissions/microg-permissions.xml
+delete "${SYS_PATH}"/etc/default-permissions/permissions-com.google.android.gms.xml
 delete "${SYS_PATH}"/etc/default-permissions/microg-*-permissions.xml
 
-delete_recursive "${SYS_PATH}"/etc/permissions/features.xml
-delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google.xml
-delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google-p.xml
-#delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-google-se.xml
-delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-org.microG.xml
-delete_recursive "${SYS_PATH}"/etc/permissions/privapp-permissions-microg.xml
-delete_recursive "${SYS_PATH}"/etc/permissions/permissions_org.fdroid.fdroid.privileged.xml
+delete "${SYS_PATH}"/etc/permissions/features.xml
+delete "${SYS_PATH}"/etc/permissions/privapp-permissions-google.xml
+delete "${SYS_PATH}"/etc/permissions/privapp-permissions-google-p.xml
+#delete "${SYS_PATH}"/etc/permissions/privapp-permissions-google-se.xml
+delete "${SYS_PATH}"/etc/permissions/privapp-permissions-org.microG.xml
+delete "${SYS_PATH}"/etc/permissions/privapp-permissions-microg.xml
+delete "${SYS_PATH}"/etc/permissions/permissions_org.fdroid.fdroid.privileged.xml
 
-delete_recursive "${SYS_PATH}"/etc/sysconfig/features.xml
-delete_recursive "${SYS_PATH}"/etc/sysconfig/google.xml
-delete_recursive "${SYS_PATH}"/etc/sysconfig/google_build.xml
-delete_recursive "${SYS_PATH}"/etc/sysconfig/org.microG.xml
-delete_recursive "${SYS_PATH}"/etc/sysconfig/microg.xml
+delete "${SYS_PATH}"/etc/sysconfig/features.xml
+delete "${SYS_PATH}"/etc/sysconfig/google.xml
+delete "${SYS_PATH}"/etc/sysconfig/google_build.xml
+delete "${SYS_PATH}"/etc/sysconfig/org.microG.xml
+delete "${SYS_PATH}"/etc/sysconfig/microg.xml
 delete "${SYS_PATH}"/etc/sysconfig/microg-*.xml
 
-delete_recursive "${SYS_PATH}"/etc/preferred-apps/google.xml
+delete "${SYS_PATH}"/etc/preferred-apps/google.xml
 
-delete_recursive "${SYS_PATH}/etc/org.fdroid.fdroid/additional_repos.xml"
-delete_recursive "${SYS_PATH}/etc/microg.xml"
+delete "${SYS_PATH}/etc/org.fdroid.fdroid/additional_repos.xml"
+delete "${SYS_PATH}/etc/microg.xml"
 
 # Legacy file
-delete_recursive "${SYS_PATH:?}/etc/zips/ug.prop"
+delete "${SYS_PATH:?}/etc/zips/ug.prop"
 
 if test -e "${SYS_PATH:?}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/org.fdroid.fdroid" || true; fi
 if test -e "${SYS_PATH:?}/etc/zips"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/zips" || true; fi
