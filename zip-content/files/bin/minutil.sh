@@ -8,8 +8,6 @@
 set -e
 # shellcheck disable=SC3040
 set -o posix 2> /dev/null || true
-# shellcheck disable=SC3040
-set -o pipefail || true
 
 MINUTIL_NAME='MinUtil'
 MINUTIL_VERSION='0.3'
@@ -27,12 +25,11 @@ _minutil_initialize()
     *) ;;
   esac
 
-  _minutil_current_user="$(\whoami)" || \exit 1
-  \readonly _minutil_current_user
-  if \test -z "${_minutil_current_user?}" || \test "$(\id -un || \true)" != "${_minutil_current_user?}"; then
+  if ! _minutil_current_user="$(\whoami)" || \test -z "${_minutil_current_user?}"; then
     \printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: Invalid user"
     \exit 1
   fi
+  \readonly _minutil_current_user
 }
 \readonly MINUTIL_NAME MINUTIL_VERSION
 \_minutil_initialize
