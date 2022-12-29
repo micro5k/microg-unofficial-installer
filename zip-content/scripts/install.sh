@@ -112,18 +112,16 @@ INSTALLATION_SETTINGS_FILE="${install_id}.prop"
 API="$(build_getprop 'build\.version\.sdk')"
 readonly API
 
-if test "${API}" -ge 19; then # KitKat or higher
+if test "${API:?}" -ge 19; then # KitKat or higher
   PRIVAPP_PATH="${SYS_PATH}/priv-app"
 else
   PRIVAPP_PATH="${SYS_PATH}/app"
 fi
 if test ! -e "${PRIVAPP_PATH:?}"; then ui_error 'The priv-app folder does NOT exist'; fi
 
-if test "${API}" -ge 21; then
-  : ### New Android versions
-elif test "${API}" -ge 8; then
-  :
-elif test "${API}" -ge 1; then
+if test "${API:?}" -ge 8; then
+  : ### Supported Android versions
+elif test "${API:?}" -ge 1; then
   ui_error 'Your Android version is too old'
 else
   ui_error 'Invalid API level'
