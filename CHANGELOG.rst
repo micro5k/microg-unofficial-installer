@@ -14,6 +14,37 @@ All notable changes to this project will be documented in this file.
 -------------
 - Click above to see all the changes.
 
+1.2.0-beta
+----------
+- Update Mozilla UnifiedNlp Backend to 1.5.0
+- Grant the ACCESS_BACKGROUND_LOCATION permission to Mozilla UnifiedNlp Backend by default
+- Improve temp folder handling
+- Improve priv-app folder detection
+- Add Android Auto 1.2.512930-stub (disabled by default, not tested)
+- Improve GApps cleaning
+- Auto mount / unmount extra partitions
+- Install MinUtil script on the device (can be used from terminal if rooted or via ADB)
+- Added function to reinstall packages as if they were installed from Play Store in the MinUtil script
+- Added function to remove all accounts of the device in the MinUtil script
+- Update NewPipe to 0.23.3
+- Refactor some code, now most apps can be enabled/disabled directly in the Live setup
+- Improve installation performance by verifying only the files that are really installed
+- Preset microG settings
+- Update FakeStore to 0.1.0
+- Add back the F-Droid Privileged Extension
+- Enable installation under API 8 although only F-Droid Privileged Extension is installed there
+- Add NewPipe 0.24.0 for Android 5+ devices
+- Update Android Auto stub to 1.2.520120-stub
+- Improved uninstaller
+- Vastly improve compatibility with legacy devices
+- Add function to rescan media in the MinUtil script
+- Update microG Service Core to 0.2.26.223616
+- Update NewPipe to 0.24.1 for Android 5+ devices
+- Add helper script (zip-install.sh) for the manual installation of the flashable zip via terminal or via ADB
+- Add function to force GCM reconnection in the MinUtil script
+- Remount /system to read-write if needed
+- Add support for addon.d also on legacy Android versions
+
 `1.1.0-beta`_ - 2022-04-28
 --------------------------
 - Improve Dalvik cache cleaning
