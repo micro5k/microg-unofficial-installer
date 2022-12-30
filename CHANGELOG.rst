@@ -42,7 +42,7 @@ All notable changes to this project will be documented in this file.
 - Update NewPipe to 0.24.1 for Android 5+ devices
 - Add helper script (zip-install.sh) for the manual installation of the flashable zip via terminal or via ADB
 - Add function to force GCM reconnection in the MinUtil script
-- Remount /system to read-write if needed
+- Remount /system as read-write if needed
 - Add support for addon.d also on legacy Android versions
 
 `1.1.0-beta`_ - 2022-04-28
