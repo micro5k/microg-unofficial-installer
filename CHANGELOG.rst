@@ -325,7 +325,7 @@ All notable changes to this project will be documented in this file.
 
 
 .. _Unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.2.0-beta...HEAD
-.. _1.1.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.1.0-beta...v1.2.0-beta
+.. _1.2.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.1.0-beta...v1.2.0-beta
 .. _1.1.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.34-beta...v1.1.0-beta
 .. _1.0.34-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.33-beta...v1.0.34-beta
 .. _1.0.33-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.32-beta...v1.0.33-beta
