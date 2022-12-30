@@ -37,7 +37,7 @@ All notable changes to this project will be documented in this file.
 - Update Android Auto stub to 1.2.520120-stub
 - Improved uninstaller
 - Vastly improve compatibility with legacy devices
-- Add function to rescan media in the MinUtil script
+- Add function to rescan storage in the MinUtil script
 - Update microG Service Core to 0.2.26.223616
 - Update NewPipe to 0.24.1 for Android 5+ devices
 - Add helper script (zip-install.sh) for the manual installation of the flashable zip via terminal or via ADB
