@@ -36,5 +36,5 @@ jobs:
           allowUpdates: true
           artifactErrorsFailBuild: true
           artifacts: "output/*.zip*"
-          body: "See [**changelog**](./CHANGELOG.rst)."
+          body: "See the full [**changelog**](./CHANGELOG.rst)."
           replacesArtifacts: false
