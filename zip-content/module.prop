@@ -5,8 +5,8 @@
 
 id=microg-unofficial-installer
 name=microG unofficial installer
-version=v1.1.0-beta
-versionCode=1
+version=v1.2.0-beta
+versionCode=2
 author=ale5000
 description=It is an installer made to simplify the installation of microG.
 support=https://github.com/micro5k/microg-unofficial-installer/issues
