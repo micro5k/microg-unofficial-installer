@@ -255,7 +255,7 @@ framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
     delete "${SYS_PATH:?}/etc/permissions/${INTERNAL_NAME:?}.xml"
     delete "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.jar"
     delete "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.odex"
-    delete "${SYS_PATH:?}"/framework/oat/*/"${INTERNAL_NAME}:?".odex
+    delete "${SYS_PATH:?}"/framework/oat/*/"${INTERNAL_NAME:?}.odex"
 
     # Dalvik cache
     delete /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".jar@classes*
