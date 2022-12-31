@@ -30,7 +30,6 @@ This project is available on GitHub_, on GitLab_ as well as on XDA_.
 Release
 -------
 .. image:: https://img.shields.io/github/v/release/micro5k/microg-unofficial-installer.svg?include_prereleases&cacheSeconds=3600
-   :name: download-release
    :alt: GitHub (pre-)release
    :target: docs/INSTRUCTIONS.rst
 
@@ -38,11 +37,11 @@ See `here <docs/INSTRUCTIONS.rst>`_ for the instructions.
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/latest/total.svg?cacheSeconds=3600
    :alt: Downloads of the latest OSS release
-   :target: `download-release`_
+   :target: `release`_
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/total.svg?cacheSeconds=3600
    :alt: Total OSS downloads
-   :target: `download-release`_
+   :target: `release`_
 
 
 Copyright
