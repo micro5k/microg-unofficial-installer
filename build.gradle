@@ -21,7 +21,6 @@ gradleEnterprise.buildScan {
 
 void configure() {
     println name
-    // net.ale5000.microg_unofficial_installer.ota
 
     defaultTasks 'tasks'
     rootProject.buildDir = "${projectDir}/output"
