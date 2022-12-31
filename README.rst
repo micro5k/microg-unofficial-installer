@@ -36,12 +36,12 @@ Release
 See `here <docs/INSTRUCTIONS.rst>`_ for the instructions.
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/latest/total.svg?cacheSeconds=3600
-   :alt: Downloads of the latest release
-   :target: docs/INSTRUCTIONS.rst
+   :alt: Downloads of the latest OSS release
+   :target: https://github.com/micro5k/microg-unofficial-installer/releases/latest
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/total.svg?cacheSeconds=3600
-   :alt: Total downloads
-   :target: docs/INSTRUCTIONS.rst
+   :alt: Total OSS downloads
+   :target: https://github.com/micro5k/microg-unofficial-installer/releases
 
 
 Copyright
