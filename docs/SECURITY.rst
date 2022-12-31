@@ -21,4 +21,4 @@ Version Supported
 Reporting a Vulnerability
 -------------------------
 
-This is a flashable ZIP that must be installed manually, so security reports can be added directly in the `Issues <./../../../issues>`_ section.
+This is a flashable ZIP that must be installed manually, so security reports can be added directly in the `Issues <./../../issues>`_ section.
