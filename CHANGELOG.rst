@@ -40,7 +40,7 @@ All notable changes to this project will be documented in this file.
 - Add function to rescan storage in the MinUtil script
 - Update microG Service Core to 0.2.26.223616
 - Update NewPipe to 0.24.1 for Android 5+ devices
-- Add helper script (zip-install.sh) for the manual installation of the flashable zip via terminal or via ADB
+- Add an helper script (:code:`zip-install.sh`) for the installation of the flashable zip via terminal or via ADB (recovery not needed)
 - Add function to force GCM reconnection in the MinUtil script
 - Remount /system as read-write if needed
 - Add support for addon.d also on legacy Android versions
