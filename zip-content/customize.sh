@@ -5,8 +5,14 @@
 
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
-set -u || true
 umask 022 || exit 1
+set -u || true
+# shellcheck disable=SC3040
+{
+  # Unsupported set -o options may cause the shell to exit, so first try them in a subshell to avoid this issue
+  ( set -o pipefail 2> /dev/null ) && set -o pipefail
+  ( set -o posix 2> /dev/null ) && set -o posix
+}
 
 ### PREVENTIVE CHECKS ###
 
