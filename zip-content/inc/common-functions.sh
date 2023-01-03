@@ -207,9 +207,9 @@ ensure_system_is_mounted()
   return 0 # OK
 }
 
-is_mounted_read_write()
+is_mounted_read_only()
 {
-  mount | grep " $1 " | head -n1 | grep -qi -e "[(\s,]rw[\s,)]"
+  mount | grep " ${1:?} " | head -n1 | grep -qi -e "[(\s,]ro[\s,)]"
 }
 
 get_mount_status()

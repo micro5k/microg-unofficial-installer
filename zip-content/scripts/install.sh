@@ -104,10 +104,10 @@ else
   fi
 fi
 
-if test "${SYS_PATH:?}" = '/system' && ! is_mounted_read_write "${SYS_PATH:?}"; then
+if test "${SYS_PATH:?}" = '/system' && is_mounted_read_only "${SYS_PATH:?}"; then
   ui_warning "The '${SYS_PATH:-}' partition is read-only, it will be remounted"
   remount_read_write "${SYS_PATH:?}"
-  is_mounted_read_write "${SYS_PATH:?}" || ui_error "The remounting of '${SYS_PATH:?}' has failed"
+  is_mounted_read_only "${SYS_PATH:?}" && ui_error "The remounting of '${SYS_PATH:?}' has failed"
 fi
 
 cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop" # Cache the file for faster access
