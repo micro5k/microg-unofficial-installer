@@ -18,7 +18,7 @@ unset CDPATH
 {
   # Unsupported set -o options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue and also handle the set -e case
   (set -o posix 2> /dev/null) && set -o posix || true
-  (set -o pipefail 2> /dev/null) && set -o pipefail || true
+  (set -o pipefail) && set -o pipefail || true
 }
 
 ### GLOBAL VARIABLES ###

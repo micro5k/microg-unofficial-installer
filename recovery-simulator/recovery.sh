@@ -7,10 +7,12 @@
 # REALLY IMPORTANT: A misbehaving flashable zip can damage your real system.
 
 set -e
-# shellcheck disable=SC3040
-set -o pipefail || true
-# shellcheck disable=SC3044
-shopt -s inherit_errexit 2> /dev/null || true
+# shellcheck disable=SC3040,SC2015
+{
+  # Unsupported set -o options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue and also handle the set -e case
+  (set -o posix 2> /dev/null) && set -o posix || true
+  (set -o pipefail) && set -o pipefail || true
+}
 
 # shellcheck disable=SC3028
 case ":${SHELLOPTS:-}:" in
