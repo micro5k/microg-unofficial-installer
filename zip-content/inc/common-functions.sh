@@ -20,9 +20,31 @@ mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions te
 
 ### FUNCTIONS ###
 
+_get_mount_info()
+{
+  if test ! -e "${1:?}"; then return 2; fi
+
+  if test "${TEST_INSTALL:-false}" = 'false' && test -e '/proc/mounts'; then
+    grep -m 1 -e '[[:blank:]]'"${1:?}"'[[:blank:]]' '/proc/mounts' 2> /dev/null || return 1
+    return 0
+  fi
+
+  local _mount_result
+  if _mount_result="$(mount 2> /dev/null)" || { test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"; }; then
+    echo "${_mount_result:?}" | grep -m 1 -e '[[:blank:]]'"${1:?}"'[[:blank:]]' || return 1
+    return 0
+  fi
+
+  return 3
+}
+
 is_mounted_read_only()
 {
-  mount | grep " ${1:?} " | head -n1 | grep -qi -e "[(\s,]ro[\s,)]"
+  local _mount_info
+  _mount_info="$(_get_mount_info "${1:?}")" || { ui_warning "is_mounted_read_only has failed, it will be assumed read-write"; return 2; }
+
+  echo "${_mount_info:?}" | grep -q -e '[(,[:blank:]]ro[[:blank:],)]' || return 1
+  return 0
 }
 
 initialize()
