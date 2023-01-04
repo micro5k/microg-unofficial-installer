@@ -20,6 +20,47 @@ mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions te
 
 ### FUNCTIONS ###
 
+_initialize()
+{
+  SYS_INIT_STATUS=0
+
+  if test -f "${ANDROID_ROOT:-/system_root/system}/build.prop"; then
+    SYS_PATH="${ANDROID_ROOT:-/system_root/system}"
+  elif test -f '/system_root/system/build.prop'; then
+    SYS_PATH='/system_root/system'
+  elif test -f '/mnt/system/system/build.prop'; then
+    SYS_PATH='/mnt/system/system'
+  elif test -f '/system/system/build.prop'; then
+    SYS_PATH='/system/system'
+  elif test -f '/system/build.prop'; then
+    SYS_PATH='/system'
+  else
+    SYS_INIT_STATUS=1
+
+    if test -n "${ANDROID_ROOT:-}" && test "${ANDROID_ROOT:-}" != '/system_root' && test "${ANDROID_ROOT:-}" != '/system' && mount_partition "${ANDROID_ROOT:-}" && test -f "${ANDROID_ROOT:-}/build.prop"; then
+      SYS_PATH="${ANDROID_ROOT:-}"
+    elif test -e '/system_root' && mount_partition '/system_root' && test -f '/system_root/system/build.prop'; then
+      SYS_PATH='/system_root/system'
+    elif test -e '/mnt/system' && mount_partition '/mnt/system' && test -f '/mnt/system/system/build.prop'; then
+      SYS_PATH='/mnt/system/system'
+    elif test -e '/system' && mount_partition '/system' && test -f '/system/system/build.prop'; then
+      SYS_PATH='/system/system'
+    elif test -f '/system/build.prop'; then
+      SYS_PATH='/system'
+    else
+      ui_error 'The ROM cannot be found'
+    fi
+  fi
+
+  if test "${SYS_PATH:?}" = '/system' && is_mounted_read_only "${SYS_PATH:?}"; then
+    ui_warning "The '${SYS_PATH:-}' partition is read-only, it will be remounted"
+    remount_read_write "${SYS_PATH:?}"
+    is_mounted_read_only "${SYS_PATH:?}" && ui_error "The remounting of '${SYS_PATH:?}' has failed"
+  fi
+
+  cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop" # Cache the file for faster access
+}
+
 # Message related functions
 _show_text_on_recovery()
 {
