@@ -20,7 +20,7 @@ mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions te
 
 ### FUNCTIONS ###
 
-_initialize()
+initialize()
 {
   SYS_INIT_STATUS=0
 
@@ -59,6 +59,15 @@ _initialize()
   fi
 
   cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop" # Cache the file for faster access
+}
+
+deinitialize()
+{
+  if test "${SYS_INIT_STATUS:?}" = '1'; then
+    if test -e '/system_root'; then unmount '/system_root'; fi
+    if test -e '/mnt/system'; then unmount '/mnt/system'; fi
+    if test -e '/system'; then unmount '/system'; fi
+  fi
 }
 
 # Message related functions

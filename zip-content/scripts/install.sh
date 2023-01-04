@@ -74,7 +74,7 @@ if test "${live_setup_enabled:?}" = 'true'; then
   fi
 fi
 
-_initialize
+initialize
 
 package_extract_file 'module.prop' "${TMP_PATH}/module.prop"
 install_id="$(simple_get_prop 'id' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse id string'
@@ -452,11 +452,7 @@ if test -e "${SYS_PATH:?}/addon.d"; then
   copy_file "${TMP_PATH}/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
 fi
 
-if test "${SYS_INIT_STATUS:?}" = '1'; then
-  if test -e '/system_root'; then unmount '/system_root'; fi
-  if test -e '/mnt/system'; then unmount '/mnt/system'; fi
-  if test -e '/system'; then unmount '/system'; fi
-fi
+deinitialize
 
 touch "${TMP_PATH:?}/installed"
 ui_msg 'Installation finished.'
