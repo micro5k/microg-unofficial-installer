@@ -20,12 +20,17 @@ mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions te
 
 ### FUNCTIONS ###
 
+is_mounted_read_only()
+{
+  mount | grep " ${1:?} " | head -n1 | grep -qi -e "[(\s,]ro[\s,)]"
+}
+
 initialize()
 {
   SYS_INIT_STATUS=0
 
-  if test -f "${ANDROID_ROOT:-/system_root/system}/build.prop"; then
-    SYS_PATH="${ANDROID_ROOT:-/system_root/system}"
+  if test -n "${ANDROID_ROOT:-}" && test -f "${ANDROID_ROOT:?}/build.prop"; then
+    SYS_PATH="${ANDROID_ROOT:?}"
   elif test -f '/system_root/system/build.prop'; then
     SYS_PATH='/system_root/system'
   elif test -f '/mnt/system/system/build.prop'; then
@@ -255,11 +260,6 @@ ensure_system_is_mounted()
     if ! is_mounted '/system'; then ui_error '/system cannot be mounted'; fi
   fi
   return 0 # OK
-}
-
-is_mounted_read_only()
-{
-  mount | grep " ${1:?} " | head -n1 | grep -qi -e "[(\s,]ro[\s,)]"
 }
 
 get_mount_status()
