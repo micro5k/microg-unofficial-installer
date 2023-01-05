@@ -20,6 +20,28 @@ mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions te
 
 ### FUNCTIONS ###
 
+_verify_system_partition()
+{
+  if test -f "${1:?}/system/build.prop"; then
+    MOUNT_POINT="${1:?}"
+    SYS_PATH="${1:?}/system"
+    return 0
+  fi
+
+  return 1
+}
+
+_mount_and_verify_system_partition()
+{
+  if test -e "${1:?}" && mount_partition "${1:?}" && test -f "${1:?}/system/build.prop"; then
+    MOUNT_POINT="${1:?}"
+    SYS_PATH="${1:?}/system"
+    return 0
+  fi
+
+  return 1
+}
+
 _get_mount_info()
 {
   if test ! -e "${1:?}"; then return 2; fi
@@ -30,7 +52,9 @@ _get_mount_info()
   fi
 
   local _mount_result
-  if _mount_result="$(mount 2> /dev/null)" || { test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"; }; then
+  if _mount_result="$(mount 2> /dev/null)" || {
+    test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"
+  }; then
     echo "${_mount_result:?}" | grep -m 1 -e '[[:blank:]]'"${1:?}"'[[:blank:]]' || return 1
     return 0
   fi
@@ -41,7 +65,10 @@ _get_mount_info()
 is_mounted_read_only()
 {
   local _mount_info
-  _mount_info="$(_get_mount_info "${1:?}")" || { ui_warning "is_mounted_read_only has failed, it will be assumed read-write"; return 2; }
+  _mount_info="$(_get_mount_info "${1:?}")" || {
+    ui_warning "is_mounted_read_only has failed, it will be assumed read-write"
+    return 2
+  }
 
   echo "${_mount_info:?}" | grep -q -e '[(,[:blank:]]ro[[:blank:],)]' || return 1
   return 0
@@ -52,40 +79,45 @@ initialize()
   SYS_INIT_STATUS=0
 
   if test -n "${ANDROID_ROOT:-}" && test -f "${ANDROID_ROOT:?}/build.prop"; then
+    MOUNT_POINT="${ANDROID_ROOT:?}"
     SYS_PATH="${ANDROID_ROOT:?}"
-  elif test -f '/system_root/system/build.prop'; then
-    SYS_PATH='/system_root/system'
-  elif test -f '/mnt/system/system/build.prop'; then
-    SYS_PATH='/mnt/system/system'
-  elif test -f '/system/system/build.prop'; then
-    SYS_PATH='/system/system'
+  elif _verify_system_partition '/system_root'; then
+    :
+  elif _verify_system_partition '/mnt/system'; then
+    :
+  elif _verify_system_partition '/system'; then
+    :
   elif test -f '/system/build.prop'; then
+    MOUNT_POINT='/system'
     SYS_PATH='/system'
   else
     SYS_INIT_STATUS=1
 
-    if test -n "${ANDROID_ROOT:-}" && test "${ANDROID_ROOT:-}" != '/system_root' && test "${ANDROID_ROOT:-}" != '/system' && mount_partition "${ANDROID_ROOT:-}" && test -f "${ANDROID_ROOT:-}/build.prop"; then
-      SYS_PATH="${ANDROID_ROOT:-}"
-    elif test -e '/system_root' && mount_partition '/system_root' && test -f '/system_root/system/build.prop'; then
-      SYS_PATH='/system_root/system'
-    elif test -e '/mnt/system' && mount_partition '/mnt/system' && test -f '/mnt/system/system/build.prop'; then
-      SYS_PATH='/mnt/system/system'
-    elif test -e '/system' && mount_partition '/system' && test -f '/system/system/build.prop'; then
-      SYS_PATH='/system/system'
-    elif test -f '/system/build.prop'; then
+    if test -n "${ANDROID_ROOT:-}" && test "${ANDROID_ROOT:?}" != '/system_root' && test "${ANDROID_ROOT:?}" != '/system' && mount_partition "${ANDROID_ROOT:?}" && test -f "${ANDROID_ROOT:?}/build.prop"; then
+      MOUNT_POINT="${ANDROID_ROOT:?}"
+      SYS_PATH="${ANDROID_ROOT:?}"
+    elif _mount_and_verify_system_partition '/system_root'; then
+      :
+    elif _mount_and_verify_system_partition '/mnt/system'; then
+      :
+    elif _mount_and_verify_system_partition '/system'; then
+      :
+    elif test -f '/system/build.prop'; then # The /system mount point was already mounted in the previous condition so no need to do it again
+      MOUNT_POINT='/system'
       SYS_PATH='/system'
     else
       ui_error 'The ROM cannot be found'
     fi
   fi
-
-  if test "${SYS_PATH:?}" = '/system' && is_mounted_read_only "${SYS_PATH:?}"; then
-    ui_warning "The '${SYS_PATH:-}' partition is read-only, it will be remounted"
-    remount_read_write "${SYS_PATH:?}"
-    is_mounted_read_only "${SYS_PATH:?}" && ui_error "The remounting of '${SYS_PATH:?}' has failed"
-  fi
+  readonly MOUNT_POINT SYS_PATH
 
   cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop" # Cache the file for faster access
+
+  if is_mounted_read_only "${MOUNT_POINT:?}"; then
+    ui_warning "The '${MOUNT_POINT:-}' mount point is read-only, it will be remounted"
+    remount_read_write "${MOUNT_POINT:?}"
+    if is_mounted_read_only "${MOUNT_POINT:?}"; then ui_error "The remounting of '${MOUNT_POINT:?}' has failed"; fi
+  fi
 }
 
 deinitialize()
@@ -295,7 +327,7 @@ get_mount_status()
 
 remount_read_write()
 {
-  mount -o 'remount,rw' -- "${1:?}" || mount -o 'remount,rw' -- "${1:?}" "${1:?}" || ui_error "Remounting of '${1:-}' failed"
+  mount -o 'remount,rw' "${1:?}" || mount -o 'remount,rw' "${1:?}" "${1:?}" || ui_error "Remounting of '${1:-}' failed"
 }
 
 remount_read_only()
