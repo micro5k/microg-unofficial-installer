@@ -148,9 +148,14 @@ ui_error()
 {
   ERROR_CODE=91
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
-  _show_text_on_recovery "ERROR: ${1:?}"
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
-  abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
+
+  if test "${BOOTMODE:?}" = 'true'; then
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
+  else
+    _show_text_on_recovery "ERROR: ${1:?}"
+  fi
+
+  exit "${ERROR_CODE:?}"
 }
 
 ui_warning()

@@ -35,7 +35,7 @@ SYS_PATH=''
 ### FUNCTIONS ###
 
 # shellcheck source=SCRIPTDIR/../inc/common-functions.sh
-. "${TMP_PATH}/inc/common-functions.sh"
+. "${TMP_PATH}/inc/common-functions.sh" || exit "${?}"
 
 ### CODE ###
 
