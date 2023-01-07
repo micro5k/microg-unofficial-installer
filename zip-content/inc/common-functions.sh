@@ -74,6 +74,11 @@ is_mounted_read_only()
   return 0
 }
 
+remount_read_write()
+{
+  mount -o 'remount,rw' "${1:?}" || mount -o 'remount,rw' "${1:?}" "${1:?}" || ui_error "Remounting of '${1:-}' failed"
+}
+
 initialize()
 {
   SYS_INIT_STATUS=0
@@ -328,16 +333,6 @@ get_mount_status()
   if test -z "${mount_line}"; then return 1; fi                             # NOT mounted
   if echo "${mount_line}" | grep -qi -e "[(\s,]rw[\s,)]"; then return 0; fi # Mounted read-write (RW)
   return 2                                                                  # Mounted read-only (RO)
-}
-
-remount_read_write()
-{
-  mount -o 'remount,rw' "${1:?}" || mount -o 'remount,rw' "${1:?}" "${1:?}" || ui_error "Remounting of '${1:-}' failed"
-}
-
-remount_read_only()
-{
-  mount -o remount,ro "$1" "$1"
 }
 
 # Getprop related functions
