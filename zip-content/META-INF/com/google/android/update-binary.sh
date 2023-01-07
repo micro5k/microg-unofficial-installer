@@ -53,7 +53,7 @@ ui_error()
 {
   ERROR_CODE=79
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
-  _show_text_on_recovery "ERROR: ${1:?}"
+  _show_text_on_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
 }
@@ -148,5 +148,5 @@ if test "${_ub_we_mounted_tmp:?}" = true; then
   umount '/tmp' || ui_error 'Failed to unmount the temp folder'
 fi
 
-if test "${STATUS:?}" -ne 0; then ui_error "Installation script failed with error ${STATUS}" "${STATUS}"; fi
+if test "${STATUS:?}" -ne 0; then ui_error "Installation script failed" "${STATUS}"; fi
 if test "${UNKNOWN_ERROR:?}" -ne 0; then ui_error 'Installation failed with an unknown error'; fi

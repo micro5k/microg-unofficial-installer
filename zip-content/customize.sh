@@ -90,15 +90,23 @@ ui_error()
 {
   ERROR_CODE=79
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
-  _show_text_on_recovery "ERROR: ${1:?}"
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
+
+  if test "${BOOTMODE:?}" = 'true'; then
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
+  else
+    _show_text_on_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
+  fi
+
   abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
 }
 
 ui_warning()
 {
-  _show_text_on_recovery "WARNING: ${1:?}"
-  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
+  if test "${BOOTMODE:?}" = 'true'; then
+    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
+  else
+    _show_text_on_recovery "WARNING: ${1:?}"
+  fi
 }
 
 ui_msg()

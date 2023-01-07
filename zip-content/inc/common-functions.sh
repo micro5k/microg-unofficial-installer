@@ -157,7 +157,7 @@ ui_error()
   if test "${BOOTMODE:?}" = 'true'; then
     printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   else
-    _show_text_on_recovery "ERROR: ${1:?}"
+    _show_text_on_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
   fi
 
   exit "${ERROR_CODE:?}"
