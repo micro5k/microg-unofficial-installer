@@ -69,14 +69,34 @@ is_mounted_read_only()
     ui_warning "is_mounted_read_only has failed, it will be assumed read-write"
     return 2
   }
+  if test ! -w "${1:?}"; then
+    ui_debug 'is_mounted_read_only: test ! -w'
+    return 0
+  fi
 
-  echo "${_mount_info:?}" | grep -q -e '[(,[:blank:]]ro[[:blank:],)]' || return 1
-  return 0
+  if printf '%s' "${_mount_info:?}" | grep -q -e '[(,[:blank:]]ro[[:blank:],)]'; then
+    return 0
+  fi
+
+  return 1
 }
 
 remount_read_write()
 {
-  mount -o 'remount,rw' "${1:?}" || mount -o 'remount,rw' "${1:?}" "${1:?}" || ui_error "Remounting of '${1:-}' failed"
+  local _retry='false'
+  if ! mount -o 'remount,rw' "${1:?}" && ! mount -o 'remount,rw' "${1:?}" "${1:?}"; then
+    _retry='true'
+  fi
+
+  if test "${_retry:?}" = 'true' || is_mounted_read_only "${1:?}"; then
+    if test -n "${DEVICE_MOUNT:-}"; then
+      "${DEVICE_MOUNT:?}" -o 'remount,rw' "${1:?}" || "${DEVICE_MOUNT:?}" -o 'remount,rw' "${1:?}" "${1:?}" || return 1
+    else
+      return 1
+    fi
+  fi
+
+  return 0
 }
 
 initialize()
@@ -120,8 +140,8 @@ initialize()
 
   if is_mounted_read_only "${MOUNT_POINT:?}"; then
     ui_warning "The '${MOUNT_POINT:-}' mount point is read-only, it will be remounted"
-    remount_read_write "${MOUNT_POINT:?}"
-    if is_mounted_read_only "${MOUNT_POINT:?}"; then ui_error "The remounting of '${MOUNT_POINT:?}' has failed"; fi
+    remount_read_write "${MOUNT_POINT:?}" || ui_error "Remounting of '${MOUNT_POINT:?}' failed (2)"
+    if is_mounted_read_only "${MOUNT_POINT:?}"; then ui_error "Remounting of '${MOUNT_POINT:?}' failed"; fi
   fi
 }
 
