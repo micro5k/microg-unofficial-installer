@@ -5,7 +5,7 @@
 
 id=microg-unofficial-installer
 name=microG unofficial installer
-version=v1.2.0-beta
+version=v1.2.0.2-alpha
 versionCode=2
 author=ale5000
 description=It is an installer made to simplify the installation of microG.
