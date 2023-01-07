@@ -80,7 +80,7 @@ _clean_at_exit
 trap - 0 2 3 6 15 || true # Already cleaned, so unset traps
 
 if test "${STATUS:-1}" != '0'; then
-  ui_show_error 'ZIP installation failed'
+  ui_show_error "ZIP installation failed with error ${STATUS:-1}"
   exit "${STATUS:-1}"
 fi
 
