@@ -240,6 +240,10 @@ minutil_remove_all_accounts()
     _minutil_error '/data NOT found'
     return 1
   }
+  test -w '/data' || {
+    _minutil_error '/data is NOT writable'
+    return 1
+  }
 
   _list_account_files | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
