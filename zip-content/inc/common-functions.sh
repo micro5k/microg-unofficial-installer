@@ -154,9 +154,7 @@ initialize()
 deinitialize()
 {
   if test "${SYS_INIT_STATUS:?}" = '1'; then
-    if test -e '/system_root'; then unmount '/system_root'; fi
-    if test -e '/mnt/system'; then unmount '/mnt/system'; fi
-    if test -e '/system'; then unmount '/system'; fi
+    unmount "${MOUNT_POINT:?}"
   fi
 }
 
