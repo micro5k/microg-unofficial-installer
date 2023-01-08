@@ -67,8 +67,8 @@ _get_mount_info()
   if _mount_result="$(mount 2> /dev/null)" || {
     test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"
   }; then
-    echo "${_mount_result:?}" | grep -m 1 -e '[[:blank:]]'"${1:?}"'[[:blank:]]' || return 1
-    return 0
+    if printf '%s' "${_mount_result:?}" | grep -m 1 -e '[[:blank:]]'"${1:?}"'[[:blank:]]'; then return 0; fi
+    return 1
   fi
 
   ui_warning "_get_mount_info has failed"
