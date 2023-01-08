@@ -88,10 +88,6 @@ is_mounted_read_only()
     ui_warning "is_mounted_read_only has failed, it will be assumed read-write"
     return 2
   }
-  if test ! -w "${1:?}"; then
-    ui_debug 'is_mounted_read_only: test ! -w'
-    return 0
-  fi
 
   if printf '%s' "${_mount_info:?}" | grep -q -e '[(,[:blank:]]ro[[:blank:],)]'; then
     return 0
@@ -110,6 +106,7 @@ remount_read_write()
   if test "${_retry:?}" = 'true' || is_mounted_read_only "${1:?}"; then
     if test -n "${DEVICE_MOUNT:-}"; then
       "${DEVICE_MOUNT:?}" -o 'remount,rw' "${1:?}" || "${DEVICE_MOUNT:?}" -o 'remount,rw' "${1:?}" "${1:?}" || return 1
+      if is_mounted_read_only "${1:?}"; then return 1; fi
     else
       return 1
     fi
@@ -142,17 +139,20 @@ initialize()
     elif test "${ANDROID_ROOT:?}" != '/system' && _mount_and_verify_system_partition '/system' true; then
       :
     else
-      ui_error 'The ROM cannot be found'
+      ui_error "The ROM cannot be found. Android root ENV: ${ANDROID_ROOT:-}"
     fi
   fi
   readonly MOUNT_POINT SYS_PATH
 
-  cp -pf "${SYS_PATH}/build.prop" "${TMP_PATH}/build.prop" # Cache the file for faster access
+  cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
   if is_mounted_read_only "${MOUNT_POINT:?}"; then
     ui_warning "The '${MOUNT_POINT:-}' mount point is read-only, it will be remounted"
-    remount_read_write "${MOUNT_POINT:?}" || ui_error "Remounting of '${MOUNT_POINT:?}' failed (2)"
-    if is_mounted_read_only "${MOUNT_POINT:?}"; then ui_error "Remounting of '${MOUNT_POINT:?}' failed"; fi
+    remount_read_write "${MOUNT_POINT:?}" || ui_error "Remounting of '${MOUNT_POINT:-}' failed"
+  fi
+
+  if test ! -w "${SYS_PATH:?}"; then
+    ui_error "The '${SYS_PATH:-}' partition is NOT writable"
   fi
 }
 
