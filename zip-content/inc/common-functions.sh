@@ -343,24 +343,6 @@ unmount_extra_partitions()
   return 0 # Never fail
 }
 
-ensure_system_is_mounted()
-{
-  if ! is_mounted '/system'; then
-    mount '/system'
-    if ! is_mounted '/system'; then ui_error '/system cannot be mounted'; fi
-  fi
-  return 0 # OK
-}
-
-get_mount_status()
-{
-  local mount_line
-  mount_line="$(mount | grep " $1 " | head -n1)"
-  if test -z "${mount_line}"; then return 1; fi                             # NOT mounted
-  if echo "${mount_line}" | grep -qi -e "[(\s,]rw[\s,)]"; then return 0; fi # Mounted read-write (RW)
-  return 2                                                                  # Mounted read-only (RO)
-}
-
 # Getprop related functions
 getprop()
 {
