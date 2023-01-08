@@ -122,9 +122,8 @@ initialize()
 {
   SYS_INIT_STATUS=0
 
-  if test -n "${ANDROID_ROOT:-}" && test -f "${ANDROID_ROOT:?}/build.prop"; then
-    MOUNT_POINT="${ANDROID_ROOT:?}"
-    SYS_PATH="${ANDROID_ROOT:?}"
+  if test -n "${ANDROID_ROOT:-}" && _verify_system_partition "${ANDROID_ROOT:?}" true; then
+    :
   elif _verify_system_partition '/system_root'; then
     :
   elif _verify_system_partition '/mnt/system'; then
@@ -134,14 +133,13 @@ initialize()
   else
     SYS_INIT_STATUS=1
 
-    if test -n "${ANDROID_ROOT:-}" && test "${ANDROID_ROOT:?}" != '/system_root' && test "${ANDROID_ROOT:?}" != '/system' && mount_partition "${ANDROID_ROOT:?}" && test -f "${ANDROID_ROOT:?}/build.prop"; then
-      MOUNT_POINT="${ANDROID_ROOT:?}"
-      SYS_PATH="${ANDROID_ROOT:?}"
-    elif _mount_and_verify_system_partition '/system_root'; then
+    if test -n "${ANDROID_ROOT:-}" && _mount_and_verify_system_partition "${ANDROID_ROOT:?}" true; then
       :
-    elif _mount_and_verify_system_partition '/mnt/system'; then
+    elif test "${ANDROID_ROOT:?}" != '/system_root' && _mount_and_verify_system_partition '/system_root'; then
       :
-    elif _mount_and_verify_system_partition '/system' true; then
+    elif test "${ANDROID_ROOT:?}" != '/mnt/system' && _mount_and_verify_system_partition '/mnt/system'; then
+      :
+    elif test "${ANDROID_ROOT:?}" != '/system' && _mount_and_verify_system_partition '/system' true; then
       :
     else
       ui_error 'The ROM cannot be found'
