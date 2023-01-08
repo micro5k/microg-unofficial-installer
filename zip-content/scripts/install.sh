@@ -251,8 +251,8 @@ delete "${TMP_PATH:?}/origin"
 DATA_INIT_STATUS=0
 if test "${TEST_INSTALL:-false}" = 'false' && ! is_mounted '/data'; then
   DATA_INIT_STATUS=1
-  mount '/data'
-  if ! is_mounted '/data'; then ui_error '/data cannot be mounted'; fi
+  mount_partition '/data'
+  if ! is_mounted '/data'; then ui_warning "/data cannot be mounted, it won't be able to properly remove previous versions"; fi
 fi
 
 # Resetting Android runtime permissions
