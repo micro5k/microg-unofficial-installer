@@ -22,9 +22,15 @@ mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions te
 
 _verify_system_partition()
 {
-  if test -f "${1:?}/system/build.prop"; then
+  if test -e "${1:?}/system/build.prop"; then
     MOUNT_POINT="${1:?}"
     SYS_PATH="${1:?}/system"
+    return 0
+  fi
+
+  if test "${2:-false}" != 'false' && test -e "${1:?}/build.prop"; then
+    MOUNT_POINT="${1:?}"
+    SYS_PATH="${1:?}"
     return 0
   fi
 
@@ -33,9 +39,15 @@ _verify_system_partition()
 
 _mount_and_verify_system_partition()
 {
-  if test -e "${1:?}" && mount_partition "${1:?}" && test -f "${1:?}/system/build.prop"; then
+  if test -e "${1:?}" && mount_partition "${1:?}" && test -e "${1:?}/system/build.prop"; then
     MOUNT_POINT="${1:?}"
     SYS_PATH="${1:?}/system"
+    return 0
+  fi
+
+  if test "${2:-false}" != 'false' && test -e "${1:?}/build.prop"; then
+    MOUNT_POINT="${1:?}"
+    SYS_PATH="${1:?}"
     return 0
   fi
 
@@ -110,11 +122,8 @@ initialize()
     :
   elif _verify_system_partition '/mnt/system'; then
     :
-  elif _verify_system_partition '/system'; then
+  elif _verify_system_partition '/system' true; then
     :
-  elif test -f '/system/build.prop'; then
-    MOUNT_POINT='/system'
-    SYS_PATH='/system'
   else
     SYS_INIT_STATUS=1
 
@@ -125,11 +134,8 @@ initialize()
       :
     elif _mount_and_verify_system_partition '/mnt/system'; then
       :
-    elif _mount_and_verify_system_partition '/system'; then
+    elif _mount_and_verify_system_partition '/system' true; then
       :
-    elif test -f '/system/build.prop'; then # The /system mount point was already mounted in the previous condition so no need to do it again
-      MOUNT_POINT='/system'
-      SYS_PATH='/system'
     else
       ui_error 'The ROM cannot be found'
     fi
