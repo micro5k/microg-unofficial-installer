@@ -275,7 +275,7 @@ package_extract_file_safe 'settings.conf' "${TMP_PATH:?}/default-settings.conf"
 test "${DEBUG_LOG}" -eq 1 && enable_debug_log # Enable file logging if needed
 
 # If the debug log was enabled at startup (not in the settings or in the live setup) we cannot allow overriding it from the settings
-if [ "${DEBUG_LOG_ENABLED}" -eq 1 ]; then export DEBUG_LOG=1; fi
+if test "${DEBUG_LOG_ENABLED}" -eq 1; then export DEBUG_LOG=1; fi
 
 ui_debug ''
 ui_debug 'Starting installation script...'
