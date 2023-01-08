@@ -74,6 +74,24 @@ _get_mount_info()
   return 3
 }
 
+is_mounted()
+{
+  local _partition _mount_result _silent
+  _silent="${2:-false}"
+  _partition="$(readlink -f "${1:?}")" || {
+    _partition="${1:?}"
+    if test "${_silent:?}" = false; then ui_warning "Failed to canonicalize '${1}'"; fi
+  }
+
+  { test "${TEST_INSTALL:-false}" = 'false' && test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || _mount_result="$(mount 2> /dev/null)" || { test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"; } || ui_error 'is_mounted has failed'
+
+  case "${_mount_result:?}" in
+    *[[:blank:]]"${_partition:?}"[[:blank:]]*) return 0 ;; # Mounted
+    *) ;;                                                  # NOT mounted
+  esac
+  return 1 # NOT mounted
+}
+
 is_mounted_read_only()
 {
   local _mount_info
@@ -282,24 +300,6 @@ unmount()
 
   umount "${partition:?}" || ui_warning "Failed to unmount '${partition}'"
   return 0 # Never fail
-}
-
-is_mounted()
-{
-  local _partition _mount_result _silent
-  _silent="${2:-false}"
-  _partition="$(readlink -f "${1:?}")" || {
-    _partition="${1:?}"
-    if test "${_silent:?}" = false; then ui_warning "Failed to canonicalize '${1}'"; fi
-  }
-
-  { test "${TEST_INSTALL:-false}" = 'false' && test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"; } || _mount_result="$(mount 2> /dev/null)" || { test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"; } || ui_error 'is_mounted has failed'
-
-  case "${_mount_result:?}" in
-    *[[:blank:]]"${_partition:?}"[[:blank:]]*) return 0 ;; # Mounted
-    *) ;;                                                  # NOT mounted
-  esac
-  return 1 # NOT mounted
 }
 
 _mount_if_needed_silent()
