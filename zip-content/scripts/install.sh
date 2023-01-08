@@ -134,6 +134,8 @@ ui_msg "Main 32-bit CPU arch: ${CPU:?}"
 ui_msg "Mount point: ${MOUNT_POINT:?}"
 ui_msg "System path: ${SYS_PATH:?}"
 ui_msg "Priv-app path: ${PRIVAPP_PATH:?}"
+ui_msg_empty_line
+ui_msg "Android root env var: ${ANDROID_ROOT:-}"
 
 if test ! -e "${SYS_PATH:?}/framework/framework-res.apk"; then ui_error "The file '${SYS_PATH:?}/framework/framework-res.apk' does NOT exist"; fi
 zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH}/framework-res"
@@ -144,6 +146,7 @@ if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATU
   FAKE_SIGN=true
 fi
 ui_msg "Fake signature: ${FAKE_SIGN}"
+ui_msg '---------------------------'
 ui_msg_empty_line
 
 if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi

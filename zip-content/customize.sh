@@ -35,6 +35,7 @@ export OUTFD
 export RECOVERY_PIPE
 export ZIPFILE
 export TMPDIR
+export ANDROID_ROOT
 unset REPLACE
 
 ### MAGISK VARIABLES ###
