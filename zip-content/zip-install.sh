@@ -24,6 +24,7 @@ if test ! -e "${ZIPFILE:?}"; then
   ui_show_error "The selected ZIP file doesn't exist => '${ZIPFILE:-}'"
   exit 4
 fi
+unset SCRIPT_NAME
 
 _clean_at_exit()
 {
@@ -37,7 +38,6 @@ _clean_at_exit()
     unset TMPDIR
   fi
 }
-unset SCRIPT_NAME
 trap ' _clean_at_exit' 0 2 3 6 15
 
 TMPDIR="${TMPDIR:-}"
@@ -74,7 +74,7 @@ test -e "${SCRIPT_NAME:?}" || {
 }
 
 STATUS=0
-sh -- "${SCRIPT_NAME:?}" 3 1 "${ZIPFILE:?}" || STATUS="${?}"
+sh -- "${SCRIPT_NAME:?}" 3 1 "${ZIPFILE:?}" 'zip-install' || STATUS="${?}"
 
 _clean_at_exit
 trap - 0 2 3 6 15 || true # Already cleaned, so unset traps

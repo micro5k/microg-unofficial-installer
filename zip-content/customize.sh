@@ -45,7 +45,15 @@ export SKIPUNZIP
 
 ### GLOBAL VARIABLES ###
 
+if test "${4:-}" = 'zip-install'; then
+  export ZIP_INSTALL='true'
+else
+  export ZIP_INSTALL='false'
+fi
 export RECOVERY_API_VER="${1:-}"
+
+readonly ZIP_INSTALL RECOVERY_API_VER
+
 ZIP_PATH="$(dirname "${ZIPFILE:?}")"
 export ZIP_PATH
 
