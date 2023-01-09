@@ -20,17 +20,30 @@ mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions te
 
 ### FUNCTIONS ###
 
+_canonicalize()
+{
+  if test ! -e "${1:?}"; then printf '%s' "${1:?}"; return 0; fi
+
+  local _path
+  _path="$(realpath "${1:?}")" || _path="$(readlink -f -- "${1:?}")" || { ui_warning "Failed to canonicalize '${1:-}'"; _path="${1:?}"; }
+  printf '%s' "${_path:?}"
+  return 0
+}
+
 _verify_system_partition()
 {
-  if test -e "${1:?}/system/build.prop"; then
-    MOUNT_POINT="${1:?}"
-    SYS_PATH="${1:?}/system"
+  local _path
+  _path="$(_canonicalize "${1:?}")"
+
+  if test -e "${_path:?}/system/build.prop"; then
+    MOUNT_POINT="${_path:?}"
+    SYS_PATH="${_path:?}/system"
     return 0
   fi
 
-  if test "${2:-false}" != 'false' && test -e "${1:?}/build.prop"; then
-    MOUNT_POINT="${1:?}"
-    SYS_PATH="${1:?}"
+  if test "${2:-false}" != 'false' && test -e "${_path:?}/build.prop"; then
+    MOUNT_POINT="${_path:?}"
+    SYS_PATH="${_path:?}"
     return 0
   fi
 
