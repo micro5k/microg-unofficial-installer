@@ -32,6 +32,7 @@ _ub_detect_bootmode()
   if pgrep -f -x 'zygote' 1> /dev/null 2> /dev/null || pgrep -f -x 'zygote64' 1> /dev/null 2> /dev/null || ps | grep 'zygote' | grep -v 'grep' 1> /dev/null || ps -A 2> /dev/null | grep 'zygote' | grep -v 'grep' 1> /dev/null; then
     BOOTMODE=true
   fi
+  readonly BOOTMODE
   export BOOTMODE
 }
 
