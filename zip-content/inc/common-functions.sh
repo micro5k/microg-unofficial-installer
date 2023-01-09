@@ -36,14 +36,21 @@ _verify_system_partition()
   _path="$(_canonicalize "${1:?}")"
 
   if test -e "${_path:?}/system/build.prop"; then
-    MOUNT_POINT="${_path:?}"
     SYS_PATH="${_path:?}/system"
+    MOUNT_POINT="${_path:?}"
     return 0
   fi
 
   if test "${2:-false}" != 'false' && test -e "${_path:?}/build.prop"; then
-    MOUNT_POINT="${_path:?}"
     SYS_PATH="${_path:?}"
+    if is_mounted "${_path:?}"; then
+      MOUNT_POINT="${_path:?}"
+    elif _path="$(_canonicalize "${_path:?}/../")" && is_mounted "${_path:?}"; then
+      MOUNT_POINT="${_path:?}"
+    else
+      ui_error "Found system path but failed to find mount point"
+    fi
+
     return 0
   fi
 
