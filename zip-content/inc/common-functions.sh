@@ -84,10 +84,7 @@ is_mounted()
 is_mounted_read_only()
 {
   local _mount_info
-  _mount_info="$(_get_mount_info "${1:?}")" || {
-    ui_warning "is_mounted_read_only has failed, it will be assumed read-write"
-    return 2
-  }
+  _mount_info="$(_get_mount_info "${1:?}")" || ui_error "is_mounted_read_only has failed for '${1:-}'"
 
   if printf '%s' "${_mount_info:?}" | grep -q -e '[(,[:blank:]]ro[[:blank:],)]'; then
     return 0
