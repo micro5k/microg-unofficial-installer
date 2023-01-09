@@ -19,7 +19,7 @@ if test -z "${1:-}"; then
   ui_show_error 'You must specify the ZIP file to install'
   exit 3
 fi
-ZIPFILE="$(realpath -- "${1:?}")" || ZIPFILE="$(readlink -f -- "${1:?}")" || exit 4
+ZIPFILE="$(realpath "${1:?}")" || ZIPFILE="$(readlink -f -- "${1:?}")" || exit 4
 if test ! -e "${ZIPFILE:?}"; then
   ui_show_error "The selected ZIP file doesn't exist => '${ZIPFILE:-}'"
   exit 4
