@@ -250,9 +250,12 @@ delete "${TMP_PATH:?}/origin"
 # MOUNT /data PARTITION
 DATA_INIT_STATUS=0
 if test "${TEST_INSTALL:-false}" = 'false' && ! is_mounted '/data'; then
-  DATA_INIT_STATUS=1
   mount_partition '/data'
-  if ! is_mounted '/data'; then ui_warning "/data cannot be mounted, it won't be able to properly remove previous versions"; fi
+  if is_mounted '/data'; then
+    DATA_INIT_STATUS=1
+  else
+    ui_warning "The /data partition cannot be mounted so I can't clean app updates and Dalvik cache but it doesn't matter if you do a factory reset"
+  fi
 fi
 
 # Resetting Android runtime permissions
