@@ -63,10 +63,10 @@ TMP_PATH="${TMPDIR:?}/custom-setup-a5k"
 
 if test "${ZIP_PATH:?}" != '/sideload' && test -w "${ZIP_PATH:?}"; then
   LOG_PATH="${ZIP_PATH:?}/debug-a5k.log"
-elif test -e '/sdcard'; then
-  LOG_PATH='/sdcard/debug-a5k.log'
 elif test -e '/sdcard0'; then
   LOG_PATH='/sdcard0/debug-a5k.log'
+elif test -e '/sdcard'; then
+  LOG_PATH='/sdcard/debug-a5k.log'
 else
   LOG_PATH="${TMPDIR:?}/debug-a5k.log"
 fi
