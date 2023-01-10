@@ -84,7 +84,7 @@ enable_debug_log()
   fi
 
   ui_debug "Creating log: ${_log_full_path:?}"
-  touch "${_log_full_path:?}" || ui_warning "Unable to create the log file at: ${_log_full_path:-}"
+  touch "${_log_full_path:?}" || { ui_warning "Unable to create the log file at: ${_log_full_path:-}"; DEBUG_LOG_ENABLED=0; return; }
 
   exec 3>&1 4>&2 # Backup stdout and stderr
   exec 1>> "${_log_full_path:?}" 2>&1
