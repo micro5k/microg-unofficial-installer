@@ -61,6 +61,18 @@ export ZIP_PATH
 BASE_TMP_PATH="${TMPDIR:?}"
 TMP_PATH="${TMPDIR:?}/custom-setup-a5k"
 
+if test "${ZIP_PATH:?}" != '/sideload' && test -w "${ZIP_PATH:?}"; then
+  LOG_PATH="${ZIP_PATH:?}/debug-a5k.log"
+elif test -e '/sdcard'; then
+  LOG_PATH='/sdcard/debug-a5k.log'
+elif test -e '/sdcard0'; then
+  LOG_PATH='/sdcard0/debug-a5k.log'
+else
+  LOG_PATH="${TMPDIR:?}/debug-a5k.log"
+fi
+readonly LOG_PATH
+export LOG_PATH
+
 export LIVE_SETUP_POSSIBLE=false
 export KEYCHECK_ENABLED=false
 
@@ -72,22 +84,15 @@ enable_debug_log()
   if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
   DEBUG_LOG_ENABLED=1
 
-  local _log_full_path
-  if test "${ZIP_PATH:?}" != '/sideload' && test -w "${ZIP_PATH:?}"; then
-    _log_full_path="${ZIP_PATH:?}/debug-a5k.log"
-  elif test -e '/sdcard'; then
-    _log_full_path='/sdcard/debug-a5k.log'
-  elif test -e '/sdcard0'; then
-    _log_full_path='/sdcard/debug-a5k.log'
-  else
-    _log_full_path="${TMPDIR:?}/debug-a5k.log"
-  fi
-
-  ui_debug "Creating log: ${_log_full_path:?}"
-  touch "${_log_full_path:?}" || { ui_warning "Unable to create the log file at: ${_log_full_path:-}"; DEBUG_LOG_ENABLED=0; return; }
+  ui_debug "Creating log: ${LOG_PATH:?}"
+  touch "${LOG_PATH:?}" || {
+    ui_warning "Unable to write the log file at: ${LOG_PATH:-}"
+    DEBUG_LOG_ENABLED=0
+    return
+  }
 
   exec 3>&1 4>&2 # Backup stdout and stderr
-  exec 1>> "${_log_full_path:?}" 2>&1
+  exec 1>> "${LOG_PATH:?}" 2>&1
 }
 
 disable_debug_log()
