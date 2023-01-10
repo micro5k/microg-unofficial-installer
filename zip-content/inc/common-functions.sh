@@ -276,7 +276,7 @@ mount_partition()
   local _partition
   _partition="$(_canonicalize "${1:?}")"
 
-  mount "${_partition:?}" || { test -n "${DEVICE_MOUNT:-}" && "${DEVICE_MOUNT:?}" "${_partition:?}"; } || ui_warning "Failed to mount '${_partition:-}'"
+  mount "${_partition:?}" 2> /dev/null || { test -n "${DEVICE_MOUNT:-}" && "${DEVICE_MOUNT:?}" "${_partition:?}"; } || ui_warning "Failed to mount '${_partition:-}'"
   return 0 # Never fail
 }
 
