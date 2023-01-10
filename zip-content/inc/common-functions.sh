@@ -273,13 +273,10 @@ validate_return_code_warning()
 # Mounting related functions
 mount_partition()
 {
-  local partition
-  partition="$(readlink -f "${1:?}")" || {
-    partition="${1:?}"
-    ui_warning "Failed to canonicalize '${1}'"
-  }
+  local _partition
+  _partition="$(_canonicalize "${1:?}")"
 
-  mount "${partition:?}" || ui_warning "Failed to mount '${partition}'"
+  mount "${_partition:?}" || { test -n "${DEVICE_MOUNT:-}" && "${DEVICE_MOUNT:?}" "${_partition:?}"; } || ui_warning "Failed to mount '${_partition:-}'"
   return 0 # Never fail
 }
 
