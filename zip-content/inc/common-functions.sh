@@ -74,6 +74,12 @@ _mount_and_verify_system_partition()
   return 1
 }
 
+_device_mount()
+{
+  if test -n "${DEVICE_MOUNT:-}" && "${DEVICE_MOUNT:?}" "${@}"; then return 0; fi
+  return 1
+}
+
 _get_mount_info()
 {
   if test ! -e "${1:?}"; then return 2; fi
@@ -93,6 +99,15 @@ _get_mount_info()
 
   ui_warning "_get_mount_info has failed"
   return 3
+}
+
+mount_partition()
+{
+  local _partition
+  _partition="$(_canonicalize "${1:?}")"
+
+  mount "${_partition:?}" 2> /dev/null || _device_mount "${_partition:?}" || ui_warning "Failed to mount '${_partition:-}'"
+  return 0 # Never fail
 }
 
 is_mounted()
@@ -271,15 +286,6 @@ validate_return_code_warning()
 }
 
 # Mounting related functions
-mount_partition()
-{
-  local _partition
-  _partition="$(_canonicalize "${1:?}")"
-
-  mount "${_partition:?}" 2> /dev/null || { test -n "${DEVICE_MOUNT:-}" && "${DEVICE_MOUNT:?}" "${_partition:?}"; } || ui_warning "Failed to mount '${_partition:-}'"
-  return 0 # Never fail
-}
-
 mount_partition_silent()
 {
   local partition
