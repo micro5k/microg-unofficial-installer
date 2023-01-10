@@ -22,10 +22,16 @@ mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions te
 
 _canonicalize()
 {
-  if test ! -e "${1:?}"; then printf '%s' "${1:?}"; return 0; fi
+  if test ! -e "${1:?}"; then
+    printf '%s' "${1:?}"
+    return 0
+  fi
 
   local _path
-  _path="$(realpath "${1:?}")" || _path="$(readlink -f -- "${1:?}")" || { ui_warning "Failed to canonicalize '${1:-}'"; _path="${1:?}"; }
+  _path="$(realpath "${1:?}")" || _path="$(readlink -f -- "${1:?}")" || {
+    ui_warning "Failed to canonicalize '${1:-}'"
+    _path="${1:?}"
+  }
   printf '%s' "${_path:?}"
   return 0
 }
