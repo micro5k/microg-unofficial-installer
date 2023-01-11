@@ -62,8 +62,8 @@ BASE_TMP_PATH="${TMPDIR:?}"
 TMP_PATH="${TMPDIR:?}/custom-setup-a5k"
 
 case "${ZIP_PATH:?}" in
-  '/sideload') SIDELOAD='true' ;;
-  '/dev/'rootfs*\/sideload) SIDELOAD='true' ;;
+  /sideload) SIDELOAD='true' ;;
+  /dev/rootfs*/sideload) SIDELOAD='true' ;;
   *) SIDELOAD='false' ;;
 esac
 readonly SIDELOAD
