@@ -175,11 +175,11 @@ initialize()
 
     if test -n "${ANDROID_ROOT:-}" && _mount_and_verify_system_partition "${ANDROID_ROOT:?}" true; then
       :
-    elif test "${ANDROID_ROOT:?}" != '/system_root' && _mount_and_verify_system_partition '/system_root'; then
+    elif test "${ANDROID_ROOT:-}" != '/system_root' && _mount_and_verify_system_partition '/system_root'; then
       :
-    elif test "${ANDROID_ROOT:?}" != '/mnt/system' && _mount_and_verify_system_partition '/mnt/system'; then
+    elif test "${ANDROID_ROOT:-}" != '/mnt/system' && _mount_and_verify_system_partition '/mnt/system'; then
       :
-    elif test "${ANDROID_ROOT:?}" != '/system' && _mount_and_verify_system_partition '/system' true; then
+    elif test "${ANDROID_ROOT:-}" != '/system' && _mount_and_verify_system_partition '/system' true; then
       :
     else
       ui_error "The ROM cannot be found. Android root ENV: ${ANDROID_ROOT:-}"
