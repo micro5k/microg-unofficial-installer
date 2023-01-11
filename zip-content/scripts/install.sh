@@ -249,7 +249,7 @@ delete "${TMP_PATH:?}/origin"
 
 # MOUNT /data PARTITION
 DATA_INIT_STATUS=0
-if test "${TEST_INSTALL:-false}" = 'false' && ! is_mounted '/data'; then
+if test "${TEST_INSTALL:-false}" = 'false' && test ! -e '/data/data' && ! is_mounted '/data'; then
   mount_partition '/data'
   if is_mounted '/data'; then
     DATA_INIT_STATUS=1
