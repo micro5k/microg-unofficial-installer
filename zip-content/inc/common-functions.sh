@@ -197,13 +197,22 @@ initialize()
   if test ! -w "${SYS_PATH:?}"; then
     ui_error "The '${SYS_PATH:-}' partition is NOT writable"
   fi
+
+  DATA_INIT_STATUS=0
+  if test "${TEST_INSTALL:-false}" = 'false' && test ! -e '/data/data' && ! is_mounted '/data'; then
+    mount_partition '/data'
+    if is_mounted '/data'; then
+      DATA_INIT_STATUS=1
+    else
+      ui_warning "The /data partition cannot be mounted so I can't clean app updates and Dalvik cache but it doesn't matter if you do a factory reset"
+    fi
+  fi
 }
 
 deinitialize()
 {
-  if test "${SYS_INIT_STATUS:?}" = '1'; then
-    unmount "${MOUNT_POINT:?}"
-  fi
+  if test "${SYS_INIT_STATUS:?}" = '1'; then unmount "${MOUNT_POINT:?}"; fi
+  if test "${DATA_INIT_STATUS}" = '1'; then unmount '/data'; fi
 }
 
 # Message related functions

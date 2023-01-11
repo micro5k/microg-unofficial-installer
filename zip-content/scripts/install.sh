@@ -247,17 +247,6 @@ fi
 
 delete "${TMP_PATH:?}/origin"
 
-# MOUNT /data PARTITION
-DATA_INIT_STATUS=0
-if test "${TEST_INSTALL:-false}" = 'false' && test ! -e '/data/data' && ! is_mounted '/data'; then
-  mount_partition '/data'
-  if is_mounted '/data'; then
-    DATA_INIT_STATUS=1
-  else
-    ui_warning "The /data partition cannot be mounted so I can't clean app updates and Dalvik cache but it doesn't matter if you do a factory reset"
-  fi
-fi
-
 # Resetting Android runtime permissions
 if test "${API}" -ge 23; then
   if test -e '/data/system/users/0/runtime-permissions.xml'; then
@@ -330,9 +319,6 @@ if test "${live_setup_enabled:?}" = 'true'; then
 elif test "${RESET_GMS_DATA_OF_ALL_APPS:?}" -eq 1; then
   reset_gms_data_of_all_apps
 fi
-
-# UNMOUNT /data PARTITION
-if test "${DATA_INIT_STATUS}" = '1'; then unmount '/data'; fi
 
 # Preparing 2
 ui_msg 'Preparing 2...'
