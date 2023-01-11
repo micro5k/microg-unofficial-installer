@@ -118,6 +118,11 @@ mount_partition()
 
 is_mounted()
 {
+  if test "${TEST_INSTALL:-false}" = 'false' && command -v mountpoint 1> /dev/null; then
+    if mountpoint "${1:?}" 1> /dev/null 2>&1; then return 0; fi # Mounted
+    return 1                                                    # NOT mounted
+  fi
+
   if _get_mount_info "${1:?}" 1> /dev/null; then return 0; fi # Mounted
   return 1                                                    # NOT mounted
 }
