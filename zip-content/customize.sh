@@ -61,7 +61,15 @@ export ZIP_PATH
 BASE_TMP_PATH="${TMPDIR:?}"
 TMP_PATH="${TMPDIR:?}/custom-setup-a5k"
 
-if test "${ZIP_PATH:?}" != '/sideload' && test -w "${ZIP_PATH:?}"; then
+case "${ZIP_PATH:?}" in
+  '/sideload') SIDELOAD='true' ;;
+  '/dev/'rootfs*\/sideload) SIDELOAD='true' ;;
+  *) SIDELOAD='false' ;;
+esac
+readonly SIDELOAD
+export SIDELOAD
+
+if test "${SIDELOAD:?}" = 'false' && test -w "${ZIP_PATH:?}"; then
   LOG_PATH="${ZIP_PATH:?}/debug-a5k.log"
 elif test -e '/sdcard0' && test -w '/sdcard0'; then
   LOG_PATH='/sdcard0/debug-a5k.log'
