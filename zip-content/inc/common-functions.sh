@@ -125,7 +125,7 @@ mount_partition()
   local _partition
   _partition="$(_canonicalize "${1:?}")"
 
-  mount "${_partition:?}" 2> /dev/null || _device_mount "${_partition:?}" || ui_warning "Failed to mount '${_partition:-}'"
+  mount -o 'rw' "${_partition:?}" 2> /dev/null || _device_mount -o 'rw' "${_partition:?}" || ui_warning "Failed to mount '${_partition:-}'"
   return 0 # Never fail
 }
 
@@ -335,7 +335,7 @@ mount_partition_silent()
     partition="${1:?}"
   }
 
-  mount "${partition:?}" 2> /dev/null || true
+  mount -o 'rw' "${partition:?}" 2> /dev/null || true
   return 0 # Never fail
 }
 
