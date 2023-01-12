@@ -263,7 +263,8 @@ fi
 set_perm_safe 0 0 0755 "${TMP_PATH:?}"
 
 PREVIOUS_PATH="${PATH}"
-DEVICE_MOUNT="$(command -v -- mount)" || DEVICE_MOUNT=''
+DEVICE_MOUNT="$(command -v mount)" || DEVICE_MOUNT=''
+readonly DEVICE_MOUNT
 export DEVICE_MOUNT
 
 if test "${TEST_INSTALL:-false}" = 'false'; then
