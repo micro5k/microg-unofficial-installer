@@ -175,6 +175,7 @@ initialize()
 {
   SLOT="$(_detect_slot)" || SLOT=''
   readonly SLOT
+  export SLOT
 
   SYS_INIT_STATUS=0
 
