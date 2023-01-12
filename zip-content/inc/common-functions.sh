@@ -503,6 +503,7 @@ custom_package_extract_dir()
 
 zip_extract_file()
 {
+  test -e "${1:?}" || ui_error "Missing archive for extraction: '${1:?}'" 96
   mkdir -p "$3" || ui_error "Failed to create the dir '$3' for extraction" 96
   set_perm 0 0 0755 "$3"
   unzip -oq "$1" "$2" -d "$3" || ui_error "Failed to extract the file '$2' from the archive '$1'" 96
@@ -510,6 +511,7 @@ zip_extract_file()
 
 zip_extract_dir()
 {
+  test -e "${1:?}" || ui_error "Missing archive for extraction: '${1:?}'" 96
   mkdir -p "$3" || ui_error "Failed to create the dir '$3' for extraction" 96
   set_perm 0 0 0755 "$3"
   unzip -oq "$1" "$2/*" -d "$3" || ui_error "Failed to extract the dir '$2' from the archive '$1'" 96
