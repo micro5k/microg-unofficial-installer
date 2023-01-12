@@ -171,12 +171,8 @@ remount_read_write()
   return 0
 }
 
-initialize()
+_find_and_mount_system()
 {
-  SLOT="$(_detect_slot)" || SLOT=''
-  readonly SLOT
-  export SLOT
-
   SYS_INIT_STATUS=0
 
   if test -n "${ANDROID_ROOT:-}" && _verify_system_partition "${ANDROID_ROOT:?}" true; then
@@ -202,8 +198,17 @@ initialize()
       ui_error "The ROM cannot be found. Android root ENV: ${ANDROID_ROOT:-}"
     fi
   fi
-  readonly MOUNT_POINT SYS_PATH
 
+  readonly MOUNT_POINT SYS_PATH
+}
+
+initialize()
+{
+  SLOT="$(_detect_slot)" || SLOT=''
+  readonly SLOT
+  export SLOT
+
+  _find_and_mount_system
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
   if is_mounted_read_only "${MOUNT_POINT:?}"; then
