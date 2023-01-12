@@ -29,7 +29,7 @@ _minutil_initialize()
     *) ;;
   esac
 
-  if ! _minutil_current_user="$(\whoami)" || \test -z "${_minutil_current_user?}"; then
+  if ! _minutil_current_user="$(\whoami || \id -un)" || \test -z "${_minutil_current_user?}"; then
     \printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: Invalid user"
     \exit 1
   fi
