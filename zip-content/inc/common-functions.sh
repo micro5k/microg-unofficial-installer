@@ -36,6 +36,19 @@ _canonicalize()
   return 0
 }
 
+_detect_slot()
+{
+  if test ! -e '/proc/cmdline'; then return 1; fi
+
+  local _slot
+  if _slot="$(grep -o -e 'androidboot.slot_suffix=[_[:alpha:]]*' '/proc/cmdline' | cut -d '=' -f 2)"; then
+    printf '%s' "${_slot:?}"
+    return 0
+  fi
+
+  return 1
+}
+
 _verify_system_partition()
 {
   local _path
@@ -160,6 +173,9 @@ remount_read_write()
 
 initialize()
 {
+  SLOT="$(_detect_slot)" || SLOT=''
+  readonly SLOT
+
   SYS_INIT_STATUS=0
 
   if test -n "${ANDROID_ROOT:-}" && _verify_system_partition "${ANDROID_ROOT:?}" true; then
