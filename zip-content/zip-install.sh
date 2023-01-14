@@ -11,6 +11,12 @@ ui_show_error()
 umask 022 || exit 1
 
 if test "$(whoami || id -un || true)" != 'root'; then
+  if test "${AUTO_ELEVATED:-false}" = 'false' && command -v su 1> /dev/null; then
+    ZIP_INSTALL_SCRIPT="$(realpath "${0:?}")" || ZIP_INSTALL_SCRIPT="$(readlink -f -- "${0:?}")" || { ui_show_error 'Unable to find this script'; exit 2; }
+    su -c "export AUTO_ELEVATED='true'; sh '${ZIP_INSTALL_SCRIPT:?}' '${1}'" || { STATUS="${?}"; ui_show_error 'Auto-rooting failed, you must execute this as root'; exit "${STATUS:-1}"; }
+    exit 0
+  fi
+
   ui_show_error 'You must execute this as root'
   exit 2
 fi
