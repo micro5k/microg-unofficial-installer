@@ -3,17 +3,24 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
+umask 022 || exit 1
+
 ui_show_error()
 {
   printf 1>&2 '\033[1;31mERROR: %s\033[0m\n' "${1:?}"
 }
 
-umask 022 || exit 1
-
 if test "$(whoami || id -un || true)" != 'root'; then
   if test "${AUTO_ELEVATED:-false}" = 'false' && command -v su 1> /dev/null; then
-    ZIP_INSTALL_SCRIPT="$(readlink -f "${0:?}")" || ZIP_INSTALL_SCRIPT="$(realpath "${0:?}")" || { ui_show_error 'Unable to find this script'; exit 2; }
-    su -c "export AUTO_ELEVATED='true'; sh '${ZIP_INSTALL_SCRIPT:?}' '${1}'" || { STATUS="${?}"; ui_show_error 'Auto-rooting failed, you must execute this as root'; exit "${STATUS:-1}"; }
+    ZIP_INSTALL_SCRIPT="$(readlink -f "${0:?}")" || ZIP_INSTALL_SCRIPT="$(realpath "${0:?}")" || {
+      ui_show_error 'Unable to find this script'
+      exit 2
+    }
+    su -c "export AUTO_ELEVATED='true'; sh '${ZIP_INSTALL_SCRIPT:?}' '${1}'" || {
+      STATUS="${?}"
+      ui_show_error 'Auto-rooting failed, you must execute this as root'
+      exit "${STATUS:-1}"
+    }
     exit 0
   fi
 
