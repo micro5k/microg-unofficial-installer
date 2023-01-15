@@ -28,7 +28,7 @@ _canonicalize()
   fi
 
   local _path
-  _path="$(realpath "${1:?}")" || _path="$(readlink -f -- "${1:?}")" || {
+  _path="$(readlink -f "${1:?}")" || _path="$(realpath "${1:?}")" || {
     ui_warning "Failed to canonicalize '${1:-}'"
     _path="${1:?}"
   }
