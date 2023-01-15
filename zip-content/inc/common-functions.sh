@@ -331,9 +331,7 @@ validate_return_code_warning()
 mount_partition_silent()
 {
   local partition
-  partition="$(readlink -f "${1:?}")" || {
-    partition="${1:?}"
-  }
+  partition="$(_canonicalize "${1:?}")"
 
   mount -o 'rw' "${partition:?}" 2> /dev/null || true
   return 0 # Never fail
@@ -342,10 +340,7 @@ mount_partition_silent()
 unmount()
 {
   local partition
-  partition="$(readlink -f "${1:?}")" || {
-    partition="${1:?}"
-    ui_warning "Failed to canonicalize '${1}'"
-  }
+  partition="$(_canonicalize "${1:?}")"
 
   umount "${partition:?}" || ui_warning "Failed to unmount '${partition}'"
   return 0 # Never fail
