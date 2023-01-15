@@ -53,7 +53,6 @@ _clean_at_exit()
 }
 trap ' _clean_at_exit' 0 2 3 6 15
 
-TMPDIR="${TMPDIR:-}"
 if test -n "${TMPDIR:-}" && test -w "${TMPDIR:?}"; then
   : # Already ready
 elif test -w '/tmp'; then

@@ -92,14 +92,13 @@ _ub_we_mounted_tmp=false
     return 1 # NOT mounted
   }
 
-  TMPDIR="${TMPDIR:-}"
-  if test -n "${TMPDIR?}" && test -w "${TMPDIR:?}"; then
+  if test -n "${TMPDIR:-}" && test -w "${TMPDIR:?}"; then
     : # Already ready
   elif test -w '/tmp' && _ub_is_mounted '/tmp'; then
     TMPDIR='/tmp'
   elif test -e '/dev' && _ub_is_mounted '/dev'; then
     mkdir -p '/dev/tmp' || ui_error 'Failed to create the temp folder'
-    set_perm 0 0 01775 '/dev/tmp'
+    set_perm 0 2000 01775 '/dev/tmp'
     TMPDIR='/dev/tmp'
   else
     _ub_we_mounted_tmp=true
@@ -111,16 +110,16 @@ _ub_we_mounted_tmp=false
       set_perm 0 0 0755 '/tmp'
     fi
 
-    mount -t tmpfs -o rw -- tmpfs '/tmp' || ui_error 'Failed to mount the temp folder'
+    mount -t 'tmpfs' -o 'rw' tmpfs '/tmp' || ui_error 'Failed to mount the temp folder'
     if ! _ub_is_mounted '/tmp'; then ui_error 'The temp folder CANNOT be mounted'; fi
-    set_perm 0 0 01775 '/tmp'
+    set_perm 0 2000 01775 '/tmp'
 
     TMPDIR='/tmp'
   fi
   unset -f _ub_is_mounted || ui_error 'Failed to unset _ub_is_mounted'
 
-  if test ! -e "${TMPDIR:?}"; then
-    ui_error 'The temp folder is missing'
+  if test -z "${TMPDIR:-}" || test ! -w "${TMPDIR:?}"; then
+    ui_error 'The temp folder is missing or not writable'
   fi
   export TMPDIR
 }
