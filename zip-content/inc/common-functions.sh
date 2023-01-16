@@ -171,6 +171,43 @@ remount_read_write()
   return 0
 }
 
+_find_block()
+{
+  if test ! -e '/sys/dev/block'; then return 1; fi
+
+  local _block _partname
+  _partname="${1:?}"
+
+  for uevent in /sys/dev/block/*/uevent; do
+    if grep -q -i -F -e "PARTNAME=${_partname:?}" "${uevent:?}"; then
+      if _block="$(grep -m 1 -o -e 'DEVNAME=.*' "${uevent:?}" | cut -d '=' -f 2)"; then
+        _block="$(_canonicalize "/dev/block/${_block:?}")"
+        if test -e "${_block:?}"; then
+          printf '%s' "${_block:?}"
+          return 0
+        fi
+      fi
+    fi
+  done
+
+  return 1
+}
+
+_advanced_find_and_mount_system()
+{
+  return 1 # Disabled for now
+
+  if _find_block "system${SLOT?}"; then
+    ui_msg "Found system${SLOT?} block"
+  elif _find_block "system"; then
+    ui_msg "Found system block"
+  elif _find_block "FACTORYFS"; then
+    ui_msg "Found FACTORYFS block"
+  else
+    return 1
+  fi
+}
+
 _find_and_mount_system()
 {
   SYS_INIT_STATUS=0
@@ -193,6 +230,8 @@ _find_and_mount_system()
     elif test "${ANDROID_ROOT:-}" != '/mnt/system' && _mount_and_verify_system_partition '/mnt/system'; then
       :
     elif test "${ANDROID_ROOT:-}" != '/system' && _mount_and_verify_system_partition '/system' true; then
+      :
+    elif _advanced_find_and_mount_system; then
       :
     else
       ui_error "The ROM cannot be found. Android root ENV: ${ANDROID_ROOT:-}"
