@@ -171,6 +171,11 @@ remount_read_write()
   return 0
 }
 
+_upperize()
+{
+  printf '%s' "${1:?}" | LC_ALL=C tr '[:lower:]' '[:upper:]' || ui_error "_upperize has failed for '${1:-}'"
+}
+
 _find_block()
 {
   if test ! -e '/sys/dev/block'; then return 1; fi
@@ -206,6 +211,8 @@ _advanced_find_and_mount_system()
   else
     return 1
   fi
+
+  return 0
 }
 
 _find_and_mount_system()
