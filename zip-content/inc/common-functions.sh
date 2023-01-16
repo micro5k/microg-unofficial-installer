@@ -241,7 +241,9 @@ _find_and_mount_system()
     elif _advanced_find_and_mount_system; then
       :
     else
+      ui_msg "Current slot: ${SLOT:-no slot}"
       ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
+      ui_msg_empty_line
       ui_error "The ROM cannot be found!"
     fi
   fi
@@ -256,6 +258,7 @@ initialize()
   export SLOT
 
   _find_and_mount_system
+
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
   if is_mounted_read_only "${MOUNT_POINT:?}"; then
