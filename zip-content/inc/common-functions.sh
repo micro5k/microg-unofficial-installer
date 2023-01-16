@@ -241,7 +241,8 @@ _find_and_mount_system()
     elif _advanced_find_and_mount_system; then
       :
     else
-      ui_error "The ROM cannot be found. Android root ENV: ${ANDROID_ROOT:-}"
+      ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
+      ui_error "The ROM cannot be found!"
     fi
   fi
 
