@@ -371,7 +371,7 @@ if test "${_minutil_display_help:?}" = 'true'; then
 
   _minutil_aligned_print '-h,-?,--help'							'Show this help'
   _minutil_aligned_print '-s,--rescan-storage'					'Rescan storage to find file changes'
-  _minutil_aligned_print '--remove-all-accounts'				'Remove all accounts from the device'
+  _minutil_aligned_print '--remove-all-accounts'				'Remove all accounts from the device (need root)'
   _minutil_aligned_print '--force-gcm-reconnection'				'Force GCM reconnection'
   _minutil_aligned_print '-i,--reinstall-package PACKAGE_NAME'	'Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions'
 
