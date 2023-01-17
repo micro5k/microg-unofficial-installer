@@ -200,7 +200,6 @@ _find_block()
 
 _advanced_find_and_mount_system()
 {
-  return 1 # Disabled for now
   local _block
 
   if _block="$(_find_block "system${SLOT?}")"; then
