@@ -217,8 +217,6 @@ _advanced_find_and_mount_system()
 
 _find_and_mount_system()
 {
-  SYS_INIT_STATUS=0
-
   if test -n "${ANDROID_ROOT:-}" && _verify_system_partition "${ANDROID_ROOT:?}" true; then
     :
   elif _verify_system_partition '/system_root'; then
