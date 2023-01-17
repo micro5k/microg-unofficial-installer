@@ -186,8 +186,8 @@ _find_block()
   for uevent in /sys/dev/block/*/uevent; do
     if grep -q -i -F -e "PARTNAME=${_partname:?}" "${uevent:?}"; then
       if _block="$(grep -m 1 -o -e 'DEVNAME=.*' "${uevent:?}" | cut -d '=' -f 2)"; then
-        _block="$(_canonicalize "/dev/block/${_block:?}")"
-        if test -e "${_block:?}"; then
+        if test -e "/dev/block/${_block:?}"; then
+          _block="$(_canonicalize "/dev/block/${_block:?}")"
           printf '%s' "${_block:?}"
           return 0
         fi
