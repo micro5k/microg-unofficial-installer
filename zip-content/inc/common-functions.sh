@@ -201,18 +201,24 @@ _find_block()
 _advanced_find_and_mount_system()
 {
   return 1 # Disabled for now
+  local _block
 
-  if _find_block "system${SLOT?}"; then
-    ui_msg "Found system${SLOT?} block"
-  elif _find_block "system"; then
-    ui_msg "Found system block"
-  elif _find_block "FACTORYFS"; then
-    ui_msg "Found FACTORYFS block"
+  if _block="$(_find_block "system${SLOT?}")"; then
+    ui_msg "Found 'system${SLOT?}' block at: ${_block:-}"
+  elif _block="$(_find_block "system")"; then
+    ui_msg "Found 'system' block at: ${_block:-}"
+  elif _block="$(_find_block "FACTORYFS")"; then
+    ui_msg "Found 'FACTORYFS' block at: ${_block:-}"
   else
     return 1
   fi
 
-  return 0
+  if test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then
+    mount -o 'rw' "${_block:?}" "${ANDROID_ROOT:-}" 2> /dev/null || _device_mount -o 'rw' "${_block:?}" "${ANDROID_ROOT:-}" || return 1
+    return 0
+  fi
+
+  return 1
 }
 
 _find_and_mount_system()
@@ -236,11 +242,12 @@ _find_and_mount_system()
       :
     elif test "${ANDROID_ROOT:-}" != '/system' && _mount_and_verify_system_partition '/system' true; then
       :
-    elif _advanced_find_and_mount_system; then
+    elif _advanced_find_and_mount_system && _find_and_mount_system; then
       :
     else
       deinitialize
 
+      ui_msg_empty_line
       ui_msg "Current slot: ${SLOT:-no slot}"
       ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
       ui_msg_empty_line
