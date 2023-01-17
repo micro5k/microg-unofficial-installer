@@ -69,15 +69,27 @@ esac
 readonly SIDELOAD
 export SIDELOAD
 
-if test "${SIDELOAD:?}" = 'false' && test -w "${ZIP_PATH:?}"; then
-  LOG_PATH="${ZIP_PATH:?}/debug-a5k.log"
-elif test -e '/sdcard0' && test -w '/sdcard0'; then
-  LOG_PATH='/sdcard0/debug-a5k.log'
-elif test -e '/sdcard' && test -w '/sdcard'; then
-  LOG_PATH='/sdcard/debug-a5k.log'
+_log_path_setter()
+{
+  if test ! -e "${1:?}"; then return 1; fi
+
+  local _path
+  _path="$(readlink -f "${1:?}")" || _path="$(realpath "${1:?}")" || return 1
+  if test -w "${_path:?}"; then
+    LOG_PATH="${_path:?}/debug-a5k.log"
+    return 0
+  fi
+
+  return 1
+}
+if test "${SIDELOAD:?}" = 'false' && _log_path_setter "${ZIP_PATH:?}"; then
+  : # OK
+elif _log_path_setter '/sdcard0' || _log_path_setter '/sdcard' || _log_path_setter '/mnt/sdcard'; then
+  : # OK
 else
   LOG_PATH="${TMPDIR:?}/debug-a5k.log"
 fi
+unset -f _log_path_setter || true
 readonly LOG_PATH
 export LOG_PATH
 
