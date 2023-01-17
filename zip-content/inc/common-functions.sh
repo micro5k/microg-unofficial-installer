@@ -241,6 +241,8 @@ _find_and_mount_system()
     elif _advanced_find_and_mount_system; then
       :
     else
+      deinitialize
+
       ui_msg "Current slot: ${SLOT:-no slot}"
       ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
       ui_msg_empty_line
@@ -257,6 +259,9 @@ initialize()
   readonly SLOT
   export SLOT
 
+  SYS_INIT_STATUS=0
+  DATA_INIT_STATUS=0
+
   _find_and_mount_system
 
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
@@ -270,7 +275,6 @@ initialize()
     ui_error "The '${SYS_PATH:-}' partition is NOT writable"
   fi
 
-  DATA_INIT_STATUS=0
   if test "${TEST_INSTALL:-false}" = 'false' && test ! -e '/data/data' && ! is_mounted '/data'; then
     mount_partition '/data'
     if is_mounted '/data'; then
@@ -283,8 +287,8 @@ initialize()
 
 deinitialize()
 {
-  if test "${SYS_INIT_STATUS:?}" = '1'; then unmount "${MOUNT_POINT:?}"; fi
-  if test "${DATA_INIT_STATUS}" = '1'; then unmount '/data'; fi
+  if test "${SYS_INIT_STATUS:?}" = '1' && test -n "${MOUNT_POINT:-}"; then unmount "${MOUNT_POINT:?}"; fi
+  if test "${DATA_INIT_STATUS:?}" = '1'; then unmount '/data'; fi
 }
 
 # Message related functions
