@@ -202,8 +202,8 @@ _advanced_find_and_mount_system()
 {
   local _block
 
-  if _block="$(_find_block "system${SLOT?}")"; then
-    ui_msg "Found 'system${SLOT?}' block at: ${_block:-}"
+  if test -n "${SLOT:-}" && _block="$(_find_block "system${SLOT:?}")"; then
+    ui_msg "Found 'system${SLOT:-no slot}' block at: ${_block:-}"
   elif _block="$(_find_block "system")"; then
     ui_msg "Found 'system' block at: ${_block:-}"
   elif _block="$(_find_block "FACTORYFS")"; then
@@ -213,7 +213,7 @@ _advanced_find_and_mount_system()
   fi
 
   if test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then
-    mount -o 'rw' "${_block:?}" "${ANDROID_ROOT:-}" 2> /dev/null || _device_mount -o 'rw' "${_block:?}" "${ANDROID_ROOT:-}" || return 1
+    mount -o 'rw' "${_block:?}" "${ANDROID_ROOT:?}" 2> /dev/null || _device_mount -o 'rw' "${_block:?}" "${ANDROID_ROOT:?}" || return 1
     return 0
   fi
 
