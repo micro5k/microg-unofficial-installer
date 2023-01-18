@@ -268,6 +268,10 @@ _find_and_mount_system()
 
 initialize()
 {
+  if test -e '/dev/block/mapper'; then DYNAMIC_PARTITIONS='true'; else DYNAMIC_PARTITIONS='false'; fi
+  readonly DYNAMIC_PARTITIONS
+  export DYNAMIC_PARTITIONS
+
   SLOT="$(_detect_slot)" || SLOT=''
   readonly SLOT
   export SLOT
