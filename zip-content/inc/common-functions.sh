@@ -202,7 +202,11 @@ _advanced_find_and_mount_system()
 {
   local _block
 
-  if test -n "${SLOT:-}" && _block="$(_find_block "system${SLOT:?}")"; then
+  if test -n "${SLOT:-}" && test -e "/dev/block/mapper/system${SLOT:?}" && _block="/dev/block/mapper/system${SLOT:?}"; then
+    ui_msg "Found 'mapper/system${SLOT:-no slot}' block at: ${_block:-}"
+  elif test -e "/dev/block/mapper/system" && _block="/dev/block/mapper/system"; then
+    ui_msg "Found 'mapper/system' block at: ${_block:-}"
+  elif test -n "${SLOT:-}" && _block="$(_find_block "system${SLOT:?}")"; then
     ui_msg "Found 'system${SLOT:-no slot}' block at: ${_block:-}"
   elif _block="$(_find_block "system")"; then
     ui_msg "Found 'system' block at: ${_block:-}"
