@@ -228,22 +228,22 @@ _advanced_find_and_mount_system()
 
 _find_and_mount_system()
 {
-  if test -n "${ANDROID_ROOT:-}" && _verify_system_partition "${ANDROID_ROOT:?}" true; then
+  if test "${TEST_INSTALL:-false}" = 'false' && _verify_system_partition '/mnt/system'; then
+    :
+  elif test -n "${ANDROID_ROOT:-}" && _verify_system_partition "${ANDROID_ROOT:?}" true; then
     :
   elif _verify_system_partition '/system_root'; then
-    :
-  elif _verify_system_partition '/mnt/system'; then
     :
   elif _verify_system_partition '/system' true; then
     :
   else
     SYS_INIT_STATUS=1
 
-    if test -n "${ANDROID_ROOT:-}" && _mount_and_verify_system_partition "${ANDROID_ROOT:?}" true; then
+    if test "${TEST_INSTALL:-false}" = 'false' && test "${ANDROID_ROOT:-}" != '/mnt/system' && _mount_and_verify_system_partition '/mnt/system'; then
+      :
+    elif test -n "${ANDROID_ROOT:-}" && _mount_and_verify_system_partition "${ANDROID_ROOT:?}" true; then
       :
     elif test "${ANDROID_ROOT:-}" != '/system_root' && _mount_and_verify_system_partition '/system_root'; then
-      :
-    elif test "${ANDROID_ROOT:-}" != '/mnt/system' && _mount_and_verify_system_partition '/mnt/system'; then
       :
     elif test "${ANDROID_ROOT:-}" != '/system' && _mount_and_verify_system_partition '/system' true; then
       :
