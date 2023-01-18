@@ -200,12 +200,6 @@ _find_block()
 
 _advanced_find_and_mount_system()
 {
-  # Unmount eventual leftovers of previous code
-  if test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then umount "${ANDROID_ROOT:?}" 2> /dev/null || true; fi
-  if test -e '/system_root'; then umount '/system_root' 2> /dev/null || true; fi
-  if test -e '/mnt/system'; then umount '/mnt/system' 2> /dev/null || true; fi
-  if test -e '/system'; then umount '/system' 2> /dev/null || true; fi
-
   local _block
 
   if test -n "${SLOT:-}" && _block="$(_find_block "system${SLOT:?}")"; then
@@ -218,7 +212,12 @@ _advanced_find_and_mount_system()
     return 1
   fi
 
-  if test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then
+  if test -e '/mnt/system'; then
+    umount '/mnt/system' 2> /dev/null || true
+    mount -o 'rw' "${_block:?}" '/mnt/system' 2> /dev/null || _device_mount -o 'rw' "${_block:?}" '/mnt/system' || _device_mount -t 'auto' -o 'rw' "${_block:?}" '/mnt/system' || return 1
+    return 0
+  elif test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then
+    umount "${ANDROID_ROOT:?}" 2> /dev/null || true
     mount -o 'rw' "${_block:?}" "${ANDROID_ROOT:?}" 2> /dev/null || _device_mount -o 'rw' "${_block:?}" "${ANDROID_ROOT:?}" || _device_mount -t 'auto' -o 'rw' "${_block:?}" "${ANDROID_ROOT:?}" || return 1
     return 0
   fi
