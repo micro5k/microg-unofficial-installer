@@ -45,9 +45,11 @@ _clean_at_exit()
     rm -f "${SCRIPT_NAME:?}" || true
   fi
   unset SCRIPT_NAME
-  if test "${TMPDIR:-}" = '/dev/tmp' && test -e "${TMPDIR:?}"; then
-    # Legacy versions of rmdir don't accept any parameter (not even --)
-    rmdir "${TMPDIR:?}" 2> /dev/null || rmdir -- "${TMPDIR:?}" 2> /dev/null || true
+  if test "${TMPDIR:-}" = '/dev/tmp'; then
+    if test -e "${TMPDIR:?}"; then
+      # Legacy versions of rmdir don't accept any parameter (not even --)
+      rmdir "${TMPDIR:?}" 2> /dev/null || true
+    fi
     unset TMPDIR
   fi
 }
