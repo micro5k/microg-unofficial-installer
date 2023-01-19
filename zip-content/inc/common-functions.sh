@@ -92,18 +92,34 @@ _verify_system_partition()
 
 _mount_and_verify_system_partition()
 {
-  if test -e "${1:?}" && mount_partition "${1:?}" && test -e "${1:?}/system/build.prop"; then
-    MOUNT_POINT="${1:?}"
-    SYS_PATH="${1:?}/system"
-    return 0
-  fi
+  local _backup_ifs _path
+  _backup_ifs="${IFS:-}"
+  IFS="${NL:?}"
 
-  if test "${2:-false}" != 'false' && test -e "${1:?}/build.prop"; then
-    MOUNT_POINT="${1:?}"
-    SYS_PATH="${1:?}"
-    return 0
-  fi
+  for _path in ${1?}; do
+    _path="$(_canonicalize "${_path:?}")"
+    mount_partition "${_path:?}"
 
+    if test -e "${_path:?}/system/build.prop"; then
+      SYS_PATH="${_path:?}/system"
+      MOUNT_POINT="${_path:?}"
+      ui_msg "Mounted: ${MOUNT_POINT:-}"
+
+      IFS="${_backup_ifs:-}"
+      return 0
+    fi
+
+    if test -e "${_path:?}/build.prop"; then
+      SYS_PATH="${_path:?}"
+      MOUNT_POINT="${_path:?}"
+      ui_msg "Mounted: ${MOUNT_POINT:-}"
+
+      IFS="${_backup_ifs:-}"
+      return 0
+    fi
+  done
+
+  IFS="${_backup_ifs:-}"
   return 1
 }
 
@@ -262,14 +278,8 @@ _find_and_mount_system()
   else
     SYS_INIT_STATUS=1
 
-    if test "${TEST_INSTALL:-false}" = 'false' && test "${ANDROID_ROOT:-}" != '/mnt/system' && _mount_and_verify_system_partition '/mnt/system'; then
-      :
-    elif test -n "${ANDROID_ROOT:-}" && _mount_and_verify_system_partition "${ANDROID_ROOT:?}" true; then
-      :
-    elif test "${ANDROID_ROOT:-}" != '/system_root' && _mount_and_verify_system_partition '/system_root'; then
-      :
-    elif test "${ANDROID_ROOT:-}" != '/system' && _mount_and_verify_system_partition '/system' true; then
-      :
+    if _mount_and_verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
+      : # Mounted and found
     elif _advanced_find_and_mount_system && _find_and_mount_system; then
       :
     else
