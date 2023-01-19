@@ -18,9 +18,9 @@ fi
 
 mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions temp folder'
 
-NEWLINE='
+NL='
 '
-readonly NEWLINE
+readonly NL
 
 ### FUNCTIONS ###
 
@@ -57,7 +57,7 @@ _verify_system_partition()
 {
   local _backup_ifs _path
   _backup_ifs="${IFS:-}"
-  IFS="${NEWLINE:?}"
+  IFS="${NL:?}"
 
   for _path in ${1?}; do
     _path="$(_canonicalize "${_path:?}")"
@@ -247,12 +247,12 @@ _find_and_mount_system()
 {
   SYS_MOUNTPOINT_LIST='' # This is a list of paths separated by newlines
   if test "${TEST_INSTALL:-false}" != 'false' && test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then
-    SYS_MOUNTPOINT_LIST="${ANDROID_ROOT:?}${NEWLINE:?}"
+    SYS_MOUNTPOINT_LIST="${ANDROID_ROOT:?}${NL:?}"
   else
-    if test -e '/mnt/system'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/mnt/system${NEWLINE:?}"; fi
-    if test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}${ANDROID_ROOT:?}${NEWLINE:?}"; fi
-    if test "${ANDROID_ROOT:-}" != '/system_root' && test -e '/system_root'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/system_root${NEWLINE:?}"; fi
-    if test "${ANDROID_ROOT:-}" != '/system' && test -e '/system'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/system${NEWLINE:?}"; fi
+    if test -e '/mnt/system'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/mnt/system${NL:?}"; fi
+    if test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}${ANDROID_ROOT:?}${NL:?}"; fi
+    if test "${ANDROID_ROOT:-}" != '/system_root' && test -e '/system_root'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/system_root${NL:?}"; fi
+    if test "${ANDROID_ROOT:-}" != '/system' && test -e '/system'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/system${NL:?}"; fi
   fi
   ui_debug "SYS_MOUNTPOINT_LIST:"
   ui_debug "${SYS_MOUNTPOINT_LIST:-}"
