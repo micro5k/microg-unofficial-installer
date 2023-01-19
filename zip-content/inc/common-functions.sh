@@ -73,6 +73,7 @@ _verify_system_partition()
       elif _path="$(_canonicalize "${_path:?}/../")" && is_mounted "${_path:?}"; then
         MOUNT_POINT="${_path:?}"
       else
+        IFS="${_backup_ifs:-}"
         ui_error "Found system path at '${SYS_PATH:-}' but failed to find the mount point"
       fi
 
