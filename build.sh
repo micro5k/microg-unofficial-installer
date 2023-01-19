@@ -83,8 +83,8 @@ fi
 _init_dir="$(pwd)" || ui_error 'Failed to read the current dir'
 
 # Check dependencies
-hash 'zip' 2> /dev/null || ui_error 'Zip is missing'
-hash 'java' 2> /dev/null || ui_error 'Java is missing'
+command -v 'zip' 1> /dev/null || ui_error 'Zip is missing'
+command -v 'java' 1> /dev/null || ui_error 'Java is missing'
 
 # Create the output dir
 OUT_DIR="${SCRIPT_DIR}/output"
