@@ -255,6 +255,8 @@ _advanced_find_and_mount_system()
 
     umount "${_path:?}" 2> /dev/null || true
     if mount -o 'rw' "${_block:?}" "${_path:?}" 2> /dev/null || _device_mount -t 'auto' -o 'rw' "${_block:?}" "${_path:?}"; then
+      ui_msg "Mounted: ${_path:-}"
+
       IFS="${_backup_ifs:-}"
       return 0
     fi
