@@ -231,6 +231,16 @@ _advanced_find_and_mount_system()
 
 _find_and_mount_system()
 {
+  if test "${TEST_INSTALL:-false}" != 'false' && test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then
+    SYS_MOUNTPOINT_LIST="${ANDROID_ROOT:?}"
+  else
+    SYS_MOUNTPOINT_LIST=''
+    if test -e '/mnt/system'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?} /mnt/system"; fi
+    if test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?} ${ANDROID_ROOT:?}"; fi
+    if test "${ANDROID_ROOT:-}" != '/system_root' && test -e '/system_root'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?} /system_root"; fi
+    if test "${ANDROID_ROOT:-}" != '/system' && test -e '/system'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?} /system"; fi
+  fi
+
   if test "${TEST_INSTALL:-false}" = 'false' && _verify_system_partition '/mnt/system'; then
     :
   elif test -n "${ANDROID_ROOT:-}" && _verify_system_partition "${ANDROID_ROOT:?}" true; then
