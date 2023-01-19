@@ -255,7 +255,8 @@ _find_and_mount_system()
     if test "${ANDROID_ROOT:-}" != '/system_root' && test -e '/system_root'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/system_root${NEWLINE:?}"; fi
     if test "${ANDROID_ROOT:-}" != '/system' && test -e '/system'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/system${NEWLINE:?}"; fi
   fi
-  ui_debug "SYS_MOUNTPOINT_LIST: ${SYS_MOUNTPOINT_LIST:-}"
+  ui_debug "SYS_MOUNTPOINT_LIST:"
+  ui_debug "${SYS_MOUNTPOINT_LIST:-}"
 
   if _verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
     :
