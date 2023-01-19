@@ -10,15 +10,15 @@ Security Policy
 Supported Versions
 ------------------
 
-======= =========
-Version Supported
-======= =========
-1.2.x      ✔
-< 1.2      ❌
-======= =========
+================= =========
+     Version      Supported
+================= =========
+Latest version        ✔
+Previous versions     ❌
+================= =========
 
 
 Reporting a Vulnerability
 -------------------------
 
-This is a flashable ZIP that must be installed manually, so security reports can be added directly in the `Issues <./../../issues>`_ section.
+This is a flashable ZIP that must be installed manually, so security reports can be added directly in the `Issues <./../../../issues>`_ section.
