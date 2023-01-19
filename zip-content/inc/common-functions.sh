@@ -246,16 +246,21 @@ _advanced_find_and_mount_system()
     return 1
   fi
 
-  if test -e '/mnt/system'; then
-    umount '/mnt/system' 2> /dev/null || true
-    mount -o 'rw' "${_block:?}" '/mnt/system' 2> /dev/null || _device_mount -o 'rw' "${_block:?}" '/mnt/system' || _device_mount -t 'auto' -o 'rw' "${_block:?}" '/mnt/system' || return 1
-    return 0
-  elif test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then
-    umount "${ANDROID_ROOT:?}" 2> /dev/null || true
-    mount -o 'rw' "${_block:?}" "${ANDROID_ROOT:?}" 2> /dev/null || _device_mount -o 'rw' "${_block:?}" "${ANDROID_ROOT:?}" || _device_mount -t 'auto' -o 'rw' "${_block:?}" "${ANDROID_ROOT:?}" || return 1
-    return 0
-  fi
+  local _backup_ifs _path
+  _backup_ifs="${IFS:-}"
+  IFS="${NL:?}"
 
+  for _path in ${1?}; do
+    _path="$(_canonicalize "${_path:?}")"
+
+    umount "${_path:?}" 2> /dev/null || true
+    if mount -o 'rw' "${_block:?}" "${_path:?}" 2> /dev/null || _device_mount -t 'auto' -o 'rw' "${_block:?}" "${_path:?}"; then
+      IFS="${_backup_ifs:-}"
+      return 0
+    fi
+  done
+
+  IFS="${_backup_ifs:-}"
   return 1
 }
 
@@ -280,8 +285,8 @@ _find_and_mount_system()
 
     if _mount_and_verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
       : # Mounted and found
-    elif _advanced_find_and_mount_system && _find_and_mount_system; then
-      :
+    elif _advanced_find_and_mount_system "${SYS_MOUNTPOINT_LIST?}" && _verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
+      : # Mounted and found
     else
       deinitialize
 
