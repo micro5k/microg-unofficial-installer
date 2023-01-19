@@ -235,7 +235,7 @@ minutil_force_gcm_reconnection()
 minutil_remove_all_accounts()
 {
   \_is_caller_root || \return 1
-  mount -o 'rw' '/data' 2> /dev/null || true
+  mount -t 'auto' -o 'rw' '/data' 2> /dev/null || true
   test -e '/data' || {
     _minutil_error '/data NOT found'
     return 1
