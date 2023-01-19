@@ -51,28 +51,37 @@ _detect_slot()
 
 _verify_system_partition()
 {
-  local _path
-  _path="$(_canonicalize "${1:?}")"
+  local _backup_ifs _path
+  _backup_ifs="${IFS:-}"
+  IFS=' '
 
-  if test -e "${_path:?}/system/build.prop"; then
-    SYS_PATH="${_path:?}/system"
-    MOUNT_POINT="${_path:?}"
-    return 0
-  fi
+  for _path in ${1?}; do
+    _path="$(_canonicalize "${_path:?}")"
 
-  if test "${2:-false}" != 'false' && test -e "${_path:?}/build.prop"; then
-    SYS_PATH="${_path:?}"
-    if is_mounted "${_path:?}"; then
+    if test -e "${_path:?}/system/build.prop"; then
+      SYS_PATH="${_path:?}/system"
       MOUNT_POINT="${_path:?}"
-    elif _path="$(_canonicalize "${_path:?}/../")" && is_mounted "${_path:?}"; then
-      MOUNT_POINT="${_path:?}"
-    else
-      ui_error "Found system path but failed to find mount point"
+
+      IFS="${_backup_ifs:-}"
+      return 0
     fi
 
-    return 0
-  fi
+    if test -e "${_path:?}/build.prop"; then
+      SYS_PATH="${_path:?}"
+      if is_mounted "${_path:?}"; then
+        MOUNT_POINT="${_path:?}"
+      elif _path="$(_canonicalize "${_path:?}/../")" && is_mounted "${_path:?}"; then
+        MOUNT_POINT="${_path:?}"
+      else
+        ui_error "Found system path at '${SYS_PATH:-}' but failed to find the mount point"
+      fi
 
+      IFS="${_backup_ifs:-}"
+      return 0
+    fi
+  done
+
+  IFS="${_backup_ifs:-}"
   return 1
 }
 
@@ -241,13 +250,7 @@ _find_and_mount_system()
     if test "${ANDROID_ROOT:-}" != '/system' && test -e '/system'; then SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?} /system"; fi
   fi
 
-  if test "${TEST_INSTALL:-false}" = 'false' && _verify_system_partition '/mnt/system'; then
-    :
-  elif test -n "${ANDROID_ROOT:-}" && _verify_system_partition "${ANDROID_ROOT:?}" true; then
-    :
-  elif _verify_system_partition '/system_root'; then
-    :
-  elif _verify_system_partition '/system' true; then
+  if _verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
     :
   else
     SYS_INIT_STATUS=1
