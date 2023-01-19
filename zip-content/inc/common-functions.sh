@@ -246,7 +246,6 @@ _advanced_find_and_mount_system()
 _find_and_mount_system()
 {
   SYS_MOUNTPOINT_LIST='' # This is a list of paths separated by newlines
-
   if test "${TEST_INSTALL:-false}" != 'false' && test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then
     SYS_MOUNTPOINT_LIST="${ANDROID_ROOT:?}${NEWLINE:?}"
   else
@@ -259,7 +258,7 @@ _find_and_mount_system()
   ui_debug "${SYS_MOUNTPOINT_LIST:-}"
 
   if _verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
-    :
+    : # Found
   else
     SYS_INIT_STATUS=1
 
