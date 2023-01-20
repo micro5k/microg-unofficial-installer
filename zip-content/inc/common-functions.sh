@@ -210,21 +210,23 @@ _find_block()
 {
   if test ! -e '/sys/dev/block'; then return 1; fi
 
-  local _block _partname
-  _partname="${1:?}"
+  local _backup_ifs _uevent _block
+  _backup_ifs="${IFS:-}"
+  IFS=''
 
-  for uevent in /sys/dev/block/*/uevent; do
-    if grep -q -i -F -e "PARTNAME=${_partname:?}" "${uevent:?}"; then
-      if _block="$(grep -m 1 -o -e 'DEVNAME=.*' "${uevent:?}" | cut -d '=' -f 2)"; then
+  for _uevent in /sys/dev/block/*/uevent; do
+    if grep -q -i -F -e "PARTNAME=${1:?}" "${_uevent:?}"; then
+      if _block="$(grep -m 1 -o -e 'DEVNAME=.*' "${_uevent:?}" | cut -d '=' -f 2)"; then
         if test -e "/dev/block/${_block:?}"; then
-          _block="$(_canonicalize "/dev/block/${_block:?}")"
-          printf '%s' "${_block:?}"
+          IFS="${_backup_ifs:-}"
+          _canonicalize "/dev/block/${_block:?}"
           return 0
         fi
       fi
     fi
   done
 
+  IFS="${_backup_ifs:-}"
   return 1
 }
 
