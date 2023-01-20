@@ -232,36 +232,44 @@ _find_block()
 
 _advanced_find_and_mount_system()
 {
-  local _block
-
-  if test -n "${SLOT:-}" && test -e "/dev/block/mapper/system${SLOT:?}" && _block="/dev/block/mapper/system${SLOT:?}"; then
-    ui_msg "Found 'mapper/system${SLOT:-no slot}' block at: ${_block:-}"
-  elif test -e "/dev/block/mapper/system" && _block="/dev/block/mapper/system"; then
-    ui_msg "Found 'mapper/system' block at: ${_block:-}"
-  elif test -n "${SLOT:-}" && _block="$(_find_block "system${SLOT:?}")"; then
-    ui_msg "Found 'system${SLOT:-no slot}' block at: ${_block:-}"
-  elif _block="$(_find_block "system")"; then
-    ui_msg "Found 'system' block at: ${_block:-}"
-  elif _block="$(_find_block "FACTORYFS")"; then
-    ui_msg "Found 'FACTORYFS' block at: ${_block:-}"
-  else
-    return 1
-  fi
-
-  local _backup_ifs _path
+  local _backup_ifs _path _block _found
   _backup_ifs="${IFS:-}"
   IFS="${NL:?}"
 
-  for _path in ${1?}; do
-    _path="$(_canonicalize "${_path:?}")"
+  _found='false'
+  if test -e "/dev/block/mapper"; then
+    for _path in ${1?}; do
+      if test -e "/dev/block/mapper/${_path:?}"; then
+        _block="$(_canonicalize "/dev/block/mapper/${_path:?}")"
+        ui_msg "Found 'mapper/${_path:-}' block at: ${_block:-}"
+        _found='true'
+        break
+      fi
+    done
+  fi
 
-    umount "${_path:?}" 2> /dev/null || true
-    if mount -o 'rw' "${_block:?}" "${_path:?}" 2> /dev/null || _device_mount -t 'auto' -o 'rw' "${_block:?}" "${_path:?}"; then
-      IFS="${_backup_ifs:-}"
-      ui_msg "Mounted: ${_path:-}"
-      return 0
-    fi
-  done
+  if test "${_found:?}" = 'false'; then
+    for _path in ${1?}; do
+      if _block="$(_find_block "${_path:?}")"; then
+        ui_msg "Found '${_path:-}' block at: ${_block:-}"
+        _found='true'
+        break
+      fi
+    done
+  fi
+
+  if test "${_found:?}" != 'false'; then
+    for _path in ${2?}; do
+      _path="$(_canonicalize "${_path:?}")"
+
+      umount "${_path:?}" 2> /dev/null || true
+      if mount -o 'rw' "${_block:?}" "${_path:?}" 2> /dev/null || _device_mount -t 'auto' -o 'rw' "${_block:?}" "${_path:?}"; then
+        IFS="${_backup_ifs:-}"
+        ui_msg "Mounted: ${_path:-}"
+        return 0
+      fi
+    done
+  fi
 
   IFS="${_backup_ifs:-}"
   return 1
@@ -288,7 +296,7 @@ _find_and_mount_system()
 
     if _mount_and_verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
       : # Mounted and found
-    elif _advanced_find_and_mount_system "${SYS_MOUNTPOINT_LIST?}" && _verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
+    elif _advanced_find_and_mount_system "system${SLOT:-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${SYS_MOUNTPOINT_LIST?}" && _verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
       : # Mounted and found
     else
       deinitialize
