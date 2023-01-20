@@ -103,18 +103,18 @@ _mount_and_verify_system_partition()
     if test -e "${_path:?}/system/build.prop"; then
       SYS_PATH="${_path:?}/system"
       MOUNT_POINT="${_path:?}"
-      ui_msg "Mounted: ${MOUNT_POINT:-}"
 
       IFS="${_backup_ifs:-}"
+      ui_msg "Mounted: ${MOUNT_POINT:-}"
       return 0
     fi
 
     if test -e "${_path:?}/build.prop"; then
       SYS_PATH="${_path:?}"
       MOUNT_POINT="${_path:?}"
-      ui_msg "Mounted: ${MOUNT_POINT:-}"
 
       IFS="${_backup_ifs:-}"
+      ui_msg "Mounted: ${MOUNT_POINT:-}"
       return 0
     fi
   done
@@ -257,9 +257,8 @@ _advanced_find_and_mount_system()
 
     umount "${_path:?}" 2> /dev/null || true
     if mount -o 'rw' "${_block:?}" "${_path:?}" 2> /dev/null || _device_mount -t 'auto' -o 'rw' "${_block:?}" "${_path:?}"; then
-      ui_msg "Mounted: ${_path:-}"
-
       IFS="${_backup_ifs:-}"
+      ui_msg "Mounted: ${_path:-}"
       return 0
     fi
   done
