@@ -351,7 +351,7 @@ deinitialize()
 _show_text_on_recovery()
 {
   if test "${BOOTMODE:?}" = 'true'; then
-    printf '%s\n' "${1?}"
+    printf '%s\n' "${1?}" # ToDO: Improve output handling
     return
   elif test -e "${RECOVERY_PIPE:?}"; then
     printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
@@ -359,7 +359,7 @@ _show_text_on_recovery()
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
 
-  if test "${DEBUG_LOG:?}" -ne 0; then printf '%s\n' "${1?}"; fi
+  if test "${DEBUG_LOG:?}" -ne 0; then printf 1>&2 '%s\n' "${1?}"; fi
 }
 
 ui_error()
@@ -405,7 +405,7 @@ ui_msg_sameline_start()
   else
     printf 'ui_print %s' "${1:?}" 1>&"${OUTFD:?}"
   fi
-  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1:?}"; fi
+  if test "${DEBUG_LOG:?}" -ne 0; then printf 1>&2 '%s\n' "${1:?}"; fi
 }
 
 ui_msg_sameline_end()
@@ -418,7 +418,7 @@ ui_msg_sameline_end()
   else
     printf '%s\nui_print\n' "${1:?}" 1>&"${OUTFD:?}"
   fi
-  if test "${DEBUG_LOG}" -ne 0; then printf '%s\n' "${1:?}"; fi
+  if test "${DEBUG_LOG:?}" -ne 0; then printf 1>&2 '%s\n' "${1:?}"; fi
 }
 
 ui_debug()
