@@ -210,8 +210,6 @@ _upperize()
 
 _find_block()
 {
-  if test ! -e '/sys/dev/block'; then return 1; fi
-
   local _backup_ifs _uevent _block
   _backup_ifs="${IFS:-}"
   IFS=''
@@ -239,7 +237,7 @@ _manual_partition_mount()
   IFS="${NL:?}"
 
   _found='false'
-  if test -e "/dev/block/mapper"; then
+  if test -e '/dev/block/mapper'; then
     for _path in ${1?}; do
       if test -e "/dev/block/mapper/${_path:?}"; then
         _block="$(_canonicalize "/dev/block/mapper/${_path:?}")"
@@ -250,7 +248,7 @@ _manual_partition_mount()
     done
   fi
 
-  if test "${_found:?}" = 'false'; then
+  if test "${_found:?}" = 'false' && test -e '/sys/dev/block'; then
     for _path in ${1?}; do
       if _block="$(_find_block "${_path:?}")"; then
         ui_msg "Found '${_path:-}' block at: ${_block:-}"
