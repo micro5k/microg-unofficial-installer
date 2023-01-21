@@ -295,7 +295,6 @@ _find_and_mount_system()
       SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/system${NL:?}"
     fi
   fi
-
   ui_debug "SYS_MOUNTPOINT_LIST:"
   ui_debug "${SYS_MOUNTPOINT_LIST:-}"
 
@@ -324,16 +323,28 @@ _find_and_mount_system()
 
 initialize()
 {
-  if test -e '/dev/block/mapper'; then DYNAMIC_PARTITIONS='true'; else DYNAMIC_PARTITIONS='false'; fi
-  readonly DYNAMIC_PARTITIONS
+  SYS_INIT_STATUS=0
+  DATA_INIT_STATUS=0
+
+  # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64
+  # Usable binaries are under /system/bin so the /system mountpoint mustn't be used while in this recovery
+  if test "${BOOTMODE:?}" != 'true' &&
+    test -e '/system/bin' &&
+    test -e '/system/etc' &&
+    test ! -e '/system/build.prop' &&
+    test ! -e '/system/system/build.prop'; then
+    readonly RECOVERY_FAKE_SYSTEM='true'
+  else
+    readonly RECOVERY_FAKE_SYSTEM='false'
+  fi
+  export RECOVERY_FAKE_SYSTEM
+
+  if test -e '/dev/block/mapper'; then readonly DYNAMIC_PARTITIONS='true'; else readonly DYNAMIC_PARTITIONS='false'; fi
   export DYNAMIC_PARTITIONS
 
   SLOT="$(_detect_slot)" || SLOT=''
   readonly SLOT
   export SLOT
-
-  SYS_INIT_STATUS=0
-  DATA_INIT_STATUS=0
 
   _find_and_mount_system
 
