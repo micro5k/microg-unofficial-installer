@@ -285,13 +285,16 @@ _find_and_mount_system()
     if test -e '/mnt/system'; then
       SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/mnt/system${NL:?}"
     fi
-    if test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then
+    if test -n "${ANDROID_ROOT:-}" &&
+      test "${ANDROID_ROOT:?}" != '/system_root' &&
+      test "${ANDROID_ROOT:?}" != '/system' &&
+      test -e "${ANDROID_ROOT:?}"; then
       SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}${ANDROID_ROOT:?}${NL:?}"
     fi
-    if test "${ANDROID_ROOT:-}" != '/system_root' && test -e '/system_root'; then
+    if test -e '/system_root'; then
       SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/system_root${NL:?}"
     fi
-    if test "${ANDROID_ROOT:-}" != '/system' && test -e '/system'; then
+    if test "${RECOVERY_FAKE_SYSTEM:?}" = 'false' && test -e '/system'; then
       SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/system${NL:?}"
     fi
   fi
@@ -326,8 +329,8 @@ initialize()
   SYS_INIT_STATUS=0
   DATA_INIT_STATUS=0
 
-  # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64
-  # Usable binaries are under /system/bin so the /system mountpoint mustn't be used while in this recovery
+  # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64.
+  # Usable binaries are under /system/bin so the /system mountpoint mustn't be used while in this recovery.
   if test "${BOOTMODE:?}" != 'true' &&
     test -e '/system/bin' &&
     test -e '/system/etc' &&
