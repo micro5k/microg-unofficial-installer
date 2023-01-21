@@ -331,11 +331,13 @@ _find_and_mount_system()
 
 initialize()
 {
+  ui_msg_empty_line
+
   SYS_INIT_STATUS=0
   DATA_INIT_STATUS=0
 
   # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64.
-  # Usable binaries are under /system/bin so the /system mountpoint mustn't be used while in this recovery.
+  # Usable binaries are under the fake /system/bin so the /system mountpoint mustn't be used while in this recovery.
   if test "${BOOTMODE:?}" != 'true' &&
     test -e '/system/bin' &&
     test -e '/system/etc' &&
@@ -367,12 +369,14 @@ initialize()
     ui_error "The '${SYS_PATH:-}' partition is NOT writable"
   fi
 
-  if test "${TEST_INSTALL:-false}" = 'false' && test ! -e '/data/data' && ! is_mounted '/data'; then
-    mount_partition '/data'
-    if is_mounted '/data'; then
+  local _data_path
+  _data_path="$(_canonicalize '/data')"
+  if test "${TEST_INSTALL:-false}" = 'false' && test ! -e "${_data_path:?}/data" && ! is_mounted "${_data_path:?}"; then
+    _mount_helper '-o' 'rw' "${_data_path:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${_data_path:?}${NL:?}" || true
+    if is_mounted "${_data_path:?}"; then
       DATA_INIT_STATUS=1
     else
-      ui_warning "The /data partition cannot be mounted so I can't clean app updates and Dalvik cache but it doesn't matter if you do a factory reset"
+      ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be deleted and their Dalvik cache cannot be cleaned, but it doesn't matter if you do a factory reset"
     fi
   fi
 }
@@ -380,7 +384,11 @@ initialize()
 deinitialize()
 {
   if test "${SYS_INIT_STATUS:?}" = '1' && test -n "${MOUNT_POINT:-}"; then unmount "${MOUNT_POINT:?}"; fi
-  if test "${DATA_INIT_STATUS:?}" = '1'; then unmount '/data'; fi
+  if test "${DATA_INIT_STATUS:?}" = '1'; then
+    local _data_path
+    _data_path="$(_canonicalize '/data')"
+    unmount "${_data_path:?}"
+  fi
 }
 
 # Message related functions
