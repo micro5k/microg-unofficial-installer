@@ -136,6 +136,7 @@ ui_msg "Main 32-bit CPU arch: ${CPU:?}"
 ui_msg_empty_line
 ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
 ui_msg "Current slot: ${SLOT:-no slot}"
+ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
 ui_msg_empty_line
 ui_msg "System mount point: ${MOUNT_POINT:?}"
 ui_msg "System path: ${SYS_PATH:?}"

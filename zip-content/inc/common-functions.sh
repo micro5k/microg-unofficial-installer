@@ -314,7 +314,10 @@ _find_and_mount_system()
       deinitialize
 
       ui_msg_empty_line
+      ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
       ui_msg "Current slot: ${SLOT:-no slot}"
+      ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
+      ui_msg_empty_line
       ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
       ui_msg_empty_line
       ui_error "The ROM cannot be found!"
