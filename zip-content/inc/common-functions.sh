@@ -232,7 +232,7 @@ _find_block()
   return 1
 }
 
-_advanced_find_and_mount_system()
+_manual_partition_mount()
 {
   local _backup_ifs _path _block _found
   _backup_ifs="${IFS:-}"
@@ -310,7 +310,7 @@ _find_and_mount_system()
 
     if _mount_and_verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
       : # Mounted and found
-    elif _advanced_find_and_mount_system "system${SLOT:-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${SYS_MOUNTPOINT_LIST?}" && _verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
+    elif _manual_partition_mount "system${SLOT:-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${SYS_MOUNTPOINT_LIST?}" && _verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
       : # Mounted and found
     else
       deinitialize
