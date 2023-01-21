@@ -87,8 +87,9 @@ test -e "${SCRIPT_NAME:?}" || {
   exit 9
 }
 
+# Use STDERR for recovery messages to avoid possible problems with subshells intercepting output
 STATUS=0
-sh -- "${SCRIPT_NAME:?}" 3 1 "${ZIPFILE:?}" 'zip-install' || STATUS="${?}"
+sh -- "${SCRIPT_NAME:?}" 3 2 "${ZIPFILE:?}" 'zip-install' || STATUS="${?}"
 
 _clean_at_exit
 trap - 0 2 3 6 15 || true # Already cleaned, so unset traps
