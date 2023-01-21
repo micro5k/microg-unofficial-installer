@@ -359,7 +359,7 @@ initialize()
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
   if is_mounted_read_only "${MOUNT_POINT:?}"; then
-    ui_warning "The '${MOUNT_POINT:-}' mount point is read-only, it will be remounted"
+    ui_msg "The '${MOUNT_POINT:-}' mount point is read-only, it will be remounted"
     remount_read_write "${MOUNT_POINT:?}" || ui_error "Remounting of '${MOUNT_POINT:-}' failed"
   fi
 
