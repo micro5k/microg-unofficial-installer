@@ -45,12 +45,20 @@ _detect_slot()
   if test ! -e '/proc/cmdline'; then return 1; fi
 
   local _slot
-  if _slot="$(grep -o -e 'androidboot.slot_suffix=[_[:alpha:]]*' '/proc/cmdline' | cut -d '=' -f 2)"; then
+  if _slot="$(grep -o -e 'androidboot.slot_suffix=[_[:alpha:]]*' '/proc/cmdline' | cut -d '=' -f 2)" && test -n "${_slot:-}"; then
     printf '%s' "${_slot:?}"
     return 0
   fi
 
   return 1
+}
+
+_mount_helper()
+{
+  mount "${@}" 2> /dev/null || {
+    test -n "${DEVICE_MOUNT:-}" && "${DEVICE_MOUNT:?}" -t 'auto' "${@}"
+  } || return "${?}"
+  return 0
 }
 
 _verify_system_partition()
@@ -98,14 +106,14 @@ _mount_and_verify_system_partition()
 
   for _path in ${1?}; do
     _path="$(_canonicalize "${_path:?}")"
-    mount_partition "${_path:?}"
+    _mount_helper '-o' 'rw' "${_path:?}" || true
 
     if test -e "${_path:?}/system/build.prop"; then
       SYS_PATH="${_path:?}/system"
       MOUNT_POINT="${_path:?}"
 
       IFS="${_backup_ifs:-}"
-      ui_msg "Mounted: ${MOUNT_POINT:-}"
+      ui_debug "Mounted: ${MOUNT_POINT:-}"
       return 0
     fi
 
@@ -114,18 +122,12 @@ _mount_and_verify_system_partition()
       MOUNT_POINT="${_path:?}"
 
       IFS="${_backup_ifs:-}"
-      ui_msg "Mounted: ${MOUNT_POINT:-}"
+      ui_debug "Mounted: ${MOUNT_POINT:-}"
       return 0
     fi
   done
 
   IFS="${_backup_ifs:-}"
-  return 1
-}
-
-_device_mount()
-{
-  if test -n "${DEVICE_MOUNT:-}" && "${DEVICE_MOUNT:?}" "${@}"; then return 0; fi
   return 1
 }
 
@@ -152,10 +154,10 @@ _get_mount_info()
 
 mount_partition()
 {
-  local _partition
-  _partition="$(_canonicalize "${1:?}")"
+  local _path
+  _path="$(_canonicalize "${1:?}")"
 
-  mount -o 'rw' "${_partition:?}" 2> /dev/null || _device_mount -o 'rw' "${_partition:?}" || ui_warning "Failed to mount '${_partition:-}'"
+  _mount_helper '-o' 'rw' "${_path:?}" || ui_warning "Failed to mount '${_path:-}'"
   return 0 # Never fail
 }
 
@@ -263,9 +265,9 @@ _advanced_find_and_mount_system()
       _path="$(_canonicalize "${_path:?}")"
 
       umount "${_path:?}" 2> /dev/null || true
-      if mount -o 'rw' "${_block:?}" "${_path:?}" 2> /dev/null || _device_mount -t 'auto' -o 'rw' "${_block:?}" "${_path:?}"; then
+      if _mount_helper '-o' 'rw' "${_block:?}" "${_path:?}"; then
         IFS="${_backup_ifs:-}"
-        ui_msg "Mounted: ${_path:-}"
+        ui_debug "Mounted: ${_path:-}"
         return 0
       fi
     done
