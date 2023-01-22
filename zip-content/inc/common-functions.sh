@@ -72,7 +72,7 @@ _verify_system_partition()
 
     if test -e "${_path:?}/system/build.prop"; then
       SYS_PATH="${_path:?}/system"
-      MOUNT_POINT="${_path:?}"
+      SYS_MOUNTPOINT="${_path:?}"
 
       IFS="${_backup_ifs:-}"
       return 0
@@ -81,9 +81,9 @@ _verify_system_partition()
     if test -e "${_path:?}/build.prop"; then
       SYS_PATH="${_path:?}"
       if is_mounted "${_path:?}"; then
-        MOUNT_POINT="${_path:?}"
+        SYS_MOUNTPOINT="${_path:?}"
       elif _path="$(_canonicalize "${_path:?}/../")" && is_mounted "${_path:?}"; then
-        MOUNT_POINT="${_path:?}"
+        SYS_MOUNTPOINT="${_path:?}"
       else
         IFS="${_backup_ifs:-}"
         ui_error "Found system path at '${SYS_PATH:-}' but failed to find the mount point"
@@ -110,19 +110,19 @@ _mount_and_verify_system_partition()
 
     if test -e "${_path:?}/system/build.prop"; then
       SYS_PATH="${_path:?}/system"
-      MOUNT_POINT="${_path:?}"
+      SYS_MOUNTPOINT="${_path:?}"
 
       IFS="${_backup_ifs:-}"
-      ui_debug "Mounted: ${MOUNT_POINT:-}"
+      ui_debug "Mounted: ${SYS_MOUNTPOINT:-}"
       return 0
     fi
 
     if test -e "${_path:?}/build.prop"; then
       SYS_PATH="${_path:?}"
-      MOUNT_POINT="${_path:?}"
+      SYS_MOUNTPOINT="${_path:?}"
 
       IFS="${_backup_ifs:-}"
-      ui_debug "Mounted: ${MOUNT_POINT:-}"
+      ui_debug "Mounted: ${SYS_MOUNTPOINT:-}"
       return 0
     fi
   done
@@ -325,7 +325,7 @@ _find_and_mount_system()
     fi
   fi
 
-  readonly MOUNT_POINT SYS_PATH
+  readonly SYS_MOUNTPOINT SYS_PATH
 }
 
 initialize()
@@ -359,9 +359,9 @@ initialize()
 
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
-  if is_mounted_read_only "${MOUNT_POINT:?}"; then
-    ui_msg "INFO: The '${MOUNT_POINT:-}' mount point is read-only, it will be remounted"
-    remount_read_write "${MOUNT_POINT:?}" || ui_error "Remounting of '${MOUNT_POINT:-}' failed"
+  if is_mounted_read_only "${SYS_MOUNTPOINT:?}"; then
+    ui_msg "INFO: The '${SYS_MOUNTPOINT:-}' mount point is read-only, it will be remounted"
+    remount_read_write "${SYS_MOUNTPOINT:?}" || ui_error "Remounting of '${SYS_MOUNTPOINT:-}' failed"
   fi
 
   if test ! -w "${SYS_PATH:?}"; then
@@ -382,7 +382,7 @@ initialize()
 
 deinitialize()
 {
-  if test "${SYS_INIT_STATUS:?}" = '1' && test -n "${MOUNT_POINT:-}"; then unmount "${MOUNT_POINT:?}"; fi
+  if test "${SYS_INIT_STATUS:?}" = '1' && test -n "${SYS_MOUNTPOINT:-}"; then unmount "${SYS_MOUNTPOINT:?}"; fi
   if test "${DATA_INIT_STATUS:?}" = '1'; then
     local _data_path
     _data_path="$(_canonicalize "${ANDROID_DATA:-/data}")"
