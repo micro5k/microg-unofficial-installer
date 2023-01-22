@@ -260,6 +260,7 @@ _manual_partition_mount()
 
   if test "${_found:?}" != 'false'; then
     for _path in ${2?}; do
+      if test -z "${_path:-}"; then continue; fi
       _path="$(_canonicalize "${_path:?}")"
 
       umount "${_path:?}" 2> /dev/null || true
@@ -368,9 +369,9 @@ initialize()
   fi
 
   local _data_path
-  _data_path="$(_canonicalize '/data')"
-  if test "${TEST_INSTALL:-false}" = 'false' && test ! -e "${_data_path:?}/data" && ! is_mounted "${_data_path:?}"; then
-    _mount_helper '-o' 'rw' "${_data_path:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${ANDROID_DATA:-/data}${NL:?}${_data_path:?}${NL:?}" || true
+  _data_path="$(_canonicalize "${ANDROID_DATA:-/data}")"
+  if test ! -e "${_data_path:?}/data" && ! is_mounted "${_data_path:?}"; then
+    _mount_helper '-o' 'rw' "${_data_path:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${ANDROID_DATA:-}${NL:?}/data${NL:?}" || true
     if is_mounted "${_data_path:?}"; then
       DATA_INIT_STATUS=1
     else
@@ -384,7 +385,7 @@ deinitialize()
   if test "${SYS_INIT_STATUS:?}" = '1' && test -n "${MOUNT_POINT:-}"; then unmount "${MOUNT_POINT:?}"; fi
   if test "${DATA_INIT_STATUS:?}" = '1'; then
     local _data_path
-    _data_path="$(_canonicalize '/data')"
+    _data_path="$(_canonicalize "${ANDROID_DATA:-/data}")"
     unmount "${_data_path:?}"
   fi
 }
