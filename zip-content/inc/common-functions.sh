@@ -370,7 +370,7 @@ initialize()
   local _data_path
   _data_path="$(_canonicalize '/data')"
   if test "${TEST_INSTALL:-false}" = 'false' && test ! -e "${_data_path:?}/data" && ! is_mounted "${_data_path:?}"; then
-    _mount_helper '-o' 'rw' "${_data_path:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${_data_path:?}${NL:?}" || true
+    _mount_helper '-o' 'rw' "${_data_path:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${ANDROID_DATA:-/data}${NL:?}${_data_path:?}${NL:?}" || true
     if is_mounted "${_data_path:?}"; then
       DATA_INIT_STATUS=1
     else
