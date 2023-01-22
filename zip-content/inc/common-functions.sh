@@ -368,6 +368,8 @@ initialize()
     ui_error "The '${SYS_PATH:-}' partition is NOT writable"
   fi
 
+  if test "${ANDROID_DATA:-}" = '/data'; then ANDROID_DATA=''; fi # Avoid duplicates
+
   DATA_PATH="$(_canonicalize "${ANDROID_DATA:-/data}")"
   if test ! -e "${DATA_PATH:?}/data" && ! is_mounted "${DATA_PATH:?}"; then
     _mount_helper '-o' 'rw' "${DATA_PATH:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${ANDROID_DATA:-}${NL:?}/data${NL:?}" || true
@@ -377,6 +379,7 @@ initialize()
       ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be deleted and their Dalvik cache cannot be cleaned, but it doesn't matter if you do a factory reset"
     fi
   fi
+  readonly DATA_PATH
 }
 
 deinitialize()
