@@ -23,7 +23,6 @@ unset CDPATH
 
 ### GLOBAL VARIABLES ###
 
-export INSTALLER=1
 TMP_PATH="$2"
 
 CPU=false
@@ -290,6 +289,9 @@ if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
   fi
 fi
 delete "${SYS_PATH:?}/etc/zips/${install_id:?}.prop"
+
+readonly INSTALLER='true'
+export INSTALLER
 # shellcheck source=SCRIPTDIR/uninstall.sh
 . "${TMP_PATH:?}/uninstall.sh"
 

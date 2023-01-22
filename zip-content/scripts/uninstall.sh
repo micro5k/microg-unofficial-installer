@@ -117,7 +117,7 @@ izat.xt.srv|
 EOF
 }
 
-if [[ -z "${INSTALLER}" ]]; then
+if test "${INSTALLER:-false}" = 'false'; then
   ui_error()
   {
     printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
@@ -141,9 +141,10 @@ if [[ -z "${INSTALLER}" ]]; then
 
   ui_debug 'Uninstalling...'
 
-  SYS_PATH='/system'
+  SYS_PATH="${ANDROID_ROOT:-/system}"
   PRIVAPP_PATH="${SYS_PATH}/app"
-  if [[ -d "${SYS_PATH}/priv-app" ]]; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi
+  if test -e "${SYS_PATH}/priv-app"; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi
+  DATA_PATH="${ANDROID_DATA:-/data}"
 fi
 
 track_init()
