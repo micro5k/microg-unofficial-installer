@@ -253,18 +253,18 @@ delete "${TMP_PATH:?}/origin"
 
 # Resetting Android runtime permissions
 if test "${API}" -ge 23; then
-  if test -e '/data/system/users/0/runtime-permissions.xml'; then
-    if ! grep -q 'com.google.android.gms' /data/system/users/*/runtime-permissions.xml; then
+  if test -e "${DATA_PATH:?}/system/users/0/runtime-permissions.xml"; then
+    if ! grep -q 'com.google.android.gms' "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml; then
       # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
       ui_msg "Resetting legacy Android runtime permissions..."
-      delete /data/system/users/*/runtime-permissions.xml
+      delete "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml
     fi
   fi
-  if test -e '/data/misc_de/0/apexdata/com.android.permission/runtime-permissions.xml'; then
-    if ! grep -q 'com.google.android.gms' /data/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml; then
+  if test -e "${DATA_PATH:?}/misc_de/0/apexdata/com.android.permission/runtime-permissions.xml"; then
+    if ! grep -q 'com.google.android.gms' "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml; then
       # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
       ui_msg "Resetting Android runtime permissions..."
-      delete /data/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml
+      delete "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml
     fi
   fi
 fi

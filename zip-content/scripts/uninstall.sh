@@ -193,11 +193,11 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
 
     # App libs
-    delete /data/app-lib/"${INTERNAL_NAME:?}"-*
+    delete "${DATA_PATH:?}"/app-lib/"${INTERNAL_NAME:?}"-*
 
     # Dalvik cache
-    delete /data/dalvik-cache/*/data@app@"${INTERNAL_NAME:?}"-*@classes*
-    delete /data/dalvik-cache/data@app@"${INTERNAL_NAME:?}"-*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/data@app@"${INTERNAL_NAME:?}"-*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/data@app@"${INTERNAL_NAME:?}"-*@classes*
   fi
 
   if test -n "${FILENAME}"; then
@@ -230,17 +230,17 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete "${SYS_PATH}/etc/default-permissions/${FILENAME:?}-permissions.xml"
 
     # Dalvik cache
-    delete /data/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
-    delete /data/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
-    delete /data/dalvik-cache/system@priv-app@"${FILENAME}"[@\.]*@classes*
-    delete /data/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/system@priv-app@"${FILENAME}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
   fi
 
   if test -n "${INTERNAL_NAME}"; then
     if test "${DEL_SYS_APPS_ONLY:-false}" = false || track_really_deleted; then
-      delete "/data/app/${INTERNAL_NAME}"
-      delete "/data/app/${INTERNAL_NAME}.apk"
-      delete "/data/app/${INTERNAL_NAME}"-*
+      delete "${DATA_PATH:?}/app/${INTERNAL_NAME}"
+      delete "${DATA_PATH:?}/app/${INTERNAL_NAME}.apk"
+      delete "${DATA_PATH:?}/app/${INTERNAL_NAME}"-*
       delete "/mnt/asec/${INTERNAL_NAME}"
       delete "/mnt/asec/${INTERNAL_NAME}.apk"
       delete "/mnt/asec/${INTERNAL_NAME}"-*
@@ -259,10 +259,10 @@ framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
     delete "${SYS_PATH:?}"/framework/oat/*/"${INTERNAL_NAME:?}.odex"
 
     # Dalvik cache
-    delete /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".jar@classes*
-    delete /data/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".odex@classes*
-    delete /data/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".jar@classes*
-    delete /data/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".odex@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".jar@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".odex@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".jar@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/system@framework@"${INTERNAL_NAME:?}".odex@classes*
   fi
 done
 STATUS="$?"
@@ -270,9 +270,9 @@ if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
 list_app_data_to_remove | while IFS='|' read -r FILENAME; do
   if [[ -z "${FILENAME}" ]]; then continue; fi
-  delete "/data/data/${FILENAME}"
-  delete '/data/user'/*/"${FILENAME}"
-  delete '/data/user_de'/*/"${FILENAME}"
+  delete "${DATA_PATH:?}/data/${FILENAME}"
+  delete "${DATA_PATH:?}"/user/*/"${FILENAME}"
+  delete "${DATA_PATH:?}"/user_de/*/"${FILENAME}"
   delete "${INTERNAL_MEMORY_PATH}/Android/data/${FILENAME}"
 done
 

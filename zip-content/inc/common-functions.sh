@@ -368,11 +368,10 @@ initialize()
     ui_error "The '${SYS_PATH:-}' partition is NOT writable"
   fi
 
-  local _data_path
-  _data_path="$(_canonicalize "${ANDROID_DATA:-/data}")"
-  if test ! -e "${_data_path:?}/data" && ! is_mounted "${_data_path:?}"; then
-    _mount_helper '-o' 'rw' "${_data_path:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${ANDROID_DATA:-}${NL:?}/data${NL:?}" || true
-    if is_mounted "${_data_path:?}"; then
+  DATA_PATH="$(_canonicalize "${ANDROID_DATA:-/data}")"
+  if test ! -e "${DATA_PATH:?}/data" && ! is_mounted "${DATA_PATH:?}"; then
+    _mount_helper '-o' 'rw' "${DATA_PATH:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${ANDROID_DATA:-}${NL:?}/data${NL:?}" || true
+    if is_mounted "${DATA_PATH:?}"; then
       DATA_INIT_STATUS=1
     else
       ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be deleted and their Dalvik cache cannot be cleaned, but it doesn't matter if you do a factory reset"
@@ -383,11 +382,7 @@ initialize()
 deinitialize()
 {
   if test "${SYS_INIT_STATUS:?}" = '1' && test -n "${SYS_MOUNTPOINT:-}"; then unmount "${SYS_MOUNTPOINT:?}"; fi
-  if test "${DATA_INIT_STATUS:?}" = '1'; then
-    local _data_path
-    _data_path="$(_canonicalize "${ANDROID_DATA:-/data}")"
-    unmount "${_data_path:?}"
-  fi
+  if test "${DATA_INIT_STATUS:?}" = '1' && test -n "${DATA_PATH:-}"; then unmount "${DATA_PATH:?}"; fi
 }
 
 # Message related functions
@@ -673,9 +668,9 @@ zip_extract_dir()
 # Data reset functions
 reset_gms_data_of_all_apps()
 {
-  if test -e '/data/data/'; then
+  if test -e "${DATA_PATH:?}/data"; then
     ui_debug 'Resetting GMS data of all apps...'
-    find /data/data/*/shared_prefs -name 'com.google.android.gms.*.xml' -delete
+    find "${DATA_PATH:?}"/data/*/shared_prefs -name 'com.google.android.gms.*.xml' -delete
     validate_return_code_warning "$?" 'Failed to reset GMS data of all apps'
   fi
 }
