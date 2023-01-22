@@ -278,38 +278,38 @@ _manual_partition_mount()
 
 _find_and_mount_system()
 {
-  SYS_MOUNTPOINT_LIST='' # This is a list of paths separated by newlines
+  local _sys_mountpoint_list='' # This is a list of paths separated by newlines
 
   if test "${TEST_INSTALL:-false}" != 'false' && test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then
-    SYS_MOUNTPOINT_LIST="${ANDROID_ROOT:?}${NL:?}"
+    _sys_mountpoint_list="${ANDROID_ROOT:?}${NL:?}"
   else
     if test -e '/mnt/system'; then
-      SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/mnt/system${NL:?}"
+      _sys_mountpoint_list="${_sys_mountpoint_list?}/mnt/system${NL:?}"
     fi
     if test -n "${ANDROID_ROOT:-}" &&
       test "${ANDROID_ROOT:?}" != '/system_root' &&
       test "${ANDROID_ROOT:?}" != '/system' &&
       test -e "${ANDROID_ROOT:?}"; then
-      SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}${ANDROID_ROOT:?}${NL:?}"
+      _sys_mountpoint_list="${_sys_mountpoint_list?}${ANDROID_ROOT:?}${NL:?}"
     fi
     if test -e '/system_root'; then
-      SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/system_root${NL:?}"
+      _sys_mountpoint_list="${_sys_mountpoint_list?}/system_root${NL:?}"
     fi
     if test "${RECOVERY_FAKE_SYSTEM:?}" = 'false' && test -e '/system'; then
-      SYS_MOUNTPOINT_LIST="${SYS_MOUNTPOINT_LIST?}/system${NL:?}"
+      _sys_mountpoint_list="${_sys_mountpoint_list?}/system${NL:?}"
     fi
   fi
-  ui_debug "SYS_MOUNTPOINT_LIST:"
-  ui_debug "${SYS_MOUNTPOINT_LIST:-}"
+  ui_debug 'System mountpoint list:'
+  ui_debug "${_sys_mountpoint_list:-}"
 
-  if _verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
+  if _verify_system_partition "${_sys_mountpoint_list?}"; then
     : # Found
   else
     SYS_INIT_STATUS=1
 
-    if _mount_and_verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
+    if _mount_and_verify_system_partition "${_sys_mountpoint_list?}"; then
       : # Mounted and found
-    elif _manual_partition_mount "system${SLOT:-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${SYS_MOUNTPOINT_LIST?}" && _verify_system_partition "${SYS_MOUNTPOINT_LIST?}"; then
+    elif _manual_partition_mount "system${SLOT:-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" && _verify_system_partition "${_sys_mountpoint_list?}"; then
       : # Mounted and found
     else
       deinitialize
