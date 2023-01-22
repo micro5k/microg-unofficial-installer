@@ -18,11 +18,12 @@ sysfs on /sys type sysfs (rw,seclabel,relatime)
 selinuxfs on /sys/fs/selinux type selinuxfs (rw,relatime)
 tmpfs on ${TMPDIR:?} type tmpfs (rw,seclabel,relatime)
 ${TMPDIR:?} on /tmp type tmpfs (rw,seclabel,relatime)
-/dev/block/platform/msm_sdcc.1/by-name/userdata on /data type ext4 (rw,seclabel,relatime,data=ordered)
-/dev/block/platform/msm_sdcc.1/by-name/cache on /cache type ext4 (rw,seclabel,relatime,data=ordered)
-/dev/block/platform/msm_sdcc.1/by-name/sdcard0 on /sdcard0 type vfat (rw,relatime,errors=remount-ro)
-/dev/block/platform/msm_sdcc.1/by-name/sdcard1 on /sdcard1 type vfat (rw,relatime,errors=remount-ro)
-/dev/block/platform/msm_sdcc.1/by-name/system on ${ANDROID_ROOT:?} type ext4 (rw,seclabel,relatime,data=ordered)
+/dev/block/bootdevice/by-name/userdata on ${ANDROID_DATA:?} type ext4 (rw,seclabel,relatime,data=ordered)
+${ANDROID_DATA:?} on /data type ext4 (rw,seclabel,relatime,data=ordered)
+/dev/block/bootdevice/by-name/cache on /cache type ext4 (rw,seclabel,relatime,data=ordered)
+/dev/block/bootdevice/by-name/sdcard0 on /sdcard0 type vfat (rw,relatime,errors=remount-ro)
+/dev/block/bootdevice/by-name/sdcard1 on /sdcard1 type vfat (rw,relatime,errors=remount-ro)
+/dev/block/bootdevice/by-name/system on ${ANDROID_ROOT:?} type ext4 (rw,seclabel,relatime,data=ordered)
 ${ANDROID_ROOT:?} on /system type ext4 (rw,seclabel,relatime,data=ordered)\
 /system/system_ext on /system_ext type ext4 (rw,seclabel,relatime,data=ordered)\
 /system/product on /product type ext4 (rw,seclabel,relatime,data=ordered)\
