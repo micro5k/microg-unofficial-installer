@@ -307,6 +307,7 @@ _find_and_mount_system()
     : # Found
   else
     SYS_INIT_STATUS=1
+    ui_debug "Mounting system..."
 
     if _mount_and_verify_system_partition "${_sys_mountpoint_list?}"; then
       : # Mounted and found
@@ -373,6 +374,7 @@ initialize()
 
   DATA_PATH="$(_canonicalize "${ANDROID_DATA:-/data}")"
   if test ! -e "${DATA_PATH:?}/data" && ! is_mounted "${DATA_PATH:?}"; then
+    ui_debug "Mounting data..."
     unset LAST_MOUNTPOINT
     _mount_helper '-o' 'rw' "${DATA_PATH:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${ANDROID_DATA:-}${NL:?}/data${NL:?}" || true
     if test -n "${LAST_MOUNTPOINT:-}"; then DATA_PATH="${LAST_MOUNTPOINT:?}"; fi
