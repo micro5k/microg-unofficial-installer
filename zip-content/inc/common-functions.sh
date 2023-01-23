@@ -266,6 +266,7 @@ _manual_partition_mount()
       umount "${_path:?}" 2> /dev/null || true
       if _mount_helper '-o' 'rw' "${_block:?}" "${_path:?}"; then
         IFS="${_backup_ifs:-}"
+        LAST_MOUNTPOINT="${_path:?}"
         ui_debug "Mounted: ${_path:-}"
         return 0
       fi
@@ -368,11 +369,14 @@ initialize()
     ui_error "The '${SYS_PATH:-}' partition is NOT writable"
   fi
 
-  if test "${ANDROID_DATA:-}" = '/data'; then ANDROID_DATA=''; fi # Avoid duplicates
+  if test "${ANDROID_DATA:-}" = '/data'; then ANDROID_DATA=''; fi # Avoid double checks
 
   DATA_PATH="$(_canonicalize "${ANDROID_DATA:-/data}")"
   if test ! -e "${DATA_PATH:?}/data" && ! is_mounted "${DATA_PATH:?}"; then
+    unset LAST_MOUNTPOINT
     _mount_helper '-o' 'rw' "${DATA_PATH:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${ANDROID_DATA:-}${NL:?}/data${NL:?}" || true
+    if test -n "${LAST_MOUNTPOINT:-}"; then DATA_PATH="${LAST_MOUNTPOINT:?}"; fi
+
     if is_mounted "${DATA_PATH:?}"; then
       DATA_INIT_STATUS=1
     else
@@ -380,6 +384,8 @@ initialize()
     fi
   fi
   readonly DATA_PATH
+
+  unset LAST_MOUNTPOINT
 }
 
 deinitialize()
