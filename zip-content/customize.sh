@@ -16,7 +16,7 @@ set -u || true
 
 ### PREVENTIVE CHECKS ###
 
-DEBUG_LOG=0
+DEBUG_LOG="${DEBUG_LOG:-0}"
 if test -z "${BOOTMODE:-}"; then
   printf 1>&2 '%s\n' 'Missing BOOTMODE variable'
   abort 'Missing BOOTMODE variable' 2> /dev/null || exit 1
@@ -311,6 +311,7 @@ if test "${CI:-false}" != 'false' || test "${APP_NAME:-false}" = 'Gradle'; then
 fi
 
 # Extract scripts
+test "${DEBUG_LOG}" -eq 1 && enable_debug_log # Enable file logging if needed
 ui_debug 'Extracting scripts...'
 create_dir_safe "${TMP_PATH:?}/inc"
 package_extract_file_safe 'inc/common-functions.sh' "${TMP_PATH:?}/inc/common-functions.sh"
