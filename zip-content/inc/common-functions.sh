@@ -1016,7 +1016,7 @@ _keycheck_map_keycode_to_key()
 choose_keycheck_with_timeout()
 {
   local _key _status
-  _timeout_compat "${1:?}" keycheck
+  _timeout_compat "${1:?}" "${TMP_PATH:?}/bin/keycheck"
   _status="${?}"
 
   if test "${_status:?}" -eq 124; then
