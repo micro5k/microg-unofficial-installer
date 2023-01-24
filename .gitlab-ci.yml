@@ -38,10 +38,10 @@ build-ota-oss:
   stage: build
   script: "./gradlew buildOtaOSS"
   rules:
-    - if: "$CI_PIPELINE_SOURCE == web"
-    - if: "$CI_PIPELINE_SOURCE == merge_request_event"
-    - if: "$CI_PIPELINE_SOURCE == external_pull_request_event"
-    - if: "$CI_COMMIT_TAG"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "external_pull_request_event"
+    - if: $CI_COMMIT_TAG
   artifacts:
     paths:
       - output/*.zip*
