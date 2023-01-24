@@ -43,8 +43,6 @@ build-ota-oss:
     paths:
       - output/*.zip*
     expire_in: 1 day
-  only:
-    - main
 
 build-ota:
   stage: build
