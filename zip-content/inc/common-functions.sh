@@ -332,7 +332,7 @@ _find_and_mount_system()
 
 initialize()
 {
-  ui_msg_empty_line
+  ui_debug ''
 
   SYS_INIT_STATUS=0
   DATA_INIT_STATUS=0
