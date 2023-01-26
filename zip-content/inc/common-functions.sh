@@ -929,7 +929,8 @@ _parse_input_event()
 {
   if test ! -e "/dev/input/${1:?}"; then return 1; fi
 
-  hexdump -n 14 -d "/dev/input/${1:?}" | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
+  # shellcheck disable=SC2002
+  cat "/dev/input/${1:?}" | hexdump -n 14 -d | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
     if test "${key_down:?}" -ne 1; then return 2; fi
     if test -n "${cur_button:-}" && printf '%.0f' "${cur_button:?}"; then return 4; fi
   done
