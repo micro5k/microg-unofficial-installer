@@ -47,14 +47,10 @@ export SKIPUNZIP ASH_STANDALONE
 
 ### GLOBAL VARIABLES ###
 
-if test "${4:-}" = 'zip-install'; then
-  export ZIP_INSTALL='true'
-else
-  export ZIP_INSTALL='false'
-fi
-export RECOVERY_API_VER="${1:-}"
-
-readonly ZIP_INSTALL RECOVERY_API_VER
+if test "${4:-}" = 'zip-install'; then readonly ZIP_INSTALL='true'; else readonly ZIP_INSTALL='false'; fi
+if test "${ZIP_INSTALL:?}" = 'true' || test "${BOOTMODE:?}" = 'true'; then readonly RECOVERY_OUTPUT='false'; else readonly RECOVERY_OUTPUT='true'; fi
+readonly RECOVERY_API_VER="${1:-}"
+export ZIP_INSTALL RECOVERY_OUTPUT RECOVERY_API_VER
 
 ZIP_PATH="$(dirname "${ZIPFILE:?}")"
 export ZIP_PATH
@@ -125,7 +121,7 @@ disable_debug_log()
 
 _show_text_on_recovery()
 {
-  if test "${BOOTMODE:?}" = 'true'; then
+  if test "${RECOVERY_OUTPUT:?}" = 'false'; then
     printf '%s\n' "${1?}"
     return
   elif test -e "${RECOVERY_PIPE:?}"; then
@@ -142,10 +138,10 @@ ui_error()
   ERROR_CODE=79
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
 
-  if test "${BOOTMODE:?}" = 'true'; then
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
-  else
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _show_text_on_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
+  else
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   fi
 
   abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
@@ -153,10 +149,10 @@ ui_error()
 
 ui_warning()
 {
-  if test "${BOOTMODE:?}" = 'true'; then
-    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
-  else
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _show_text_on_recovery "WARNING: ${1:?}"
+  else
+    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
   fi
 }
 

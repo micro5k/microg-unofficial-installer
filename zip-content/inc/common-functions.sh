@@ -399,7 +399,7 @@ deinitialize()
 # Message related functions
 _show_text_on_recovery()
 {
-  if test "${BOOTMODE:?}" = 'true'; then
+  if test "${RECOVERY_OUTPUT:?}" = 'false'; then
     printf '%s\n' "${1?}" # ToDO: Improve output handling
     return
   elif test -e "${RECOVERY_PIPE:?}"; then
@@ -416,10 +416,10 @@ ui_error()
   ERROR_CODE=91
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
 
-  if test "${BOOTMODE:?}" = 'true'; then
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
-  else
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _show_text_on_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
+  else
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   fi
 
   exit "${ERROR_CODE:?}"
@@ -427,10 +427,10 @@ ui_error()
 
 ui_warning()
 {
-  if test "${BOOTMODE:?}" = 'true'; then
-    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
-  else
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _show_text_on_recovery "WARNING: ${1:?}"
+  else
+    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
   fi
 }
 
@@ -446,7 +446,7 @@ ui_msg()
 
 ui_msg_sameline_start()
 {
-  if test "${BOOTMODE:?}" = 'true'; then
+  if test "${RECOVERY_OUTPUT:?}" = 'false'; then
     printf '%s ' "${1:?}"
     return
   elif test -e "${RECOVERY_PIPE:?}"; then
@@ -459,7 +459,7 @@ ui_msg_sameline_start()
 
 ui_msg_sameline_end()
 {
-  if test "${BOOTMODE:?}" = 'true'; then
+  if test "${RECOVERY_OUTPUT:?}" = 'false'; then
     printf '%s\n' "${1:?}"
     return
   elif test -e "${RECOVERY_PIPE:?}"; then
@@ -922,7 +922,7 @@ _find_hardware_keys()
     fi
   done
   if test "${?}" -eq 4; then return 0; fi # Found
-  return 1 # NOT found
+  return 1                                # NOT found
 }
 
 _parse_input_event()
