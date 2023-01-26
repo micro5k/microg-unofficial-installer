@@ -984,7 +984,7 @@ _timeout_compat()
   if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
     timeout -- "${_timeout_secs:?}" "${@:?}"
   else
-    timeout -t "${_timeout_secs:?}" -- "${@:?}" 2> /dev/null
+    timeout 2> /dev/null -t "${_timeout_secs:?}" -- "${@:?}"
   fi
   _timeout_exit_code_remapper "${?}"
   return "${?}"
