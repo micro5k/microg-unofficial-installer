@@ -1096,12 +1096,12 @@ choose_read()
 {
   local _key
   # shellcheck disable=SC3045
-  IFS='' read -rsn 1 -- _key || {
+  IFS='' read -r -s -n '1' _key || {
     ui_warning 'Key detection failed'
     return 1
   }
 
-  clear
+  #clear
   _choose_remapper "${_key?}"
   return "${?}"
 }
@@ -1140,7 +1140,7 @@ choose()
     ui_msg "QUESTION: ${1:?}"
     ui_msg "${2:?}"
     ui_msg "${3:?}"
-    if test "${TEST_INSTALL:-false}" != 'false'; then
+    if test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'; then
       choose_read "${@}"
     elif "${KEYCHECK_ENABLED:?}"; then
       choose_keycheck "${@}"

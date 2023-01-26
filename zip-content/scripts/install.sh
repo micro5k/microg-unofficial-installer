@@ -53,10 +53,10 @@ if test "${LIVE_SETUP_POSSIBLE:?}" = 'true'; then
     ui_msg '---------------------------------------------------'
     ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
     ui_msg "Waiting input for ${LIVE_SETUP_TIMEOUT} seconds..."
-    if "${KEYCHECK_ENABLED}"; then
-      choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
-    else
+    if test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'; then
       choose_read_with_timeout "${LIVE_SETUP_TIMEOUT}"
+    elif "${KEYCHECK_ENABLED}"; then
+      choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
     fi
     if test "${?}" = '3'; then live_setup_enabled=true; fi
   fi
