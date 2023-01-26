@@ -976,7 +976,7 @@ _timeout_exit_code_remapper()
 
 _timeout_compat()
 {
-  local _timeout_ver _timeout_secs
+  local _status _timeout_ver _timeout_secs
 
   _timeout_ver="$(timeout --help 2>&1 | parse_busybox_version)" || _timeout_ver=''
   _timeout_secs="${1:?}" || ui_error 'Missing "secs" parameter for _timeout_compat'
@@ -984,10 +984,14 @@ _timeout_compat()
 
   if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
     timeout -- "${_timeout_secs:?}" "${@:?}"
+    _status="${?}"
   else
-    timeout 2> /dev/null -t "${_timeout_secs:?}" -- "${@:?}"
+    {
+      timeout -t "${_timeout_secs:?}" -- "${@:?}"
+      _status="${?}"
+    } 2> /dev/null
   fi
-  _timeout_exit_code_remapper "${?}"
+  _timeout_exit_code_remapper "${_status:?}"
   return "${?}"
 }
 
