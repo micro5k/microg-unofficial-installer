@@ -1095,11 +1095,13 @@ choose_read_with_timeout()
 choose_read()
 {
   local _key
+
   # shellcheck disable=SC3045
-  IFS='' read -r -s -n '1' _key || {
+  until _key='FAIL' && IFS='' read -r -s -n '1' _key && test -n "${_key:-}"; do
+    if test -z "${_key:-}"; then continue; fi # Retry if only the enter key was pressed
     ui_warning 'Key detection failed'
     return 1
-  }
+  done
 
   #clear
   _choose_remapper "${_key?}"
