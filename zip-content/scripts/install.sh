@@ -64,7 +64,7 @@ fi
 
 if test "${live_setup_enabled:?}" = 'true'; then
   ui_msg 'LIVE SETUP ENABLED!'
-  if test "${DEBUG_LOG}" = '0'; then
+  if test "${DEBUG_LOG:?}" -eq 0; then
     choose 'Do you want to enable the debug log?' '+) Yes' '-) No'
     if test "${?}" = '3'; then
       export DEBUG_LOG=1

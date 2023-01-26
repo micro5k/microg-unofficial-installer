@@ -311,7 +311,7 @@ if test "${CI:-false}" != 'false' || test "${APP_NAME:-false}" = 'Gradle'; then
 fi
 
 # Extract scripts
-test "${DEBUG_LOG}" -eq 1 && enable_debug_log # Enable file logging if needed
+test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
 ui_debug 'Extracting scripts...'
 create_dir_safe "${TMP_PATH:?}/inc"
 package_extract_file_safe 'inc/common-functions.sh' "${TMP_PATH:?}/inc/common-functions.sh"
@@ -325,7 +325,7 @@ set_perm_safe 0 0 0755 "${TMP_PATH:?}/install.sh"
 package_extract_file_safe 'settings.conf' "${TMP_PATH:?}/default-settings.conf"
 # shellcheck source=SCRIPTDIR/settings-full.conf
 . "${TMP_PATH:?}/default-settings.conf"
-test "${DEBUG_LOG}" -eq 1 && enable_debug_log # Enable file logging if needed
+test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
 
 # If the debug log was enabled at startup (not in the settings or in the live setup) we cannot allow overriding it from the settings
 if test "${DEBUG_LOG_ENABLED}" -eq 1; then export DEBUG_LOG=1; fi
@@ -341,5 +341,5 @@ delete_recursive_safe "${TMP_PATH:?}"
 
 #!!! UNSAFE ENVIRONMENT FROM HERE !!!#
 
-test "${DEBUG_LOG}" -eq 1 && disable_debug_log # Disable debug log and restore normal output
+test "${DEBUG_LOG:?}" -ne 0 && disable_debug_log # Disable debug log and restore normal output
 delete_safe "${BASE_TMP_PATH:?}/busybox"
