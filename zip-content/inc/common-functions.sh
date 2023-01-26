@@ -900,6 +900,7 @@ _find_hardware_keys()
   if test ! -e '/proc/bus/input/devices'; then return 1; fi # NOT found
 
   local _last_device_name=''
+  # shellcheck disable=SC2002
   cat '/proc/bus/input/devices' | while IFS=': ' read -r line_type full_line; do
     if test "${line_type?}" = 'N'; then
       _last_device_name="${full_line?}"
@@ -928,7 +929,7 @@ _parse_input_event()
 {
   if test ! -e "/dev/input/${1:?}"; then return 1; fi
 
-  cat "/dev/input/${1:?}" | hexdump -n 14 -d | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
+  hexdump -n 14 -d "/dev/input/${1:?}" | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
     if test "${key_down:?}" -ne 1; then return 2; fi
     if test -n "${cur_button:-}" && printf '%.0f' "${cur_button:?}"; then return 4; fi
   done
