@@ -294,8 +294,8 @@ if test "${TEST_INSTALL:-false}" = 'false'; then
   fi
 fi
 
-# Enable the binary-free live setup when inside the recovery simulator
-if test "${TEST_INSTALL:-false}" != 'false'; then
+# Enable the binary-free live setup inside the recovery simulator and also when using zip-install.sh
+if test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'; then
   LIVE_SETUP_POSSIBLE=true
   KEYCHECK_ENABLED=false
 fi
