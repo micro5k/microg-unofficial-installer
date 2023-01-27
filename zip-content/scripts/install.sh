@@ -46,7 +46,7 @@ fi
 
 # Live setup
 live_setup_enabled=false
-if test "${LIVE_SETUP_POSSIBLE:?}" = 'true'; then
+if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then
   if test "${LIVE_SETUP_DEFAULT:?}" != '0'; then
     live_setup_enabled=true
   elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then

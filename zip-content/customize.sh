@@ -90,7 +90,6 @@ unset -f _log_path_setter || true
 readonly LOG_PATH
 export LOG_PATH
 
-export LIVE_SETUP_POSSIBLE=false
 export KEYCHECK_ENABLED=false
 
 ### FUNCTIONS ###
@@ -276,6 +275,8 @@ DEVICE_MOUNT="$(command -v mount)" || DEVICE_MOUNT=''
 readonly DEVICE_MOUNT
 export DEVICE_MOUNT
 
+LIVE_SETUP_ALLOWED='false'
+
 if test "${TEST_INSTALL:-false}" = 'false'; then
   create_dir_safe "${TMP_PATH:?}/bin"
   # Clean search path so only internal BusyBox applets will be used
@@ -289,22 +290,24 @@ if test "${TEST_INSTALL:-false}" = 'false'; then
     "${OUR_BB:?}" mv -f "${BASE_TMP_PATH:?}/keycheck" "${TMP_PATH:?}/bin/keycheck" || ui_error "Failed to move keycheck to the bin folder"
     # Give execution rights
     "${OUR_BB:?}" chmod 0755 "${TMP_PATH:?}/bin/keycheck" || ui_error "chmod failed on keycheck"
-    LIVE_SETUP_POSSIBLE=true
+    LIVE_SETUP_ALLOWED='true'
     KEYCHECK_ENABLED=true
   fi
 fi
 
 # Enable the binary-free live setup inside the recovery simulator and also when using zip-install.sh
 if test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'; then
-  LIVE_SETUP_POSSIBLE=true
-  KEYCHECK_ENABLED=false
+  LIVE_SETUP_ALLOWED='true'
 fi
 
-# Live setup isn't supported under continuous integration system
+# Live setup under continuous integration systems doesn't make sense
 # Live setup doesn't work when executed through Gradle
 if test "${CI:-false}" != 'false' || test "${APP_NAME:-false}" = 'Gradle'; then
-  LIVE_SETUP_POSSIBLE=false
+  LIVE_SETUP_ALLOWED='false'
 fi
+
+readonly LIVE_SETUP_ALLOWED
+export LIVE_SETUP_ALLOWED
 
 # Extract scripts
 test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
