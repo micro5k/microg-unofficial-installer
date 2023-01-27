@@ -1103,7 +1103,6 @@ choose_read()
     return 1
   done
 
-  #clear
   _choose_remapper "${_key?}"
   return "${?}"
 }
