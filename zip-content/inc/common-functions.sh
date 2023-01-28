@@ -1167,7 +1167,7 @@ choose_inputevent()
       115) ;;          # Vol + key (allowed)
       114) ;;          # Vol - key (allowed)
       *)
-        ui_msg 'Invalid choice!!!'
+        ui_msg "Invalid choice!!! Key code: ${_key:-}"
         continue
         ;; # NOT allowed
     esac
