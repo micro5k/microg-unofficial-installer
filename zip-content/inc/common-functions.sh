@@ -943,9 +943,9 @@ _timeout_exit_code_remapper()
       ;;
     125) # The timeout command itself fails
       ;;
-    126) # COMMAND is found but cannot be invoked - Example: missing execute permission
+    126) # COMMAND is found but cannot be invoked (126) - Example: missing execute permission
       ;;
-    127) # COMMAND cannot be found (127)
+    127) # COMMAND cannot be found (127) - Note: this return value may even be used when timeout is unable to execute the COMMAND
       ui_msg_empty_line
       ui_warning 'timeout returned cmd NOT found (127)'
       return 127
