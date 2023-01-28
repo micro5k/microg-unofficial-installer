@@ -1141,10 +1141,12 @@ choose_inputevent()
 {
   local _key _hard_keys_event _status
 
-  _hard_keys_event="$(_find_hardware_keys)" && test -e "/dev/input/${_hard_keys_event:?}" || {
+  if _hard_keys_event="$(_find_hardware_keys)" && test -e "/dev/input/${_hard_keys_event:?}"; then
+    : # OK
+  else
     ui_warning 'Key detection failed'
     return 1
-  }
+  fi
 
   while true; do
     _key=''
