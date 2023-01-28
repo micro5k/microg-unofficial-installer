@@ -233,6 +233,7 @@ _find_block()
 _manual_partition_mount()
 {
   local _backup_ifs _path _block _found
+  unset LAST_MOUNTPOINT
   _backup_ifs="${IFS:-}"
   IFS="${NL:?}"
 
