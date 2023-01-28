@@ -1038,7 +1038,7 @@ choose_keycheck_with_timeout()
     ui_msg 'Key: No key pressed'
     return 0
   elif test "${_status:?}" -eq 127 || test "${_status:?}" -eq 132; then
-    ui_msg 'Fallbacking to manual input parsing...'
+    ui_msg 'Fallbacking to manual input parsing, waiting input...'
     export KEYCHECK_ENABLED=false
     choose_inputevent
     return "${?}"
