@@ -205,7 +205,7 @@ fi
 setup_app 1 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
 
 setup_app 1 'microG Services Core (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false
-if test "${GMSCORE_VERSION:?}" = 'auto' && test "${CPU}" != 'armeabi'; then
+if test "${CPU}" != 'armeabi'; then
   setup_app 1 'microG Services Core' 'GmsCore' 'priv-app' false false
 else
   setup_app 1 'microG Services Core (vtm)' 'GmsCoreVtm' 'priv-app' false false
