@@ -57,6 +57,8 @@ if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then
       choose_read_with_timeout "${LIVE_SETUP_TIMEOUT}"
     elif "${KEYCHECK_ENABLED}"; then
       choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
+    else
+      choose_inputevent
     fi
     if test "${?}" = '3'; then live_setup_enabled=true; fi
   fi

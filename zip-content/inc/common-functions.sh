@@ -927,15 +927,12 @@ _find_hardware_keys()
 
 _parse_input_event()
 {
-  if test ! -e "/dev/input/${1:?}"; then return 1; fi
-
   # shellcheck disable=SC2002
   cat "/dev/input/${1:?}" | hexdump -n 14 -d | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
-    if test "${key_down:?}" -ne 1; then return 2; fi
+    if test "${key_down:-0}" -ne 1; then return 85; fi
     if test -n "${cur_button:-}" && printf '%.0f' "${cur_button:?}"; then return 4; fi
   done
-  if test "${?}" -eq 4; then return 0; fi
-  return 1
+  return "${?}"
 }
 
 _timeout_exit_code_remapper()
@@ -948,16 +945,19 @@ _timeout_exit_code_remapper()
       ;;
     126) # COMMAND is found but cannot be invoked - Example: missing execute permission
       ;;
-    127) # COMMAND cannot be found
-      ui_warning 'timeout returned "COMMAND cannot be found" (127)'
+    127) # COMMAND cannot be found (127)
+      ui_msg_empty_line
+      ui_warning 'timeout returned cmd NOT found (127)'
       return 127
       ;;
     132) # SIGILL signal (128+4) - Example: illegal instruction
-      ui_warning 'timeout returned SIGILL signal (128+4)'
+      ui_msg_empty_line
+      ui_warning 'timeout returned SIGILL (128+4)'
       return 132
       ;;
     137) # SIGKILL signal (128+9) - Timed out but SIGTERM failed
-      ui_warning 'timeout returned SIGKILL signal (128+9)'
+      ui_msg_empty_line
+      ui_warning 'timeout returned SIGKILL (128+9)'
       return 1
       ;;
     143) # SIGTERM signal (128+15) - Timed out
@@ -970,6 +970,7 @@ _timeout_exit_code_remapper()
       ;;
   esac
 
+  ui_msg_empty_line
   ui_warning "timeout returned: ${1:?}"
   return 1
 }
@@ -1000,15 +1001,13 @@ _choose_remapper()
 {
   local _key
   _key="${1?}" || ui_error 'Missing parameter for _choose_remapper'
-  if test -z "${_key?}"; then _key='Enter'; elif test "${_key:?}" = "${_esc_keycode:?}"; then _key='ESC'; fi
   ui_msg_empty_line
   ui_msg "Key press: ${_key:-}"
   ui_msg_empty_line
 
-  case "${_key:?}" in
+  case "${_key?}" in
     '+') return 3 ;;                                            # + key
     '-') return 2 ;;                                            # - key
-    'Enter') return 0 ;;                                        # Enter key
     'ESC') ui_error 'Installation forcefully terminated' 143 ;; # ESC or other special keys
     *) return 123 ;;                                            # All other keys
   esac
@@ -1039,6 +1038,7 @@ choose_keycheck_with_timeout()
     ui_msg 'Key: No key pressed'
     return 0
   elif test "${_status:?}" -eq 127 || test "${_status:?}" -eq 132; then
+    ui_msg 'Fallbacking to manual input parsing...'
     export KEYCHECK_ENABLED=false
     choose_inputevent
     return "${?}"
@@ -1139,16 +1139,39 @@ choose_read()
 
 choose_inputevent()
 {
-  local _key _hard_keys_event
+  local _key _hard_keys_event _status
 
-  _hard_keys_event="$(_find_hardware_keys)" || {
+  _hard_keys_event="$(_find_hardware_keys)" && test -e "/dev/input/${_hard_keys_event:?}" || {
     ui_warning 'Key detection failed'
     return 1
   }
-  _key="$(_parse_input_event "${_hard_keys_event:?}")" || {
-    ui_warning 'Key detection failed (2)'
-    return 1
-  }
+
+  while true; do
+    _key=''
+    _status=0
+    _key="$(_parse_input_event "${_hard_keys_event:?}")" || _status="${?}"
+
+    case "${_status:?}" in
+      4) ;;           # Key down event read (allowed)
+      85) continue ;; # Key up event read (ignored)
+      *)              # Event read failed
+        ui_warning 'Key detection failed (2)'
+        return 1
+        ;;
+    esac
+
+    case "${_key?}" in
+      116) continue ;; # Power key (ignored)
+      115) ;;          # Vol + key (allowed)
+      114) ;;          # Vol - key (allowed)
+      *)
+        ui_msg 'Invalid choice!!!'
+        continue
+        ;; # NOT allowed
+    esac
+
+    break
+  done
 
   ui_msg "Key code: ${_key:-}"
   # 102 Menu
