@@ -1070,23 +1070,38 @@ choose_keycheck()
 choose_read_with_timeout()
 {
   local _key _status
-  _status='0'
 
-  # shellcheck disable=SC3045
-  IFS='' read -rsn 1 -t "${1:?}" -- _key || _status="${?}"
+  while true; do
+    _key=''
+    _status=0
+    # shellcheck disable=SC3045
+    IFS='' read -r -s -n '1' -t "${1:?}" _key || _status="${?}"
 
-  case "${_status:?}" in
-    0) # Command terminated successfully
-      ;;
-    1 | 142) # 1 => Command timed out on BusyBox / Toybox; 142 => Command timed out on Bash
-      ui_msg 'Key: No key pressed'
-      return 0
-      ;;
-    *)
-      ui_warning 'Key detection failed'
-      return 1
-      ;;
-  esac
+    case "${_status:?}" in
+      0) ;;    # Command terminated successfully
+      1 | 142) # 1 => Command timed out on BusyBox / Toybox; 142 => Command timed out on Bash
+        ui_msg 'Key: No key pressed'
+        return 0
+        ;;
+      *)
+        ui_warning 'Key detection failed'
+        return 1
+        ;;
+    esac
+
+    case "${_key?}" in
+      '+') ;;                                        # + key (allowed)
+      '-') ;;                                        # - key (allowed)
+      'c' | 'C' | "${_esc_keycode:?}") _key='ESC' ;; # ESC or C key (allowed)
+      '') continue ;;                                # Enter key (ignored)
+      *)
+        ui_msg 'Invalid choice!!!'
+        continue
+        ;; # NOT allowed
+    esac
+
+    break
+  done
 
   _choose_remapper "${_key?}"
   return "${?}"
@@ -1096,14 +1111,29 @@ choose_read()
 {
   local _key
 
-  # shellcheck disable=SC3045
-  until _key='FAIL' && IFS='' read -r -s -n '1' _key && test -n "${_key:-}"; do
-    if test -z "${_key:-}"; then continue; fi # Retry if only the enter key was pressed
-    ui_warning 'Key detection failed'
-    return 1
+  while true; do
+    _key=''
+    # shellcheck disable=SC3045
+    IFS='' read -r -s -n '1' _key || {
+      ui_warning 'Key detection failed'
+      return 1
+    }
+
+    case "${_key?}" in
+      '+') ;;                                        # + key (allowed)
+      '-') ;;                                        # - key (allowed)
+      'c' | 'C' | "${_esc_keycode:?}") _key='ESC' ;; # ESC or C key (allowed)
+      '') continue ;;                                # Enter key (ignored)
+      *)
+        ui_msg 'Invalid choice!!!'
+        continue
+        ;; # NOT allowed
+    esac
+
+    break
   done
 
-  _choose_remapper "${_key?}"
+  _choose_remapper "${_key:?}"
   return "${?}"
 }
 
