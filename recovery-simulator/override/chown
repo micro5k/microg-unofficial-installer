@@ -5,7 +5,7 @@
 # SPDX-FileType: SOURCE
 
 if test -n "$1"; then
-  echo "Dummy chown: $*"
+  #echo "Dummy chown: $*"
   return 0 2>&- || exit 0
 fi
 
