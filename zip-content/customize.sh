@@ -48,8 +48,15 @@ export SKIPUNZIP ASH_STANDALONE
 ### GLOBAL VARIABLES ###
 
 if test "${4:-}" = 'zip-install'; then readonly ZIP_INSTALL='true'; else readonly ZIP_INSTALL='false'; fi
-if test "${ZIP_INSTALL:?}" = 'true' || test "${BOOTMODE:?}" = 'true'; then readonly RECOVERY_OUTPUT='false'; else readonly RECOVERY_OUTPUT='true'; fi
+
+if test "${ZIP_INSTALL:?}" = 'true' || test "${BOOTMODE:?}" = 'true' || test "${OUTFD:?}" = '1'; then
+  readonly RECOVERY_OUTPUT='false'
+else
+  readonly RECOVERY_OUTPUT='true'
+fi
+
 readonly RECOVERY_API_VER="${1:-}"
+
 export ZIP_INSTALL RECOVERY_OUTPUT RECOVERY_API_VER
 
 ZIP_PATH="$(dirname "${ZIPFILE:?}")"
