@@ -32,11 +32,11 @@ if test -z "${1:-}"; then
   ui_show_error 'You must specify the ZIP file to install'
   exit 3
 fi
-ZIPFILE="$(readlink -f "${1:?}")" || ZIPFILE="$(realpath "${1:?}")" || exit 4
-if test ! -e "${ZIPFILE:?}"; then
-  ui_show_error "The selected ZIP file doesn't exist => '${ZIPFILE:-}'"
+if test ! -e "${1:?}"; then
+  ui_show_error "The selected ZIP file doesn't exist => '${1:-}'"
   exit 4
 fi
+ZIPFILE="$(readlink -f "${1:?}")" || ZIPFILE="$(realpath "${1:?}")" || exit 4
 unset SCRIPT_NAME
 
 _clean_at_exit()
