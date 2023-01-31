@@ -11,7 +11,10 @@ ui_show_error()
 }
 
 if test "$(whoami || id -un || true)" != 'root'; then
-  if test "${AUTO_ELEVATED:-false}" = 'false' && command -v su 1> /dev/null; then
+  if test "${AUTO_ELEVATED:-false}" = 'false' && {
+    test "${FORCE_ROOT:-false}" != 'false' || command -v su 1> /dev/null
+  }; then
+
     ZIP_INSTALL_SCRIPT="$(readlink -f "${0:?}")" || ZIP_INSTALL_SCRIPT="$(realpath "${0:?}")" || {
       ui_show_error 'Unable to find this script'
       exit 2
@@ -22,6 +25,7 @@ if test "$(whoami || id -un || true)" != 'root'; then
       exit "${STATUS:-1}"
     }
     exit 0
+
   fi
 
   ui_show_error 'You must execute this as root'
