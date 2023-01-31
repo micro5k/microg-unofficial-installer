@@ -15,20 +15,23 @@ if test "$(whoami || id -un || true)" != 'root'; then
     test "${FORCE_ROOT:-false}" != 'false' || command -v su 1> /dev/null
   }; then
 
+    # First check if root is working (0 => root)
+    su -c '' -- 0 -- || {
+      _status="${?}" # Usually it return 1 or 255 when fail
+      ui_show_error 'Auto-rooting failed, you must execute this as root!!!'
+      exit "${_status:-1}"
+    }
+
     ZIP_INSTALL_SCRIPT="$(readlink -f "${0:?}")" || ZIP_INSTALL_SCRIPT="$(realpath "${0:?}")" || {
       ui_show_error 'Unable to find this script'
       exit 2
     }
-    su -c "export AUTO_ELEVATED='true'; sh '${ZIP_INSTALL_SCRIPT:?}' '${1}'" || {
-      STATUS="${?}"
-      ui_show_error 'Auto-rooting failed, you must execute this as root'
-      exit "${STATUS:-1}"
-    }
-    exit 0
+    exec su -c "export AUTO_ELEVATED=true; sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" -- 0 -- _ "${@}" || ui_show_error 'failed: exec'
+    exit 127
 
   fi
 
-  ui_show_error 'You must execute this as root'
+  ui_show_error 'You must execute this as root!!!'
   exit 2
 fi
 
