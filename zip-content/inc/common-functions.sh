@@ -398,16 +398,15 @@ deinitialize()
 # Message related functions
 _show_text_on_recovery()
 {
-  if test "${RECOVERY_OUTPUT:?}" = 'false'; then
-    printf '%s\n' "${1?}" # ToDO: Improve output handling
-    return
-  elif test -e "${RECOVERY_PIPE:?}"; then
-    printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
-  else
-    printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
-  fi
+  if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
 
   if test "${DEBUG_LOG:?}" -ne 0; then printf 1>&2 '%s\n' "${1?}"; fi
+
+  if test -e "${RECOVERY_PIPE:?}"; then
+    printf 'ui_print %s\nui_print\n' "${1:?}" >> "${RECOVERY_PIPE:?}"
+  else
+    printf 'ui_print %s\nui_print\n' "${1:?}" 1>&"${OUTFD:?}"
+  fi
 }
 
 ui_error()
@@ -435,12 +434,20 @@ ui_warning()
 
 ui_msg_empty_line()
 {
-  _show_text_on_recovery ' '
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
+    _show_text_on_recovery ' '
+  else
+    printf '\n'
+  fi
 }
 
 ui_msg()
 {
-  _show_text_on_recovery "${1:?}"
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
+    _show_text_on_recovery "${1:?}"
+  else
+    printf '%s\n' "${1:?}"
+  fi
 }
 
 ui_msg_sameline_start()
