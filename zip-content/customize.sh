@@ -21,9 +21,9 @@ if test -z "${BOOTMODE:-}"; then
   printf 1>&2 '%s\n' 'Missing BOOTMODE variable'
   abort 'Missing BOOTMODE variable' 2> /dev/null || exit 1
 fi
-if test -z "${OUTFD:-}"; then
-  printf 1>&2 '%s\n' 'Missing OUTFD variable'
-  abort 'Missing OUTFD variable' 2> /dev/null || exit 1
+if test -z "${OUTFD:-}" || test "${OUTFD:?}" -lt 1; then
+  printf 1>&2 '%s\n' 'Missing or invalid OUTFD variable'
+  abort 'Missing or invalid OUTFD variable' 2> /dev/null || exit 1
 fi
 RECOVERY_PIPE="/proc/self/fd/${OUTFD:?}"
 if test -z "${ZIPFILE:-}"; then ui_error 'Missing ZIPFILE variable'; fi
