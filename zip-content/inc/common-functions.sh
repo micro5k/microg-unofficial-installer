@@ -403,9 +403,9 @@ _show_text_on_recovery()
   if test "${DEBUG_LOG:?}" -ne 0; then printf 1>&2 '%s\n' "${1?}"; fi
 
   if test -e "${RECOVERY_PIPE:?}"; then
-    printf 'ui_print %s\nui_print\n' "${1:?}" >> "${RECOVERY_PIPE:?}"
+    printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
   else
-    printf 'ui_print %s\nui_print\n' "${1:?}" 1>&"${OUTFD:?}"
+    printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
 }
 
