@@ -44,6 +44,11 @@ if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"
   . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
 fi
 
+# Currently we don't handle this case properly so disable it
+if test "${RECOVERY_OUTPUT:?}" != 'true' && test "${DEBUG_LOG_ENABLED}" -eq 1; then
+  LIVE_SETUP_ALLOWED='false'
+fi
+
 # Live setup
 live_setup_enabled=false
 if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then

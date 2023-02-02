@@ -362,6 +362,7 @@ ui_debug 'Starting installation script...'
 export STATUS="${?}"
 if test -f "${TMP_PATH:?}/installed"; then export UNKNOWN_ERROR=0; else export UNKNOWN_ERROR=1; fi
 
+ui_debug ''
 disable_debug_log # Disable debug log if it was enabled and restore normal output
 
 export PATH="${PREVIOUS_PATH?}"
