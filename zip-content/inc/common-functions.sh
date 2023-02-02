@@ -11,7 +11,7 @@
 
 ### PREVENTIVE CHECKS ###
 
-if test -z "${RECOVERY_PIPE:-}" || test -z "${OUTFD:-}" || test -z "${ZIPFILE:-}" || test -z "${TMP_PATH:-}" || test -z "${DEBUG_LOG:-}"; then
+if test -z "${RECOVERY_PIPE:-}" || test -z "${OUTFD:-}" || test -z "${ZIPFILE:-}" || test -z "${TMP_PATH:-}" || test -z "${DEBUG_LOG_ENABLED:-}"; then
   echo 'Some variables are NOT set.'
   exit 90
 fi
@@ -400,13 +400,13 @@ _show_text_on_recovery()
 {
   if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
 
-  if test "${DEBUG_LOG:?}" -ne 0; then printf 1>&2 '%s\n' "${1?}"; fi
-
   if test -e "${RECOVERY_PIPE:?}"; then
     printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
   else
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
+
+  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then printf 1>&2 '%s\n' "${1?}"; fi
 }
 
 ui_error()
@@ -460,7 +460,8 @@ ui_msg_sameline_start()
   else
     printf 'ui_print %s' "${1:?}" 1>&"${OUTFD:?}"
   fi
-  if test "${DEBUG_LOG:?}" -ne 0; then printf 1>&2 '%s\n' "${1:?}"; fi
+
+  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then printf 1>&2 '%s\n' "${1:?}"; fi
 }
 
 ui_msg_sameline_end()
@@ -473,7 +474,8 @@ ui_msg_sameline_end()
   else
     printf '%s\nui_print\n' "${1:?}" 1>&"${OUTFD:?}"
   fi
-  if test "${DEBUG_LOG:?}" -ne 0; then printf 1>&2 '%s\n' "${1:?}"; fi
+
+  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then printf 1>&2 '%s\n' "${1:?}"; fi
 }
 
 ui_debug()
@@ -1239,24 +1241,39 @@ remove_ext()
 enable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
-  DEBUG_LOG_ENABLED=1
+  export DEBUG_LOG_ENABLED=1
 
   ui_debug "Creating log: ${LOG_PATH:?}"
   touch "${LOG_PATH:?}" || {
     ui_warning "Unable to write the log file at: ${LOG_PATH:-}"
-    DEBUG_LOG_ENABLED=0
+    export DEBUG_LOG_ENABLED=0
     return
   }
 
-  exec 3>&1 4>&2 # Backup stdout and stderr
+  # If they are already in use, then use alternatives
+  if { true 1>&6 || true 1>&7; } 2> /dev/null; then
+    export ALTERNATIVE_FDS=1
+    # shellcheck disable=SC3023
+    exec 88>&1 89>&2 # Backup stdout and stderr
+  else
+    export ALTERNATIVE_FDS=0
+    exec 6>&1 7>&2 # Backup stdout and stderr
+  fi
   exec 1>> "${LOG_PATH:?}" 2>&1
 }
 
 disable_debug_log()
 {
-  if test "${DEBUG_LOG_ENABLED}" -eq 0; then return; fi
-  DEBUG_LOG_ENABLED=0
-  exec 1>&3 2>&4 # Restore stdout and stderr
+  if test "${DEBUG_LOG_ENABLED}" -ne 1; then return; fi
+  export DEBUG_LOG_ENABLED=0
+  if test "${ALTERNATIVE_FDS:?}" -eq 0; then
+    exec 1>&6 2>&7 # Restore stdout and stderr
+    exec 6>&- 7>&-
+  else
+    exec 1>&88 2>&89 # Restore stdout and stderr
+    # shellcheck disable=SC3023
+    exec 88>&- 89>&-
+  fi
 }
 
 # Find test: this is useful to test 'find' - if every file/folder, even the ones with spaces, is displayed in a single line then your version is good

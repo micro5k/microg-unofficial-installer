@@ -16,7 +16,6 @@ set -u || true
 
 ### PREVENTIVE CHECKS ###
 
-DEBUG_LOG="${DEBUG_LOG:-0}"
 if test -z "${BOOTMODE:-}"; then
   printf 1>&2 '%s\n' 'Missing BOOTMODE variable'
   abort 'Missing BOOTMODE variable' 2> /dev/null || exit 1
@@ -29,7 +28,6 @@ RECOVERY_PIPE="/proc/self/fd/${OUTFD:?}"
 if test -z "${ZIPFILE:-}"; then ui_error 'Missing ZIPFILE variable'; fi
 if test -z "${TMPDIR:-}" || test ! -e "${TMPDIR:?}"; then ui_error 'The temp folder is missing (2)'; fi
 
-export DEBUG_LOG
 export BOOTMODE
 export OUTFD
 export RECOVERY_PIPE
@@ -101,42 +99,61 @@ export KEYCHECK_ENABLED=false
 
 ### FUNCTIONS ###
 
+ui_debug()
+{
+  printf '%s\n' "${1?}"
+}
+
 export DEBUG_LOG_ENABLED=0
 enable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
-  DEBUG_LOG_ENABLED=1
+  export DEBUG_LOG_ENABLED=1
 
   ui_debug "Creating log: ${LOG_PATH:?}"
   touch "${LOG_PATH:?}" || {
     ui_warning "Unable to write the log file at: ${LOG_PATH:-}"
-    DEBUG_LOG_ENABLED=0
+    export DEBUG_LOG_ENABLED=0
     return
   }
 
-  exec 3>&1 4>&2 # Backup stdout and stderr
+  # If they are already in use, then use alternatives
+  if { true 1>&6 || true 1>&7; } 2> /dev/null; then
+    export ALTERNATIVE_FDS=1
+    # shellcheck disable=SC3023
+    exec 88>&1 89>&2 # Backup stdout and stderr
+  else
+    export ALTERNATIVE_FDS=0
+    exec 6>&1 7>&2 # Backup stdout and stderr
+  fi
   exec 1>> "${LOG_PATH:?}" 2>&1
 }
 
 disable_debug_log()
 {
-  if test "${DEBUG_LOG_ENABLED}" -eq 0; then return; fi
-  DEBUG_LOG_ENABLED=0
-  exec 1>&3 2>&4 # Restore stdout and stderr
+  if test "${DEBUG_LOG_ENABLED}" -ne 1; then return; fi
+  export DEBUG_LOG_ENABLED=0
+  if test "${ALTERNATIVE_FDS:?}" -eq 0; then
+    exec 1>&6 2>&7 # Restore stdout and stderr
+    exec 6>&- 7>&-
+  else
+    exec 1>&88 2>&89 # Restore stdout and stderr
+    # shellcheck disable=SC3023
+    exec 88>&- 89>&-
+  fi
 }
 
 _show_text_on_recovery()
 {
-  if test "${RECOVERY_OUTPUT:?}" = 'false'; then
-    printf '%s\n' "${1?}"
-    return
-  elif test -e "${RECOVERY_PIPE:?}"; then
+  if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
+
+  if test -e "${RECOVERY_PIPE:?}"; then
     printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
   else
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
 
-  if test "${DEBUG_LOG:?}" -ne 0; then printf '%s\n' "${1?}"; fi
+  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then printf 1>&2 '%s\n' "${1?}"; fi
 }
 
 ui_error()
@@ -164,12 +181,11 @@ ui_warning()
 
 ui_msg()
 {
-  _show_text_on_recovery "${1:?}"
-}
-
-ui_debug()
-{
-  printf '%s\n' "${1?}"
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
+    _show_text_on_recovery "${1:?}"
+  else
+    printf '%s\n' "${1:?}"
+  fi
 }
 
 set_perm()
@@ -291,6 +307,9 @@ if test "${TEST_INSTALL:-false}" = 'false'; then
   "${OUR_BB:?}" --install -s "${TMP_PATH:?}/bin" || ui_error "Failed to setup BusyBox"
 fi
 
+DEBUG_LOG="${DEBUG_LOG:-0}"
+test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
+
 LIVE_SETUP_ALLOWED='false'
 KEYCHECK_PATH=''
 if test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'; then
@@ -319,7 +338,6 @@ readonly LIVE_SETUP_ALLOWED KEYCHECK_PATH
 export LIVE_SETUP_ALLOWED KEYCHECK_PATH
 
 # Extract scripts
-test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
 ui_debug 'Extracting scripts...'
 create_dir_safe "${TMP_PATH:?}/inc"
 package_extract_file_safe 'inc/common-functions.sh' "${TMP_PATH:?}/inc/common-functions.sh"
@@ -344,10 +362,11 @@ ui_debug 'Starting installation script...'
 export STATUS="${?}"
 if test -f "${TMP_PATH:?}/installed"; then export UNKNOWN_ERROR=0; else export UNKNOWN_ERROR=1; fi
 
+disable_debug_log # Disable debug log if it was enabled and restore normal output
+
 export PATH="${PREVIOUS_PATH?}"
 delete_recursive_safe "${TMP_PATH:?}"
 
 #!!! UNSAFE ENVIRONMENT FROM HERE !!!#
 
-test "${DEBUG_LOG:?}" -ne 0 && disable_debug_log # Disable debug log and restore normal output
 delete_safe "${BASE_TMP_PATH:?}/busybox"
