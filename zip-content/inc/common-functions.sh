@@ -1222,6 +1222,13 @@ choose()
 }
 
 # Other
+kill_app()
+{
+  if command -v am 1> /dev/null; then
+    am force-stop "${1:?}" 2> /dev/null || am kill "${1:?}" 2> /dev/null || true
+  fi
+}
+
 parse_busybox_version()
 {
   head -n1 | grep -oE 'BusyBox v[0-9]+\.[0-9]+\.[0-9]+' | cut -d 'v' -f 2
