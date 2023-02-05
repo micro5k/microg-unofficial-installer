@@ -57,6 +57,7 @@ if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then
   elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
     ui_msg '---------------------------------------------------'
     ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
+    ui_msg '---------------------------------------------------'
 
     if test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'; then
       LIVE_SETUP_TIMEOUT="$((LIVE_SETUP_TIMEOUT + 3))"
