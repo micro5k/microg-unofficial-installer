@@ -281,6 +281,13 @@ fi
 
 mount_extra_partitions_silent
 
+# Kill the apps if they were active
+if command -v am 1> /dev/null; then
+  am force-stop com.android.vending 2> /dev/null || true
+  am force-stop com.google.android.gsf 2> /dev/null || true
+  am force-stop com.google.android.gms 2> /dev/null || true
+fi
+
 # Clean previous installations
 if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
   if test "${CPU}" != false; then
