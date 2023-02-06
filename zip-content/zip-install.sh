@@ -109,7 +109,7 @@ test -e "${SCRIPT_NAME:?}" || {
   exit 14
 }
 
-# Use STDERR for recovery messages to avoid possible problems with subshells intercepting output
+# Use STDERR (2) for recovery messages to avoid possible problems with subshells intercepting output
 STATUS=0
 sh -- "${SCRIPT_NAME:?}" 3 2 "${ZIPFILE:?}" 'zip-install' || STATUS="${?}"
 
