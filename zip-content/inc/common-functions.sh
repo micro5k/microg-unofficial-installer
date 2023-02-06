@@ -1258,7 +1258,9 @@ enable_debug_log()
   }
 
   # If they are already in use, then use alternatives
-  if { command 1>&6 || command 1>&7; } 2> /dev/null; then
+  if {
+    command 1>&6 || command 1>&7
+  } 2> /dev/null; then
     export ALTERNATIVE_FDS=1
     # shellcheck disable=SC3023
     exec 88>&1 89>&2 # Backup stdout and stderr
