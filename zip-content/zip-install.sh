@@ -10,6 +10,25 @@ ui_show_error()
   printf 1>&2 '\033[1;31mERROR: %s\033[0m\n' "${1:?}"
 }
 
+for _param in "${@}"; do
+  shift
+  if test -z "${_param:-}" || test "${_param:?}" = '--'; then continue; fi # Skip empty parameters
+
+  test -e "${_param:?}" || {
+    ui_show_error "ZIP file doesn't exist => '${_param:-}'"
+    exit 4
+  }
+
+  _param_copy="${_param:?}"
+  _param="$(readlink -f "${_param_copy:?}")" || _param="$(realpath "${_param_copy:?}")" || {
+    ui_show_error "Canonicalization failed => '${_param_copy:-}'"
+    exit 4
+  }
+
+  set -- "${@}" "${_param:?}"
+done
+unset _param _param_copy
+
 if test "$(whoami || id -un || true)" != 'root'; then
   if test "${AUTO_ELEVATED:-false}" = 'false' && {
     test "${FORCE_ROOT:-false}" != 'false' || command -v su 1> /dev/null
@@ -39,11 +58,7 @@ if test -z "${1:-}"; then
   ui_show_error 'You must specify the ZIP file to install'
   exit 3
 fi
-if test ! -e "${1:?}"; then
-  ui_show_error "The selected ZIP file doesn't exist => '${1:-}'"
-  exit 4
-fi
-ZIPFILE="$(readlink -f "${1:?}")" || ZIPFILE="$(realpath "${1:?}")" || exit 4
+ZIPFILE="${1:?}"
 unset SCRIPT_NAME
 
 _clean_at_exit()
