@@ -44,49 +44,7 @@ if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"
   . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
 fi
 
-# Currently we don't handle this case properly so disable it
-if test "${RECOVERY_OUTPUT:?}" != 'true' && test "${DEBUG_LOG_ENABLED}" -eq 1; then
-  LIVE_SETUP_ALLOWED='false'
-fi
-
-# Live setup
-live_setup_enabled=false
-if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then
-  if test "${LIVE_SETUP_DEFAULT:?}" != '0'; then
-    live_setup_enabled=true
-  elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
-    ui_msg '---------------------------------------------------'
-    ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
-    ui_msg '---------------------------------------------------'
-
-    # Check if STDIN (0) is valid
-    if test -t 0 && {
-      test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'
-    }; then
-      LIVE_SETUP_TIMEOUT="$((LIVE_SETUP_TIMEOUT + 3))"
-      ui_msg "Waiting input for ${LIVE_SETUP_TIMEOUT} seconds..."
-      choose_read_with_timeout "${LIVE_SETUP_TIMEOUT}"
-    elif "${KEYCHECK_ENABLED}"; then
-      ui_msg "Waiting input for ${LIVE_SETUP_TIMEOUT} seconds..."
-      choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
-    else
-      ui_msg "Waiting input..."
-      choose_inputevent
-    fi
-    if test "${?}" = '3'; then live_setup_enabled=true; fi
-  fi
-fi
-
-if test "${live_setup_enabled:?}" = 'true'; then
-  ui_msg 'LIVE SETUP ENABLED!'
-  if test "${DEBUG_LOG_ENABLED:?}" -ne 1; then
-    choose 'Do you want to enable the debug log?' '+) Yes' '-) No'
-    if test "${?}" = '3'; then
-      enable_debug_log
-    fi
-  fi
-fi
-
+live_setup_choice
 initialize
 
 package_extract_file 'module.prop' "${TMP_PATH}/module.prop"

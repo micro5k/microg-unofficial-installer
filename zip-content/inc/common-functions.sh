@@ -1085,15 +1085,20 @@ choose_read_with_timeout()
     _status=0
     # shellcheck disable=SC3045
     IFS='' read -r -s -n '1' -t "${1:?}" _key || _status="${?}"
+    printf '\r                 \r' # Clean invalid choice message (if printed)
 
     case "${_status:?}" in
       0) ;;    # Command terminated successfully
       1 | 142) # 1 => Command timed out on BusyBox / Toybox; 142 => Command timed out on Bash
+        ui_msg_empty_line
         ui_msg 'Key: No key pressed'
+        ui_msg_empty_line
         return 0
         ;;
       *)
+        ui_msg_empty_line
         ui_warning 'Key detection failed'
+        ui_msg_empty_line
         return 1
         ;;
     esac
@@ -1104,14 +1109,13 @@ choose_read_with_timeout()
       'c' | 'C' | "${_esc_keycode:?}") _key='ESC' ;; # ESC or C key (allowed)
       '') continue ;;                                # Enter key (ignored)
       *)
-        printf '\rInvalid choice!!!'
+        printf 'Invalid choice!!!'
         continue
         ;; # NOT allowed
     esac
 
     break
   done
-  printf '\r                 \r' # Clean invalid choice message (if printed)
 
   _choose_remapper "${_key?}"
   return "${?}"
@@ -1126,9 +1130,12 @@ choose_read()
     _key=''
     # shellcheck disable=SC3045
     IFS='' read -r -s -n '1' _key || {
+      ui_msg_empty_line
       ui_warning 'Key detection failed'
+      ui_msg_empty_line
       return 1
     }
+    printf '\r                 \r' # Clean invalid choice message (if printed)
 
     case "${_key?}" in
       '+') ;;                                        # + key (allowed)
@@ -1136,14 +1143,13 @@ choose_read()
       'c' | 'C' | "${_esc_keycode:?}") _key='ESC' ;; # ESC or C key (allowed)
       '') continue ;;                                # Enter key (ignored)
       *)
-        printf '\rInvalid choice!!!'
+        printf 'Invalid choice!!!'
         continue
         ;; # NOT allowed
     esac
 
     break
   done
-  printf '\r                 \r' # Clean invalid choice message (if printed)
 
   _choose_remapper "${_key:?}"
   return "${?}"
@@ -1223,6 +1229,63 @@ choose()
     fi
   done
   return "${_last_status:?}"
+}
+
+_live_setup_choice_msg()
+{
+  ui_msg '---------------------------------------------------'
+  ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
+  ui_msg '---------------------------------------------------'
+
+  if test -n "${1:-}"; then
+    ui_msg "Waiting input for ${1:?} seconds..."
+  else
+    ui_msg "Waiting input..."
+  fi
+}
+
+live_setup_choice()
+{
+  # Currently we don't handle this case properly so return in this case
+  if test "${RECOVERY_OUTPUT:?}" != 'true' && test "${DEBUG_LOG_ENABLED}" -eq 1; then
+    return
+  fi
+
+  live_setup_enabled=false
+  if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then
+    if test "${LIVE_SETUP_DEFAULT:?}" != '0'; then
+      live_setup_enabled=true
+    elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
+
+      # Check if STDIN (0) is valid
+      if test -t 0 && {
+        test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'
+      }; then
+        _live_setup_choice_msg "$((LIVE_SETUP_TIMEOUT + 3))"
+        choose_read_with_timeout "$((LIVE_SETUP_TIMEOUT + 3))"
+      elif "${KEYCHECK_ENABLED}"; then
+        _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
+        choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
+      else
+        _live_setup_choice_msg
+        choose_inputevent
+      fi
+      if test "${?}" = '3'; then live_setup_enabled=true; fi
+
+    fi
+  fi
+  readonly live_setup_enabled
+
+  if test "${live_setup_enabled:?}" = 'true'; then
+    ui_msg 'LIVE SETUP ENABLED!'
+
+    if test "${DEBUG_LOG_ENABLED:?}" -ne 1; then
+      choose 'Do you want to enable the debug log?' '+) Yes' '-) No'
+      if test "${?}" = '3'; then
+        enable_debug_log
+      fi
+    fi
+  fi
 }
 
 # Other
