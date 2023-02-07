@@ -301,7 +301,6 @@ _find_and_mount_system()
       _sys_mountpoint_list="${_sys_mountpoint_list?}/system${NL:?}"
     fi
   fi
-  ui_debug ''
   ui_debug 'System mountpoint list:'
   ui_debug "${_sys_mountpoint_list:-}"
 
