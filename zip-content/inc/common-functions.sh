@@ -1086,7 +1086,8 @@ choose_keycheck()
 choose_read_with_timeout()
 {
   local _key _status
-  if test "${RECOVERY_OUTPUT:?}" = 'true'; then return 1; fi
+  if test ! -t 0; then return 1; fi
+  if test "${RECOVERY_OUTPUT:?}" = 'true' && test "${TEST_INSTALL:-false}" = 'false'; then return 1; fi
 
   while true; do
     _key=''
@@ -1132,7 +1133,8 @@ choose_read_with_timeout()
 choose_read()
 {
   local _key
-  if test "${RECOVERY_OUTPUT:?}" = 'true'; then return 1; fi
+  if test ! -t 0; then return 1; fi
+  if test "${RECOVERY_OUTPUT:?}" = 'true' && test "${TEST_INSTALL:-false}" = 'false'; then return 1; fi
 
   while true; do
     _key=''
