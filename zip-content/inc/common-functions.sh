@@ -369,6 +369,7 @@ initialize()
 
   if is_mounted_read_only "${SYS_MOUNTPOINT:?}"; then
     ui_msg "INFO: The '${SYS_MOUNTPOINT:-}' mount point is read-only, it will be remounted"
+    ui_msg_empty_line
     remount_read_write "${SYS_MOUNTPOINT:?}" || ui_error "Remounting of '${SYS_MOUNTPOINT:-}' failed"
   fi
 
