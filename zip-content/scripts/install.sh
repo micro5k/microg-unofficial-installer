@@ -290,10 +290,10 @@ else
   delete_recursive "${TMP_PATH}/files/etc/default-permissions"
 fi
 
-if test "${live_setup_enabled:?}" = 'true'; then
+if test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
   choose 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
   if test "$?" -eq 3; then reset_gms_data_of_all_apps; fi
-elif test "${RESET_GMS_DATA_OF_ALL_APPS:?}" -eq 1; then
+elif test "${RESET_GMS_DATA_OF_ALL_APPS:?}" -ne 0; then
   reset_gms_data_of_all_apps
 fi
 

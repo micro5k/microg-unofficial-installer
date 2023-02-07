@@ -837,7 +837,7 @@ setup_app()
   _optional="${6:-true}"
 
   if test "${API:?}" -ge "${_min_api:?}" && test "${API:?}" -le "${_max_api:-99}"; then
-    if test "${_optional:?}" = 'true' && test "${live_setup_enabled:?}" = 'true'; then
+    if test "${_optional:?}" = 'true' && test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
       choose "Do you want to install ${2:?}?" '+) Yes' '-) No'
       if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
     fi
@@ -1259,10 +1259,10 @@ live_setup_choice()
     return
   fi
 
-  live_setup_enabled=false
+  LIVE_SETUP_ENABLED='false'
   if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then
-    if test "${LIVE_SETUP_DEFAULT:?}" != '0'; then
-      live_setup_enabled=true
+    if test "${LIVE_SETUP_DEFAULT:?}" -ne 0; then
+      LIVE_SETUP_ENABLED='true'
     elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
 
       # Check if STDIN (0) is valid
@@ -1278,13 +1278,13 @@ live_setup_choice()
         _live_setup_choice_msg
         choose_inputevent
       fi
-      if test "${?}" = '3'; then live_setup_enabled=true; fi
+      if test "${?}" = '3'; then LIVE_SETUP_ENABLED='true'; fi
 
     fi
   fi
-  readonly live_setup_enabled
+  readonly LIVE_SETUP_ENABLED
 
-  if test "${live_setup_enabled:?}" = 'true'; then
+  if test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
     ui_msg 'LIVE SETUP ENABLED!'
 
     if test "${DEBUG_LOG_ENABLED:?}" -ne 1; then
