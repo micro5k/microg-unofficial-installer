@@ -334,6 +334,14 @@ _find_and_mount_system()
 
 initialize()
 {
+  # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
+  if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
+    # shellcheck source=SCRIPTDIR/../../recovery-simulator/inc/configure-overrides.sh
+    . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
+  fi
+
+  live_setup_choice
+
   SYS_INIT_STATUS=0
   DATA_INIT_STATUS=0
 

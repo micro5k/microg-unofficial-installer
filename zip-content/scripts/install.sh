@@ -38,13 +38,6 @@ SYS_PATH=''
 
 ### CODE ###
 
-# Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
-if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
-  # shellcheck source=SCRIPTDIR/../../recovery-simulator/inc/configure-overrides.sh
-  . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
-fi
-
-live_setup_choice
 initialize
 
 package_extract_file 'module.prop' "${TMP_PATH}/module.prop"
