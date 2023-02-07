@@ -1078,6 +1078,7 @@ choose_keycheck()
 choose_read_with_timeout()
 {
   local _key _status
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then return 1; fi
 
   while true; do
     _key=''
@@ -1103,13 +1104,14 @@ choose_read_with_timeout()
       'c' | 'C' | "${_esc_keycode:?}") _key='ESC' ;; # ESC or C key (allowed)
       '') continue ;;                                # Enter key (ignored)
       *)
-        ui_msg 'Invalid choice!!!'
+        printf '\rInvalid choice!!!'
         continue
         ;; # NOT allowed
     esac
 
     break
   done
+  printf '\r                 \r' # Clean invalid choice message (if printed)
 
   _choose_remapper "${_key?}"
   return "${?}"
@@ -1118,6 +1120,7 @@ choose_read_with_timeout()
 choose_read()
 {
   local _key
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then return 1; fi
 
   while true; do
     _key=''
@@ -1133,13 +1136,14 @@ choose_read()
       'c' | 'C' | "${_esc_keycode:?}") _key='ESC' ;; # ESC or C key (allowed)
       '') continue ;;                                # Enter key (ignored)
       *)
-        ui_msg 'Invalid choice!!!'
+        printf '\rInvalid choice!!!'
         continue
         ;; # NOT allowed
     esac
 
     break
   done
+  printf '\r                 \r' # Clean invalid choice message (if printed)
 
   _choose_remapper "${_key:?}"
   return "${?}"
