@@ -472,6 +472,10 @@ if test -e "${SYS_PATH:?}/addon.d"; then
   copy_file "${TMP_PATH}/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
 fi
 
+if test "${BOOTMODE:?}" = 'true' && command -v am 1> /dev/null; then
+  am broadcast -a 'org.microg.gms.gcm.FORCE_TRY_RECONNECT' -n 'com.google.android.gms/org.microg.gms.gcm.TriggerReceiver' 1> /dev/null 2>&1 || true
+fi
+
 deinitialize
 
 touch "${TMP_PATH:?}/installed"
