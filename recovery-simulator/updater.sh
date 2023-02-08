@@ -9,6 +9,9 @@ export BB_OVERRIDE_APPLETS='mount umount chown su sudo' || exit 125
 # shellcheck source=SCRIPTDIR/inc/configure-overrides.sh
 . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
 
+# Note: Bashcov use PS4, LINENO, BASH_XTRACEFD, SHELLOPTS (don't touch them)
+# ToDO: Check BASHCOV_BASH_PATH
+
 unset OUR_TEMP_DIR
 unset HOSTNAME
 unset HOSTTYPE
