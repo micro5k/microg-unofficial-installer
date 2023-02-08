@@ -12,7 +12,7 @@ set -o pipefail || true
 set -o posix 2> /dev/null || true
 
 cat << 'LICENSE'
-  SPDX-FileCopyrightText: (c) 2016-2019, 2021-2022 ale5000
+  SPDX-FileCopyrightText: (c) 2016-2019, 2021-2023 ale5000
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
