@@ -1257,12 +1257,13 @@ _live_setup_choice_msg()
 
 live_setup_choice()
 {
+  LIVE_SETUP_ENABLED='false'
+
   # Currently we don't handle this case properly so return in this case
   if test "${RECOVERY_OUTPUT:?}" != 'true' && test "${DEBUG_LOG_ENABLED}" -eq 1; then
     return
   fi
 
-  LIVE_SETUP_ENABLED='false'
   if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then
     if test "${LIVE_SETUP_DEFAULT:?}" -ne 0; then
       LIVE_SETUP_ENABLED='true'
@@ -1289,7 +1290,7 @@ live_setup_choice()
   if test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
     ui_msg 'LIVE SETUP ENABLED!'
 
-    if test "${DEBUG_LOG_ENABLED:?}" -ne 1; then
+    if test "${DEBUG_LOG_ENABLED:?}" -ne 1 && test "${RECOVERY_OUTPUT:?}" = 'true'; then
       choose 'Do you want to enable the debug log?' '+) Yes' '-) No'
       if test "${?}" = '3'; then
         enable_debug_log
