@@ -87,6 +87,7 @@ elif test -e '/dev'; then
   }
   chmod 01775 '/dev/tmp' || {
     ui_show_error "chmod failed on '/dev/tmp'"
+    rmdir '/dev/tmp' 2> /dev/null || true
     exit 10
   }
   TMPDIR='/dev/tmp'
