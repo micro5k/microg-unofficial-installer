@@ -1224,7 +1224,10 @@ choose()
   ui_msg "QUESTION: ${1:?}"
   ui_msg "${2:?}"
   ui_msg "${3:?}"
-  if test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'; then
+
+  if {
+    test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'
+  } && test -t 0; then # Check if STDIN (0) is valid
     choose_read "${@}"
   elif "${KEYCHECK_ENABLED:?}"; then
     choose_keycheck "${@}"
@@ -1265,10 +1268,9 @@ live_setup_choice()
       LIVE_SETUP_ENABLED='true'
     elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
 
-      # Check if STDIN (0) is valid
-      if test -t 0 && {
+      if {
         test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'
-      }; then
+      } && test -t 0; then # Check if STDIN (0) is valid
         _live_setup_choice_msg "$((LIVE_SETUP_TIMEOUT + 3))"
         choose_read_with_timeout "$((LIVE_SETUP_TIMEOUT + 3))"
       elif "${KEYCHECK_ENABLED}"; then
