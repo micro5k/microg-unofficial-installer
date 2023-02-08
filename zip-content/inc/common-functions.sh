@@ -1220,24 +1220,22 @@ choose_inputevent()
 choose()
 {
   local _last_status=0
-  while true; do
-    ui_msg "QUESTION: ${1:?}"
-    ui_msg "${2:?}"
-    ui_msg "${3:?}"
-    if test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'; then
-      choose_read "${@}"
-    elif "${KEYCHECK_ENABLED:?}"; then
-      choose_keycheck "${@}"
-    else
-      choose_inputevent "${@}"
-    fi
-    _last_status="${?}"
-    if test "${_last_status:?}" -eq 123; then
-      ui_msg 'Invalid choice!!!'
-    else
-      break
-    fi
-  done
+
+  ui_msg "QUESTION: ${1:?}"
+  ui_msg "${2:?}"
+  ui_msg "${3:?}"
+  if test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'; then
+    choose_read "${@}"
+  elif "${KEYCHECK_ENABLED:?}"; then
+    choose_keycheck "${@}"
+  else
+    choose_inputevent "${@}"
+  fi
+  _last_status="${?}"
+  if test "${_last_status:?}" -eq 123; then
+    ui_msg 'Invalid choice!!!'
+  fi
+
   return "${_last_status:?}"
 }
 
