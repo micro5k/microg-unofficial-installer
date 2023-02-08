@@ -93,7 +93,7 @@ elif test -e '/dev'; then
 fi
 
 if test -z "${TMPDIR:-}" || test ! -w "${TMPDIR:?}"; then
-  ui_show_error 'Unable to create a temp folder'
+  ui_show_error 'Unable to find a temp folder'
   exit 11
 fi
 export TMPDIR
