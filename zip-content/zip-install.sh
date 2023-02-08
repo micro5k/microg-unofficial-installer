@@ -58,9 +58,8 @@ if test -z "${1:-}"; then
   ui_show_error 'You must specify the ZIP file to install'
   exit 5
 fi
-ZIPFILE="${1:?}"
-unset SCRIPT_NAME
 
+unset SCRIPT_NAME
 _clean_at_exit()
 {
   if test -n "${SCRIPT_NAME:-}" && test -e "${SCRIPT_NAME:?}"; then
@@ -100,6 +99,7 @@ fi
 export TMPDIR
 
 SCRIPT_NAME="${TMPDIR:?}/update-binary.sh" || exit 12
+ZIPFILE="${1:?}"
 unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/update-binary' 1> "${SCRIPT_NAME:?}" || {
   ui_show_error 'Failed to extract update-binary'
   exit 13
