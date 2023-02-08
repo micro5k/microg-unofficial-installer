@@ -28,9 +28,7 @@ jobs:
         with:
           fetch-depth: "0"
       - name: "Gradle Wrapper validation"
-        uses: gradle/wrapper-validation-action@master
-      - name: "Gitleaks"
-        uses: zricethezav/gitleaks-action@v1
+        uses: gradle/wrapper-validation-action@v1
       - name: "Validate Codecov configuration"
         shell: bash
         run: |
