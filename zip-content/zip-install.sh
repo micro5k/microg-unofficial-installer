@@ -102,11 +102,11 @@ export TMPDIR
 SCRIPT_NAME="${TMPDIR:?}/update-binary.sh" || exit 12
 ZIPFILE="${1:?}"
 unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/update-binary' 1> "${SCRIPT_NAME:?}" || {
-  ui_show_error 'Failed to extract update-binary'
+  ui_show_error "Failed to extract update-binary from => '${ZIPFILE:-}'"
   exit 13
 }
 test -e "${SCRIPT_NAME:?}" || {
-  ui_show_error 'Failed to extract update-binary (2)'
+  ui_show_error "Failed to extract update-binary (2) from => '${ZIPFILE:-}'"
   exit 14
 }
 
