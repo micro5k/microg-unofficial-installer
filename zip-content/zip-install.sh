@@ -123,3 +123,4 @@ if test "${STATUS:-20}" != '0'; then
 fi
 
 printf '\033[1;32m%s\033[0m\n' 'The ZIP installation is completed, now restart your device!!!'
+exit 0
