@@ -47,7 +47,7 @@ export SKIPUNZIP ASH_STANDALONE
 
 if test "${4:-}" = 'zip-install'; then readonly ZIP_INSTALL='true'; else readonly ZIP_INSTALL='false'; fi
 
-if test "${ZIP_INSTALL:?}" = 'true' || test "${BOOTMODE:?}" = 'true' || test "${OUTFD:?}" = '1'; then
+if test "${ZIP_INSTALL:?}" = 'true' || test "${BOOTMODE:?}" = 'true' || test "${OUTFD:?}" -le 2; then
   readonly RECOVERY_OUTPUT='false'
 else
   readonly RECOVERY_OUTPUT='true'
