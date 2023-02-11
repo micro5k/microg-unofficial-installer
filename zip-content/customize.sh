@@ -41,21 +41,23 @@ unset REPLACE
 
 SKIPUNZIP=1
 ASH_STANDALONE=1
+readonly SKIPUNZIP ASH_STANDALONE
 export SKIPUNZIP ASH_STANDALONE
 
 ### GLOBAL VARIABLES ###
 
+export DEBUG_LOG_ENABLED=0
+
+readonly RECOVERY_API_VER="${1:-}"
 if test "${4:-}" = 'zip-install'; then readonly ZIP_INSTALL='true'; else readonly ZIP_INSTALL='false'; fi
+export RECOVERY_API_VER ZIP_INSTALL
 
 if test "${ZIP_INSTALL:?}" = 'true' || test "${BOOTMODE:?}" = 'true' || test "${OUTFD:?}" -le 2; then
   readonly RECOVERY_OUTPUT='false'
 else
   readonly RECOVERY_OUTPUT='true'
 fi
-
-readonly RECOVERY_API_VER="${1:-}"
-
-export ZIP_INSTALL RECOVERY_OUTPUT RECOVERY_API_VER
+export RECOVERY_OUTPUT
 
 ZIP_PATH="$(dirname "${ZIPFILE:?}")"
 export ZIP_PATH
@@ -104,7 +106,6 @@ ui_debug()
   printf '%s\n' "${1?}"
 }
 
-export DEBUG_LOG_ENABLED=0
 enable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
