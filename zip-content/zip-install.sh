@@ -31,7 +31,7 @@ unset _param _param_copy
 
 if test "$(whoami || id -un || true)" != 'root'; then
   if test "${AUTO_ELEVATED:-false}" = 'false' && {
-    test "${FORCE_ROOT:-false}" != 'false' || command -v su 1> /dev/null
+    test "${FORCE_ROOT:-0}" != '0' || command -v su 1> /dev/null
   }; then
 
     # First check if root is working (0 => root)
