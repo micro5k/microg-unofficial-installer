@@ -235,10 +235,16 @@ fi
 
 mount_extra_partitions_silent
 
-# Kill the apps if they were active
-kill_app com.android.vending
-kill_app com.google.android.gsf
-kill_app com.google.android.gms
+# Kill the apps if they were active and disable them
+kill_and_disable_app com.android.vending
+kill_and_disable_app com.google.android.gsf
+kill_and_disable_app com.google.android.gms
+
+clear_app com.android.vending
+clear_app com.google.android.gsf
+
+kill_app com.google.android.gsf.login
+clear_app com.google.android.gsf.login
 
 # Clean previous installations
 if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
@@ -421,6 +427,10 @@ if test -e "${SYS_PATH:?}/addon.d"; then
   replace_line_in_file_with_file "${TMP_PATH}/addon.d/00-1-microg.sh" '%PLACEHOLDER-1%' "${TMP_PATH}/backup-filelist.lst"
   copy_file "${TMP_PATH}/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
 fi
+
+enable_app com.google.android.gms
+enable_app com.google.android.gsf
+enable_app com.android.vending
 
 if test "${BOOTMODE:?}" = 'true' && command -v am 1> /dev/null; then
   am broadcast -a 'org.microg.gms.gcm.FORCE_TRY_RECONNECT' -n 'com.google.android.gms/org.microg.gms.gcm.TriggerReceiver' 1> /dev/null 2>&1 || true

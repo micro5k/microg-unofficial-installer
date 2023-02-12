@@ -1300,10 +1300,34 @@ live_setup_choice()
 }
 
 # Other
+clear_app()
+{
+  if command -v pm 1> /dev/null; then
+    pm clear "${1:?}" 2> /dev/null || true
+  fi
+}
+
 kill_app()
 {
   if command -v am 1> /dev/null; then
     am force-stop "${1:?}" 2> /dev/null || am kill "${1:?}" 2> /dev/null || true
+  fi
+}
+
+kill_and_disable_app()
+{
+  if command -v am 1> /dev/null; then
+    am force-stop "${1:?}" 2> /dev/null || am kill "${1:?}" 2> /dev/null || true
+  fi
+  if command -v pm 1> /dev/null; then
+    pm disable "${1:?}" 2> /dev/null || true
+  fi
+}
+
+enable_app()
+{
+  if command -v pm 1> /dev/null; then
+    pm enable "${1:?}" 2> /dev/null || true
   fi
 }
 
