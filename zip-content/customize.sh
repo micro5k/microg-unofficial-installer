@@ -25,8 +25,14 @@ if test -z "${OUTFD:-}" || test "${OUTFD:?}" -lt 1; then
   abort 'Missing or invalid OUTFD variable' 2> /dev/null || exit 1
 fi
 RECOVERY_PIPE="/proc/self/fd/${OUTFD:?}"
-if test -z "${ZIPFILE:-}"; then ui_error 'Missing ZIPFILE variable'; fi
-if test -z "${TMPDIR:-}" || test ! -e "${TMPDIR:?}"; then ui_error 'The temp folder is missing (2)'; fi
+if test -z "${ZIPFILE:-}"; then
+  printf 1>&2 '%s\n' 'Missing ZIPFILE variable'
+  abort 'Missing ZIPFILE variable' 2> /dev/null || exit 1
+fi
+if test -z "${TMPDIR:-}" || test ! -e "${TMPDIR:?}"; then
+  printf 1>&2 '%s\n' 'The temp folder is missing (2)'
+  abort 'The temp folder is missing (2)' 2> /dev/null || exit 1
+fi
 
 export BOOTMODE
 export OUTFD
