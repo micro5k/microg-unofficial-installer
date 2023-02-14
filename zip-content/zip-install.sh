@@ -35,7 +35,7 @@ if test "$(whoami || id -un || true)" != 'root'; then
   }; then
 
     # First check if root is working (0 => root)
-    su -c '' -- 0 -- || {
+    su -c 'command' -- 0 -- || {
       _status="${?}" # Usually it return 1 or 255 when fail
       ui_show_error 'Auto-rooting failed, you must execute this as root!!!'
       exit "${_status:-2}"
