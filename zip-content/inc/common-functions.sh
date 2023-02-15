@@ -1204,7 +1204,7 @@ choose_inputevent()
     break
   done
 
-  ui_msg "Key code: ${_key:-}"
+  #ui_msg "Key code: ${_key:-}"
   # 102 Menu
   # 114 Vol -
   # 115 Vol +
@@ -1212,8 +1212,14 @@ choose_inputevent()
   #_choose_inputevent_remapper "${_key:?}"
   #return "${?}"
   if test "${_key?}" -eq 115; then
+    ui_msg_empty_line
+    ui_msg "Key press: +"
+    ui_msg_empty_line
     return 3
   elif test "${_key?}" -eq 114; then
+    ui_msg_empty_line
+    ui_msg "Key press: -"
+    ui_msg_empty_line
     return 2
   fi
 }
