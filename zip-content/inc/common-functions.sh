@@ -388,6 +388,7 @@ initialize()
 
     if is_mounted "${DATA_PATH:?}"; then
       DATA_INIT_STATUS=1
+      ui_debug "Mounted: ${DATA_PATH:-}"
     else
       ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be deleted and their Dalvik cache cannot be cleaned, but it doesn't matter if you do a factory reset"
     fi
