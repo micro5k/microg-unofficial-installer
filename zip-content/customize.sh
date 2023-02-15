@@ -319,16 +319,13 @@ fi
 DEBUG_LOG="${DEBUG_LOG:-0}"
 test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
 
-LIVE_SETUP_ALLOWED='false'
+LIVE_SETUP_ALLOWED='true'
 KEYCHECK_PATH=''
 if test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'; then
-  # Enable the binary-free live setup when using zip-install.sh or when inside the recovery simulator
-  LIVE_SETUP_ALLOWED='true'
   "${OUR_BB:?}" rm -f "${BASE_TMP_PATH:?}/keycheck" || ui_error "Failed to remove keycheck"
 else
   # Setup Keycheck in the temp folder
   if test -e "${BASE_TMP_PATH:?}/keycheck"; then
-    LIVE_SETUP_ALLOWED='true'
     KEYCHECK_PATH="${TMP_PATH:?}/bin/keycheck"
     "${OUR_BB:?}" mv -f "${BASE_TMP_PATH:?}/keycheck" "${KEYCHECK_PATH:?}" || ui_error "Failed to move keycheck to the bin folder"
     # Give execution rights
