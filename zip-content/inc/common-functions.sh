@@ -978,6 +978,8 @@ _find_hardware_keys()
           *) ui_debug "Unknown key: ${key_name:-}" ;;
         esac
       done 0< "/system/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl" || ui_warning "Failed parsing '/system/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
+    else
+      ui_debug "Missing keylayout: '/system/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
     fi
 
     return 0
