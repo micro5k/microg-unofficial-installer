@@ -1019,7 +1019,11 @@ _choose_remapper()
   local _key
   _key="${1?}" || ui_error 'Missing parameter for _choose_remapper'
   ui_msg_empty_line
-  ui_msg "Key press: ${_key:-}"
+  if test -n "${2:-}"; then
+    ui_msg "Key press: ${_key:-} (${2:-})"
+  else
+    ui_msg "Key press: ${_key:-}"
+  fi
   ui_msg_empty_line
 
   case "${_key?}" in
@@ -1065,7 +1069,7 @@ choose_keycheck_with_timeout()
     return 1
   }
 
-  _choose_remapper "${_key?}"
+  _choose_remapper "${_key?}" "${_status?}"
   return "${?}"
 }
 
@@ -1080,7 +1084,7 @@ choose_keycheck()
     return 1
   }
 
-  _choose_remapper "${_key?}"
+  _choose_remapper "${_key?}" "${_status?}"
   return "${?}"
 }
 
@@ -1213,12 +1217,12 @@ choose_inputevent()
   #return "${?}"
   if test "${_key?}" -eq 115; then
     ui_msg_empty_line
-    ui_msg "Key press: +"
+    ui_msg "Key press: + (115)"
     ui_msg_empty_line
     return 3
   elif test "${_key?}" -eq 114; then
     ui_msg_empty_line
-    ui_msg "Key press: -"
+    ui_msg "Key press: - (114)"
     ui_msg_empty_line
     return 2
   fi
