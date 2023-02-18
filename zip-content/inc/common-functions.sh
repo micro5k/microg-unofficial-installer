@@ -11,7 +11,7 @@
 
 ### PREVENTIVE CHECKS ###
 
-if test -z "${RECOVERY_PIPE:-}" || test -z "${OUTFD:-}" || test -z "${ZIPFILE:-}" || test -z "${TMP_PATH:-}" || test -z "${DEBUG_LOG_ENABLED:-}"; then
+if test -z "${ZIPFILE:-}" || test -z "${TMP_PATH:-}" || test -z "${RECOVERY_PIPE:-}" || test -z "${OUTFD:-}" || test -z "${INPUT_FROM_TERMINAL:-}" || test -z "${DEBUG_LOG_ENABLED:-}"; then
   echo 'Some variables are NOT set.'
   exit 90
 fi
@@ -1056,7 +1056,7 @@ choose_keycheck_with_timeout()
     return 0
   elif test "${_status:?}" -eq 127 || test "${_status:?}" -eq 132; then
     ui_msg 'Fallbacking to manual input parsing, waiting input...'
-    export KEYCHECK_ENABLED=false
+    export KEYCHECK_ENABLED='false'
     choose_inputevent
     return "${?}"
   fi
@@ -1232,9 +1232,7 @@ choose()
   ui_msg "${2:?}"
   ui_msg "${3:?}"
 
-  if {
-    test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'
-  } && test -t 0; then # Check if STDIN (0) is valid
+  if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
     choose_read "${@}"
   elif "${KEYCHECK_ENABLED:?}"; then
     choose_keycheck "${@}"
@@ -1276,12 +1274,10 @@ live_setup_choice()
       LIVE_SETUP_ENABLED='true'
     elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
 
-      if {
-        test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'
-      } && test -t 0; then # Check if STDIN (0) is valid
+      if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
         _live_setup_choice_msg "$((LIVE_SETUP_TIMEOUT + 3))"
         choose_read_with_timeout "$((LIVE_SETUP_TIMEOUT + 3))"
-      elif "${KEYCHECK_ENABLED}"; then
+      elif "${KEYCHECK_ENABLED:?}"; then
         _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
         choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
       else

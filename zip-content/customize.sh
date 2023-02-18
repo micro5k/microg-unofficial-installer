@@ -65,6 +65,16 @@ else
 fi
 export RECOVERY_OUTPUT
 
+# Check if STDIN (0) is valid
+if test -t 0 && {
+  test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'
+}; then
+  readonly INPUT_FROM_TERMINAL='true'
+else
+  readonly INPUT_FROM_TERMINAL='false'
+fi
+export INPUT_FROM_TERMINAL
+
 ZIP_PATH="$(dirname "${ZIPFILE:?}")"
 export ZIP_PATH
 
@@ -103,7 +113,7 @@ unset -f _log_path_setter || true
 readonly LOG_PATH
 export LOG_PATH
 
-export KEYCHECK_ENABLED=false
+export KEYCHECK_ENABLED='false'
 
 ### FUNCTIONS ###
 
@@ -330,7 +340,7 @@ else
     "${OUR_BB:?}" mv -f "${BASE_TMP_PATH:?}/keycheck" "${KEYCHECK_PATH:?}" || ui_error "Failed to move keycheck to the bin folder"
     # Give execution rights
     "${OUR_BB:?}" chmod 0755 "${KEYCHECK_PATH:?}" || ui_error "chmod failed on keycheck"
-    KEYCHECK_ENABLED='true'
+    export KEYCHECK_ENABLED='true'
   fi
 fi
 
