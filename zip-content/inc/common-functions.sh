@@ -1042,11 +1042,12 @@ _timeout_compat()
 {
   local _status _timeout_ver _timeout_secs
 
-  _timeout_ver="$(timeout --help 2>&1 | parse_busybox_version)" || _timeout_ver=''
+  # timeout may return failure when displaying "--help" so be sure to ignore it
+  _timeout_ver="$({ timeout --help 2>&1 || true; } | parse_busybox_version)" || _timeout_ver=''
   _timeout_secs="${1:?}" || ui_error 'Missing "secs" parameter for _timeout_compat'
   shift
 
-  if test -z "${_timeout_ver?}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
+  if test -z "${_timeout_ver:-}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
     timeout -- "${_timeout_secs:?}" "${@:?}"
     _status="${?}"
   else
@@ -1386,7 +1387,7 @@ enable_app()
 
 parse_busybox_version()
 {
-  head -n1 | grep -oE 'BusyBox v[0-9]+\.[0-9]+\.[0-9]+' | cut -d 'v' -f 2
+  grep -m 1 -o -e 'BusyBox v[0-9]*\.[0-9]*\.[0-9]*' | cut -d 'v' -f 2
 }
 
 numerically_comparable_version()
