@@ -1043,7 +1043,9 @@ _timeout_compat()
   local _status _timeout_ver _timeout_secs
 
   # timeout may return failure when displaying "--help" so be sure to ignore it
-  _timeout_ver="$({ timeout --help 2>&1 || true; } | parse_busybox_version)" || _timeout_ver=''
+  _timeout_ver="$({
+    timeout --help 2>&1 || true
+  } | parse_busybox_version)" || _timeout_ver=''
   _timeout_secs="${1:?}" || ui_error 'Missing "secs" parameter for _timeout_compat'
   shift
 
