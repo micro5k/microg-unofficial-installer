@@ -959,7 +959,7 @@ _find_hardware_keys()
     INPUT_CODE_VOLUME_UP='115'
     INPUT_CODE_VOLUME_DOWN='114'
     INPUT_CODE_POWER='116'
-    INPUT_CODE_HOME='102'
+    #INPUT_CODE_HOME='102'
 
     if test -e "/system/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl"; then
       while IFS=' ' read -r key_type key_code key_name _; do
@@ -974,7 +974,7 @@ _find_hardware_keys()
           'VOLUME_UP') INPUT_CODE_VOLUME_UP="${key_code:?}" ;;
           'VOLUME_DOWN') INPUT_CODE_VOLUME_DOWN="${key_code:?}" ;;
           'POWER') INPUT_CODE_POWER="${key_code:?}" ;;
-          'HOME') INPUT_CODE_HOME="${key_code:?}" ;;
+          'HOME') ;; #INPUT_CODE_HOME="${key_code:?}" ;;
           *) ui_debug "Unknown key: ${key_name:-}" ;;
         esac
       done 0< "/system/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl" || ui_warning "Failed parsing '/system/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
