@@ -1103,7 +1103,9 @@ choose_keycheck_with_timeout()
   _status="${?}"
 
   if test "${_status:?}" -eq 124; then
+    ui_msg_empty_line
     ui_msg 'Key: No key pressed'
+    ui_msg_empty_line
     return 0
   elif test "${_status:?}" -eq 127 || test "${_status:?}" -eq 132; then
     ui_msg 'Fallbacking to manual input parsing, waiting input...'
