@@ -1108,6 +1108,7 @@ choose_keycheck_with_timeout()
     ui_msg_empty_line
     return 0
   elif test "${_status:?}" -eq 127 || test "${_status:?}" -eq 132; then
+    true # This is just to waste some time otherwise the warning about "timeout" failure may appear earlier than the message
     ui_msg 'Fallbacking to manual input parsing, waiting input...'
     export KEYCHECK_ENABLED='false'
     choose_inputevent
