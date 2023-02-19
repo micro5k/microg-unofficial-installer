@@ -14,6 +14,23 @@ All notable changes to this project will be documented in this file.
 -------------
 - Click above to see all the changes.
 
+`1.3.0-beta`_ - 2023-02-19
+--------------------------
+- Add support for mounting system partition at /mnt/system (@mjenny)
+- Improve compatibility with legacy shells
+- Fix remounting system as read-write
+- Rewrite system mounting code
+- Fix debug log path when sideloading (thanks @mjenny for the help)
+- Auto-root if needed in zip-install.sh
+- Update microG Service Core to 0.2.27.223616 (now using MapLibre)
+- Add full support for automounting A/B slot partitions (thanks @mjenny for the help)
+- Add full support for automounting dynamic partitions (thanks @mjenny for the help)
+- Support DEBUG_LOG and FORCE_ROOT env variables in zip-install.sh
+- Fallback to manual parsing of key events when keycheck fails, fix #5
+- Support live setup under zip-install.sh
+- Update NewPipe to 0.25.0
+- Support and enable live setup on all devices
+
 `1.2.0-beta`_ - 2022-12-30
 --------------------------
 - Update Mozilla UnifiedNlp Backend to 1.5.0
@@ -324,7 +341,8 @@ All notable changes to this project will be documented in this file.
 - Initial release
 
 
-.. _Unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.2.0-beta...HEAD
+.. _Unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.0-beta...HEAD
+.. _1.3.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.2.0-beta...v1.3.0-beta
 .. _1.2.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.1.0-beta...v1.2.0-beta
 .. _1.1.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.34-beta...v1.1.0-beta
 .. _1.0.34-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.33-beta...v1.0.34-beta
