@@ -5,8 +5,8 @@
 
 id=microg-unofficial-installer
 name=microG unofficial installer
-version=v1.2.0.6-alpha
-versionCode=2
+version=v1.3.0-beta
+versionCode=3
 author=ale5000
 description=It is an installer made to simplify the installation of microG.
 applicationId=net.ale5000.microg_unofficial_installer.ota
