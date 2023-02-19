@@ -14,7 +14,7 @@
         <!-- description -->
         <item>This is the official NewPipe F-Droid repository. It contains the official bleeding edge builds from GitHub, and the official F-Droid binaries which we cross-sign so they can just be used with this repository.</item>
         <!-- version -->
-        <item>21</item>
+        <item>20001</item>
         <!-- enabled -->
         <item>1</item>
         <!-- push requests: ignore, prompt, always -->
@@ -29,9 +29,9 @@
         <!-- description -->
         <item>Corona Contact Tracing Germany Repo</item>
         <!-- version -->
-        <item>21</item>
+        <item>20001</item>
         <!-- enabled -->
-        <item>1</item>
+        <item>0</item>
         <!-- push requests: ignore, prompt, always -->
         <item>ignore</item>
         <!-- pubkey -->
@@ -74,7 +74,7 @@
         <!-- description -->
         <item>This is a repository of microG apps to be used with F-Droid. Applications in this repository are signed official binaries built by the microG Team from the corresponding source code.</item>
         <!-- version -->
-        <item>21</item>
+        <item>20001</item>
         <!-- enabled -->
         <item>1</item>
         <!-- push requests: ignore, prompt, always -->
