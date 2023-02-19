@@ -21,13 +21,13 @@ All notable changes to this project will be documented in this file.
 - Fix remounting system as read-write
 - Rewrite system mounting code
 - Fix debug log path when sideloading (thanks @mjenny for the help)
-- Auto-root if needed in zip-install.sh
+- Auto-root if needed in :code:`zip-install.sh`
 - Update microG Service Core to 0.2.27.223616 (now using MapLibre)
 - Add full support for automounting A/B slot partitions (thanks @mjenny for the help)
 - Add full support for automounting dynamic partitions (thanks @mjenny for the help)
-- Support DEBUG_LOG and FORCE_ROOT env variables in zip-install.sh
+- Support DEBUG_LOG and FORCE_ROOT env variables in :code:`zip-install.sh`
 - Fallback to manual parsing of key events when keycheck fails, fix #5
-- Support live setup under zip-install.sh
+- Support live setup under :code:`zip-install.sh`
 - Update NewPipe to 0.25.0
 - Support and enable live setup on all devices
 
