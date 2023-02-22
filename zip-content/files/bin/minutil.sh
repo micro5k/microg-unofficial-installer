@@ -160,8 +160,10 @@ _minutil_reinstall_split_package()
 {
   \_is_caller_adb_or_root || \return 1
 
-  _install_sid="$(pm install-create -i 'com.android.vending' -r -g | grep -F -e 'Success: created install session' | grep -oE -e '[0-9]+')" || return "${?}"
+  _install_sid="$(pm install-create -i 'com.android.vending' -r -g | grep -F -e 'Success: created install session' | grep -m 1 -o -e '[0-9][0-9]*')" || return "${?}"
   _file_index=0
+  if test -z "${_install_sid:-}"; then return 2; fi
+
   echo "${1:?}" | while IFS='' read -r _file; do
     if test -n "${_file:-}" && test -e "${_file:?}"; then
       pm install-write -- "${_install_sid:?}" "${_file_index:?}" "${_file:?}" || {
