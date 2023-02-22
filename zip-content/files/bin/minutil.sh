@@ -193,7 +193,7 @@ minutil_reinstall_package()
     _minutil_error "Package '${1:-}' not found"
     return 2
   fi
-  _apk_count="$(echo "${_package_path:?}" | wc -l)"
+  _apk_count="$(printf '%s\n' "${_package_path:-}" | wc -l)"
   if test "${_apk_count:?}" -ge 2; then
     _minutil_reinstall_split_package "${_package_path:?}" || {
       _status="${?}"
