@@ -42,12 +42,12 @@ _minutil_initialize()
 
 _minutil_error()
 {
-  \printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: ${*?}"
+  \printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: ${*}"
 }
 
 _minutil_warn()
 {
-  \printf 1>&2 '\033[0;33m%s\033[0m\n\n' "WARNING: ${*?}"
+  \printf 1>&2 '\033[0;33m%s\033[0m\n\n' "WARNING: ${*}"
 }
 
 _minutil_aligned_print()
