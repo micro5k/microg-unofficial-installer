@@ -163,7 +163,7 @@ _minutil_reinstall_split_package()
   _install_sid="$(pm install-create -i 'com.android.vending' -r -g | grep -F -e 'Success: created install session' | grep -oE -e '[0-9]+')" || return "${?}"
   _file_index=0
   echo "${1:?}" | while IFS='' read -r _file; do
-    if test -e "${_file:?}"; then
+    if test -n "${_file:-}" && test -e "${_file:?}"; then
       pm install-write -- "${_install_sid:?}" "${_file_index:?}" "${_file:?}" || {
         pm install-abandon "${_install_sid:?}"
         return 3
@@ -183,14 +183,14 @@ minutil_reinstall_package()
 {
   \_is_caller_adb_or_root || \return 1
 
-  echo "Reinstalling ${1?}..."
+  echo "Reinstalling ${1:-}..."
   command -v pm 1> /dev/null || {
     _minutil_error 'Package manager is NOT available'
     return 1
   }
 
-  if ! _package_path="$(_minutil_find_package "${1:?}")" || test -z "${_package_path?}"; then
-    _minutil_error "Package '${1?}' not found"
+  if ! _package_path="$(_minutil_find_package "${1:?}")" || test -z "${_package_path:-}"; then
+    _minutil_error "Package '${1:-}' not found"
     return 2
   fi
   _apk_count="$(echo "${_package_path:?}" | wc -l)"
@@ -202,7 +202,7 @@ minutil_reinstall_package()
     }
   else
     if test ! -e "${_package_path:?}"; then
-      _minutil_error "Package '${1?}' found but file missing"
+      _minutil_error "Package '${1:-}' found but file missing"
       return 2
     fi
     pm install -i 'com.android.vending' -r -g -- "${_package_path:?}" || {
@@ -212,7 +212,7 @@ minutil_reinstall_package()
   fi
 
   unset _package_path _apk_count
-  echo "Package ${1:?} reinstalled."
+  echo "Package ${1:-} reinstalled."
 }
 
 minutil_force_gcm_reconnection()
@@ -352,7 +352,7 @@ while true; do
   esac
 
   # Note: 'shift' with nothing to shift cause some shells to exit and it can't be avoided so check it before using
-  if \test "${#:?}" -gt 0; then
+  if \test "${#}" -gt 0; then
     \shift 2> /dev/null || \break
   else
     \break
