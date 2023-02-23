@@ -137,12 +137,13 @@ _minutil_getprop()
   grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f 2
 }
 
-MINUTIL_SYSTEM_SDK='0'
 if test -e '/system/build.prop'; then
   if ! MINUTIL_SYSTEM_SDK="$(_minutil_getprop 'ro.build.version.sdk' '/system/build.prop')" || test -z "${MINUTIL_SYSTEM_SDK:-}"; then
     MINUTIL_SYSTEM_SDK='0'
     _minutil_warn 'Failed to parse system SDK'
   fi
+else
+  MINUTIL_SYSTEM_SDK='99' # We are most likely in the recovery
 fi
 readonly MINUTIL_SYSTEM_SDK
 
