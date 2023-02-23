@@ -82,7 +82,7 @@ restore_saved_title_if_exist()
 
 simple_get_prop()
 {
-  grep -F "${1}=" "${2}" | head -n1 | cut -d '=' -f 2
+  grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f 2
 }
 
 get_domain_from_url()
