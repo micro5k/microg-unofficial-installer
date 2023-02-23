@@ -132,6 +132,20 @@ if \test -z "${*:-}" || \test "${*:-}" = '--'; then
   _minutil_display_help='true'
 fi
 
+_minutil_getprop()
+{
+  grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f 2
+}
+
+MINUTIL_SYSTEM_SDK='0'
+if test -e '/system/build.prop'; then
+  if ! MINUTIL_SYSTEM_SDK="$(_minutil_getprop 'ro.build.version.sdk' '/system/build.prop')" || test -z "${MINUTIL_SYSTEM_SDK:-}"; then
+    MINUTIL_SYSTEM_SDK='0'
+    _minutil_warn 'Failed to parse system SDK'
+  fi
+fi
+readonly MINUTIL_SYSTEM_SDK
+
 _list_account_files()
 {
   cat << 'EOF'
@@ -207,10 +221,17 @@ minutil_reinstall_package()
       _minutil_error "Package '${1:-}' found but file missing"
       return 2
     fi
-    pm install -i 'com.android.vending' -r -g -- "${_package_path:?}" || {
-      _minutil_error 'Package reinstall failed'
-      return 3
-    }
+    if test "${MINUTIL_SYSTEM_SDK:?}" -ge 23; then
+      pm install -i 'com.android.vending' -r -g -- "${_package_path:?}" || {
+        _minutil_error 'Package reinstall failed'
+        return 3
+      }
+    else
+      pm install -i 'com.android.vending' -r -- "${_package_path:?}" || {
+        _minutil_error 'Package reinstall failed'
+        return 3
+      }
+    fi
   fi
 
   unset _package_path _apk_count
@@ -371,11 +392,11 @@ if test "${_minutil_display_help:?}" = 'true'; then
   printf '%s\n\n' 'Licensed under GPLv3+'
   printf 'Usage: %s [OPTIONS] [--]\n\n' "${_minutil_script_name:?}"
 
-  _minutil_aligned_print '-h,-?,--help'							'Show this help'
-  _minutil_aligned_print '-s,--rescan-storage'					'Rescan storage to find file changes'
-  _minutil_aligned_print '--remove-all-accounts'				'Remove all accounts from the device (need root)'
-  _minutil_aligned_print '--force-gcm-reconnection'				'Force GCM reconnection'
-  _minutil_aligned_print '-i,--reinstall-package PACKAGE_NAME'	'Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions'
+  _minutil_aligned_print '-h,-?,--help' 'Show this help'
+  _minutil_aligned_print '-s,--rescan-storage' 'Rescan storage to find file changes'
+  _minutil_aligned_print '--remove-all-accounts' 'Remove all accounts from the device (need root)'
+  _minutil_aligned_print '--force-gcm-reconnection' 'Force GCM reconnection'
+  _minutil_aligned_print '-i,--reinstall-package PACKAGE_NAME' 'Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions'
 
   printf '
 Examples:
