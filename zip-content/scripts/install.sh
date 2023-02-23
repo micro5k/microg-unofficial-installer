@@ -44,6 +44,7 @@ package_extract_file 'module.prop' "${TMP_PATH}/module.prop"
 install_id="$(simple_get_prop 'id' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse id string'
 install_version="$(simple_get_prop 'version' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version string'
 install_version_code="$(simple_get_prop 'versionCode' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version code'
+install_author="$(simple_get_prop 'author' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse author string'
 
 INSTALLATION_SETTINGS_FILE="${install_id}.prop"
 API="$(build_getprop 'build\.version\.sdk')"
@@ -85,8 +86,8 @@ fi
 # Info
 ui_msg '---------------------------'
 ui_msg 'microG unofficial installer'
-ui_msg "${install_version}"
-ui_msg '(by ale5000)'
+ui_msg "${install_version:?}"
+ui_msg "(by ${install_author:?})"
 ui_msg '---------------------------'
 ui_msg "Boot mode: ${BOOTMODE:?}"
 ui_msg "Sideload: ${SIDELOAD:?}"
