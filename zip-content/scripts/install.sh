@@ -412,7 +412,8 @@ set_perm 0 0 0750 "${SYS_PATH:?}/etc/zips"
 
 copy_dir_content "${USED_SETTINGS_PATH:?}" "${SYS_PATH:?}/etc/zips"
 
-if test "${API:?}" -ge 23; then
+# Install utilities
+if test "${API:?}" -ge 19; then
   ui_msg 'Installing utilities...'
   set_perm 0 2000 0755 "${TMP_PATH:?}/files/bin/minutil.sh"
   move_rename_file "${TMP_PATH:?}/files/bin/minutil.sh" "${TMP_PATH:?}/files/bin/minutil"
