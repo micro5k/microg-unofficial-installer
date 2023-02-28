@@ -22,15 +22,16 @@ gradleEnterprise.buildScan {
 void configure() {
     println name
 
-    defaultTasks 'tasks'
     rootProject.buildDir = "${projectDir}/output"
+    defaultTasks 'tasks'
 
     Properties props = new Properties()
     file("${projectDir}/zip-content/module.prop").withInputStream { props.load(it) }
 
-    String description = props.getProperty('description')
-    String version = props.getProperty('version').trim()
-    String archivesBaseName = props.getProperty('id')
+    description = String.valueOf(props.getProperty('description'))
+    version = String.valueOf(props.getProperty('version')).toLowerCase(Locale.ENGLISH).trim()
+    archivesBaseName = String.valueOf(props.getProperty('id')).trim()
+
     //ext.isBeta = version.endsWith('-beta')
     //ext.isAlpha = version.endsWith('-alpha')
     //ext.isSnapshot = version.endsWith('-snapshot')
@@ -39,7 +40,7 @@ void configure() {
     println 'OS: ' + System.properties['os.name']
 
     if(JavaVersion.current() < JavaVersion.VERSION_11) {
-        throw new GradleException('This build must be run with Java 11 or later')
+        throw new GradleException('This require Java 11 or later')
     }
 }
 configure()
