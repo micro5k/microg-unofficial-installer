@@ -29,7 +29,6 @@ CPU=false
 CPU64=false
 LEGACY_ARM=false
 FAKE_SIGN=false
-SYS_PATH=''
 
 ### FUNCTIONS ###
 
