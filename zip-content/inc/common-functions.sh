@@ -1304,9 +1304,17 @@ choose()
 
 _live_setup_choice_msg()
 {
-  ui_msg '---------------------------------------------------'
-  ui_msg 'INFO: Select the VOLUME + key to enable live setup.'
-  ui_msg '---------------------------------------------------'
+  local _msg _sep
+  if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
+    _msg='INFO: Press the + sign button on your keyboard to enable live setup.'
+  else
+    _msg='INFO: Press the VOLUME + key to enable live setup.'
+  fi
+  _sep="$(yes '-' | head -n "${#_msg}" | tr -d '\r\n')"
+
+  ui_msg "${_sep:?}"
+  ui_msg "${_msg:?}"
+  ui_msg "${_sep:?}"
 
   if test -n "${1:-}"; then
     ui_msg "Waiting input for ${1:?} seconds..."
