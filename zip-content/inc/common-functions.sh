@@ -1310,7 +1310,7 @@ _live_setup_choice_msg()
   else
     _msg='INFO: Press the VOLUME + key to enable live setup.'
   fi
-  _sep="$(yes '-' | head -n "${#_msg}" | tr -d '\r\n')"
+  _sep="$(printf '%*s' "${#_msg}" '' | tr -- ' ' '-')"
 
   ui_msg "${_sep:?}"
   ui_msg "${_msg:?}"
