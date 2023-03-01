@@ -89,6 +89,7 @@ ui_msg "${install_name:?}"
 ui_msg "${install_version:?}"
 ui_msg "(by ${install_author:?})"
 ui_msg "$(write_separator_line "${#install_name}" '-')"
+
 ui_msg "Boot mode: ${BOOTMODE:?}"
 ui_msg "Sideload: ${SIDELOAD:?}"
 ui_msg "Zip install: ${ZIP_INSTALL:?}"
