@@ -1305,7 +1305,7 @@ choose()
 write_separator_line()
 {
   if test "${#2}" -ne 1; then ui_warning 'Invalid separator character'; return 1; fi
-  printf '%*s' "${1:?}" '' | tr -- ' ' "${2:?}"
+  printf '%*s\n' "${1:?}" '' | tr -- ' ' "${2:?}"
 }
 
 _live_setup_choice_msg()

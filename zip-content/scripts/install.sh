@@ -84,11 +84,11 @@ elif is_substring ',arm64-v8a,' "${ABI_LIST}"; then
 fi
 
 # Info
-ui_msg "$(write_separator_line "${#install_name}" '-')"
+ui_msg "$(write_separator_line "${#install_name}" '-' || true)"
 ui_msg "${install_name:?}"
 ui_msg "${install_version:?}"
 ui_msg "(by ${install_author:?})"
-ui_msg "$(write_separator_line "${#install_name}" '-')"
+ui_msg "$(write_separator_line "${#install_name}" '-' || true)"
 
 ui_msg "Boot mode: ${BOOTMODE:?}"
 ui_msg "Sideload: ${SIDELOAD:?}"
@@ -117,7 +117,7 @@ if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATU
   FAKE_SIGN=true
 fi
 ui_msg "Fake signature: ${FAKE_SIGN}"
-ui_msg "$(write_separator_line "${#install_name}" '-')"
+ui_msg "$(write_separator_line "${#install_name}" '-' || true)"
 ui_msg_empty_line
 
 if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi
