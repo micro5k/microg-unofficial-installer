@@ -40,10 +40,11 @@ FAKE_SIGN=false
 initialize
 
 package_extract_file 'module.prop' "${TMP_PATH}/module.prop"
-install_id="$(simple_get_prop 'id' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse id string'
-install_version="$(simple_get_prop 'version' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version string'
+install_id="$(simple_get_prop 'id' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse id'
+install_name="$(simple_get_prop 'name' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse name'
+install_version="$(simple_get_prop 'version' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version'
 install_version_code="$(simple_get_prop 'versionCode' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version code'
-install_author="$(simple_get_prop 'author' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse author string'
+install_author="$(simple_get_prop 'author' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse author'
 
 INSTALLATION_SETTINGS_FILE="${install_id}.prop"
 API="$(build_getprop 'build\.version\.sdk')"
@@ -83,11 +84,11 @@ elif is_substring ',arm64-v8a,' "${ABI_LIST}"; then
 fi
 
 # Info
-ui_msg '---------------------------'
-ui_msg 'microG unofficial installer'
+ui_msg "$(write_separator_line "${#install_name}" '-')"
+ui_msg "${install_name:?}"
 ui_msg "${install_version:?}"
 ui_msg "(by ${install_author:?})"
-ui_msg '---------------------------'
+ui_msg "$(write_separator_line "${#install_name}" '-')"
 ui_msg "Boot mode: ${BOOTMODE:?}"
 ui_msg "Sideload: ${SIDELOAD:?}"
 ui_msg "Zip install: ${ZIP_INSTALL:?}"
@@ -115,7 +116,7 @@ if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATU
   FAKE_SIGN=true
 fi
 ui_msg "Fake signature: ${FAKE_SIGN}"
-ui_msg '---------------------------'
+ui_msg "$(write_separator_line "${#install_name}" '-')"
 ui_msg_empty_line
 
 if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi

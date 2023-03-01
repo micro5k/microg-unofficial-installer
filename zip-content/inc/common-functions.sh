@@ -1302,6 +1302,12 @@ choose()
   return "${_last_status:?}"
 }
 
+write_separator_line()
+{
+  if test "${#2}" -ne 1; then ui_warning 'Invalid separator character'; return 1; fi
+  printf '%*s' "${1:?}" '' | tr -- ' ' "${2:?}"
+}
+
 _live_setup_choice_msg()
 {
   local _msg _sep
@@ -1310,7 +1316,7 @@ _live_setup_choice_msg()
   else
     _msg='INFO: Press the VOLUME + key to enable live setup.'
   fi
-  _sep="$(printf '%*s' "${#_msg}" '' | tr -- ' ' '-')"
+  _sep="$(write_separator_line "${#_msg}" '-')" || _sep='---'
 
   ui_msg "${_sep:?}"
   ui_msg "${_msg:?}"
