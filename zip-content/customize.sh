@@ -53,6 +53,7 @@ export SKIPUNZIP ASH_STANDALONE
 ### GLOBAL VARIABLES ###
 
 export DEBUG_LOG_ENABLED=0
+readonly FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS:-0}"
 
 readonly RECOVERY_API_VER="${1:-}"
 if test "${4:-}" = 'zip-install'; then readonly ZIP_INSTALL='true'; else readonly ZIP_INSTALL='false'; fi
@@ -65,8 +66,7 @@ else
 fi
 export RECOVERY_OUTPUT
 
-# Check if STDIN (0) is valid
-if test -t 0 && {
+if test "${FORCE_HW_BUTTONS:?}" = '0' && test -t 0 && { # Check if STDIN (0) is valid
   test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'
 }; then
   readonly INPUT_FROM_TERMINAL='true'
