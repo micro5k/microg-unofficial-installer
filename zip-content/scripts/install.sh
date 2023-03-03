@@ -39,13 +39,6 @@ FAKE_SIGN=false
 
 initialize
 
-package_extract_file 'module.prop' "${TMP_PATH}/module.prop"
-install_id="$(simple_get_prop 'id' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse id'
-install_name="$(simple_get_prop 'name' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse name'
-install_version="$(simple_get_prop 'version' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version'
-install_version_code="$(simple_get_prop 'versionCode' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse version code'
-install_author="$(simple_get_prop 'author' "${TMP_PATH}/module.prop")" || ui_error 'Failed to parse author'
-
 INSTALLATION_SETTINGS_FILE="${install_id}.prop"
 API="$(build_getprop 'build\.version\.sdk')"
 readonly API

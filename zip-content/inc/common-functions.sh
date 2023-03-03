@@ -396,6 +396,17 @@ initialize()
   readonly DATA_PATH
 
   unset LAST_MOUNTPOINT
+
+  package_extract_file 'module.prop' "${TMP_PATH:?}/module.prop"
+  install_id="$(simple_get_prop 'id' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse id'
+  install_name="$(simple_get_prop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
+  install_version="$(simple_get_prop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
+  install_version_code="$(simple_get_prop 'versionCode' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version code'
+  install_author="$(simple_get_prop 'author' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse author'
+
+  # Previously installed module version code (0 if wasn't installed)
+  PREV_MODULE_VERCODE="$(simple_get_prop 'install.version.code' "${SYS_PATH:?}/etc/zips/${install_id:?}.prop")" || PREV_MODULE_VERCODE=''
+  readonly PREV_MODULE_VERCODE="${PREV_MODULE_VERCODE:-0}"
 }
 
 deinitialize()
@@ -574,7 +585,8 @@ build_getprop()
 
 simple_get_prop()
 {
-  grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f 2
+  if test ! -e "${2:?}"; then return 1; fi
+  grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f 2 -s
 }
 
 # String related functions
