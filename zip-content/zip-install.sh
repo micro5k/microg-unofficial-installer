@@ -10,30 +10,32 @@ ui_show_error()
   printf 1>&2 '\033[1;31mERROR: %s\033[0m\n' "${1:-}"
 }
 
-for _param in "${@}"; do
-  shift || {
-    ui_show_error 'shift failed'
-    exit 6
-  }
-  if test -z "${_param:-}" || test "${_param:?}" = '--'; then continue; fi # Skip empty parameters
+if test -n "${*:-}"; then
+  for _param in "${@?}"; do
+    shift || {
+      ui_show_error 'shift failed'
+      exit 6
+    }
+    if test -z "${_param:-}" || test "${_param:?}" = '--'; then continue; fi # Skip empty parameters
 
-  test -e "${_param:?}" || {
-    ui_show_error "ZIP file doesn't exist => '${_param:-}'"
-    exit 7
-  }
+    test -e "${_param:?}" || {
+      ui_show_error "ZIP file doesn't exist => '${_param:-}'"
+      exit 7
+    }
 
-  _param_copy="${_param:?}"
-  _param="$(readlink -f "${_param_copy:?}")" || _param="$(realpath "${_param_copy:?}")" || {
-    ui_show_error "Canonicalization failed => '${_param_copy:-}'"
-    exit 8
-  }
+    _param_copy="${_param:?}"
+    _param="$(readlink -f "${_param_copy:?}")" || _param="$(realpath "${_param_copy:?}")" || {
+      ui_show_error "Canonicalization failed => '${_param_copy:-}'"
+      exit 8
+    }
 
-  set -- "${@}" "${_param:?}" || {
-    ui_show_error 'set failed'
-    exit 6
-  }
-done
-unset _param _param_copy
+    set -- "${@}" "${_param:?}" || {
+      ui_show_error 'set failed'
+      exit 6
+    }
+  done
+  unset _param _param_copy
+fi
 
 if test -z "${*:-}"; then
   ui_show_error 'You must specify the ZIP file to install'
