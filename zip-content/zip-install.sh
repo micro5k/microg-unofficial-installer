@@ -7,11 +7,14 @@ umask 022 || exit 6
 
 ui_show_error()
 {
-  printf 1>&2 '\033[1;31mERROR: %s\033[0m\n' "${1:?}"
+  printf 1>&2 '\033[1;31mERROR: %s\033[0m\n' "${1:-}"
 }
 
 for _param in "${@}"; do
-  shift
+  shift || {
+    ui_show_error 'shift failed'
+    exit 6
+  }
   if test -z "${_param:-}" || test "${_param:?}" = '--'; then continue; fi # Skip empty parameters
 
   test -e "${_param:?}" || {
@@ -25,14 +28,24 @@ for _param in "${@}"; do
     exit 8
   }
 
-  set -- "${@}" "${_param:?}"
+  set -- "${@}" "${_param:?}" || {
+    ui_show_error 'set failed'
+    exit 6
+  }
 done
 unset _param _param_copy
+
+if test -z "${*:-}"; then
+  ui_show_error 'You must specify the ZIP file to install'
+  exit 5
+fi
 
 if test "$(whoami || id -un || true)" != 'root'; then
   if test "${AUTO_ELEVATED:-false}" = 'false' && {
     test "${FORCE_ROOT:-0}" != '0' || command -v su 1> /dev/null
   }; then
+
+    printf '%s\n' 'Auto-rooting attempt...'
 
     # First check if root is working (0 => root)
     su -c 'command' -- 0 -- || {
@@ -52,11 +65,6 @@ if test "$(whoami || id -un || true)" != 'root'; then
 
   ui_show_error 'You must execute this as root!!!'
   exit 4
-fi
-
-if test -z "${1:-}"; then
-  ui_show_error 'You must specify the ZIP file to install'
-  exit 5
 fi
 
 unset SCRIPT_NAME
