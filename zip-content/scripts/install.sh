@@ -39,7 +39,7 @@ FAKE_SIGN=false
 
 initialize
 
-INSTALLATION_SETTINGS_FILE="${install_id}.prop"
+INSTALLATION_SETTINGS_FILE="${MODULE_ID:?}.prop"
 API="$(build_getprop 'build\.version\.sdk')"
 readonly API
 
@@ -77,11 +77,11 @@ elif is_substring ',arm64-v8a,' "${ABI_LIST}"; then
 fi
 
 # Info
-ui_msg "$(write_separator_line "${#install_name}" '-' || true)"
-ui_msg "${install_name:?}"
-ui_msg "${install_version:?}"
-ui_msg "(by ${install_author:?})"
-ui_msg "$(write_separator_line "${#install_name}" '-' || true)"
+ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
+ui_msg "${MODULE_NAME:?}"
+ui_msg "${MODULE_VERSION:?}"
+ui_msg "(by ${MODULE_AUTHOR:?})"
+ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 
 ui_msg "Boot mode: ${BOOTMODE:?}"
 ui_msg "Sideload: ${SIDELOAD:?}"
@@ -110,7 +110,7 @@ if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATU
   FAKE_SIGN=true
 fi
 ui_msg "Fake signature: ${FAKE_SIGN}"
-ui_msg "$(write_separator_line "${#install_name}" '-' || true)"
+ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 ui_msg_empty_line
 
 if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi
@@ -258,7 +258,7 @@ if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
     delete "${SYS_PATH:?}/lib64/libcronet".*."so"
   fi
 fi
-delete "${SYS_PATH:?}/etc/zips/${install_id:?}.prop"
+delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
 
 readonly INSTALLER='true'
 export INSTALLER
@@ -395,8 +395,8 @@ create_dir "${USED_SETTINGS_PATH:?}"
   echo '# SPDX-FileType: OTHER'
   echo ''
   echo 'install.type=flashable-zip'
-  echo "install.version.code=${install_version_code}"
-  echo "install.version=${install_version}"
+  echo "install.version.code=${MODULE_VERCODE:?}"
+  echo "install.version=${MODULE_VERSION:?}"
   echo "fakestore=${market_is_fakestore:?}"
 } > "${USED_SETTINGS_PATH:?}/${INSTALLATION_SETTINGS_FILE:?}"
 set_perm 0 0 0640 "${USED_SETTINGS_PATH:?}/${INSTALLATION_SETTINGS_FILE:?}"
