@@ -11,6 +11,7 @@ IF "%CD%" == "%windir%\system32" CD /D "%~dp0"
 SET "LANG=C.UTF-8"
 CHCP 65001 1> nul || ECHO "Changing the codepage failed"
 
+SET "BB_FIX_BACKSLASH=1"
 SET "PATH=.;%PATH%"
 SET "PATHEXT=.SH;%PATHEXT%"
 SET "HOME=%~dp0"
