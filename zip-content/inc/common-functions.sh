@@ -408,7 +408,11 @@ initialize()
 
   # Previously installed module version code (0 if wasn't installed)
   PREV_MODULE_VERCODE="$(simple_get_prop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
-  readonly PREV_MODULE_VERCODE="${PREV_MODULE_VERCODE:-0}"
+  case "${PREV_MODULE_VERCODE:-}" in
+    [0-9]*) ;; # OK
+    *) PREV_MODULE_VERCODE='0' ;;
+  esac
+  readonly PREV_MODULE_VERCODE
 }
 
 deinitialize()
@@ -1318,7 +1322,10 @@ choose()
 
 write_separator_line()
 {
-  if test "${#2}" -ne 1; then ui_warning 'Invalid separator character'; return 1; fi
+  if test "${#2}" -ne 1; then
+    ui_warning 'Invalid separator character'
+    return 1
+  fi
   printf '%*s\n' "${1:?}" '' | tr -- ' ' "${2:?}"
 }
 
