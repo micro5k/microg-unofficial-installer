@@ -961,8 +961,8 @@ _find_hardware_keys()
 {
   if test "${1:?}" = "${INPUT_DEVICE_NAME:-}" && test -n "${INPUT_DEVICE_PATH:-}"; then return 0; fi
 
-  INPUT_DEVICE_NAME="${1:?}"
   INPUT_DEVICE_PATH=''
+  INPUT_DEVICE_NAME="${1:?}"
 
   local _input_device_event
   if _input_device_event="$(_find_input_device "${INPUT_DEVICE_NAME:?}")" && test -e "/dev/input/${_input_device_event:?}"; then
