@@ -11,12 +11,13 @@ ui_show_error()
 }
 
 if test -n "${*:-}"; then
-  for _param in "${@?}"; do
+  for _param in "${@}"; do
     shift || {
       ui_show_error 'shift failed'
       exit 6
     }
-    if test -z "${_param:-}" || test "${_param:?}" = '--'; then continue; fi # Skip empty parameters
+    # Skip empty parameters or parameters that may get passed due to buggy su implementation
+    if test -z "${_param:-}" || test "${_param:?}" = '--' || test "${_param:?}" = '[su] zip-install.sh'; then continue; fi
 
     test -e "${_param:?}" || {
       ui_show_error "ZIP file doesn't exist => '${_param:-}'"
@@ -50,7 +51,7 @@ if test "$(whoami || id -un || true)" != 'root'; then
     printf '%s\n' 'Auto-rooting attempt...'
 
     # First check if root is working (0 => root)
-    su -c 'command' -- 0 -- || {
+    su -c 'command' -- 0 -- _ || {
       _status="${?}" # Usually it return 1 or 255 when fail
       ui_show_error 'Auto-rooting failed, you must execute this as root!!!'
       exit "${_status:-2}"
@@ -60,7 +61,7 @@ if test "$(whoami || id -un || true)" != 'root'; then
       ui_show_error 'Unable to find myself'
       exit 3
     }
-    exec su -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" -- 0 -- _ "${@}" || ui_show_error 'failed: exec'
+    exec su -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" -- 0 -- '[su] zip-install.sh' "${@}" || ui_show_error 'failed: exec'
     exit 127
 
   fi
