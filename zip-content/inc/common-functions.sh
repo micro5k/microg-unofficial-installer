@@ -333,6 +333,9 @@ _find_and_mount_system()
 
 initialize()
 {
+  SYS_INIT_STATUS=0
+  DATA_INIT_STATUS=0
+
   # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
   if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
     # shellcheck source=SCRIPTDIR/../../recovery-simulator/inc/configure-overrides.sh
@@ -340,9 +343,6 @@ initialize()
   fi
 
   live_setup_choice
-
-  SYS_INIT_STATUS=0
-  DATA_INIT_STATUS=0
 
   # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64.
   # Usable binaries are under the fake /system/bin so the /system mountpoint mustn't be used while in this recovery.
@@ -364,6 +364,23 @@ initialize()
   export SLOT
 
   _find_and_mount_system
+
+  package_extract_file 'module.prop' "${TMP_PATH:?}/module.prop"
+  MODULE_ID="$(simple_get_prop 'id' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse id'
+  MODULE_NAME="$(simple_get_prop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
+  MODULE_VERSION="$(simple_get_prop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
+  MODULE_VERCODE="$(simple_get_prop 'versionCode' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version code'
+  MODULE_AUTHOR="$(simple_get_prop 'author' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse author'
+  readonly MODULE_ID MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
+  export MODULE_ID MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
+
+  # Previously installed module version code (0 if wasn't installed)
+  PREV_MODULE_VERCODE="$(simple_get_prop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
+  case "${PREV_MODULE_VERCODE:-}" in
+    '' | *[!0-9]*) PREV_MODULE_VERCODE='0' ;; # Not installed (empty) or invalid data
+    *) ;;                                     # OK
+  esac
+  readonly PREV_MODULE_VERCODE
 
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
@@ -396,23 +413,6 @@ initialize()
   readonly DATA_PATH
 
   unset LAST_MOUNTPOINT
-
-  package_extract_file 'module.prop' "${TMP_PATH:?}/module.prop"
-  MODULE_ID="$(simple_get_prop 'id' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse id'
-  MODULE_NAME="$(simple_get_prop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
-  MODULE_VERSION="$(simple_get_prop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
-  MODULE_VERCODE="$(simple_get_prop 'versionCode' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version code'
-  MODULE_AUTHOR="$(simple_get_prop 'author' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse author'
-  readonly MODULE_ID MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
-  export MODULE_ID MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
-
-  # Previously installed module version code (0 if wasn't installed)
-  PREV_MODULE_VERCODE="$(simple_get_prop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
-  case "${PREV_MODULE_VERCODE:-}" in
-    [0-9]*) ;; # OK
-    *) PREV_MODULE_VERCODE='0' ;;
-  esac
-  readonly PREV_MODULE_VERCODE
 }
 
 deinitialize()
