@@ -119,96 +119,104 @@ if test "${CPU}" = false && test "${CPU64}" = false; then
   ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
 fi
 
-# Extracting
-ui_msg 'Extracting...'
-custom_package_extract_dir 'origin' "${TMP_PATH:?}"
-custom_package_extract_dir 'files' "${TMP_PATH:?}"
-custom_package_extract_dir 'addon.d' "${TMP_PATH:?}"
+if test "${IS_INSTALLATION:?}" = 'true'; then
+  ui_msg 'Starting installation...'
+  ui_msg_empty_line
 
-# Setting up permissions
-ui_debug 'Setting up permissions...'
-set_std_perm_recursive "${TMP_PATH:?}/origin"
-set_std_perm_recursive "${TMP_PATH:?}/files"
-if test -e "${TMP_PATH:?}/addon.d"; then set_std_perm_recursive "${TMP_PATH:?}/addon.d"; fi
-set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
+  # Extracting
+  ui_msg 'Extracting...'
+  custom_package_extract_dir 'origin' "${TMP_PATH:?}"
+  custom_package_extract_dir 'files' "${TMP_PATH:?}"
+  custom_package_extract_dir 'addon.d' "${TMP_PATH:?}"
 
-# Verifying
-ui_msg_sameline_start 'Verifying... '
-ui_debug ''
-if verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '9a6ffed69c510a06a719a2d52c3fd49218f71806' &&
-  verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'b853c1b177b611310219cc6571576bd455fa3e9e' &&
-  verify_sha1 "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
-  verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7'; then
-  ui_msg_sameline_end 'OK'
+  # Setting up permissions
+  ui_debug 'Setting up permissions...'
+  set_std_perm_recursive "${TMP_PATH:?}/origin"
+  set_std_perm_recursive "${TMP_PATH:?}/files"
+  if test -e "${TMP_PATH:?}/addon.d"; then set_std_perm_recursive "${TMP_PATH:?}/addon.d"; fi
+  set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
+
+  # Verifying
+  ui_msg_sameline_start 'Verifying... '
+  ui_debug ''
+  if verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '9a6ffed69c510a06a719a2d52c3fd49218f71806' &&
+    verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'b853c1b177b611310219cc6571576bd455fa3e9e' &&
+    verify_sha1 "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
+    verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7'; then
+    ui_msg_sameline_end 'OK'
+  else
+    ui_msg_sameline_end 'ERROR'
+    ui_error 'Verification failed'
+    sleep 1
+  fi
+
+  # Preparing
+  ui_msg 'Preparing...'
+
+  # Check the existance of the libraries folders
+  if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
+    if test "${CPU}" != false && test ! -e "${SYS_PATH:?}/lib"; then create_dir "${SYS_PATH:?}/lib"; fi
+    if test "${CPU64}" != false && test ! -e "${SYS_PATH:?}/lib64"; then create_dir "${SYS_PATH:?}/lib64"; fi
+  fi
+
+  setup_app 1 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
+
+  setup_app 1 'microG Services Core (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false
+  if test "${CPU}" != 'armeabi'; then
+    setup_app 1 'microG Services Core' 'GmsCore' 'priv-app' false false
+  else
+    setup_app 1 'microG Services Core (vtm)' 'GmsCoreVtm' 'priv-app' false false
+  fi
+
+  setup_app 1 'microG Services Framework Proxy' 'GoogleServicesFramework' 'priv-app' false false
+
+  setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true
+  app_1_is_installed="${?}"
+  setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' true
+  app_2_is_installed="${?}"
+
+  # Fallback to FakeStore if the selected market is missing
+  market_is_fakestore='false'
+  if {
+    test "${app_1_is_installed:?}" -ne 0 && test "${app_2_is_installed:?}" -ne 0
+  } || test ! -f "${TMP_PATH}/files/priv-app/Phonesky.apk"; then
+    market_is_fakestore='true'
+    setup_app 1 'FakeStore' 'FakeStore' 'priv-app' false false
+  fi
+  unset app_1_is_installed app_2_is_installed
+
+  if test "${market_is_fakestore:?}" = 'true'; then
+    move_rename_file "${TMP_PATH:?}/origin/etc/microg.xml" "${TMP_PATH:?}/files/etc/microg.xml"
+  else
+    move_rename_file "${TMP_PATH:?}/origin/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
+  fi
+
+  setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
+
+  setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
+  setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe (old)' 'NewPipeOld' 'app' true
+  setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' true
+
+  setup_app "${INSTALL_ANDROIDAUTO:-}" 'Android Auto stub' 'AndroidAuto' 'priv-app' true
+
+  # Extracting libs
+  if test "${API:?}" -ge 9; then
+    ui_msg 'Extracting libs...'
+    create_dir "${TMP_PATH:?}/libs"
+    zip_extract_dir "${TMP_PATH:?}/files/priv-app/GmsCore.apk" 'lib' "${TMP_PATH:?}/libs"
+  fi
+
+  # Setting up libs permissions
+  if test "${API:?}" -ge 9; then
+    ui_debug 'Setting up libs permissions...'
+    set_std_perm_recursive "${TMP_PATH:?}/libs"
+  fi
+
+  delete "${TMP_PATH:?}/origin"
 else
-  ui_msg_sameline_end 'ERROR'
-  ui_error 'Verification failed'
-  sleep 1
+  ui_msg 'Starting uninstallation...'
+  ui_msg_empty_line
 fi
-
-# Preparing
-ui_msg 'Preparing...'
-
-# Check the existance of the libraries folders
-if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
-  if test "${CPU}" != false && test ! -e "${SYS_PATH:?}/lib"; then create_dir "${SYS_PATH:?}/lib"; fi
-  if test "${CPU64}" != false && test ! -e "${SYS_PATH:?}/lib64"; then create_dir "${SYS_PATH:?}/lib64"; fi
-fi
-
-setup_app 1 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
-
-setup_app 1 'microG Services Core (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false
-if test "${CPU}" != 'armeabi'; then
-  setup_app 1 'microG Services Core' 'GmsCore' 'priv-app' false false
-else
-  setup_app 1 'microG Services Core (vtm)' 'GmsCoreVtm' 'priv-app' false false
-fi
-
-setup_app 1 'microG Services Framework Proxy' 'GoogleServicesFramework' 'priv-app' false false
-
-setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true
-app_1_is_installed="${?}"
-setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' true
-app_2_is_installed="${?}"
-
-# Fallback to FakeStore if the selected market is missing
-market_is_fakestore='false'
-if {
-  test "${app_1_is_installed:?}" -ne 0 && test "${app_2_is_installed:?}" -ne 0
-} || test ! -f "${TMP_PATH}/files/priv-app/Phonesky.apk"; then
-  market_is_fakestore='true'
-  setup_app 1 'FakeStore' 'FakeStore' 'priv-app' false false
-fi
-unset app_1_is_installed app_2_is_installed
-
-if test "${market_is_fakestore:?}" = 'true'; then
-  move_rename_file "${TMP_PATH:?}/origin/etc/microg.xml" "${TMP_PATH:?}/files/etc/microg.xml"
-else
-  move_rename_file "${TMP_PATH:?}/origin/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
-fi
-
-setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
-
-setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
-setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe (old)' 'NewPipeOld' 'app' true
-setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' true
-
-setup_app "${INSTALL_ANDROIDAUTO:-}" 'Android Auto stub' 'AndroidAuto' 'priv-app' true
-
-# Extracting libs
-if test "${API:?}" -ge 9; then
-  ui_msg 'Extracting libs...'
-  create_dir "${TMP_PATH:?}/libs"
-  zip_extract_dir "${TMP_PATH:?}/files/priv-app/GmsCore.apk" 'lib' "${TMP_PATH:?}/libs"
-fi
-
-# Setting up libs permissions
-if test "${API:?}" -ge 9; then
-  ui_debug 'Setting up libs permissions...'
-  set_std_perm_recursive "${TMP_PATH:?}/libs"
-fi
-
-delete "${TMP_PATH:?}/origin"
 
 # Resetting Android runtime permissions
 if test "${API}" -ge 23; then
@@ -230,16 +238,18 @@ fi
 
 mount_extra_partitions_silent
 
-# Kill the apps if they were active and disable them
-kill_and_disable_app com.android.vending
-kill_and_disable_app com.google.android.gsf
-kill_and_disable_app com.google.android.gms
+if test "${IS_INSTALLATION:?}" = 'true'; then
+  # Kill the apps if they were active and disable them
+  kill_and_disable_app com.android.vending
+  kill_and_disable_app com.google.android.gsf
+  kill_and_disable_app com.google.android.gms
 
-clear_app com.android.vending
-clear_app com.google.android.gsf
+  clear_app com.android.vending
+  clear_app com.google.android.gsf
 
-kill_app com.google.android.gsf.login
-clear_app com.google.android.gsf.login
+  kill_app com.google.android.gsf.login
+  clear_app com.google.android.gsf.login
+fi
 
 # Clean previous installations
 if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
@@ -266,6 +276,16 @@ export INSTALLER
 . "${TMP_PATH:?}/uninstall.sh"
 
 unmount_extra_partitions
+
+if test "${IS_INSTALLATION:?}" != 'true'; then
+  reset_gms_data_of_all_apps
+  deinitialize
+
+  touch "${TMP_PATH:?}/installed"
+  ui_msg 'Uninstallation finished.'
+
+  exit 0
+fi
 
 # Configuring default Android permissions
 if test "${API}" -ge 23; then

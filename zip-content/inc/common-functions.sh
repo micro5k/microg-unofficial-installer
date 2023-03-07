@@ -382,6 +382,16 @@ initialize()
   esac
   readonly PREV_MODULE_VERCODE
 
+  IS_INSTALLATION='true'
+  if test "${LIVE_SETUP_ENABLED:?}" = 'true' && test "${PREV_MODULE_VERCODE:?}" -ge 3; then
+    choose 'What do you want to do?' '+) Update / reinstall' '-) Uninstall'
+    if test "${?}" != '3'; then
+      IS_INSTALLATION='false'
+    fi
+  fi
+  readonly IS_INSTALLATION
+  export IS_INSTALLATION
+
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
   if is_mounted_read_only "${SYS_MOUNTPOINT:?}"; then

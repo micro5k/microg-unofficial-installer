@@ -373,7 +373,7 @@ test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
 if test "${DEBUG_LOG_ENABLED}" -eq 1; then export DEBUG_LOG=1; fi
 
 ui_debug ''
-ui_debug 'Starting installation script...'
+ui_debug 'Starting main script...'
 "${OUR_BB:?}" sh "${TMP_PATH:?}/install.sh" Preloader "${TMP_PATH:?}"
 export STATUS="${?}"
 if test -f "${TMP_PATH:?}/installed"; then export UNKNOWN_ERROR=0; else export UNKNOWN_ERROR=1; fi
