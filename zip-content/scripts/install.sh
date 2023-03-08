@@ -254,18 +254,26 @@ fi
 # Clean previous installations
 if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
   if test "${CPU}" != false; then
-    delete "${SYS_PATH:?}/lib/libvtm-jni.so"
     delete "${SYS_PATH:?}/lib/libmapbox-gl.so"
-    delete "${SYS_PATH:?}/lib/libconscrypt_jni.so"
+    delete "${SYS_PATH:?}/lib/libvtm-jni.so"
     delete "${SYS_PATH:?}/lib/libconscrypt_gmscore_jni.so"
+    delete "${SYS_PATH:?}/lib/libconscrypt_jni.so"
     delete "${SYS_PATH:?}/lib/libcronet".*."so"
+    delete "${SYS_PATH:?}/lib/libgmscore.so"
+    delete "${SYS_PATH:?}/lib/"libempty_*.so
+    delete "${SYS_PATH:?}/lib/"libmappedcountercacheversionjni.so
+    delete "${SYS_PATH:?}/lib/"libphonesky_data_loader.so
   fi
   if test "${CPU64}" != false; then
-    delete "${SYS_PATH:?}/lib64/libvtm-jni.so"
     delete "${SYS_PATH:?}/lib64/libmapbox-gl.so"
-    delete "${SYS_PATH:?}/lib64/libconscrypt_jni.so"
+    delete "${SYS_PATH:?}/lib64/libvtm-jni.so"
     delete "${SYS_PATH:?}/lib64/libconscrypt_gmscore_jni.so"
+    delete "${SYS_PATH:?}/lib64/libconscrypt_jni.so"
     delete "${SYS_PATH:?}/lib64/libcronet".*."so"
+    delete "${SYS_PATH:?}/lib64/libgmscore.so"
+    delete "${SYS_PATH:?}/lib64/"libempty_*.so
+    delete "${SYS_PATH:?}/lib64/"libmappedcountercacheversionjni.so
+    delete "${SYS_PATH:?}/lib64/"libphonesky_data_loader.so
   fi
 fi
 delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
