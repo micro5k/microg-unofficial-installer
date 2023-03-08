@@ -85,7 +85,7 @@ ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 
 ui_msg "Boot mode: ${BOOTMODE:?}"
 ui_msg "Sideload: ${SIDELOAD:?}"
-ui_msg "Zip install: ${ZIP_INSTALL:?}"
+ui_msg "Zip install: ${ZIP_INSTALL:?} (${ZIPINSTALL_VERSION:-})"
 ui_msg "Recovery API ver: ${RECOVERY_API_VER:-}"
 ui_msg_empty_line
 ui_msg "Android API: ${API:?}"

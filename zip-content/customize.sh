@@ -56,8 +56,14 @@ export DEBUG_LOG_ENABLED=0
 readonly FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS:-0}"
 
 readonly RECOVERY_API_VER="${1:-}"
-if test "${4:-}" = 'zip-install'; then readonly ZIP_INSTALL='true'; else readonly ZIP_INSTALL='false'; fi
-export RECOVERY_API_VER ZIP_INSTALL
+if test "${4:-}" = 'zip-install'; then
+  readonly ZIP_INSTALL='true'
+  readonly ZIPINSTALL_VERSION="${5:-}"
+else
+  readonly ZIP_INSTALL='false'
+  readonly ZIPINSTALL_VERSION=''
+fi
+export RECOVERY_API_VER ZIP_INSTALL ZIPINSTALL_VERSION
 
 if test "${ZIP_INSTALL:?}" = 'true' || test "${BOOTMODE:?}" = 'true' || test "${OUTFD:?}" -le 2; then
   readonly RECOVERY_OUTPUT='false'
