@@ -168,14 +168,14 @@ EOF
 
 _minutil_find_package()
 {
-  pm path "${1:?}" 2> /dev/null | cut -d ':' -f 2 || return 1
+  pm path "${1:?}" 2> /dev/null | cut -d ':' -f 2 -s || return 1
 }
 
 _minutil_reinstall_split_package()
 {
   \_is_caller_adb_or_root || \return 1
 
-  _install_sid="$(pm install-create -i 'com.android.vending' -r -g | grep -F -e 'Success: created install session' | grep -m 1 -o -e '[0-9][0-9]*')" || return "${?}"
+  _install_sid="$(pm install-create -r -g -i 'com.android.vending' | grep -m 1 -F -e 'Success: created install session' | grep -m 1 -o -e '[0-9][0-9]*')" || return "${?}"
   _file_index=0
   if test -z "${_install_sid:-}"; then return 2; fi
 
@@ -223,12 +223,12 @@ minutil_reinstall_package()
       return 2
     fi
     if test "${MINUTIL_SYSTEM_SDK:?}" -ge 23; then
-      pm install -i 'com.android.vending' -r -g -- "${_package_path:?}" || {
+      pm install -r -g -i 'com.android.vending' -- "${_package_path:?}" || {
         _minutil_error 'Package reinstall failed'
         return 3
       }
     else
-      pm install -i 'com.android.vending' -r -- "${_package_path:?}" || {
+      pm install -r -i 'com.android.vending' -- "${_package_path:?}" || {
         _minutil_error 'Package reinstall failed'
         return 3
       }
