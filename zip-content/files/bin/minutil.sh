@@ -175,6 +175,11 @@ _minutil_reinstall_split_package()
 {
   \_is_caller_adb_or_root || \return 1
 
+  if test "${MINUTIL_SYSTEM_SDK:?}" -lt 23; then
+    _minutil_error "Split package reinstalling isn't currently supported on this version of Android"
+    return 125
+  fi
+
   _install_sid="$(pm install-create -r -g -i 'com.android.vending' | grep -m 1 -F -e 'Success: created install session' | grep -m 1 -o -w -e '[0-9][0-9]*')" || return "${?}"
   _file_index=0
   if test -z "${_install_sid:-}"; then return 2; fi
@@ -229,7 +234,7 @@ minutil_reinstall_package()
       }
     else
       pm install -r -i 'com.android.vending' -- "${_package_path:?}" || {
-        _minutil_error 'Package reinstall failed'
+        _minutil_error 'Package reinstall failed (legacy)'
         return 3
       }
     fi
