@@ -45,15 +45,15 @@ adb_start()
   adb 'start-server' 2> /dev/null
 }
 
-adb_getprop()
+device_getprop()
 {
   adb shell "getprop '${1:?}'" | LC_ALL=C tr -d '\r\n'
 }
 
-validated_adb_getprop()
+validated_device_getprop()
 {
   local _value
-  _value="$(adb_getprop "${1:?}")" || return 1
+  _value="$(device_getprop "${1:?}")" || return 1
 
   if ! is_valid_value "${_value?}" "${2:-}"; then
     show_error "Invalid value for ${1:-}"
@@ -67,12 +67,12 @@ find_serialno()
 {
   local _serialno
 
-  _serialno="$(adb_getprop 'sys.serialnumber')" || _serialno=''
+  _serialno="$(device_getprop 'sys.serialnumber')" || _serialno=''
   if ! is_valid_value "${_serialno?}"; then
-    _serialno="$(adb_getprop 'ril.serialnumber')" || _serialno=''
+    _serialno="$(device_getprop 'ril.serialnumber')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
-    _serialno="$(adb_getprop 'ro.serialno')" || _serialno=''
+    _serialno="$(device_getprop 'ro.serialno')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
     show_warn 'Serial number not found'
@@ -97,36 +97,36 @@ adb_start
 
 # Info: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
-BUILD_BOARD="$(validated_adb_getprop ro.product.board)"
-BUILD_BOOTLOADER="$(validated_adb_getprop ro.bootloader 1)"
-BUILD_BRAND="$(validated_adb_getprop ro.product.brand)"
-BUILD_CPU_ABI="$(validated_adb_getprop ro.product.cpu.abi)"
-BUILD_CPU_ABI2="$(validated_adb_getprop ro.product.cpu.abi2 2)"
-BUILD_DEVICE="$(validated_adb_getprop ro.product.device)"
-BUILD_DISPLAY="$(validated_adb_getprop ro.build.display.id)"
-BUILD_FINGERPRINT="$(validated_adb_getprop ro.build.fingerprint)"
-BUILD_HARDWARE="$(validated_adb_getprop ro.hardware)"
-BUILD_HOST="$(validated_adb_getprop ro.build.host)"
-BUILD_ID="$(validated_adb_getprop ro.build.id)"
-BUILD_MANUFACTURER="$(validated_adb_getprop ro.product.manufacturer)"
-BUILD_MODEL="$(validated_adb_getprop ro.product.model)"
-BUILD_PRODUCT="$(validated_adb_getprop ro.product.name)"
-BUILD_RADIO="$(validated_adb_getprop ro.baseband 1)"
-BUILD_TAGS="$(validated_adb_getprop ro.build.tags)"
-BUILD_TIME="$(validated_adb_getprop ro.build.date.utc)""000"
-BUILD_TYPE="$(validated_adb_getprop ro.build.type)"
-BUILD_USER="$(validated_adb_getprop ro.build.user)"
-BUILD_VERSION_CODENAME="$(validated_adb_getprop ro.build.version.codename)"
-BUILD_VERSION_INCREMENTAL="$(validated_adb_getprop ro.build.version.incremental)"
-BUILD_VERSION_RELEASE="$(validated_adb_getprop ro.build.version.release)"
-BUILD_VERSION_SECURITY_PATCH="$(validated_adb_getprop ro.build.version.security_patch 2)"
-BUILD_VERSION_SDK="$(validated_adb_getprop ro.build.version.sdk)"
-BUILD_VERSION_SDK_INT="$(validated_adb_getprop ro.build.version.sdk)"    # ToDO: If not numeric or empty return 0
-BUILD_SUPPORTED_ABIS="$(validated_adb_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
+BUILD_BOARD="$(validated_device_getprop ro.product.board)"
+BUILD_BOOTLOADER="$(validated_device_getprop ro.bootloader 1)"
+BUILD_BRAND="$(validated_device_getprop ro.product.brand)"
+BUILD_CPU_ABI="$(validated_device_getprop ro.product.cpu.abi)"
+BUILD_CPU_ABI2="$(validated_device_getprop ro.product.cpu.abi2 2)"
+BUILD_DEVICE="$(validated_device_getprop ro.product.device)"
+BUILD_DISPLAY="$(validated_device_getprop ro.build.display.id)"
+BUILD_FINGERPRINT="$(validated_device_getprop ro.build.fingerprint)"
+BUILD_HARDWARE="$(validated_device_getprop ro.hardware)"
+BUILD_HOST="$(validated_device_getprop ro.build.host)"
+BUILD_ID="$(validated_device_getprop ro.build.id)"
+BUILD_MANUFACTURER="$(validated_device_getprop ro.product.manufacturer)"
+BUILD_MODEL="$(validated_device_getprop ro.product.model)"
+BUILD_PRODUCT="$(validated_device_getprop ro.product.name)"
+BUILD_RADIO="$(validated_device_getprop ro.baseband 1)"
+BUILD_TAGS="$(validated_device_getprop ro.build.tags)"
+BUILD_TIME="$(validated_device_getprop ro.build.date.utc)""000"
+BUILD_TYPE="$(validated_device_getprop ro.build.type)"
+BUILD_USER="$(validated_device_getprop ro.build.user)"
+BUILD_VERSION_CODENAME="$(validated_device_getprop ro.build.version.codename)"
+BUILD_VERSION_INCREMENTAL="$(validated_device_getprop ro.build.version.incremental)"
+BUILD_VERSION_RELEASE="$(validated_device_getprop ro.build.version.release)"
+BUILD_VERSION_SECURITY_PATCH="$(validated_device_getprop ro.build.version.security_patch 2)"
+BUILD_VERSION_SDK="$(validated_device_getprop ro.build.version.sdk)"
+BUILD_VERSION_SDK_INT="$(validated_device_getprop ro.build.version.sdk)"    # ToDO: If not numeric or empty return 0
+BUILD_SUPPORTED_ABIS="$(validated_device_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
 SERIAL_NUMBER="$(find_serialno)"
 
 DEVICE_INFO="$(uc_first_letter "${BUILD_BRAND:?} ${BUILD_MODEL:?}")"
-LOS_VERSION="$(adb_getprop ro.cm.build.version)" || LOS_VERSION=''
+LOS_VERSION="$(device_getprop ro.cm.build.version)" || LOS_VERSION=''
 if is_valid_value "${LOS_VERSION?}"; then
   ROM_INFO="LineageOS ${LOS_VERSION:?}"
 else
