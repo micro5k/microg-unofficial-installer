@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# @name Android profile generator
+# @name Android device profile generator
 # @brief It can automatically generate a device profile (usable by microG) from a device connected via adb.
 # @author ale5000
 
@@ -171,4 +171,4 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     <serial template=\"${SERIAL_NUMBER?}\" />
 </profile>
 
-<!-- Automatically generated from Android profile generator by ale5000 -->"
+<!-- Automatically generated from Android device profile generator by ale5000 -->"
