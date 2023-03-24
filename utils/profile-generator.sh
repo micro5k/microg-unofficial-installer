@@ -126,7 +126,7 @@ BUILD_SUPPORTED_ABIS="$(validated_adb_getprop ro.product.cpu.abilist 2)" # ToDO:
 SERIAL_NUMBER="$(find_serialno)"
 
 DEVICE_INFO="$(uc_first_letter "${BUILD_BRAND:?} ${BUILD_MODEL:?}")"
-LOS_VERSION="$(adb_getprop ro.cm.build.version)"
+LOS_VERSION="$(adb_getprop ro.cm.build.version)" || LOS_VERSION=''
 if is_valid_value "${LOS_VERSION?}"; then
   ROM_INFO="LineageOS ${LOS_VERSION:?}"
 else
@@ -145,7 +145,7 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     <data key=\"Build.BOOTLOADER\" value=\"${BUILD_BOOTLOADER:?}\" />
     <data key=\"Build.BRAND\" value=\"${BUILD_BRAND:?}\" />
     <data key=\"Build.CPU_ABI\" value=\"${BUILD_CPU_ABI:?}\" />
-    <data key=\"Build.CPU_ABI2\" value=\"${BUILD_CPU_ABI2:?}\" />
+    <data key=\"Build.CPU_ABI2\" value=\"${BUILD_CPU_ABI2?}\" />
     <data key=\"Build.DEVICE\" value=\"${BUILD_DEVICE:?}\" />
     <data key=\"Build.DISPLAY\" value=\"${BUILD_DISPLAY:?}\" />
     <data key=\"Build.FINGERPRINT\" value=\"${BUILD_FINGERPRINT:?}\" />
