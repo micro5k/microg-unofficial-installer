@@ -98,7 +98,13 @@ adb_start
 # Info: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
 BUILD_BOARD="$(validated_device_getprop ro.product.board)"
-BUILD_BOOTLOADER="$(validated_device_getprop ro.bootloader 1)"
+
+BUILD_BOOTLOADER="$(validated_device_getprop 'ro.bootloader' 1)"
+BUILD_BOOTLOADER_2="$(device_getprop 'ro.build.expect.bootloader')" || BUILD_BOOTLOADER_2=''
+if is_valid_value "${BUILD_BOOTLOADER_2?}" && test "${BUILD_BOOTLOADER_2?}" != "${BUILD_BOOTLOADER?}"; then
+  show_warn "Expected Build.BOOTLOADER do NOT match: ${BUILD_BOOTLOADER_2:-}"
+fi
+
 BUILD_BRAND="$(validated_device_getprop ro.product.brand)"
 BUILD_CPU_ABI="$(validated_device_getprop ro.product.cpu.abi)"
 BUILD_CPU_ABI2="$(validated_device_getprop ro.product.cpu.abi2 2)"
