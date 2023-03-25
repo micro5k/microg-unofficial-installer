@@ -65,14 +65,19 @@ validated_device_getprop()
 
 find_serialno()
 {
-  local _serialno
+  local _serialno=''
 
-  _serialno="$(device_getprop 'sys.serialnumber')" || _serialno=''
+  if test "${BUILD_MANUFACTURER:?}" = 'LENOVO'; then
+    _serialno="$(device_getprop 'ro.lenovosn2')" || _serialno=''
+  fi
   if ! is_valid_value "${_serialno?}"; then
     _serialno="$(device_getprop 'ril.serialnumber')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
     _serialno="$(device_getprop 'ro.serialno')" || _serialno=''
+  fi
+  if ! is_valid_value "${_serialno?}"; then
+    _serialno="$(device_getprop 'sys.serialnumber')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
     show_warn 'Serial number not found'
