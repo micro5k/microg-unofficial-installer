@@ -151,7 +151,7 @@ BUILD_VERSION_SDK="$(validated_device_getprop ro.build.version.sdk)" # ToDO: If 
 BUILD_SUPPORTED_ABIS="$(validated_device_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
 SERIAL_NUMBER="$(find_serialno)"
 
-DEVICE_INFO="$(uc_first_letter "${BUILD_BRAND:?}") ${BUILD_MODEL:?}"
+DEVICE_INFO="$(uc_first_letter "${BUILD_MANUFACTURER:?}") ${BUILD_MODEL:?}"
 LOS_VERSION="$(device_getprop ro.cm.build.version)" || LOS_VERSION=''
 MIUI_VERSION="$(device_getprop ro.miui.ui.version.name)" || MIUI_VERSION=''
 LEAPD_VERSION="$(device_getprop ro.leapdroid.version)" || LEAPD_VERSION=''
