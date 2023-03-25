@@ -147,8 +147,7 @@ BUILD_VERSION_CODENAME="$(validated_device_getprop ro.build.version.codename)"
 BUILD_VERSION_INCREMENTAL="$(validated_device_getprop ro.build.version.incremental)"
 BUILD_VERSION_RELEASE="$(validated_device_getprop ro.build.version.release)"
 BUILD_VERSION_SECURITY_PATCH="$(validated_device_getprop ro.build.version.security_patch 2)"
-BUILD_VERSION_SDK="$(validated_device_getprop ro.build.version.sdk)"
-BUILD_VERSION_SDK_INT="$(validated_device_getprop ro.build.version.sdk)"    # ToDO: If not numeric or empty return 0
+BUILD_VERSION_SDK="$(validated_device_getprop ro.build.version.sdk)" # ToDO: If not numeric or empty return 0
 BUILD_SUPPORTED_ABIS="$(validated_device_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
 SERIAL_NUMBER="$(find_serialno)"
 
@@ -174,7 +173,7 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     SPDX-FileType: SOURCE
 -->
 
-<profile name=\"${DEVICE_INFO:?} (${ROM_INFO:?})\" product=\"${BUILD_PRODUCT:?}\" sdk=\"${BUILD_VERSION_SDK_INT:?}\" id=\"${BUILD_PRODUCT:?}_${BUILD_VERSION_SDK:?}\" auto=\"true\">
+<profile name=\"${DEVICE_INFO:?} (${ROM_INFO:?})\" product=\"${BUILD_PRODUCT:?}\" sdk=\"${BUILD_VERSION_SDK:?}\" id=\"${BUILD_PRODUCT:?}_${BUILD_VERSION_SDK:?}\" auto=\"true\">
     <data key=\"Build.BOARD\" value=\"${BUILD_BOARD:?}\" />
     <data key=\"Build.BOOTLOADER\" value=\"${BUILD_BOOTLOADER:?}\" />
     <data key=\"Build.BRAND\" value=\"${BUILD_BRAND:?}\" />
@@ -199,7 +198,7 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     <data key=\"Build.VERSION.RELEASE\" value=\"${BUILD_VERSION_RELEASE:?}\" />
     <data key=\"Build.VERSION.SECURITY_PATCH\" value=\"${BUILD_VERSION_SECURITY_PATCH?}\" />
     <data key=\"Build.VERSION.SDK\" value=\"${BUILD_VERSION_SDK:?}\" />
-    <data key=\"Build.VERSION.SDK_INT\" value=\"${BUILD_VERSION_SDK_INT:?}\" />
+    <data key=\"Build.VERSION.SDK_INT\" value=\"${BUILD_VERSION_SDK:?}\" />
     <data key=\"Build.SUPPORTED_ABIS\" value=\"${BUILD_SUPPORTED_ABIS?}\" />
 
     <serial template=\"${SERIAL_NUMBER?}\" />
