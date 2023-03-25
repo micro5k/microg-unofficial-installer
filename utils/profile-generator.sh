@@ -96,6 +96,12 @@ find_serialno()
     _serialno="$(device_getprop 'sys.serialnumber')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
+    _serialno="$(device_getprop 'ro.boot.serialno')" || _serialno=''
+  fi
+  if ! is_valid_value "${_serialno?}"; then
+    _serialno="$(device_getprop 'ro.kernel.androidboot.serialno')" || _serialno=''
+  fi
+  if ! is_valid_value "${_serialno?}"; then
     show_warn 'Serial number not found'
     return 1
   fi
