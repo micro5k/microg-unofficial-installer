@@ -83,7 +83,7 @@ find_serialno()
 {
   local _serialno=''
 
-  if test "$(lc_text "${BUILD_MANUFACTURER:?}")" = 'lenovo'; then
+  if test "$(lc_text "${BUILD_MANUFACTURER:?}" || true)" = 'lenovo'; then
     _serialno="$(device_getprop 'ro.lenovosn2')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
@@ -121,9 +121,9 @@ adb_start
 BUILD_BOARD="$(validated_device_getprop ro.product.board)"
 
 BUILD_BOOTLOADER="$(validated_device_getprop 'ro.bootloader' 1)"
-BUILD_BOOTLOADER_2="$(device_getprop 'ro.build.expect.bootloader')" || BUILD_BOOTLOADER_2=''
-if is_valid_value "${BUILD_BOOTLOADER_2?}" && test "${BUILD_BOOTLOADER_2?}" != "${BUILD_BOOTLOADER?}"; then
-  show_warn "Expected Build.BOOTLOADER do NOT match: ${BUILD_BOOTLOADER_2:-}"
+BUILD_BOOTLOADER_EXPECT="$(device_getprop 'ro.build.expect.bootloader')" || BUILD_BOOTLOADER_EXPECT=''
+if is_valid_value "${BUILD_BOOTLOADER_EXPECT?}" && test "${BUILD_BOOTLOADER_EXPECT?}" != "${BUILD_BOOTLOADER?}"; then
+  show_warn "Build.BOOTLOADER does NOT match, current: ${BUILD_BOOTLOADER:-}, expected: ${BUILD_BOOTLOADER_EXPECT:-}"
 fi
 
 BUILD_BRAND="$(validated_device_getprop ro.product.brand)"
@@ -138,7 +138,13 @@ BUILD_ID="$(validated_device_getprop ro.build.id)"
 BUILD_MANUFACTURER="$(validated_device_getprop ro.product.manufacturer)"
 BUILD_MODEL="$(validated_device_getprop ro.product.model)"
 BUILD_PRODUCT="$(validated_device_getprop ro.product.name)"
+
 BUILD_RADIO="$(validated_device_getprop ro.baseband 1)"
+BUILD_RADIO_EXPECT="$(device_getprop 'ro.build.expect.baseband')" || BUILD_RADIO_EXPECT=''
+if is_valid_value "${BUILD_RADIO_EXPECT?}" && test "${BUILD_RADIO_EXPECT?}" != "${BUILD_RADIO?}"; then
+  show_warn "Build.RADIO does NOT match, current: ${BUILD_RADIO:-}, expected: ${BUILD_RADIO_EXPECT:-}"
+fi
+
 BUILD_TAGS="$(validated_device_getprop ro.build.tags)"
 BUILD_TIME="$(validated_device_getprop ro.build.date.utc)""000"
 BUILD_TYPE="$(validated_device_getprop ro.build.type)"
