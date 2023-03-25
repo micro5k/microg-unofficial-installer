@@ -40,6 +40,22 @@ is_valid_value()
   return 0
 }
 
+lc_text()
+{
+  printf '%s\n' "${1:?}" | LC_ALL=C tr '[:upper:]' '[:lower:]'
+}
+
+uc_text()
+{
+  printf '%s\n' "${1:?}" | LC_ALL=C tr '[:lower:]' '[:upper:]'
+}
+
+uc_first_letter()
+{
+  printf '%s' "${1:?}" | cut -c '1' | LC_ALL=C tr -d '\r\n' | LC_ALL=C tr '[:lower:]' '[:upper:]'
+  printf '%s\n' "${1:?}" | cut -c '2-'
+}
+
 adb_start()
 {
   adb 'start-server' 2> /dev/null
@@ -67,7 +83,7 @@ find_serialno()
 {
   local _serialno=''
 
-  if test "${BUILD_MANUFACTURER:?}" = 'LENOVO'; then
+  if test "$(lc_text "${BUILD_MANUFACTURER:?}")" = 'lenovo'; then
     _serialno="$(device_getprop 'ro.lenovosn2')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
@@ -85,12 +101,6 @@ find_serialno()
   fi
 
   printf '%s\n' "${_serialno?}"
-}
-
-uc_first_letter()
-{
-  printf '%s' "${1:?}" | cut -c '1' | LC_ALL=C tr -d '\r\n' | LC_ALL=C tr '[:lower:]' '[:upper:]'
-  printf '%s\n' "${1:?}" | cut -c '2-'
 }
 
 command -v adb 1> /dev/null || {
