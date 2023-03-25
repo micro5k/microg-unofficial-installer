@@ -203,5 +203,4 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 
     <serial template=\"${SERIAL_NUMBER?}\" />
 </profile>
-
 <!-- Automatically generated from Android device profile generator by ale5000 -->"
