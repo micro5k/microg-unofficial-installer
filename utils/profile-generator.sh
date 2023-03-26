@@ -30,6 +30,11 @@ show_warn()
   printf 1>&2 '\033[0;33m%s\033[0m\n\n' "WARNING: ${*}"
 }
 
+show_info()
+{
+  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
+}
+
 is_valid_value()
 {
   # 1 = Allow unknown
@@ -58,9 +63,11 @@ uc_first_letter()
   printf '%s\n' "${1:?}" | cut -c '2-'
 }
 
-adb_start()
+wait_device()
 {
-  adb 'start-server' 2> /dev/null
+  show_info 'Waiting for the device...'
+  adb 'start-server' 2> /dev/null || true
+  adb 'wait-for-device'
 }
 
 device_getprop()
@@ -116,10 +123,11 @@ command -v adb 1> /dev/null || {
   exit 1
 }
 
-adb_start
+wait_device
 
 # Info: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
+show_info 'Generating profile...'
 BUILD_BOARD="$(validated_device_getprop ro.product.board)"
 
 BUILD_BOOTLOADER="$(validated_device_getprop 'ro.bootloader' 1)"
