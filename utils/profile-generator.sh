@@ -57,7 +57,7 @@ uc_text()
   printf '%s\n' "${1:?}" | LC_ALL=C tr '[:lower:]' '[:upper:]'
 }
 
-uc_first_letter()
+uc_first_char()
 {
   printf '%s' "${1:?}" | cut -c '1' | LC_ALL=C tr -d '\r\n' | LC_ALL=C tr '[:lower:]' '[:upper:]'
   printf '%s\n' "${1:?}" | cut -c '2-'
@@ -167,7 +167,8 @@ BUILD_VERSION_SDK="$(validated_device_getprop ro.build.version.sdk)" # ToDO: If 
 BUILD_SUPPORTED_ABIS="$(validated_device_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
 SERIAL_NUMBER="$(find_serialno)" || SERIAL_NUMBER=''
 
-DEVICE_INFO="$(uc_first_letter "${BUILD_MANUFACTURER:?}") ${BUILD_MODEL:?}"
+DEVICE_INFO="$(uc_first_char "${BUILD_MANUFACTURER:?}") ${BUILD_MODEL:?}"
+REAL_SECURITY_PATCH=''
 
 LOS_VERSION="$(device_getprop ro.cm.build.version)" || LOS_VERSION=''
 LEAPD_VERSION="$(device_getprop ro.leapdroid.version)" || LEAPD_VERSION=''
@@ -180,7 +181,10 @@ elif is_valid_value "${LEAPD_VERSION?}"; then
   ROM_INFO="Leapdroid - ${BUILD_VERSION_RELEASE:?}"
 elif is_valid_value "${EMUI_VERSION?}"; then
   EMUI_VERSION="$(printf '%s' "${EMUI_VERSION:?}" | cut -d '_' -f 2)"
-  ROM_INFO="EmotionUI ${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+  ROM_INFO="EMUI ${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+
+  REAL_SECURITY_PATCH="$(validated_device_getprop 'ro.huawei.build.version.security_patch')" || REAL_SECURITY_PATCH=''
+  REAL_SECURITY_PATCH=" <!-- Real security patch: ${REAL_SECURITY_PATCH:-} -->"
 elif is_valid_value "${MIUI_VERSION?}"; then
   ROM_INFO="MIUI ${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
 else
@@ -217,7 +221,7 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     <data key=\"Build.VERSION.CODENAME\" value=\"${BUILD_VERSION_CODENAME:?}\" />
     <data key=\"Build.VERSION.INCREMENTAL\" value=\"${BUILD_VERSION_INCREMENTAL:?}\" />
     <data key=\"Build.VERSION.RELEASE\" value=\"${BUILD_VERSION_RELEASE:?}\" />
-    <data key=\"Build.VERSION.SECURITY_PATCH\" value=\"${BUILD_VERSION_SECURITY_PATCH?}\" />
+    <data key=\"Build.VERSION.SECURITY_PATCH\" value=\"${BUILD_VERSION_SECURITY_PATCH?}\" />${REAL_SECURITY_PATCH:-}
     <data key=\"Build.VERSION.SDK\" value=\"${BUILD_VERSION_SDK:?}\" />
     <data key=\"Build.VERSION.SDK_INT\" value=\"${BUILD_VERSION_SDK:?}\" />
     <data key=\"Build.SUPPORTED_ABIS\" value=\"${BUILD_SUPPORTED_ABIS?}\" />
