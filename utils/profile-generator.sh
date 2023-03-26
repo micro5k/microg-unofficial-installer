@@ -176,7 +176,7 @@ REAL_SECURITY_PATCH=''
 LOS_VERSION="$(device_getprop ro.cm.build.version)" || LOS_VERSION=''
 LEAPD_VERSION="$(device_getprop ro.leapdroid.version)" || LEAPD_VERSION=''
 EMUI_VERSION="$(device_getprop ro.build.version.emui)" || EMUI_VERSION='' # Huawei
-MIUI_VERSION="$(device_getprop ro.miui.ui.version.name)" || MIUI_VERSION=''
+MIUI_VERSION="$(device_getprop ro.miui.ui.version.name)" || MIUI_VERSION='' # Xiaomi
 
 if is_valid_value "${LOS_VERSION?}"; then
   ROM_INFO="LineageOS ${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
