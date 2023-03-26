@@ -168,7 +168,7 @@ BUILD_SUPPORTED_ABIS="$(validated_device_getprop ro.product.cpu.abilist 2)" # To
 SERIAL_NUMBER="$(find_serialno)" || SERIAL_NUMBER=''
 
 DEVICE_INFO="$(uc_first_char "${BUILD_MANUFACTURER:?}") ${BUILD_MODEL:?}"
-if MARKETING_DEVICE_INFO="$(validated_device_getprop 'ro.config.marketing_name')"; then
+if MARKETING_DEVICE_INFO="$(device_getprop 'ro.config.marketing_name')" && is_valid_value "${MARKETING_DEVICE_INFO?}"; then
   DEVICE_INFO="${MARKETING_DEVICE_INFO:?}"
 fi
 REAL_SECURITY_PATCH=''
