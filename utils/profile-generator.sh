@@ -18,6 +18,8 @@ set -u
   (set -o pipefail) && set -o pipefail || true
 }
 
+readonly PROFGEN_VERSION='0.1'
+
 show_error()
 {
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
@@ -209,4 +211,4 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 
     <serial template=\"${SERIAL_NUMBER?}\" />
 </profile>
-<!-- Automatically generated from Android device profile generator by ale5000 -->"
+<!-- Automatically generated from Android device profile generator ${PROFGEN_VERSION:?} by ale5000 -->"
