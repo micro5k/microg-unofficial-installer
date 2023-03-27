@@ -27,7 +27,7 @@ show_error()
 
 show_warn()
 {
-  printf 1>&2 '\033[0;33m%s\033[0m\n\n' "WARNING: ${*}"
+  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
 }
 
 show_info()
@@ -165,7 +165,12 @@ BUILD_VERSION_RELEASE="$(validated_device_getprop ro.build.version.release)"
 BUILD_VERSION_SECURITY_PATCH="$(validated_device_getprop ro.build.version.security_patch 2)"
 BUILD_VERSION_SDK="$(validated_device_getprop ro.build.version.sdk)" # ToDO: If not numeric or empty return 0
 BUILD_SUPPORTED_ABIS="$(validated_device_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
-SERIAL_NUMBER="$(find_serialno)" || SERIAL_NUMBER=''
+
+if SERIAL_NUMBER="$(find_serialno)"; then
+  show_info "Serial number: ${SERIAL_NUMBER:-}"
+else
+  SERIAL_NUMBER=''
+fi
 
 if MARKETING_DEVICE_INFO="$(device_getprop 'ro.config.marketing_name')" && is_valid_value "${MARKETING_DEVICE_INFO?}"; then
   DEVICE_INFO="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
@@ -190,6 +195,7 @@ else
   ROM_INFO="Android ${BUILD_VERSION_RELEASE:?}"
 fi
 
+printf 1>&2 '\n'
 printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <!--
     SPDX-FileCopyrightText: none
