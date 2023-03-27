@@ -18,7 +18,7 @@ set -u
   (set -o pipefail) && set -o pipefail || true
 }
 
-readonly PROFGEN_VERSION='0.1'
+readonly PROFGEN_VERSION='0.2'
 
 show_error()
 {
@@ -228,20 +228,20 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 
 <profile name=\"${DEVICE_INFO:?} (${ROM_INFO:?})\" product=\"${BUILD_PRODUCT:?}\" sdk=\"${BUILD_VERSION_SDK:?}\" id=\"${BUILD_PRODUCT:?}_${BUILD_VERSION_SDK:?}\" auto=\"true\">
     <data key=\"Build.BOARD\" value=\"${BUILD_BOARD:?}\" />
-    <data key=\"Build.BOOTLOADER\" value=\"${BUILD_BOOTLOADER:?}\" />
+    <data key=\"Build.BOOTLOADER\" value=\"${BUILD_BOOTLOADER?}\" />
     <data key=\"Build.BRAND\" value=\"${BUILD_BRAND:?}\" />
     <data key=\"Build.CPU_ABI\" value=\"${BUILD_CPU_ABI:?}\" />
     <data key=\"Build.CPU_ABI2\" value=\"${BUILD_CPU_ABI2?}\" />
     <data key=\"Build.DEVICE\" value=\"${BUILD_DEVICE:?}\" />
     <data key=\"Build.DISPLAY\" value=\"${BUILD_DISPLAY:?}\" />
     <data key=\"Build.FINGERPRINT\" value=\"${BUILD_FINGERPRINT:?}\" />
-    <data key=\"Build.HARDWARE\" value=\"${BUILD_HARDWARE:?}\" />
+    <data key=\"Build.HARDWARE\" value=\"${BUILD_HARDWARE?}\" />
     <data key=\"Build.HOST\" value=\"${BUILD_HOST:?}\" />
     <data key=\"Build.ID\" value=\"${BUILD_ID:?}\" />
     <data key=\"Build.MANUFACTURER\" value=\"${BUILD_MANUFACTURER:?}\" />
     <data key=\"Build.MODEL\" value=\"${BUILD_MODEL:?}\" />
     <data key=\"Build.PRODUCT\" value=\"${BUILD_PRODUCT:?}\" />
-    <data key=\"Build.RADIO\" value=\"${BUILD_RADIO:?}\" />
+    <data key=\"Build.RADIO\" value=\"${BUILD_RADIO?}\" />
     <data key=\"Build.TAGS\" value=\"${BUILD_TAGS:?}\" />
     <data key=\"Build.TIME\" value=\"${BUILD_TIME:?}\" />
     <data key=\"Build.TYPE\" value=\"${BUILD_TYPE:?}\" />
