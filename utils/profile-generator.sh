@@ -75,10 +75,15 @@ device_getprop()
   adb shell "getprop '${1:?}'" | LC_ALL=C tr -d '\r\n'
 }
 
-validated_device_getprop()
+chosen_getprop()
+{
+  device_getprop "${*}"
+}
+
+validated_chosen_getprop()
 {
   local _value
-  _value="$(device_getprop "${1:?}")" || return 1
+  _value="$(chosen_getprop "${1:?}")" || return 1
 
   if ! is_valid_value "${_value?}" "${2:-}"; then
     show_error "Invalid value for ${1:-}"
@@ -93,22 +98,22 @@ find_serialno()
   local _serialno=''
 
   if test "$(lc_text "${BUILD_MANUFACTURER:?}" || true)" = 'lenovo'; then
-    _serialno="$(device_getprop 'ro.lenovosn2')" || _serialno=''
+    _serialno="$(chosen_getprop 'ro.lenovosn2')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
-    _serialno="$(device_getprop 'ril.serialnumber')" || _serialno=''
+    _serialno="$(chosen_getprop 'ril.serialnumber')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
-    _serialno="$(device_getprop 'ro.serialno')" || _serialno=''
+    _serialno="$(chosen_getprop 'ro.serialno')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
-    _serialno="$(device_getprop 'sys.serialnumber')" || _serialno=''
+    _serialno="$(chosen_getprop 'sys.serialnumber')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
-    _serialno="$(device_getprop 'ro.boot.serialno')" || _serialno=''
+    _serialno="$(chosen_getprop 'ro.boot.serialno')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
-    _serialno="$(device_getprop 'ro.kernel.androidboot.serialno')" || _serialno=''
+    _serialno="$(chosen_getprop 'ro.kernel.androidboot.serialno')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
     show_warn 'Serial number not found'
@@ -128,43 +133,43 @@ wait_device
 # Info: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
 show_info 'Generating profile...'
-BUILD_BOARD="$(validated_device_getprop ro.product.board)"
+BUILD_BOARD="$(validated_chosen_getprop ro.product.board)"
 
-BUILD_BOOTLOADER="$(validated_device_getprop 'ro.bootloader' 1)"
-BUILD_BOOTLOADER_EXPECT="$(device_getprop 'ro.build.expect.bootloader')" || BUILD_BOOTLOADER_EXPECT=''
+BUILD_BOOTLOADER="$(validated_chosen_getprop 'ro.bootloader' 1)"
+BUILD_BOOTLOADER_EXPECT="$(chosen_getprop 'ro.build.expect.bootloader')" || BUILD_BOOTLOADER_EXPECT=''
 if is_valid_value "${BUILD_BOOTLOADER_EXPECT?}" && test "${BUILD_BOOTLOADER_EXPECT?}" != "${BUILD_BOOTLOADER?}"; then
   show_warn "Build.BOOTLOADER does NOT match, current: ${BUILD_BOOTLOADER:-}, expected: ${BUILD_BOOTLOADER_EXPECT:-}"
 fi
 
-BUILD_BRAND="$(validated_device_getprop ro.product.brand)"
-BUILD_CPU_ABI="$(validated_device_getprop ro.product.cpu.abi)"
-BUILD_CPU_ABI2="$(validated_device_getprop ro.product.cpu.abi2 2)"
-BUILD_DEVICE="$(validated_device_getprop ro.product.device)"
-BUILD_DISPLAY="$(validated_device_getprop ro.build.display.id)"
-BUILD_FINGERPRINT="$(validated_device_getprop ro.build.fingerprint)"
-BUILD_HARDWARE="$(validated_device_getprop ro.hardware)"
-BUILD_HOST="$(validated_device_getprop ro.build.host)"
-BUILD_ID="$(validated_device_getprop ro.build.id)"
-BUILD_MANUFACTURER="$(validated_device_getprop ro.product.manufacturer)"
-BUILD_MODEL="$(validated_device_getprop ro.product.model)"
-BUILD_PRODUCT="$(validated_device_getprop ro.product.name)"
+BUILD_BRAND="$(validated_chosen_getprop ro.product.brand)"
+BUILD_CPU_ABI="$(validated_chosen_getprop ro.product.cpu.abi)"
+BUILD_CPU_ABI2="$(validated_chosen_getprop ro.product.cpu.abi2 2)"
+BUILD_DEVICE="$(validated_chosen_getprop ro.product.device)"
+BUILD_DISPLAY="$(validated_chosen_getprop ro.build.display.id)"
+BUILD_FINGERPRINT="$(validated_chosen_getprop ro.build.fingerprint)"
+BUILD_HARDWARE="$(validated_chosen_getprop ro.hardware)"
+BUILD_HOST="$(validated_chosen_getprop ro.build.host)"
+BUILD_ID="$(validated_chosen_getprop ro.build.id)"
+BUILD_MANUFACTURER="$(validated_chosen_getprop ro.product.manufacturer)"
+BUILD_MODEL="$(validated_chosen_getprop ro.product.model)"
+BUILD_PRODUCT="$(validated_chosen_getprop ro.product.name)"
 
-BUILD_RADIO="$(validated_device_getprop ro.baseband 1)"
-BUILD_RADIO_EXPECT="$(device_getprop 'ro.build.expect.baseband')" || BUILD_RADIO_EXPECT=''
+BUILD_RADIO="$(validated_chosen_getprop ro.baseband 1)"
+BUILD_RADIO_EXPECT="$(chosen_getprop 'ro.build.expect.baseband')" || BUILD_RADIO_EXPECT=''
 if is_valid_value "${BUILD_RADIO_EXPECT?}" && test "${BUILD_RADIO_EXPECT?}" != "${BUILD_RADIO?}"; then
   show_warn "Build.RADIO does NOT match, current: ${BUILD_RADIO:-}, expected: ${BUILD_RADIO_EXPECT:-}"
 fi
 
-BUILD_TAGS="$(validated_device_getprop ro.build.tags)"
-BUILD_TIME="$(validated_device_getprop ro.build.date.utc)""000"
-BUILD_TYPE="$(validated_device_getprop ro.build.type)"
-BUILD_USER="$(validated_device_getprop ro.build.user)"
-BUILD_VERSION_CODENAME="$(validated_device_getprop ro.build.version.codename)"
-BUILD_VERSION_INCREMENTAL="$(validated_device_getprop ro.build.version.incremental)"
-BUILD_VERSION_RELEASE="$(validated_device_getprop ro.build.version.release)"
-BUILD_VERSION_SECURITY_PATCH="$(validated_device_getprop ro.build.version.security_patch 2)"
-BUILD_VERSION_SDK="$(validated_device_getprop ro.build.version.sdk)" # ToDO: If not numeric or empty return 0
-BUILD_SUPPORTED_ABIS="$(validated_device_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
+BUILD_TAGS="$(validated_chosen_getprop ro.build.tags)"
+BUILD_TIME="$(validated_chosen_getprop ro.build.date.utc)""000"
+BUILD_TYPE="$(validated_chosen_getprop ro.build.type)"
+BUILD_USER="$(validated_chosen_getprop ro.build.user)"
+BUILD_VERSION_CODENAME="$(validated_chosen_getprop ro.build.version.codename)"
+BUILD_VERSION_INCREMENTAL="$(validated_chosen_getprop ro.build.version.incremental)"
+BUILD_VERSION_RELEASE="$(validated_chosen_getprop ro.build.version.release)"
+BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop ro.build.version.security_patch 2)"
+BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)" # ToDO: If not numeric or empty return 0
+BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
 
 if SERIAL_NUMBER="$(find_serialno)"; then
   show_info "Serial number: ${SERIAL_NUMBER:-}"
@@ -172,24 +177,24 @@ else
   SERIAL_NUMBER=''
 fi
 
-if MARKETING_DEVICE_INFO="$(device_getprop 'ro.config.marketing_name')" && is_valid_value "${MARKETING_DEVICE_INFO?}"; then
+if MARKETING_DEVICE_INFO="$(chosen_getprop 'ro.config.marketing_name')" && is_valid_value "${MARKETING_DEVICE_INFO?}"; then
   DEVICE_INFO="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
 else
   DEVICE_INFO="$(uc_first_char "${BUILD_MANUFACTURER:?}") ${BUILD_MODEL:?}"
 fi
 REAL_SECURITY_PATCH=''
 
-if LOS_VERSION="$(device_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
+if LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
   ROM_INFO="LineageOS ${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
-elif LEAPD_VERSION="$(device_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
+elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
   ROM_INFO="Leapdroid - ${BUILD_VERSION_RELEASE:?}"
-elif EMUI_VERSION="$(device_getprop 'ro.build.version.emui')" && is_valid_value "${EMUI_VERSION?}"; then # Huawei
+elif EMUI_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value "${EMUI_VERSION?}"; then # Huawei
   EMUI_VERSION="$(printf '%s' "${EMUI_VERSION:?}" | cut -d '_' -f 2)"
   ROM_INFO="EMUI ${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
 
-  REAL_SECURITY_PATCH="$(validated_device_getprop 'ro.huawei.build.version.security_patch')" || REAL_SECURITY_PATCH=''
+  REAL_SECURITY_PATCH="$(validated_chosen_getprop 'ro.huawei.build.version.security_patch')" || REAL_SECURITY_PATCH=''
   REAL_SECURITY_PATCH=" <!-- Real security patch: ${REAL_SECURITY_PATCH:-} -->"
-elif MIUI_VERSION="$(device_getprop 'ro.miui.ui.version.name')" && is_valid_value "${MIUI_VERSION?}"; then # Xiaomi
+elif MIUI_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_value "${MIUI_VERSION?}"; then # Xiaomi
   ROM_INFO="MIUI ${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
 else
   ROM_INFO="Android ${BUILD_VERSION_RELEASE:?}"
