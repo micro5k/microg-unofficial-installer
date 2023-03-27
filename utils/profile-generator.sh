@@ -49,12 +49,12 @@ is_valid_value()
 
 lc_text()
 {
-  printf '%s\n' "${1:?}" | LC_ALL=C tr '[:upper:]' '[:lower:]'
+  printf '%s\n' "${1?}" | LC_ALL=C tr '[:upper:]' '[:lower:]'
 }
 
 uc_text()
 {
-  printf '%s\n' "${1:?}" | LC_ALL=C tr '[:lower:]' '[:upper:]'
+  printf '%s\n' "${1?}" | LC_ALL=C tr '[:lower:]' '[:upper:]'
 }
 
 uc_first_char()
@@ -75,17 +75,29 @@ device_getprop()
   adb shell "getprop '${1:?}'" | LC_ALL=C tr -d '\r\n'
 }
 
+getprop_output_parse()
+{
+  local _value
+
+  if test ! -e "${1:?}"; then return 1; fi
+  # Return success even if the property isn't found, it will be checked later
+  _value="$(grep -m 1 -o -e "\[${2:?}\]\:[[:blank:]].*\]" "${1:?}" | cut -d ':' -f '2-' -s)" || return 0
+  printf '%s\n' "${_value:2:-1}"
+}
+
 chosen_getprop()
 {
-  device_getprop "${*}"
+  if test "${PARSING_TYPE:?}" = 'adb'; then
+    device_getprop "${@}"
+  else
+    getprop_output_parse "${PARSING_TYPE:?}" "${@}"
+  fi
 }
 
 validated_chosen_getprop()
 {
   local _value
-  _value="$(chosen_getprop "${1:?}")" || return 1
-
-  if ! is_valid_value "${_value?}" "${2:-}"; then
+  if ! _value="$(chosen_getprop "${1:?}")" || ! is_valid_value "${_value?}" "${2:-}"; then
     show_error "Invalid value for ${1:-}"
     return 1
   fi
@@ -97,7 +109,7 @@ find_serialno()
 {
   local _serialno=''
 
-  if test "$(lc_text "${BUILD_MANUFACTURER:?}" || true)" = 'lenovo'; then
+  if test "$(lc_text "${BUILD_MANUFACTURER?}" || true)" = 'lenovo'; then
     _serialno="$(chosen_getprop 'ro.lenovosn2')" || _serialno=''
   fi
   if ! is_valid_value "${_serialno?}"; then
@@ -123,12 +135,18 @@ find_serialno()
   printf '%s\n' "${_serialno?}"
 }
 
-command -v adb 1> /dev/null || {
-  show_error 'adb is NOT available'
-  exit 1
-}
+if test -n "${1:-}"; then
+  PARSING_TYPE="${1:?}"
+else
+  PARSING_TYPE='adb'
 
-wait_device
+  command -v adb 1> /dev/null || {
+    show_error 'adb is NOT available'
+    exit 1
+  }
+
+  wait_device
+fi
 
 # Info: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
