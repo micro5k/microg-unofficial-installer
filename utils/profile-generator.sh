@@ -167,28 +167,24 @@ BUILD_VERSION_SDK="$(validated_device_getprop ro.build.version.sdk)" # ToDO: If 
 BUILD_SUPPORTED_ABIS="$(validated_device_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
 SERIAL_NUMBER="$(find_serialno)" || SERIAL_NUMBER=''
 
-DEVICE_INFO="$(uc_first_char "${BUILD_MANUFACTURER:?}") ${BUILD_MODEL:?}"
 if MARKETING_DEVICE_INFO="$(device_getprop 'ro.config.marketing_name')" && is_valid_value "${MARKETING_DEVICE_INFO?}"; then
-  DEVICE_INFO="${MARKETING_DEVICE_INFO:?}"
+  DEVICE_INFO="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
+else
+  DEVICE_INFO="$(uc_first_char "${BUILD_MANUFACTURER:?}") ${BUILD_MODEL:?}"
 fi
 REAL_SECURITY_PATCH=''
 
-LOS_VERSION="$(device_getprop ro.cm.build.version)" || LOS_VERSION=''
-LEAPD_VERSION="$(device_getprop ro.leapdroid.version)" || LEAPD_VERSION=''
-EMUI_VERSION="$(device_getprop ro.build.version.emui)" || EMUI_VERSION='' # Huawei
-MIUI_VERSION="$(device_getprop ro.miui.ui.version.name)" || MIUI_VERSION='' # Xiaomi
-
-if is_valid_value "${LOS_VERSION?}"; then
+if LOS_VERSION="$(device_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
   ROM_INFO="LineageOS ${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
-elif is_valid_value "${LEAPD_VERSION?}"; then
+elif LEAPD_VERSION="$(device_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
   ROM_INFO="Leapdroid - ${BUILD_VERSION_RELEASE:?}"
-elif is_valid_value "${EMUI_VERSION?}"; then
+elif EMUI_VERSION="$(device_getprop 'ro.build.version.emui')" && is_valid_value "${EMUI_VERSION?}"; then # Huawei
   EMUI_VERSION="$(printf '%s' "${EMUI_VERSION:?}" | cut -d '_' -f 2)"
   ROM_INFO="EMUI ${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
 
   REAL_SECURITY_PATCH="$(validated_device_getprop 'ro.huawei.build.version.security_patch')" || REAL_SECURITY_PATCH=''
   REAL_SECURITY_PATCH=" <!-- Real security patch: ${REAL_SECURITY_PATCH:-} -->"
-elif is_valid_value "${MIUI_VERSION?}"; then
+elif MIUI_VERSION="$(device_getprop 'ro.miui.ui.version.name')" && is_valid_value "${MIUI_VERSION?}"; then # Xiaomi
   ROM_INFO="MIUI ${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
 else
   ROM_INFO="Android ${BUILD_VERSION_RELEASE:?}"
