@@ -201,7 +201,7 @@ BUILD_VERSION_CODENAME="$(validated_chosen_getprop ro.build.version.codename)"
 BUILD_VERSION_INCREMENTAL="$(validated_chosen_getprop ro.build.version.incremental)"
 BUILD_VERSION_RELEASE="$(validated_chosen_getprop ro.build.version.release)"
 BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop ro.build.version.security_patch 2)"
-BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)" # ToDO: If not numeric or empty return 0
+BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"        # ToDO: If not numeric or empty return 0
 BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
 
 if IMEI="$(find_imei)"; then
@@ -278,3 +278,10 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     <serial template=\"${SERIAL_NUMBER?}\" />
 </profile>
 <!-- Automatically generated from Android device profile generator ${PROFGEN_VERSION:?} by ale5000 -->"
+
+if test "${CI:-false}" = 'false' && test "${SHLVL:-}" = '1' && test -t 1 && test -t 2; then
+  printf 1>&2 '\n\033[1;32m' || true
+  # shellcheck disable=SC3045
+  IFS='' read 1>&2 -r -s -n 1 -p 'Press any key to continue...' _ || true
+  printf 1>&2 '\033[0m\n' || true
+fi
