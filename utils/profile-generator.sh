@@ -150,6 +150,24 @@ find_imei()
   printf '%s\n' "${_imei?}"
 }
 
+anonymize_string()
+{
+  printf '%s' "${1?}" | LC_ALL=C tr '[:digit:]' '0' | LC_ALL=C tr 'a-f' 'f' | LC_ALL=C tr 'g-z' 'x' | LC_ALL=C tr 'A-F' 'F' | LC_ALL=C tr 'G-Z' 'X'
+}
+
+anonymize_serialno()
+{
+  local _string _prefix_length
+
+  _prefix_length="$((${#1} / 2))"
+  if test "${_prefix_length:?}" -gt 6; then _prefix_length='6'; fi
+
+  printf '%s' "${1:?}" | cut -c "-${_prefix_length:?}" | LC_ALL=C tr -d '[:cntrl:]'
+
+  _string="$(printf '%s' "${1:?}" | cut -c "$((${_prefix_length:?} + 1))-" | LC_ALL=C tr -d '[:cntrl:]')"
+  anonymize_string "${_string:?}"
+}
+
 if test -n "${1:-}"; then
   PARSING_TYPE="${1:?}"
 else
@@ -163,7 +181,9 @@ else
   wait_device
 fi
 
-# Info: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
+# Infos:
+# - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
+# - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
 show_info 'Generating profile...'
 BUILD_BOARD="$(validated_chosen_getprop ro.product.board)"
@@ -212,8 +232,10 @@ fi
 
 if SERIAL_NUMBER="$(find_serialno)"; then
   show_info "Serial number: ${SERIAL_NUMBER:-}"
+  ANON_SERIAL_NUMBER="$(anonymize_serialno "${SERIAL_NUMBER:?}")"
 else
   SERIAL_NUMBER=''
+  ANON_SERIAL_NUMBER=''
 fi
 
 if MARKETING_DEVICE_INFO="$(chosen_getprop 'ro.config.marketing_name')" && is_valid_value "${MARKETING_DEVICE_INFO?}"; then
@@ -275,10 +297,11 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     <data key=\"Build.VERSION.SDK_INT\" value=\"${BUILD_VERSION_SDK:?}\" />
     <data key=\"Build.SUPPORTED_ABIS\" value=\"${BUILD_SUPPORTED_ABIS?}\" />
 
-    <serial template=\"${SERIAL_NUMBER?}\" />
+    <serial template=\"${ANON_SERIAL_NUMBER?}\" />
 </profile>
 <!-- Automatically generated from Android device profile generator ${PROFGEN_VERSION:?} by ale5000 -->"
 
+# shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
 if test "${CI:-false}" = 'false' && test "${SHLVL:-}" = '1' && test -t 1 && test -t 2; then
   printf 1>&2 '\n\033[1;32m' || true
   # shellcheck disable=SC3045
