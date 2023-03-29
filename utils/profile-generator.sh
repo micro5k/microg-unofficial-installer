@@ -72,7 +72,7 @@ wait_device()
 
 device_getprop()
 {
-  adb shell "getprop '${1:?}'" | LC_ALL=C tr -d '\r\n'
+  adb shell "getprop '${1:?}'" | LC_ALL=C tr -d '[:cntrl:]'
 }
 
 getprop_output_parse()
@@ -136,6 +136,20 @@ find_serialno()
   printf '%s\n' "${_serialno?}"
 }
 
+find_imei()
+{
+  local _imei
+  if test "${PARSING_TYPE:?}" != 'adb'; then return 2; fi
+  _imei="$(adb shell 'service call iphonesubinfo 1' | cut -c '52-67' | LC_ALL=C tr -d '.[:space:]')" || _imei=''
+
+  if ! is_valid_value "${_imei?}"; then
+    show_warn 'IMEI not found'
+    return 1
+  fi
+
+  printf '%s\n' "${_imei?}"
+}
+
 if test -n "${1:-}"; then
   PARSING_TYPE="${1:?}"
 else
@@ -189,6 +203,12 @@ BUILD_VERSION_RELEASE="$(validated_chosen_getprop ro.build.version.release)"
 BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop ro.build.version.security_patch 2)"
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)" # ToDO: If not numeric or empty return 0
 BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
+
+if IMEI="$(find_imei)"; then
+  show_info "IMEI: ${IMEI:-}"
+else
+  IMEI=''
+fi
 
 if SERIAL_NUMBER="$(find_serialno)"; then
   show_info "Serial number: ${SERIAL_NUMBER:-}"
