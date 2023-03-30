@@ -78,12 +78,11 @@ device_getprop()
 getprop_output_parse()
 {
   local _value
-
   if test ! -e "${1:?}"; then return 1; fi
+
   # Return success even if the property isn't found, it will be checked later
-  _value="$(grep -m 1 -o -e "\[${2:?}\]\:[[:blank:]].*\]" "${1:?}" | cut -d ':' -f '2-' -s)" || return 0
-  # shellcheck disable=SC3057
-  printf '%s\n' "${_value: 2 : -1}"
+  _value="$(grep -m 1 -o -e "^\[${2:?}\]\:[[:blank:]]\[.*\][[:cntrl:]]*$" "${1:?}" | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '[:cntrl:]')" || return 0
+  printf '%s' "${_value?}" | cut -c "3-$((${#_value} - 1))" || return 0
 }
 
 chosen_getprop()
