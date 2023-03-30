@@ -140,7 +140,7 @@ find_imei()
 {
   local _imei
   if test "${PARSING_TYPE:?}" != 'adb'; then return 2; fi
-  _imei="$(adb shell 'service call iphonesubinfo 1' | cut -c '52-67' | LC_ALL=C tr -d '.[:space:]')" || _imei=''
+  _imei="$(adb shell 'service call iphonesubinfo 1' | cut -d "'" -f '2' -s | LC_ALL=C tr -d '.[:space:]')" || _imei=''
 
   if ! is_valid_value "${_imei?}"; then
     show_warn 'IMEI not found'
