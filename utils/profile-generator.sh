@@ -84,12 +84,22 @@ getprop_output_parse()
   printf '%s' "${_value?}" | cut -c "3-$((${#_value} - 1))" || return 0
 }
 
+prop_output_parse()
+{
+  local _value
+
+  # Return success even if the property isn't found, it will be checked later
+  grep -m 1 -e "^${2:?}=" "${1:?}" | LC_ALL=C tr -d '[:cntrl:]' | cut -d '=' -f '2-' -s || return 0
+}
+
 chosen_getprop()
 {
   if test "${PARSING_TYPE:?}" = 'adb'; then
     device_getprop "${@}"
-  else
+  elif test "${PROP_TYPE:?}" = '1'; then
     getprop_output_parse "${PARSING_TYPE:?}" "${@}"
+  else
+    prop_output_parse "${PARSING_TYPE:?}" "${@}"
   fi
 }
 
@@ -173,6 +183,12 @@ if test -n "${1:-}"; then
     show_error "Input file doesn't exist => '${1:-}'"
     exit 1
   }
+
+  if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${1:?}"; then
+    readonly PROP_TYPE='1'
+  else
+    readonly PROP_TYPE='2'
+  fi
 else
   PARSING_TYPE='adb'
 
@@ -254,8 +270,9 @@ elif EMUI_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value 
   EMUI_VERSION="$(printf '%s' "${EMUI_VERSION:?}" | cut -d '_' -f 2)"
   ROM_INFO="EMUI ${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
 
-  REAL_SECURITY_PATCH="$(validated_chosen_getprop 'ro.huawei.build.version.security_patch')" || REAL_SECURITY_PATCH=''
-  REAL_SECURITY_PATCH=" <!-- Real security patch: ${REAL_SECURITY_PATCH:-} -->"
+  if REAL_SECURITY_PATCH="$(validated_chosen_getprop 'ro.huawei.build.version.security_patch')"; then
+    REAL_SECURITY_PATCH=" <!-- Real security patch: ${REAL_SECURITY_PATCH:-} -->"
+  fi
 elif MIUI_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_value "${MIUI_VERSION?}"; then # Xiaomi
   ROM_INFO="MIUI ${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
 elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
