@@ -114,6 +114,20 @@ validated_chosen_getprop()
   printf '%s\n' "${_value?}"
 }
 
+generate_device_info()
+{
+  if MARKETING_DEVICE_INFO="$(chosen_getprop 'ro.config.marketing_name')" && is_valid_value "${MARKETING_DEVICE_INFO?}"; then
+    DEVICE_INFO="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
+  else
+    DEVICE_INFO="$(uc_first_char "${BUILD_MANUFACTURER:?}")"
+    if test "$(uc_text "${BUILD_BRAND:?}")" != "$(uc_text "${BUILD_MANUFACTURER:?}")"; then
+      DEVICE_INFO="${DEVICE_INFO:?} $(uc_first_char "${BUILD_BRAND:?}")"
+    fi
+    DEVICE_INFO="${DEVICE_INFO:?} ${BUILD_MODEL:?}"
+    
+  fi
+}
+
 find_serialno()
 {
   local _serialno=''
@@ -242,6 +256,7 @@ BUILD_VERSION_RELEASE="$(validated_chosen_getprop ro.build.version.release)"
 BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop ro.build.version.security_patch 2)"
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"        # ToDO: If not numeric or empty return 0
 BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
+REAL_SECURITY_PATCH=''
 
 if IMEI="$(find_imei)"; then
   show_info "IMEI: ${IMEI:-}"
@@ -257,12 +272,7 @@ else
   ANON_SERIAL_NUMBER=''
 fi
 
-if MARKETING_DEVICE_INFO="$(chosen_getprop 'ro.config.marketing_name')" && is_valid_value "${MARKETING_DEVICE_INFO?}"; then
-  DEVICE_INFO="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
-else
-  DEVICE_INFO="$(uc_first_char "${BUILD_MANUFACTURER:?}") ${BUILD_MODEL:?}"
-fi
-REAL_SECURITY_PATCH=''
+generate_device_info
 
 if LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
   ROM_INFO="LineageOS ${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
@@ -290,7 +300,7 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 -->
 
 <profile name=\"${DEVICE_INFO:?} (${ROM_INFO:?})\" product=\"${BUILD_PRODUCT:?}\" sdk=\"${BUILD_VERSION_SDK:?}\" id=\"${BUILD_PRODUCT:?}_${BUILD_VERSION_SDK:?}\" auto=\"true\">
-    <data key=\"Build.BOARD\" value=\"${BUILD_BOARD:?}\" />
+    <data key=\"Build.BOARD\" value=\"${BUILD_BOARD?}\" />
     <data key=\"Build.BOOTLOADER\" value=\"${BUILD_BOOTLOADER?}\" />
     <data key=\"Build.BRAND\" value=\"${BUILD_BRAND:?}\" />
     <data key=\"Build.CPU_ABI\" value=\"${BUILD_CPU_ABI:?}\" />
