@@ -78,10 +78,9 @@ device_getprop()
 getprop_output_parse()
 {
   local _value
-  if test ! -e "${1:?}"; then return 1; fi
 
   # Return success even if the property isn't found, it will be checked later
-  _value="$(grep -m 1 -o -e "^\[${2:?}\]\:[[:blank:]]\[.*\][[:cntrl:]]*$" "${1:?}" | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '[:cntrl:]')" || return 0
+  _value="$(grep -m 1 -e "^\[${2:?}\]\:" "${1:?}" | LC_ALL=C tr -d '[:cntrl:]' | cut -d ':' -f '2-' -s | grep -m 1 -o -e '^[[:blank:]]\[.*\]$')" || return 0
   printf '%s' "${_value?}" | cut -c "3-$((${#_value} - 1))" || return 0
 }
 
@@ -169,6 +168,11 @@ anonymize_serialno()
 
 if test -n "${1:-}"; then
   PARSING_TYPE="${1:?}"
+
+  test -e "${1:?}" || {
+    show_error "Input file doesn't exist => '${1:-}'"
+    exit 1
+  }
 else
   PARSING_TYPE='adb'
 
