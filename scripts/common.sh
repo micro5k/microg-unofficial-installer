@@ -62,9 +62,10 @@ compare_start_uname()
 
 detect_os()
 {
-  local _os='unknown'
+  local _os
+  _os="$(uname | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)"
 
-  case "$(uname | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" in
+  case "${_os?}" in
     'linux')
       _os='linux'
       ;;
@@ -78,6 +79,7 @@ detect_os()
       _os='freebsd'
       ;;
     '')
+      _os='unknown'
       ;;
 
     *)
@@ -91,10 +93,10 @@ detect_os()
           _os='win'
           ;;
         *)
-          _os="$(uname | LC_ALL=C tr -d '/' | LC_ALL=C tr '[:upper:]' '[:lower:]')" || ui_error 'Failed to get uname'
+          printf '%s\n' "${_os:?}" | LC_ALL=C tr -d '/' || ui_error 'Failed to get uname'
+          return 0
           ;;
       esac
-
       ;;
   esac
 
