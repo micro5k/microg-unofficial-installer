@@ -102,16 +102,16 @@ detect_os()
 
   # Android identify itself as Linux
   if test "${_os?}" = 'linux'; then
-    if test "$(uname -o 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" = 'android'; then # Termux on Android
-      _os='android'
-    else
-      case "$(uname -r 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" in # adb shell on Android
-        *'-lineage-'* | *'-leapdroid-'*)
+    case "$(uname -r 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" in # adb shell on Android
+      *'-lineage-'* | *'-leapdroid-'*)
+        _os='android'
+        ;;
+      *)
+        if test "$(uname -o 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" = 'android'; then # Termux on Android
           _os='android'
-          ;;
-        *) ;;
-      esac
-    fi
+        fi
+        ;;
+    esac
   fi
 
   printf '%s\n' "${_os?}"
