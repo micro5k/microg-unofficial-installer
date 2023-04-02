@@ -18,7 +18,9 @@ set -u
   (set -o pipefail) && set -o pipefail || true
 }
 
-readonly PROFGEN_VERSION='0.2'
+readonly PROFGEN_NAME='Android device profile generator'
+readonly PROFGEN_SHORTNAME='Device ProfGen'
+readonly PROFGEN_VERSION='0.3'
 
 show_error()
 {
@@ -49,18 +51,57 @@ is_valid_value()
 
 lc_text()
 {
-  printf '%s\n' "${1?}" | LC_ALL=C tr '[:upper:]' '[:lower:]'
+  printf '%s' "${1?}" | LC_ALL=C tr '[:upper:]' '[:lower:]'
 }
 
 uc_text()
 {
-  printf '%s\n' "${1?}" | LC_ALL=C tr '[:lower:]' '[:upper:]'
+  printf '%s' "${1?}" | LC_ALL=C tr '[:lower:]' '[:upper:]'
 }
 
 uc_first_char()
 {
-  printf '%s' "${1:?}" | cut -c '1' | LC_ALL=C tr -d '\r\n' | LC_ALL=C tr '[:lower:]' '[:upper:]'
-  printf '%s\n' "${1:?}" | cut -c '2-'
+  printf '%s' "${1?}" | cut -c '1' | LC_ALL=C tr -d '\r\n' | LC_ALL=C tr '[:lower:]' '[:upper:]'
+  printf '%s\n' "${1?}" | cut -c '2-'
+}
+
+compare_nocase()
+{
+  if test "$(lc_text "${1?}")" = "$(lc_text "${2?}")"; then
+    return 0 # True
+  fi
+
+  return 1 # False
+}
+
+is_string_starting_with()
+{
+  case "${2?}" in
+    "${1:?}"*) return 0 ;; # Found
+    *) ;;               # NOT found
+  esac
+  return 1 # NOT found
+}
+
+is_string_nocase_starting_with()
+{
+  local _val_1 _val_2
+  _val_1="$(lc_text "${1?}")"
+  _val_2="$(lc_text "${2?}")"
+
+  case "${_val_2?}" in
+    "${_val_1:?}"*) return 0 ;; # Found
+    *) ;;               # NOT found
+  esac
+  return 1 # NOT found
+}
+
+prepend_with_space()
+{
+  printf '%s' "${1?}"
+  if test -n "${2?}"; then
+    printf ' %s' "${2?}"
+  fi
 }
 
 wait_device()
@@ -116,15 +157,26 @@ validated_chosen_getprop()
 
 generate_device_info()
 {
-  if MARKETING_DEVICE_INFO="$(chosen_getprop 'ro.config.marketing_name')" && is_valid_value "${MARKETING_DEVICE_INFO?}"; then
-    DEVICE_INFO="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
+  local _info _info_prefix
+  _info_prefix=''
+
+  if is_valid_value "${MARKETING_DEVICE_INFO?}"; then
+    _info="${MARKETING_DEVICE_INFO:?}"
   else
-    DEVICE_INFO="$(uc_first_char "${BUILD_MANUFACTURER:?}")"
-    if test "$(uc_text "${BUILD_BRAND:?}")" != "$(uc_text "${BUILD_MANUFACTURER:?}")"; then
-      DEVICE_INFO="${DEVICE_INFO:?} $(uc_first_char "${BUILD_BRAND:?}")"
+    if test -n "${BUILD_BRAND?}" && ! compare_nocase "${BUILD_BRAND:?}" "${BUILD_MANUFACTURER?}"; then
+      _info_prefix="$(uc_first_char "${BUILD_BRAND:?}")"
     fi
-    DEVICE_INFO="${DEVICE_INFO:?} ${BUILD_MODEL:?}"
-    
+    _info="${BUILD_MODEL?}"
+  fi
+
+  if test -n "${BUILD_MANUFACTURER?}" && ! is_string_nocase_starting_with "${BUILD_MANUFACTURER:?} " "${_info?}"; then
+    _info_prefix="$(prepend_with_space "${BUILD_MANUFACTURER:?}" "${_info_prefix?}")"
+  fi
+
+  if test -n "${_info_prefix?}"; then
+    printf '%s %s' "$(uc_first_char "${_info_prefix?}")" "${_info?}"
+  else
+    printf '%s' "$(uc_first_char "${_info?}")"
   fi
 }
 
@@ -190,6 +242,8 @@ anonymize_serialno()
   anonymize_string "${_string:?}"
 }
 
+show_info "${PROFGEN_NAME:?} ${PROFGEN_VERSION:?} by ale5000"
+
 if test -n "${1:-}"; then
   PARSING_TYPE="${1:?}"
 
@@ -202,6 +256,7 @@ if test -n "${1:-}"; then
     readonly PROP_TYPE='1'
   else
     readonly PROP_TYPE='2'
+    show_warn 'Profiles generated this way will be incomplete!!!'
   fi
 else
   PARSING_TYPE='adb'
@@ -247,7 +302,7 @@ if is_valid_value "${BUILD_RADIO_EXPECT?}" && test "${BUILD_RADIO_EXPECT?}" != "
 fi
 
 BUILD_TAGS="$(validated_chosen_getprop ro.build.tags)"
-BUILD_TIME="$(validated_chosen_getprop ro.build.date.utc)""000"
+BUILD_TIME="$(validated_chosen_getprop ro.build.date.utc)""000" || BUILD_TIME=''
 BUILD_TYPE="$(validated_chosen_getprop ro.build.type)"
 BUILD_USER="$(validated_chosen_getprop ro.build.user)"
 BUILD_VERSION_CODENAME="$(validated_chosen_getprop ro.build.version.codename)"
@@ -256,7 +311,6 @@ BUILD_VERSION_RELEASE="$(validated_chosen_getprop ro.build.version.release)"
 BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop ro.build.version.security_patch 2)"
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"        # ToDO: If not numeric or empty return 0
 BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
-REAL_SECURITY_PATCH=''
 
 if IMEI="$(find_imei)"; then
   show_info "IMEI: ${IMEI:-}"
@@ -272,7 +326,9 @@ else
   ANON_SERIAL_NUMBER=''
 fi
 
-generate_device_info
+MARKETING_DEVICE_INFO="$(chosen_getprop 'ro.config.marketing_name')" || MARKETING_DEVICE_INFO=''
+DEVICE_INFO="$(generate_device_info)"
+REAL_SECURITY_PATCH=''
 
 if LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
   ROM_INFO="LineageOS ${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
@@ -288,7 +344,7 @@ elif MIUI_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_valu
 elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
   ROM_INFO="Leapdroid - ${BUILD_VERSION_RELEASE:?}"
 else
-  ROM_INFO="Android ${BUILD_VERSION_RELEASE:?}"
+  ROM_INFO="Android ${BUILD_VERSION_RELEASE?}"
 fi
 
 printf 1>&2 '\n'
@@ -299,37 +355,37 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     SPDX-FileType: SOURCE
 -->
 
-<profile name=\"${DEVICE_INFO:?} (${ROM_INFO:?})\" product=\"${BUILD_PRODUCT:?}\" sdk=\"${BUILD_VERSION_SDK:?}\" id=\"${BUILD_PRODUCT:?}_${BUILD_VERSION_SDK:?}\" auto=\"true\">
+<profile name=\"${DEVICE_INFO?} (${ROM_INFO:?})\" product=\"${BUILD_PRODUCT:?}\" sdk=\"${BUILD_VERSION_SDK:?}\" id=\"${BUILD_PRODUCT:?}_${BUILD_VERSION_SDK:?}\" auto=\"true\">
     <data key=\"Build.BOARD\" value=\"${BUILD_BOARD?}\" />
     <data key=\"Build.BOOTLOADER\" value=\"${BUILD_BOOTLOADER?}\" />
-    <data key=\"Build.BRAND\" value=\"${BUILD_BRAND:?}\" />
-    <data key=\"Build.CPU_ABI\" value=\"${BUILD_CPU_ABI:?}\" />
+    <data key=\"Build.BRAND\" value=\"${BUILD_BRAND?}\" />
+    <data key=\"Build.CPU_ABI\" value=\"${BUILD_CPU_ABI?}\" />
     <data key=\"Build.CPU_ABI2\" value=\"${BUILD_CPU_ABI2?}\" />
-    <data key=\"Build.DEVICE\" value=\"${BUILD_DEVICE:?}\" />
-    <data key=\"Build.DISPLAY\" value=\"${BUILD_DISPLAY:?}\" />
-    <data key=\"Build.FINGERPRINT\" value=\"${BUILD_FINGERPRINT:?}\" />
+    <data key=\"Build.DEVICE\" value=\"${BUILD_DEVICE?}\" />
+    <data key=\"Build.DISPLAY\" value=\"${BUILD_DISPLAY?}\" />
+    <data key=\"Build.FINGERPRINT\" value=\"${BUILD_FINGERPRINT?}\" />
     <data key=\"Build.HARDWARE\" value=\"${BUILD_HARDWARE?}\" />
-    <data key=\"Build.HOST\" value=\"${BUILD_HOST:?}\" />
-    <data key=\"Build.ID\" value=\"${BUILD_ID:?}\" />
-    <data key=\"Build.MANUFACTURER\" value=\"${BUILD_MANUFACTURER:?}\" />
-    <data key=\"Build.MODEL\" value=\"${BUILD_MODEL:?}\" />
+    <data key=\"Build.HOST\" value=\"${BUILD_HOST?}\" />
+    <data key=\"Build.ID\" value=\"${BUILD_ID?}\" />
+    <data key=\"Build.MANUFACTURER\" value=\"${BUILD_MANUFACTURER?}\" />
+    <data key=\"Build.MODEL\" value=\"${BUILD_MODEL?}\" />
     <data key=\"Build.PRODUCT\" value=\"${BUILD_PRODUCT:?}\" />
     <data key=\"Build.RADIO\" value=\"${BUILD_RADIO?}\" />
-    <data key=\"Build.TAGS\" value=\"${BUILD_TAGS:?}\" />
-    <data key=\"Build.TIME\" value=\"${BUILD_TIME:?}\" />
-    <data key=\"Build.TYPE\" value=\"${BUILD_TYPE:?}\" />
-    <data key=\"Build.USER\" value=\"${BUILD_USER:?}\" />
-    <data key=\"Build.VERSION.CODENAME\" value=\"${BUILD_VERSION_CODENAME:?}\" />
-    <data key=\"Build.VERSION.INCREMENTAL\" value=\"${BUILD_VERSION_INCREMENTAL:?}\" />
-    <data key=\"Build.VERSION.RELEASE\" value=\"${BUILD_VERSION_RELEASE:?}\" />
-    <data key=\"Build.VERSION.SECURITY_PATCH\" value=\"${BUILD_VERSION_SECURITY_PATCH?}\" />${REAL_SECURITY_PATCH:-}
+    <data key=\"Build.TAGS\" value=\"${BUILD_TAGS?}\" />
+    <data key=\"Build.TIME\" value=\"${BUILD_TIME?}\" />
+    <data key=\"Build.TYPE\" value=\"${BUILD_TYPE?}\" />
+    <data key=\"Build.USER\" value=\"${BUILD_USER?}\" />
+    <data key=\"Build.VERSION.CODENAME\" value=\"${BUILD_VERSION_CODENAME?}\" />
+    <data key=\"Build.VERSION.INCREMENTAL\" value=\"${BUILD_VERSION_INCREMENTAL?}\" />
+    <data key=\"Build.VERSION.RELEASE\" value=\"${BUILD_VERSION_RELEASE?}\" />
+    <data key=\"Build.VERSION.SECURITY_PATCH\" value=\"${BUILD_VERSION_SECURITY_PATCH?}\" />${REAL_SECURITY_PATCH?}
     <data key=\"Build.VERSION.SDK\" value=\"${BUILD_VERSION_SDK:?}\" />
     <data key=\"Build.VERSION.SDK_INT\" value=\"${BUILD_VERSION_SDK:?}\" />
     <data key=\"Build.SUPPORTED_ABIS\" value=\"${BUILD_SUPPORTED_ABIS?}\" />
 
     <serial template=\"${ANON_SERIAL_NUMBER?}\" />
 </profile>
-<!-- Automatically generated from Android device profile generator ${PROFGEN_VERSION:?} by ale5000 -->"
+<!-- Generated by ${PROFGEN_SHORTNAME:?} ${PROFGEN_VERSION:?} by ale5000 -->"
 
 # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
 if test "${CI:-false}" = 'false' && test "${SHLVL:-}" = '1' && test -t 1 && test -t 2; then
