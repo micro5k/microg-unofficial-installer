@@ -39,7 +39,7 @@ show_info()
 
 is_all_zeros()
 {
-  if test -n "${1?}" && test "$(printf '%s' "${1?}" | LC_ALL=C tr -d '0')" == ''; then
+  if test -n "${1?}" && test "$(printf '%s' "${1?}" | LC_ALL=C tr -d '0' || true)" == ''; then
     return 0 # True
   fi
 
