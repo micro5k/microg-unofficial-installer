@@ -280,7 +280,7 @@ else
   }
 
   show_info 'Generating profile...'
-  if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${1:?}"; then
+  if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${PARSING_TYPE:?}"; then
     readonly PROP_TYPE='1'
   else
     readonly PROP_TYPE='2'
