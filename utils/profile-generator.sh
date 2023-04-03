@@ -259,37 +259,39 @@ anonymize_serialno()
 }
 
 show_info "${PROFGEN_NAME:?} ${PROFGEN_VERSION:?} by ale5000"
-
-if test -n "${1:-}"; then
-  PARSING_TYPE="${1:?}"
-
-  test -e "${1:?}" || {
-    show_error "Input file doesn't exist => '${1:-}'"
-    exit 1
-  }
-
-  if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${1:?}"; then
-    readonly PROP_TYPE='1'
-  else
-    readonly PROP_TYPE='2'
-    show_warn 'Profiles generated this way will be incomplete!!!'
-  fi
+if test -z "${*}"; then
+  readonly PARSING_TYPE='adb'
 else
-  PARSING_TYPE='adb'
+  readonly PARSING_TYPE="${1:?}"
+fi
 
+if test "${PARSING_TYPE:?}" = 'adb'; then
   command -v adb 1> /dev/null || {
     show_error 'adb is NOT available'
     exit 1
   }
 
   wait_device
+  show_info 'Generating profile...'
+else
+  test -e "${PARSING_TYPE:?}" || {
+    show_error "Input file doesn't exist => '${PARSING_TYPE:-}'"
+    exit 1
+  }
+
+  show_info 'Generating profile...'
+  if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${1:?}"; then
+    readonly PROP_TYPE='1'
+  else
+    readonly PROP_TYPE='2'
+    show_warn 'Profiles generated this way will be incomplete!!!'
+  fi
 fi
 
 # Infos:
 # - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
 # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
-show_info 'Generating profile...'
 BUILD_BOARD="$(validated_chosen_getprop ro.product.board)"
 
 BUILD_BOOTLOADER="$(validated_chosen_getprop 'ro.bootloader' 1)"
