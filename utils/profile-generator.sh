@@ -131,7 +131,9 @@ getprop_output_parse()
 
   # Return success even if the property isn't found, it will be checked later
   _value="$(grep -m 1 -e "^\[${2:?}\]\:" "${1:?}" | LC_ALL=C tr -d '[:cntrl:]' | cut -d ':' -f '2-' -s | grep -m 1 -o -e '^[[:blank:]]\[.*\]$')" || return 0
-  printf '%s' "${_value?}" | cut -c "3-$((${#_value} - 1))" || return 0
+  if test "${#_value}" -gt 3; then
+    printf '%s' "${_value?}" | cut -c "3-$((${#_value} - 1))"
+  fi
 }
 
 prop_output_parse()
@@ -242,6 +244,11 @@ anonymize_serialno()
 {
   local _string _prefix_length
 
+  if test "${#1}" -lt 2; then
+    show_error 'Invalid serial number'
+    return 1
+  fi
+
   _prefix_length="$((${#1} / 2))"
   if test "${_prefix_length:?}" -gt 6; then _prefix_length='6'; fi
 
@@ -311,7 +318,13 @@ if is_valid_value "${BUILD_RADIO_EXPECT?}" && test "${BUILD_RADIO_EXPECT?}" != "
 fi
 
 BUILD_TAGS="$(validated_chosen_getprop ro.build.tags)"
-BUILD_TIME="$(validated_chosen_getprop ro.build.date.utc)""000" || BUILD_TIME=''
+
+BUILD_TIME_HUMAN=''
+if BUILD_TIME="$(validated_chosen_getprop ro.build.date.utc)"; then
+  BUILD_TIME_HUMAN="$(LC_ALL=C date -u -d "@${BUILD_TIME:?}" '+%a %b %d %H:%M:%S %Z %Y')"
+  BUILD_TIME="${BUILD_TIME:?}000"
+fi
+
 BUILD_TYPE="$(validated_chosen_getprop ro.build.type)"
 BUILD_USER="$(validated_chosen_getprop ro.build.user)"
 BUILD_VERSION_CODENAME="$(validated_chosen_getprop ro.build.version.codename)"
@@ -382,7 +395,7 @@ printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     <data key=\"Build.PRODUCT\" value=\"${BUILD_PRODUCT:?}\" />
     <data key=\"Build.RADIO\" value=\"${BUILD_RADIO?}\" />
     <data key=\"Build.TAGS\" value=\"${BUILD_TAGS?}\" />
-    <data key=\"Build.TIME\" value=\"${BUILD_TIME?}\" />
+    <data key=\"Build.TIME\" value=\"${BUILD_TIME?}\" /> <!-- ${BUILD_TIME_HUMAN?} -->
     <data key=\"Build.TYPE\" value=\"${BUILD_TYPE?}\" />
     <data key=\"Build.USER\" value=\"${BUILD_USER?}\" />
     <data key=\"Build.VERSION.CODENAME\" value=\"${BUILD_VERSION_CODENAME?}\" />
