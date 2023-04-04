@@ -146,12 +146,12 @@ prop_output_parse()
 
 chosen_getprop()
 {
-  if test "${PARSING_TYPE:?}" = 'adb'; then
+  if test "${INPUT_TYPE:?}" = 'adb'; then
     device_getprop "${@}"
   elif test "${PROP_TYPE:?}" = '1'; then
-    getprop_output_parse "${PARSING_TYPE:?}" "${@}"
+    getprop_output_parse "${INPUT_TYPE:?}" "${@}"
   else
-    prop_output_parse "${PARSING_TYPE:?}" "${@}"
+    prop_output_parse "${INPUT_TYPE:?}" "${@}"
   fi
 }
 
@@ -224,7 +224,7 @@ find_serialno()
 find_imei()
 {
   local _imei
-  if test "${PARSING_TYPE:?}" != 'adb'; then return 2; fi
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 2; fi
   _imei="$(adb shell 'service call iphonesubinfo 1' | cut -d "'" -f '2' -s | LC_ALL=C tr -d '.[:space:]')" || _imei=''
 
   if ! is_valid_value "${_imei?}"; then
@@ -260,12 +260,12 @@ anonymize_serialno()
 
 show_info "${PROFGEN_NAME:?} ${PROFGEN_VERSION:?} by ale5000"
 if test -z "${*}"; then
-  readonly PARSING_TYPE='adb'
+  readonly INPUT_TYPE='adb'
 else
-  readonly PARSING_TYPE="${1:?}"
+  readonly INPUT_TYPE="${1:?}"
 fi
 
-if test "${PARSING_TYPE:?}" = 'adb'; then
+if test "${INPUT_TYPE:?}" = 'adb'; then
   command -v adb 1> /dev/null || {
     show_error 'adb is NOT available'
     exit 1
@@ -274,13 +274,13 @@ if test "${PARSING_TYPE:?}" = 'adb'; then
   wait_device
   show_info 'Generating profile...'
 else
-  test -e "${PARSING_TYPE:?}" || {
-    show_error "Input file doesn't exist => '${PARSING_TYPE:-}'"
+  test -e "${INPUT_TYPE:?}" || {
+    show_error "Input file doesn't exist => '${INPUT_TYPE:-}'"
     exit 1
   }
 
   show_info 'Generating profile...'
-  if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${PARSING_TYPE:?}"; then
+  if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
     readonly PROP_TYPE='1'
   else
     readonly PROP_TYPE='2'
