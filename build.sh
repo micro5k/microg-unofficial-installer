@@ -59,8 +59,8 @@ detect_script_dir()
 }
 detect_script_dir || return 1 2>&- || exit 1
 
-# shellcheck source=SCRIPTDIR/scripts/common.sh
-if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${SCRIPT_DIR}/scripts/common.sh"; fi
+# shellcheck source=SCRIPTDIR/includes/common.sh
+if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${SCRIPT_DIR}/includes/common.sh"; fi
 
 save_last_title
 change_title 'Building the flashable OTA zip...'
