@@ -83,6 +83,15 @@ compare_nocase()
   return 1 # False
 }
 
+contains()
+{
+  case "${2?}" in
+    *"${1:?}"*) return 0 ;; # Found
+    *) ;;                   # NOT found
+  esac
+  return 1 # NOT found
+}
+
 is_string_starting_with()
 {
   case "${2?}" in
@@ -225,7 +234,12 @@ find_imei()
 {
   local _imei
   if test "${INPUT_TYPE:?}" != 'adb'; then return 2; fi
-  _imei="$(adb shell 'service call iphonesubinfo 1' | cut -d "'" -f '2' -s | LC_ALL=C tr -d '.[:space:]')" || _imei=''
+  _imei="$(adb shell 'service call iphonesubinfo 1' | cut -d "'" -f '2' -s | LC_ALL=C tr -d '.[:cntrl:]')" || _imei=''
+
+  if contains 'Requires READ_PHONE_STATE' "${_imei?}"; then
+    show_warn 'Unable to find IMEI due to lack of permissions'
+    return 1
+  fi
 
   if ! is_valid_value "${_imei?}"; then
     show_warn 'IMEI not found'
