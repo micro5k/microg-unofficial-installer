@@ -53,9 +53,17 @@ is_valid_value()
 
   if test -z "${1?}" && test "${2:-0}" != '2'; then return 1; fi
   if test "${1?}" = 'unknown' && test "${2:-0}" != '1'; then return 1; fi
-  if is_all_zeros "${1?}"; then return 1; fi
 
-  return 0
+  return 0 # Valid
+}
+
+is_valid_serial()
+{
+  if test -z "${1?}" || test "${#1}" -lt 2 || test "${1?}" = 'unknown' || is_all_zeros "${1?}"; then
+    return 1 # NOT valid
+  fi
+
+  return 0 # Valid
 }
 
 lc_text()
@@ -204,25 +212,25 @@ find_serialno()
 {
   local _serialno=''
 
-  if test "$(lc_text "${BUILD_MANUFACTURER?}" || true)" = 'lenovo'; then
+  if compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo'; then
     _serialno="$(chosen_getprop 'ro.lenovosn2')" || _serialno=''
   fi
-  if ! is_valid_value "${_serialno?}"; then
+  if ! is_valid_serial "${_serialno?}"; then
     _serialno="$(chosen_getprop 'ril.serialnumber')" || _serialno=''
   fi
-  if ! is_valid_value "${_serialno?}"; then
+  if ! is_valid_serial "${_serialno?}"; then
     _serialno="$(chosen_getprop 'ro.serialno')" || _serialno=''
   fi
-  if ! is_valid_value "${_serialno?}"; then
+  if ! is_valid_serial "${_serialno?}"; then
     _serialno="$(chosen_getprop 'sys.serialnumber')" || _serialno=''
   fi
-  if ! is_valid_value "${_serialno?}"; then
+  if ! is_valid_serial "${_serialno?}"; then
     _serialno="$(chosen_getprop 'ro.boot.serialno')" || _serialno=''
   fi
-  if ! is_valid_value "${_serialno?}"; then
+  if ! is_valid_serial "${_serialno?}"; then
     _serialno="$(chosen_getprop 'ro.kernel.androidboot.serialno')" || _serialno=''
   fi
-  if ! is_valid_value "${_serialno?}"; then
+  if ! is_valid_serial "${_serialno?}"; then
     show_warn 'Serial number not found'
     return 1
   fi
