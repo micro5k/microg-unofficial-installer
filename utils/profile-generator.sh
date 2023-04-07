@@ -208,6 +208,25 @@ generate_device_info()
   fi
 }
 
+find_radio()
+{
+  local _val
+
+  if _val="$(chosen_getprop 'gsm.version.baseband')" && is_valid_serial "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ro.baseband')" && is_valid_serial "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ril.sw_ver')" && is_valid_serial "${_val?}"; then
+    :
+  else
+    show_warn 'Build.RADIO not found'
+    printf '%s' 'unknown'
+    return 1
+  fi
+
+  printf '%s' "${_val?}"
+}
+
 find_serialno()
 {
   local _serialno=''
@@ -335,7 +354,7 @@ BUILD_MANUFACTURER="$(validated_chosen_getprop ro.product.manufacturer)"
 BUILD_MODEL="$(validated_chosen_getprop ro.product.model)"
 BUILD_PRODUCT="$(validated_chosen_getprop ro.product.name)"
 
-BUILD_RADIO="$(validated_chosen_getprop ro.baseband 1)"
+BUILD_RADIO="$(find_radio)"
 BUILD_RADIO_EXPECT="$(chosen_getprop 'ro.build.expect.baseband')" || BUILD_RADIO_EXPECT=''
 if is_valid_value "${BUILD_RADIO_EXPECT?}" && test "${BUILD_RADIO_EXPECT?}" != "${BUILD_RADIO?}"; then
   show_warn "Build.RADIO does NOT match, current: ${BUILD_RADIO:-}, expected: ${BUILD_RADIO_EXPECT:-}"
