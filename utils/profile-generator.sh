@@ -411,7 +411,7 @@ elif EMUI_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value 
   EMUI_VERSION="$(printf '%s' "${EMUI_VERSION:?}" | cut -d '_' -f 2)"
   ROM_INFO="EMUI ${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
 
-  if REAL_SECURITY_PATCH="$(validated_chosen_getprop 'ro.huawei.build.version.security_patch')"; then
+  if REAL_SECURITY_PATCH="$(chosen_getprop 'ro.huawei.build.version.security_patch')" && is_valid_value "${REAL_SECURITY_PATCH?}"; then
     REAL_SECURITY_PATCH=" <!-- Real security patch: ${REAL_SECURITY_PATCH:-} -->"
   fi
 elif MIUI_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_value "${MIUI_VERSION?}"; then # Xiaomi
