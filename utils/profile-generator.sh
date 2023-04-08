@@ -190,7 +190,7 @@ generate_device_info()
   if is_valid_value "${MARKETING_DEVICE_INFO?}"; then
     _info="${MARKETING_DEVICE_INFO:?}"
   else
-    if test -n "${BUILD_BRAND?}" && ! compare_nocase "${BUILD_BRAND:?}" "${BUILD_MANUFACTURER?}"; then
+    if test -n "${BUILD_BRAND?}" && ! compare_nocase "${BUILD_BRAND:?}" "${BUILD_MANUFACTURER?}" && ! compare_nocase "${BUILD_BRAND:?}" 'Android'; then
       _info_prefix="$(uc_first_char "${BUILD_BRAND:?}")"
     fi
     _info="${BUILD_MODEL?}"
@@ -405,6 +405,7 @@ MARKETING_DEVICE_INFO="$(chosen_getprop 'ro.config.marketing_name')" || MARKETIN
 DEVICE_INFO="$(generate_device_info)"
 REAL_SECURITY_PATCH=''
 
+ROM_MOD_VER="$(chosen_getprop 'ro.mod.version')" || ROM_MOD_VER=''
 if LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
   ROM_INFO="LineageOS ${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
 elif EMUI_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value "${EMUI_VERSION?}"; then # Huawei
@@ -418,6 +419,8 @@ elif MIUI_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_valu
   ROM_INFO="MIUI ${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
 elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
   ROM_INFO="Leapdroid - ${BUILD_VERSION_RELEASE:?}"
+elif is_valid_value "${ROM_MOD_VER?}"; then
+  ROM_INFO="Android MOD ${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE:?}"
 else
   ROM_INFO="Android ${BUILD_VERSION_RELEASE?}"
 fi
