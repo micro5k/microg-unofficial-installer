@@ -48,11 +48,10 @@ is_all_zeros()
 
 is_valid_value()
 {
-  # 1 = Allow unknown
-  # 2 = Allow empty
+  # ${2:-0} => 2 (Allow empty value)
 
   if test -z "${1?}" && test "${2:-0}" != '2'; then return 1; fi
-  if test "${1?}" = 'unknown' && test "${2:-0}" != '1'; then return 1; fi
+  if test "${1?}" = 'unknown'; then return 1; fi
 
   return 0 # Valid
 }
@@ -248,32 +247,26 @@ find_radio()
 
 find_serialno()
 {
-  local _serialno=''
+  local _val
 
-  if compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo'; then
-    _serialno="$(chosen_getprop 'ro.lenovosn2')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
-    _serialno="$(chosen_getprop 'ril.serialnumber')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
-    _serialno="$(chosen_getprop 'ro.serialno')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
-    _serialno="$(chosen_getprop 'sys.serialnumber')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
-    _serialno="$(chosen_getprop 'ro.boot.serialno')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
-    _serialno="$(chosen_getprop 'ro.kernel.androidboot.serialno')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
+  if compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo' && _val="$(chosen_getprop 'ro.lenovosn2')" && is_valid_serial "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ril.serialnumber')" && is_valid_serial "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ro.serialno')" && is_valid_serial "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'sys.serialnumber')" && is_valid_serial "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ro.boot.serialno')" && is_valid_serial "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ro.kernel.androidboot.serialno')" && is_valid_serial "${_val?}"; then
+    :
+  else
     show_warn 'Serial number not found'
     return 1
   fi
 
-  printf '%s\n' "${_serialno?}"
+  printf '%s' "${_val?}"
 }
 
 find_imei()
@@ -402,12 +395,10 @@ else
   IMEI=''
 fi
 
+ANON_SERIAL_NUMBER=''
 if SERIAL_NUMBER="$(find_serialno)"; then
   show_info "Serial number: ${SERIAL_NUMBER:-}"
   ANON_SERIAL_NUMBER="$(anonymize_serialno "${SERIAL_NUMBER:?}")"
-else
-  SERIAL_NUMBER=''
-  ANON_SERIAL_NUMBER=''
 fi
 
 MARKETING_DEVICE_INFO="$(chosen_getprop 'ro.config.marketing_name')" || MARKETING_DEVICE_INFO=''
