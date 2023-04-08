@@ -208,15 +208,34 @@ generate_device_info()
   fi
 }
 
+find_bootloader()
+{
+  local _val
+
+  if _val="$(chosen_getprop 'ro.bootloader')" && is_valid_value "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ro.boot.bootloader')" && is_valid_value "${_val?}"; then
+    :
+  else
+    show_warn 'Build.BOOTLOADER not found'
+    printf '%s' 'unknown'
+    return 1
+  fi
+
+  printf '%s' "${_val?}"
+}
+
 find_radio()
 {
   local _val
 
-  if _val="$(chosen_getprop 'gsm.version.baseband')" && is_valid_serial "${_val?}"; then
+  if _val="$(chosen_getprop 'gsm.version.baseband')" && is_valid_value "${_val?}"; then
     :
-  elif _val="$(chosen_getprop 'ro.baseband')" && is_valid_serial "${_val?}"; then
+  elif _val="$(chosen_getprop 'ro.baseband')" && is_valid_value "${_val?}"; then
     :
-  elif _val="$(chosen_getprop 'ril.sw_ver')" && is_valid_serial "${_val?}"; then
+  elif _val="$(chosen_getprop 'ro.boot.baseband')" && is_valid_value "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ril.sw_ver')" && is_valid_value "${_val?}"; then
     :
   else
     show_warn 'Build.RADIO not found'
@@ -335,7 +354,7 @@ fi
 
 BUILD_BOARD="$(validated_chosen_getprop ro.product.board)"
 
-BUILD_BOOTLOADER="$(validated_chosen_getprop 'ro.bootloader' 1)"
+BUILD_BOOTLOADER="$(find_bootloader)"
 BUILD_BOOTLOADER_EXPECT="$(chosen_getprop 'ro.build.expect.bootloader')" || BUILD_BOOTLOADER_EXPECT=''
 if is_valid_value "${BUILD_BOOTLOADER_EXPECT?}" && test "${BUILD_BOOTLOADER_EXPECT?}" != "${BUILD_BOOTLOADER?}"; then
   show_warn "Build.BOOTLOADER does NOT match, current: ${BUILD_BOOTLOADER:-}, expected: ${BUILD_BOOTLOADER_EXPECT:-}"
