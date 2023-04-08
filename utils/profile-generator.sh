@@ -224,11 +224,30 @@ find_bootloader()
   printf '%s' "${_val?}"
 }
 
+find_hardware()
+{
+  local _val
+
+  if _val="$(chosen_getprop 'ro.hardware')" && is_valid_value "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ro.boot.hardware')" && is_valid_value "${_val?}"; then
+    :
+  else
+    show_warn 'Build.HARDWARE not found'
+    printf '%s' 'unknown'
+    return 1
+  fi
+
+  printf '%s' "${_val?}"
+}
+
 find_radio()
 {
   local _val
 
   if _val="$(chosen_getprop 'gsm.version.baseband')" && is_valid_value "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ro.boot.radio')" && is_valid_value "${_val?}"; then
     :
   elif _val="$(chosen_getprop 'ro.baseband')" && is_valid_value "${_val?}"; then
     :
@@ -359,7 +378,7 @@ BUILD_CPU_ABI2="$(validated_chosen_getprop ro.product.cpu.abi2 2)"
 BUILD_DEVICE="$(validated_chosen_getprop ro.product.device)"
 BUILD_DISPLAY="$(validated_chosen_getprop ro.build.display.id)"
 BUILD_FINGERPRINT="$(validated_chosen_getprop ro.build.fingerprint)"
-BUILD_HARDWARE="$(validated_chosen_getprop ro.hardware)"
+BUILD_HARDWARE="$(find_hardware)"
 BUILD_HOST="$(validated_chosen_getprop ro.build.host)"
 BUILD_ID="$(validated_chosen_getprop ro.build.id)"
 BUILD_MANUFACTURER="$(validated_chosen_getprop ro.product.manufacturer)"
