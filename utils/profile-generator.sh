@@ -58,7 +58,7 @@ is_valid_value()
 
 is_valid_serial()
 {
-  if test -z "${1?}" || test "${#1}" -lt 2 || test "${1?}" = 'unknown' || is_all_zeros "${1?}"; then
+  if test -z "${1?}" || test "${#1}" -lt 2 || test "${1?}" = 'unknown' || is_all_zeros "${1?}" || is_string_nocase_starting_with 'EMULATOR' "${1?}"; then
     return 1 # NOT valid
   fi
 
@@ -387,7 +387,7 @@ BUILD_HOST="$(validated_chosen_getprop ro.build.host)"
 BUILD_ID="$(validated_chosen_getprop ro.build.id)"
 BUILD_MANUFACTURER="$(validated_chosen_getprop ro.product.manufacturer)"
 BUILD_MODEL="$(validated_chosen_getprop ro.product.model)"
-BUILD_PRODUCT="$(validated_chosen_getprop ro.product.name)"
+BUILD_PRODUCT="$(validated_chosen_getprop ro.product.name)" || BUILD_PRODUCT='unknown'
 
 BUILD_RADIO="$(find_radio)"
 BUILD_RADIO_EXPECT="$(chosen_getprop 'ro.build.expect.baseband')" || BUILD_RADIO_EXPECT=''
