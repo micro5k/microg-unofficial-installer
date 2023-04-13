@@ -52,7 +52,7 @@ _minutil_warn()
 
 _minutil_aligned_print()
 {
-  printf '\t%-37s %s\n' "${@:?}"
+  printf '\t%-37s %s\n' "${@}"
 }
 
 _is_caller_user_0()
