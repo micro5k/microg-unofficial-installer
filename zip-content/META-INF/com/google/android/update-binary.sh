@@ -63,8 +63,9 @@ set_perm()
   local gid="${2:?}"
   local mod="${3:?}"
   shift 3
-  chown "${uid:?}:${gid:?}" "${@:?}" || chown "${uid:?}.${gid:?}" "${@:?}" || ui_error "chown failed on: $*"
-  chmod "${mod:?}" "${@:?}" || ui_error "chmod failed on: $*"
+  test -n "${*:-}" || ui_error "Missing parameter on set_perm: $*"
+  chown "${uid:?}:${gid:?}" "${@}" || chown "${uid:?}.${gid:?}" "${@}" || ui_error "chown failed on: $*"
+  chmod "${mod:?}" "${@}" || ui_error "chmod failed on: $*"
 }
 
 package_extract_file()
