@@ -134,16 +134,16 @@ fi
 
 _minutil_getprop()
 {
-  grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f 2
+  grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f '2' -s
 }
 
-if test -e '/system/build.prop'; then
-  if ! MINUTIL_SYSTEM_SDK="$(_minutil_getprop 'ro.build.version.sdk' '/system/build.prop')" || test -z "${MINUTIL_SYSTEM_SDK:-}"; then
-    MINUTIL_SYSTEM_SDK='0'
-    _minutil_warn 'Failed to parse system SDK'
-  fi
+if test -r '/system/build.prop' && MINUTIL_SYSTEM_SDK="$(_minutil_getprop 'ro.build.version.sdk' '/system/build.prop')" && test -n "${MINUTIL_SYSTEM_SDK?}"; then
+  :
+elif MINUTIL_SYSTEM_SDK="$(getprop 'ro.build.version.sdk')" && test -n "${MINUTIL_SYSTEM_SDK?}"; then
+  :
 else
-  MINUTIL_SYSTEM_SDK='99' # We are most likely in the recovery
+  _minutil_warn 'Failed to parse system SDK'
+  MINUTIL_SYSTEM_SDK='999'
 fi
 readonly MINUTIL_SYSTEM_SDK
 
@@ -321,9 +321,9 @@ minutil_manual_media_rescan()
   }
 
   if test -e '/storage/emulated'; then
-    find /storage/emulated/* -type 'd' '(' -path '/storage/emulated/*/Android' -o -path '/storage/emulated/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' ! -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${*:?}" 1>&-' _ '{}' ';' || true
+    find /storage/emulated/* -type 'd' '(' -path '/storage/emulated/*/Android' -o -path '/storage/emulated/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' ! -name '\.*' -exec sh -c 'am 1>&- broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${*}"' _ '{}' ';' || true
   elif test -e '/storage'; then
-    find /storage/* -type 'd' '(' -path '/storage/*/Android' -o -path '/storage/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' ! -name '\.*' -exec sh -c 'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${*:?}" 1>&-' _ '{}' ';' || true
+    find /storage/* -type 'd' '(' -path '/storage/*/Android' -o -path '/storage/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' ! -name '\.*' -exec sh -c 'am 1>&- broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${*}"' _ '{}' ';' || true
   else
     _minutil_error 'Manual media rescanning failed!'
     return 3
