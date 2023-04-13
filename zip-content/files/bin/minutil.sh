@@ -107,15 +107,17 @@ _minutil_check_getopt()
 
 _minutil_display_help='false'
 if \_minutil_check_getopt; then
-  for param in "${@}"; do
-    \shift
-    if \test "${param?}" = '-?'; then # Workaround for getopt issues with the question mark
-      _minutil_display_help='true'
-    else
-      \set -- "${@}" "${param?}" || \exit 1
-    fi
-  done
-  \unset param
+  if test -n "${*:-}"; then
+    for param in "${@}"; do
+      \shift
+      if \test "${param?}" = '-?'; then # Workaround for getopt issues with the question mark
+        _minutil_display_help='true'
+      else
+        \set -- "${@}" "${param?}" || \exit 1
+      fi
+    done
+    \unset param
+  fi
 
   if minutil_args="$(
     \unset POSIXLY_CORRECT
@@ -139,7 +141,7 @@ _minutil_getprop()
 
 if test -r '/system/build.prop' && MINUTIL_SYSTEM_SDK="$(_minutil_getprop 'ro.build.version.sdk' '/system/build.prop')" && test -n "${MINUTIL_SYSTEM_SDK?}"; then
   :
-elif MINUTIL_SYSTEM_SDK="$(getprop 'ro.build.version.sdk')" && test -n "${MINUTIL_SYSTEM_SDK?}"; then
+elif command -v getprop 1> /dev/null && MINUTIL_SYSTEM_SDK="$(getprop 'ro.build.version.sdk')" && test -n "${MINUTIL_SYSTEM_SDK?}"; then
   :
 else
   _minutil_warn 'Failed to parse system SDK'
