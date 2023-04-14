@@ -106,23 +106,13 @@ _minutil_check_getopt()
 
 ### FUNCTIONS AND CODE ###
 
+MINUTIL_VERBOSE='false'
 _minutil_display_help='false'
-if \_minutil_check_getopt; then
-  if test -n "${*:-}"; then
-    for param in "${@}"; do
-      \shift
-      if \test "${param?}" = '-?'; then # Workaround for getopt issues with the question mark
-        _minutil_display_help='true'
-      else
-        \set -- "${@}" "${param?}" || \exit 1
-      fi
-    done
-    \unset param
-  fi
 
+if \_minutil_check_getopt; then
   if minutil_args="$(
     \unset POSIXLY_CORRECT
-    \getopt -o 'hsi:' -l 'help,remove-all-accounts,rescan-storage,force-gcm-reconnection,reinstall-package:' -n 'MinUtil' -- "${@}"
+    \getopt -o 'vhsi:' -l 'help,remove-all-accounts,rescan-storage,force-gcm-reconnection,reinstall-package:' -n 'MinUtil' -- "${@}"
   )"; then
     \eval ' \set' '--' "${minutil_args?}" || \exit 1
   else
@@ -131,8 +121,17 @@ if \_minutil_check_getopt; then
   fi
   \unset minutil_args
 fi
-if \test -z "${*:-}" || \test "${*:-}" = '--'; then
+
+if test -z "${*:-}" || test "${*:-}" = '--'; then
   _minutil_display_help='true'
+else
+  for param in "${@}"; do
+    if test "${param?}" = '-v'; then
+      MINUTIL_VERBOSE='true'
+      break
+    fi
+  done
+  unset param
 fi
 
 _minutil_getprop()
@@ -337,7 +336,9 @@ minutil_manual_media_rescan()
 
 while true; do
   case "${1}" in
-    -h | --help | -\?)
+    -v) ;; # Early parameters, already parsed
+
+    -h | --help)
       _minutil_display_help='true'
       ;;
 
@@ -401,7 +402,7 @@ if test "${_minutil_display_help:?}" = 'true'; then
   printf '%s\n\n' 'Licensed under GPLv3+'
   printf 'Usage: %s [OPTIONS] [--]\n\n' "${_minutil_script_name:?}"
 
-  _minutil_aligned_print '-h,-?,--help' 'Show this help'
+  _minutil_aligned_print '-h,--help' 'Show this help'
   _minutil_aligned_print '-s,--rescan-storage' 'Rescan storage to find file changes'
   _minutil_aligned_print '--remove-all-accounts' 'Remove all accounts from the device (need root)'
   _minutil_aligned_print '--force-gcm-reconnection' 'Force GCM reconnection'
