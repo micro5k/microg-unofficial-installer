@@ -187,7 +187,7 @@ is_mounted_read_only()
 remount_read_write()
 {
   local _retry='false'
-  if ! mount -o 'remount,rw' "${1:?}" && ! mount -o 'remount,rw' "${1:?}" "${1:?}"; then
+  if ! mount -o 'remount,rw' "${1:?}"; then
     _retry='true'
   fi
 
