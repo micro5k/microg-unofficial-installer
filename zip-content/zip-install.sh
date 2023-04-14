@@ -19,7 +19,7 @@ if test -n "${*:-}"; then
       exit 6
     }
     # Skip empty parameters or parameters that may get passed due to buggy su implementation
-    if test -z "${_param:-}" || test "${_param:?}" = '--' || test "${_param:?}" = '[su] zip-install.sh'; then continue; fi
+    if test -z "${_param:-}" || test "${_param:?}" = '--' || test "${_param:?}" = '[su]zip-install.sh'; then continue; fi
 
     test -e "${_param:?}" || {
       ui_show_error "ZIP file doesn't exist => '${_param:-}'"
@@ -54,7 +54,7 @@ if test "$(whoami || id -un || true)" != 'root'; then
     # The root user (0) is the default when not specified
 
     # First verify that "su" is working
-    su -c 'command' -- -- _ || {
+    su -c 'command #' -- -- _ || {
       _status="${?}" # Usually it return 1 or 255 when root is present but disabled
       ui_show_error 'Auto-rooting failed, you must execute this as root!!!'
       exit "${_status:-2}"
@@ -64,7 +64,7 @@ if test "$(whoami || id -un || true)" != 'root'; then
       ui_show_error 'Unable to find myself'
       exit 3
     }
-    exec su -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" -- -- '[su] zip-install.sh' "${@}" || ui_show_error 'failed: exec'
+    exec su -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" -- -- '[su]zip-install.sh' "${@}" || ui_show_error 'failed: exec'
     exit 127
   fi
 
