@@ -128,6 +128,7 @@ else
   for param in "${@}"; do
     if test "${param?}" = '-v'; then
       MINUTIL_VERBOSE='true'
+      : "${MINUTIL_VERBOSE}" # UNUSED
       break
     fi
   done
