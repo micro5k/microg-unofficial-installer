@@ -90,6 +90,12 @@ command -v 'java' 1> /dev/null || ui_error 'Java is missing'
 OUT_DIR="${SCRIPT_DIR}/output"
 mkdir -p "${OUT_DIR}" || ui_error 'Failed to create the output dir'
 
+# Workaround for an issue with Bash under Windows
+if test "${PLATFORM:?}" = 'win' && test "${TMPDIR:-}" = '/tmp' && test -n "${LOCALAPPDATA:-}" && test -e "${LOCALAPPDATA:?}/Temp"; then
+  TMPDIR="$(realpath ${LOCALAPPDATA:?}/Temp)" || TMPDIR="${LOCALAPPDATA:?}/Temp" || ui_error 'Failed to set the temp dir'
+  export TMPDIR
+fi
+
 # Create the temp dir
 TEMP_DIR="$(mktemp -d -t ZIPBUILDER-XXXXXX)" || ui_error 'Failed to create our temp dir'
 if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
@@ -185,7 +191,7 @@ mv -f "${BASE_TMP_SCRIPT_DIR}/update-binary.sh" "${BASE_TMP_SCRIPT_DIR}/update-b
 mv -f "${BASE_TMP_SCRIPT_DIR}/updater-script.dat" "${BASE_TMP_SCRIPT_DIR}/updater-script" || ui_error 'Failed to rename a file'
 find "${TEMP_DIR}/zip-content" -type d -exec chmod 0700 '{}' + -o -type f -exec chmod 0600 '{}' + || ui_error 'Failed to set permissions of files'
 if test "${PLATFORM:?}" = 'win'; then
-  ATTRIB -R -A -S -H "${TEMP_DIR}/zip-content/*" /S /D
+  ATTRIB -R -A -S -H "${TEMP_DIR:?}/zip-content/*" /S /D
 fi
 find "${TEMP_DIR}/zip-content" -exec touch -c -t 200802290333.46 '{}' + || ui_error 'Failed to set the modification date of files'
 
