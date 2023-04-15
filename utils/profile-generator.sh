@@ -38,6 +38,52 @@ show_info()
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
 }
 
+pause_if_needed()
+{
+  # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
+  if test "${CI:-false}" = 'false' && test "${SHLVL:-}" = '1' && test -t 1 && test -t 2; then
+    printf 1>&2 '\n\033[1;32m' || true
+    # shellcheck disable=SC3045
+    IFS='' read 1>&2 -r -s -n 1 -p 'Press any key to continue...' _ || true
+    printf 1>&2 '\033[0m\n' || true
+  fi
+}
+
+verify_adb()
+{
+  local _pathsep
+
+  if command -v adb 1> /dev/null; then
+    return 0
+  fi
+
+  if test "${OS:-}" = 'Windows_NT'; then
+    # Set the path of Android SDK if not already set
+    if test -z "${ANDROID_SDK_ROOT:-}" && test -n "${LOCALAPPDATA:-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
+      export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
+    fi
+
+    if test -n "${ANDROID_SDK_ROOT:-}"; then
+      if test "$(uname -o 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" = 'ms/windows'; then
+        _pathsep=';' # BusyBox-w32
+      else
+        _pathsep=':' # Other shells on Windows
+      fi
+
+      # shellcheck disable=SC2123
+      export PATH="${ANDROID_SDK_ROOT:?}/platform-tools${_pathsep:?}${PATH}"
+
+      if command -v adb 1> /dev/null; then
+        return 0
+      fi
+    fi
+  fi
+
+  show_error 'adb is NOT available'
+  pause_if_needed
+  exit 1
+}
+
 is_all_zeros()
 {
   if test -n "${1?}" && test "$(printf '%s' "${1?}" | LC_ALL=C tr -d '0' || true)" = ''; then
@@ -328,16 +374,13 @@ else
 fi
 
 if test "${INPUT_TYPE:?}" = 'adb'; then
-  command -v adb 1> /dev/null || {
-    show_error 'adb is NOT available'
-    exit 1
-  }
-
+  verify_adb
   wait_device
   show_info 'Generating profile...'
 else
   test -e "${INPUT_TYPE:?}" || {
     show_error "Input file doesn't exist => '${INPUT_TYPE:-}'"
+    pause_if_needed
     exit 1
   }
 
@@ -476,10 +519,4 @@ ${xml_comment_end:?}
     <serial template=\"${ANON_SERIAL_NUMBER?}\" />
 </profile>"
 
-# shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
-if test "${CI:-false}" = 'false' && test "${SHLVL:-}" = '1' && test -t 1 && test -t 2; then
-  printf 1>&2 '\n\033[1;32m' || true
-  # shellcheck disable=SC3045
-  IFS='' read 1>&2 -r -s -n 1 -p 'Press any key to continue...' _ || true
-  printf 1>&2 '\033[0m\n' || true
-fi
+pause_if_needed
