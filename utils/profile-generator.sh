@@ -10,11 +10,12 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 set -u
-
 # shellcheck disable=SC3040,SC2015
 {
-  # Unsupported set -o options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue and also handle the set -e case
+  # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
   (set -o posix 2> /dev/null) && set -o posix || true
+  # shellcheck disable=SC3041
+  (set +H 2> /dev/null) && set +H || true
   (set -o pipefail) && set -o pipefail || true
 }
 
