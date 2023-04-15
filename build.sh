@@ -92,7 +92,7 @@ mkdir -p "${OUT_DIR}" || ui_error 'Failed to create the output dir'
 
 # Workaround for an issue with Bash under Windows
 if test "${PLATFORM:?}" = 'win' && test "${TMPDIR:-}" = '/tmp' && test -n "${LOCALAPPDATA:-}" && test -e "${LOCALAPPDATA:?}/Temp"; then
-  TMPDIR="$(realpath ${LOCALAPPDATA:?}/Temp)" || TMPDIR="${LOCALAPPDATA:?}/Temp" || ui_error 'Failed to set the temp dir'
+  TMPDIR="$(realpath "${LOCALAPPDATA:?}/Temp")" || TMPDIR="${LOCALAPPDATA:?}/Temp" || ui_error 'Failed to set the temp dir'
   export TMPDIR
 fi
 
