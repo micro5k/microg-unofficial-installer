@@ -174,7 +174,7 @@ find_serialno()
 
 get_phone_info()
 {
-  adb shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d '.[:cntrl:]'
+  adb shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s -- '.[:cntrl:]' '[:space:]'
 }
 
 validate_and_display_info()
@@ -186,7 +186,7 @@ validate_and_display_info()
     return 3
   fi
 
-  _val="$(printf '%s' "${2?}" | LC_ALL=C tr -d '[:space:]')"
+  _val="$(printf '%s' "${2?}" | LC_ALL=C tr -d -- '[:space:]')"
 
   if ! is_valid_value "${_val?}"; then
     show_warn "${1:-} not found"
