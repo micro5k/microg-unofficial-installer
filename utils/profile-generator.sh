@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='0.3'
+readonly SCRIPT_VERSION='0.4'
 
 show_error()
 {
@@ -293,25 +293,6 @@ find_serialno()
   printf '%s' "${_val?}"
 }
 
-find_imei()
-{
-  local _imei
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 2; fi
-  _imei="$(adb shell 'service call iphonesubinfo 1' | cut -d "'" -f '2' -s | LC_ALL=C tr -d '.[:cntrl:]')" || _imei=''
-
-  if contains 'Requires READ_PHONE_STATE' "${_imei?}"; then
-    show_warn 'Unable to find IMEI due to lack of permissions'
-    return 1
-  fi
-
-  if ! is_valid_value "${_imei?}"; then
-    show_warn 'IMEI not found'
-    return 1
-  fi
-
-  printf '%s\n' "${_imei?}"
-}
-
 anonymize_string()
 {
   printf '%s' "${1?}" | LC_ALL=C tr '[:digit:]' '0' | LC_ALL=C tr 'a-f' 'f' | LC_ALL=C tr 'g-z' 'x' | LC_ALL=C tr 'A-F' 'F' | LC_ALL=C tr 'G-Z' 'X'
@@ -416,12 +397,6 @@ BUILD_VERSION_RELEASE="$(validated_chosen_getprop ro.build.version.release)"
 BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop ro.build.version.security_patch 2)"
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"        # ToDO: If not numeric or empty return 0
 BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
-
-if IMEI="$(find_imei)"; then
-  show_info "IMEI: ${IMEI:-}"
-else
-  IMEI=''
-fi
 
 ANON_SERIAL_NUMBER=''
 if SERIAL_NUMBER="$(find_serialno)"; then
