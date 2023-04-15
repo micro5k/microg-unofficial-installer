@@ -179,25 +179,34 @@ get_phone_info()
 
 validate_and_display_info()
 {
+  local _val
+
   if contains 'Requires READ_PHONE_STATE' "${2?}" || contains 'does not belong to' "${2?}"; then
     show_warn "Unable to find ${1:-} due to: ${2:-}"
-    return 1
+    return 3
   fi
 
-  if ! is_valid_value "${2?}"; then
+  _val="$(printf '%s' "${2?}" | LC_ALL=C tr -d '[:space:]')"
+
+  if ! is_valid_value "${_val?}"; then
     show_warn "${1:-} not found"
     return 1
   fi
 
-  show_msg "${1?}: ${2?}"
+  if test -n "${3:-}" && test "${#_val}" -ne "${3?}"; then
+    show_warn "Invalid ${1:-}: ${_val:-}"
+    return 2
+  fi
+
+  show_msg "${1?}: ${_val?}"
 }
 
-find_imei()
+get_imei()
 {
   local _val
 
   _val="$(get_phone_info 1 s16 'com.android.shell')" || _val=''
-  validate_and_display_info 'IMEI' "${_val?}"
+  validate_and_display_info 'IMEI' "${_val?}" 15
 
   if test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
     _val="$(get_phone_info 6 s16 'com.android.shell')" || _val=''
@@ -208,10 +217,10 @@ find_imei()
   else
     _val="$(get_phone_info 2)" || _val=''
   fi
-  validate_and_display_info 'IMEI SV' "${_val?}"
+  validate_and_display_info 'IMEI SV' "${_val?}" 2
 }
 
-find_line_number()
+get_line_number()
 {
   local _val
 
@@ -250,8 +259,8 @@ validate_and_display_info 'Model' "${BUILD_MODEL?}"
 SERIAL_NUMBER="$(find_serialno)"
 validate_and_display_info 'Serial number' "${SERIAL_NUMBER?}"
 
-find_imei
-find_line_number
+get_imei
+get_line_number
 
 # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
 if test "${CI:-false}" = 'false' && test "${SHLVL:-}" = '1' && test -t 1 && test -t 2; then
