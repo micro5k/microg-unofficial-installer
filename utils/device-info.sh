@@ -22,6 +22,25 @@ set -u
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_VERSION='0.1'
 
+# shellcheck disable=SC2034
+{
+  readonly ANDROID_4_1_SDK=16
+  readonly ANDROID_4_2_SDK=17
+  readonly ANDROID_4_3_SDK=18
+  readonly ANDROID_4_4_SDK=19
+  readonly ANDROID_4_4W_SDK=20
+  readonly ANDROID_5_SDK=21
+  readonly ANDROID_5_1_SDK=22
+  readonly ANDROID_6_SDK=23
+  readonly ANDROID_7_SDK=24
+  readonly ANDROID_7_1_SDK=25
+  readonly ANDROID_8_SDK=26
+  readonly ANDROID_8_1_SDK=27
+  readonly ANDROID_9_SDK=28
+  readonly ANDROID_10_SDK=29
+  readonly ANDROID_11_SDK=30
+}
+
 show_error()
 {
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
@@ -41,22 +60,6 @@ show_msg()
 {
   printf '%s\n' "${*}"
 }
-
-readonly ANDROID_4_1_SDK=16
-readonly ANDROID_4_2_SDK=17
-readonly ANDROID_4_3_SDK=18
-readonly ANDROID_4_4_SDK=19
-readonly ANDROID_4_4W_SDK=20
-readonly ANDROID_5_SDK=21
-readonly ANDROID_5_1_SDK=22
-readonly ANDROID_6_SDK=23
-readonly ANDROID_7_SDK=24
-readonly ANDROID_7_1_SDK=25
-readonly ANDROID_8_SDK=26
-readonly ANDROID_8_1_SDK=27
-readonly ANDROID_9_SDK=28
-readonly ANDROID_10_SDK=29
-readonly ANDROID_11_SDK=30
 
 is_all_zeros()
 {
@@ -171,7 +174,7 @@ find_serialno()
 
 get_phone_info()
 {
-  adb shell "service call iphonesubinfo ${@}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d '.[:cntrl:]'
+  adb shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d '.[:cntrl:]'
 }
 
 validate_and_display_info()
