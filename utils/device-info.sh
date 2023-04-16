@@ -342,7 +342,7 @@ validate_and_display_prop 'Serial number' "${SERIAL_NUMBER?}"
 
 printf '\n'
 
-validate_and_display_prop 'Android ID' "$(get_android_id)"
+validate_and_display_prop 'Android ID' "$(get_android_id || true)"
 
 printf '\n'
 
