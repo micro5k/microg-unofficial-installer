@@ -159,6 +159,16 @@ contains()
   return 1 # NOT found
 }
 
+trim_space_on_sides()
+{
+  local _var
+  IFS='' read -r _var || return 1
+  test "${#_var}" -ne 0 || return 1
+
+  _var="${_var# }"
+  printf '%s' "${_var% }"
+}
+
 wait_device()
 {
   show_info 'Waiting for the device...'
@@ -225,7 +235,9 @@ get_android_id()
 
 get_phone_info()
 {
-  adb shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s -- '.[:cntrl:]' '[:space:]'
+  adb shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | {
+    LC_ALL=C tr -d -s -- '.[:cntrl:]' '[:space:]' && printf '\n'
+  } | trim_space_on_sides
 }
 
 validate_and_display_prop()
@@ -240,26 +252,24 @@ validate_and_display_prop()
 
 validate_and_display_info()
 {
-  local _val
-
   if contains 'Requires READ_PHONE_STATE' "${2?}" || contains 'does not belong to' "${2?}"; then
-    show_warn "Unable to find ${1:-} due to: ${2:-}"
+    local _val
+    _val="$(printf '%s' "${2?}" | grep -o -e '[^[:digit:]].*')"
+    show_warn "Unable to find ${1:-} due to: ${_val:-}"
     return 3
   fi
 
-  _val="$(printf '%s' "${2?}" | LC_ALL=C tr -d -- '[:space:]')"
-
-  if ! is_valid_value "${_val?}"; then
+  if ! is_valid_value "${2?}"; then
     show_warn "${1:-} not found"
     return 1
   fi
 
-  if test -n "${3:-}" && test "${#_val}" -ne "${3?}"; then
-    show_warn "Invalid ${1:-}: ${_val:-}"
+  if test -n "${3:-}" && test "${#2}" -ne "${3?}"; then
+    show_warn "Invalid ${1:-}: ${2:-}"
     return 2
   fi
 
-  show_msg "${1?}: ${_val?}"
+  show_msg "${1?}: ${2?}"
 }
 
 get_imei()
