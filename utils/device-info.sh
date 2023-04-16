@@ -61,6 +61,24 @@ show_msg()
   printf '%s\n' "${*}"
 }
 
+is_boot_completed()
+{
+  if test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
+    return 0
+  fi
+
+  return 1
+}
+
+check_boot_completed()
+{
+  is_boot_completed || {
+    show_error 'The device has not finished booting yet!!!'
+    pause_if_needed
+    exit 1
+  }
+}
+
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
@@ -331,6 +349,7 @@ show_info "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 verify_adb
 wait_device
 show_info 'Finding info...'
+check_boot_completed
 show_info ''
 
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"

@@ -38,6 +38,24 @@ show_info()
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
 }
 
+is_boot_completed()
+{
+  if test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
+    return 0
+  fi
+
+  return 1
+}
+
+check_boot_completed()
+{
+  is_boot_completed || {
+    show_error 'The device has not finished booting yet!!!'
+    pause_if_needed
+    exit 1
+  }
+}
+
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
@@ -415,6 +433,7 @@ if test "${INPUT_TYPE:?}" = 'adb'; then
   verify_adb
   wait_device
   show_info 'Generating profile...'
+  check_boot_completed
 else
   test -e "${INPUT_TYPE:?}" || {
     show_error "Input file doesn't exist => '${INPUT_TYPE:-}'"
@@ -425,9 +444,10 @@ else
   show_info 'Generating profile...'
   if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
     readonly PROP_TYPE='1'
+    check_boot_completed
   else
     readonly PROP_TYPE='2'
-    show_warn 'Profiles generated this way will be incomplete!!!'
+    show_error 'Profiles generated in this way will be incomplete!!!'
   fi
 fi
 
