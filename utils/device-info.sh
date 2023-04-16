@@ -340,8 +340,10 @@ show_info ''
 
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"
 
-if ROM_EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && test -n "${ROM_EMU_NAME?}"; then
-  validate_and_display_prop 'Emulator' "${ROM_EMU_NAME?}"
+if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && test -n "${EMU_NAME?}"; then
+  validate_and_display_prop 'Emulator' "${EMU_NAME?}"
+elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && test -n "${LEAPD_VERSION?}"; then
+  validate_and_display_prop 'Emulator' 'Leapdroid'
 fi
 
 BUILD_MODEL="$(validated_chosen_getprop ro.product.model)"
