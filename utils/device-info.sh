@@ -223,6 +223,16 @@ get_phone_info()
   adb shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s -- '.[:cntrl:]' '[:space:]'
 }
 
+validate_and_display_prop()
+{
+  if ! is_valid_value "${2?}"; then
+    show_warn "${1:-} not found"
+    return 1
+  fi
+
+  show_msg "${1?}: ${2?}"
+}
+
 validate_and_display_info()
 {
   local _val
@@ -295,11 +305,15 @@ show_info ''
 
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"
 
+if ROM_EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && test -n "${ROM_EMU_NAME?}"; then
+  validate_and_display_prop 'Emulator' "${ROM_EMU_NAME?}"
+fi
+
 BUILD_MODEL="$(validated_chosen_getprop ro.product.model)"
-validate_and_display_info 'Model' "${BUILD_MODEL?}"
+validate_and_display_prop 'Model' "${BUILD_MODEL?}"
 
 SERIAL_NUMBER="$(find_serialno)"
-validate_and_display_info 'Serial number' "${SERIAL_NUMBER?}"
+validate_and_display_prop 'Serial number' "${SERIAL_NUMBER?}"
 
 get_imei
 get_line_number
