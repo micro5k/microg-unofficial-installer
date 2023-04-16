@@ -240,13 +240,8 @@ get_phone_info()
   } | trim_space_on_sides
 }
 
-validate_and_display_prop()
+display_info()
 {
-  if ! is_valid_value "${2?}"; then
-    show_warn "${1:-} not found"
-    return 1
-  fi
-
   show_msg "${1?}: ${2?}"
 }
 
@@ -339,22 +334,20 @@ show_info 'Finding info...'
 show_info ''
 
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"
+readonly BUILD_VERSION_SDK
 
-if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && test -n "${EMU_NAME?}"; then
-  validate_and_display_prop 'Emulator' "${EMU_NAME?}"
-elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && test -n "${LEAPD_VERSION?}"; then
-  validate_and_display_prop 'Emulator' 'Leapdroid'
+if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
+  display_info 'Emulator' "${EMU_NAME?}"
+elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
+  display_info 'Emulator' 'Leapdroid'
 fi
 
-BUILD_MODEL="$(validated_chosen_getprop ro.product.model)"
-validate_and_display_prop 'Model' "${BUILD_MODEL?}"
-
-SERIAL_NUMBER="$(find_serialno)"
-validate_and_display_prop 'Serial number' "${SERIAL_NUMBER?}"
+BUILD_MODEL="$(validated_chosen_getprop ro.product.model)" && display_info 'Model' "${BUILD_MODEL?}"
+SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBER?}"
 
 printf '\n'
 
-validate_and_display_prop 'Android ID' "$(get_android_id || true)"
+ANDROID_ID="$(get_android_id)" && validate_and_display_info 'Android ID' "${ANDROID_ID?}"
 
 printf '\n'
 
