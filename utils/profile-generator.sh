@@ -229,6 +229,44 @@ validated_chosen_getprop()
   printf '%s\n' "${_value?}"
 }
 
+generate_rom_info()
+{
+  local _verify_emulator='false'
+
+  IS_EMU='false'
+  EMU_NAME=''
+  REAL_SECURITY_PATCH=''
+
+  if LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
+    ROM_INFO="LineageOS ${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+  elif ROM_MOD_VER="$(chosen_getprop 'ro.mod.version')" && is_valid_value "${ROM_MOD_VER?}"; then
+    ROM_INFO="Android MOD ${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE:?}"
+  elif EMUI_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value "${EMUI_VERSION?}"; then # Huawei
+    EMUI_VERSION="$(printf '%s' "${EMUI_VERSION:?}" | cut -d '_' -f 2)"
+    ROM_INFO="EMUI ${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+
+    if REAL_SECURITY_PATCH="$(chosen_getprop 'ro.huawei.build.version.security_patch')" && is_valid_value "${REAL_SECURITY_PATCH?}"; then
+      REAL_SECURITY_PATCH=" ${xml_comment_start:?} Real security patch: ${REAL_SECURITY_PATCH:-} ${xml_comment_end:?}"
+    fi
+  elif MIUI_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_value "${MIUI_VERSION?}"; then # Xiaomi
+    ROM_INFO="MIUI ${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+  else
+    ROM_INFO="Android ${BUILD_VERSION_RELEASE?}"
+    _verify_emulator='true'
+  fi
+
+  if test "${_verify_emulator?}" = 'true'; then
+    if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && test -n "${EMU_NAME?}"; then
+      IS_EMU='true'
+    elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && test -n "${LEAPD_VERSION?}"; then
+      IS_EMU='true'
+      EMU_NAME='Leapdroid'
+    else
+      EMU_NAME=''
+    fi
+  fi
+}
+
 generate_device_info()
 {
   local _info _info_prefix
@@ -447,50 +485,13 @@ if SERIAL_NUMBER="$(find_serialno)"; then
   ANON_SERIAL_NUMBER="$(anonymize_serialno "${SERIAL_NUMBER:?}")"
 fi
 
-generate_rom_info()
-{
-  local _verify_emulator='false'
-
-  IS_EMU='false'
-  EMU_NAME=''
-  REAL_SECURITY_PATCH=''
-
-  if LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
-    ROM_INFO="LineageOS ${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
-  elif ROM_MOD_VER="$(chosen_getprop 'ro.mod.version')" && is_valid_value "${ROM_MOD_VER?}"; then
-    ROM_INFO="Android MOD ${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE:?}"
-  elif EMUI_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value "${EMUI_VERSION?}"; then # Huawei
-    EMUI_VERSION="$(printf '%s' "${EMUI_VERSION:?}" | cut -d '_' -f 2)"
-    ROM_INFO="EMUI ${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
-
-    if REAL_SECURITY_PATCH="$(chosen_getprop 'ro.huawei.build.version.security_patch')" && is_valid_value "${REAL_SECURITY_PATCH?}"; then
-      REAL_SECURITY_PATCH=" ${xml_comment_start:?} Real security patch: ${REAL_SECURITY_PATCH:-} ${xml_comment_end:?}"
-    fi
-  elif MIUI_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_value "${MIUI_VERSION?}"; then # Xiaomi
-    ROM_INFO="MIUI ${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
-  else
-    ROM_INFO="Android ${BUILD_VERSION_RELEASE?}"
-    _verify_emulator='true'
-  fi
-
-  if test "${_verify_emulator?}" = 'true'; then
-    if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && test -n "${EMU_NAME?}"; then
-      IS_EMU='true'
-    elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && test -n "${LEAPD_VERSION?}"; then
-      IS_EMU='true'
-      EMU_NAME='Leapdroid'
-    else
-      EMU_NAME=''
-    fi
-  fi
-}
 generate_rom_info
 
-if test "${IS_EMU:?}" != 'true'; then
+if test "${IS_EMU:?}" = 'true'; then
+  DEVICE_INFO="Emulator - ${EMU_NAME?}"
+else
   MARKETING_DEVICE_INFO="$(chosen_getprop 'ro.config.marketing_name')" || MARKETING_DEVICE_INFO=''
   DEVICE_INFO="$(generate_device_info)"
-else
-  DEVICE_INFO="Emulator - ${EMU_NAME?}"
 fi
 
 printf 1>&2 '\n'
