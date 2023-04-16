@@ -218,6 +218,11 @@ find_serialno()
   printf '%s\n' "${_serialno?}"
 }
 
+get_android_id()
+{
+  adb shell 'settings get secure android_id 2> /dev/null' | LC_ALL=C tr -d '[:cntrl:]'
+}
+
 get_phone_info()
 {
   adb shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s -- '.[:cntrl:]' '[:space:]'
@@ -296,6 +301,26 @@ get_line_number()
   validate_and_display_info 'Line number' "${_val?}"
 }
 
+get_iccid()
+{
+  local _val
+
+  if test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
+    _val="$(get_phone_info 12 s16 'com.android.shell')" || _val=''
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
+    _val="$(get_phone_info 10 s16 'com.android.shell')" || _val=''
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
+    _val="$(get_phone_info 11 s16 'com.android.shell')" || _val=''
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
+    _val="$(get_phone_info 9)" || _val=''
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_4_3_SDK:?}"; then
+    _val="$(get_phone_info 5)" || _val=''
+  else
+    _val="$(get_phone_info 4)" || _val=''
+  fi
+  validate_and_display_info 'ICCID' "${_val?}"
+}
+
 show_info "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
 verify_adb
@@ -315,7 +340,14 @@ validate_and_display_prop 'Model' "${BUILD_MODEL?}"
 SERIAL_NUMBER="$(find_serialno)"
 validate_and_display_prop 'Serial number' "${SERIAL_NUMBER?}"
 
+printf '\n'
+
+validate_and_display_prop 'Android ID' "$(get_android_id)"
+
+printf '\n'
+
 get_imei
+get_iccid
 get_line_number
 
 pause_if_needed
