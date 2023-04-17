@@ -2,6 +2,7 @@
 # @name Android device info extractor
 # @brief It can automatically extract device information from a device connected via adb.
 # @author ale5000
+# Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils
 
 # SPDX-FileCopyrightText: (c) 2023 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
