@@ -21,7 +21,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='0.1'
+readonly SCRIPT_VERSION='0.2'
 
 # shellcheck disable=SC2034
 {
@@ -50,6 +50,11 @@ show_error()
 show_warn()
 {
   printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
+}
+
+show_note()
+{
+  printf 1>&2 '\033[1;36m%s\033[0m\n' "NOTE: ${*}"
 }
 
 show_info()
@@ -434,6 +439,8 @@ printf '\n'
 ADVERTISING_ID="$(get_advertising_id)"
 validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
-printf '\n'
+show_info ''
+
+show_note 'GSF ID and Advertising ID require root but all others do not require it!'
 
 pause_if_needed
