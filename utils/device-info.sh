@@ -188,6 +188,15 @@ trim_space_on_sides()
   printf '%s' "${_var% }"
 }
 
+convert_dec_to_hex()
+{
+  if command -v bc 1> /dev/null; then
+    printf 'obase=16;%s' "${1?}" | bc -s | LC_ALL=C tr '[:upper:]' '[:lower:]'
+  else
+    printf '%x' "${1?}"
+  fi
+}
+
 wait_device()
 {
   show_info 'Waiting for the device...'
@@ -252,11 +261,23 @@ get_android_id()
   adb shell 'settings get secure android_id 2> /dev/null' | LC_ALL=C tr -d '[:cntrl:]'
 }
 
+get_gsf_id()
+{
+  local _val
+
+  _val="$(adb shell 'sqlite3 -line "/data/data/com.google.android.gsf/databases/gservices.db" "SELECT * FROM main WHERE name = \"android_id\";" 2> /dev/null || sqlite3 -line "/data/data/com.google.android.gms/databases/gservices.db" "SELECT * FROM main WHERE name = \"android_id\";" 2> /dev/null')" || _val=''
+  test "${_val?}" != '' || return 1
+
+  _val="$(printf '%s' "${_val?}" | grep -m 1 -e 'value' | cut -d '=' -f '2-' -s)"
+
+  printf '%s' "${_val# }"
+}
+
 get_advertising_id()
 {
   local adid
 
-  adid="$(adb shell 'cat "/data/data/com.google.android.gms/shared_prefs/adid_settings.xml" 2> /dev/null' | LC_ALL=C tr -d '[:cntrl:]')" || adid=''
+  adid="$(adb shell 'cat "/data/data/com.google.android.gms/shared_prefs/adid_settings.xml" 2> /dev/null')" || adid=''
   test "${adid?}" != '' || return 1
 
   adid="$(printf '%s' "${adid?}" | grep -m 1 -o -e 'adid_key[^<]*' | grep -o -e ">.*")"
@@ -379,8 +400,22 @@ SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBE
 
 printf '\n'
 
-ANDROID_ID="$(get_android_id)" && validate_and_display_info 'Android ID' "${ANDROID_ID?}"
-ADVERTISING_ID="$(get_advertising_id)" && validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
+ANDROID_ID="$(get_android_id)"
+validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
+
+printf '\n'
+
+mount -t 'auto' '/data' 2> /dev/null || true
+
+GSF_ID="$(get_gsf_id)"
+if validate_and_display_info 'GSF ID' "${GSF_ID?}" 19; then
+  validate_and_display_info 'GSF ID (hex)' "$(convert_dec_to_hex "${GSF_ID?}" || true)" 16
+fi
+
+printf '\n'
+
+ADVERTISING_ID="$(get_advertising_id)"
+validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
 printf '\n'
 
