@@ -252,6 +252,18 @@ get_android_id()
   adb shell 'settings get secure android_id 2> /dev/null' | LC_ALL=C tr -d '[:cntrl:]'
 }
 
+get_advertising_id()
+{
+  local adid
+
+  adid="$(adb shell 'cat "/data/data/com.google.android.gms/shared_prefs/adid_settings.xml" 2> /dev/null' | LC_ALL=C tr -d '[:cntrl:]')" || adid=''
+  test "${adid?}" != '' || return 1
+
+  adid="$(printf '%s' "${adid?}" | grep -m 1 -o -e 'adid_key[^<]*' | grep -o -e ">.*")"
+
+  printf '%s' "${adid#>}"
+}
+
 get_phone_info()
 {
   adb shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | {
@@ -368,6 +380,7 @@ SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBE
 printf '\n'
 
 ANDROID_ID="$(get_android_id)" && validate_and_display_info 'Android ID' "${ANDROID_ID?}"
+ADVERTISING_ID="$(get_advertising_id)" && validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
 printf '\n'
 
