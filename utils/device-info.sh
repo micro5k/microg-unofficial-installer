@@ -204,6 +204,11 @@ wait_device()
   adb 'wait-for-device'
 }
 
+adb_root()
+{
+  adb 'root' 1> /dev/null && adb 'wait-for-device'
+}
+
 device_getprop()
 {
   adb shell "getprop '${1:?}'" | LC_ALL=C tr -d '[:cntrl:]'
@@ -311,7 +316,12 @@ validate_and_display_info()
     return 1
   fi
 
-  if test -n "${3:-}" && test "${#2}" -ne "${3?}"; then
+  if test -n "${4:-}"; then
+    if test "${#2}" -lt "${3?}" || test "${#2}" -gt "${4?}"; then
+      show_warn "Invalid ${1:-}: ${2:-}"
+      return 2
+    fi
+  elif test -n "${3:-}" && test "${#2}" -ne "${3?}"; then
     show_warn "Invalid ${1:-}: ${2:-}"
     return 2
   fi
@@ -375,7 +385,7 @@ get_iccid()
   else
     _val="$(get_phone_info 4)" || _val=''
   fi
-  validate_and_display_info 'ICCID' "${_val?}"
+  validate_and_display_info 'ICCID' "${_val?}" 19 20
 }
 
 show_info "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
@@ -384,6 +394,7 @@ verify_adb
 wait_device
 show_info 'Finding info...'
 check_boot_completed
+adb_root
 show_info ''
 
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"
