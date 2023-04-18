@@ -400,6 +400,12 @@ SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBE
 
 printf '\n'
 
+get_imei
+get_iccid
+get_line_number
+
+printf '\n'
+
 ANDROID_ID="$(get_android_id)"
 validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
 
@@ -418,9 +424,5 @@ ADVERTISING_ID="$(get_advertising_id)"
 validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
 printf '\n'
-
-get_imei
-get_iccid
-get_line_number
 
 pause_if_needed
