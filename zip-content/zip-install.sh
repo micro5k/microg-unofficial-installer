@@ -49,12 +49,8 @@ if test "$(whoami || id -un || true)" != 'root'; then
   if test "${AUTO_ELEVATED:-false}" = 'false'; then
     printf '%s\n' 'Auto-rooting attempt...'
 
-    # su [options] [--] [-] [LOGIN] [--] [args...]
-    # su -c 'command' -- 0 -- _
-    # The root user (0) is the default when not specified
-
-    # First verify that "su" is working
-    su -c 'command #' -- -- _ || {
+    # First verify that "su" is working (0 => root)
+    su 0 sh -c 'command' '[su]verification' || {
       _status="${?}" # Usually it return 1 or 255 when root is present but disabled
       ui_show_error 'Auto-rooting failed, you must execute this as root!!!'
       exit "${_status:-2}"
@@ -64,7 +60,7 @@ if test "$(whoami || id -un || true)" != 'root'; then
       ui_show_error 'Unable to find myself'
       exit 3
     }
-    exec su -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" -- -- '[su]zip-install.sh' "${@}" || ui_show_error 'failed: exec'
+    exec su 0 sh -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_show_error 'failed: exec'
     exit 127
   fi
 
