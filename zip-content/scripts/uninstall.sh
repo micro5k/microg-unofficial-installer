@@ -136,7 +136,7 @@ if test "${INSTALLER:-false}" = 'false'; then
 
   delete()
   {
-    for filename in "${@?}"; do
+    for filename in "${@}"; do
       if test -e "${filename?}"; then
         ui_debug "Deleting '${filename?}'...."
         rm -rf -- "${filename:?}" || ui_debug 'Failed to delete files/folders'
@@ -167,7 +167,7 @@ track_really_deleted()
 
 delete_tracked()
 {
-  for filename in "${@?}"; do
+  for filename in "${@}"; do
     if test -e "${filename?}"; then
       REALLY_DELETED='true'
       ui_debug "Deleting '${filename?}'...."
