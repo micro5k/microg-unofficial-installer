@@ -39,6 +39,7 @@ GoogleServicesFramework|com.google.android.gsf
 |com.mgoogle.android.gms
 PlayGames|com.google.android.play.games
 Velvet|com.google.android.googlequicksearchbox|true
+PrebuiltGmail|com.google.android.gm|true
 
 GmsCore_update|
 GmsCoreSetupPrebuilt|
@@ -50,9 +51,10 @@ PrebuiltGmsCorePix|
 PrebuiltGmsCoreSc|
 MicroGGMSCore|
 
-MarketUpdater|com.android.vending.updater
 Phonesky|com.android.vending
 Vending|
+LicenseChecker|
+MarketUpdater|com.android.vending.updater
 
 BlankStore|
 FakeStore|
@@ -100,7 +102,10 @@ AndroidAutoFullPrebuilt|
 |com.google.android.gms.car
 
 WhisperPush|org.whispersystems.whisperpush
+Hangouts|com.google.android.talk
 
+PlayAutoInstallConfig|android.autoinstalls.config.google.nexus
+|android.autoinstalls.config.sony.xperia
 PrebuiltGoogleTelemetryTvp|com.google.mainline.telemetry
 HwAps|com.huawei.android.hwaps
 HwPowerGenieEngine3|com.huawei.powergenie
