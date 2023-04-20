@@ -273,11 +273,15 @@ get_android_id()
 
 get_gsf_id()
 {
-  local _val
+  local _val _my_command
+  _my_command='readonly my_query="SELECT * FROM main WHERE name = \"android_id\";"; { test -e "/data/data/com.google.android.gsf/databases/gservices.db" && sqlite3 2> /dev/null -line "/data/data/com.google.android.gsf/databases/gservices.db" "${my_query?}"; } || { test -e "/data/data/com.google.android.gms/databases/gservices.db" && sqlite3 2> /dev/null -line "/data/data/com.google.android.gms/databases/gservices.db" "${my_query?}"; }'
 
-  _val="$(adb shell 'sqlite3 -line "/data/data/com.google.android.gsf/databases/gservices.db" "SELECT * FROM main WHERE name = \"android_id\";" 2> /dev/null || sqlite3 -line "/data/data/com.google.android.gms/databases/gservices.db" "SELECT * FROM main WHERE name = \"android_id\";" 2> /dev/null')" || _val=''
-  test "${_val?}" != '' || return 1
+  _val="$(adb shell "${_my_command:?}")" || _val=''
+  if test -z "${_val?}"; then
+    _val="$(adb shell "su 0 sh -c '${_my_command:?}'")" || _val=''
+  fi
 
+  test -n "${_val?}" || return 1
   _val="$(printf '%s' "${_val?}" | grep -m 1 -e 'value' | cut -d '=' -f '2-' -s)"
 
   printf '%s' "${_val# }"
