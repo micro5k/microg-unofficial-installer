@@ -70,8 +70,6 @@ pause_if_needed()
 
 verify_adb()
 {
-  local _pathsep
-
   if command -v adb 1> /dev/null; then
     return 0
   fi
@@ -81,20 +79,21 @@ verify_adb()
     if test -z "${ANDROID_SDK_ROOT:-}" && test -n "${LOCALAPPDATA:-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
       export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
     fi
+  fi
 
-    if test -n "${ANDROID_SDK_ROOT:-}"; then
-      if test "$(uname -o 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" = 'ms/windows'; then
-        _pathsep=';' # BusyBox-w32
-      else
-        _pathsep=':' # Other shells on Windows
-      fi
+  if test -n "${ANDROID_SDK_ROOT:-}"; then
+    local _pathsep
+    if test "$(uname -o 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" = 'ms/windows'; then
+      _pathsep=';' # BusyBox-w32
+    else
+      _pathsep=':' # Other shells on Windows
+    fi
 
-      # shellcheck disable=SC2123
-      export PATH="${ANDROID_SDK_ROOT:?}/platform-tools${_pathsep:?}${PATH}"
+    # shellcheck disable=SC2123
+    export PATH="${ANDROID_SDK_ROOT:?}/platform-tools${_pathsep:?}${PATH}"
 
-      if command -v adb 1> /dev/null; then
-        return 0
-      fi
+    if command -v adb 1> /dev/null; then
+      return 0
     fi
   fi
 
