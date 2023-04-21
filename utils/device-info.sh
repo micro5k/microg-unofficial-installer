@@ -273,6 +273,9 @@ get_android_id()
 get_gsf_id()
 {
   local _val _my_command
+
+  # We want this without expansion, since it will happens later inside adb shell
+  # shellcheck disable=SC2016
   _my_command='readonly my_query="SELECT * FROM main WHERE name = \"android_id\";"; { test -e "/data/data/com.google.android.gsf/databases/gservices.db" && sqlite3 2> /dev/null -line "/data/data/com.google.android.gsf/databases/gservices.db" "${my_query?}"; } || { test -e "/data/data/com.google.android.gms/databases/gservices.db" && sqlite3 2> /dev/null -line "/data/data/com.google.android.gms/databases/gservices.db" "${my_query?}"; }'
 
   _val="$(adb shell "${_my_command:?}")" || _val=''
