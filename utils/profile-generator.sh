@@ -39,24 +39,6 @@ show_info()
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
 }
 
-is_boot_completed()
-{
-  if test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
-    return 0
-  fi
-
-  return 1
-}
-
-check_boot_completed()
-{
-  is_boot_completed || {
-    show_error 'The device has not finished booting yet!!!'
-    pause_if_needed
-    exit 1
-  }
-}
-
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
@@ -100,6 +82,13 @@ verify_adb()
   show_error 'adb is NOT available'
   pause_if_needed
   exit 1
+}
+
+wait_device()
+{
+  show_info 'Waiting for the device...'
+  adb 'start-server' 2> /dev/null || true
+  adb 'wait-for-device'
 }
 
 is_all_zeros()
@@ -194,13 +183,6 @@ prepend_with_space()
   fi
 }
 
-wait_device()
-{
-  show_info 'Waiting for the device...'
-  adb 'start-server' 2> /dev/null || true
-  adb 'wait-for-device'
-}
-
 device_getprop()
 {
   adb shell "getprop '${1:?}'" | LC_ALL=C tr -d '[:cntrl:]'
@@ -245,6 +227,24 @@ validated_chosen_getprop()
   fi
 
   printf '%s\n' "${_value?}"
+}
+
+is_boot_completed()
+{
+  if test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
+    return 0
+  fi
+
+  return 1
+}
+
+check_boot_completed()
+{
+  is_boot_completed || {
+    show_error 'The device has not finished booting yet!!!'
+    pause_if_needed
+    exit 1
+  }
 }
 
 generate_rom_info()

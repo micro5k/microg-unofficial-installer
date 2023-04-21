@@ -67,24 +67,6 @@ show_msg()
   printf '%s\n' "${*}"
 }
 
-is_boot_completed()
-{
-  if test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
-    return 0
-  fi
-
-  return 1
-}
-
-check_boot_completed()
-{
-  is_boot_completed || {
-    show_error 'The device has not finished booting yet!!!'
-    pause_if_needed
-    exit 1
-  }
-}
-
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
@@ -128,6 +110,18 @@ verify_adb()
   show_error 'adb is NOT available'
   pause_if_needed
   exit 1
+}
+
+wait_device()
+{
+  show_info 'Waiting for the device...'
+  adb 'start-server' 2> /dev/null || true
+  adb 'wait-for-device'
+}
+
+adb_root()
+{
+  adb 'root' 1> /dev/null && adb 'wait-for-device'
 }
 
 is_all_zeros()
@@ -201,18 +195,6 @@ convert_dec_to_hex()
   fi
 }
 
-wait_device()
-{
-  show_info 'Waiting for the device...'
-  adb 'start-server' 2> /dev/null || true
-  adb 'wait-for-device'
-}
-
-adb_root()
-{
-  adb 'root' 1> /dev/null && adb 'wait-for-device'
-}
-
 device_getprop()
 {
   adb shell "getprop '${1:?}'" | LC_ALL=C tr -d '[:cntrl:]'
@@ -232,6 +214,24 @@ validated_chosen_getprop()
   fi
 
   printf '%s\n' "${_value?}"
+}
+
+is_boot_completed()
+{
+  if test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
+    return 0
+  fi
+
+  return 1
+}
+
+check_boot_completed()
+{
+  is_boot_completed || {
+    show_error 'The device has not finished booting yet!!!'
+    pause_if_needed
+    exit 1
+  }
 }
 
 find_serialno()
@@ -405,7 +405,6 @@ verify_adb
 wait_device
 show_info 'Finding info...'
 check_boot_completed
-adb_root
 show_info ''
 
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"
@@ -433,6 +432,7 @@ validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
 
 printf '\n'
 
+adb_root
 mount -t 'auto' '/data' 2> /dev/null || true
 
 GSF_ID="$(get_gsf_id)"
