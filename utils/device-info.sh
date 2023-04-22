@@ -40,6 +40,10 @@ readonly SCRIPT_VERSION='0.3'
   readonly ANDROID_9_SDK=28
   readonly ANDROID_10_SDK=29
   readonly ANDROID_11_SDK=30
+  readonly ANDROID_12_SDK=31
+  readonly ANDROID_12_1_SDK=32
+  readonly ANDROID_13_SDK=33
+  readonly ANDROID_14_SDK=34
 }
 
 show_error()
@@ -352,7 +356,9 @@ get_imei()
   _val="$(get_phone_info 1 s16 'com.android.shell')" || _val=''
   validate_and_display_info 'IMEI' "${_val?}" 15
 
-  if test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
+  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+    :
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
     _val="$(get_phone_info 6 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
     _val="$(get_phone_info 5 s16 'com.android.shell')" || _val=''
@@ -368,7 +374,9 @@ get_line_number()
 {
   local _val
 
-  if test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
+  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+    :
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
     _val="$(get_phone_info 15 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
     _val="$(get_phone_info 12 s16 'com.android.shell')" || _val=''
@@ -388,7 +396,9 @@ get_iccid()
 {
   local _val
 
-  if test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
+  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+    :
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
     _val="$(get_phone_info 12 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
     _val="$(get_phone_info 10 s16 'com.android.shell')" || _val=''
