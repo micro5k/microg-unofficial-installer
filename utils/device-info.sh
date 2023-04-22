@@ -124,6 +124,11 @@ adb_root()
   adb 'root' 1> /dev/null && adb 'wait-for-device'
 }
 
+adb_unroot()
+{
+  adb 'unroot' 1> /dev/null 2> /dev/null
+}
+
 is_all_zeros()
 {
   if test -n "${1?}" && test "$(printf '%s' "${1?}" | LC_ALL=C tr -d '0' || true)" = ''; then
@@ -433,6 +438,7 @@ validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
 printf '\n'
 
 adb_root
+
 mount -t 'auto' '/data' 2> /dev/null || true
 
 GSF_ID="$(get_gsf_id)"
@@ -445,8 +451,9 @@ printf '\n'
 ADVERTISING_ID="$(get_advertising_id)"
 validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
-show_info ''
+adb_unroot &
 
+show_info ''
 show_note 'GSF ID and Advertising ID require root but all others do not require it!'
 
 pause_if_needed
