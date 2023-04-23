@@ -331,6 +331,38 @@ _find_and_mount_system()
   readonly SYS_MOUNTPOINT SYS_PATH
 }
 
+_get_local_settings()
+{
+  if test "${LOCAL_SETTINGS_READ:-false}" = 'true'; then return; fi
+
+  LOCAL_SETTINGS=''
+  if test -n "${DEVICE_GETPROP?}"; then
+    ui_debug 'Parsing local settings...'
+    LOCAL_SETTINGS="$("${DEVICE_GETPROP}" | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
+  fi
+  LOCAL_SETTINGS_READ='true'
+
+  readonly LOCAL_SETTINGS LOCAL_SETTINGS_READ
+  export LOCAL_SETTINGS LOCAL_SETTINGS_READ
+}
+
+parse_setting()
+{
+  local _var
+
+  _get_local_settings
+
+  _var="$(printf '%s\n' "${LOCAL_SETTINGS?}" | grep -m 1 -F -e "[zip.${MODULE_ID:?}.${1:?}]" | cut -d ':' -f '2-' -s)" || _var=''
+  _var="${_var# }"
+  if test -n "${_var?}" && test "${#_var}" -gt 2; then
+    printf '%s\n' "${_var?}" | cut -c "2-$((${#_var} - 1))"
+    return
+  fi
+
+  # Fallback to the default value
+  printf '%s\n' "${2?}"
+}
+
 initialize()
 {
   SYS_INIT_STATUS=0
@@ -341,6 +373,13 @@ initialize()
     # shellcheck source=SCRIPTDIR/../../recovery-simulator/inc/configure-overrides.sh
     . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
   fi
+
+  package_extract_file 'module.prop' "${TMP_PATH:?}/module.prop"
+  MODULE_ID="$(simple_get_prop 'id' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse id'
+  readonly MODULE_ID
+  export MODULE_ID
+
+  LIVE_SETUP_TIMEOUT="$(parse_setting 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}")"
 
   live_setup_choice
 
@@ -365,14 +404,12 @@ initialize()
 
   _find_and_mount_system
 
-  package_extract_file 'module.prop' "${TMP_PATH:?}/module.prop"
-  MODULE_ID="$(simple_get_prop 'id' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse id'
   MODULE_NAME="$(simple_get_prop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
   MODULE_VERSION="$(simple_get_prop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
   MODULE_VERCODE="$(simple_get_prop 'versionCode' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version code'
   MODULE_AUTHOR="$(simple_get_prop 'author' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse author'
-  readonly MODULE_ID MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
-  export MODULE_ID MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
+  readonly MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
+  export MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
 
   # Previously installed module version code (0 if wasn't installed)
   PREV_MODULE_VERCODE="$(simple_get_prop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
@@ -516,7 +553,7 @@ ui_msg_sameline_end()
 
 ui_debug()
 {
-  printf '%s\n' "${1?}"
+  printf 1>&2 '%s\n' "${1?}"
 }
 
 # Error checking functions
