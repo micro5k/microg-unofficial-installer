@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-readonly ZIPINSTALL_VERSION='0.2'
+readonly ZIPINSTALL_VERSION='0.3'
 
 umask 022 || exit 6
 
@@ -49,8 +49,8 @@ if test "$(whoami || id -un || true)" != 'root'; then
   if test "${AUTO_ELEVATED:-false}" = 'false'; then
     printf '%s\n' 'Auto-rooting attempt...'
 
-    # First verify that "su" is working (0 => root)
-    su 0 sh -c 'command' '[su]verification' || {
+    # First verify that "su" is working
+    su root sh -c 'command' '[su]verification' || {
       _status="${?}" # Usually it return 1 or 255 when root is present but disabled
       ui_show_error 'Auto-rooting failed, you must execute this as root!!!'
       exit "${_status:-2}"
@@ -60,7 +60,7 @@ if test "$(whoami || id -un || true)" != 'root'; then
       ui_show_error 'Unable to find myself'
       exit 3
     }
-    exec su 0 sh -c "AUTO_ELEVATED=true CI='${CI:-false}' DEBUG_LOG='${DEBUG_LOG:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_show_error 'failed: exec'
+    exec su root sh -c "AUTO_ELEVATED=true CI='${CI:-false}' DEBUG_LOG='${DEBUG_LOG:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_show_error 'failed: exec'
     exit 127
   fi
 
@@ -85,7 +85,7 @@ _clean_at_exit()
 }
 trap ' _clean_at_exit' 0 2 3 6 15
 
-if test -n "${TMPDIR:-}" && test -w "${TMPDIR:?}"; then
+if test -n "${TMPDIR:-}" && test -w "${TMPDIR:?}" && test "${TMPDIR:?}" != '/data/local/tmp'; then
   : # Already ready
 elif test -w '/tmp'; then
   TMPDIR='/tmp'
