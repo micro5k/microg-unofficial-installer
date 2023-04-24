@@ -382,6 +382,8 @@ initialize()
   if test "${INPUT_FROM_TERMINAL:?}" = 'true' && test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then LIVE_SETUP_TIMEOUT="$((LIVE_SETUP_TIMEOUT + 3))"; fi
   LIVE_SETUP_TIMEOUT="$(parse_setting 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}")"
 
+  ui_debug ''
+
   live_setup_choice
 
   # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64.
