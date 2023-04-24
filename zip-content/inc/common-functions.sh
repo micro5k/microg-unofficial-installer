@@ -379,6 +379,7 @@ initialize()
   readonly MODULE_ID
   export MODULE_ID
 
+  if test "${INPUT_FROM_TERMINAL:?}" = 'true' && test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then LIVE_SETUP_TIMEOUT="$((LIVE_SETUP_TIMEOUT + 3))"; fi
   LIVE_SETUP_TIMEOUT="$(parse_setting 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}")"
 
   live_setup_choice
@@ -418,6 +419,7 @@ initialize()
     *) ;;                                     # OK
   esac
   readonly PREV_MODULE_VERCODE
+  export PREV_MODULE_VERCODE
 
   IS_INSTALLATION='true'
   if test "${LIVE_SETUP_ENABLED:?}" = 'true' && test "${PREV_MODULE_VERCODE:?}" -ge 3; then
@@ -1412,8 +1414,8 @@ live_setup_choice()
     elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
 
       if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
-        _live_setup_choice_msg "$((LIVE_SETUP_TIMEOUT + 3))"
-        choose_read_with_timeout "$((LIVE_SETUP_TIMEOUT + 3))"
+        _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
+        choose_read_with_timeout "${LIVE_SETUP_TIMEOUT}"
       elif "${KEYCHECK_ENABLED:?}"; then
         _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
         choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
