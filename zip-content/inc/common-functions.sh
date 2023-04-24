@@ -338,7 +338,7 @@ _get_local_settings()
   LOCAL_SETTINGS=''
   if test -n "${DEVICE_GETPROP?}"; then
     ui_debug 'Parsing local settings...'
-    LOCAL_SETTINGS="$("${DEVICE_GETPROP}" | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
+    LOCAL_SETTINGS="$("${DEVICE_GETPROP:?}" | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
   fi
   LOCAL_SETTINGS_READ='true'
 
@@ -354,7 +354,7 @@ parse_setting()
 
   _var="$(printf '%s\n' "${LOCAL_SETTINGS?}" | grep -m 1 -F -e "[zip.${MODULE_ID:?}.${1:?}]" | cut -d ':' -f '2-' -s)" || _var=''
   _var="${_var# }"
-  if test -n "${_var?}" && test "${#_var}" -gt 2; then
+  if test "${#_var}" -gt 2; then
     printf '%s\n' "${_var?}" | cut -c "2-$((${#_var} - 1))"
     return
   fi
