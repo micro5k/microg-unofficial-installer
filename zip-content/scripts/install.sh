@@ -23,7 +23,7 @@ unset CDPATH
 
 ### GLOBAL VARIABLES ###
 
-TMP_PATH="$2"
+TMP_PATH="${2:?}"
 
 CPU=false
 CPU64=false
@@ -33,7 +33,7 @@ FAKE_SIGN=false
 ### FUNCTIONS ###
 
 # shellcheck source=SCRIPTDIR/../inc/common-functions.sh
-. "${TMP_PATH}/inc/common-functions.sh" || exit "${?}"
+. "${TMP_PATH:?}/inc/common-functions.sh" || exit "${?}"
 
 ### CODE ###
 
