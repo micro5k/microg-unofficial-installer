@@ -1122,6 +1122,7 @@ _timeout_exit_code_remapper()
       fi
       ;;
   esac
+  # https://en.wikipedia.org/wiki/Signal_(IPC)#Default_action
 
   ui_msg_empty_line
   ui_warning "timeout returned: ${1:?}"
