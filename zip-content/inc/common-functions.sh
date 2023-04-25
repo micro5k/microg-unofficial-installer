@@ -1061,12 +1061,28 @@ _find_hardware_keys()
 
 _parse_input_event()
 {
-  # shellcheck disable=SC2002
-  cat "${INPUT_DEVICE_PATH:?}" | hexdump -d -n 14 | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
+  local _var _status
+
+  _status=0
+  if test -n "${1:-}"; then
+    _var="$(_timeout_compat "${1:?}" cat -u "${INPUT_DEVICE_PATH:?}" | hexdump -d -n 14)" || _status="${?}"
+  else
+    _var="$(cat -u "${INPUT_DEVICE_PATH:?}" | hexdump -d -n 14)" || _status="${?}"
+  fi
+
+  case "${_status:?}" in
+    0) ;;              # OK
+    141) ;;            # OK. Only the necessary part is read, so the "Broken pipe" is supposed to happen, ignore it
+    124) return 124 ;; # Timed out
+    *) return 2 ;;     # Failure
+  esac
+
+  printf "%s\n" "${_var?}" | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
     if test "${key_down:-0}" -ne 1; then return 85; fi
     if test -n "${cur_button:-}" && printf '%.0f' "${cur_button:?}"; then return 4; fi
-  done
-  return "${?}"
+  done || return "${?}"
+
+  return 1
 }
 
 _timeout_exit_code_remapper()
@@ -1093,6 +1109,9 @@ _timeout_exit_code_remapper()
       ui_msg_empty_line
       ui_warning 'timeout returned SIGKILL (128+9)'
       return 1
+      ;;
+    141) # SIGPIPE signal (128+13) - Broken pipe
+      return 141
       ;;
     143) # SIGTERM signal (128+15) - Timed out
       return 124
@@ -1181,10 +1200,11 @@ choose_keycheck_with_timeout()
     ui_msg_empty_line
     return 0
   elif test "${_status:?}" -eq 127 || test "${_status:?}" -eq 132; then
-    true # This is just to waste some time otherwise the warning about "timeout" failure may appear earlier than the message
-    ui_msg 'Fallbacking to manual input parsing, waiting input...'
     export KEYCHECK_ENABLED='false'
-    choose_inputevent
+    true # This is just to waste some time, otherwise the warning about the "timeout" failure may appear after the following message
+
+    ui_msg 'Fallbacking to manual input parsing, waiting input...'
+    choose_inputevent "${@}"
     return "${?}"
   fi
   _key="$(_keycheck_map_keycode_to_key "${_status:?}")" || {
@@ -1307,11 +1327,17 @@ choose_inputevent()
   while true; do
     _key=''
     _status=0
-    _key="$(_parse_input_event)" || _status="${?}"
+    _key="$(_parse_input_event "${1:-}")" || _status="${?}"
 
     case "${_status:?}" in
       4) ;;           # Key down event read (allowed)
       85) continue ;; # Key up event read (ignored)
+      124)
+        ui_msg_empty_line
+        ui_msg 'Key: No key pressed'
+        ui_msg_empty_line
+        return 0
+        ;;
       *)              # Event read failed
         ui_warning 'Key detection failed (2)'
         return 1
@@ -1357,6 +1383,7 @@ choose()
   ui_msg "QUESTION: ${1:?}"
   ui_msg "${2:?}"
   ui_msg "${3:?}"
+  shift 3
 
   if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
     choose_read "${@}"
@@ -1424,8 +1451,8 @@ live_setup_choice()
         _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
         choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
       else
-        _live_setup_choice_msg
-        choose_inputevent
+        _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
+        choose_inputevent "${LIVE_SETUP_TIMEOUT}"
       fi
       if test "${?}" = '3'; then LIVE_SETUP_ENABLED='true'; fi
 
