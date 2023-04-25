@@ -1338,7 +1338,7 @@ choose_inputevent()
         ui_msg_empty_line
         return 0
         ;;
-      *)              # Event read failed
+      *) # Event read failed
         ui_warning 'Key detection failed (2)'
         return 1
         ;;
