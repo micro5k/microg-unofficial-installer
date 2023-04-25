@@ -90,6 +90,11 @@ _is_caller_root()
   fi
 }
 
+_minutil_getprop()
+{
+  grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f '2-' -s
+}
+
 _minutil_check_getopt()
 {
   \unset GETOPT_COMPATIBLE
@@ -135,10 +140,8 @@ else
   unset param
 fi
 
-_minutil_getprop()
-{
-  grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f '2' -s
-}
+if test ! -e '/system/bin'; then mount -t 'auto' '/system' 2> /dev/null || true; fi
+if test ! -e '/data/data'; then mount -t 'auto' -o 'rw' '/data' 2> /dev/null || true; fi
 
 if test -r '/system/build.prop' && MINUTIL_SYSTEM_SDK="$(_minutil_getprop 'ro.build.version.sdk' '/system/build.prop')" && test -n "${MINUTIL_SYSTEM_SDK?}"; then
   :
@@ -334,9 +337,6 @@ minutil_manual_media_rescan()
   echo "Done!"
   return 0
 }
-
-if test ! -e '/system/bin'; then mount -t 'auto' '/system' 2> /dev/null || true; fi
-if test ! -e '/data/data'; then mount -t 'auto' -o 'rw' '/data' 2> /dev/null || true; fi
 
 while true; do
   case "${1}" in
