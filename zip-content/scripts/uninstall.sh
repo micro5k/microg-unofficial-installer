@@ -67,6 +67,8 @@ FDroidPrivilegedExtension|org.fdroid.fdroid.privileged
 F-DroidPrivilegedExtension|
 FDroidPrivileged|
 FDroidPriv|
+AuroraServices|com.aurora.services
+auroraservices|
 
 NewPipe|org.schabi.newpipe
 NewPipeLegacy|org.schabi.newpipelegacy
@@ -193,8 +195,9 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     # Legacy xml paths
     delete "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
     # Other installers
-    delete "${SYS_PATH}/etc/permissions/${INTERNAL_NAME:?}.xml"
     delete "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH}/etc/permissions/permissions_${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH}/etc/permissions/${INTERNAL_NAME:?}.xml"
     delete "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
 
     # App libs
@@ -287,6 +290,7 @@ delete "${SYS_PATH}"/addon.d/*-unifiednlp.sh
 delete "${SYS_PATH}"/addon.d/*-mapsapi.sh
 delete "${SYS_PATH}"/addon.d/*-gapps.sh
 delete "${SYS_PATH}"/addon.d/80-fdroid.sh
+delete "${SYS_PATH}"/addon.d/69-AuroraServices.sh
 
 delete "${SYS_PATH}"/etc/default-permissions/google-permissions.xml
 delete "${SYS_PATH}"/etc/default-permissions/phonesky-permissions.xml
