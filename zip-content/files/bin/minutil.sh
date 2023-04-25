@@ -15,7 +15,7 @@ set -e
 }
 
 MINUTIL_NAME='MinUtil'
-MINUTIL_VERSION='0.6'
+MINUTIL_VERSION='0.7'
 
 ### PREVENTIVE CHECKS ###
 
@@ -267,7 +267,7 @@ minutil_force_gcm_reconnection()
 minutil_remove_all_accounts()
 {
   \_is_caller_root || \return 1
-  mount -t 'auto' -o 'rw' '/data' 2> /dev/null || true
+
   test -e '/data' || {
     _minutil_error '/data NOT found'
     return 1
@@ -334,6 +334,9 @@ minutil_manual_media_rescan()
   echo "Done!"
   return 0
 }
+
+if test ! -e '/system/bin'; then mount -t 'auto' '/system' 2> /dev/null || true; fi
+if test ! -e '/data/data'; then mount -t 'auto' -o 'rw' '/data' 2> /dev/null || true; fi
 
 while true; do
   case "${1}" in
