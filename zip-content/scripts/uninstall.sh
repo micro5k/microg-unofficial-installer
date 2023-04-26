@@ -28,28 +28,31 @@ EOF
 uninstall_list()
 {
   cat << 'EOF'
-ChromeHomePage|com.android.partnerbrowsercustomizations.tmobile
-ConfigUpdater|com.google.android.configupdater
 GmsCore|com.google.android.gms
-GoogleFeedback|com.google.android.feedback
-BetaFeedback|com.google.android.apps.betterbug
-GoogleLoginService|com.google.android.gsf.login
-GoogleOneTimeInitializer|com.google.android.onetimeinitializer
 GoogleServicesFramework|com.google.android.gsf
-|com.mgoogle.android.gms
-PlayGames|com.google.android.play.games
-Velvet|com.google.android.googlequicksearchbox|true
-PrebuiltGmail|com.google.android.gm|true
+GoogleLoginService|com.google.android.gsf.login
 
-GmsCore_update|
-GmsCoreSetupPrebuilt|
-GoogleQuickSearchBox|
-GsfProxy|
 PrebuiltGmsCore|
 PrebuiltGmsCorePi|
 PrebuiltGmsCorePix|
 PrebuiltGmsCoreSc|
+GmsCoreSetupPrebuilt|
+GmsCore_update|
 MicroGGMSCore|
+GsfProxy|
+|com.mgoogle.android.gms
+
+PartnerSetupPrebuilt|com.google.android.partnersetup
+GooglePartnerSetup|
+PartnerBookmarksProvider|com.android.providers.partnerbookmarks
+ChromeHomePage|com.android.partnerbrowsercustomizations.tmobile
+GoogleFeedback|com.google.android.feedback
+BetaFeedback|com.google.android.apps.betterbug
+
+Velvet|com.google.android.googlequicksearchbox|true
+GoogleQuickSearchBox|
+PrebuiltGmail|com.google.android.gm|true
+PlayGames|com.google.android.play.games
 
 Phonesky|com.android.vending
 Vending|
@@ -97,10 +100,10 @@ VollaNlpRRO|com.volla.overlay.nlp
 VollaNlp|com.volla.nlp
 VollaGSMNlp|com.volla.gsmnlp
 
-AndroidAuto|com.google.android.projection.gearhead
+AndroidAutoStubPrebuilt|com.google.android.projection.gearhead
 AndroidAutoPrebuiltStub|
-AndroidAutoStubPrebuilt|
 AndroidAutoFullPrebuilt|
+AndroidAuto|
 |com.google.android.gms.car
 
 WhisperPush|org.whispersystems.whisperpush
@@ -113,7 +116,6 @@ HwAps|com.huawei.android.hwaps
 HwPowerGenieEngine3|com.huawei.powergenie
 EOF
 }
-# Note: Do not remove GooglePartnerSetup (com.google.android.partnersetup) since some ROMs may need it.
 
 framework_uninstall_list()
 {
