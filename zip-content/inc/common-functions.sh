@@ -186,19 +186,13 @@ is_mounted_read_only()
 
 remount_read_write()
 {
-  local _retry='false'
-  if ! mount -o 'remount,rw' "${1:?}"; then
-    _retry='true'
+  if test -n "${DEVICE_MOUNT:-}"; then
+    "${DEVICE_MOUNT:?}" -o 'remount,rw' "${1:?}" || "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}" "${1:?}" || return 1
+  else
+    mount -o 'remount,rw' "${1:?}" || return 1
   fi
 
-  if test "${_retry:?}" = 'true' || is_mounted_read_only "${1:?}"; then
-    if test -n "${DEVICE_MOUNT:-}"; then
-      "${DEVICE_MOUNT:?}" -o 'remount,rw' "${1:?}" || "${DEVICE_MOUNT:?}" -o 'remount,rw' "${1:?}" "${1:?}" || return 1
-      if is_mounted_read_only "${1:?}"; then return 1; fi
-    else
-      return 1
-    fi
-  fi
+  if is_mounted_read_only "${1:?}"; then return 1; fi
 
   return 0
 }
