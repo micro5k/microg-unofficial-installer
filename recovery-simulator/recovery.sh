@@ -125,7 +125,7 @@ uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 # Check dependencies
 _our_busybox="$(env -- which -- busybox)" || fail_with_msg 'BusyBox is missing'
 if test "${COVERAGE:-false}" != 'false'; then
-  COVERAGE="$(command -v -- bashcov)" || fail_with_msg 'Bashcov is missing'
+  COVERAGE="$(command -v bashcov)" || fail_with_msg 'Bashcov is missing'
 fi
 
 # Get dir of this script
