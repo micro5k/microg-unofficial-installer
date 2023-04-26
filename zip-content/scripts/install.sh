@@ -180,20 +180,16 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   setup_app 1 'microG Services Framework Proxy' 'GoogleServicesFramework' 'priv-app' false false
 
-  setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true
-  app_1_is_installed="${?}"
-  setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' true
-  app_2_is_installed="${?}"
-
-  # Fallback to FakeStore if the selected market is missing
+  # Store selection
   market_is_fakestore='false'
-  if {
-    test "${app_1_is_installed:?}" -ne 0 && test "${app_2_is_installed:?}" -ne 0
-  } || test ! -f "${TMP_PATH}/files/priv-app/Phonesky.apk"; then
+  if setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' true ||
+    setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
+    :
+  else
+    # Fallback to FakeStore
     market_is_fakestore='true'
     setup_app 1 'FakeStore' 'FakeStore' 'priv-app' false false
   fi
-  unset app_1_is_installed app_2_is_installed
 
   if test "${market_is_fakestore:?}" = 'true'; then
     move_rename_file "${TMP_PATH:?}/origin/etc/microg.xml" "${TMP_PATH:?}/files/etc/microg.xml"
@@ -204,9 +200,9 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
   setup_app "${INSTALL_AURORASERVICES:?}" 'Aurora Services' 'AuroraServices' 'priv-app'
 
-  setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
-  setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe (old)' 'NewPipeOld' 'app' true
-  setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' true
+  setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' true ||
+    setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe (old)' 'NewPipeOld' 'app' true ||
+    setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
 
   setup_app "${INSTALL_ANDROIDAUTO:-}" 'Android Auto stub' 'AndroidAuto' 'priv-app' true
 
