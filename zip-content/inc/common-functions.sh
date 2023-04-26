@@ -369,7 +369,6 @@ remount_read_write_if_needed()
     ui_msg "INFO: The '${_mountpoint:-}' mount point is read-only, it will be remounted"
     ui_msg_empty_line
     remount_read_write "${_mountpoint:?}" || ui_error "Remounting of '${_mountpoint:-}' failed"
-    fi
   fi
 }
 
