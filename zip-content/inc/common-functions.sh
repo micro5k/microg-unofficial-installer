@@ -357,6 +357,19 @@ parse_setting()
   printf '%s\n' "${2?}"
 }
 
+remount_read_write_if_needed()
+{
+  local _mountpoint
+  _mountpoint="$(_canonicalize "${1:?}")"
+
+  if is_mounted "${_mountpoint:?}" && is_mounted_read_only "${_mountpoint:?}"; then
+    ui_msg "INFO: The '${_mountpoint:-}' mount point is read-only, it will be remounted"
+    ui_msg_empty_line
+    remount_read_write "${_mountpoint:?}" || ui_error "Remounting of '${_mountpoint:-}' failed"
+    fi
+  fi
+}
+
 initialize()
 {
   SYS_INIT_STATUS=0
@@ -458,6 +471,11 @@ initialize()
     fi
   fi
   readonly DATA_PATH
+
+  mount_extra_partitions_silent
+  if test -e '/system_ext'; then remount_read_write_if_needed '/system_ext'; fi
+  if test -e '/product'; then remount_read_write_if_needed '/product'; fi
+  if test -e '/vendor'; then remount_read_write_if_needed '/vendor'; fi
 
   unset LAST_MOUNTPOINT
 }

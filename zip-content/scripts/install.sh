@@ -247,8 +247,6 @@ if test "${API}" -ge 23; then
   fi
 fi
 
-mount_extra_partitions_silent
-
 if test "${IS_INSTALLATION:?}" = 'true'; then
   # Kill the apps if they were active and disable them
   kill_and_disable_app com.android.vending
