@@ -333,6 +333,9 @@ _get_local_settings()
   if test -n "${DEVICE_GETPROP?}"; then
     ui_debug 'Parsing local settings...'
     LOCAL_SETTINGS="$("${DEVICE_GETPROP:?}" | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
+  elif command -v getprop 1> /dev/null; then
+    ui_debug 'Parsing local settings (2)...'
+    LOCAL_SETTINGS="$(getprop | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
   fi
   LOCAL_SETTINGS_READ='true'
 
