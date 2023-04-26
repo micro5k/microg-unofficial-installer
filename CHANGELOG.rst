@@ -14,8 +14,8 @@ All notable changes to this project will be documented in this file.
 -------------
 - Click above to see all the changes.
 
-1.3.1-beta
-----------
+1.3.1-beta - Not yet released
+-----------------------------
 - Improve compatibility of the MinUtil script with old Android versions
 - The MinUtil script is now installed under KitKat and higher
 - Add FORCE_HW_BUTTONS env variable to force using hardware buttons even when using :code:`zip-install.sh`
@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
 - Support the timeout also for the manual input parsing, fix `#59 <https://github.com/micro5k/microg-unofficial-installer/issues/59>`_
 - Add Aurora Services 1.1.1
 - Update NewPipe to 0.25.1
+- Remount all extra partitions as read-write if necessary
 
 `1.3.0-beta`_ - 2023-02-19
 --------------------------
