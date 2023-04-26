@@ -14,6 +14,21 @@ All notable changes to this project will be documented in this file.
 -------------
 - Click above to see all the changes.
 
+1.3.1-beta
+----------
+- Improve compatibility of the MinUtil script with old Android versions
+- The MinUtil script is now installed under KitKat and higher
+- Add FORCE_HW_BUTTONS env variable to force using hardware buttons even when using :code:`zip-install.sh`
+- Improve error handling of :code:`zip-install.sh`
+- Add support for uninstallation
+- Add `Android device profile generator <https://github.com/micro5k/microg-unofficial-installer/blob/main/utils/profile-generator.sh>`_ (it automatically generate a device profile, usable by microG, from a device connected via adb)
+- Add `Android device info extractor <https://github.com/micro5k/microg-unofficial-installer/blob/main/utils/device-info.sh>`_ (it automatically extract device information from a device connected via adb)
+- Add support for very limited "su" binaries in :code:`zip-install.sh`
+- Allow to configure all options before flashing the zip (example: :code:`adb shell "setprop zip.microg-unofficial-installer.LIVE_SETUP_TIMEOUT 8"`)
+- Support the timeout also for the manual input parsing, fix `#59 <https://github.com/micro5k/microg-unofficial-installer/issues/59>`_
+- Add Aurora Services 1.1.1
+- Update NewPipe to 0.25.1
+
 `1.3.0-beta`_ - 2023-02-19
 --------------------------
 - Add support for mounting system partition at /mnt/system (`@mjenny <https://github.com/mjenny>`_)
