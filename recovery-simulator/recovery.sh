@@ -132,7 +132,7 @@ fi
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
 unset THIS_SCRIPT
 
-case "${*?}" in
+case "${*}" in
   *'*.zip') fail_with_msg 'The flashable ZIP is missing, you have to build it before being able to test it' ;;
   *) ;;
 esac

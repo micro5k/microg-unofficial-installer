@@ -127,7 +127,7 @@ if \_minutil_check_getopt; then
   \unset minutil_args
 fi
 
-if test -z "${*:-}" || test "${*:-}" = '--'; then
+if test -z "${*}" || test "${*}" = '--'; then
   _minutil_display_help='true'
 else
   for param in "${@}"; do

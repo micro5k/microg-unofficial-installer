@@ -12,7 +12,7 @@ ui_show_error()
   printf 1>&2 '\033[1;31mERROR: %s\033[0m\n' "${1:-}"
 }
 
-if test -n "${*:-}"; then
+if test -n "${*}"; then
   for _param in "${@}"; do
     shift || {
       ui_show_error 'shift failed'
@@ -40,7 +40,7 @@ if test -n "${*:-}"; then
   unset _param _param_copy
 fi
 
-if test -z "${*:-}"; then
+if test -z "${*}"; then
   ui_show_error 'You must specify the ZIP file to install'
   exit 5
 fi
