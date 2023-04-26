@@ -850,7 +850,7 @@ move_dir_content()
 
 delete()
 {
-  for filename in "${@?}"; do
+  for filename in "${@}"; do
     if test -e "${filename?}"; then
       ui_debug "Deleting '${filename?}'...."
       rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders' 103
@@ -860,7 +860,7 @@ delete()
 
 delete_recursive()
 {
-  for filename in "${@?}"; do
+  for filename in "${@}"; do
     if test -e "${filename?}"; then
       ui_debug "Deleting '${filename?}'...."
       rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders' 103
@@ -870,7 +870,7 @@ delete_recursive()
 
 delete_recursive_wildcard()
 {
-  for filename in "${@?}"; do
+  for filename in "${@}"; do
     if test -e "${filename?}"; then
       ui_debug "Deleting '${filename?}'...."
       rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders' 103
@@ -1155,11 +1155,11 @@ _timeout_compat()
   shift
 
   if test -z "${_timeout_ver:-}" || test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -ge "$(numerically_comparable_version '1.30.0' || true)"; then
-    timeout -- "${_timeout_secs:?}" "${@:?}"
+    timeout -- "${_timeout_secs:?}" "${@}"
     _status="${?}"
   else
     {
-      timeout -t "${_timeout_secs:?}" -- "${@:?}"
+      timeout -t "${_timeout_secs:?}" -- "${@}"
       _status="${?}"
     } 2> /dev/null
   fi
@@ -1527,7 +1527,7 @@ parse_busybox_version()
 
 numerically_comparable_version()
 {
-  echo "${@:?}" | awk -F. '{ printf("%d%03d%03d%03d\n", $1, $2, $3, $4); }'
+  echo "${@}" | awk -F. '{ printf("%d%03d%03d%03d\n", $1, $2, $3, $4); }'
 }
 
 remove_ext()
