@@ -9,7 +9,6 @@ REM Fix the working directory when using "Run as administrator"
 IF "%CD%" == "%windir%\system32" CD /D "%~dp0"
 
 SET "LANG=C.UTF-8"
-CHCP 65001 1> nul || ECHO "Changing the codepage failed"
 
 "%~dp0tools\win\busybox.exe" ash -- "%~dp0build.sh" %*
 
