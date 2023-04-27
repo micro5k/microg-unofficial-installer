@@ -364,6 +364,8 @@ PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the col
 PROMPT_COMMAND=
 
 UTILS_DIR="${SCRIPT_DIR:?}${SEP:?}utils"
+export UTILS_DIR
+
 TOOLS_DIR="${SCRIPT_DIR:?}${SEP:?}tools${SEP:?}${PLATFORM:?}"
 PATH="${UTILS_DIR:?}${PATHSEP:?}${TOOLS_DIR:?}${PATHSEP:?}${PATH}"
 export PATH
