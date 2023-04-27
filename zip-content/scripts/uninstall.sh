@@ -38,6 +38,7 @@ PrebuiltGmsCorePix|
 PrebuiltGmsCoreSc|
 GmsCoreSetupPrebuilt|
 GmsCore_update|
+gmscore_debug|
 MicroGGMSCore|
 GsfProxy|
 |com.mgoogle.android.gms
