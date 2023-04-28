@@ -40,6 +40,38 @@ pause_if_needed()
   fi
 }
 
+contains()
+{
+  case "${2?}" in
+    *"${1:?}"*) return 0 ;; # Found
+    *) ;;
+  esac
+  return 1 # NOT found
+}
+
+iconv_compat()
+{
+  local _input_file _output_file _status
+
+  _input_file="${1:?}"
+  _output_file="${2:?}"
+  shift 2
+
+  if contains 'GNU libiconv' "$(iconv --version 2> /dev/null | head -n 1 -q || true)"; then
+    # Limited version, -o is NOT available
+    if test "${_output_file:?}" = "${_input_file:?}"; then
+      iconv "${@}" -- "${_input_file:?}" 1> "${_output_file:?}.compat-temp" || return "${?}"
+      rm -f -- "${_output_file:?}" || return "${?}"
+      mv -f -T -- "${_output_file:?}.compat-temp" "${_output_file:?}" || return "${?}"
+    else
+      iconv "${@}" -- "${_input_file:?}" 1> "${_output_file:?}" || { _status="${?}"; if test "${_status:?}" -ne 1; then return "${_status:?}"; fi; }
+    fi
+  else
+    # -o is available
+    iconv -o "${_output_file:?}" "${@}" -- "${_input_file:?}" || return "${?}"
+  fi
+}
+
 readonly WGET_CMD='wget'
 readonly DL_UA='Mozilla/5.0 (Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0'
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
@@ -74,10 +106,10 @@ dl_and_convert_device_list()
   rm -f "${_file:?}-temp" || return "${?}"
   dl 'https://storage.googleapis.com/play_public/supported_devices.csv' "${_file:?}-temp" || return "${?}"
 
-  iconv -o "${_file:?}-temp" -f 'UTF-16LE' -t 'UTF-8' -- "${_file:?}-temp" || return "${?}"
+  iconv_compat "${_file:?}-temp" "${_file:?}-temp" -f 'UTF-16LE' -t 'UTF-8' || return "${?}"
   _var="$(printf '\342\200\235')"
   sed -i "s/${_var:?}/\"/g" "${_file:?}-temp" || return "${?}"
-  iconv -c -o "${_file:?}" -f 'UTF-8' -t 'WINDOWS-1252' -- "${_file:?}-temp" || return "${?}"
+  iconv_compat "${_file:?}-temp" "${_file:?}" -c -f 'UTF-8' -t 'WINDOWS-1252' || return "${?}"
   rm -f "${_file:?}-temp" || return "${?}"
 }
 
