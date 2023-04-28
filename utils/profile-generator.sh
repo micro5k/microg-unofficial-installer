@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='0.7'
+readonly SCRIPT_VERSION='0.8'
 
 show_error()
 {
@@ -146,15 +146,6 @@ compare_nocase()
   fi
 
   return 1 # False
-}
-
-contains()
-{
-  case "${2?}" in
-    *"${1:?}"*) return 0 ;; # Found
-    *) ;;
-  esac
-  return 1 # NOT found
 }
 
 contains_nocase()
@@ -335,7 +326,7 @@ generate_device_info()
 
   if is_valid_value "${MARKETING_DEVICE_INFO?}"; then
     _info="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
-  elif test "${OFFICIAL_STATUS:?}" -eq 0 && is_valid_value "${OFFICIAL_DEVICE_INFO?}"; then
+  elif test "${OFFICIAL_STATUS:?}" -eq 0 && is_valid_value "${OFFICIAL_DEVICE_INFO?}" && ! contains_nocase "${OFFICIAL_DEVICE_INFO:?}" "${BUILD_MODEL?}"; then
     _info="${OFFICIAL_DEVICE_INFO?}"
   else
     _info="${BUILD_MODEL?}"
