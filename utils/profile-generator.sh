@@ -147,7 +147,20 @@ contains()
 {
   case "${2?}" in
     *"${1:?}"*) return 0 ;; # Found
-    *) ;;                   # NOT found
+    *) ;;
+  esac
+  return 1 # NOT found
+}
+
+contains_nocase()
+{
+  local _val_1 _val_2
+  _val_1="$(lc_text "${1?}")"
+  _val_2="$(lc_text "${2?}")"
+
+  case "${_val_2?}" in
+    *"${_val_1:?}"*) return 0 ;; # Found
+    *) ;;
   esac
   return 1 # NOT found
 }
@@ -156,7 +169,7 @@ is_string_starting_with()
 {
   case "${2?}" in
     "${1:?}"*) return 0 ;; # Found
-    *) ;;                  # NOT found
+    *) ;;
   esac
   return 1 # NOT found
 }
@@ -169,7 +182,7 @@ is_string_nocase_starting_with()
 
   case "${_val_2?}" in
     "${_val_1:?}"*) return 0 ;; # Found
-    *) ;;                       # NOT found
+    *) ;;
   esac
   return 1 # NOT found
 }
@@ -286,27 +299,23 @@ generate_rom_info()
 
 generate_device_info()
 {
-  local _info _info_prefix
-  _info_prefix=''
+  local _info
 
   if is_valid_value "${MARKETING_DEVICE_INFO?}"; then
-    _info="${MARKETING_DEVICE_INFO:?}"
+    _info="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
   else
-    if test -n "${BUILD_BRAND?}" && ! compare_nocase "${BUILD_BRAND:?}" "${BUILD_MANUFACTURER?}" && ! compare_nocase "${BUILD_BRAND:?}" 'Android'; then
-      _info_prefix="$(uc_first_char "${BUILD_BRAND:?}")"
-    fi
     _info="${BUILD_MODEL?}"
   fi
 
-  if test -n "${BUILD_MANUFACTURER?}" && ! is_string_nocase_starting_with "${BUILD_MANUFACTURER:?} " "${_info?}"; then
-    _info_prefix="$(prepend_with_space "${BUILD_MANUFACTURER:?}" "${_info_prefix?}")"
+  if test -n "${BUILD_BRAND?}" && ! contains_nocase " ${BUILD_BRAND:?} " " ${_info?}" && ! compare_nocase "${BUILD_BRAND:?}" 'Android'; then
+    _info="$(uc_first_char "${BUILD_BRAND:?}") ${_info?}"
   fi
 
-  if test -n "${_info_prefix?}"; then
-    printf '%s %s' "$(uc_first_char "${_info_prefix?}" || true)" "${_info?}"
-  else
-    printf '%s' "$(uc_first_char "${_info?}" || true)"
+  if test -n "${BUILD_MANUFACTURER?}" && ! contains_nocase " ${BUILD_MANUFACTURER:?} " " ${_info?}"; then
+    _info="${BUILD_MANUFACTURER:?} ${_info?}"
   fi
+
+  printf '%s' "$(uc_first_char "${_info?}" || true)"
 }
 
 find_bootloader()
