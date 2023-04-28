@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='0.6'
+readonly SCRIPT_VERSION='0.7'
 
 show_error()
 {
@@ -36,6 +36,11 @@ show_warn()
 show_info()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
+}
+
+show_negative_info()
+{
+  printf 1>&2 '\033[1;32m%s\033[1;31m%s\033[0m\n' "${1:?}" "${2:?}"
 }
 
 pause_if_needed()
@@ -314,11 +319,14 @@ parse_devices_list()
     _file='./device-list.csv'
   else
     show_warn 'THE DEVICE LIST IS MISSING! Use dl-device-list.sh'
-    return 1
+    return 2
   fi
 
   grep -m 1 -i -e "^${BUILD_BRAND?},.*,${BUILD_DEVICE?},${BUILD_MODEL?}$" -- "${_file:?}" | cut -d ',' -f '2' -s ||
-    grep -m 1 -i -e "^${BUILD_MANUFACTURER?},.*,${BUILD_DEVICE?},${BUILD_MODEL?}$" -- "${_file:?}" | cut -d ',' -f '2' -s
+    grep -m 1 -i -e "^${BUILD_MANUFACTURER?},.*,${BUILD_DEVICE?},${BUILD_MODEL?}$" -- "${_file:?}" | cut -d ',' -f '2' -s ||
+    return 1
+
+  return 0
 }
 
 generate_device_info()
@@ -327,8 +335,8 @@ generate_device_info()
 
   if is_valid_value "${MARKETING_DEVICE_INFO?}"; then
     _info="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
-  elif _info="$(parse_devices_list)" && is_valid_value "${_info?}"; then
-    :
+  elif test "${OFFICIAL_STATUS:?}" -eq 0 && is_valid_value "${OFFICIAL_DEVICE_INFO?}"; then
+    _info="${OFFICIAL_DEVICE_INFO?}"
   else
     _info="${BUILD_MODEL?}"
   fi
@@ -489,6 +497,19 @@ fi
 # - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
 # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
+BUILD_BRAND="$(validated_chosen_getprop ro.product.brand)"
+BUILD_MANUFACTURER="$(validated_chosen_getprop ro.product.manufacturer)"
+BUILD_DEVICE="$(validated_chosen_getprop ro.product.device)"
+BUILD_MODEL="$(validated_chosen_getprop ro.product.model)"
+
+OFFICIAL_STATUS=0
+OFFICIAL_DEVICE_INFO="$(parse_devices_list)" || OFFICIAL_STATUS="${?}"
+case "${OFFICIAL_STATUS:?}" in
+  '0') show_info 'Device certified: YES' ;;
+  '1') show_negative_info 'Device certified: ' 'NO' ;;
+  *) ;;
+esac
+
 BUILD_BOARD="$(validated_chosen_getprop ro.product.board)"
 
 BUILD_BOOTLOADER="$(find_bootloader)"
@@ -497,17 +518,13 @@ if is_valid_value "${BUILD_BOOTLOADER_EXPECT?}" && test "${BUILD_BOOTLOADER_EXPE
   show_warn "Build.BOOTLOADER does NOT match, current: ${BUILD_BOOTLOADER:-}, expected: ${BUILD_BOOTLOADER_EXPECT:-}"
 fi
 
-BUILD_BRAND="$(validated_chosen_getprop ro.product.brand)"
 BUILD_CPU_ABI="$(validated_chosen_getprop ro.product.cpu.abi)"
 BUILD_CPU_ABI2="$(validated_chosen_getprop ro.product.cpu.abi2 2)"
-BUILD_DEVICE="$(validated_chosen_getprop ro.product.device)"
 BUILD_DISPLAY="$(validated_chosen_getprop ro.build.display.id)"
 BUILD_FINGERPRINT="$(validated_chosen_getprop ro.build.fingerprint)"
 BUILD_HARDWARE="$(find_hardware)"
 BUILD_HOST="$(validated_chosen_getprop ro.build.host)"
 BUILD_ID="$(validated_chosen_getprop ro.build.id)"
-BUILD_MANUFACTURER="$(validated_chosen_getprop ro.product.manufacturer)"
-BUILD_MODEL="$(validated_chosen_getprop ro.product.model)"
 BUILD_PRODUCT="$(validated_chosen_getprop ro.product.name)" || BUILD_PRODUCT='unknown'
 
 BUILD_RADIO="$(find_radio)"
