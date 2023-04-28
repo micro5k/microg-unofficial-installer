@@ -336,7 +336,7 @@ generate_device_info()
     _info="${BUILD_MANUFACTURER:?} ${_info?}"
   fi
 
-  printf '%s' "$(uc_first_char "${_info?}" || true)"
+  printf '%s\n' "$(uc_first_char "${_info?}" || true)" | sed 's/"/\&quot;/g'
 }
 
 find_bootloader()
