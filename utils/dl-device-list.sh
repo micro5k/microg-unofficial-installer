@@ -51,7 +51,7 @@ contains()
 
 remove_utf8_bom()
 {
-  if test "$(printf '\357\273\277')" = "$(head -q -c 3 -- "${1:?}")"; then
+  if test "$(printf '\357\273\277')" = "$(head -q -c 3 -- "${1:?}" || true)"; then
     rm -f -- "${1:?}.bom-temp" || return "${?}"
     dd if="${1:?}" of="${1:?}.bom-temp" skip=3 iflag=skip_bytes status=none || return "${?}"
     mv -f -T -- "${1:?}.bom-temp" "${1:?}" || return "${?}"
