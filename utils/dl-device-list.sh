@@ -52,13 +52,23 @@ dl()
 
 dl_and_convert_device_list()
 {
-  local _file _var
+  local _path _file _var
 
+  # shellcheck disable=SC3028
   if test -n "${UTILS_DATA_DIR:-}"; then
-    mkdir -p "${UTILS_DATA_DIR:?}"
-    _file="${UTILS_DATA_DIR:?}/device-list.csv"
+    _path="${UTILS_DATA_DIR:?}"
+  elif test -n "${BASH_SOURCE:-}" && _path="$(dirname "${BASH_SOURCE:?}")/data"; then # Expanding an array without an index gives the first element (it is intended)
+    :
+  elif test -n "${0:-}" && _path="$(dirname "${0:?}")/data"; then
+    :
   else
-    _file='./device-list.csv'
+    _path='./data'
+  fi
+
+  if mkdir -p "${_path:?}"; then
+    _file="${_path:?}/device-list.csv"
+  else
+    return 1
   fi
 
   rm -f "${_file:?}-temp" || return "${?}"
