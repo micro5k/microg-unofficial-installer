@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='0.4'
+readonly SCRIPT_VERSION='0.5'
 
 show_error()
 {
@@ -297,12 +297,33 @@ generate_rom_info()
   fi
 }
 
+parse_devices_list()
+{
+  local _file
+
+  if test -n "${UTILS_DATA_DIR:-}" && test -e "${UTILS_DATA_DIR:?}/device-list.csv"; then
+    _file="${UTILS_DATA_DIR:?}/device-list.csv"
+  elif test -e './data/device-list.csv'; then
+    _file='./data/device-list.csv'
+  elif test -e './device-list.csv'; then
+    _file='./device-list.csv'
+  else
+    show_warn 'THE DEVICE LIST IS MISSING! Use dl-device-list.sh'
+    return 1
+  fi
+
+  grep -m 1 -i -e "^${BUILD_BRAND?},.*,${BUILD_DEVICE?},${BUILD_MODEL?}$" -- "${_file:?}" | cut -d ',' -f '2' -s ||
+    grep -m 1 -i -e "^${BUILD_MANUFACTURER?},.*,${BUILD_DEVICE?},${BUILD_MODEL?}$" -- "${_file:?}" | cut -d ',' -f '2' -s
+}
+
 generate_device_info()
 {
   local _info
 
   if is_valid_value "${MARKETING_DEVICE_INFO?}"; then
     _info="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
+  elif _info="$(parse_devices_list)" && is_valid_value "${_info?}"; then
+    :
   else
     _info="${BUILD_MODEL?}"
   fi
