@@ -49,6 +49,15 @@ contains()
   return 1 # NOT found
 }
 
+remove_utf8_bom()
+{
+  if test "$(printf '\357\273\277')" = "$(head -q -c 3 -- "${1:?}")"; then
+    rm -f -- "${1:?}.bom-temp" || return "${?}"
+    dd if="${1:?}" of="${1:?}.bom-temp" skip=3 iflag=skip_bytes status=none || return "${?}"
+    mv -f -T -- "${1:?}.bom-temp" "${1:?}" || return "${?}"
+  fi
+}
+
 iconv_compat()
 {
   local _input_file _output_file _status
@@ -61,7 +70,6 @@ iconv_compat()
     # Limited version, -o is NOT available
     if test "${_output_file:?}" = "${_input_file:?}"; then
       iconv "${@}" -- "${_input_file:?}" 1> "${_output_file:?}.compat-temp" || return "${?}"
-      rm -f -- "${_output_file:?}" || return "${?}"
       mv -f -T -- "${_output_file:?}.compat-temp" "${_output_file:?}" || return "${?}"
     else
       iconv "${@}" -- "${_input_file:?}" 1> "${_output_file:?}" || { _status="${?}"; if test "${_status:?}" -ne 1; then return "${_status:?}"; fi; }
@@ -107,8 +115,10 @@ dl_and_convert_device_list()
   dl 'https://storage.googleapis.com/play_public/supported_devices.csv' "${_file:?}-temp" || return "${?}"
 
   iconv_compat "${_file:?}-temp" "${_file:?}-temp" -f 'UTF-16LE' -t 'UTF-8' || return "${?}"
+
   _var="$(printf '\342\200\235')"
   sed -i "s/${_var:?}/\"/g" "${_file:?}-temp" || return "${?}"
+
   iconv_compat "${_file:?}-temp" "${_file:?}" -c -f 'UTF-8' -t 'WINDOWS-1252' || return "${?}"
   rm -f "${_file:?}-temp" || return "${?}"
 }
