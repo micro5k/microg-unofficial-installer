@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='0.5'
+readonly SCRIPT_VERSION='0.6'
 
 show_error()
 {
@@ -42,10 +42,10 @@ pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
   if test "${CI:-false}" = 'false' && test "${SHLVL:-}" = '1' && test -t 1 && test -t 2; then
-    printf 1>&2 '\n\033[1;32m' || true
+    printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit...' || true
     # shellcheck disable=SC3045
-    IFS='' read 1>&2 -r -s -n 1 -p 'Press any key to continue...' _ || true
-    printf 1>&2 '\033[0m\n' || true
+    IFS='' read 1>&2 -r -s -n 1 _ || true
+    printf 1>&2 '\n' || true
   fi
 }
 
@@ -301,8 +301,13 @@ parse_devices_list()
 {
   local _file
 
+  # shellcheck disable=SC3028
   if test -n "${UTILS_DATA_DIR:-}" && test -e "${UTILS_DATA_DIR:?}/device-list.csv"; then
     _file="${UTILS_DATA_DIR:?}/device-list.csv"
+  elif test -n "${BASH_SOURCE:-}" && _file="$(dirname "${BASH_SOURCE:?}")/data/device-list.csv" && test -e "${_file:?}"; then # Expanding an array without an index gives the first element (it is intended)
+    :
+  elif test -n "${0:-}" && _file="$(dirname "${0:?}")/data/device-list.csv" && test -e "${_file:?}"; then
+    :
   elif test -e './data/device-list.csv'; then
     _file='./data/device-list.csv'
   elif test -e './device-list.csv'; then
