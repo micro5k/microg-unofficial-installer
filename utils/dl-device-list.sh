@@ -72,7 +72,7 @@ iconv_compat()
       iconv "${@}" -- "${_input_file:?}" 1> "${_output_file:?}.compat-temp" || return "${?}"
       mv -f -T -- "${_output_file:?}.compat-temp" "${_output_file:?}" || return "${?}"
     else
-      iconv "${@}" -- "${_input_file:?}" 1> "${_output_file:?}" || { _status="${?}"; if test "${_status:?}" -ne 1; then return "${_status:?}"; fi; }
+      iconv "${@}" -- "${_input_file:?}" 1> "${_output_file:?}" || return "${?}"
     fi
   else
     # -o is available
@@ -119,7 +119,7 @@ dl_and_convert_device_list()
   _var="$(printf '\342\200\235')"
   sed -i "s/${_var:?}/\"/g" "${_file:?}-temp" || return "${?}"
 
-  iconv_compat "${_file:?}-temp" "${_file:?}" -c -f 'UTF-8' -t 'WINDOWS-1252' || return "${?}"
+  iconv_compat "${_file:?}-temp" "${_file:?}" -c -f 'UTF-8' -t 'WINDOWS-1252//IGNORE' || return "${?}"
   rm -f "${_file:?}-temp" || return "${?}"
 }
 
