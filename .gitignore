@@ -3,6 +3,7 @@
 # SPDX-FileType: OTHER
 
 # Custom project folders
+utils/debug/
 utils/data/
 cache/
 output/
