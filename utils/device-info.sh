@@ -449,8 +449,8 @@ adb_root
 mount -t 'auto' '/data' 2> /dev/null || true
 
 GSF_ID="$(get_gsf_id)"
-if validate_and_display_info 'GSF ID' "${GSF_ID?}" 19; then
-  validate_and_display_info 'GSF ID (hex)' "$(convert_dec_to_hex "${GSF_ID?}" || true)" 16
+if validate_and_display_info 'GSF ID (decimal)' "${GSF_ID?}" 19; then
+  validate_and_display_info 'GSF ID' "$(convert_dec_to_hex "${GSF_ID?}" || true)" 16
 fi
 
 printf '\n'
