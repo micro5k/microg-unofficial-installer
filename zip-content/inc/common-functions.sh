@@ -364,13 +364,22 @@ parse_setting()
 
 remount_read_write_if_needed()
 {
-  local _mountpoint
+  local _mountpoint _required
   _mountpoint="$(_canonicalize "${1:?}")"
+  _required="${2:-true}"
 
   if is_mounted "${_mountpoint:?}" && is_mounted_read_only "${_mountpoint:?}"; then
     ui_msg "INFO: The '${_mountpoint:-}' mount point is read-only, it will be remounted"
     ui_msg_empty_line
-    remount_read_write "${_mountpoint:?}" || ui_error "Remounting of '${_mountpoint:-}' failed"
+    remount_read_write "${_mountpoint:?}" || {
+      if test "${_required:?}" = 'true'; then
+        ui_error "Remounting of '${_mountpoint:-}' failed"
+      else
+        ui_warning "Remounting of '${_mountpoint:-}' failed"
+        ui_msg_empty_line
+        return 1
+      fi
+    }
   fi
 }
 
@@ -503,9 +512,9 @@ initialize()
   readonly DATA_PATH
 
   mount_extra_partitions_silent
-  if test -e '/system_ext'; then remount_read_write_if_needed '/system_ext'; fi
-  if test -e '/product'; then remount_read_write_if_needed '/product'; fi
-  if test -e '/vendor'; then remount_read_write_if_needed '/vendor'; fi
+  if test -e '/product'; then remount_read_write_if_needed '/product' false; fi
+  if test -e '/vendor'; then remount_read_write_if_needed '/vendor' false; fi
+  if test -e '/system_ext'; then remount_read_write_if_needed '/system_ext' false; fi
 
   unset LAST_MOUNTPOINT
 }
