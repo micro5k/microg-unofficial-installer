@@ -50,6 +50,9 @@ ChromeHomePage|com.android.partnerbrowsercustomizations.tmobile
 GoogleFeedback|com.google.android.feedback
 BetaFeedback|com.google.android.apps.betterbug
 
+PlayAutoInstallConfig|android.autoinstalls.config.google.nexus
+|android.autoinstalls.config.sony.xperia
+
 Velvet|com.google.android.googlequicksearchbox|true
 GoogleQuickSearchBox|
 PrebuiltGmail|com.google.android.gm|true
@@ -110,9 +113,6 @@ AndroidAuto|
 WhisperPush|org.whispersystems.whisperpush
 Hangouts|com.google.android.talk
 
-PlayAutoInstallConfig|android.autoinstalls.config.google.nexus
-|android.autoinstalls.config.sony.xperia
-PrebuiltGoogleTelemetryTvp|com.google.mainline.telemetry
 HwAps|com.huawei.android.hwaps
 HwPowerGenieEngine3|com.huawei.powergenie
 EOF
