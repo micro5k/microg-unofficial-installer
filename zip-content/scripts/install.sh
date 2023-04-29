@@ -102,6 +102,7 @@ ui_msg "Android API: ${API:?}"
 ui_msg "Main 64-bit CPU arch: ${CPU64:?}"
 ui_msg "Main 32-bit CPU arch: ${CPU:?}"
 ui_msg_empty_line
+ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
 ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
 ui_msg "Current slot: ${SLOT:-no slot}"
 ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"

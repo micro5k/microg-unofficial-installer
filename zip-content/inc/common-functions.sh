@@ -312,12 +312,14 @@ _find_and_mount_system()
       deinitialize
 
       ui_msg_empty_line
+      ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
       ui_msg "Current slot: ${SLOT:-no slot}"
       ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
       ui_msg_empty_line
       ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
       ui_msg_empty_line
+
       ui_error "The ROM cannot be found!"
     fi
   fi
@@ -416,6 +418,15 @@ initialize()
   readonly SLOT
   export SLOT
 
+  VERITY_MODE=''
+  if test -n "${DEVICE_GETPROP?}"; then
+    VERITY_MODE="$("${DEVICE_GETPROP:?}" 'ro.boot.veritymode')" || VERITY_MODE=''
+  elif command -v getprop 1> /dev/null; then
+    VERITY_MODE="$(getprop 'ro.boot.veritymode')" || VERITY_MODE=''
+  fi
+  readonly VERITY_MODE
+  export VERITY_MODE
+
   _find_and_mount_system
 
   MODULE_NAME="$(simple_get_prop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
@@ -449,7 +460,24 @@ initialize()
   if is_mounted_read_only "${SYS_MOUNTPOINT:?}"; then
     ui_msg "INFO: The '${SYS_MOUNTPOINT:-}' mount point is read-only, it will be remounted"
     ui_msg_empty_line
-    remount_read_write "${SYS_MOUNTPOINT:?}" || ui_error "Remounting of '${SYS_MOUNTPOINT:-}' failed"
+    remount_read_write "${SYS_MOUNTPOINT:?}" || {
+      deinitialize
+
+      ui_msg_empty_line
+      ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
+      ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
+      ui_msg "Current slot: ${SLOT:-no slot}"
+      ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
+      ui_msg_empty_line
+      ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
+      ui_msg_empty_line
+
+      if test "${VERITY_MODE?}" = 'enforcing'; then
+        ui_error "Remounting of '${SYS_MOUNTPOINT:-}' failed, you should DISABLE dm-verity!!!"
+      else
+        ui_error "Remounting of '${SYS_MOUNTPOINT:-}' failed!!!"
+      fi
+    }
   fi
 
   if test ! -w "${SYS_PATH:?}"; then
