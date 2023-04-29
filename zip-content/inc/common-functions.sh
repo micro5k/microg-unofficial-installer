@@ -333,9 +333,9 @@ _get_local_settings()
   if test -n "${DEVICE_GETPROP?}"; then
     ui_debug 'Parsing local settings...'
     LOCAL_SETTINGS="$("${DEVICE_GETPROP:?}" | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
-  # elif command -v getprop 1> /dev/null; then # ToDO: Merge all getprop functions and change the name before enabling it
-  #   ui_debug 'Parsing local settings (2)...'
-  #   LOCAL_SETTINGS="$(getprop | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
+  elif command -v getprop 1> /dev/null; then
+    ui_debug 'Parsing local settings (2)...'
+    LOCAL_SETTINGS="$(getprop | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
   fi
   LOCAL_SETTINGS_READ='true'
 
@@ -646,11 +646,6 @@ unmount_extra_partitions()
 }
 
 # Getprop related functions
-getprop()
-{
-  (test -e '/sbin/getprop' && /sbin/getprop "ro.$1") || (grep "^ro\.$1=" '/default.prop' | head -n1 | cut -d '=' -f 2)
-}
-
 build_getprop()
 {
   grep "^ro\.$1=" "${TMP_PATH}/build.prop" | head -n1 | cut -d '=' -f 2
