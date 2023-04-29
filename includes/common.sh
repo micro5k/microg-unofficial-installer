@@ -359,8 +359,11 @@ if test -z "${ANDROID_SDK_ROOT:-}" && test -n "${LOCALAPPDATA:-}" && test -e "${
   export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
 fi
 if test -n "${ANDROID_SDK_ROOT:-}" && test -e "${ANDROID_SDK_ROOT:?}/emulator/emulator.exe"; then
-  alias emu="'${ANDROID_SDK_ROOT:?}/emulator/emulator.exe'"
-  alias emu-w="'${ANDROID_SDK_ROOT:?}/emulator/emulator.exe' -writable-system"
+  # shellcheck disable=SC2139
+  {
+    alias 'emu'="'${ANDROID_SDK_ROOT:?}/emulator/emulator.exe'"
+    alias 'emu-w'="'${ANDROID_SDK_ROOT:?}/emulator/emulator.exe' -writable-system"
+  }
 fi
 
 # Set some environment variables
