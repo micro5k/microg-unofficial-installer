@@ -253,7 +253,11 @@ generate_rom_info()
   EMU_NAME=''
   REAL_SECURITY_PATCH=''
 
-  if LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
+  if {
+    LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"
+  } || {
+    LOS_VERSION="$(chosen_getprop 'ro.lineage.build.version')" && is_valid_value "${LOS_VERSION?}"
+  }; then
     ROM_INFO="LineageOS v${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
   elif {
     ROM_MOD_VER="$(chosen_getprop 'ro.modversion')" && is_valid_value "${ROM_MOD_VER?}"
