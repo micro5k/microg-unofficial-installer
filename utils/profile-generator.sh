@@ -248,22 +248,23 @@ generate_rom_info()
   local _real_build_time _verify_emulator
   _verify_emulator='false'
 
+  ROM_INFO='unknown'
   IS_EMU='false'
   EMU_NAME=''
   REAL_SECURITY_PATCH=''
 
   if LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
-    ROM_INFO="LineageOS v${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+    ROM_INFO="LineageOS v${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
   elif {
     ROM_MOD_VER="$(chosen_getprop 'ro.modversion')" && is_valid_value "${ROM_MOD_VER?}"
   } || {
     ROM_MOD_VER="$(chosen_getprop 'ro.mod.version')" && is_valid_value "${ROM_MOD_VER?}"
   }; then
     ROM_MOD_VER="$(printf '%s\n' "${ROM_MOD_VER:?}" | cut -d 'v' -f '2-')"
-    ROM_INFO="Android MOD v${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE:?}"
+    ROM_INFO="Android MOD v${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE?}"
   elif EMUI_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value "${EMUI_VERSION?}"; then # Huawei
     EMUI_VERSION="$(printf '%s\n' "${EMUI_VERSION:?}" | cut -d '_' -f '2-')"
-    ROM_INFO="EMUI v${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+    ROM_INFO="EMUI v${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
 
     if _real_build_time="$(chosen_getprop 'ro.huawei.build.date.utc')" && is_valid_value "${_real_build_time?}"; then
       TEXT_BUILD_TIME_HUMAN="${TEXT_BUILD_TIME_HUMAN?} - Real: $(convert_time_to_human_readable_form "${_real_build_time:?}")"
@@ -274,7 +275,7 @@ generate_rom_info()
     fi
   elif MIUI_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_value "${MIUI_VERSION?}"; then # Xiaomi
     MIUI_VERSION="$(printf '%s\n' "${MIUI_VERSION:?}" | cut -d 'V' -f '2-')"
-    ROM_INFO="MIUI v${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+    ROM_INFO="MIUI v${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
   else
     ROM_INFO="Android ${BUILD_VERSION_RELEASE?}"
     _verify_emulator='true'
@@ -295,6 +296,8 @@ generate_rom_info()
 parse_devices_list()
 {
   local _file
+
+  if test "${EMU_NAME?}" = 'Leapdroid'; then return 1; fi
 
   # shellcheck disable=SC3028
   if test -n "${UTILS_DATA_DIR:-}" && test -e "${UTILS_DATA_DIR:?}/device-list.csv"; then
@@ -487,12 +490,19 @@ fi
 # - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
 # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
-TEXT_BUILD_TIME_HUMAN=''
-
 BUILD_BRAND="$(validated_chosen_getprop ro.product.brand)"
 BUILD_MANUFACTURER="$(validated_chosen_getprop ro.product.manufacturer)"
 BUILD_DEVICE="$(validated_chosen_getprop ro.product.device)"
 BUILD_MODEL="$(validated_chosen_getprop ro.product.model)"
+BUILD_VERSION_RELEASE="$(validated_chosen_getprop ro.build.version.release)"
+
+TEXT_BUILD_TIME_HUMAN=''
+if BUILD_TIME="$(validated_chosen_getprop ro.build.date.utc)"; then
+  TEXT_BUILD_TIME_HUMAN="$(convert_time_to_human_readable_form "${BUILD_TIME:?}")"
+  BUILD_TIME="${BUILD_TIME:?}000"
+fi
+
+generate_rom_info
 
 OFFICIAL_STATUS=0
 OFFICIAL_DEVICE_INFO="$(parse_devices_list)" || OFFICIAL_STATUS="${?}"
@@ -501,11 +511,6 @@ case "${OFFICIAL_STATUS:?}" in
   '1') show_negative_info 'Device certified: ' 'NO' ;;
   *) ;;
 esac
-
-if BUILD_TIME="$(validated_chosen_getprop ro.build.date.utc)"; then
-  TEXT_BUILD_TIME_HUMAN="$(convert_time_to_human_readable_form "${BUILD_TIME:?}")"
-  BUILD_TIME="${BUILD_TIME:?}000"
-fi
 
 BUILD_BOARD="$(validated_chosen_getprop ro.product.board)"
 
@@ -536,7 +541,6 @@ BUILD_TYPE="$(validated_chosen_getprop ro.build.type)"
 BUILD_USER="$(validated_chosen_getprop ro.build.user)"
 BUILD_VERSION_CODENAME="$(validated_chosen_getprop ro.build.version.codename)"
 BUILD_VERSION_INCREMENTAL="$(validated_chosen_getprop ro.build.version.incremental)"
-BUILD_VERSION_RELEASE="$(validated_chosen_getprop ro.build.version.release)"
 BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop ro.build.version.security_patch 2)"
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"        # ToDO: If not numeric or empty return 0
 BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
@@ -546,8 +550,6 @@ if SERIAL_NUMBER="$(find_serialno)"; then
   show_info "Serial number: ${SERIAL_NUMBER:-}"
   ANON_SERIAL_NUMBER="$(anonymize_serialno "${SERIAL_NUMBER:?}")"
 fi
-
-generate_rom_info
 
 if test "${IS_EMU:?}" = 'true'; then
   DEVICE_INFO="Emulator - ${EMU_NAME?}"
