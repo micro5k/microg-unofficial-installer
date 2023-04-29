@@ -254,7 +254,11 @@ generate_rom_info()
 
   if LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
     ROM_INFO="LineageOS v${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
-  elif { ROM_MOD_VER="$(chosen_getprop 'ro.modversion')" && is_valid_value "${ROM_MOD_VER?}"; } || { ROM_MOD_VER="$(chosen_getprop 'ro.mod.version')" && is_valid_value "${ROM_MOD_VER?}"; }; then
+  elif {
+    ROM_MOD_VER="$(chosen_getprop 'ro.modversion')" && is_valid_value "${ROM_MOD_VER?}"
+  } || {
+    ROM_MOD_VER="$(chosen_getprop 'ro.mod.version')" && is_valid_value "${ROM_MOD_VER?}"
+  }; then
     ROM_MOD_VER="$(printf '%s\n' "${ROM_MOD_VER:?}" | cut -d 'v' -f '2-')"
     ROM_INFO="Android MOD v${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE:?}"
   elif EMUI_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value "${EMUI_VERSION?}"; then # Huawei
