@@ -358,6 +358,10 @@ readonly PLATFORM SEP PATHSEP
 if test -z "${ANDROID_SDK_ROOT:-}" && test -n "${LOCALAPPDATA:-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
   export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
 fi
+if test -n "${ANDROID_SDK_ROOT:-}" && test -e "${ANDROID_SDK_ROOT:?}/emulator/emulator.exe"; then
+  alias emu="'${ANDROID_SDK_ROOT:?}/emulator/emulator.exe'"
+  alias emu-w="'${ANDROID_SDK_ROOT:?}/emulator/emulator.exe' -writable-system"
+fi
 
 # Set some environment variables
 PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
