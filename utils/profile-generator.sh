@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='0.8'
+readonly SCRIPT_VERSION='0.9'
 
 show_error()
 {
@@ -255,9 +255,15 @@ check_boot_completed()
   }
 }
 
+convert_time_to_human_readable_form()
+{
+  LC_ALL=C date -u -d "@${1:?}" '+%a %b %d %H:%M:%S %Z %Y'
+}
+
 generate_rom_info()
 {
-  local _verify_emulator='false'
+  local _real_build_time _verify_emulator
+  _verify_emulator='false'
 
   IS_EMU='false'
   EMU_NAME=''
@@ -268,8 +274,12 @@ generate_rom_info()
   elif ROM_MOD_VER="$(chosen_getprop 'ro.mod.version')" && is_valid_value "${ROM_MOD_VER?}"; then
     ROM_INFO="Android MOD ${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE:?}"
   elif EMUI_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value "${EMUI_VERSION?}"; then # Huawei
-    EMUI_VERSION="$(printf '%s' "${EMUI_VERSION:?}" | cut -d '_' -f 2)"
-    ROM_INFO="EMUI ${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+    EMUI_VERSION="$(printf '%s' "${EMUI_VERSION:?}" | cut -d '_' -f '2-')"
+    ROM_INFO="EMUI v${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+
+    if _real_build_time="$(chosen_getprop 'ro.huawei.build.date.utc')" && is_valid_value "${_real_build_time?}"; then
+      TEXT_BUILD_TIME_HUMAN="${TEXT_BUILD_TIME_HUMAN?} - Real: $(convert_time_to_human_readable_form "${_real_build_time:?}")"
+    fi
 
     if REAL_SECURITY_PATCH="$(chosen_getprop 'ro.huawei.build.version.security_patch')" && is_valid_value "${REAL_SECURITY_PATCH?}"; then
       REAL_SECURITY_PATCH=" ${xml_comment_start:?} Real security patch: ${REAL_SECURITY_PATCH:-} ${xml_comment_end:?}"
@@ -488,6 +498,8 @@ fi
 # - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
 # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
+TEXT_BUILD_TIME_HUMAN=''
+
 BUILD_BRAND="$(validated_chosen_getprop ro.product.brand)"
 BUILD_MANUFACTURER="$(validated_chosen_getprop ro.product.manufacturer)"
 BUILD_DEVICE="$(validated_chosen_getprop ro.product.device)"
@@ -500,6 +512,11 @@ case "${OFFICIAL_STATUS:?}" in
   '1') show_negative_info 'Device certified: ' 'NO' ;;
   *) ;;
 esac
+
+if BUILD_TIME="$(validated_chosen_getprop ro.build.date.utc)"; then
+  TEXT_BUILD_TIME_HUMAN="$(convert_time_to_human_readable_form "${BUILD_TIME:?}")"
+  BUILD_TIME="${BUILD_TIME:?}000"
+fi
 
 BUILD_BOARD="$(validated_chosen_getprop ro.product.board)"
 
@@ -525,12 +542,6 @@ if is_valid_value "${BUILD_RADIO_EXPECT?}" && test "${BUILD_RADIO_EXPECT?}" != "
 fi
 
 BUILD_TAGS="$(validated_chosen_getprop ro.build.tags)"
-
-BUILD_TIME_HUMAN=''
-if BUILD_TIME="$(validated_chosen_getprop ro.build.date.utc)"; then
-  BUILD_TIME_HUMAN="$(LC_ALL=C date -u -d "@${BUILD_TIME:?}" '+%a %b %d %H:%M:%S %Z %Y')"
-  BUILD_TIME="${BUILD_TIME:?}000"
-fi
 
 BUILD_TYPE="$(validated_chosen_getprop ro.build.type)"
 BUILD_USER="$(validated_chosen_getprop ro.build.user)"
@@ -582,7 +593,7 @@ ${xml_comment_end:?}
     <data key=\"Build.PRODUCT\" value=\"${BUILD_PRODUCT:?}\" />
     <data key=\"Build.RADIO\" value=\"${BUILD_RADIO?}\" />
     <data key=\"Build.TAGS\" value=\"${BUILD_TAGS?}\" />
-    <data key=\"Build.TIME\" value=\"${BUILD_TIME?}\" /> ${xml_comment_start:?} ${BUILD_TIME_HUMAN?} ${xml_comment_end:?}
+    <data key=\"Build.TIME\" value=\"${BUILD_TIME?}\" /> ${xml_comment_start:?} ${TEXT_BUILD_TIME_HUMAN?} ${xml_comment_end:?}
     <data key=\"Build.TYPE\" value=\"${BUILD_TYPE?}\" />
     <data key=\"Build.USER\" value=\"${BUILD_USER?}\" />
     <data key=\"Build.VERSION.CODENAME\" value=\"${BUILD_VERSION_CODENAME?}\" />
