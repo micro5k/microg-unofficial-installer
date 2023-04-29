@@ -270,11 +270,12 @@ generate_rom_info()
   REAL_SECURITY_PATCH=''
 
   if LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"; then
-    ROM_INFO="LineageOS ${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
-  elif ROM_MOD_VER="$(chosen_getprop 'ro.mod.version')" && is_valid_value "${ROM_MOD_VER?}"; then
-    ROM_INFO="Android MOD ${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE:?}"
+    ROM_INFO="LineageOS v${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+  elif { ROM_MOD_VER="$(chosen_getprop 'ro.modversion')" && is_valid_value "${ROM_MOD_VER?}"; } || { ROM_MOD_VER="$(chosen_getprop 'ro.mod.version')" && is_valid_value "${ROM_MOD_VER?}"; }; then
+    ROM_MOD_VER="$(printf '%s\n' "${ROM_MOD_VER:?}" | cut -d 'v' -f '2-')"
+    ROM_INFO="Android MOD v${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE:?}"
   elif EMUI_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value "${EMUI_VERSION?}"; then # Huawei
-    EMUI_VERSION="$(printf '%s' "${EMUI_VERSION:?}" | cut -d '_' -f '2-')"
+    EMUI_VERSION="$(printf '%s\n' "${EMUI_VERSION:?}" | cut -d '_' -f '2-')"
     ROM_INFO="EMUI v${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
 
     if _real_build_time="$(chosen_getprop 'ro.huawei.build.date.utc')" && is_valid_value "${_real_build_time?}"; then
@@ -285,7 +286,8 @@ generate_rom_info()
       REAL_SECURITY_PATCH=" ${xml_comment_start:?} Real security patch: ${REAL_SECURITY_PATCH:-} ${xml_comment_end:?}"
     fi
   elif MIUI_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_value "${MIUI_VERSION?}"; then # Xiaomi
-    ROM_INFO="MIUI ${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
+    MIUI_VERSION="$(printf '%s\n' "${MIUI_VERSION:?}" | cut -d 'V' -f '2-')"
+    ROM_INFO="MIUI v${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE:?}"
   else
     ROM_INFO="Android ${BUILD_VERSION_RELEASE?}"
     _verify_emulator='true'
