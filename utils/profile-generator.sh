@@ -161,15 +161,6 @@ contains_nocase()
   return 1 # NOT found
 }
 
-is_string_starting_with()
-{
-  case "${2?}" in
-    "${1:?}"*) return 0 ;; # Found
-    *) ;;
-  esac
-  return 1 # NOT found
-}
-
 is_string_nocase_starting_with()
 {
   local _val_1 _val_2
@@ -181,14 +172,6 @@ is_string_nocase_starting_with()
     *) ;;
   esac
   return 1 # NOT found
-}
-
-prepend_with_space()
-{
-  printf '%s' "${1?}"
-  if test -n "${2?}"; then
-    printf ' %s' "${2?}"
-  fi
 }
 
 device_getprop()
@@ -395,13 +378,13 @@ find_radio()
 
   if _val="$(chosen_getprop 'gsm.version.baseband')" && is_valid_value "${_val?}"; then
     :
+  elif _val="$(chosen_getprop 'ril.sw_ver')" && is_valid_value "${_val?}"; then
+    :
   elif _val="$(chosen_getprop 'ro.boot.radio')" && is_valid_value "${_val?}"; then
     :
   elif _val="$(chosen_getprop 'ro.baseband')" && is_valid_value "${_val?}"; then
     :
   elif _val="$(chosen_getprop 'ro.boot.baseband')" && is_valid_value "${_val?}"; then
-    :
-  elif _val="$(chosen_getprop 'ril.sw_ver')" && is_valid_value "${_val?}"; then
     :
   else
     show_warn 'Build.RADIO not found'
