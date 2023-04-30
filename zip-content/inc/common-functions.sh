@@ -312,6 +312,8 @@ _find_and_mount_system()
       deinitialize
 
       ui_msg_empty_line
+      ui_msg "Device: ${BUILD_DEVICE?}"
+      ui_msg_empty_line
       ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
       ui_msg "Current slot: ${SLOT:-no slot}"
@@ -427,14 +429,19 @@ initialize()
   readonly SLOT
   export SLOT
 
-  VERITY_MODE=''
-  if test -n "${DEVICE_GETPROP?}"; then
-    VERITY_MODE="$("${DEVICE_GETPROP:?}" 'ro.boot.veritymode')" || VERITY_MODE=''
-  elif command -v getprop 1> /dev/null; then
-    VERITY_MODE="$(getprop 'ro.boot.veritymode')" || VERITY_MODE=''
-  fi
+  VERITY_MODE="$(simple_getprop 'ro.boot.veritymode')" || VERITY_MODE=''
   readonly VERITY_MODE
   export VERITY_MODE
+
+  if BUILD_DEVICE="$(simple_getprop 'ro.product.device')" && test -n "${BUILD_DEVICE?}"; then
+    :
+  elif BUILD_DEVICE="$(simple_getprop 'ro.build.product')"; then
+    :
+  else
+    BUILD_DEVICE=''
+  fi
+  readonly BUILD_DEVICE
+  export BUILD_DEVICE
 
   _find_and_mount_system
 
@@ -472,6 +479,8 @@ initialize()
     remount_read_write "${SYS_MOUNTPOINT:?}" || {
       deinitialize
 
+      ui_msg_empty_line
+      ui_msg "Device: ${BUILD_DEVICE?}"
       ui_msg_empty_line
       ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
@@ -686,6 +695,17 @@ unmount_extra_partitions()
 build_getprop()
 {
   grep "^ro\.$1=" "${TMP_PATH}/build.prop" | head -n1 | cut -d '=' -f 2
+}
+
+simple_getprop()
+{
+  if test -n "${DEVICE_GETPROP?}"; then
+    "${DEVICE_GETPROP:?}" "${1:?}" || return "${?}"
+  elif command -v getprop 1> /dev/null; then
+    getprop "${1:?}" || return "${?}"
+  else
+    return 1
+  fi
 }
 
 simple_file_getprop()
