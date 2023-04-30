@@ -329,12 +329,14 @@ parse_devices_list()
 
 generate_device_info()
 {
-  local _info
+  local _info _lenovo_device_name
 
   if is_valid_value "${MARKETING_DEVICE_INFO?}"; then
     _info="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
   elif test "${OFFICIAL_STATUS:?}" -le 1 && is_valid_value "${OFFICIAL_DEVICE_INFO?}" && ! contains_nocase "${OFFICIAL_DEVICE_INFO:?}" "${BUILD_MODEL?}"; then
     _info="${OFFICIAL_DEVICE_INFO?}"
+  elif compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo' && _lenovo_device_name="$(chosen_getprop 'ro.lenovo.series')" && is_valid_value "${_lenovo_device_name?}"; then
+    _info="$(uc_first_char "${_lenovo_device_name:?}")"
   else
     _info="${BUILD_MODEL?}"
   fi
