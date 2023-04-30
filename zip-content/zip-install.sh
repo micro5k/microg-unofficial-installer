@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-readonly ZIPINSTALL_VERSION='0.3'
+readonly ZIPINSTALL_VERSION='0.4'
 
 umask 022 || exit 6
 
