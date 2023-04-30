@@ -90,6 +90,7 @@ ui_msg "(by ${MODULE_AUTHOR:?})"
 ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 
 ui_msg "Device: ${BUILD_DEVICE?}"
+ui_msg "Emulator: ${IS_EMU:?}"
 ui_msg_empty_line
 ui_msg "Boot mode: ${BOOTMODE:?}"
 ui_msg "Sideload: ${SIDELOAD:?}"

@@ -433,15 +433,27 @@ initialize()
   readonly VERITY_MODE
   export VERITY_MODE
 
-  if BUILD_DEVICE="$(simple_getprop 'ro.product.device')" && test -n "${BUILD_DEVICE?}"; then
+  if BUILD_DEVICE="$(simple_getprop 'ro.product.device')" && is_valid_prop "${BUILD_DEVICE?}"; then
     :
-  elif BUILD_DEVICE="$(simple_getprop 'ro.build.product')"; then
+  elif BUILD_DEVICE="$(simple_getprop 'ro.build.product')" && is_valid_prop "${BUILD_DEVICE?}"; then
     :
   else
     BUILD_DEVICE=''
   fi
   readonly BUILD_DEVICE
   export BUILD_DEVICE
+
+  IS_EMU='false'
+  case "${BUILD_DEVICE?}" in
+    'windows_x86_64' | 'emu64x')
+      IS_EMU='true'
+      ;;
+    *)
+      if is_valid_prop "$(simple_getprop 'ro.leapdroid.version' || true)"; then IS_EMU='true'; fi
+      ;;
+  esac
+  readonly IS_EMU
+  export IS_EMU
 
   _find_and_mount_system
 
@@ -712,6 +724,12 @@ simple_file_getprop()
 {
   if test ! -e "${2:?}"; then return 1; fi
   grep -m 1 -F -e "${1:?}=" -- "${2:?}" | cut -d '=' -f '2-' -s
+}
+
+is_valid_prop()
+{
+  if test -z "${1?}" || test "${1?}" = 'unknown'; then return 1; fi
+  return 0 # Valid
 }
 
 # String related functions
