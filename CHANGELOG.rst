@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 -------------
 - Click above to see all the changes.
 
-1.3.1-beta - Not yet released
+`1.3.1-beta`_ - 2023-05-01
 -----------------------------
 - Improve compatibility of the MinUtil script with old Android versions
 - The MinUtil script is now installed under KitKat and higher
@@ -357,7 +357,8 @@ All notable changes to this project will be documented in this file.
 - Initial release
 
 
-.. _Unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.0-beta...HEAD
+.. _Unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.1-beta...HEAD
+.. _1.3.1-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.0-beta...v1.3.1-beta
 .. _1.3.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.2.0-beta...v1.3.0-beta
 .. _1.2.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.1.0-beta...v1.2.0-beta
 .. _1.1.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.0.34-beta...v1.1.0-beta
