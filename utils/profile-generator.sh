@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='1.0'
+readonly SCRIPT_VERSION='1.1'
 
 show_error()
 {
@@ -557,6 +557,14 @@ BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop ro.build.version.securi
 BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"        # ToDO: If not numeric or empty return 0
 BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
 
+BUILD_DESCRIPTION="$(validated_chosen_getprop 'ro.build.description')"
+TEXT_ADDITIONAL_INFO="ro.build.description: ${BUILD_DESCRIPTION?}"
+
+TEXT_FIRST_API=''
+if FIRST_API="$(chosen_getprop 'ro.product.first_api_level')" && is_valid_value "${FIRST_API?}"; then
+  TEXT_FIRST_API=" ${xml_comment_start:?} ro.product.first_api_level: ${FIRST_API:?} ${xml_comment_end:?}"
+fi
+
 ANON_SERIAL_NUMBER=''
 if SERIAL_NUMBER="$(find_serialno)"; then
   show_info "Serial number: ${SERIAL_NUMBER:-}"
@@ -586,6 +594,7 @@ ${xml_comment_end:?}
     <data key=\"Build.CPU_ABI\" value=\"${BUILD_CPU_ABI?}\" />
     <data key=\"Build.CPU_ABI2\" value=\"${BUILD_CPU_ABI2?}\" />
     <data key=\"Build.DEVICE\" value=\"${BUILD_DEVICE?}\" />
+    ${xml_comment_start:?} ${TEXT_ADDITIONAL_INFO?} ${xml_comment_end:?}
     <data key=\"Build.DISPLAY\" value=\"${BUILD_DISPLAY?}\" />
     <data key=\"Build.FINGERPRINT\" value=\"${BUILD_FINGERPRINT?}\" />
     <data key=\"Build.HARDWARE\" value=\"${BUILD_HARDWARE?}\" />
@@ -604,7 +613,7 @@ ${xml_comment_end:?}
     <data key=\"Build.VERSION.RELEASE\" value=\"${BUILD_VERSION_RELEASE?}\" />
     <data key=\"Build.VERSION.SECURITY_PATCH\" value=\"${BUILD_VERSION_SECURITY_PATCH?}\" />${REAL_SECURITY_PATCH?}
     <data key=\"Build.VERSION.SDK\" value=\"${BUILD_VERSION_SDK:?}\" />
-    <data key=\"Build.VERSION.SDK_INT\" value=\"${BUILD_VERSION_SDK:?}\" />
+    <data key=\"Build.VERSION.SDK_INT\" value=\"${BUILD_VERSION_SDK:?}\" />${TEXT_FIRST_API?}
     <data key=\"Build.SUPPORTED_ABIS\" value=\"${BUILD_SUPPORTED_ABIS?}\" />
 
     <serial template=\"${ANON_SERIAL_NUMBER?}\" />
