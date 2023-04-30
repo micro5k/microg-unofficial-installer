@@ -395,7 +395,7 @@ initialize()
   fi
 
   package_extract_file 'module.prop' "${TMP_PATH:?}/module.prop"
-  MODULE_ID="$(simple_get_prop 'id' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse id'
+  MODULE_ID="$(simple_file_getprop 'id' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse id'
   readonly MODULE_ID
   export MODULE_ID
 
@@ -438,15 +438,15 @@ initialize()
 
   _find_and_mount_system
 
-  MODULE_NAME="$(simple_get_prop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
-  MODULE_VERSION="$(simple_get_prop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
-  MODULE_VERCODE="$(simple_get_prop 'versionCode' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version code'
-  MODULE_AUTHOR="$(simple_get_prop 'author' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse author'
+  MODULE_NAME="$(simple_file_getprop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
+  MODULE_VERSION="$(simple_file_getprop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
+  MODULE_VERCODE="$(simple_file_getprop 'versionCode' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version code'
+  MODULE_AUTHOR="$(simple_file_getprop 'author' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse author'
   readonly MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
   export MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
 
   # Previously installed module version code (0 if wasn't installed)
-  PREV_MODULE_VERCODE="$(simple_get_prop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
+  PREV_MODULE_VERCODE="$(simple_file_getprop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
   case "${PREV_MODULE_VERCODE:-}" in
     '' | *[!0-9]*) PREV_MODULE_VERCODE='0' ;; # Not installed (empty) or invalid data
     *) ;;                                     # OK
@@ -688,10 +688,10 @@ build_getprop()
   grep "^ro\.$1=" "${TMP_PATH}/build.prop" | head -n1 | cut -d '=' -f 2
 }
 
-simple_get_prop()
+simple_file_getprop()
 {
   if test ! -e "${2:?}"; then return 1; fi
-  grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f 2 -s
+  grep -m 1 -F -e "${1:?}=" -- "${2:?}" | cut -d '=' -f '2-' -s
 }
 
 # String related functions
