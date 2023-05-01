@@ -110,13 +110,16 @@ if ! "${ENV_RESETTED:-false}"; then
   fi
 
   if test "${COVERAGE:-false}" = 'false'; then
-    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" SHELLOPTS="${SHELLOPTS:-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG:-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS:-}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" SHELLOPTS="${SHELLOPTS:-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   else
-    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" SHELLOPTS="${SHELLOPTS:-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG:-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS:-}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" SHELLOPTS="${SHELLOPTS:-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   fi
   exit 127
 fi
 unset ENV_RESETTED
+if test -z "${DEBUG_LOG:-}"; then unset DEBUG_LOG; fi
+if test -z "${FORCE_HW_BUTTONS:-}"; then unset FORCE_HW_BUTTONS; fi
+
 if test -z "${CI:-}"; then unset CI; fi
 if test -z "${APP_NAME:-}"; then unset APP_NAME; fi
 if test -z "${SHELLOPTS:-}"; then unset SHELLOPTS; fi
