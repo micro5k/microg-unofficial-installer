@@ -25,11 +25,11 @@ jobs:
         uses: a5k-actions/shellchecker@v0
 
   codacy:
-    permissions:
-      security-events: write
     name: "Codacy"
     if: "${{ github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
 
     steps:
       - name: "Check out code"
@@ -53,10 +53,10 @@ jobs:
           category: "Codacy"
 
   sonarcloud:
-    permissions: {}
     name: "SonarCloud"
     if: "${{ github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
     runs-on: ubuntu-latest
+    permissions: {}
 
     steps:
       - name: "Check out code"

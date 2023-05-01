@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 name: "Periodic checks"
+permissions: {}
 on:
   push:
     paths:

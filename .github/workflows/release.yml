@@ -11,9 +11,9 @@ on:
 jobs:
   base-job:
     name: "Release"
+    runs-on: ubuntu-latest
     permissions:
       contents: write
-    runs-on: ubuntu-latest
 
     steps:
       - name: "Check out code"
