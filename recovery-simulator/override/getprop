@@ -6,6 +6,7 @@
 
 main()
 {
+  # shellcheck disable=SC3043
   local _val
 
   if test -z "${ANDROID_ROOT:-}" || test "${#}" -ge 3 || test ! -f "${ANDROID_ROOT:?}/build.prop"; then
