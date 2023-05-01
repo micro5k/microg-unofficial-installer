@@ -312,8 +312,6 @@ _find_and_mount_system()
       deinitialize
 
       ui_msg_empty_line
-      ui_msg "Device: ${BUILD_DEVICE?}"
-      ui_msg_empty_line
       ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
       ui_msg "Current slot: ${SLOT:-no slot}"
@@ -433,9 +431,15 @@ initialize()
   readonly VERITY_MODE
   export VERITY_MODE
 
+  _find_and_mount_system
+
+  cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
+
   if BUILD_DEVICE="$(simple_getprop 'ro.product.device')" && is_valid_prop "${BUILD_DEVICE?}"; then
     :
   elif BUILD_DEVICE="$(simple_getprop 'ro.build.product')" && is_valid_prop "${BUILD_DEVICE?}"; then
+    :
+  elif BUILD_DEVICE="$(simple_file_getprop 'ro.product.device' "${TMP_PATH:?}/build.prop")" && is_valid_prop "${BUILD_DEVICE?}"; then
     :
   else
     BUILD_DEVICE=''
@@ -454,8 +458,6 @@ initialize()
   esac
   readonly IS_EMU
   export IS_EMU
-
-  _find_and_mount_system
 
   MODULE_NAME="$(simple_file_getprop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
   MODULE_VERSION="$(simple_file_getprop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
@@ -482,8 +484,6 @@ initialize()
   fi
   readonly IS_INSTALLATION
   export IS_INSTALLATION
-
-  cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
   if is_mounted_read_only "${SYS_MOUNTPOINT:?}"; then
     ui_msg "INFO: The '${SYS_MOUNTPOINT:-}' mount point is read-only, it will be remounted"
