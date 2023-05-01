@@ -21,7 +21,7 @@ main()
     exit 0
   fi
 
-  cat "${ANDROID_ROOT:?}/build.prop" | sed -e 's/=/\]: \[/; s/^/\[/; s/$/\]/' || exit 1
+  sed -e 's/=/\]: \[/; s/^/\[/; s/$/\]/' -- "${ANDROID_ROOT:?}/build.prop" || exit 1
 }
 
 main "${@}"
