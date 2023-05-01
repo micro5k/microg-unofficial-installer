@@ -189,6 +189,8 @@ link_folder "${BASE_SIMULATION_PATH:?}/sdcard" "${_android_ext_stor:?}"
   echo 'ro.product.cpu.abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi'
   echo 'ro.product.cpu.abilist32=x86,armeabi-v7a,armeabi'
   echo 'ro.product.cpu.abilist64=x86_64,arm64-v8a'
+  echo 'ro.product.device=emu64x'
+  echo 'ro.build.characteristics=phone,emulator'
 } 1> "${_android_sys:?}/build.prop"
 
 touch "${BASE_SIMULATION_PATH:?}/AndroidManifest.xml"
