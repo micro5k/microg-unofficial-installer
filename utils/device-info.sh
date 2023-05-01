@@ -323,7 +323,7 @@ validate_and_display_info()
 {
   if contains 'Requires READ_PHONE_STATE' "${2?}" || contains 'does not belong to' "${2?}"; then
     local _val
-    _val="$(printf '%s' "${2?}" | grep -o -e '[^[:digit:]].*')"
+    _val="$(printf '%s' "${2?}" | grep -o -e '[^[:digit:]].*' | cut -c '-69')"
     show_warn "Unable to find ${1:-} due to: ${_val:-}"
     return 3
   fi
