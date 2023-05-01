@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+
+# SPDX-FileCopyrightText: (c) 2023 ale5000
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileType: SOURCE
+
+main()
+{
+  local _val
+
+  if test -z "${ANDROID_ROOT:-}" || test "${#}" -ge 3 || test ! -f "${ANDROID_ROOT:?}/build.prop"; then
+    exit 1
+  fi
+
+  if test "${#}" -ge 1; then
+    if test -n "${1:-}" && _val="$(grep -m 1 -F -e "${1:?}=" -- "${ANDROID_ROOT:?}/build.prop" | cut -d '=' -f '2-' -s)" && test -n "${_val:-}"; then
+      printf '%s\n' "${_val:-}"
+    else
+      printf '%s\n' "${2:-}"
+    fi
+    exit 0
+  fi
+
+  cat "${ANDROID_ROOT:?}/build.prop" | sed -e 's/=/\]: \[/; s/^/\[/; s/$/\]/' || exit 1
+}
+
+main "${@}"
+exit 0
