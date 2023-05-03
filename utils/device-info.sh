@@ -73,7 +73,7 @@ show_msg()
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
-  if test "${CI:-false}" = 'false' && test "${SHLVL:-}" = '1' && test -t 1 && test -t 2; then
+  if test "${CI:-false}" = 'false' && test "${SHLVL:-}" = '1' && test -t 0 && test -t 1 && test -t 2; then
     printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit...' || true
     # shellcheck disable=SC3045
     IFS='' read 1>&2 -r -s -n 1 _ || true
