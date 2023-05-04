@@ -117,7 +117,7 @@ _minutil_display_help='false'
 if \_minutil_check_getopt; then
   if minutil_args="$(
     \unset POSIXLY_CORRECT
-    \getopt -o 'vhsi:' -l 'help,remove-all-accounts,rescan-storage,force-gcm-reconnection,reinstall-package:' -n 'MinUtil' -- "${@}"
+    \getopt -o 'vhsi:' -l 'help,version,remove-all-accounts,rescan-storage,force-gcm-reconnection,reinstall-package:' -n 'MinUtil' -- "${@}"
   )"; then
     \eval ' \set' '--' "${minutil_args?}" || \exit 1
   else
@@ -338,12 +338,23 @@ minutil_manual_media_rescan()
   return 0
 }
 
+minutil_display_version()
+{
+  printf '%s\n' "${MINUTIL_NAME:?} v${MINUTIL_VERSION:?} (Minimal utilities)"
+  printf '%s\n' "Copyright (c) 2022 ale5000"
+  printf '%s\n' "License GPLv3+"
+}
+
 while true; do
   case "${1}" in
     -v) ;; # Early parameters, already parsed
 
     -h | --help)
       _minutil_display_help='true'
+      ;;
+
+    --version)
+      minutil_display_version
       ;;
 
     -i | --reinstall-package)
