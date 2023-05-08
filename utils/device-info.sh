@@ -143,11 +143,10 @@ is_all_zeros()
 
 is_valid_value()
 {
-  # 1 = Allow unknown
-  # 2 = Allow empty
+  # ${2:-0} => 2 (Allow empty value)
 
   if test -z "${1?}" && test "${2:-0}" != '2'; then return 1; fi
-  if test "${1?}" = 'unknown' && test "${2:-0}" != '1'; then return 1; fi
+  if test "${1?}" = 'unknown'; then return 1; fi
 
   return 0 # Valid
 }
@@ -245,7 +244,7 @@ check_boot_completed()
 find_serialno()
 {
   local _serialno=''
-  BUILD_MANUFACTURER="$(validated_chosen_getprop ro.product.manufacturer)"
+  BUILD_MANUFACTURER="$(validated_chosen_getprop 'ro.product.manufacturer')"
 
   if compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo'; then
     _serialno="$(chosen_getprop 'ro.lenovosn2')" || _serialno=''
@@ -419,7 +418,7 @@ show_info 'Finding info...'
 check_boot_completed
 show_info ''
 
-BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"
+BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')"
 readonly BUILD_VERSION_SDK
 
 if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
@@ -428,7 +427,7 @@ elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && is_valid_value 
   display_info 'Emulator' 'Leapdroid'
 fi
 
-BUILD_MODEL="$(validated_chosen_getprop ro.product.model)" && display_info 'Model' "${BUILD_MODEL?}"
+BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
 SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBER?}"
 
 printf '\n'

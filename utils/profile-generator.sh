@@ -497,14 +497,14 @@ fi
 # - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
 # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
-BUILD_BRAND="$(validated_chosen_getprop ro.product.brand)"
-BUILD_MANUFACTURER="$(validated_chosen_getprop ro.product.manufacturer)"
-BUILD_DEVICE="$(validated_chosen_getprop ro.product.device)"
-BUILD_MODEL="$(validated_chosen_getprop ro.product.model)"
-BUILD_VERSION_RELEASE="$(validated_chosen_getprop ro.build.version.release)"
+BUILD_BRAND="$(validated_chosen_getprop 'ro.product.brand')"
+BUILD_MANUFACTURER="$(validated_chosen_getprop 'ro.product.manufacturer')"
+BUILD_DEVICE="$(validated_chosen_getprop 'ro.product.device')"
+BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')"
+BUILD_VERSION_RELEASE="$(validated_chosen_getprop 'ro.build.version.release')"
 
 TEXT_BUILD_TIME_HUMAN=''
-if BUILD_TIME="$(validated_chosen_getprop ro.build.date.utc)"; then
+if BUILD_TIME="$(validated_chosen_getprop 'ro.build.date.utc')"; then
   TEXT_BUILD_TIME_HUMAN="$(convert_time_to_human_readable_form "${BUILD_TIME:?}")"
   BUILD_TIME="${BUILD_TIME:?}000"
 fi
@@ -526,7 +526,7 @@ case "${OFFICIAL_STATUS:?}" in
   *) ;;
 esac
 
-BUILD_BOARD="$(validated_chosen_getprop ro.product.board)"
+BUILD_BOARD="$(validated_chosen_getprop 'ro.product.board')"
 
 BUILD_BOOTLOADER="$(find_bootloader)"
 BUILD_BOOTLOADER_EXPECT="$(chosen_getprop 'ro.build.expect.bootloader')" || BUILD_BOOTLOADER_EXPECT=''
@@ -534,14 +534,14 @@ if is_valid_value "${BUILD_BOOTLOADER_EXPECT?}" && test "${BUILD_BOOTLOADER_EXPE
   show_warn "Build.BOOTLOADER does NOT match, current: ${BUILD_BOOTLOADER:-}, expected: ${BUILD_BOOTLOADER_EXPECT:-}"
 fi
 
-BUILD_CPU_ABI="$(validated_chosen_getprop ro.product.cpu.abi)"
-BUILD_CPU_ABI2="$(validated_chosen_getprop ro.product.cpu.abi2 2)"
-BUILD_DISPLAY="$(validated_chosen_getprop ro.build.display.id)"
-BUILD_FINGERPRINT="$(validated_chosen_getprop ro.build.fingerprint)"
+BUILD_CPU_ABI="$(validated_chosen_getprop 'ro.product.cpu.abi')"
+BUILD_CPU_ABI2="$(validated_chosen_getprop 'ro.product.cpu.abi2' 2)"
+BUILD_DISPLAY="$(validated_chosen_getprop 'ro.build.display.id')"
+BUILD_FINGERPRINT="$(validated_chosen_getprop 'ro.build.fingerprint')"
 BUILD_HARDWARE="$(find_hardware)"
-BUILD_HOST="$(validated_chosen_getprop ro.build.host)"
-BUILD_ID="$(validated_chosen_getprop ro.build.id)"
-BUILD_PRODUCT="$(validated_chosen_getprop ro.product.name)" || BUILD_PRODUCT='unknown'
+BUILD_HOST="$(validated_chosen_getprop 'ro.build.host')"
+BUILD_ID="$(validated_chosen_getprop 'ro.build.id')"
+BUILD_PRODUCT="$(validated_chosen_getprop 'ro.product.name')" || BUILD_PRODUCT='unknown'
 
 BUILD_RADIO="$(find_radio)"
 BUILD_RADIO_EXPECT="$(chosen_getprop 'ro.build.expect.baseband')" || BUILD_RADIO_EXPECT=''
@@ -549,15 +549,15 @@ if is_valid_value "${BUILD_RADIO_EXPECT?}" && test "${BUILD_RADIO_EXPECT?}" != "
   show_warn "Build.RADIO does NOT match, current: ${BUILD_RADIO:-}, expected: ${BUILD_RADIO_EXPECT:-}"
 fi
 
-BUILD_TAGS="$(validated_chosen_getprop ro.build.tags)"
+BUILD_TAGS="$(validated_chosen_getprop 'ro.build.tags')"
 
-BUILD_TYPE="$(validated_chosen_getprop ro.build.type)"
-BUILD_USER="$(validated_chosen_getprop ro.build.user)"
-BUILD_VERSION_CODENAME="$(validated_chosen_getprop ro.build.version.codename)"
-BUILD_VERSION_INCREMENTAL="$(validated_chosen_getprop ro.build.version.incremental)"
-BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop ro.build.version.security_patch 2)"
-BUILD_VERSION_SDK="$(validated_chosen_getprop ro.build.version.sdk)"        # ToDO: If not numeric or empty return 0
-BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop ro.product.cpu.abilist 2)" # ToDO: Auto-generate it if missing
+BUILD_TYPE="$(validated_chosen_getprop 'ro.build.type')"
+BUILD_USER="$(validated_chosen_getprop 'ro.build.user')"
+BUILD_VERSION_CODENAME="$(validated_chosen_getprop 'ro.build.version.codename')"
+BUILD_VERSION_INCREMENTAL="$(validated_chosen_getprop 'ro.build.version.incremental')"
+BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop 'ro.build.version.security_patch' 2)"
+BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')"        # ToDO: If not numeric or empty return 0
+BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop 'ro.product.cpu.abilist' 2)" # ToDO: Auto-generate it if missing
 
 BUILD_DESCRIPTION="$(validated_chosen_getprop 'ro.build.description')"
 TEXT_ADDITIONAL_INFO="ro.build.description: ${BUILD_DESCRIPTION?}"
