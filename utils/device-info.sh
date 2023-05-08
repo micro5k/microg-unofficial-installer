@@ -410,56 +410,59 @@ get_iccid()
   validate_and_display_info 'ICCID' "${_val?}" 19 20
 }
 
+main()
+{
+  verify_adb
+  wait_device
+  show_info 'Finding info...'
+  check_boot_completed
+  show_info ''
+
+  BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')"
+  readonly BUILD_VERSION_SDK
+
+  if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
+    display_info 'Emulator' "${EMU_NAME?}"
+  elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
+    display_info 'Emulator' 'Leapdroid'
+  fi
+
+  BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
+  SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBER?}"
+
+  printf '\n'
+
+  get_imei
+  get_iccid
+  get_line_number
+
+  printf '\n'
+
+  ANDROID_ID="$(get_android_id)"
+  validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
+
+  printf '\n'
+
+  adb_root
+
+  mount -t 'auto' '/data' 2> /dev/null || true
+
+  GSF_ID="$(get_gsf_id)"
+  if validate_and_display_info 'GSF ID (decimal)' "${GSF_ID?}" 19; then
+    validate_and_display_info 'GSF ID' "$(convert_dec_to_hex "${GSF_ID?}" || true)" 16
+  fi
+
+  printf '\n'
+
+  ADVERTISING_ID="$(get_advertising_id)"
+  validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
+
+  adb_unroot &
+
+  show_info ''
+  show_note 'GSF ID and Advertising ID require root but all others do not require it!'
+}
+
 show_info "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
-
-verify_adb
-wait_device
-show_info 'Finding info...'
-check_boot_completed
-show_info ''
-
-BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')"
-readonly BUILD_VERSION_SDK
-
-if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
-  display_info 'Emulator' "${EMU_NAME?}"
-elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
-  display_info 'Emulator' 'Leapdroid'
-fi
-
-BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
-SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBER?}"
-
-printf '\n'
-
-get_imei
-get_iccid
-get_line_number
-
-printf '\n'
-
-ANDROID_ID="$(get_android_id)"
-validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
-
-printf '\n'
-
-adb_root
-
-mount -t 'auto' '/data' 2> /dev/null || true
-
-GSF_ID="$(get_gsf_id)"
-if validate_and_display_info 'GSF ID (decimal)' "${GSF_ID?}" 19; then
-  validate_and_display_info 'GSF ID' "$(convert_dec_to_hex "${GSF_ID?}" || true)" 16
-fi
-
-printf '\n'
-
-ADVERTISING_ID="$(get_advertising_id)"
-validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
-
-adb_unroot &
-
-show_info ''
-show_note 'GSF ID and Advertising ID require root but all others do not require it!'
-
+main "${@}"
 pause_if_needed

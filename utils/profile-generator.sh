@@ -460,128 +460,128 @@ anonymize_serialno()
   anonymize_string "${_string:?}"
 }
 
-show_info "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
-
 readonly xml_comment_start='<!--' # Workaround for history substitution of Bash: don't insert ! directly in the printf but use a variable.
 readonly xml_comment_end='-->'
 
-if test -z "${*}"; then
-  readonly INPUT_TYPE='adb'
-else
-  readonly INPUT_TYPE="${1:?}"
-fi
+main()
+{
+  if test -z "${*}"; then
+    readonly INPUT_TYPE='adb'
+  else
+    readonly INPUT_TYPE="${1:?}"
+  fi
 
-if test "${INPUT_TYPE:?}" = 'adb'; then
-  verify_adb
-  wait_device
-  show_info 'Generating profile...'
-  check_boot_completed
-else
-  test -e "${INPUT_TYPE:?}" || {
-    show_error "Input file doesn't exist => '${INPUT_TYPE:-}'"
-    pause_if_needed
-    exit 1
-  }
-
-  show_info 'Generating profile...'
-  if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
-    readonly PROP_TYPE='1'
+  if test "${INPUT_TYPE:?}" = 'adb'; then
+    verify_adb
+    wait_device
+    show_info 'Generating profile...'
     check_boot_completed
   else
-    readonly PROP_TYPE='2'
-    show_error 'Profiles generated in this way will be incomplete!!!'
+    test -e "${INPUT_TYPE:?}" || {
+      show_error "Input file doesn't exist => '${INPUT_TYPE:-}'"
+      pause_if_needed
+      exit 1
+    }
+
+    show_info 'Generating profile...'
+    if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
+      readonly PROP_TYPE='1'
+      check_boot_completed
+    else
+      readonly PROP_TYPE='2'
+      show_error 'Profiles generated in this way will be incomplete!!!'
+    fi
   fi
-fi
 
-# Infos:
-# - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
-# - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
+  # Infos:
+  # - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
+  # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
 
-BUILD_BRAND="$(validated_chosen_getprop 'ro.product.brand')"
-BUILD_MANUFACTURER="$(validated_chosen_getprop 'ro.product.manufacturer')"
-BUILD_DEVICE="$(validated_chosen_getprop 'ro.product.device')"
-BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')"
-BUILD_VERSION_RELEASE="$(validated_chosen_getprop 'ro.build.version.release')"
+  BUILD_BRAND="$(validated_chosen_getprop 'ro.product.brand')"
+  BUILD_MANUFACTURER="$(validated_chosen_getprop 'ro.product.manufacturer')"
+  BUILD_DEVICE="$(validated_chosen_getprop 'ro.product.device')"
+  BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')"
+  BUILD_VERSION_RELEASE="$(validated_chosen_getprop 'ro.build.version.release')"
 
-TEXT_BUILD_TIME_HUMAN=''
-if BUILD_TIME="$(validated_chosen_getprop 'ro.build.date.utc')"; then
-  TEXT_BUILD_TIME_HUMAN="$(convert_time_to_human_readable_form "${BUILD_TIME:?}")"
-  BUILD_TIME="${BUILD_TIME:?}000"
-fi
+  TEXT_BUILD_TIME_HUMAN=''
+  if BUILD_TIME="$(validated_chosen_getprop 'ro.build.date.utc')"; then
+    TEXT_BUILD_TIME_HUMAN="$(convert_time_to_human_readable_form "${BUILD_TIME:?}")"
+    BUILD_TIME="${BUILD_TIME:?}000"
+  fi
 
-generate_rom_info
+  generate_rom_info
 
-TEXT_OFFICIAL_STATUS=''
-OFFICIAL_STATUS=0
-OFFICIAL_DEVICE_INFO="$(parse_devices_list)" || OFFICIAL_STATUS="${?}"
-case "${OFFICIAL_STATUS:?}" in
-  0 | 1)
-    show_info 'Device certified: YES'
-    TEXT_OFFICIAL_STATUS=" ${xml_comment_start:?} Device certified: YES (${OFFICIAL_STATUS:?}) ${xml_comment_end:?}"
-    ;;
-  2)
-    show_negative_info 'Device certified: ' 'NO'
-    TEXT_OFFICIAL_STATUS=" ${xml_comment_start:?} Device certified: NO ${xml_comment_end:?}"
-    ;;
-  *) ;;
-esac
+  TEXT_OFFICIAL_STATUS=''
+  OFFICIAL_STATUS=0
+  OFFICIAL_DEVICE_INFO="$(parse_devices_list)" || OFFICIAL_STATUS="${?}"
+  case "${OFFICIAL_STATUS:?}" in
+    0 | 1)
+      show_info 'Device certified: YES'
+      TEXT_OFFICIAL_STATUS=" ${xml_comment_start:?} Device certified: YES (${OFFICIAL_STATUS:?}) ${xml_comment_end:?}"
+      ;;
+    2)
+      show_negative_info 'Device certified: ' 'NO'
+      TEXT_OFFICIAL_STATUS=" ${xml_comment_start:?} Device certified: NO ${xml_comment_end:?}"
+      ;;
+    *) ;;
+  esac
 
-BUILD_BOARD="$(validated_chosen_getprop 'ro.product.board')"
+  BUILD_BOARD="$(validated_chosen_getprop 'ro.product.board')"
 
-BUILD_BOOTLOADER="$(find_bootloader)"
-BUILD_BOOTLOADER_EXPECT="$(chosen_getprop 'ro.build.expect.bootloader')" || BUILD_BOOTLOADER_EXPECT=''
-if is_valid_value "${BUILD_BOOTLOADER_EXPECT?}" && test "${BUILD_BOOTLOADER_EXPECT?}" != "${BUILD_BOOTLOADER?}"; then
-  show_warn "Build.BOOTLOADER does NOT match, current: ${BUILD_BOOTLOADER:-}, expected: ${BUILD_BOOTLOADER_EXPECT:-}"
-fi
+  BUILD_BOOTLOADER="$(find_bootloader)"
+  BUILD_BOOTLOADER_EXPECT="$(chosen_getprop 'ro.build.expect.bootloader')" || BUILD_BOOTLOADER_EXPECT=''
+  if is_valid_value "${BUILD_BOOTLOADER_EXPECT?}" && test "${BUILD_BOOTLOADER_EXPECT?}" != "${BUILD_BOOTLOADER?}"; then
+    show_warn "Build.BOOTLOADER does NOT match, current: ${BUILD_BOOTLOADER:-}, expected: ${BUILD_BOOTLOADER_EXPECT:-}"
+  fi
 
-BUILD_CPU_ABI="$(validated_chosen_getprop 'ro.product.cpu.abi')"
-BUILD_CPU_ABI2="$(validated_chosen_getprop 'ro.product.cpu.abi2' 2)"
-BUILD_DISPLAY="$(validated_chosen_getprop 'ro.build.display.id')"
-BUILD_FINGERPRINT="$(validated_chosen_getprop 'ro.build.fingerprint')"
-BUILD_HARDWARE="$(find_hardware)"
-BUILD_HOST="$(validated_chosen_getprop 'ro.build.host')"
-BUILD_ID="$(validated_chosen_getprop 'ro.build.id')"
-BUILD_PRODUCT="$(validated_chosen_getprop 'ro.product.name')" || BUILD_PRODUCT='unknown'
+  BUILD_CPU_ABI="$(validated_chosen_getprop 'ro.product.cpu.abi')"
+  BUILD_CPU_ABI2="$(validated_chosen_getprop 'ro.product.cpu.abi2' 2)"
+  BUILD_DISPLAY="$(validated_chosen_getprop 'ro.build.display.id')"
+  BUILD_FINGERPRINT="$(validated_chosen_getprop 'ro.build.fingerprint')"
+  BUILD_HARDWARE="$(find_hardware)"
+  BUILD_HOST="$(validated_chosen_getprop 'ro.build.host')"
+  BUILD_ID="$(validated_chosen_getprop 'ro.build.id')"
+  BUILD_PRODUCT="$(validated_chosen_getprop 'ro.product.name')" || BUILD_PRODUCT='unknown'
 
-BUILD_RADIO="$(find_radio)"
-BUILD_RADIO_EXPECT="$(chosen_getprop 'ro.build.expect.baseband')" || BUILD_RADIO_EXPECT=''
-if is_valid_value "${BUILD_RADIO_EXPECT?}" && test "${BUILD_RADIO_EXPECT?}" != "${BUILD_RADIO?}"; then
-  show_warn "Build.RADIO does NOT match, current: ${BUILD_RADIO:-}, expected: ${BUILD_RADIO_EXPECT:-}"
-fi
+  BUILD_RADIO="$(find_radio)"
+  BUILD_RADIO_EXPECT="$(chosen_getprop 'ro.build.expect.baseband')" || BUILD_RADIO_EXPECT=''
+  if is_valid_value "${BUILD_RADIO_EXPECT?}" && test "${BUILD_RADIO_EXPECT?}" != "${BUILD_RADIO?}"; then
+    show_warn "Build.RADIO does NOT match, current: ${BUILD_RADIO:-}, expected: ${BUILD_RADIO_EXPECT:-}"
+  fi
 
-BUILD_TAGS="$(validated_chosen_getprop 'ro.build.tags')"
+  BUILD_TAGS="$(validated_chosen_getprop 'ro.build.tags')"
 
-BUILD_TYPE="$(validated_chosen_getprop 'ro.build.type')"
-BUILD_USER="$(validated_chosen_getprop 'ro.build.user')"
-BUILD_VERSION_CODENAME="$(validated_chosen_getprop 'ro.build.version.codename')"
-BUILD_VERSION_INCREMENTAL="$(validated_chosen_getprop 'ro.build.version.incremental')"
-BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop 'ro.build.version.security_patch' 2)"
-BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')"        # ToDO: If not numeric or empty return 0
-BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop 'ro.product.cpu.abilist' 2)" # ToDO: Auto-generate it if missing
+  BUILD_TYPE="$(validated_chosen_getprop 'ro.build.type')"
+  BUILD_USER="$(validated_chosen_getprop 'ro.build.user')"
+  BUILD_VERSION_CODENAME="$(validated_chosen_getprop 'ro.build.version.codename')"
+  BUILD_VERSION_INCREMENTAL="$(validated_chosen_getprop 'ro.build.version.incremental')"
+  BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop 'ro.build.version.security_patch' 2)"
+  BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')"        # ToDO: If not numeric or empty return 0
+  BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop 'ro.product.cpu.abilist' 2)" # ToDO: Auto-generate it if missing
 
-BUILD_DESCRIPTION="$(validated_chosen_getprop 'ro.build.description')"
-TEXT_ADDITIONAL_INFO="ro.build.description: ${BUILD_DESCRIPTION?}"
+  BUILD_DESCRIPTION="$(validated_chosen_getprop 'ro.build.description')"
+  TEXT_ADDITIONAL_INFO="ro.build.description: ${BUILD_DESCRIPTION?}"
 
-TEXT_FIRST_API=''
-if FIRST_API="$(chosen_getprop 'ro.product.first_api_level')" && is_valid_value "${FIRST_API?}"; then
-  TEXT_FIRST_API=" ${xml_comment_start:?} ro.product.first_api_level: ${FIRST_API:?} ${xml_comment_end:?}"
-fi
+  TEXT_FIRST_API=''
+  if FIRST_API="$(chosen_getprop 'ro.product.first_api_level')" && is_valid_value "${FIRST_API?}"; then
+    TEXT_FIRST_API=" ${xml_comment_start:?} ro.product.first_api_level: ${FIRST_API:?} ${xml_comment_end:?}"
+  fi
 
-ANON_SERIAL_NUMBER=''
-if SERIAL_NUMBER="$(find_serialno)"; then
-  show_info "Serial number: ${SERIAL_NUMBER:-}"
-  ANON_SERIAL_NUMBER="$(anonymize_serialno "${SERIAL_NUMBER:?}")"
-fi
+  ANON_SERIAL_NUMBER=''
+  if SERIAL_NUMBER="$(find_serialno)"; then
+    show_info "Serial number: ${SERIAL_NUMBER:-}"
+    ANON_SERIAL_NUMBER="$(anonymize_serialno "${SERIAL_NUMBER:?}")"
+  fi
 
-if test "${IS_EMU:?}" = 'true'; then
-  DEVICE_INFO="Emulator - ${EMU_NAME?}"
-else
-  MARKETING_DEVICE_INFO="$(chosen_getprop 'ro.config.marketing_name')" || MARKETING_DEVICE_INFO=''
-  DEVICE_INFO="$(generate_device_info)"
-fi
+  if test "${IS_EMU:?}" = 'true'; then
+    DEVICE_INFO="Emulator - ${EMU_NAME?}"
+  else
+    MARKETING_DEVICE_INFO="$(chosen_getprop 'ro.config.marketing_name')" || MARKETING_DEVICE_INFO=''
+    DEVICE_INFO="$(generate_device_info)"
+  fi
 
-printf 1>&2 '\n'
-printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+  printf 1>&2 '\n'
+  printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 ${xml_comment_start:?}
     SPDX-FileCopyrightText: none
     SPDX-License-Identifier: CC0-1.0
@@ -620,5 +620,8 @@ ${xml_comment_end:?}
 
     <serial template=\"${ANON_SERIAL_NUMBER?}\" />
 </profile>"
+}
 
+show_info "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+main "${@}"
 pause_if_needed
