@@ -451,11 +451,13 @@ main()
   show_msg ''
   adb_root
 
-  mount -t 'auto' '/data' 2> /dev/null || true
+  if test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi
 
-  GSF_ID="$(get_gsf_id)"
-  if validate_and_display_info 'GSF ID (decimal)' "${GSF_ID?}" 19; then
-    validate_and_display_info 'GSF ID' "$(convert_dec_to_hex "${GSF_ID?}" || true)" 16
+  GSF_ID=''
+  GSF_ID_DEC="$(get_gsf_id)"
+  if validate_and_display_info 'GSF ID (decimal)' "${GSF_ID_DEC?}" 19; then
+    GSF_ID="$(convert_dec_to_hex "${GSF_ID_DEC?}")"
+    validate_and_display_info 'GSF ID' "${GSF_ID?}" 16
   fi
 
   show_msg ''
