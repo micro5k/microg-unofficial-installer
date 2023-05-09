@@ -23,6 +23,16 @@ readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
 readonly SCRIPT_VERSION='1.1'
 
+{
+  readonly xml_comment_start='<!--' # Workaround for history substitution of Bash: don't insert ! directly in the printf but use a variable.
+  readonly xml_comment_end='-->'
+}
+
+show_status_msg()
+{
+  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
+}
+
 show_error()
 {
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
@@ -31,11 +41,6 @@ show_error()
 show_warn()
 {
   printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
-}
-
-show_info()
-{
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
 }
 
 show_negative_info()
@@ -90,7 +95,7 @@ verify_adb()
 
 wait_device()
 {
-  show_info 'Waiting for the device...'
+  show_status_msg 'Waiting for the device...'
   adb 'start-server' 2> /dev/null || true
   adb 'wait-for-device'
 }
@@ -460,9 +465,6 @@ anonymize_serialno()
   anonymize_string "${_string:?}"
 }
 
-readonly xml_comment_start='<!--' # Workaround for history substitution of Bash: don't insert ! directly in the printf but use a variable.
-readonly xml_comment_end='-->'
-
 main()
 {
   if test -z "${*}"; then
@@ -474,7 +476,7 @@ main()
   if test "${INPUT_TYPE:?}" = 'adb'; then
     verify_adb
     wait_device
-    show_info 'Generating profile...'
+    show_status_msg 'Generating profile...'
     check_boot_completed
   else
     test -e "${INPUT_TYPE:?}" || {
@@ -483,7 +485,7 @@ main()
       exit 1
     }
 
-    show_info 'Generating profile...'
+    show_status_msg 'Generating profile...'
     if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
       readonly PROP_TYPE='1'
       check_boot_completed
@@ -516,7 +518,7 @@ main()
   OFFICIAL_DEVICE_INFO="$(parse_devices_list)" || OFFICIAL_STATUS="${?}"
   case "${OFFICIAL_STATUS:?}" in
     0 | 1)
-      show_info 'Device certified: YES'
+      show_status_msg 'Device certified: YES'
       TEXT_OFFICIAL_STATUS=" ${xml_comment_start:?} Device certified: YES (${OFFICIAL_STATUS:?}) ${xml_comment_end:?}"
       ;;
     2)
@@ -569,7 +571,7 @@ main()
 
   ANON_SERIAL_NUMBER=''
   if SERIAL_NUMBER="$(find_serialno)"; then
-    show_info "Serial number: ${SERIAL_NUMBER:-}"
+    show_status_msg "Serial number: ${SERIAL_NUMBER:-}"
     ANON_SERIAL_NUMBER="$(anonymize_serialno "${SERIAL_NUMBER:?}")"
   fi
 
@@ -622,6 +624,6 @@ ${xml_comment_end:?}
 </profile>"
 }
 
-show_info "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 main "${@}"
 pause_if_needed
