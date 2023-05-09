@@ -55,9 +55,9 @@ show_warn()
   printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
 }
 
-show_note()
+show_section()
 {
-  printf 1>&2 '\033[1;36m%s\033[0m\n' "NOTE: ${*}"
+  printf 1>&2 '\033[1;36m%s\033[0m\n' "${*}"
 }
 
 show_info()
@@ -421,6 +421,9 @@ main()
   BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')"
   readonly BUILD_VERSION_SDK
 
+  show_section 'BASIC INFO'
+  show_info ''
+
   if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
     display_info 'Emulator' "${EMU_NAME?}"
   elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
@@ -441,8 +444,10 @@ main()
   ANDROID_ID="$(get_android_id)"
   validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
 
-  printf '\n'
+  printf '\n\n'
 
+  show_section 'ADVANCED INFO (root may be required)'
+  show_info ''
   adb_root
 
   mount -t 'auto' '/data' 2> /dev/null || true
@@ -458,9 +463,6 @@ main()
   validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
   adb_unroot &
-
-  show_info ''
-  show_note 'GSF ID and Advertising ID require root but all others do not require it!'
 }
 
 show_info "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
