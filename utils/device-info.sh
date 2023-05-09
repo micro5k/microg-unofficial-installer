@@ -45,9 +45,9 @@ readonly SCRIPT_VERSION='0.3'
   readonly ANDROID_14_SDK=34
 }
 
-show_error()
+show_status_msg()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
+  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
 }
 
 show_warn()
@@ -55,14 +55,14 @@ show_warn()
   printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
 }
 
-show_section()
+show_error()
 {
-  printf 1>&2 '\033[1;36m%s\033[0m\n' "${*}"
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
 }
 
-show_info()
+show_section()
 {
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
+  printf '\033[1;36m%s\033[0m\n' "${*}"
 }
 
 show_msg()
@@ -117,7 +117,7 @@ verify_adb()
 
 wait_device()
 {
-  show_info 'Waiting for the device...'
+  show_status_msg 'Waiting for the device...'
   adb 'start-server' 2> /dev/null || true
   adb 'wait-for-device'
 }
@@ -414,15 +414,15 @@ main()
 {
   verify_adb
   wait_device
-  show_info 'Finding info...'
+  show_status_msg 'Finding info...'
   check_boot_completed
-  show_info ''
+  show_status_msg ''
 
   BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')"
   readonly BUILD_VERSION_SDK
 
   show_section 'BASIC INFO'
-  show_info ''
+  show_msg ''
 
   if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
     display_info 'Emulator' "${EMU_NAME?}"
@@ -433,21 +433,22 @@ main()
   BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
   SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBER?}"
 
-  printf '\n'
+  show_msg ''
 
   get_imei
   get_iccid
   get_line_number
 
-  printf '\n'
+  show_msg ''
 
   ANDROID_ID="$(get_android_id)"
   validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
 
-  printf '\n\n'
+  show_msg ''
+  show_msg ''
 
   show_section 'ADVANCED INFO (root may be required)'
-  show_info ''
+  show_msg ''
   adb_root
 
   mount -t 'auto' '/data' 2> /dev/null || true
@@ -457,7 +458,7 @@ main()
     validate_and_display_info 'GSF ID' "$(convert_dec_to_hex "${GSF_ID?}" || true)" 16
   fi
 
-  printf '\n'
+  show_msg ''
 
   ADVERTISING_ID="$(get_advertising_id)"
   validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
@@ -465,6 +466,6 @@ main()
   adb_unroot &
 }
 
-show_info "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 main "${@}"
 pause_if_needed
