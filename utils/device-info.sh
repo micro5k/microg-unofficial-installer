@@ -124,12 +124,15 @@ wait_device()
 
 adb_root()
 {
-  adb 'root' 1> /dev/null && adb 'wait-for-device'
+  adb 1> /dev/null 'root' &
+  adb 1> /dev/null 'reconnect' # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
+  adb 'wait-for-device'
 }
 
 adb_unroot()
 {
-  adb 'unroot' 1> /dev/null 2> /dev/null
+  adb 1> /dev/null 2> /dev/null 'unroot' &
+  adb 1> /dev/null 'reconnect' & # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
 }
 
 is_all_zeros()
@@ -410,6 +413,48 @@ get_iccid()
   validate_and_display_info 'ICCID' "${_val?}" 19 20
 }
 
+get_data_folder()
+{
+  local _path
+
+  # shellcheck disable=SC3028
+  if test -n "${UTILS_DATA_DIR:-}"; then
+    _path="${UTILS_DATA_DIR:?}"
+  elif test -n "${BASH_SOURCE:-}" && _path="$(dirname "${BASH_SOURCE:?}")/data"; then # Expanding an array without an index gives the first element (it is intended)
+    :
+  elif test -n "${0:-}" && _path="$(dirname "${0:?}")/data"; then
+    :
+  else
+    _path='./data'
+  fi
+
+  _path="$(realpath "${_path:?}")" || return 1
+
+  if test ! -e "${_path:?}"; then
+    mkdir -p "${_path:?}" || return 1
+  fi
+
+  printf '%s\n' "${_path:?}"
+}
+
+parse_nv_data()
+{
+  local _path
+
+  HARDWARE_VERSION=''
+  PRODUCT_CODE=''
+  _path="$(get_data_folder)" || return 1
+  rm -f "${_path:?}/nv_data.bin" || return 1
+
+  adb 1> /dev/null pull '/efs/nv_data.bin' "${_path:?}/nv_data.bin" || return 1
+  if test ! -r "${_path:?}/nv_data.bin"; then return 1; fi
+
+  HARDWARE_VERSION="$(dd if="${_path:?}/nv_data.bin" skip=1605636 count=18 iflag=skip_bytes,count_bytes status=none)"
+  PRODUCT_CODE="$(dd if="${_path:?}/nv_data.bin" skip=1605654 count=20 iflag=skip_bytes,count_bytes status=none)"
+
+  rm -f "${_path:?}/nv_data.bin" || return 1
+}
+
 main()
 {
   verify_adb
@@ -465,7 +510,11 @@ main()
   ADVERTISING_ID="$(get_advertising_id)"
   validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
-  adb_unroot &
+  parse_nv_data
+  validate_and_display_info 'Hardware version' "${HARDWARE_VERSION?}"
+  validate_and_display_info 'Product code' "${PRODUCT_CODE?}"
+
+  adb_unroot
 }
 
 show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
