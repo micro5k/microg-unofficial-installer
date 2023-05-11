@@ -115,18 +115,26 @@ verify_adb()
   exit 1
 }
 
+start_adb_server()
+{
+  adb 2> /dev/null 'start-server' || true
+}
+
 wait_device()
 {
   show_status_msg 'Waiting for the device...'
-  adb 'start-server' 2> /dev/null || true
-  adb 'wait-for-device'
+  if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
+    adb 'wait-for-recovery'
+  else
+    adb 'wait-for-device'
+  fi
 }
 
 adb_root()
 {
   adb 1> /dev/null 'root' &
   adb 1> /dev/null 'reconnect' # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
-  adb 'wait-for-device'
+  wait_device
 }
 
 adb_unroot()
@@ -228,7 +236,7 @@ validated_chosen_getprop()
 
 is_recovery()
 {
-  if test "$(adb 'get-state' || true)" = 'recovery'; then
+  if test "$(adb 2> /dev/null 'get-state' || true)" = 'recovery'; then
     return 0;
   fi
   return 1
@@ -236,7 +244,7 @@ is_recovery()
 
 is_boot_completed()
 {
-  if is_recovery || test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
+  if test "${DEVICE_IN_RECOVERY:?}" = 'true' || test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
     return 0
   fi
 
@@ -314,7 +322,7 @@ get_advertising_id()
   adid="$(adb shell 'cat "/data/data/com.google.android.gms/shared_prefs/adid_settings.xml" 2> /dev/null')" || adid=''
   test "${adid?}" != '' || return 1
 
-  adid="$(printf '%s' "${adid?}" | grep -m 1 -o -e 'adid_key[^<]*' | grep -o -e ">.*")"
+  adid="$(printf '%s' "${adid?}" | grep -m 1 -o -e '"adid_key"[^<]*' | grep -o -e ">.*$")"
 
   printf '%s' "${adid#>}"
 }
@@ -463,9 +471,20 @@ parse_nv_data()
   rm -f "${_path:?}/nv_data.bin" || return 1
 }
 
+get_csc_region_code()
+{
+  adb shell 'if test -r "/efs/imei/mps_code.dat"; then cat "/efs/imei/mps_code.dat"; fi'
+}
+
 main()
 {
   verify_adb
+  start_adb_server
+  if is_recovery; then
+    readonly DEVICE_IN_RECOVERY='true'
+  else
+    readonly DEVICE_IN_RECOVERY='false'
+  fi
   wait_device
   show_status_msg 'Finding info...'
   check_boot_completed
@@ -501,8 +520,8 @@ main()
   show_msg ''
 
   show_section 'ADVANCED INFO (root may be required)'
-  show_msg ''
   adb_root
+  show_msg ''
 
   adb shell "if test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
 
@@ -521,6 +540,9 @@ main()
   parse_nv_data
   validate_and_display_info 'Hardware version' "${HARDWARE_VERSION?}"
   validate_and_display_info 'Product code' "${PRODUCT_CODE?}"
+
+  CSC_REGION_CODE="$(get_csc_region_code)"
+  validate_and_display_info 'CSC region code' "${CSC_REGION_CODE?}"
 
   adb_unroot
 }
