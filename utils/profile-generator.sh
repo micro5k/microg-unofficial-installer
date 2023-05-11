@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='1.1'
+readonly SCRIPT_VERSION='1.2'
 
 {
   readonly xml_comment_start='<!--' # Workaround for history substitution of Bash: don't insert ! directly in the printf but use a variable.
@@ -33,14 +33,14 @@ show_status_msg()
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
 }
 
-show_error()
-{
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
-}
-
 show_warn()
 {
   printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
+}
+
+show_error()
+{
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
 }
 
 show_negative_info()
@@ -93,11 +93,36 @@ verify_adb()
   exit 1
 }
 
-wait_device()
+start_adb_server()
+{
+  adb 2> /dev/null 'start-server' || true
+}
+
+is_recovery()
+{
+  if test "$(adb 2> /dev/null 'get-state' || true)" = 'recovery'; then
+    return 0;
+  fi
+  return 1
+}
+
+verify_device_status()
+{
+  if is_recovery; then
+    readonly DEVICE_IN_RECOVERY='true'
+  else
+    readonly DEVICE_IN_RECOVERY='false'
+  fi
+}
+
+wait_connection()
 {
   show_status_msg 'Waiting for the device...'
-  adb 'start-server' 2> /dev/null || true
-  adb 'wait-for-device'
+  if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
+    adb 'wait-for-recovery'
+  else
+    adb 'wait-for-device'
+  fi
 }
 
 is_all_zeros()
@@ -227,7 +252,7 @@ validated_chosen_getprop()
 
 is_boot_completed()
 {
-  if test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
+  if test "${DEVICE_IN_RECOVERY:?}" = 'true' || test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
     return 0
   fi
 
@@ -475,7 +500,10 @@ main()
 
   if test "${INPUT_TYPE:?}" = 'adb'; then
     verify_adb
-    wait_device
+    start_adb_server
+    verify_device_status
+    if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then show_error "Recovery isn't currently supported"; exit 1; fi
+    wait_connection
     show_status_msg 'Generating profile...'
     check_boot_completed
   else

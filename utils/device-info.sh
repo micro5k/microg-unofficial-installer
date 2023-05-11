@@ -120,6 +120,23 @@ start_adb_server()
   adb 2> /dev/null 'start-server' || true
 }
 
+is_recovery()
+{
+  if test "$(adb 2> /dev/null 'get-state' || true)" = 'recovery'; then
+    return 0;
+  fi
+  return 1
+}
+
+verify_device_status()
+{
+  if is_recovery; then
+    readonly DEVICE_IN_RECOVERY='true'
+  else
+    readonly DEVICE_IN_RECOVERY='false'
+  fi
+}
+
 wait_connection()
 {
   show_status_msg 'Waiting for the device...'
@@ -232,14 +249,6 @@ validated_chosen_getprop()
   fi
 
   printf '%s\n' "${_value?}"
-}
-
-is_recovery()
-{
-  if test "$(adb 2> /dev/null 'get-state' || true)" = 'recovery'; then
-    return 0;
-  fi
-  return 1
 }
 
 is_boot_completed()
@@ -485,11 +494,7 @@ main()
 {
   verify_adb
   start_adb_server
-  if is_recovery; then
-    readonly DEVICE_IN_RECOVERY='true'
-  else
-    readonly DEVICE_IN_RECOVERY='false'
-  fi
+  verify_device_status
   wait_connection
   show_status_msg 'Finding info...'
   check_boot_completed
