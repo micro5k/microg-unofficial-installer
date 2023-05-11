@@ -476,6 +476,11 @@ get_csc_region_code()
   adb shell 'if test -r "/efs/imei/mps_code.dat"; then cat "/efs/imei/mps_code.dat"; fi'
 }
 
+get_efs_serialno()
+{
+  adb shell 'if test -r "/efs/FactoryApp/serial_no"; then cat "/efs/FactoryApp/serial_no"; fi'
+}
+
 main()
 {
   verify_adb
@@ -538,12 +543,22 @@ main()
   ADVERTISING_ID="$(get_advertising_id)"
   validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
+  show_msg ''
+  show_msg ''
+
+  show_section 'EFS INFO (root may be required)'
+  show_msg ''
+
   parse_nv_data
   validate_and_display_info 'Hardware version' "${HARDWARE_VERSION?}"
   validate_and_display_info 'Product code' "${PRODUCT_CODE?}"
 
   CSC_REGION_CODE="$(get_csc_region_code)"
-  validate_and_display_info 'CSC region code' "${CSC_REGION_CODE?}"
+  validate_and_display_info 'CSC region code' "${CSC_REGION_CODE?}" 3
+
+  EFS_SERIALNO="$(get_efs_serialno)"
+  validate_and_display_info 'Serial number' "${EFS_SERIALNO?}"
+  
 
   adb_unroot
 }
