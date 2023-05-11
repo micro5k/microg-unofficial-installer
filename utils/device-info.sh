@@ -120,7 +120,7 @@ start_adb_server()
   adb 2> /dev/null 'start-server' || true
 }
 
-wait_device()
+wait_connection()
 {
   show_status_msg 'Waiting for the device...'
   if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
@@ -134,7 +134,7 @@ adb_root()
 {
   adb 1> /dev/null 'root' &
   adb 1> /dev/null 'reconnect' # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
-  wait_device
+  wait_connection
 }
 
 adb_unroot()
@@ -490,7 +490,7 @@ main()
   else
     readonly DEVICE_IN_RECOVERY='false'
   fi
-  wait_device
+  wait_connection
   show_status_msg 'Finding info...'
   check_boot_completed
   show_status_msg ''
