@@ -20,7 +20,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='0.3'
+readonly SCRIPT_VERSION='0.9'
 
 # shellcheck disable=SC2034
 {
@@ -529,7 +529,8 @@ main()
   show_msg ''
 
   adb shell "if test -e '/system' && test ! -e '/system/bin/sh'; then mount -t 'auto' -o 'ro' '/system' 2> /dev/null || true; fi"
-  adb shell "if test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
+  adb shell "if test -e '/data' && test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
+  adb shell "if test -e '/efs'; then mount -t 'auto' -o 'ro' '/efs' 2> /dev/null || true; fi"
 
   GSF_ID=''
   GSF_ID_DEC="$(get_gsf_id)"
