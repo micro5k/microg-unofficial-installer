@@ -20,7 +20,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='0.9'
+readonly SCRIPT_VERSION='1.0'
 
 # shellcheck disable=SC2034
 {
@@ -271,33 +271,30 @@ check_boot_completed()
 
 find_serialno()
 {
-  local _serialno=''
-  BUILD_MANUFACTURER="$(validated_chosen_getprop 'ro.product.manufacturer')"
+  local _val
 
-  if compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo'; then
-    _serialno="$(chosen_getprop 'ro.lenovosn2')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
-    _serialno="$(chosen_getprop 'ril.serialnumber')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
-    _serialno="$(chosen_getprop 'ro.serialno')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
-    _serialno="$(chosen_getprop 'sys.serialnumber')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
-    _serialno="$(chosen_getprop 'ro.boot.serialno')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
-    _serialno="$(chosen_getprop 'ro.kernel.androidboot.serialno')" || _serialno=''
-  fi
-  if ! is_valid_serial "${_serialno?}"; then
+  if compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo' && _val="$(chosen_getprop 'ro.lenovosn2')" && is_valid_serial "${_val?}"; then # Lenovo tablets
+    :
+  elif _val="$(chosen_getprop 'ril.serialnumber')" && is_valid_serial "${_val?}"; then # Samsung phones / tablets (possibly others)
+    :
+  elif _val="$(chosen_getprop 'ro.ril.oem.psno')" && is_valid_serial "${_val?}"; then # Xiaomi phones (possibly others)
+    :
+  elif _val="$(chosen_getprop 'ro.ril.oem.sno')" && is_valid_serial "${_val?}"; then # Xiaomi phones (possibly others)
+    :
+  elif _val="$(chosen_getprop 'ro.serialno')" && is_valid_serial "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'sys.serialnumber')" && is_valid_serial "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ro.boot.serialno')" && is_valid_serial "${_val?}"; then
+    :
+  elif _val="$(chosen_getprop 'ro.kernel.androidboot.serialno')" && is_valid_serial "${_val?}"; then
+    :
+  else
     show_warn 'Serial number not found'
     return 1
   fi
 
-  printf '%s\n' "${_serialno?}"
+  printf '%s' "${_val?}"
 }
 
 get_android_id()
@@ -512,6 +509,7 @@ main()
     display_info 'Emulator' 'Leapdroid'
   fi
 
+  BUILD_MANUFACTURER="$(validated_chosen_getprop 'ro.product.manufacturer')"
   BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
   SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBER?}"
 
