@@ -226,9 +226,17 @@ validated_chosen_getprop()
   printf '%s\n' "${_value?}"
 }
 
+is_recovery()
+{
+  if test "$(adb 'get-state')" = 'recovery'; then
+    return 0;
+  fi
+  return 1
+}
+
 is_boot_completed()
 {
-  if test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
+  if is_recovery || test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
     return 0
   fi
 
