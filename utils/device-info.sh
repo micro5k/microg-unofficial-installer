@@ -294,7 +294,7 @@ get_gsf_id()
 
   # We want this without expansion, since it will happens later inside adb shell
   # shellcheck disable=SC2016
-  _my_command='readonly my_query="SELECT * FROM main WHERE name = \"android_id\";"; { test -e "/data/data/com.google.android.gsf/databases/gservices.db" && sqlite3 2> /dev/null -line "/data/data/com.google.android.gsf/databases/gservices.db" "${my_query?}"; } || { test -e "/data/data/com.google.android.gms/databases/gservices.db" && sqlite3 2> /dev/null -line "/data/data/com.google.android.gms/databases/gservices.db" "${my_query?}"; }'
+  _my_command='PATH="${PATH:-/sbin}:/sbin:/system/bin:/system/xbin"; export PATH; readonly my_query="SELECT * FROM main WHERE name = \"android_id\";"; { test -e "/data/data/com.google.android.gsf/databases/gservices.db" && sqlite3 2> /dev/null -line "/data/data/com.google.android.gsf/databases/gservices.db" "${my_query?}"; } || { test -e "/data/data/com.google.android.gms/databases/gservices.db" && sqlite3 2> /dev/null -line "/data/data/com.google.android.gms/databases/gservices.db" "${my_query?}"; }'
 
   _val="$(adb shell "${_my_command:?}")" || _val=''
   if test -z "${_val?}"; then
@@ -504,7 +504,7 @@ main()
   show_msg ''
   adb_root
 
-  if test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi
+  adb shell "if test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
 
   GSF_ID=''
   GSF_ID_DEC="$(get_gsf_id)"
