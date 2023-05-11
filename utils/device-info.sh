@@ -228,7 +228,7 @@ validated_chosen_getprop()
 
 is_recovery()
 {
-  if test "$(adb 'get-state')" = 'recovery'; then
+  if test "$(adb 'get-state' || true)" = 'recovery'; then
     return 0;
   fi
   return 1
