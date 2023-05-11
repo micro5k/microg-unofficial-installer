@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='1.2'
+readonly SCRIPT_VERSION='1.3'
 
 {
   readonly xml_comment_start='<!--' # Workaround for history substitution of Bash: don't insert ! directly in the printf but use a variable.
@@ -516,6 +516,7 @@ main()
     show_status_msg 'Generating profile...'
     if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
       readonly PROP_TYPE='1'
+      readonly DEVICE_IN_RECOVERY='false'
       check_boot_completed
     else
       readonly PROP_TYPE='2'
