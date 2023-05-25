@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-readonly ZIPINSTALL_VERSION='0.4'
+readonly ZIPINSTALL_VERSION='0.5'
 
 umask 022 || exit 6
 
@@ -74,6 +74,9 @@ _clean_at_exit()
   if test -n "${SCRIPT_NAME:-}" && test -e "${SCRIPT_NAME:?}"; then
     rm -f "${SCRIPT_NAME:?}" || true
   fi
+  if test -n "${UPD_SCRIPT_NAME:-}" && test -e "${UPD_SCRIPT_NAME:?}"; then
+    rm -f "${UPD_SCRIPT_NAME:?}" || true
+  fi
   unset SCRIPT_NAME
   if test "${TMPDIR:-}" = '/dev/tmp'; then
     if test -e "${TMPDIR:?}"; then
@@ -108,8 +111,10 @@ if test -z "${TMPDIR:-}" || test ! -w "${TMPDIR:?}"; then
 fi
 export TMPDIR
 
-SCRIPT_NAME="${TMPDIR:?}/update-binary.sh" || exit 12
+SCRIPT_NAME="${TMPDIR:?}/update-binary" || exit 12
+UPD_SCRIPT_NAME="${TMPDIR:?}/updater-script" || exit 12
 ZIPFILE="${1:?}"
+
 unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/update-binary' 1> "${SCRIPT_NAME:?}" || {
   ui_show_error "Failed to extract update-binary from => '${ZIPFILE:-}'"
   exit 13
@@ -119,8 +124,10 @@ test -e "${SCRIPT_NAME:?}" || {
   exit 14
 }
 
-# Use STDERR (2) for recovery messages to avoid possible problems with subshells intercepting output
+unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/updater-script' 1> "${UPD_SCRIPT_NAME:?}" || true # Not strictly needed
+
 STATUS=0
+# Use STDERR (2) for recovery messages to avoid possible problems with subshells intercepting output
 sh -- "${SCRIPT_NAME:?}" 3 2 "${ZIPFILE:?}" 'zip-install' "${ZIPINSTALL_VERSION:?}" || STATUS="${?}"
 
 _clean_at_exit
