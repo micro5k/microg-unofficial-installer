@@ -1116,7 +1116,7 @@ _find_hardware_keys()
     INPUT_CODE_POWER='116'
     #INPUT_CODE_HOME='102'
 
-    if test -e "/system/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl"; then
+    if test -e "${SYS_PATH:?}/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl"; then
       while IFS=' ' read -r key_type key_code key_name _; do
         if test "${key_type:-}" != 'key'; then continue; fi
 
@@ -1132,9 +1132,9 @@ _find_hardware_keys()
           'HOME') ;; #INPUT_CODE_HOME="${key_code:?}" ;;
           *) ui_debug "Unknown key: ${key_name:-}" ;;
         esac
-      done 0< "/system/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl" || ui_warning "Failed parsing '/system/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
+      done 0< "${SYS_PATH:?}/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl" || ui_warning "Failed parsing '${SYS_PATH:-}/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
     else
-      ui_debug "Missing keylayout: '/system/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
+      ui_debug "Missing keylayout: '${SYS_PATH:-}/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
     fi
 
     return 0
