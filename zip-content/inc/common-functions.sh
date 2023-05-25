@@ -1548,13 +1548,6 @@ live_setup_choice()
   if test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
     ui_msg 'LIVE SETUP ENABLED!'
     ui_msg_empty_line
-
-    if test "${DEBUG_LOG_ENABLED:?}" -ne 1 && test "${RECOVERY_OUTPUT:?}" = 'true'; then
-      choose 'Do you want to enable the debug log?' '+) Yes' '-) No'
-      if test "${?}" = '3'; then
-        enable_debug_log
-      fi
-    fi
   fi
 }
 
