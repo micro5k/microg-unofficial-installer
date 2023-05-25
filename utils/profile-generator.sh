@@ -101,7 +101,7 @@ start_adb_server()
 is_recovery()
 {
   if test "$(adb 2> /dev/null 'get-state' || true)" = 'recovery'; then
-    return 0;
+    return 0
   fi
   return 1
 }
@@ -502,7 +502,11 @@ main()
     verify_adb
     start_adb_server
     verify_device_status
-    if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then show_error "Recovery isn't currently supported"; exit 1; fi
+    if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
+      show_error "Recovery isn't currently supported"
+      pause_if_needed
+      exit 1
+    fi
     wait_connection
     show_status_msg 'Generating profile...'
     check_boot_completed

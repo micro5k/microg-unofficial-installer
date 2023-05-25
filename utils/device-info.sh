@@ -123,7 +123,7 @@ start_adb_server()
 is_recovery()
 {
   if test "$(adb 2> /dev/null 'get-state' || true)" = 'recovery'; then
-    return 0;
+    return 0
   fi
   return 1
 }
@@ -562,7 +562,6 @@ main()
 
   EFS_SERIALNO="$(get_efs_serialno)"
   validate_and_display_info 'Serial number' "${EFS_SERIALNO?}"
-  
 
   adb_unroot
 }
