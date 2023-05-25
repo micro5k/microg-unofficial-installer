@@ -68,6 +68,7 @@ _verify_system_partition()
   IFS="${NL:?}"
 
   for _path in ${1?}; do
+    if test -z "${_path:-}"; then continue; fi
     _path="$(_canonicalize "${_path:?}")"
 
     if test -e "${_path:?}/system/build.prop"; then
@@ -105,6 +106,7 @@ _mount_and_verify_system_partition()
   IFS="${NL:?}"
 
   for _path in ${1?}; do
+    if test -z "${_path:-}" || test "${_path:?}" = '/mnt/system'; then continue; fi # Note: '/mnt/system' can only be manually mounted
     _path="$(_canonicalize "${_path:?}")"
     _mount_helper '-o' 'rw' "${_path:?}" || true
 
