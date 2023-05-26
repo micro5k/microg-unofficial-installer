@@ -333,7 +333,33 @@ if test "${TEST_INSTALL:-false}" = 'false'; then
   "${OUR_BB:?}" --install -s "${TMP_PATH:?}/bin" || ui_error "Failed to setup BusyBox"
 fi
 
-DEBUG_LOG="${DEBUG_LOG:-0}"
+ui_debug 'Parsing common settings...'
+
+_simple_getprop()
+{
+  if test -n "${DEVICE_GETPROP?}"; then
+    "${DEVICE_GETPROP:?}" "${1:?}" || return "${?}"
+  elif command -v getprop 1> /dev/null; then
+    getprop "${1:?}" || return "${?}"
+  else
+    return 1
+  fi
+}
+_get_common_setting()
+{
+  local _val
+  if _val="$(_simple_getprop "zip.common.${1:?}")" && test -n "${_val?}"; then
+    printf '%s\n' "${_val:?}"
+  else
+    printf '%s\n' "${2?}"
+  fi
+}
+
+DEBUG_LOG="$(_get_common_setting 'DEBUG_LOG' "${DEBUG_LOG:-0}")"
+
+unset -f _simple_getprop
+unset -f _get_common_setting
+
 test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
 
 LIVE_SETUP_ALLOWED='true'
