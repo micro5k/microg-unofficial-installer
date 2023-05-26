@@ -402,11 +402,12 @@ initialize()
   export MODULE_ID
 
   _get_local_settings
-  ui_debug ''
 
   if test "${INPUT_FROM_TERMINAL:?}" = 'true' && test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then LIVE_SETUP_TIMEOUT="$((LIVE_SETUP_TIMEOUT + 3))"; fi
   LIVE_SETUP_DEFAULT="$(parse_setting 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}")"
   LIVE_SETUP_TIMEOUT="$(parse_setting 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}")"
+
+  ui_debug ''
 
   # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64.
   # Usable binaries are under the fake /system/bin so the /system mountpoint mustn't be used while in this recovery.

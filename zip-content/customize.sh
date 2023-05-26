@@ -350,9 +350,11 @@ _get_common_setting()
   local _val
   if _val="$(_simple_getprop "zip.common.${1:?}")" && test -n "${_val?}"; then
     printf '%s\n' "${_val:?}"
-  else
-    printf '%s\n' "${2?}"
+    return
   fi
+
+  # Fallback to the default value
+  printf '%s\n' "${2?}"
 }
 
 DEBUG_LOG="$(_get_common_setting 'DEBUG_LOG' "${DEBUG_LOG:-0}")"
