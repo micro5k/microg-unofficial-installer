@@ -154,8 +154,6 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   ui_msg_sameline_start 'Verifying... '
   ui_debug ''
   if verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '9a6ffed69c510a06a719a2d52c3fd49218f71806' &&
-    verify_sha1 "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk" 'b853c1b177b611310219cc6571576bd455fa3e9e' &&
-    verify_sha1 "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk" '40b0917e9805cdab5abc53925f8732bff9ba8d84' &&
     verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7'; then
     ui_msg_sameline_end 'OK'
   else
@@ -187,6 +185,9 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   if test "${IS_EMU:?}" = 'true'; then
     move_rename_file "${TMP_PATH:?}/origin/profiles/lenovo_yoga_tab_3_pro_10_inches_23.xml" "${TMP_PATH:?}/files/etc/microg_device_profile.xml"
   fi
+
+  setup_app "${INSTALL_MOZILLABACKEND:?}" 'Mozilla UnifiedNlp Backend' 'IchnaeaNlpBackend' 'app'
+  setup_app "${INSTALL_NOMINATIMGEOBACKEND:?}" 'Nominatim Geocoder Backend' 'NominatimGeocoderBackend' 'app'
 
   # Store selection
   market_is_fakestore='false'
@@ -318,6 +319,9 @@ if test "${API}" -ge 23; then
 
   if test "${API}" -ge 29; then # Android 10+
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %ACCESS_BACKGROUND_LOCATION% -->' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
+    if test -e "${TMP_PATH}/files/etc/default-permissions/default-permissions-IchnaeaNlpBackend.xml"; then
+      replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/default-permissions-IchnaeaNlpBackend.xml" '<!-- %ACCESS_BACKGROUND_LOCATION% -->' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
+    fi
   fi
   if test "${FAKE_SIGN}" = true; then
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="false" />'
@@ -342,8 +346,6 @@ fi
 ui_msg 'Preparing 2...'
 
 if test "${API:?}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; fi
-if test "${API:?}" -lt 10; then delete "${TMP_PATH}/files/app/IchnaeaNlpBackend.apk"; fi
-if test "${API:?}" -lt 9; then delete "${TMP_PATH}/files/app/NominatimGeocoderBackend.apk"; fi
 if test -e "${TMP_PATH:?}/files/priv-app" && test "${PRIVAPP_FOLDER:?}" != 'priv-app'; then
   copy_dir_content "${TMP_PATH:?}/files/priv-app" "${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}"
   delete "${TMP_PATH:?}/files/priv-app"
