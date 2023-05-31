@@ -1,6 +1,6 @@
 priv-app/GmsCoreVtmLegacy|9|13|GmsCore|com.google.android.gms|da538490beadc760a7a8519ec5ed367f19ae8d7b
 priv-app/GmsCoreVtm|14||GmsCore|com.google.android.gms|dd5ed6eadc470b7b99379832dfe40b2e4e41ab59
-priv-app/GmsCore|14||GmsCore|com.google.android.gms|5de6942e54839953df07123a538d27bf04ba9b95
+priv-app/GmsCore|14||GmsCore|com.google.android.gms|9155a68d1a1f5cff810a5fc42318882d9e77ccff
 priv-app/GoogleServicesFramework|10||GoogleServicesFramework|com.google.android.gsf|f9907df2e2c8fd20cd2e928821641fa01fca09ce
 priv-app/FakeStore|9||Phonesky|com.android.vending|4bce32236ec486fe379cec91b36493626e13130f
 priv-app/FDroidPrivilegedExtension|8||FDroidPrivilegedExtension|org.fdroid.fdroid.privileged|cb05a14c986f7c470c0eeb2b3f57c27fe2a72a23
