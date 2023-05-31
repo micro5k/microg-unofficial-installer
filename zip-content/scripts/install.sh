@@ -153,8 +153,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   # Verifying
   ui_msg_sameline_start 'Verifying... '
   ui_debug ''
-  if verify_sha1 "${TMP_PATH}/files/app/DejaVuBackend.apk" '9a6ffed69c510a06a719a2d52c3fd49218f71806' &&
-    verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7'; then
+  if verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7'; then
     ui_msg_sameline_end 'OK'
   else
     ui_msg_sameline_end 'ERROR'
@@ -188,6 +187,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   if test "${API:?}" -lt 14 || test "${CPU}" = 'armeabi'; then
     setup_app "${INSTALL_MOZILLABACKEND:?}" 'Mozilla UnifiedNlp Backend' 'IchnaeaNlpBackend' 'app'
+    setup_app "${INSTALL_DEJAVUBACKEND:?}" 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
     setup_app "${INSTALL_NOMINATIMGEOBACKEND:?}" 'Nominatim Geocoder Backend' 'NominatimGeocoderBackend' 'app'
   fi
 
@@ -347,7 +347,6 @@ fi
 # Preparing 2
 ui_msg 'Preparing 2...'
 
-if test "${API:?}" -lt 18; then delete "${TMP_PATH}/files/app/DejaVuBackend.apk"; fi
 if test -e "${TMP_PATH:?}/files/priv-app" && test "${PRIVAPP_FOLDER:?}" != 'priv-app'; then
   copy_dir_content "${TMP_PATH:?}/files/priv-app" "${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}"
   delete "${TMP_PATH:?}/files/priv-app"

@@ -6,6 +6,7 @@ priv-app/FakeStore|9||Phonesky|com.android.vending|4bce32236ec486fe379cec91b3649
 priv-app/FDroidPrivilegedExtension|8||FDroidPrivilegedExtension|org.fdroid.fdroid.privileged|cb05a14c986f7c470c0eeb2b3f57c27fe2a72a23
 priv-app/AuroraServices|21||AuroraServices|com.aurora.services|a5fde752b5c7526615699cd21424106fae46ee10
 app/IchnaeaNlpBackend|10||IchnaeaNlpBackend|org.microg.nlp.backend.ichnaea|b853c1b177b611310219cc6571576bd455fa3e9e
+app/DejaVuBackend|18||DejaVuBackend|org.fitchfamily.android.dejavu|9a6ffed69c510a06a719a2d52c3fd49218f71806
 app/NominatimGeocoderBackend|9||NominatimGeocoderBackend|org.microg.nlp.backend.nominatim|40b0917e9805cdab5abc53925f8732bff9ba8d84
 app/LegacyNetworkLocation|9|18|NetworkLocation|com.google.android.location|8121295640985fad6c5b98890a156aafd18c2053
 app/NewPipeLegacy|16|18|NewPipe|org.schabi.newpipelegacy|95413ee2bf576e4c7b0bdc9e9e79fd2187d444a9
