@@ -183,6 +183,14 @@ else
   cp -f "${SCRIPT_DIR}/cache/misc/keycheck/keycheck-arm.bin" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
 fi
 
+printf '%s\n' 'Setting name;Visibility;Type' 1> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (1)'
+while IFS='#=; ' read -r _ PROP_NAME PROP_VALUE PROP PROP_VISIBILITY PROP_TYPE _; do
+  if test "${PROP?}" != 'setprop'; then continue; fi
+
+  : "UNUSED ${PROP_VALUE:?}"
+  printf '%s\n' "${PROP_NAME:?};${PROP_VISIBILITY:?};${PROP_TYPE:?}"
+done 0< "${TEMP_DIR:?}/zip-content/settings.conf" 1>> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list'
+
 printf '\n'
 
 # Remove the cache folder only if it is empty
