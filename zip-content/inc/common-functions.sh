@@ -1143,7 +1143,7 @@ _find_hardware_keys()
     return 0
   fi
 
-  return 1
+  return 2
 }
 
 _parse_input_event()
@@ -1271,9 +1271,12 @@ _keycheck_map_keycode_to_key()
       printf '-'
       ;;
     *)
+      if test "${1:?}" -ne 0; then return "${1:?}"; fi
       return 1
       ;;
   esac
+
+  return 0
 }
 
 choose_keycheck_with_timeout()
@@ -1295,8 +1298,9 @@ choose_keycheck_with_timeout()
     choose_inputevent "${@}"
     return "${?}"
   fi
+
   _key="$(_keycheck_map_keycode_to_key "${_status:?}")" || {
-    ui_warning 'Key detection failed'
+    ui_warning "Key detection failed (keycheck), status code: ${?}"
     return 1
   }
 
@@ -1406,8 +1410,9 @@ choose_inputevent()
   local _key _status
 
   _find_hardware_keys 'gpio-keys' || {
+    _status="${?}"
     ui_msg_empty_line
-    ui_warning 'Key detection failed'
+    ui_warning "Key detection failed (input event), status code: ${_status:-}"
     ui_msg_empty_line
     return 1
   }
@@ -1427,7 +1432,7 @@ choose_inputevent()
         return 0
         ;;
       *) # Event read failed
-        ui_warning 'Key detection failed (2)'
+        ui_warning "Key detection failed 2 (input event), status code: ${_status:-}"
         return 1
         ;;
     esac
