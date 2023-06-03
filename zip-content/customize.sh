@@ -366,7 +366,7 @@ test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
 
 LIVE_SETUP_ALLOWED='true'
 KEYCHECK_PATH=''
-if test "${ZIP_INSTALL:?}" = 'true' || test "${TEST_INSTALL:-false}" != 'false'; then
+if test "${TEST_INSTALL:-false}" != 'false'; then
   "${OUR_BB:?}" rm -f "${BASE_TMP_PATH:?}/keycheck" || ui_error "Failed to remove keycheck"
 else
   # Setup Keycheck in the temp folder
