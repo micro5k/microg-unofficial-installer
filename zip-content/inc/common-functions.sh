@@ -1541,9 +1541,11 @@ live_setup_choice()
         _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
         choose_read_with_timeout "${LIVE_SETUP_TIMEOUT}"
       elif "${KEYCHECK_ENABLED:?}"; then
+        if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug 'Using: keycheck'; fi
         _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
         choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
       else
+        if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug 'Using: input event'; fi
         _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
         choose_inputevent "${LIVE_SETUP_TIMEOUT}"
       fi
