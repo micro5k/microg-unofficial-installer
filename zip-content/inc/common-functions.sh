@@ -1111,7 +1111,7 @@ _find_hardware_keys()
   local _input_device_event
   if _input_device_event="$(_find_input_device "${INPUT_DEVICE_NAME:?}")" && test -e "/dev/input/${_input_device_event:?}"; then
     INPUT_DEVICE_PATH="/dev/input/${_input_device_event:?}"
-    if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then ui_debug "Found ${INPUT_DEVICE_NAME:-} device at: ${INPUT_DEVICE_PATH:-}"; fi
+    if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Found ${INPUT_DEVICE_NAME:-} device at: ${INPUT_DEVICE_PATH:-}"; fi
 
     # Set the default values, useful when the parsing fails
     INPUT_CODE_VOLUME_UP='115'
