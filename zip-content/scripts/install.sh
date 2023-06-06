@@ -89,6 +89,7 @@ ui_msg "${MODULE_VERSION:?}"
 ui_msg "(by ${MODULE_AUTHOR:?})"
 ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 
+ui_msg "Manufacturer: ${BUILD_MANUFACTURER?}"
 ui_msg "Device: ${BUILD_DEVICE?}"
 ui_msg "Emulator: ${IS_EMU:?}"
 ui_msg_empty_line

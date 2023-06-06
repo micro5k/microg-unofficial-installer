@@ -438,6 +438,14 @@ initialize()
 
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
+  if BUILD_MANUFACTURER="$(simple_getprop 'ro.product.manufacturer')" && is_valid_prop "${BUILD_MANUFACTURER?}"; then
+    :
+  else
+    BUILD_MANUFACTURER=''
+  fi
+  readonly BUILD_MANUFACTURER
+  export BUILD_MANUFACTURER
+
   if BUILD_DEVICE="$(simple_getprop 'ro.product.device')" && is_valid_prop "${BUILD_DEVICE?}"; then
     :
   elif BUILD_DEVICE="$(simple_getprop 'ro.build.product')" && is_valid_prop "${BUILD_DEVICE?}"; then
@@ -1292,6 +1300,7 @@ choose_keycheck_with_timeout()
     return 0
   elif test "${_status:?}" -eq 127 || test "${_status:?}" -eq 132; then
     export KEYCHECK_ENABLED='false'
+
     true # This is just to waste some time, otherwise the warning about the "timeout" failure may appear after the following message
 
     ui_msg 'Fallbacking to manual input parsing, waiting input...'

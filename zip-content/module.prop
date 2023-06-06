@@ -5,7 +5,7 @@
 
 id=microg-unofficial-installer
 name=microG unofficial installer
-version=v1.3.1.6-alpha
+version=v1.3.1.8-alpha
 versionCode=4
 author=ale5000
 description=It installs microG on Android.
