@@ -373,11 +373,11 @@ generate_device_info()
     _info="${BUILD_DEVICE?}"
   fi
 
-  if test -n "${BUILD_BRAND?}" && ! contains_nocase " ${BUILD_BRAND:?} " " ${_info?}" && ! compare_nocase "${BUILD_BRAND:?}" 'Android'; then
+  if test -n "${BUILD_BRAND?}" && ! contains_nocase " ${BUILD_BRAND:?} " " ${_info?} " && ! compare_nocase "${BUILD_BRAND:?}" 'Android'; then
     _info="$(uc_first_char "${BUILD_BRAND:?}") ${_info?}"
   fi
 
-  if test -n "${BUILD_MANUFACTURER?}" && ! contains_nocase " ${BUILD_MANUFACTURER:?} " " ${_info?}"; then
+  if test -n "${BUILD_MANUFACTURER?}" && ! contains_nocase " ${BUILD_MANUFACTURER:?} " " ${_info?} "; then
     _info="${BUILD_MANUFACTURER:?} ${_info?}"
   fi
 
