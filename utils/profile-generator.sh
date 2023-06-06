@@ -367,8 +367,10 @@ generate_device_info()
     _info="${OFFICIAL_DEVICE_INFO?}"
   elif compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo' && _lenovo_device_name="$(chosen_getprop 'ro.lenovo.series')" && is_valid_value "${_lenovo_device_name?}"; then
     _info="$(uc_first_char "${_lenovo_device_name:?}")"
-  else
+  elif is_valid_value "${BUILD_MODEL?}"; then
     _info="${BUILD_MODEL?}"
+  else
+    _info="${BUILD_DEVICE?}"
   fi
 
   if test -n "${BUILD_BRAND?}" && ! contains_nocase " ${BUILD_BRAND:?} " " ${_info?}" && ! compare_nocase "${BUILD_BRAND:?}" 'Android'; then
@@ -534,7 +536,7 @@ main()
 
   BUILD_BRAND="$(validated_chosen_getprop 'ro.product.brand')"
   BUILD_MANUFACTURER="$(validated_chosen_getprop 'ro.product.manufacturer')"
-  BUILD_DEVICE="$(validated_chosen_getprop 'ro.product.device')"
+  BUILD_DEVICE="$(validated_chosen_getprop 'ro.product.device')" || BUILD_DEVICE="$(chosen_getprop 'ro.build.product')" || BUILD_DEVICE=""
   BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')"
   BUILD_VERSION_RELEASE="$(validated_chosen_getprop 'ro.build.version.release')"
 
