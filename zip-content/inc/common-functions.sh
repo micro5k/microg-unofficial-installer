@@ -1213,7 +1213,7 @@ _timeout_exit_code_remapper()
       return 124
       ;;
     *) ### All other keys
-      if test "${1:?}" -lt 128; then
+      if test "${1:?}" -lt 124; then
         return "${1:?}" # Return code of the COMMAND
       fi
       ;;
