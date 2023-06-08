@@ -1568,6 +1568,7 @@ live_setup_choice()
     elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
 
       if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
+        if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug 'Using: read'; fi
         _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
         choose_read_with_timeout "${LIVE_SETUP_TIMEOUT}"
       elif "${KEYCHECK_ENABLED:?}"; then
