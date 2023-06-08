@@ -1174,11 +1174,20 @@ _parse_input_event()
   esac
 
   printf "%s\n" "${_var?}" | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
-    if test "${key_down:-0}" -ne 1; then return 85; fi
-    if test -n "${cur_button:-}" && printf '%.0f' "${cur_button:?}"; then return 4; fi
+    if test "${key_down:-9}" -ne 0 && test "${key_down:-9}" -ne 1; then return 125; fi
+
+    if test -n "${cur_button?}"; then
+      printf '%.0f' "${cur_button:?}" || return 125
+    fi
+
+    if test "${key_down:?}" -eq 1; then
+      return 3
+    else
+      return 4
+    fi
   done || return "${?}"
 
-  return 1
+  return 127
 }
 
 _timeout_exit_code_remapper()
@@ -1453,8 +1462,8 @@ choose_inputevent()
     _key="$(_parse_input_event "${1:-}")" || _status="${?}"
 
     case "${_status:?}" in
-      4) ;;           # Key down event read (allowed)
-      85) continue ;; # Key up event read (ignored)
+      3) ;;           # Key down event read (allowed)
+      4) continue ;; # Key up event read (ignored)
       124)
         ui_msg_empty_line
         ui_msg 'Key: No key pressed'
