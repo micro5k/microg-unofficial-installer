@@ -433,10 +433,6 @@ initialize()
   export VERITY_MODE
 
   _find_and_mount_system
-
-  _timeout_check
-  live_setup_choice
-
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
   if BUILD_MANUFACTURER="$(simple_getprop 'ro.product.manufacturer')" && is_valid_prop "${BUILD_MANUFACTURER?}"; then
@@ -458,6 +454,13 @@ initialize()
   fi
   readonly BUILD_DEVICE
   export BUILD_DEVICE
+
+  if test "${BUILD_MANUFACTURER?}" = 'OnePlus' && test "${BUILD_DEVICE?}" = 'OnePlus6'; then
+    export KEYCHECK_ENABLED='false' # It doesn't work properly on this device
+  fi
+
+  _timeout_check
+  live_setup_choice
 
   IS_EMU='false'
   case "${BUILD_DEVICE?}" in
