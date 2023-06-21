@@ -1118,7 +1118,7 @@ _find_hardware_keys()
   INPUT_DEVICE_NAME="${1:?}"
 
   local _input_device_event
-  if _input_device_event="$(_find_input_device "${INPUT_DEVICE_NAME:?}")" && test -e "/dev/input/${_input_device_event:?}"; then
+  if _input_device_event="$(_find_input_device "${INPUT_DEVICE_NAME:?}")" && test -r "/dev/input/${_input_device_event:?}"; then
     INPUT_DEVICE_PATH="/dev/input/${_input_device_event:?}"
     if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Found ${INPUT_DEVICE_NAME:-} device at: ${INPUT_DEVICE_PATH:-}"; fi
 
@@ -1155,30 +1155,56 @@ _find_hardware_keys()
   return 2
 }
 
-_parse_input_event()
+kill_pid_from_file()
+{
+  local _pid
+
+  if test -e "${1:?}" && _pid="$(cat "${1:?}")" && test -n "${_pid?}"; then
+    if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Killing: ${_pid:-}"; fi
+    kill -s 'KILL' "${_pid:?}" || true
+  fi
+
+  delete "${1:?}"
+}
+
+_get_input_event()
 {
   local _var _status
 
+  INPUT_EVENT_CURRENT=''
+
   _status=0
   if test -n "${1:-}"; then
-    _var="$(_timeout_compat "${1:?}" cat -u "${INPUT_DEVICE_PATH:?}" | hexdump -d -n 14)" || _status="${?}"
+    _var="$({
+      cat -u "${INPUT_DEVICE_PATH:?}" &
+      printf '%s' "${!}" > "${TMP_PATH:?}/pid-to-kill.dat"
+    } | _timeout_compat "${1:?}" hexdump -d -n 32)" || _status="${?}"
   else
-    _var="$(cat -u "${INPUT_DEVICE_PATH:?}" | hexdump -d -n 14)" || _status="${?}"
+    _var="$({
+      cat "${INPUT_DEVICE_PATH:?}" &
+      printf '%s' "${!}" > "${TMP_PATH:?}/pid-to-kill.dat"
+    } | hexdump -d -n 32)" || _status="${?}"
   fi
+  kill_pid_from_file "${TMP_PATH:?}/pid-to-kill.dat"
 
   case "${_status:?}" in
-    0) ;;              # OK
-    141) ;;            # OK. Only the necessary part is read, so the "Broken pipe" is supposed to happen, ignore it
-    124) return 124 ;; # Timed out
-    *) return 2 ;;     # Failure
+    0) ;;                       # OK
+    124) return 124 ;;          # Timed out
+    *) return "${_status:?}" ;; # Failure
   esac
+  if test -z "${_var?}"; then return 1; fi
 
-  printf "%s\n" "${_var?}" | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
+  INPUT_EVENT_CURRENT="${_var?}"
+  return 0
+}
+
+_parse_input_event()
+{
+  printf "%s\n" "${1?}" | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
+    if test -z "${cur_button?}" || test "${cur_button:?}" -eq 0; then continue; fi
     if test "${key_down:-9}" -ne 0 && test "${key_down:-9}" -ne 1; then return 125; fi
 
-    if test -n "${cur_button?}"; then
-      printf '%.0f' "${cur_button:?}" || return 125
-    fi
+    printf '%.0f' "${cur_button:?}" || return 125
 
     if test "${key_down:?}" -eq 1; then
       return 3
@@ -1446,7 +1472,7 @@ choose_read()
 
 choose_inputevent()
 {
-  local _key _status
+  local _key _status _last_key_pressed
 
   _find_hardware_keys 'gpio-keys' || {
     _status="${?}"
@@ -1456,35 +1482,66 @@ choose_inputevent()
     return 1
   }
 
+  _last_key_pressed=''
   while true; do
-    _key=''
-    _status=0
-    _key="$(_parse_input_event "${1:-}")" || _status="${?}"
+    _get_input_event "${1:-}" || {
+      _status="${?}"
 
-    case "${_status:?}" in
-      3) ;;           # Key down event read (allowed)
-      4) continue ;; # Key up event read (ignored)
-      124)
+      if test "${_status:?}" -eq 124; then
         ui_msg_empty_line
         ui_msg 'Key: No key pressed'
         ui_msg_empty_line
         return 0
-        ;;
-      *) # Event read failed
-        ui_warning "Key detection failed 2 (input event), status code: ${_status:-}"
+      fi
+
+      ui_warning "Key detection failed 2 (input event), status code: ${_status:-}"
+      return 1
+    }
+
+    _status=0
+    _key="$(_parse_input_event "${INPUT_EVENT_CURRENT?}")" || _status="${?}"
+
+    case "${_status:?}" in
+      3) ;; # Key down event read (allowed)
+      4) ;; # Key up event read (allowed)
+      *)    # Event read failed
+        ui_warning "Key detection failed 3 (input event), status code: ${_status:-}"
         return 1
         ;;
     esac
 
+    if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Key code: ${_key:-}, Event type: ${_status:-}"; fi
+
     case "${_key?}" in
-      "${INPUT_CODE_VOLUME_UP:?}") ;;      # Vol + key (allowed)
-      "${INPUT_CODE_VOLUME_DOWN:?}") ;;    # Vol - key (allowed)
-      "${INPUT_CODE_POWER:?}") continue ;; # Power key (ignored)
+      "${INPUT_CODE_VOLUME_UP:?}") ;;   # Vol + key (allowed)
+      "${INPUT_CODE_VOLUME_DOWN:?}") ;; # Vol - key (allowed)
+      "${INPUT_CODE_POWER:?}")
+        _last_key_pressed=''
+        continue # Power key (ignored)
+        ;;
       *)
+        _last_key_pressed=''
         ui_msg "Invalid choice!!! Key code: ${_key:-}"
         continue
-        ;; # NOT allowed
+        ;;
     esac
+
+    if test "${_status:?}" -eq 3; then
+      # Key down
+      _last_key_pressed="${_key:?}"
+      continue
+    else
+      # Key up
+
+      if test "${_key:?}" = "${_last_key_pressed?}"; then
+        : # OK
+      else
+        _last_key_pressed=''
+        ui_msg 'Key mismatch, ignored!!!' # Key mismatch, current key press ignored
+        continue
+      fi
+
+    fi
 
     break
   done
