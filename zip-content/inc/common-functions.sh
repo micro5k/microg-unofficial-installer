@@ -1542,7 +1542,7 @@ choose_inputevent()
         : # OK
       else
         _last_key_pressed=''
-        ui_msg 'Key mismatch, ignored!!!' # Key mismatch, current key press ignored
+        ui_msg 'Key mismatch, ignored!!!' # Key mismatch (ignored)
         continue
       fi
 
