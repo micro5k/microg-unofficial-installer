@@ -963,6 +963,15 @@ delete_recursive_wildcard()
   done
 }
 
+delete_temp()
+{
+  for filename in "${@}"; do
+    if test -e "${TMP_PATH:?}/${filename?}"; then
+      rm -rf -- "${TMP_PATH:?}/${filename?}" || ui_error 'Failed to delete temp files/folders' 103
+    fi
+  done
+}
+
 delete_dir_if_empty()
 {
   if test -d "$1"; then
@@ -1167,8 +1176,6 @@ kill_pid_from_file()
     if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Killing: ${_pid:-}"; fi
     kill -s 'KILL' "${_pid:?}" || true
   fi
-
-  delete "${1:?}"
 }
 
 _get_input_event()
@@ -1190,6 +1197,7 @@ _get_input_event()
     } | hexdump -d -n 32)" || _status="${?}"
   fi
   kill_pid_from_file "${TMP_PATH:?}/pid-to-kill.dat"
+  delete_temp 'pid-to-kill.dat'
 
   case "${_status:?}" in
     0) ;;                       # OK
@@ -1514,7 +1522,11 @@ choose_inputevent()
         ;;
     esac
 
-    if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Key code: ${_key:-}, Event type: ${_status:-}"; fi
+    if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then
+      ui_debug ''
+      ui_debug "Key code: ${_key:-}, Event type: ${_status:-}"
+      ui_debug ''
+    fi
 
     case "${_key?}" in
       "${INPUT_CODE_VOLUME_UP:?}") ;;   # Vol + key (allowed)
