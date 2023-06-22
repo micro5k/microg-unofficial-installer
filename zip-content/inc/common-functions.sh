@@ -1086,7 +1086,7 @@ _find_input_device()
 {
   local _last_device_name=''
 
-  if test ! -e '/proc/bus/input/devices'; then return 1; fi # NOT found
+  if test ! -r '/proc/bus/input/devices'; then return 1; fi # NOT found
 
   # shellcheck disable=SC2002
   cat '/proc/bus/input/devices' | while IFS=': ' read -r line_type full_line; do
@@ -1115,27 +1115,28 @@ _find_input_device()
 
 _find_hardware_keys()
 {
-  if test "${1:?}" = "${INPUT_DEVICE_NAME:-}" && test -n "${INPUT_DEVICE_PATH:-}"; then return 0; fi
+  if test -n "${INPUT_DEVICE_NAME:-}" && test -n "${INPUT_DEVICE_PATH:-}"; then return 0; fi
 
+  INPUT_DEVICE_NAME=''
   INPUT_DEVICE_PATH=''
-  INPUT_DEVICE_NAME="${1:?}"
 
   local _input_device_event
-  if _input_device_event="$(_find_input_device "${INPUT_DEVICE_NAME:?}")" && test -r "/dev/input/${_input_device_event:?}"; then
+  if _input_device_event="$(_find_input_device "${1:?}")" && test -r "/dev/input/${_input_device_event:?}"; then
+    INPUT_DEVICE_NAME="${1:?}"
     INPUT_DEVICE_PATH="/dev/input/${_input_device_event:?}"
     if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Found ${INPUT_DEVICE_NAME:-} device at: ${INPUT_DEVICE_PATH:-}"; fi
 
-    # Set the default values, useful when the parsing fails
+    # Set the default values, useful when the parsing of keylayout fails
     INPUT_CODE_VOLUME_UP='115'
     INPUT_CODE_VOLUME_DOWN='114'
     INPUT_CODE_POWER='116'
-    #INPUT_CODE_HOME='102'
+    INPUT_CODE_HOME='102'
 
     if test -e "${SYS_PATH:?}/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl"; then
       while IFS=' ' read -r key_type key_code key_name _; do
-        if test "${key_type:-}" != 'key'; then continue; fi
+        if test "${key_type?}" != 'key'; then continue; fi
 
-        if test -z "${key_name:-}" || test -z "${key_code:-}"; then
+        if test -z "${key_name?}" || test -z "${key_code?}"; then
           ui_warning "Missing key code, debug info: '${key_type:-}' '${key_code:-}' '${key_name:-}'"
           continue
         fi
@@ -1144,7 +1145,7 @@ _find_hardware_keys()
           'VOLUME_UP') INPUT_CODE_VOLUME_UP="${key_code:?}" ;;
           'VOLUME_DOWN') INPUT_CODE_VOLUME_DOWN="${key_code:?}" ;;
           'POWER') INPUT_CODE_POWER="${key_code:?}" ;;
-          'HOME') ;; #INPUT_CODE_HOME="${key_code:?}" ;;
+          'HOME') INPUT_CODE_HOME="${key_code:?}" ;;
           *) ui_debug "Unknown key: ${key_name:-}" ;;
         esac
       done 0< "${SYS_PATH:?}/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl" || ui_warning "Failed parsing '${SYS_PATH:-}/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
@@ -1528,6 +1529,7 @@ choose_inputevent()
         continue
         ;;
     esac
+    : "UNUSED ${INPUT_CODE_HOME:?}"
 
     if test "${_status:?}" -eq 3; then
       # Key down
