@@ -1178,6 +1178,17 @@ kill_pid_from_file()
   fi
 }
 
+hex_to_dec()
+{
+  printf '%d' "0x${1:-0}"
+}
+
+_prepare_hexdump_output()
+{
+  cut -d ' ' -f '2-' -s | tr -d '\r\n' || return "${?}"
+  printf '\n'
+}
+
 _get_input_event()
 {
   local _var _status
@@ -1189,12 +1200,12 @@ _get_input_event()
     _var="$({
       cat -u "${INPUT_DEVICE_PATH:?}" &
       printf '%s' "${!}" > "${TMP_PATH:?}/pid-to-kill.dat"
-    } | _timeout_compat "${1:?}" hexdump -d -n 32)" || _status="${?}"
+    } | _timeout_compat "${1:?}" hexdump -x -v -n 24)" || _status="${?}"
   else
     _var="$({
       cat "${INPUT_DEVICE_PATH:?}" &
       printf '%s' "${!}" > "${TMP_PATH:?}/pid-to-kill.dat"
-    } | hexdump -d -n 32)" || _status="${?}"
+    } | hexdump -x -v -n 24)" || _status="${?}"
   fi
   kill_pid_from_file "${TMP_PATH:?}/pid-to-kill.dat"
   delete_temp 'pid-to-kill.dat'
@@ -1212,11 +1223,26 @@ _get_input_event()
 
 _parse_input_event()
 {
-  printf "%s\n" "${1?}" | while IFS=' ' read -r _ _ _ _ _ _ cur_button key_down _; do
-    if test -z "${cur_button?}" || test "${cur_button:?}" -eq 0; then continue; fi
-    if test "${key_down:-9}" -ne 0 && test "${key_down:-9}" -ne 1; then return 125; fi
+  printf "%s\n" "${1?}" | _prepare_hexdump_output | while IFS=' ' read -r _ _ _ _ ev_type32 key_code32 key_down32 zero32 ev_type64 key_code64 key_down64 zero64 _; do
+    if test "$(hex_to_dec "${ev_type64:-9}" || true)" -eq 1 && test "$(hex_to_dec "${zero64:-9}" || true)" -eq 0; then
+      key_code="${key_code64?}"
+      key_down="$(hex_to_dec "${key_down64:-9}")"
+    elif test "$(hex_to_dec "${ev_type32:-9}" || true)" -eq 1 && test "$(hex_to_dec "${zero32:-9}" || true)" -eq 0; then
+      key_code="${key_code32?}"
+      key_down="$(hex_to_dec "${key_down32:-9}")"
+    else
+      ui_warning "Invalid event type: ${ev_type32:-} ${ev_type64:-}"
+      continue
+    fi
 
-    printf '%.0f' "${cur_button:?}" || return 125
+    if test "${key_down:?}" -ne 1 && test "${key_down:?}" -ne 0; then
+      return 125
+    fi
+    if test -z "${key_code?}"; then
+      return 126
+    fi
+
+    hex_to_dec "${key_code:?}" || return 126
 
     if test "${key_down:?}" -eq 1; then
       return 3
@@ -1510,6 +1536,11 @@ choose_inputevent()
       return 1
     }
 
+    if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
+      ui_debug ''
+      ui_debug "EVENT DEBUG:$(printf '%s' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -d -s '\n' '[:blank:]' || true)"
+    fi
+
     _status=0
     _key="$(_parse_input_event "${INPUT_EVENT_CURRENT?}")" || _status="${?}"
 
@@ -1524,44 +1555,46 @@ choose_inputevent()
 
     if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then
       ui_debug ''
-      ui_debug "Key code: ${_key:-}, Event type: ${_status:-}"
-      ui_debug ''
+      ui_debug "Key code: ${_key:-}, Action: ${_status:-}"
     fi
-
-    case "${_key?}" in
-      "${INPUT_CODE_VOLUME_UP:?}") ;;   # Vol + key (allowed)
-      "${INPUT_CODE_VOLUME_DOWN:?}") ;; # Vol - key (allowed)
-      "${INPUT_CODE_POWER:?}")
-        _last_key_pressed=''
-        continue # Power key (ignored)
-        ;;
-      *)
-        _last_key_pressed=''
-        ui_msg "Invalid choice!!! Key code: ${_key:-}"
-        continue
-        ;;
-    esac
-    : "UNUSED ${INPUT_CODE_HOME:?}"
 
     if test "${_status:?}" -eq 3; then
       # Key down
-      _last_key_pressed="${_key:?}"
+      if test "${_last_key_pressed?}" = ''; then
+        _last_key_pressed="${_key:?}"
+      else
+        _last_key_pressed='' # Two buttons pressed simultaneously (ignored)
+      fi
       continue
     else
       # Key up
-
-      if test "${_key:?}" = "${_last_key_pressed?}"; then
+      if test -n "${_key?}" && test "${_key:?}" = "${_last_key_pressed?}"; then
         : # OK
       else
         _last_key_pressed=''
         ui_msg 'Key mismatch, ignored!!!' # Key mismatch (ignored)
         continue
       fi
-
     fi
+
+    _last_key_pressed=''
+
+    case "${_key?}" in
+      "${INPUT_CODE_VOLUME_UP:?}") ;;   # Vol + key (allowed)
+      "${INPUT_CODE_VOLUME_DOWN:?}") ;; # Vol - key (allowed)
+      "${INPUT_CODE_POWER:?}")
+        continue # Power key (ignored)
+        ;;
+      *)
+        ui_msg "Invalid choice!!! Key code: ${_key:-}"
+        continue
+        ;;
+    esac
 
     break
   done
+
+  : "UNUSED ${INPUT_CODE_HOME:?}"
 
   if test "${_key?}" = "${INPUT_CODE_VOLUME_UP:?}"; then
     ui_msg_empty_line
