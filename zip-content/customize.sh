@@ -236,7 +236,20 @@ set_perm_safe()
 package_extract_file()
 {
   unzip -opq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" || ui_error "Failed to extract the file '${1}' from this archive" 82
-  if ! test -e "${2:?}"; then ui_error "Failed to extract the file '${1}' from this archive" 82; fi
+  if test ! -e "${2:?}"; then ui_error "Failed to extract the file '${1}' from this archive" 82; fi
+}
+
+package_extract_file_may_fail()
+{
+  unzip -opq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" || {
+    rm -f -- "${2:?}" || true
+    ui_warning "Failed to extract the file '${1}' from this archive"
+    return 1
+  }
+  if test ! -e "${2:?}"; then
+    ui_warning "Failed to extract the file '${1}' from this archive"
+    return 1
+  fi
 }
 
 package_extract_file_safe()
@@ -299,11 +312,11 @@ elif test "${RECOVERY_ARCH}" = 'x86'; then
 elif test "${RECOVERY_ARCH}" = 'arm64-v8a'; then
   ui_debug 'Extracting 64-bit ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm64.bin' "${OUR_BB:?}"
-  package_extract_file 'misc/keycheck/keycheck-arm.bin' "${BASE_TMP_PATH:?}/keycheck"
+  package_extract_file_may_fail 'misc/keycheck/keycheck-arm.bin' "${BASE_TMP_PATH:?}/keycheck"
 elif test "${RECOVERY_ARCH}" = 'armeabi-v7a' || test "${RECOVERY_ARCH}" = 'armeabi'; then
   ui_debug 'Extracting ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm.bin' "${OUR_BB:?}"
-  package_extract_file 'misc/keycheck/keycheck-arm.bin' "${BASE_TMP_PATH:?}/keycheck"
+  package_extract_file_may_fail 'misc/keycheck/keycheck-arm.bin' "${BASE_TMP_PATH:?}/keycheck"
 fi
 if ! test -e "${OUR_BB:?}"; then ui_error 'BusyBox not found'; fi
 
