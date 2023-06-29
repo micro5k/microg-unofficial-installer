@@ -1173,7 +1173,7 @@ kill_pid_from_file()
   local _pid
 
   if test -e "${1:?}" && _pid="$(cat "${1:?}")" && test -n "${_pid?}"; then
-    if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Killing: ${_pid:-}"; fi
+    if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then ui_debug "Killing: ${_pid:-}"; fi
     kill -s 'KILL' "${_pid:?}" || true
     kill 2> /dev/null "${_pid:?}" || true # Since the above command may not work in some cases, keep this as fallback
   fi
