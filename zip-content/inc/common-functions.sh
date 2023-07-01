@@ -1224,19 +1224,19 @@ _get_input_event()
 
 _parse_input_event()
 {
-  printf "%s\n" "${1?}" | _prepare_hexdump_output | while IFS=' ' read -r _ _ _ _ ev_type32 key_code32 key_down32 zero32 ev_type64 key_code64 key_down64 zero64 _; do
-    if test "$(hex_to_dec "${ev_type64:-9}" || true)" -eq 1 && test "$(hex_to_dec "${zero64:-9}" || true)" -eq 0; then
+  printf "%s\n" "${1}" | _prepare_hexdump_output | while IFS=' ' read -r _ _ _ _ ev_type32 key_code32 key_down32 zero32 ev_type64 key_code64 key_down64 zero64 _; do
+    if test "$(hex_to_dec "${ev_type64:-9}" || true)" -eq 1 && test "$(hex_to_dec "${zero64:-9}" || printf '9' || true)" -eq 0; then
       key_code="${key_code64?}"
       key_down="$(hex_to_dec "${key_down64:-9}")"
-    elif test "$(hex_to_dec "${ev_type32:-9}" || true)" -eq 1 && test "$(hex_to_dec "${zero32:-9}" || true)" -eq 0; then
+    elif test "$(hex_to_dec "${ev_type32:-9}" || true)" -eq 1 && test "$(hex_to_dec "${zero32:-9}" || printf '9' || true)" -eq 0; then
       key_code="${key_code32?}"
       key_down="$(hex_to_dec "${key_down32:-9}")"
     else
-      ui_warning "Invalid event type: ${ev_type32:-} ${ev_type64:-}"
+      ui_warning "Invalid event type: ${ev_type32:-''} ${ev_type64:-''}"
       continue
     fi
 
-    if test "${key_down:?}" -ne 1 && test "${key_down:?}" -ne 0; then
+    if test "${key_down?}" -ne 1 && test "${key_down?}" -ne 0; then
       return 125
     fi
     if test -z "${key_code?}"; then
@@ -1559,26 +1559,28 @@ choose_inputevent()
       ui_debug "Key code: ${_key:-}, Action: ${_status:-}"
     fi
 
-    if test "${_status:?}" -eq 3; then
-      # Key down
-      if test "${_last_key_pressed?}" = ''; then
-        _last_key_pressed="${_key:?}"
-      else
-        _last_key_pressed='' # Two buttons pressed simultaneously (ignored)
-      fi
-      continue
-    else
-      # Key up
-      if test -n "${_key?}" && test "${_key:?}" = "${_last_key_pressed?}"; then
-        : # OK
-      else
-        _last_key_pressed=''
-        ui_msg 'Key mismatch, ignored!!!' # Key mismatch (ignored)
+    if true; then
+      if test "${_status:?}" -eq 3; then
+        # Key down
+        if test "${_last_key_pressed?}" = ''; then
+          _last_key_pressed="${_key:?}"
+        else
+          _last_key_pressed='' # Two buttons pressed simultaneously (ignored)
+        fi
         continue
+      else
+        # Key up
+        if test -n "${_key?}" && test "${_key:?}" = "${_last_key_pressed?}"; then
+          : # OK
+        else
+          _last_key_pressed=''
+          ui_msg 'Key mismatch, ignored!!!' # Key mismatch (ignored)
+          continue
+        fi
       fi
-    fi
 
-    _last_key_pressed=''
+      _last_key_pressed=''
+    fi
 
     case "${_key?}" in
       "${INPUT_CODE_VOLUME_UP:?}") ;;   # Vol + key (allowed)
