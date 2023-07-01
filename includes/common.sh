@@ -66,8 +66,11 @@ detect_os()
   _os="$(uname | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)"
 
   case "${_os?}" in
-    'linux')
+    'linux') # Returned by both Linux and Android, it will be identified later in the code
       _os='linux'
+      ;;
+    'android') # Currently never returned, but may be in the future
+      _os='android'
       ;;
     'windows'*) # BusyBox-w32 on Windows => Windows_NT (other Windows cases will be detected in the default case)
       _os='win'
@@ -83,7 +86,7 @@ detect_os()
       ;;
 
     *)
-      case "$(uname -o 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" in
+      case "$(uname 2> /dev/null -o | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" in
         # Output of uname -o:
         # - MinGW => Msys
         # - MSYS => Msys
@@ -102,19 +105,15 @@ detect_os()
 
   # Android identify itself as Linux
   if test "${_os?}" = 'linux'; then
-    case "$(uname -r 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" in # adb shell on Android
-      *'-lineage-'* | *'-leapdroid-'*)
+    case "$(uname 2> /dev/null -a | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" in
+      *' android'* | *'-lineage-'* | *'-leapdroid-'*)
         _os='android'
         ;;
-      *)
-        if test "$(uname -o 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" = 'android'; then # Termux on Android
-          _os='android'
-        fi
-        ;;
+      *) ;;
     esac
   fi
 
-  printf '%s\n' "${_os?}"
+  printf '%s\n' "${_os:?}"
 }
 
 change_title()
