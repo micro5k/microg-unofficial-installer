@@ -28,5 +28,7 @@ if test "${COVERAGE:-false}" = 'false'; then
   PS4='+ '
 fi
 
+OSTYPE='linux-androideabi'
+
 # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
 . "${TMPDIR:?}/update-binary" || exit "${?}"
