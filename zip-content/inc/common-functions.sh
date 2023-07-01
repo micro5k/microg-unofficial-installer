@@ -1186,7 +1186,7 @@ hex_to_dec()
 
 _prepare_hexdump_output()
 {
-  cut -d ' ' -f '2-' -s | tr -d '\r\n' || return "${?}"
+  cut -d ' ' -f '2-' -s | LC_ALL=C tr '[:cntrl:]' ' ' || return "${?}"
   printf '\n'
 }
 
@@ -1539,7 +1539,7 @@ choose_inputevent()
 
     if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
       ui_debug ''
-      ui_debug "EVENT DEBUG:$(printf '%s' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -d -s '\n' '[:blank:]' || true)"
+      ui_debug "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -d -s '\n' '[:blank:]' || true)"
     fi
 
     _status=0
