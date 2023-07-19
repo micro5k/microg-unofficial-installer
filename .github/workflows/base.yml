@@ -32,7 +32,7 @@ jobs:
       - name: "Install Bashcov and Codecov"
         run: |
           # Installing Bashcov and Codecov...
-          gem install bashcov codecov
+          gem install bashcov:3.0.2 codecov
       - name: "Execute code coverage"
         id: "coverage"
         run: |
