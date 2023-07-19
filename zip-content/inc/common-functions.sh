@@ -967,6 +967,7 @@ delete_temp()
 {
   for filename in "${@}"; do
     if test -e "${TMP_PATH:?}/${filename?}"; then
+      #ui_debug "Deleting '${TMP_PATH:?}/${filename?}'...."
       rm -rf -- "${TMP_PATH:?}/${filename?}" || ui_error 'Failed to delete temp files/folders' 103
     fi
   done
@@ -1172,11 +1173,13 @@ kill_pid_from_file()
 {
   local _pid
 
-  if test -e "${1:?}" && _pid="$(cat "${1:?}")" && test -n "${_pid?}"; then
+  if test -e "${TMP_PATH:?}/${1:?}" && _pid="$(cat "${TMP_PATH:?}/${1:?}")" && test -n "${_pid?}"; then
     if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then ui_debug "Killing: ${_pid:-}"; fi
     kill -s 'KILL' "${_pid:?}" || true
     kill 2> /dev/null "${_pid:?}" & # Since the above command may not work in some cases, keep this as fallback
   fi
+
+  delete_temp "${1:?}"
 }
 
 hex_to_dec()
@@ -1208,8 +1211,7 @@ _get_input_event()
       printf '%s' "${!}" > "${TMP_PATH:?}/pid-to-kill.dat"
     } | hexdump -x -v -n 24)" || _status="${?}"
   fi
-  kill_pid_from_file "${TMP_PATH:?}/pid-to-kill.dat"
-  delete_temp 'pid-to-kill.dat'
+  kill_pid_from_file 'pid-to-kill.dat'
 
   case "${_status:?}" in
     0) ;;                       # OK
