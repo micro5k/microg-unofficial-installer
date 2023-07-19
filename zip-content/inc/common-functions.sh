@@ -1565,7 +1565,7 @@ choose_inputevent()
       if test "${_status:?}" -eq 3; then
         # Key down
         if test "${_last_key_pressed?}" = ''; then
-          _last_key_pressed="${_key:?}"
+          _last_key_pressed="${_key?}"
         else
           _last_key_pressed='' # Two buttons pressed simultaneously (ignored)
         fi
