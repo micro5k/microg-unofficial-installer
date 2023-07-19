@@ -1207,7 +1207,7 @@ _get_input_event()
     } | _timeout_compat "${1:?}" hexdump -x -v -n 24)" || _status="${?}"
   else
     _var="$({
-      cat "${INPUT_DEVICE_PATH:?}" &
+      cat -u "${INPUT_DEVICE_PATH:?}" &
       printf '%s' "${!}" > "${TMP_PATH:?}/pid-to-kill.dat"
     } | hexdump -x -v -n 24)" || _status="${?}"
   fi
