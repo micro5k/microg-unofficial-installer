@@ -235,19 +235,25 @@ set_perm_safe()
 
 package_extract_file()
 {
-  unzip -o -p -qq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" && test -s "${2:?}" || {
-    rm -f -- "${2:?}" || true
-    ui_error "Failed to extract the file '${1}' from this archive" 82
-  }
+  {
+    unzip -o -p -qq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" && test -s "${2:?}"
+  } ||
+    {
+      rm -f -- "${2:?}" || true
+      ui_error "Failed to extract the file '${1}' from this archive" 82
+    }
 }
 
 package_extract_file_may_fail()
 {
-  unzip -o -p -qq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" && test -s "${2:?}" || {
-    rm -f -- "${2:?}" || true
-    ui_warning "Failed to extract the file '${1}' from this archive"
-    return 1
-  }
+  {
+    unzip -o -p -qq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" && test -s "${2:?}"
+  } ||
+    {
+      rm -f -- "${2:?}" || true
+      ui_warning "Failed to extract the file '${1}' from this archive"
+      return 1
+    }
 }
 
 package_extract_file_safe()
