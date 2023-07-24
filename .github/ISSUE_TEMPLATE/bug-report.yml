@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 name: "🐞 Bug report"
-description: Report a bug to help us improve
+description: Report a bug to help improve this software
 labels: ["bug", "needs triage"]
 assignees:
   - ale5000-git
