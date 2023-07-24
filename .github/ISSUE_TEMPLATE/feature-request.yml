@@ -1,0 +1,30 @@
+---
+# SPDX-FileCopyrightText: none
+# SPDX-License-Identifier: CC0-1.0
+
+name: "✅ Feature request"
+description: Suggest a new feature for this project
+labels: ["enhancement", "needs triage"]
+assignees:
+  - ale5000-git
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have made sure to update your software to the **latest version** and I have verified that the requested feature is **NOT** already present in it.
+          required: true
+        - label: I made sure that there weren't already **[feature requests](../labels/enhancement)** for the same feature.
+          required: true
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature description
+      description: Explain in detail the feature you would like to have.
+    validations:
+      required: true
