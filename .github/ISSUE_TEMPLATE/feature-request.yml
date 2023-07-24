@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 name: "✅ Feature request"
-description: Suggest a new feature or an idea to improve this software
+description: Suggest a new feature or an idea to improve this software.
 labels: ["enhancement", "needs triage"]
 assignees:
   - ale5000-git
