@@ -17,7 +17,7 @@ body:
     attributes:
       label: Checklist
       options:
-        - label: I have made sure to update your software to the **latest version** and I have verified that the requested feature is **NOT** already present in it.
+        - label: I have updated your software to the **latest version** and I have verified that the requested feature is **NOT** already in it.
           required: true
         - label: I made sure that there weren't already **[feature requests](../labels/enhancement)** for the same feature.
           required: true
