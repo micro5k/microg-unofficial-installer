@@ -278,33 +278,34 @@ generate_rom_info()
   local _real_build_time _verify_emulator _temp_value
   _verify_emulator='false'
 
+  ROM_VERSION=''
   ROM_INFO='unknown'
   IS_EMU='false'
   EMU_NAME=''
   REAL_SECURITY_PATCH=''
 
   if {
-    LOS_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${LOS_VERSION?}"
+    ROM_VERSION="$(chosen_getprop 'ro.cm.build.version')" && is_valid_value "${ROM_VERSION?}"
   } || {
-    LOS_VERSION="$(chosen_getprop 'ro.lineage.build.version')" && is_valid_value "${LOS_VERSION?}"
+    ROM_VERSION="$(chosen_getprop 'ro.lineage.build.version')" && is_valid_value "${ROM_VERSION?}"
   }; then
-    ROM_INFO="LineageOS v${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
-  elif ROM_MOD_VER="$(chosen_getprop 'ro.mod.version')" && is_valid_value "${ROM_MOD_VER?}"; then
-    ROM_MOD_VER="$(printf '%s\n' "${ROM_MOD_VER:?}" | cut -d 'v' -f '2-')"
+    ROM_INFO="LineageOS v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
+  elif ROM_VERSION="$(chosen_getprop 'ro.mod.version')" && is_valid_value "${ROM_VERSION?}"; then
+    ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d 'v' -f '2-')"
     if _temp_value="$(chosen_getprop 'ro.du.version')" && is_valid_value "${_temp_value?}"; then
-      ROM_INFO="Dirty Unicorns v${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE?}"
+      ROM_INFO="Dirty Unicorns v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
     else
-      ROM_INFO="Android MOD v${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE?}"
+      ROM_INFO="Android MOD v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
     fi
-  elif MIUI_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_value "${MIUI_VERSION?}"; then # Xiaomi
-    MIUI_VERSION="$(printf '%s\n' "${MIUI_VERSION:?}" | cut -d 'V' -f '2-')"
-    ROM_INFO="MIUI v${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
-  elif ROM_MOD_VER="$(chosen_getprop 'ro.modversion')" && is_valid_value "${ROM_MOD_VER?}"; then
-    ROM_MOD_VER="$(printf '%s\n' "${ROM_MOD_VER:?}" | cut -d 'v' -f '2-')"
-    ROM_INFO="Android MOD v${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE?}"
-  elif EMUI_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value "${EMUI_VERSION?}"; then # Huawei
-    EMUI_VERSION="$(printf '%s\n' "${EMUI_VERSION:?}" | cut -d '_' -f '2-')"
-    ROM_INFO="EMUI v${EMUI_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
+  elif ROM_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_value "${ROM_VERSION?}"; then # Xiaomi
+    ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d 'V' -f '2-')"
+    ROM_INFO="MIUI v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
+  elif ROM_VERSION="$(chosen_getprop 'ro.modversion')" && is_valid_value "${ROM_VERSION?}"; then
+    ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d 'v' -f '2-')"
+    ROM_INFO="Android MOD v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
+  elif ROM_VERSION="$(chosen_getprop 'ro.build.version.emui')" && is_valid_value "${ROM_VERSION?}"; then # Huawei
+    ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d '_' -f '2-')"
+    ROM_INFO="EMUI v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
 
     if _real_build_time="$(chosen_getprop 'ro.huawei.build.date.utc')" && is_valid_value "${_real_build_time?}"; then
       TEXT_BUILD_TIME_HUMAN="${TEXT_BUILD_TIME_HUMAN?} - Real: $(convert_time_to_human_readable_form "${_real_build_time:?}")"
@@ -314,6 +315,7 @@ generate_rom_info()
       REAL_SECURITY_PATCH=" ${xml_comment_start:?} Real security patch: ${REAL_SECURITY_PATCH:-} ${xml_comment_end:?}"
     fi
   else
+    ROM_VERSION=''
     ROM_INFO="Android ${BUILD_VERSION_RELEASE?}"
     _verify_emulator='true'
   fi
