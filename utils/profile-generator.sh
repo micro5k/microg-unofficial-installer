@@ -275,7 +275,7 @@ convert_time_to_human_readable_form()
 
 generate_rom_info()
 {
-  local _real_build_time _verify_emulator
+  local _real_build_time _verify_emulator _temp_value
   _verify_emulator='false'
 
   ROM_INFO='unknown'
@@ -291,7 +291,11 @@ generate_rom_info()
     ROM_INFO="LineageOS v${LOS_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
   elif ROM_MOD_VER="$(chosen_getprop 'ro.mod.version')" && is_valid_value "${ROM_MOD_VER?}"; then
     ROM_MOD_VER="$(printf '%s\n' "${ROM_MOD_VER:?}" | cut -d 'v' -f '2-')"
-    ROM_INFO="Android MOD v${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE?}"
+    if _temp_value="$(chosen_getprop 'ro.du.version')" && is_valid_value "${_temp_value?}"; then
+      ROM_INFO="Dirty Unicorns v${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE?}"
+    else
+      ROM_INFO="Android MOD v${ROM_MOD_VER?} - ${BUILD_VERSION_RELEASE?}"
+    fi
   elif MIUI_VERSION="$(chosen_getprop 'ro.miui.ui.version.name')" && is_valid_value "${MIUI_VERSION?}"; then # Xiaomi
     MIUI_VERSION="$(printf '%s\n' "${MIUI_VERSION:?}" | cut -d 'V' -f '2-')"
     ROM_INFO="MIUI v${MIUI_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
