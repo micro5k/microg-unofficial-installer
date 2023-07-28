@@ -323,13 +323,13 @@ generate_rom_info()
       ROM_VERSION="$(printf '%s\n' "${ROM_VERSION?}" | cut -d 'v' -f '2-')"
     fi
     ROM_INFO="Resurrection Remix v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
-  elif ROM_VERSION="$(get_and_check_prop 'ro.mod.version')"; then
-    ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d 'v' -f '2-')"
-    if _temp_value="$(get_and_check_prop 'ro.du.version')"; then
-      ROM_INFO="Dirty Unicorns v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
+  elif ROM_VERSION="$(get_and_check_prop 'ro.du.version')"; then
+    if test -n "${_mod_version?}"; then
+      ROM_VERSION="${_mod_version?}"
     else
-      ROM_INFO="Android MOD v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
+      ROM_VERSION="$(printf '%s\n' "${ROM_VERSION?}" | cut -d 'v' -f '2-')"
     fi
+    ROM_INFO="Dirty Unicorns v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
   elif test -n "${_mod_version?}"; then
     ROM_VERSION="${_mod_version?}"
     ROM_INFO="Android MOD v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
