@@ -284,8 +284,25 @@ get_and_check_prop()
   return 1
 }
 
+get_mod_version()
+{
+  local _val
+
+  if _val="$(chosen_getprop 'ro.modversion')" && test -n "${_val?}" && ! is_string_nocase_starting_with 'xiaomi' "${_val:?}"; then
+    :
+  elif _val="$(chosen_getprop 'ro.mod.version')" && test -n "${_val?}"; then
+    :
+  else
+    return 1
+  fi
+
+  printf '%s\n' "${_val:?}" | cut -d 'v' -f '2-'
+  return 0
+}
+
 generate_rom_info()
 {
+  local _mod_version
   local _real_build_time _verify_emulator _temp_value
   _verify_emulator='false'
 
@@ -295,8 +312,17 @@ generate_rom_info()
   EMU_NAME=''
   REAL_SECURITY_PATCH=''
 
+  _mod_version="$(get_mod_version)"
+
   if ROM_VERSION="$(get_and_check_prop 'ro.cm.build.version')" || ROM_VERSION="$(get_and_check_prop 'ro.lineage.build.version')"; then
     ROM_INFO="LineageOS v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
+  elif ROM_VERSION="$(get_and_check_prop 'ro.rr.version')"; then
+    if test -n "${_mod_version?}"; then
+      ROM_VERSION="${_mod_version?}"
+    else
+      ROM_VERSION="$(printf '%s\n' "${ROM_VERSION?}" | cut -d 'v' -f '2-')"
+    fi
+    ROM_INFO="Resurrection Remix v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
   elif ROM_VERSION="$(get_and_check_prop 'ro.mod.version')"; then
     ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d 'v' -f '2-')"
     if _temp_value="$(get_and_check_prop 'ro.du.version')"; then
