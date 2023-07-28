@@ -330,12 +330,12 @@ generate_rom_info()
     else
       ROM_INFO="Android MOD v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
     fi
+  elif test -n "${_mod_version?}"; then
+    ROM_VERSION="${_mod_version?}"
+    ROM_INFO="Android MOD v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
   elif ROM_VERSION="$(get_and_check_prop 'ro.miui.ui.version.name')"; then # Xiaomi
     ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d 'V' -f '2-')"
     ROM_INFO="MIUI v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
-  elif ROM_VERSION="$(get_and_check_prop 'ro.modversion')"; then
-    ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d 'v' -f '2-')"
-    ROM_INFO="Android MOD v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
   elif ROM_VERSION="$(get_and_check_prop 'ro.build.version.emui')"; then # Huawei
     ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d '_' -f '2-')"
     ROM_INFO="EMUI v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
