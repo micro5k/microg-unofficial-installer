@@ -24,7 +24,7 @@ body:
     attributes:
       label: Version
       description: What version of our software are you running?
-      placeholder: "e.g. 1.0.29-beta"
+      placeholder: "e.g. 1.2.0-beta"
     validations:
       required: true
   - type: input
