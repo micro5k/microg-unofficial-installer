@@ -314,9 +314,7 @@ generate_rom_info()
 
   _mod_version="$(get_mod_version)"
 
-  if ROM_VERSION="$(get_and_check_prop 'ro.cm.build.version')" || ROM_VERSION="$(get_and_check_prop 'ro.lineage.build.version')"; then
-    ROM_INFO="LineageOS v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
-  elif ROM_VERSION="$(get_and_check_prop 'ro.rr.version')"; then
+  if ROM_VERSION="$(get_and_check_prop 'ro.rr.version')"; then
     if test -n "${_mod_version?}"; then
       ROM_VERSION="${_mod_version?}"
     else
@@ -330,6 +328,8 @@ generate_rom_info()
       ROM_VERSION="$(printf '%s\n' "${ROM_VERSION?}" | cut -d 'v' -f '2-')"
     fi
     ROM_INFO="Dirty Unicorns v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
+  elif ROM_VERSION="$(get_and_check_prop 'ro.cm.build.version')" || ROM_VERSION="$(get_and_check_prop 'ro.lineage.build.version')"; then
+    ROM_INFO="LineageOS v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
   elif test -n "${_mod_version?}"; then
     ROM_VERSION="${_mod_version?}"
     ROM_INFO="Android MOD v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
