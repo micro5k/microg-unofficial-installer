@@ -462,6 +462,10 @@ initialize()
   _timeout_check
   live_setup_choice
 
+  API="$(sys_getprop 'ro.build.version.sdk')" || API=0
+  readonly API
+  export API
+
   IS_EMU='false'
   case "${BUILD_DEVICE?}" in
     'windows_x86_64' | 'emu64x')

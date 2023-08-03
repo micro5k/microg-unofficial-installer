@@ -44,8 +44,6 @@ INSTALL_PLAYSTORE="$(parse_setting 'INSTALL_PLAYSTORE' "${INSTALL_PLAYSTORE:-}")
 INSTALL_ANDROIDAUTO="$(parse_setting 'INSTALL_ANDROIDAUTO' "${INSTALL_ANDROIDAUTO:-}")"
 
 INSTALLATION_SETTINGS_FILE="${MODULE_ID:?}.prop"
-API="$(build_getprop 'build\.version\.sdk')"
-readonly API
 
 if test "${API:?}" -ge 19; then # KitKat or higher
   PRIVAPP_FOLDER='priv-app'
