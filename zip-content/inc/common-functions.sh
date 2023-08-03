@@ -385,6 +385,58 @@ remount_read_write_if_needed()
   fi
 }
 
+_detect_architectures()
+{
+  ARCH_X64='false'
+  ARCH_X86='false'
+  ARCH_ARM64='false'
+  ARCH_ARM='false'
+  ARCH_LEGACY_ARM='false'
+
+  if is_substring ',x86_64,' "${ABI_LIST:?}"; then
+    ARCH_X64='true'
+  fi
+  if is_substring ',x86,' "${ABI_LIST:?}"; then
+    ARCH_X86='true'
+  fi
+  if is_substring ',arm64-v8a,' "${ABI_LIST:?}"; then
+    ARCH_ARM64='true'
+  fi
+  if is_substring ',armeabi-v7a,' "${ABI_LIST:?}"; then
+    ARCH_ARM='true'
+  fi
+  if is_substring ',armeabi,' "${ABI_LIST:?}"; then
+    ARCH_LEGACY_ARM='true'
+  fi
+
+  readonly ARCH_X64 ARCH_X86 ARCH_ARM64 ARCH_ARM ARCH_LEGACY_ARM
+  export ARCH_X64 ARCH_X86 ARCH_ARM64 ARCH_ARM ARCH_LEGACY_ARM
+}
+
+_generate_architectures_list()
+{
+  ARCH_LIST=''
+
+  if test "${ARCH_X64:?}" = 'true'; then
+    ARCH_LIST="${ARCH_LIST?}x86_64,"
+  fi
+  if test "${ARCH_X86:?}" = 'true'; then
+    ARCH_LIST="${ARCH_LIST?}x86,"
+  fi
+  if test "${ARCH_ARM64:?}" = 'true'; then
+    ARCH_LIST="${ARCH_LIST?}arm64-v8a,"
+  fi
+  if test "${ARCH_ARM:?}" = 'true'; then
+    ARCH_LIST="${ARCH_LIST?}armeabi-v7a,"
+  fi
+  if test "${ARCH_LEGACY_ARM:?}" = 'true'; then
+    ARCH_LIST="${ARCH_LIST?}armeabi,"
+  fi
+
+  readonly ARCH_LIST
+  export ARCH_LIST
+}
+
 display_info()
 {
   ui_msg "Manufacturer: ${BUILD_MANUFACTURER?}"
@@ -401,6 +453,7 @@ display_info()
   ui_msg "Recovery API ver: ${RECOVERY_API_VER:-}"
   ui_msg_empty_line
   ui_msg "Android API: ${API:?}"
+  ui_msg "CPU arch list: ${ARCH_LIST?}"
 }
 
 initialize()
@@ -585,6 +638,9 @@ initialize()
   ABI_LIST=','"$(sys_getprop 'ro.product.cpu.abi')"','"$(sys_getprop 'ro.product.cpu.abi2')"','"$(sys_getprop 'ro.product.cpu.upgradeabi')"','"$(sys_getprop 'ro.product.cpu.abilist')"','
   readonly ABI_LIST
   export ABI_LIST
+
+  _detect_architectures
+  _generate_architectures_list
 
   unset LAST_MOUNTPOINT
 }
