@@ -747,6 +747,21 @@ is_valid_prop()
   return 0 # Valid
 }
 
+sys_getprop()
+{
+  local _val
+
+  if _val="$(simple_file_getprop "${1:?}" "${TMP_PATH:?}/build.prop")" && is_valid_prop "${_val?}"; then
+    :
+  elif _val="$(simple_getprop "${1:?}")" && is_valid_prop "${_val?}"; then
+    :
+  else
+    return 1
+  fi
+
+  printf '%s\n' "${_val:?}"
+}
+
 # String related functions
 is_substring()
 {
@@ -1766,3 +1781,7 @@ find_test()
 {
   find "$1" -type d -exec echo 'FOLDER:' '{}' ';' -o -type f -exec echo 'FILE:' '{}' ';' | while read -r x; do echo "${x}"; done
 }
+
+### INITIALIZATION ###
+
+initialize

@@ -37,8 +37,6 @@ FAKE_SIGN=false
 
 ### CODE ###
 
-initialize
-
 INSTALL_FDROIDPRIVEXT="$(parse_setting 'INSTALL_FDROIDPRIVEXT' "${INSTALL_FDROIDPRIVEXT:?}")"
 INSTALL_AURORASERVICES="$(parse_setting 'INSTALL_AURORASERVICES' "${INSTALL_AURORASERVICES:?}")"
 INSTALL_NEWPIPE="$(parse_setting 'INSTALL_NEWPIPE' "${INSTALL_NEWPIPE:?}")"
@@ -65,6 +63,8 @@ elif test "${API:?}" -ge 1; then
 else
   ui_error 'Invalid API level'
 fi
+
+#_arch_list=','$(sys_getprop 'ro.product.cpu.abi')','$(sys_getprop 'ro.product.cpu.abi2')','$(sys_getprop 'ro.product.cpu.upgradeabi')','$(sys_getprop 'ro.product.cpu.abilist')','
 
 # shellcheck disable=SC2312
 ABI_LIST=','$(build_getprop 'product\.cpu\.abi')','$(build_getprop 'product\.cpu\.abi2')','$(build_getprop 'product\.cpu\.abilist')','
