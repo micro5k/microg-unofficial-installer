@@ -1761,46 +1761,6 @@ remove_ext()
   echo "${str%.*}"
 }
 
-enable_debug_log()
-{
-  if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
-  export DEBUG_LOG_ENABLED=1
-
-  ui_debug "Creating log: ${LOG_PATH:?}"
-  touch "${LOG_PATH:?}" || {
-    ui_warning "Unable to write the log file at: ${LOG_PATH:-}"
-    export DEBUG_LOG_ENABLED=0
-    return
-  }
-
-  # If they are already in use, then use alternatives
-  if {
-    command 1>&6 || command 1>&7
-  } 2> /dev/null; then
-    export ALTERNATIVE_FDS=1
-    # shellcheck disable=SC3023
-    exec 88>&1 89>&2 # Backup stdout and stderr
-  else
-    export ALTERNATIVE_FDS=0
-    exec 6>&1 7>&2 # Backup stdout and stderr
-  fi
-  exec 1>> "${LOG_PATH:?}" 2>&1
-}
-
-disable_debug_log()
-{
-  if test "${DEBUG_LOG_ENABLED}" -ne 1; then return; fi
-  export DEBUG_LOG_ENABLED=0
-  if test "${ALTERNATIVE_FDS:?}" -eq 0; then
-    exec 1>&6 2>&7 # Restore stdout and stderr
-    exec 6>&- 7>&-
-  else
-    exec 1>&88 2>&89 # Restore stdout and stderr
-    # shellcheck disable=SC3023
-    exec 88>&- 89>&-
-  fi
-}
-
 # Find test: this is useful to test 'find' - if every file/folder, even the ones with spaces, is displayed in a single line then your version is good
 find_test()
 {
