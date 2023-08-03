@@ -556,6 +556,13 @@ initialize()
   if test -e '/vendor'; then remount_read_write_if_needed '/vendor' false; fi
   if test -e '/system_ext'; then remount_read_write_if_needed '/system_ext' false; fi
 
+  # Display header
+  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
+  ui_msg "${MODULE_NAME:?}"
+  ui_msg "${MODULE_VERSION:?}"
+  ui_msg "(by ${MODULE_AUTHOR:?})"
+  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
+
   unset LAST_MOUNTPOINT
 }
 

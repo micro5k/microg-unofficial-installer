@@ -77,13 +77,7 @@ elif is_substring ',arm64-v8a,' "${ABI_LIST}"; then
   CPU64='arm64-v8a'
 fi
 
-# Info
-ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
-ui_msg "${MODULE_NAME:?}"
-ui_msg "${MODULE_VERSION:?}"
-ui_msg "(by ${MODULE_AUTHOR:?})"
-ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
-
+# Display info
 ui_msg "Manufacturer: ${BUILD_MANUFACTURER?}"
 ui_msg "Device: ${BUILD_DEVICE?}"
 ui_msg "Emulator: ${IS_EMU:?}"
