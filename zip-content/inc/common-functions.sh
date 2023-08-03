@@ -582,7 +582,7 @@ initialize()
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 
   # shellcheck disable=SC2312
-  ABI_LIST=','$(sys_getprop 'ro.product.cpu.abi')','$(sys_getprop 'ro.product.cpu.abi2')','$(sys_getprop 'ro.product.cpu.upgradeabi')','$(sys_getprop 'ro.product.cpu.abilist')','
+  ABI_LIST=','"$(sys_getprop 'ro.product.cpu.abi')"','"$(sys_getprop 'ro.product.cpu.abi2')"','"$(sys_getprop 'ro.product.cpu.upgradeabi')"','"$(sys_getprop 'ro.product.cpu.abilist')"','
   readonly ABI_LIST
   export ABI_LIST
 
