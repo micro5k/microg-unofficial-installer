@@ -62,10 +62,7 @@ else
   ui_error 'Invalid API level'
 fi
 
-#_arch_list=','$(sys_getprop 'ro.product.cpu.abi')','$(sys_getprop 'ro.product.cpu.abi2')','$(sys_getprop 'ro.product.cpu.upgradeabi')','$(sys_getprop 'ro.product.cpu.abilist')','
-
-# shellcheck disable=SC2312
-ABI_LIST=','$(build_getprop 'product\.cpu\.abi')','$(build_getprop 'product\.cpu\.abi2')','$(build_getprop 'product\.cpu\.abilist')','
+ABI_LIST=','$(sys_getprop 'ro.product.cpu.abi')','$(sys_getprop 'ro.product.cpu.abi2')','$(sys_getprop 'ro.product.cpu.upgradeabi')','$(sys_getprop 'ro.product.cpu.abilist')','
 if is_substring ',x86,' "${ABI_LIST}"; then
   CPU='x86'
 elif is_substring ',armeabi-v7a,' "${ABI_LIST}"; then
