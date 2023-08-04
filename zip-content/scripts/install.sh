@@ -25,8 +25,6 @@ unset CDPATH
 
 TMP_PATH="${2:?}"
 
-CPU=false
-CPU64=false
 LEGACY_ARM=false
 FAKE_SIGN=false
 
@@ -62,24 +60,8 @@ else
   ui_error 'Invalid API level'
 fi
 
-if is_substring ',x86,' "${ABI_LIST}"; then
-  CPU='x86'
-elif is_substring ',armeabi-v7a,' "${ABI_LIST}"; then
-  CPU='armeabi-v7a'
-elif is_substring ',armeabi,' "${ABI_LIST}"; then
-  CPU='armeabi'
-fi
-
-if is_substring ',x86_64,' "${ABI_LIST}"; then
-  CPU64='x86_64'
-elif is_substring ',arm64-v8a,' "${ABI_LIST}"; then
-  CPU64='arm64-v8a'
-fi
-
 # Display info
 display_info
-ui_msg "Main 64-bit CPU arch: ${CPU64:?}"
-ui_msg "Main 32-bit CPU arch: ${CPU:?}"
 ui_msg_empty_line
 ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
 ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"

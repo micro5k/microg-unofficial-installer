@@ -413,6 +413,29 @@ _detect_architectures()
   export ARCH_X64 ARCH_X86 ARCH_ARM64 ARCH_ARM ARCH_LEGACY_ARM
 }
 
+_detect_main_architectures()
+{
+  CPU64='false'
+  CPU='false'
+
+  if test "${ARCH_X64:?}" = 'true'; then
+    CPU64='x86_64'
+  elif test "${ARCH_ARM64:?}" = 'true'; then
+    CPU64='arm64-v8a'
+  fi
+
+  if test "${ARCH_X86:?}" = 'true'; then
+    CPU='x86'
+  elif test "${ARCH_ARM:?}" = 'true'; then
+    CPU='armeabi-v7a'
+  elif test "${ARCH_LEGACY_ARM:?}" = 'true'; then
+    CPU='armeabi'
+  fi
+
+  readonly CPU64 CPU
+  export CPU64 CPU
+}
+
 _generate_architectures_list()
 {
   ARCH_LIST=''
@@ -432,6 +455,7 @@ _generate_architectures_list()
   if test "${ARCH_LEGACY_ARM:?}" = 'true'; then
     ARCH_LIST="${ARCH_LIST?}armeabi,"
   fi
+  ARCH_LIST="${ARCH_LIST%,}"
 
   readonly ARCH_LIST
   export ARCH_LIST
@@ -453,6 +477,8 @@ display_info()
   ui_msg "Recovery API ver: ${RECOVERY_API_VER:-}"
   ui_msg_empty_line
   ui_msg "Android API: ${API:?}"
+  ui_msg "64-bit CPU arch: ${CPU64:?}"
+  ui_msg "32-bit CPU arch: ${CPU:?}"
   ui_msg "CPU arch list: ${ARCH_LIST?}"
 }
 
@@ -640,6 +666,7 @@ initialize()
   export ABI_LIST
 
   _detect_architectures
+  _detect_main_architectures
   _generate_architectures_list
 
   unset LAST_MOUNTPOINT
