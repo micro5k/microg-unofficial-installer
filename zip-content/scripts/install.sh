@@ -310,18 +310,40 @@ if test "${API:?}" -ge 21; then
     done
   fi
 
-  # The name of the following architectures remain unchanged: x86, x86_64, mips, mips64
-  move_rename_dir "${TMP_PATH}/libs/lib/arm64-v8a" "${TMP_PATH}/libs/lib/arm64"
-  if test "${ARCH_ARM:?}" = 'true'; then
-    move_rename_dir "${TMP_PATH}/libs/lib/armeabi-v7a" "${TMP_PATH}/libs/lib/arm"
-    delete_recursive "${TMP_PATH}/libs/lib/armeabi"
-  else
-    move_rename_dir "${TMP_PATH}/libs/lib/armeabi" "${TMP_PATH}/libs/lib/arm"
-    delete_recursive "${TMP_PATH}/libs/lib/armeabi-v7a"
+  select_lib()
+  {
+    if test -e "${TMP_PATH:?}/libs/lib/${1:?}"; then
+      move_rename_dir "${TMP_PATH:?}/libs/lib/${1:?}" "${TMP_PATH:?}/selected-libs/${2:?}"
+    else
+      ui_warning "Missing library => ${1:-}"
+      return 1
+    fi
+  }
+
+  create_dir "${TMP_PATH:?}/selected-libs"
+
+  # ToDO: Add support for: mips, mips64
+
+  if test "${ARCH_X64:?}" = 'true'; then
+    select_lib 'x86_64' 'x86_64'
+  fi
+  if test "${ARCH_X86:?}" = 'true'; then
+    select_lib 'x86' 'x86'
+  fi
+  if test "${ARCH_ARM64:?}" = 'true'; then
+    select_lib 'arm64-v8a' 'arm64'
   fi
 
-  create_dir "${TMP_PATH}/files/priv-app/GmsCore/lib"
-  move_dir_content "${TMP_PATH}/libs/lib" "${TMP_PATH}/files/priv-app/GmsCore/lib"
+  if test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a' 'arm'; then
+    :
+  elif test "${ARCH_LEGACY_ARM:?}" = 'true'; then
+    select_lib 'armeabi' 'arm'
+  fi
+
+  delete "${TMP_PATH:?}/libs"
+  create_dir "${TMP_PATH:?}/files/priv-app/GmsCore/lib"
+  move_dir_content "${TMP_PATH:?}/selected-libs" "${TMP_PATH:?}/files/priv-app/GmsCore/lib"
+  delete "${TMP_PATH:?}/selected-libs"
 fi
 
 if test "${API:?}" -lt 9; then
