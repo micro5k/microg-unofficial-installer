@@ -84,10 +84,6 @@ ui_msg "Fake signature: ${FAKE_SIGN}"
 ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 ui_msg_empty_line
 
-if test "${CPU}" = false && test "${CPU64}" = false; then
-  ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
-fi
-
 if test "${IS_INSTALLATION:?}" = 'true'; then
   ui_msg 'Starting installation...'
   ui_msg_empty_line

@@ -417,6 +417,7 @@ _detect_main_architectures()
 {
   CPU64='false'
   CPU='false'
+return
 
   if test "${ARCH_X64:?}" = 'true'; then
     CPU64='x86_64'
@@ -479,7 +480,7 @@ display_info()
   ui_msg "Android API: ${API:?}"
   ui_msg "64-bit CPU arch: ${CPU64:?}"
   ui_msg "32-bit CPU arch: ${CPU:?}"
-  ui_msg "CPU arch list: ${ARCH_LIST?}"
+  ui_msg "ABI list: ${ARCH_LIST?}"
 }
 
 initialize()
@@ -668,6 +669,10 @@ initialize()
   _detect_architectures
   _detect_main_architectures
   _generate_architectures_list
+
+  if test "${CPU64:?}" = 'false' && test "${CPU:?}" = 'false'; then
+    ui_error "Unsupported CPU, ABI list: ${ABI_LIST:-}"
+  fi
 
   unset LAST_MOUNTPOINT
 }
