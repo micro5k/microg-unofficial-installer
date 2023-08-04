@@ -480,6 +480,17 @@ display_info()
   ui_msg "64-bit CPU arch: ${CPU64:?}"
   ui_msg "32-bit CPU arch: ${CPU:?}"
   ui_msg "ABI list: ${ARCH_LIST?}"
+  ui_msg_empty_line
+  ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
+  ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
+  ui_msg "Current slot: ${SLOT:-no slot}"
+  ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
+  ui_msg_empty_line
+  ui_msg "System mount point: ${SYS_MOUNTPOINT:?}"
+  ui_msg "System path: ${SYS_PATH:?}"
+  ui_msg "Priv-app path: ${PRIVAPP_PATH:?}"
+  ui_msg_empty_line
+  ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
 }
 
 initialize()

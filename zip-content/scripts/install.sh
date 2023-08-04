@@ -59,17 +59,6 @@ fi
 
 # Display info
 display_info
-ui_msg_empty_line
-ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
-ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
-ui_msg "Current slot: ${SLOT:-no slot}"
-ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
-ui_msg_empty_line
-ui_msg "System mount point: ${SYS_MOUNTPOINT:?}"
-ui_msg "System path: ${SYS_PATH:?}"
-ui_msg "Priv-app path: ${PRIVAPP_PATH:?}"
-ui_msg_empty_line
-ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
 
 zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH}/framework-res"
 XML_MANIFEST="${TMP_PATH}/framework-res/AndroidManifest.xml"
