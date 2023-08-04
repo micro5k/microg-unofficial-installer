@@ -393,19 +393,19 @@ _detect_architectures()
   ARCH_ARM='false'
   ARCH_LEGACY_ARM='false'
 
-  if is_substring ',x86_64,' "${ABI_LIST:?}"; then
+  if is_substring ',x86_64,' "${1:?}"; then
     ARCH_X64='true'
   fi
-  if is_substring ',x86,' "${ABI_LIST:?}"; then
+  if is_substring ',x86,' "${1:?}"; then
     ARCH_X86='true'
   fi
-  if is_substring ',arm64-v8a,' "${ABI_LIST:?}"; then
+  if is_substring ',arm64-v8a,' "${1:?}"; then
     ARCH_ARM64='true'
   fi
-  if is_substring ',armeabi-v7a,' "${ABI_LIST:?}"; then
+  if is_substring ',armeabi-v7a,' "${1:?}"; then
     ARCH_ARM='true'
   fi
-  if is_substring ',armeabi,' "${ABI_LIST:?}"; then
+  if is_substring ',armeabi,' "${1:?}"; then
     ARCH_LEGACY_ARM='true'
   fi
 
@@ -484,6 +484,7 @@ display_info()
 
 initialize()
 {
+  local _raw_arch_list
   SYS_INIT_STATUS=0
   DATA_INIT_STATUS=0
 
@@ -661,16 +662,14 @@ initialize()
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 
   # shellcheck disable=SC2312
-  ABI_LIST=','"$(sys_getprop 'ro.product.cpu.abi')"','"$(sys_getprop 'ro.product.cpu.abi2')"','"$(sys_getprop 'ro.product.cpu.upgradeabi')"','"$(sys_getprop 'ro.product.cpu.abilist')"','
-  readonly ABI_LIST
-  export ABI_LIST
+  _raw_arch_list=','"$(sys_getprop 'ro.product.cpu.abi')"','"$(sys_getprop 'ro.product.cpu.abi2')"','"$(sys_getprop 'ro.product.cpu.upgradeabi')"','"$(sys_getprop 'ro.product.cpu.abilist')"','
 
-  _detect_architectures
+  _detect_architectures "${_raw_arch_list:?}"
   _detect_main_architectures
   _generate_architectures_list
 
   if test "${CPU64:?}" = 'false' && test "${CPU:?}" = 'false'; then
-    ui_error "Unsupported CPU, ABI list: ${ABI_LIST:-}"
+    ui_error "Unsupported CPU, ABI list: ${_raw_arch_list:-}"
   fi
 
   unset LAST_MOUNTPOINT
