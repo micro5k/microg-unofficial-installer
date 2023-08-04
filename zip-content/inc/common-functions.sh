@@ -417,7 +417,6 @@ _detect_main_architectures()
 {
   CPU64='false'
   CPU='false'
-return
 
   if test "${ARCH_X64:?}" = 'true'; then
     CPU64='x86_64'
