@@ -537,11 +537,7 @@ initialize()
   readonly BUILD_MANUFACTURER
   export BUILD_MANUFACTURER
 
-  if BUILD_DEVICE="$(sys_getprop 'ro.product.device')" && is_valid_prop "${BUILD_DEVICE?}"; then
-    :
-  else
-    BUILD_DEVICE="$(sys_getprop 'ro.build.product')"
-  fi
+  BUILD_DEVICE="$(sys_getprop 'ro.product.device')" || BUILD_DEVICE="$(sys_getprop 'ro.build.product')"
   readonly BUILD_DEVICE
   export BUILD_DEVICE
 
