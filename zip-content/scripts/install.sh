@@ -25,7 +25,6 @@ unset CDPATH
 
 TMP_PATH="${2:?}"
 
-LEGACY_ARM=false
 FAKE_SIGN=false
 
 ### FUNCTIONS ###
@@ -84,8 +83,6 @@ fi
 ui_msg "Fake signature: ${FAKE_SIGN}"
 ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 ui_msg_empty_line
-
-if is_substring ',armeabi,' "${ABI_LIST}" && ! is_substring ',armeabi-v7a,' "${ABI_LIST}"; then LEGACY_ARM=true; fi
 
 if test "${CPU}" = false && test "${CPU64}" = false; then
   ui_error "Unsupported CPU, ABI list: ${ABI_LIST}"
@@ -332,7 +329,7 @@ if test "${API:?}" -ge 21; then
 
   # The name of the following architectures remain unchanged: x86, x86_64, mips, mips64
   move_rename_dir "${TMP_PATH}/libs/lib/arm64-v8a" "${TMP_PATH}/libs/lib/arm64"
-  if test "${LEGACY_ARM}" != true; then
+  if test "${ARCH_ARM:?}" = 'true'; then
     move_rename_dir "${TMP_PATH}/libs/lib/armeabi-v7a" "${TMP_PATH}/libs/lib/arm"
     delete_recursive "${TMP_PATH}/libs/lib/armeabi"
   else
