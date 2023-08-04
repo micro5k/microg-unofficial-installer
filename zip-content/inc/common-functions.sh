@@ -656,6 +656,10 @@ initialize()
   _detect_main_architectures
   _generate_architectures_list
 
+  if test "${API:?}" -lt 1; then
+    ui_error 'Invalid API level'
+  fi
+
   if test "${CPU64:?}" = 'false' && test "${CPU:?}" = 'false'; then
     ui_error "Unsupported CPU, ABI list: ${_raw_arch_list:-}"
   fi

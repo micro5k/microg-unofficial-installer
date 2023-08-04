@@ -53,10 +53,8 @@ if test ! -e "${PRIVAPP_PATH:?}"; then ui_error 'The priv-app folder does NOT ex
 
 if test "${API:?}" -ge 8; then
   : ### Supported Android versions
-elif test "${API:?}" -ge 1; then
-  ui_error 'Your Android version is too old'
 else
-  ui_error 'Invalid API level'
+  ui_error 'Your Android version is too old'
 fi
 
 # Display info
