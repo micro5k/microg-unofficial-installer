@@ -533,22 +533,14 @@ initialize()
   _find_and_mount_system
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
-  if BUILD_MANUFACTURER="$(simple_getprop 'ro.product.manufacturer')" && is_valid_prop "${BUILD_MANUFACTURER?}"; then
-    :
-  else
-    BUILD_MANUFACTURER=''
-  fi
+  BUILD_MANUFACTURER="$(sys_getprop 'ro.product.manufacturer')"
   readonly BUILD_MANUFACTURER
   export BUILD_MANUFACTURER
 
-  if BUILD_DEVICE="$(simple_getprop 'ro.product.device')" && is_valid_prop "${BUILD_DEVICE?}"; then
-    :
-  elif BUILD_DEVICE="$(simple_getprop 'ro.build.product')" && is_valid_prop "${BUILD_DEVICE?}"; then
-    :
-  elif BUILD_DEVICE="$(simple_file_getprop 'ro.product.device' "${TMP_PATH:?}/build.prop")" && is_valid_prop "${BUILD_DEVICE?}"; then
+  if BUILD_DEVICE="$(sys_getprop 'ro.product.device')" && is_valid_prop "${BUILD_DEVICE?}"; then
     :
   else
-    BUILD_DEVICE=''
+    BUILD_DEVICE="$(sys_getprop 'ro.build.product')"
   fi
   readonly BUILD_DEVICE
   export BUILD_DEVICE
