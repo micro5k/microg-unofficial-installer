@@ -328,7 +328,7 @@ generate_rom_info()
       ROM_VERSION="$(printf '%s\n' "${ROM_VERSION?}" | cut -d 'v' -f '2-')"
     fi
     ROM_INFO="Dirty Unicorns v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
-  elif ROM_VERSION="$(get_and_check_prop 'ro.cm.build.version')" || ROM_VERSION="$(get_and_check_prop 'ro.lineage.build.version')" || ROM_VERSION="$(get_and_check_prop 'ro.cm.version')"; then
+  elif ROM_VERSION="$(get_and_check_prop 'ro.lineage.build.version')" || ROM_VERSION="$(get_and_check_prop 'ro.cm.build.version')" || ROM_VERSION="$(get_and_check_prop 'ro.lineage.version')" || ROM_VERSION="$(get_and_check_prop 'ro.cm.version')"; then
     if _temp_value="$(chosen_getprop 'ro.elegal.url')" && test -n "${_temp_value?}"; then
       ROM_INFO="/e/ OS v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
     else
