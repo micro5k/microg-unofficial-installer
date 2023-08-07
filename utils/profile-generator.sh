@@ -288,7 +288,7 @@ get_mod_version()
 {
   local _val
 
-  if _val="$(chosen_getprop 'ro.modversion')" && test -n "${_val?}" && ! is_string_nocase_starting_with 'xiaomi' "${_val:?}"; then
+  if _val="$(chosen_getprop 'ro.modversion')" && test -n "${_val?}" && test "${_val:?}" != 'xiaomi''.eu_miui''os''.cz_miui''polska''.pl' ; then
     :
   elif _val="$(chosen_getprop 'ro.mod.version')" && test -n "${_val?}"; then
     :
@@ -338,7 +338,12 @@ generate_rom_info()
     ROM_VERSION="${_mod_version?}"
     ROM_INFO="Android MOD v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
   elif ROM_VERSION="$(get_and_check_prop 'ro.miui.ui.version.name')"; then # Xiaomi
-    ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d 'V' -f '2-')"
+    if _temp_value="$(chosen_getprop 'ro.build.version.incremental')" && _temp_value="$(printf '%s\n' "${_temp_value?}" | grep -m 1 -o -e 'V[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*' | cut -d 'V' -f '2-' -s)" && test -n "${_temp_value?}"; then
+      _temp_value="${_temp_value%.}"
+      ROM_VERSION="${_temp_value?}"
+    else
+      ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d 'V' -f '2-')"
+    fi
     ROM_INFO="MIUI v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
   elif ROM_VERSION="$(get_and_check_prop 'ro.build.version.emui')"; then # Huawei
     ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d '_' -f '2-')"
