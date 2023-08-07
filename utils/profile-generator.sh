@@ -340,7 +340,7 @@ generate_rom_info()
   elif ROM_VERSION="$(get_and_check_prop 'ro.miui.ui.version.name')"; then # Xiaomi
     if _temp_value="$(chosen_getprop 'ro.build.version.incremental')" && _temp_value="$(printf '%s\n' "${_temp_value?}" | grep -m 1 -o -e 'V[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*' | cut -d 'V' -f '2-' -s)" && test -n "${_temp_value?}"; then
       _temp_value="${_temp_value%.}"
-      ROM_VERSION="${_temp_value?}"
+      ROM_VERSION="${_temp_value:?}"
     else
       ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d 'V' -f '2-')"
     fi

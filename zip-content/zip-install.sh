@@ -127,7 +127,7 @@ test -s "${SCRIPT_NAME:?}" || {
 unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/updater-script' 1> "${UPD_SCRIPT_NAME:?}" || true # Not strictly needed
 
 STATUS=0
-if test '#!' = "$(head -q -c 2 -- "${SCRIPT_NAME:?}")"; then
+if test '#!' = "$(head -q -c 2 -- "${SCRIPT_NAME:?}" || true)"; then
   # Use STDERR (2) for recovery messages to avoid possible problems with subshells intercepting output
   sh -- "${SCRIPT_NAME:?}" 3 2 "${ZIPFILE:?}" 'zip-install' "${ZIPINSTALL_VERSION:?}" || STATUS="${?}"
 else
