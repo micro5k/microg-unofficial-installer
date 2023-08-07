@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-readonly ZIPINSTALL_VERSION='0.5'
+readonly ZIPINSTALL_VERSION='0.6'
 
 umask 022 || exit 6
 
@@ -119,7 +119,7 @@ unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/update-binary' 1> "${SC
   ui_show_error "Failed to extract update-binary from => '${ZIPFILE:-}'"
   exit 13
 }
-test -e "${SCRIPT_NAME:?}" || {
+test -s "${SCRIPT_NAME:?}" || {
   ui_show_error "Failed to extract update-binary (2) from => '${ZIPFILE:-}'"
   exit 14
 }
@@ -127,8 +127,18 @@ test -e "${SCRIPT_NAME:?}" || {
 unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/updater-script' 1> "${UPD_SCRIPT_NAME:?}" || true # Not strictly needed
 
 STATUS=0
-# Use STDERR (2) for recovery messages to avoid possible problems with subshells intercepting output
-sh -- "${SCRIPT_NAME:?}" 3 2 "${ZIPFILE:?}" 'zip-install' "${ZIPINSTALL_VERSION:?}" || STATUS="${?}"
+if test '#!' = "$(head -q -c 2 -- "${SCRIPT_NAME:?}")"; then
+  # Use STDERR (2) for recovery messages to avoid possible problems with subshells intercepting output
+  sh -- "${SCRIPT_NAME:?}" 3 2 "${ZIPFILE:?}" 'zip-install' "${ZIPINSTALL_VERSION:?}" || STATUS="${?}"
+else
+  printf '%s\n' 'Executing binary...'
+  # Legacy versions of chmod don't support +x and --
+  chmod 0755 "${SCRIPT_NAME:?}" || {
+    ui_show_error "chmod failed on '${SCRIPT_NAME:?}'"
+    exit 15
+  }
+  "${SCRIPT_NAME:?}" 3 2 "${ZIPFILE:?}" 'zip-install' "${ZIPINSTALL_VERSION:?}" || STATUS="${?}"
+fi
 
 _clean_at_exit
 trap - 0 2 3 6 15 || true # Already cleaned, so unset traps
