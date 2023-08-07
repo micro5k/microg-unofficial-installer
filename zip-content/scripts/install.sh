@@ -3,17 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-### INIT ENV ###
-export TZ=UTC
-export LANG=en_US
-
-unset LANGUAGE
-unset LC_ALL
-unset UNZIP
-unset UNZIPOPT
-unset UNZIP_OPTS
-unset CDPATH
-
 ### GLOBAL VARIABLES ###
 
 TMP_PATH="${2:?}"

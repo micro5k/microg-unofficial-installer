@@ -9,7 +9,19 @@
 # shellcheck disable=SC3043
 # SC3043: In POSIX sh, local is undefined
 
-### PREVENTIVE CHECKS AND SETTINGS ###
+### INIT ENV ###
+
+export TZ=UTC
+export LANG=en_US
+
+unset LANGUAGE
+unset LC_ALL
+unset UNZIP
+unset UNZIPOPT
+unset UNZIP_OPTS
+unset CDPATH
+
+### INIT OPTIONS ###
 
 # shellcheck disable=SC3040,SC2015
 {
@@ -17,6 +29,8 @@
   (set -o posix 2> /dev/null) && set -o posix || true
   (set -o pipefail) && set -o pipefail || true
 }
+
+### PREVENTIVE CHECKS ###
 
 if test -z "${ZIPFILE:-}" || test -z "${TMP_PATH:-}" || test -z "${RECOVERY_PIPE:-}" || test -z "${OUTFD:-}" || test -z "${INPUT_FROM_TERMINAL:-}" || test -z "${DEBUG_LOG_ENABLED:-}"; then
   echo 'Some variables are NOT set.'
