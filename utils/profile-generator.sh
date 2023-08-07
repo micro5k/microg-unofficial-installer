@@ -288,7 +288,7 @@ get_mod_version()
 {
   local _val
 
-  if _val="$(chosen_getprop 'ro.modversion')" && test -n "${_val?}" && test "${_val:?}" != 'xiaomi''.eu_miui''os''.cz_miui''polska''.pl' ; then
+  if _val="$(chosen_getprop 'ro.modversion')" && test -n "${_val?}" && test "${_val:?}" != 'xiaomi''.eu_miui''os''.cz_miui''polska''.pl'; then
     :
   elif _val="$(chosen_getprop 'ro.mod.version')" && test -n "${_val?}"; then
     :
