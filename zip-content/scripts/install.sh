@@ -22,12 +22,10 @@ INSTALL_NEWPIPE="$(parse_setting 'INSTALL_NEWPIPE' "${INSTALL_NEWPIPE:?}")"
 INSTALL_PLAYSTORE="$(parse_setting 'INSTALL_PLAYSTORE' "${INSTALL_PLAYSTORE:-}")"
 INSTALL_ANDROIDAUTO="$(parse_setting 'INSTALL_ANDROIDAUTO' "${INSTALL_ANDROIDAUTO:-}")"
 
-INSTALLATION_SETTINGS_FILE="${MODULE_ID:?}.prop"
-
 if test "${API:?}" -ge 8; then
   : ### Supported Android versions
 else
-  ui_error 'Your Android version is too old'
+  ui_error "Your Android version is too old, API: ${API:-}"
 fi
 
 # Display info
@@ -376,8 +374,8 @@ create_dir "${USED_SETTINGS_PATH:?}"
   echo "install.version.code=${MODULE_VERCODE:?}"
   echo "install.version=${MODULE_VERSION:?}"
   echo "fakestore=${market_is_fakestore:?}"
-} > "${USED_SETTINGS_PATH:?}/${INSTALLATION_SETTINGS_FILE:?}"
-set_perm 0 0 0640 "${USED_SETTINGS_PATH:?}/${INSTALLATION_SETTINGS_FILE:?}"
+} > "${USED_SETTINGS_PATH:?}/${MODULE_ID:?}.prop"
+set_perm 0 0 0640 "${USED_SETTINGS_PATH:?}/${MODULE_ID:?}.prop"
 
 create_dir "${SYS_PATH:?}/etc/zips"
 set_perm 0 0 0750 "${SYS_PATH:?}/etc/zips"
