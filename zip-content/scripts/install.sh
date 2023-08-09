@@ -40,8 +40,6 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   custom_package_extract_dir 'files' "${TMP_PATH:?}"
   custom_package_extract_dir 'addon.d' "${TMP_PATH:?}"
 
-  set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
-
   # Verifying
   ui_msg_sameline_start 'Verifying... '
   ui_debug ''
@@ -118,7 +116,6 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   # Setting up libs permissions
   if test "${API:?}" -ge 9; then
-    ui_debug 'Setting up libs permissions...'
     set_std_perm_recursive "${TMP_PATH:?}/libs"
   fi
 
@@ -309,6 +306,7 @@ delete_dir_if_empty "${TMP_PATH:?}/files/framework"
 # Prepare installation
 set_std_perm_recursive "${TMP_PATH:?}/files"
 if test -e "${TMP_PATH:?}/addon.d"; then set_std_perm_recursive "${TMP_PATH:?}/addon.d"; fi
+set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
 
 # Installing
 ui_msg 'Installing...'
