@@ -512,6 +512,8 @@ display_info()
   ui_msg "Priv-app path: ${PRIVAPP_PATH:?}"
   ui_msg_empty_line
   ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
+  ui_msg "Fake signature: ${FAKE_SIGN}"
+  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 }
 
 initialize()
@@ -706,6 +708,15 @@ initialize()
 
   if test ! -e "${PRIVAPP_PATH:?}"; then
     ui_error 'The priv-app folder does NOT exist'
+  fi
+
+  FAKE_SIGN=false
+  zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH}/framework-res"
+  XML_MANIFEST="${TMP_PATH}/framework-res/AndroidManifest.xml"
+  # Detect the presence of the fake signature permission
+  # Note: It won't detect it if signature spoofing doesn't require a permission, but it is still fine for our case
+  if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "${XML_MANIFEST}"; then
+    FAKE_SIGN=true
   fi
 
   unset LAST_MOUNTPOINT

@@ -7,8 +7,6 @@
 
 TMP_PATH="${2:?}"
 
-FAKE_SIGN=false
-
 ### FUNCTIONS ###
 
 # shellcheck source=SCRIPTDIR/../inc/common-functions.sh
@@ -30,16 +28,6 @@ fi
 
 # Display info
 display_info
-
-zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH}/framework-res"
-XML_MANIFEST="${TMP_PATH}/framework-res/AndroidManifest.xml"
-# Detect the presence of the fake signature permission
-# Note: It won't detect it if signature spoofing doesn't require a permission, but it is still fine for our case
-if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "${XML_MANIFEST}"; then
-  FAKE_SIGN=true
-fi
-ui_msg "Fake signature: ${FAKE_SIGN}"
-ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 ui_msg_empty_line
 
 if test "${IS_INSTALLATION:?}" = 'true'; then
