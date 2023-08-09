@@ -688,12 +688,24 @@ initialize()
   _detect_main_architectures
   _generate_architectures_list
 
+  if test "${CPU64:?}" = 'false' && test "${CPU:?}" = 'false'; then
+    ui_error "Unsupported CPU, ABI list: ${_raw_arch_list:-}"
+  fi
+
   if test "${API:?}" -lt 1; then
     ui_error 'Invalid API level'
   fi
 
-  if test "${CPU64:?}" = 'false' && test "${CPU:?}" = 'false'; then
-    ui_error "Unsupported CPU, ABI list: ${_raw_arch_list:-}"
+  if test "${API:?}" -ge 19; then # KitKat or higher
+    PRIVAPP_FOLDER='priv-app'
+  else
+    PRIVAPP_FOLDER='app'
+  fi
+  PRIVAPP_PATH="${SYS_PATH:?}/${PRIVAPP_FOLDER:?}"
+  readonly PRIVAPP_FOLDER PRIVAPP_PATH
+
+  if test ! -e "${PRIVAPP_PATH:?}"; then
+    ui_error 'The priv-app folder does NOT exist'
   fi
 
   unset LAST_MOUNTPOINT

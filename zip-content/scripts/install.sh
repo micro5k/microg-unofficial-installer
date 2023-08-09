@@ -24,15 +24,6 @@ INSTALL_ANDROIDAUTO="$(parse_setting 'INSTALL_ANDROIDAUTO' "${INSTALL_ANDROIDAUT
 
 INSTALLATION_SETTINGS_FILE="${MODULE_ID:?}.prop"
 
-if test "${API:?}" -ge 19; then # KitKat or higher
-  PRIVAPP_FOLDER='priv-app'
-else
-  PRIVAPP_FOLDER='app'
-fi
-PRIVAPP_PATH="${SYS_PATH:?}/${PRIVAPP_FOLDER:?}"
-readonly PRIVAPP_FOLDER PRIVAPP_PATH
-if test ! -e "${PRIVAPP_PATH:?}"; then ui_error 'The priv-app folder does NOT exist'; fi
-
 if test "${API:?}" -ge 8; then
   : ### Supported Android versions
 else
