@@ -346,9 +346,6 @@ if test "${uname_o_saved:?}" != 'MS/Windows' && test "${uname_o_saved:?}" != 'Ms
   sudo chattr -a "${recovery_logs_dir:?}/recovery-stderr.log" || fail_with_msg "chattr failed on 'recovery-stderr.log'"
 fi
 
-# List installed files
-#ls -ARFl --color=always -- "${BASE_SIMULATION_PATH}" || true
-
 parse_recovery_output()
 {
   _last_zip_name=''
@@ -372,8 +369,12 @@ parse_recovery_output()
 }
 
 # Parse recovery output
-parse_recovery_output true "${recovery_logs_dir}/recovery-output-raw.log" "${recovery_logs_dir}/recovery-output.log"
-parse_recovery_output false "${recovery_logs_dir}/recovery-raw.log" "${recovery_logs_dir}/recovery.log"
+parse_recovery_output true "${recovery_logs_dir:?}/recovery-output-raw.log" "${recovery_logs_dir:?}/recovery-output.log"
+parse_recovery_output false "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery.log"
+
+# List installed files
+rm -rf -- "${_android_sys:?}/bin" # It contains all symlinks of BusyBox, so remove it for now
+ls -A -R -F -l -n --color='never' -- "${BASE_SIMULATION_PATH}" 1> "${recovery_logs_dir:?}/installed-files.log" || true
 
 # Final cleanup
 cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
