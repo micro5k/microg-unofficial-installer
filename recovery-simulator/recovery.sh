@@ -373,8 +373,9 @@ parse_recovery_output true "${recovery_logs_dir:?}/recovery-output-raw.log" "${r
 parse_recovery_output false "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery.log"
 
 # List installed files
-rm -f -- "${_android_sys:?}/framework/framework-res.apk"
-rm -rf -- "${_android_sys:?}/bin" # It contains all symlinks of BusyBox, so remove it for now
+rm -f -- "${_android_sys:?}/framework/framework-res.apk" || true
+rm -rf -- "${_android_sys:?}/bin" || true # It contains all symlinks of BusyBox, so remove it for now
+find "${BASE_SIMULATION_PATH}" -exec touch -c -t 202401010000.00 '{}' + || true
 ls -A -R -F -l -n --color='never' -- "${BASE_SIMULATION_PATH}" 1> "${recovery_logs_dir:?}/installed-files.log" || true
 
 # Final cleanup
