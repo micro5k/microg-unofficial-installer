@@ -376,7 +376,7 @@ parse_recovery_output false "${recovery_logs_dir:?}/recovery-raw.log" "${recover
 rm -f -- "${_android_sys:?}/framework/framework-res.apk" || true
 rm -rf -- "${_android_sys:?}/bin" || true # It contains all symlinks of BusyBox, so remove it for now
 find "${BASE_SIMULATION_PATH}" -exec touch -c -t 202401010000.00 '{}' + || true
-ls -A -R -F -l -n --color='never' -- "${BASE_SIMULATION_PATH}" 1> "${recovery_logs_dir:?}/installed-files.log" || true
+LC_ALL=C TZ=UTC LS_COLORS='' ls -A -R -F -l -n --color='never' -- "${BASE_SIMULATION_PATH}" 1> "${recovery_logs_dir:?}/installed-files.log" || true
 
 # Final cleanup
 cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
