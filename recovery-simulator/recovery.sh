@@ -378,7 +378,7 @@ rm -f -- "${_android_sys:?}/framework/framework-res.apk" || true
 rm -rf -- "${_android_sys:?}/bin" || true # It contains all symlinks of BusyBox, so remove it for now
 TZ=UTC find "${BASE_SIMULATION_PATH}" -exec touch -c -h -t '202001010000' -- '{}' '+' || true
 cd "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to change dir to our temp dir'
-LC_ALL=C TZ=UTC ls -A -R -F -l -n --color='never' -- 'root' 1> "${recovery_logs_dir:?}/installed-files.log" || true
+TZ=UTC ls -A -R -F -l -n --color='never' -- 'root' 1> "${recovery_logs_dir:?}/installed-files.log" || true
 
 # Final cleanup
 cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
