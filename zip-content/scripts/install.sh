@@ -56,6 +56,10 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   setup_app 1 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
 
+  if test "${IS_EMU:?}" = 'true'; then
+    move_rename_file "${TMP_PATH:?}/origin/profiles/lenovo_yoga_tab_3_pro_10_inches_23.xml" "${TMP_PATH:?}/files/etc/microg_device_profile.xml"
+  fi
+
   install_backends='false'
   if test "${CPU:?}" = 'armeabi' && test "${CPU64:?}" = 'false' && setup_app 1 'microG Services Core (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
     install_backends='true'
@@ -67,10 +71,6 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   setup_app 1 'microG Services Framework Proxy' 'GoogleServicesFramework' 'priv-app' false false
 
-  if test "${IS_EMU:?}" = 'true'; then
-    move_rename_file "${TMP_PATH:?}/origin/profiles/lenovo_yoga_tab_3_pro_10_inches_23.xml" "${TMP_PATH:?}/files/etc/microg_device_profile.xml"
-  fi
-
   if test "${install_backends:?}" = 'true'; then
     setup_app "${INSTALL_MOZILLABACKEND:?}" 'Mozilla UnifiedNlp Backend' 'IchnaeaNlpBackend' 'app'
     setup_app "${INSTALL_DEJAVUBACKEND:?}" 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
@@ -79,8 +79,9 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   # Store selection
   market_is_fakestore='false'
-  if setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' true ||
-    setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
+  if setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' true; then
+    :
+  elif setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
     :
   else
     # Fallback to FakeStore
@@ -233,32 +234,6 @@ fi
 prepare_installation
 
 if test "${API:?}" -ge 21; then
-  select_lib()
-  {
-    local _dest_arch_name
-
-    if test -e "${TMP_PATH:?}/libs/lib/${1:?}"; then
-      case "${1:?}" in
-        'arm64-v8a')
-          _dest_arch_name='arm64'
-          ;;
-        'armeabi-v7a' | 'armeabi')
-          _dest_arch_name='arm'
-          ;;
-        *)
-          _dest_arch_name="${1:?}"
-          ;;
-      esac
-
-      move_rename_dir "${TMP_PATH:?}/libs/lib/${1:?}" "${TMP_PATH:?}/selected-libs/${_dest_arch_name:?}"
-    else
-      ui_warning "Missing library => ${1:-}"
-      return 1
-    fi
-  }
-
-  create_dir "${TMP_PATH:?}/selected-libs"
-
   # ToDO: Add support for: mips, mips64
 
   if test "${ARCH_X64:?}" = 'true'; then

@@ -1203,6 +1203,32 @@ delete_dir_if_empty()
   fi
 }
 
+select_lib()
+{
+  local _dest_arch_name
+
+  create_dir "${TMP_PATH:?}/selected-libs"
+
+  if test -e "${TMP_PATH:?}/libs/lib/${1:?}"; then
+    case "${1:?}" in
+      'arm64-v8a')
+        _dest_arch_name='arm64'
+        ;;
+      'armeabi-v7a' | 'armeabi')
+        _dest_arch_name='arm'
+        ;;
+      *)
+        _dest_arch_name="${1:?}"
+        ;;
+    esac
+
+    move_rename_dir "${TMP_PATH:?}/libs/lib/${1:?}" "${TMP_PATH:?}/selected-libs/${_dest_arch_name:?}"
+  else
+    ui_warning "Missing library => ${1:-}"
+    return 1
+  fi
+}
+
 file_get_first_line_that_start_with()
 {
   grep -m 1 -e "^${1:?}" -- "${2:?}" || return "${?}"
