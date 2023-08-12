@@ -262,7 +262,11 @@ simulate_env()
   export RS_OVERRIDE_SCRIPT="${_our_overrider_script:?}"
   export TEST_INSTALL=true
 
-  "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
+  if test "${uname_o_saved:?}" != 'MS/Windows' && test "${uname_o_saved:?}" != 'Msys'; then
+    "${CUSTOM_BUSYBOX:?}" --install -s "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
+  else
+    "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
+  fi
 
   # shellcheck disable=SC2310
   override_command mount || return 123
@@ -280,11 +284,7 @@ restore_env()
 {
   "${_our_busybox:?}" 2> /dev/null --uninstall "${CUSTOM_BUSYBOX:?}" || true
   # Fallback if --uninstall is NOT supported
-  find "${_android_sys:?}/bin" -type l -exec sh -c 'bb_path="${1:?}"; shift; echo "${*}"; if test "$(realpath "${*}")" = "${bb_path:?}"; then rm -f -- "${*}"; fi' _ "${CUSTOM_BUSYBOX:?}" '{}' ';'
-
-  stat "${_android_sys:?}/bin/cat"
-  realpath "${_android_sys:?}/bin/cat"
-  echo "${CUSTOM_BUSYBOX:?}"
+  find "${_android_sys:?}/bin" -type l -exec sh -c 'bb_path="${1:?}"; shift; if test "$(realpath "${*}")" = "${bb_path:?}"; then rm -f -- "${*}"; fi' _ "${CUSTOM_BUSYBOX:?}" '{}' ';'
 
   export PATH="${_backup_path}"
   unset BB_OVERRIDE_APPLETS
