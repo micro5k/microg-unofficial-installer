@@ -735,9 +735,10 @@ prepare_installation()
   ui_msg 'Preparing installation...'
 
   if test "${PRIVAPP_FOLDER:?}" != 'priv-app' && test -e "${TMP_PATH:?}/files/priv-app"; then
+    ui_debug "Merging priv-app folder with ${PRIVAPP_FOLDER:?} folder..."
     mkdir -p -- "${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}" || ui_error "Failed to create the dir '${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}'"
     copy_dir_content "${TMP_PATH:?}/files/priv-app" "${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}"
-    delete "${TMP_PATH:?}/files/priv-app"
+    delete_temp "files/priv-app"
   fi
 
   if test "${API:?}" -ge 21; then
@@ -745,6 +746,7 @@ prepare_installation()
     IFS=''
 
     # Move apps into subdirs
+    ui_debug "Moving apps into subdirs..."
     if test -e "${TMP_PATH:?}/files/priv-app"; then
       for entry in "${TMP_PATH:?}/files/priv-app"/*; do
         path_without_ext="$(remove_ext "${entry:?}")"

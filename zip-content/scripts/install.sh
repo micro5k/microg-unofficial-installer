@@ -54,12 +54,6 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   # Preparing
   ui_msg 'Preparing...'
 
-  # Check the existance of the libraries folders
-  if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
-    if test "${CPU}" != false && test ! -e "${SYS_PATH:?}/lib"; then create_dir "${SYS_PATH:?}/lib"; fi
-    if test "${CPU64}" != false && test ! -e "${SYS_PATH:?}/lib64"; then create_dir "${SYS_PATH:?}/lib64"; fi
-  fi
-
   setup_app 1 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
 
   setup_app 1 'microG Services Core (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false
@@ -271,6 +265,14 @@ if test "${API:?}" -ge 21; then
   create_dir "${TMP_PATH:?}/files/priv-app/GmsCore/lib"
   move_dir_content "${TMP_PATH:?}/selected-libs" "${TMP_PATH:?}/files/priv-app/GmsCore/lib"
   delete "${TMP_PATH:?}/selected-libs"
+elif test "${API:?}" -ge 9; then
+  if test "${CPU64}" != false; then
+    move_rename_dir "${TMP_PATH:?}/libs/lib/${CPU64}" "${TMP_PATH:?}/files/lib64"
+  fi
+  if test "${CPU}" != false; then
+    move_rename_dir "${TMP_PATH:?}/libs/lib/${CPU}" "${TMP_PATH:?}/files/lib"
+  fi
+  delete "${TMP_PATH:?}/libs"
 fi
 
 if test "${API:?}" -lt 9; then
@@ -285,6 +287,16 @@ set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
 
 # Installing
 ui_msg 'Installing...'
+if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
+  if test "${CPU64}" != false; then
+    create_dir "${SYS_PATH:?}/lib64"
+    copy_dir_content "${TMP_PATH:?}/files/lib64" "${SYS_PATH:?}/lib64"
+  fi
+  if test "${CPU}" != false; then
+    create_dir "${SYS_PATH:?}/lib"
+    copy_dir_content "${TMP_PATH:?}/files/lib" "${SYS_PATH:?}/lib"
+  fi
+fi
 if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
 if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg.xml" "${SYS_PATH:?}/etc"; fi
 if test -e "${TMP_PATH:?}/files/etc/org.fdroid.fdroid"; then copy_dir_content "${TMP_PATH:?}/files/etc/org.fdroid.fdroid" "${SYS_PATH:?}/etc/org.fdroid.fdroid"; fi
@@ -309,18 +321,6 @@ else
 fi
 
 delete_dir_if_empty "${TMP_PATH:?}/files/etc"
-
-if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
-  if test "${CPU}" != false; then
-    move_rename_dir "${TMP_PATH:?}/libs/lib/${CPU}" "${TMP_PATH:?}/files/lib"
-    copy_dir_content "${TMP_PATH:?}/files/lib" "${SYS_PATH:?}/lib"
-  fi
-  if test "${CPU64}" != false; then
-    move_rename_dir "${TMP_PATH:?}/libs/lib/${CPU64}" "${TMP_PATH:?}/files/lib64"
-    copy_dir_content "${TMP_PATH:?}/files/lib64" "${SYS_PATH:?}/lib64"
-  fi
-fi
-delete_recursive "${TMP_PATH:?}/libs"
 
 USED_SETTINGS_PATH="${TMP_PATH:?}/files/etc/zips"
 create_dir "${USED_SETTINGS_PATH:?}"
