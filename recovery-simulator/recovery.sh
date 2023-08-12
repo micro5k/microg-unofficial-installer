@@ -382,6 +382,7 @@ parse_recovery_output false "${recovery_logs_dir:?}/recovery-raw.log" "${recover
 
 # List installed files
 rm -f -- "${BASE_SIMULATION_PATH:?}/sbin" || true
+rm -f -- "${_android_sys:?}/build.prop" || true
 rm -f -- "${_android_sys:?}/framework/framework-res.apk" || true
 TZ=UTC find "${BASE_SIMULATION_PATH}" -exec touch -c -h -t '202001010000' -- '{}' '+' || true
 cd "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to change dir to our temp dir'
