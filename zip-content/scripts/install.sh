@@ -233,8 +233,22 @@ prepare_installation
 if test "${API:?}" -ge 21; then
   select_lib()
   {
+    local _dest_arch_name
+
     if test -e "${TMP_PATH:?}/libs/lib/${1:?}"; then
-      move_rename_dir "${TMP_PATH:?}/libs/lib/${1:?}" "${TMP_PATH:?}/selected-libs/${2:?}"
+      case "${1:?}" in
+        'arm64-v8a')
+          _dest_arch_name='arm64'
+          ;;
+        'armeabi-v7a' | 'armeabi')
+          _dest_arch_name='arm'
+          ;;
+        *)
+          _dest_arch_name="${1:?}"
+          ;;
+      esac
+
+      move_rename_dir "${TMP_PATH:?}/libs/lib/${1:?}" "${TMP_PATH:?}/selected-libs/${_dest_arch_name:?}"
     else
       ui_warning "Missing library => ${1:-}"
       return 1
@@ -246,19 +260,19 @@ if test "${API:?}" -ge 21; then
   # ToDO: Add support for: mips, mips64
 
   if test "${ARCH_X64:?}" = 'true'; then
-    select_lib 'x86_64' 'x86_64'
+    select_lib 'x86_64'
   fi
   if test "${ARCH_X86:?}" = 'true'; then
-    select_lib 'x86' 'x86'
+    select_lib 'x86'
   fi
   if test "${ARCH_ARM64:?}" = 'true'; then
-    select_lib 'arm64-v8a' 'arm64'
+    select_lib 'arm64-v8a'
   fi
 
-  if test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a' 'arm'; then
+  if test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a'; then
     :
   elif test "${ARCH_LEGACY_ARM:?}" = 'true'; then
-    select_lib 'armeabi' 'arm'
+    select_lib 'armeabi'
   fi
 
   delete "${TMP_PATH:?}/libs"
