@@ -1246,7 +1246,7 @@ setup_app()
     fi
 
     if test "${_install:?}" -ne 0 || test "${_optional:?}" != 'true'; then
-      ui_msg "Enabling: ${2?}"
+      ui_msg "Enabling: ${2:?}"
 
       ui_msg_sameline_start 'Verifying... '
       ui_debug ''
@@ -1268,10 +1268,10 @@ setup_app()
       move_rename_file "${TMP_PATH}/origin/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${2}'"
       return 0
     else
-      ui_debug "Disabling: ${2?}"
+      ui_debug "Disabling: ${2:?}"
     fi
   else
-    ui_debug "Skipping: ${2?}"
+    ui_debug "Skipping: ${2:?}"
   fi
 
   return 1

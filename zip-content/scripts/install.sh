@@ -56,11 +56,13 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   setup_app 1 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
 
-  setup_app 1 'microG Services Core (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false
-  if test "${CPU}" != 'armeabi'; then
-    setup_app 1 'microG Services Core' 'GmsCore' 'priv-app' false false
-  else
-    setup_app 1 'microG Services Core (vtm)' 'GmsCoreVtm' 'priv-app' false false
+  install_backends='false'
+  if test "${CPU:?}" = 'armeabi' && test "${CPU64:?}" = 'false' && setup_app 1 'microG Services Core (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
+    install_backends='true'
+  elif setup_app 1 'microG Services Core' 'GmsCore' 'priv-app' false false; then
+    :
+  elif setup_app 1 'microG Services Core (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
+    install_backends='true'
   fi
 
   setup_app 1 'microG Services Framework Proxy' 'GoogleServicesFramework' 'priv-app' false false
@@ -69,7 +71,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     move_rename_file "${TMP_PATH:?}/origin/profiles/lenovo_yoga_tab_3_pro_10_inches_23.xml" "${TMP_PATH:?}/files/etc/microg_device_profile.xml"
   fi
 
-  if test "${API:?}" -lt 14 || test "${CPU}" = 'armeabi'; then
+  if test "${install_backends:?}" = 'true'; then
     setup_app "${INSTALL_MOZILLABACKEND:?}" 'Mozilla UnifiedNlp Backend' 'IchnaeaNlpBackend' 'app'
     setup_app "${INSTALL_DEJAVUBACKEND:?}" 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
     setup_app "${INSTALL_NOMINATIMGEOBACKEND:?}" 'Nominatim Geocoder Backend' 'NominatimGeocoderBackend' 'app'
