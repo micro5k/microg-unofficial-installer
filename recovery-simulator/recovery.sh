@@ -282,14 +282,14 @@ simulate_env()
 
 restore_env()
 {
+  export PATH="${_backup_path}"
+  unset BB_OVERRIDE_APPLETS
+  unset -f -- mount umount chown su sudo
+
   "${_our_busybox:?}" 2> /dev/null --uninstall "${CUSTOM_BUSYBOX:?}" || true
   # Fallback if --uninstall is NOT supported
   find "${_android_sys:?}/bin" -type l -exec sh -c 'bb_path="${1:?}"; shift; if test "$(realpath "${*}")" = "${bb_path:?}"; then rm -f -- "${*}"; fi' _ "${CUSTOM_BUSYBOX:?}" '{}' ';' || true
   rm -f "${CUSTOM_BUSYBOX:?}" || true
-
-  export PATH="${_backup_path}"
-  unset BB_OVERRIDE_APPLETS
-  unset -f -- mount umount chown su sudo
 }
 
 # Setup recovery output
