@@ -233,34 +233,10 @@ elif test "${RESET_GMS_DATA_OF_ALL_APPS:?}" -ne 0; then
   reset_gms_data_of_all_apps
 fi
 
-# Preparing 2
-ui_msg 'Preparing 2...'
-
-if test -e "${TMP_PATH:?}/files/priv-app" && test "${PRIVAPP_FOLDER:?}" != 'priv-app'; then
-  copy_dir_content "${TMP_PATH:?}/files/priv-app" "${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}"
-  delete "${TMP_PATH:?}/files/priv-app"
-fi
-delete_dir_if_empty "${TMP_PATH:?}/files/app"
+# Prepare installation
+prepare_installation
 
 if test "${API:?}" -ge 21; then
-  # Move apps into subdirs
-  if test -e "${TMP_PATH:?}/files/priv-app"; then
-    for entry in "${TMP_PATH:?}/files/priv-app"/*; do
-      path_without_ext=$(remove_ext "${entry}")
-
-      create_dir "${path_without_ext}"
-      mv -f "${entry}" "${path_without_ext}"/
-    done
-  fi
-  if test -e "${TMP_PATH:?}/files/app"; then
-    for entry in "${TMP_PATH:?}/files/app"/*; do
-      path_without_ext=$(remove_ext "${entry}")
-
-      create_dir "${path_without_ext}"
-      mv -f "${entry}" "${path_without_ext}"/
-    done
-  fi
-
   select_lib()
   {
     if test -e "${TMP_PATH:?}/libs/lib/${1:?}"; then
@@ -303,7 +279,6 @@ if test "${API:?}" -lt 9; then
 fi
 delete_dir_if_empty "${TMP_PATH:?}/files/framework"
 
-# Prepare installation
 set_std_perm_recursive "${TMP_PATH:?}/files"
 if test -e "${TMP_PATH:?}/addon.d"; then set_std_perm_recursive "${TMP_PATH:?}/addon.d"; fi
 set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"

@@ -728,6 +728,44 @@ deinitialize()
   if test "${DATA_INIT_STATUS:?}" = '1' && test -n "${DATA_PATH:-}"; then unmount "${DATA_PATH:?}"; fi
 }
 
+prepare_installation()
+{
+  local _backup_ifs
+
+  ui_msg 'Preparing installation...'
+
+  if test "${PRIVAPP_FOLDER:?}" != 'priv-app' && test -e "${TMP_PATH:?}/files/priv-app"; then
+    mkdir -p -- "${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}" || ui_error "Failed to create the dir '${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}'"
+    copy_dir_content "${TMP_PATH:?}/files/priv-app" "${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}"
+    delete "${TMP_PATH:?}/files/priv-app"
+  fi
+
+  if test "${API:?}" -ge 21; then
+    _backup_ifs="${IFS:-}"
+    IFS=''
+
+    # Move apps into subdirs
+    if test -e "${TMP_PATH:?}/files/priv-app"; then
+      for entry in "${TMP_PATH:?}/files/priv-app"/*; do
+        path_without_ext="$(remove_ext "${entry:?}")"
+
+        mkdir -p -- "${path_without_ext:?}" || ui_error "Failed to create the dir '${path_without_ext:-}'"
+        mv -f -- "${entry:?}" "${path_without_ext:?}/" || ui_error "Failed to move the file '${entry:-}' to '${path_without_ext:-}'"
+      done
+    fi
+    if test -e "${TMP_PATH:?}/files/app"; then
+      for entry in "${TMP_PATH:?}/files/app"/*; do
+        path_without_ext="$(remove_ext "${entry:?}")"
+
+        mkdir -p -- "${path_without_ext:?}" || ui_error "Failed to create the dir '${path_without_ext:-}'"
+        mv -f -- "${entry:?}" "${path_without_ext:?}/" || ui_error "Failed to move the file '${entry:-}' to '${path_without_ext:-}'"
+      done
+    fi
+
+    IFS="${_backup_ifs:-}"
+  fi
+}
+
 # Message related functions
 _show_text_on_recovery()
 {
