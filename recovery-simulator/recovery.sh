@@ -282,6 +282,10 @@ restore_env()
   # Fallback if --uninstall is NOT supported
   find "${_android_sys:?}/bin" -type l -exec sh -c 'bb_path="${1:?}"; shift; echo "${*}"; if test "$(realpath "${*}")" = "${bb_path:?}"; then rm -f -- "${*}"; fi' _ "${CUSTOM_BUSYBOX:?}" '{}' ';'
 
+  stat "${_android_sys:?}/bin/cat"
+  realpath "${_android_sys:?}/bin/cat"
+  echo "${CUSTOM_BUSYBOX:?}"
+
   export PATH="${_backup_path}"
   unset BB_OVERRIDE_APPLETS
   unset -f -- mount umount chown su sudo
