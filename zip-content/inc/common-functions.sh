@@ -409,22 +409,30 @@ remount_read_write_if_needed()
 _detect_architectures()
 {
   ARCH_X64='false'
-  ARCH_X86='false'
   ARCH_ARM64='false'
+  ARCH_MIPS64='false'
+  ARCH_RISCV64='false'
+
+  ARCH_X86='false'
   ARCH_ARM='false'
   ARCH_LEGACY_ARM='false'
-  ARCH_RISCV64='false'
-  ARCH_MIPS64='false'
   ARCH_MIPS='false'
 
   if is_substring ',x86_64,' "${1:?}"; then
     ARCH_X64='true'
   fi
-  if is_substring ',x86,' "${1:?}"; then
-    ARCH_X86='true'
-  fi
   if is_substring ',arm64-v8a,' "${1:?}"; then
     ARCH_ARM64='true'
+  fi
+  if is_substring ',mips64,' "${1:?}"; then
+    ARCH_MIPS64='true'
+  fi
+  if is_substring ',riscv64,' "${1:?}"; then
+    ARCH_RISCV64='true'
+  fi
+
+  if is_substring ',x86,' "${1:?}"; then
+    ARCH_X86='true'
   fi
   if is_substring ',armeabi-v7a,' "${1:?}"; then
     ARCH_ARM='true'
@@ -432,18 +440,12 @@ _detect_architectures()
   if is_substring ',armeabi,' "${1:?}"; then
     ARCH_LEGACY_ARM='true'
   fi
-  if is_substring ',riscv64,' "${1:?}"; then
-    ARCH_RISCV64='true'
-  fi
-  if is_substring ',mips64,' "${1:?}"; then
-    ARCH_MIPS64='true'
-  fi
   if is_substring ',mips,' "${1:?}"; then
     ARCH_MIPS='true'
   fi
 
-  readonly ARCH_X64 ARCH_X86 ARCH_ARM64 ARCH_ARM ARCH_LEGACY_ARM ARCH_RISCV64 ARCH_MIPS64 ARCH_MIPS
-  export ARCH_X64 ARCH_X86 ARCH_ARM64 ARCH_ARM ARCH_LEGACY_ARM ARCH_RISCV64 ARCH_MIPS64 ARCH_MIPS
+  readonly ARCH_X64 ARCH_ARM64 ARCH_MIPS64 ARCH_RISCV64 ARCH_X86 ARCH_ARM ARCH_LEGACY_ARM ARCH_MIPS
+  export ARCH_X64 ARCH_ARM64 ARCH_MIPS64 ARCH_RISCV64 ARCH_X86 ARCH_ARM ARCH_LEGACY_ARM ARCH_MIPS
 }
 
 _detect_main_architectures()
@@ -487,6 +489,15 @@ _generate_architectures_list()
   fi
   if test "${ARCH_LEGACY_ARM:?}" = 'true'; then
     ARCH_LIST="${ARCH_LIST?}armeabi,"
+  fi
+  if test "${ARCH_MIPS64:?}" = 'true'; then
+    ARCH_LIST="${ARCH_LIST?}mips64,"
+  fi
+  if test "${ARCH_MIPS:?}" = 'true'; then
+    ARCH_LIST="${ARCH_LIST?}mips,"
+  fi
+  if test "${ARCH_RISCV64:?}" = 'true'; then
+    ARCH_LIST="${ARCH_LIST?}riscv64,"
   fi
   ARCH_LIST="${ARCH_LIST%,}"
 
