@@ -413,6 +413,9 @@ _detect_architectures()
   ARCH_ARM64='false'
   ARCH_ARM='false'
   ARCH_LEGACY_ARM='false'
+  ARCH_RISCV64='false'
+  ARCH_MIPS64='false'
+  ARCH_MIPS='false'
 
   if is_substring ',x86_64,' "${1:?}"; then
     ARCH_X64='true'
@@ -429,9 +432,18 @@ _detect_architectures()
   if is_substring ',armeabi,' "${1:?}"; then
     ARCH_LEGACY_ARM='true'
   fi
+  if is_substring ',riscv64,' "${1:?}"; then
+    ARCH_RISCV64='true'
+  fi
+  if is_substring ',mips64,' "${1:?}"; then
+    ARCH_MIPS64='true'
+  fi
+  if is_substring ',mips,' "${1:?}"; then
+    ARCH_MIPS='true'
+  fi
 
-  readonly ARCH_X64 ARCH_X86 ARCH_ARM64 ARCH_ARM ARCH_LEGACY_ARM
-  export ARCH_X64 ARCH_X86 ARCH_ARM64 ARCH_ARM ARCH_LEGACY_ARM
+  readonly ARCH_X64 ARCH_X86 ARCH_ARM64 ARCH_ARM ARCH_LEGACY_ARM ARCH_RISCV64 ARCH_MIPS64 ARCH_MIPS
+  export ARCH_X64 ARCH_X86 ARCH_ARM64 ARCH_ARM ARCH_LEGACY_ARM ARCH_RISCV64 ARCH_MIPS64 ARCH_MIPS
 }
 
 _detect_main_architectures()
