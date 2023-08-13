@@ -244,6 +244,9 @@ if test "${API:?}" -ge 21; then
   if test "${ARCH_ARM64:?}" = 'true' && select_lib 'arm64-v8a'; then
     _lib_selected='true'
   fi
+  if test "${ARCH_MIPS64:?}" = 'true' && select_lib 'mips64'; then
+    _lib_selected='true'
+  fi
 
   if test "${ARCH_X86:?}" = 'true' && select_lib 'x86'; then
     _lib_selected='true'
@@ -257,14 +260,21 @@ if test "${API:?}" -ge 21; then
   fi
   # armeabi-v7a-hard is not a real ABI. No devices are built with this. The "hard float" variant only changes the function call ABI.
   # More info: https://android.googlesource.com/platform/ndk/+/master/docs/HardFloatAbi.md
-
-  if test "${_lib_selected:?}" != 'true'; then
-    ui_error "Failed to select library"
+  if test "${ARCH_MIPS:?}" = 'true' && select_lib 'mips'; then
+    _lib_selected='true'
   fi
 
   delete "${TMP_PATH:?}/libs"
-  create_dir "${TMP_PATH:?}/files/priv-app/GmsCore/lib"
-  move_dir_content "${TMP_PATH:?}/selected-libs" "${TMP_PATH:?}/files/priv-app/GmsCore/lib"
+
+  if test "${_lib_selected:?}" = 'true'; then
+    create_dir "${TMP_PATH:?}/files/priv-app/GmsCore/lib"
+    move_dir_content "${TMP_PATH:?}/selected-libs" "${TMP_PATH:?}/files/priv-app/GmsCore/lib"
+  elif test "${CPU64:?}" = 'mips64' || test "${CPU:?}" = 'mips'; then
+    : # Tolerate missing libraries
+  else
+    ui_error "Failed to select library"
+  fi
+
   delete "${TMP_PATH:?}/selected-libs"
 elif test "${API:?}" -ge 9; then
   if test "${CPU64}" != false; then

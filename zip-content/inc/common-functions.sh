@@ -462,6 +462,8 @@ _detect_main_architectures()
     CPU64='x86_64'
   elif test "${ARCH_ARM64:?}" = 'true'; then
     CPU64='arm64-v8a'
+  elif test "${ARCH_MIPS64:?}" = 'true'; then
+    CPU64='mips64'
   fi
 
   if test "${ARCH_X86:?}" = 'true'; then
@@ -470,6 +472,8 @@ _detect_main_architectures()
     CPU='armeabi-v7a'
   elif test "${ARCH_LEGACY_ARM:?}" = 'true'; then
     CPU='armeabi'
+  elif test "${ARCH_MIPS:?}" = 'true'; then
+    CPU='mips'
   fi
 
   readonly CPU64 CPU
@@ -719,7 +723,7 @@ initialize()
   _generate_architectures_list
 
   if test "${CPU64:?}" = 'false' && test "${CPU:?}" = 'false'; then
-    ui_error "Unsupported CPU, ABI list: ${_raw_arch_list:-}"
+    ui_error "Unsupported CPU, ABI list => $(printf '%s\n' "${_raw_arch_list?}" | LC_ALL=C tr -s -- ',' || true)"
   fi
 
   if test "${API:?}" -lt 1; then
@@ -733,9 +737,10 @@ initialize()
   fi
   PRIVAPP_PATH="${SYS_PATH:?}/${PRIVAPP_FOLDER:?}"
   readonly PRIVAPP_FOLDER PRIVAPP_PATH
+  export PRIVAPP_FOLDER PRIVAPP_PATH
 
   if test ! -e "${PRIVAPP_PATH:?}"; then
-    ui_error 'The priv-app folder does NOT exist'
+    ui_error "The ${PRIVAPP_FOLDER?} folder does NOT exist"
   fi
 
   FAKE_SIGN=false
