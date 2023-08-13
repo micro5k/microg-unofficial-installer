@@ -236,25 +236,31 @@ prepare_installation
 if test "${API:?}" -ge 21; then
   # ToDO: Add support for: mips, mips64
 
-  if test "${ARCH_X64:?}" = 'true'; then
-    select_lib 'x86_64'
+  _lib_selected='false'
+
+  if test "${ARCH_X64:?}" = 'true' && select_lib 'x86_64'; then
+    _lib_selected='true'
   fi
-  if test "${ARCH_X86:?}" = 'true'; then
-    select_lib 'x86'
-  fi
-  if test "${ARCH_ARM64:?}" = 'true'; then
-    select_lib 'arm64-v8a'
+  if test "${ARCH_ARM64:?}" = 'true' && select_lib 'arm64-v8a'; then
+    _lib_selected='true'
   fi
 
+  if test "${ARCH_X86:?}" = 'true' && select_lib 'x86'; then
+    _lib_selected='true'
+  fi
   if test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a'; then
-    :
+    _lib_selected='true'
   elif test "${ARCH_LEGACY_ARM:?}" = 'true' && select_lib 'armeabi'; then
-    :
+    _lib_selected='true'
   elif test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a-hard'; then # Use the deprecated Hard Float ABI only as fallback
-    :
+    _lib_selected='true'
   fi
   # armeabi-v7a-hard is not a real ABI. No devices are built with this. The "hard float" variant only changes the function call ABI.
   # More info: https://android.googlesource.com/platform/ndk/+/master/docs/HardFloatAbi.md
+
+  if test "${_lib_selected:?}" != 'true'; then
+    ui_error "Failed to select library"
+  fi
 
   delete "${TMP_PATH:?}/libs"
   create_dir "${TMP_PATH:?}/files/priv-app/GmsCore/lib"
