@@ -234,8 +234,6 @@ fi
 prepare_installation
 
 if test "${API:?}" -ge 21; then
-  # ToDO: Add support for: mips, mips64
-
   _lib_selected='false'
 
   if test "${ARCH_X64:?}" = 'true' && select_lib 'x86_64'; then
