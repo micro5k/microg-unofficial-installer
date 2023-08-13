@@ -408,6 +408,11 @@ remount_read_write_if_needed()
 
 _detect_architectures()
 {
+  # Info:
+  # - https://android.googlesource.com/platform/cts/+/main/tests/tests/os/src/android/os/cts/BuildTest.java#68
+  # - https://android.googlesource.com/platform/cts/+/refs/tags/android-13.0.0_r74/tests/tests/os/src/android/os/cts/BuildTest.java#62
+  # - https://android.googlesource.com/toolchain/prebuilts/ndk-darwin/r23/+/refs/heads/main/build/core/setup-app.mk#63
+
   ARCH_X64='false'
   ARCH_ARM64='false'
   ARCH_MIPS64='false'
@@ -1237,7 +1242,7 @@ select_lib()
       'arm64-v8a')
         _dest_arch_name='arm64'
         ;;
-      'armeabi-v7a' | 'armeabi')
+      'armeabi-v7a' | 'armeabi' | 'armeabi-v7a-hard')
         _dest_arch_name='arm'
         ;;
       *)

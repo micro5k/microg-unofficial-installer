@@ -248,9 +248,13 @@ if test "${API:?}" -ge 21; then
 
   if test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a'; then
     :
-  elif test "${ARCH_LEGACY_ARM:?}" = 'true'; then
-    select_lib 'armeabi'
+  elif test "${ARCH_LEGACY_ARM:?}" = 'true' && select_lib 'armeabi'; then
+    :
+  elif test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a-hard'; then # Use the deprecated Hard Float ABI only as fallback
+    :
   fi
+  # armeabi-v7a-hard is not a real ABI. No devices are built with this. The "hard float" variant only changes the function call ABI.
+  # More info: https://android.googlesource.com/platform/ndk/+/master/docs/HardFloatAbi.md
 
   delete "${TMP_PATH:?}/libs"
   create_dir "${TMP_PATH:?}/files/priv-app/GmsCore/lib"
