@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='1.3'
+readonly SCRIPT_VERSION='1.4'
 
 {
   readonly xml_comment_start='<!--' # Workaround for history substitution of Bash: don't insert ! directly in the printf but use a variable.
@@ -581,6 +581,7 @@ main()
   # Infos:
   # - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
   # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
+  # - https://developer.android.com/reference/android/os/Build
 
   BUILD_BRAND="$(validated_chosen_getprop 'ro.product.brand')"
   BUILD_MANUFACTURER="$(validated_chosen_getprop 'ro.product.manufacturer')"
@@ -641,16 +642,12 @@ main()
   BUILD_VERSION_CODENAME="$(validated_chosen_getprop 'ro.build.version.codename')"
   BUILD_VERSION_INCREMENTAL="$(validated_chosen_getprop 'ro.build.version.incremental')"
   BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop 'ro.build.version.security_patch' 2)"
-  BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')"        # ToDO: If not numeric or empty return 0
+  BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" # ToDO: If not numeric or empty return 0
+  BUILD_VERSION_DEVICE_INITIAL_SDK_INT="$(chosen_getprop 'ro.product.first_api_level')"
   BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop 'ro.product.cpu.abilist' 2)" # ToDO: Auto-generate it if missing
 
   BUILD_DESCRIPTION="$(validated_chosen_getprop 'ro.build.description')"
   TEXT_ADDITIONAL_INFO="ro.build.description: ${BUILD_DESCRIPTION?}"
-
-  TEXT_FIRST_API=''
-  if FIRST_API="$(chosen_getprop 'ro.product.first_api_level')" && is_valid_value "${FIRST_API?}"; then
-    TEXT_FIRST_API=" ${xml_comment_start:?} ro.product.first_api_level: ${FIRST_API:?} ${xml_comment_end:?}"
-  fi
 
   ANON_SERIAL_NUMBER=''
   if SERIAL_NUMBER="$(find_serialno)"; then
@@ -700,7 +697,8 @@ ${xml_comment_end:?}
     <data key=\"Build.VERSION.RELEASE\" value=\"${BUILD_VERSION_RELEASE?}\" />
     <data key=\"Build.VERSION.SECURITY_PATCH\" value=\"${BUILD_VERSION_SECURITY_PATCH?}\" />${REAL_SECURITY_PATCH?}
     <data key=\"Build.VERSION.SDK\" value=\"${BUILD_VERSION_SDK:?}\" />
-    <data key=\"Build.VERSION.SDK_INT\" value=\"${BUILD_VERSION_SDK:?}\" />${TEXT_FIRST_API?}
+    <data key=\"Build.VERSION.SDK_INT\" value=\"${BUILD_VERSION_SDK:?}\" />
+    <data key=\"Build.VERSION.DEVICE_INITIAL_SDK_INT\" value=\"${BUILD_VERSION_DEVICE_INITIAL_SDK_INT?}\" />
     <data key=\"Build.SUPPORTED_ABIS\" value=\"${BUILD_SUPPORTED_ABIS?}\" />
 
     <serial template=\"${ANON_SERIAL_NUMBER?}\" />
