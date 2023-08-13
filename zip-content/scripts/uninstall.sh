@@ -234,6 +234,14 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete_tracked "/vendor/priv-app/${FILENAME}"
     delete_tracked "/vendor/app/${FILENAME}"
 
+    # Delete legacy libs (very unlikely to be present but possible)
+    delete "${SYS_PATH:?}/lib64/${FILENAME:?}"
+    delete "${SYS_PATH:?}/lib/${FILENAME:?}"
+    delete "/vendor/lib64/${FILENAME:?}"
+    delete "/vendor/lib/${FILENAME:?}"
+    delete "${SYS_PATH:?}/vendor/lib64/${FILENAME:?}"
+    delete "${SYS_PATH:?}/vendor/lib/${FILENAME:?}"
+
     # Current xml paths
     delete "${SYS_PATH}/etc/permissions/privapp-permissions-${FILENAME:?}.xml"
     delete "${SYS_PATH}/etc/default-permissions/default-permissions-${FILENAME:?}.xml"

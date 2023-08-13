@@ -154,7 +154,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 fi
 
 # Clean previous installations
-if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
+if test "${API:?}" -lt 21; then
   if test "${CPU}" != false; then
     delete "${SYS_PATH:?}/lib/libmapbox-gl.so"
     delete "${SYS_PATH:?}/lib/libvtm-jni.so"
