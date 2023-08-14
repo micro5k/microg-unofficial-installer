@@ -40,6 +40,7 @@ GmsCoreSetupPrebuilt|
 GmsCore_update|
 gmscore_debug|
 MicroGGMSCore|
+MicroGGSFProxy|
 GsfProxy|
 |com.mgoogle.android.gms
 
