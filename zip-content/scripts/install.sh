@@ -211,7 +211,7 @@ if test "${API}" -ge 23; then
       replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/default-permissions-IchnaeaNlpBackend.xml" '<!-- %ACCESS_BACKGROUND_LOCATION% -->' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
     fi
   fi
-  if test "${FAKE_SIGN}" = true; then
+  if test "${FAKE_SIGN:?}" = true; then
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="false" />'
     if test -e "${TMP_PATH}/files/etc/default-permissions/default-permissions-Phonesky.xml"; then
       replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/default-permissions-Phonesky.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="false" />'
@@ -298,19 +298,18 @@ set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
 ui_msg 'Installing...'
 if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
   if test "${CPU64}" != false; then
-    create_dir "${SYS_PATH:?}/lib64"
-    copy_dir_content "${TMP_PATH:?}/files/lib64" "${SYS_PATH:?}/lib64"
+    perform_secure_copy_to_device 'lib64'
   fi
   if test "${CPU}" != false; then
-    create_dir "${SYS_PATH:?}/lib"
-    copy_dir_content "${TMP_PATH:?}/files/lib" "${SYS_PATH:?}/lib"
+    perform_secure_copy_to_device 'lib'
   fi
 fi
-if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
+
 if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg.xml" "${SYS_PATH:?}/etc"; fi
-if test -e "${TMP_PATH:?}/files/etc/org.fdroid.fdroid"; then copy_dir_content "${TMP_PATH:?}/files/etc/org.fdroid.fdroid" "${SYS_PATH:?}/etc/org.fdroid.fdroid"; fi
-if test -e "${TMP_PATH:?}/files/app"; then copy_dir_content "${TMP_PATH:?}/files/app" "${SYS_PATH:?}/app"; fi
-if test -e "${TMP_PATH:?}/files/priv-app"; then copy_dir_content "${TMP_PATH:?}/files/priv-app" "${PRIVAPP_PATH:?}"; fi
+if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
+perform_secure_copy_to_device 'etc/org.fdroid.fdroid'
+if test "${PRIVAPP_FOLDER:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDER:?}"; fi
+perform_secure_copy_to_device 'app'
 
 if test "${API:?}" -lt 26; then
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml"
@@ -320,11 +319,12 @@ else
   fi
 fi
 delete_dir_if_empty "${TMP_PATH:?}/files/etc/permissions"
-if test -e "${TMP_PATH:?}/files/etc/permissions"; then copy_dir_content "${TMP_PATH:?}/files/etc/permissions" "${SYS_PATH:?}/etc/permissions"; fi
-if test -e "${TMP_PATH:?}/files/framework"; then copy_dir_content "${TMP_PATH:?}/files/framework" "${SYS_PATH:?}/framework"; fi
+
+perform_secure_copy_to_device 'etc/permissions'
+perform_secure_copy_to_device 'framework'
 
 if test "${API:?}" -ge 21; then
-  copy_dir_content "${TMP_PATH:?}/files/etc/sysconfig" "${SYS_PATH:?}/etc/sysconfig"
+  perform_secure_copy_to_device 'etc/sysconfig'
 else
   delete_recursive "${TMP_PATH:?}/files/etc/sysconfig"
 fi

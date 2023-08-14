@@ -544,7 +544,7 @@ display_info()
   ui_msg "Priv-app path: ${PRIVAPP_PATH:?}"
   ui_msg_empty_line
   ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
-  ui_msg "Fake signature: ${FAKE_SIGN}"
+  ui_msg "Fake signature: ${FAKE_SIGN:?}"
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 }
 
@@ -799,6 +799,18 @@ prepare_installation()
 
     IFS="${_backup_ifs:-}"
   fi
+}
+
+perform_secure_copy_to_device()
+{
+  local _error
+
+  if test ! -e "${TMP_PATH:?}/files/${1:?}"; then return 1; fi
+
+  create_dir "${SYS_PATH:?}/${1:?}"
+  cp 2> /dev/null -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ ||
+    _error="$(cp 2>&1 -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)" ||
+    ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error?}" | head -n 1 || true)"
 }
 
 # Message related functions
