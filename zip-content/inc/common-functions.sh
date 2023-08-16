@@ -1252,8 +1252,6 @@ select_lib()
 {
   local _dest_arch_name
 
-  create_dir "${TMP_PATH:?}/selected-libs"
-
   if test -e "${TMP_PATH:?}/libs/lib/${1:?}"; then
     case "${1:?}" in
       'arm64-v8a')
