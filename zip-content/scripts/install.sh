@@ -51,8 +51,8 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     sleep 1
   fi
 
-  # Preparing
-  ui_msg 'Preparing...'
+  # Configuring
+  ui_msg 'Configuring...'
 
   setup_app 1 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
 
@@ -220,74 +220,6 @@ fi
 
 # Prepare installation
 prepare_installation
-
-prepare_libs()
-{
-  local _lib_selected
-
-  ui_msg "Extracting libs from ${1:?}/${2:?}..."
-  create_dir "${TMP_PATH:?}/libs"
-
-  if test "${API:?}" -ge 21; then
-    zip_extract_dir "${TMP_PATH:?}/files/${1:?}/${2:?}/${2:?}.apk" 'lib' "${TMP_PATH:?}/libs"
-    set_std_perm_recursive "${TMP_PATH:?}/libs"
-
-    create_dir "${TMP_PATH:?}/selected-libs"
-
-    _lib_selected='false'
-
-    if test "${ARCH_X64:?}" = 'true' && select_lib 'x86_64'; then
-      _lib_selected='true'
-    fi
-    if test "${ARCH_ARM64:?}" = 'true' && select_lib 'arm64-v8a'; then
-      _lib_selected='true'
-    fi
-    if test "${ARCH_MIPS64:?}" = 'true' && select_lib 'mips64'; then
-      _lib_selected='true'
-    fi
-
-    if test "${ARCH_X86:?}" = 'true' && select_lib 'x86'; then
-      _lib_selected='true'
-    fi
-    if test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a'; then
-      _lib_selected='true'
-    elif test "${ARCH_LEGACY_ARM:?}" = 'true' && select_lib 'armeabi'; then
-      _lib_selected='true'
-    elif test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a-hard'; then # Use the deprecated Hard Float ABI only as fallback
-      _lib_selected='true'
-    fi
-    # armeabi-v7a-hard is not a real ABI. No devices are built with this. The "hard float" variant only changes the function call ABI.
-    # More info: https://android.googlesource.com/platform/ndk/+/master/docs/HardFloatAbi.md
-    if test "${ARCH_MIPS:?}" = 'true' && select_lib 'mips'; then
-      _lib_selected='true'
-    fi
-
-    if test "${_lib_selected:?}" = 'true'; then
-      create_dir "${TMP_PATH:?}/files/${1:?}/${2:?}/lib"
-      move_dir_content "${TMP_PATH:?}/selected-libs" "${TMP_PATH:?}/files/${1:?}/${2:?}/lib"
-    elif test "${CPU64:?}" = 'mips64' || test "${CPU:?}" = 'mips'; then
-      : # Tolerate missing libraries
-    else
-      ui_error "Failed to select library"
-    fi
-
-    delete "${TMP_PATH:?}/selected-libs"
-  else
-    zip_extract_dir "${TMP_PATH:?}/files/${1:?}/${2:?}.apk" 'lib' "${TMP_PATH:?}/libs"
-    set_std_perm_recursive "${TMP_PATH:?}/libs"
-
-    if test "${CPU64}" != false; then
-      create_dir "${TMP_PATH:?}/files/lib64"
-      move_dir_content "${TMP_PATH:?}/libs/lib/${CPU64}" "${TMP_PATH:?}/files/lib64"
-    fi
-    if test "${CPU}" != false; then
-      create_dir "${TMP_PATH:?}/files/lib"
-      move_dir_content "${TMP_PATH:?}/libs/lib/${CPU}" "${TMP_PATH:?}/files/lib"
-    fi
-  fi
-
-  delete "${TMP_PATH:?}/libs"
-}
 
 # Extracting libs
 if test "${API:?}" -ge 9; then
