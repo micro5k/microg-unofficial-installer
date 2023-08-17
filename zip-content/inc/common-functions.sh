@@ -1280,11 +1280,9 @@ prepare_libs()
 
   ui_msg "Extracting libs from ${1:?}/${2:?}..."
   create_dir "${TMP_PATH:?}/libs"
+  zip_extract_dir "${TMP_PATH:?}/files/${1:?}/${2:?}.apk" 'lib' "${TMP_PATH:?}/libs"
 
   if test "${API:?}" -ge 21; then
-    zip_extract_dir "${TMP_PATH:?}/files/${1:?}/${2:?}/${2:?}.apk" 'lib' "${TMP_PATH:?}/libs"
-    set_std_perm_recursive "${TMP_PATH:?}/libs"
-
     create_dir "${TMP_PATH:?}/selected-libs"
 
     _lib_selected='false'
@@ -1316,19 +1314,16 @@ prepare_libs()
     fi
 
     if test "${_lib_selected:?}" = 'true'; then
-      create_dir "${TMP_PATH:?}/files/${1:?}/${2:?}/lib"
-      move_dir_content "${TMP_PATH:?}/selected-libs" "${TMP_PATH:?}/files/${1:?}/${2:?}/lib"
+      create_dir "${TMP_PATH:?}/files/${1:?}/${2:?}"
+      move_rename_dir "${TMP_PATH:?}/selected-libs" "${TMP_PATH:?}/files/${1:?}/${2:?}/lib"
     elif test "${CPU64:?}" = 'mips64' || test "${CPU:?}" = 'mips'; then
       : # Tolerate missing libraries
     else
       ui_error "Failed to select library"
     fi
 
-    delete "${TMP_PATH:?}/selected-libs"
+    delete_temp "selected-libs"
   else
-    zip_extract_dir "${TMP_PATH:?}/files/${1:?}/${2:?}.apk" 'lib' "${TMP_PATH:?}/libs"
-    set_std_perm_recursive "${TMP_PATH:?}/libs"
-
     if test "${CPU64}" != false; then
       create_dir "${TMP_PATH:?}/files/lib64"
       move_dir_content "${TMP_PATH:?}/libs/lib/${CPU64}" "${TMP_PATH:?}/files/lib64"
@@ -1339,7 +1334,7 @@ prepare_libs()
     fi
   fi
 
-  delete "${TMP_PATH:?}/libs"
+  delete_temp "libs"
 }
 
 file_get_first_line_that_start_with()

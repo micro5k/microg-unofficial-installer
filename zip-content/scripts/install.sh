@@ -68,6 +68,9 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   elif setup_app 1 'microG Services Core (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
     install_backends='true'
   fi
+  if test "${API:?}" -ge 9; then
+    prepare_libs "${PRIVAPP_FOLDER:?}" "GmsCore"
+  fi
 
   setup_app 1 'microG Services Framework Proxy' 'GoogleServicesFramework' 'priv-app' false false
 
@@ -237,11 +240,6 @@ fi
 
 # Prepare installation
 prepare_installation
-
-## Extracting libs
-if test "${API:?}" -ge 9; then
-  prepare_libs "${PRIVAPP_FOLDER:?}" "GmsCore"
-fi
 
 set_std_perm_recursive "${TMP_PATH:?}/files"
 if test -e "${TMP_PATH:?}/addon.d"; then set_std_perm_recursive "${TMP_PATH:?}/addon.d"; fi
