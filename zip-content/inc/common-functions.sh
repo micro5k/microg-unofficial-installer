@@ -801,6 +801,9 @@ prepare_installation()
 
     IFS="${_backup_ifs:-}"
   fi
+
+  set_std_perm_recursive "${TMP_PATH:?}/files"
+  if test -e "${TMP_PATH:?}/addon.d"; then set_std_perm_recursive "${TMP_PATH:?}/addon.d"; fi
 }
 
 perform_secure_copy_to_device()
@@ -1274,7 +1277,7 @@ select_lib()
   fi
 }
 
-prepare_libs()
+extract_libs()
 {
   local _lib_selected
 

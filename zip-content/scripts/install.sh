@@ -69,7 +69,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     install_backends='true'
   fi
   if test "${API:?}" -ge 9; then
-    prepare_libs 'priv-app' "GmsCore"
+    extract_libs 'priv-app' "GmsCore"
   fi
 
   setup_app 1 'microG Services Framework Proxy' 'GoogleServicesFramework' 'priv-app' false false
@@ -240,9 +240,6 @@ fi
 
 # Prepare installation
 prepare_installation
-
-set_std_perm_recursive "${TMP_PATH:?}/files"
-if test -e "${TMP_PATH:?}/addon.d"; then set_std_perm_recursive "${TMP_PATH:?}/addon.d"; fi
 set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
 
 # Installing
