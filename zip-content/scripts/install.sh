@@ -69,7 +69,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     install_backends='true'
   fi
   if test "${API:?}" -ge 9; then
-    prepare_libs "${PRIVAPP_FOLDER:?}" "GmsCore"
+    prepare_libs 'priv-app' "GmsCore"
   fi
 
   setup_app 1 'microG Services Framework Proxy' 'GoogleServicesFramework' 'priv-app' false false
