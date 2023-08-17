@@ -238,7 +238,8 @@ set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
 
 # Installing
 ui_msg 'Installing...'
-if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
+
+if test "${API:?}" -lt 21; then
   if test "${CPU64}" != false; then
     perform_secure_copy_to_device 'lib64'
   fi
@@ -246,9 +247,9 @@ if test "${API:?}" -ge 9 && test "${API:?}" -lt 21; then
     perform_secure_copy_to_device 'lib'
   fi
 fi
-
 if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg.xml" "${SYS_PATH:?}/etc"; fi
 if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
+
 perform_secure_copy_to_device 'etc/org.fdroid.fdroid'
 if test "${PRIVAPP_FOLDER:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDER:?}"; fi
 perform_secure_copy_to_device 'app'
@@ -270,8 +271,6 @@ if test "${API:?}" -ge 21; then
 else
   delete_recursive "${TMP_PATH:?}/files/etc/sysconfig"
 fi
-
-delete_dir_if_empty "${TMP_PATH:?}/files/etc"
 
 USED_SETTINGS_PATH="${TMP_PATH:?}/files/etc/zips"
 create_dir "${USED_SETTINGS_PATH:?}"
