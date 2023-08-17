@@ -199,7 +199,7 @@ if test "${API}" -ge 23; then
       replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/default-permissions-IchnaeaNlpBackend.xml" '<!-- %ACCESS_BACKGROUND_LOCATION% -->' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
     fi
   fi
-  if test "${FAKE_SIGN:?}" = true; then
+  if test "${FAKE_SIGN:?}" = 'true'; then
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="false" />'
     if test -e "${TMP_PATH}/files/etc/default-permissions/default-permissions-Phonesky.xml"; then
       replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/default-permissions-Phonesky.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="false" />'
@@ -211,6 +211,23 @@ else
   delete_recursive "${TMP_PATH}/files/etc/default-permissions"
 fi
 
+# Preparing remaining files
+if test "${API:?}" -lt 26; then
+  delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml"
+else
+  if test "${FAKE_SIGN:?}" = 'true'; then
+    replace_line_in_file "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
+  fi
+fi
+
+if test "${API:?}" -lt 9; then
+  delete "${TMP_PATH:?}/files/framework/com.google.android.maps.jar"
+  delete "${TMP_PATH:?}/files/etc/permissions/com.google.android.maps.xml"
+fi
+
+delete_dir_if_empty "${TMP_PATH:?}/files/etc/permissions"
+delete_dir_if_empty "${TMP_PATH:?}/files/framework"
+
 if test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
   choose 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
   if test "$?" -eq 3; then reset_gms_data_of_all_apps; fi
@@ -221,16 +238,10 @@ fi
 # Prepare installation
 prepare_installation
 
-# Extracting libs
+## Extracting libs
 if test "${API:?}" -ge 9; then
   prepare_libs "${PRIVAPP_FOLDER:?}" "GmsCore"
 fi
-
-if test "${API:?}" -lt 9; then
-  delete "${TMP_PATH:?}/files/framework/com.google.android.maps.jar"
-  delete "${TMP_PATH:?}/files/etc/permissions/com.google.android.maps.xml"
-fi
-delete_dir_if_empty "${TMP_PATH:?}/files/framework"
 
 set_std_perm_recursive "${TMP_PATH:?}/files"
 if test -e "${TMP_PATH:?}/addon.d"; then set_std_perm_recursive "${TMP_PATH:?}/addon.d"; fi
@@ -251,20 +262,10 @@ if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/f
 if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
 
 perform_secure_copy_to_device 'etc/org.fdroid.fdroid'
-if test "${PRIVAPP_FOLDER:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDER:?}"; fi
-perform_secure_copy_to_device 'app'
-
-if test "${API:?}" -lt 26; then
-  delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml"
-else
-  if test "${FAKE_SIGN}" = true; then
-    replace_line_in_file "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
-  fi
-fi
-delete_dir_if_empty "${TMP_PATH:?}/files/etc/permissions"
-
 perform_secure_copy_to_device 'etc/permissions'
 perform_secure_copy_to_device 'framework'
+if test "${PRIVAPP_FOLDER:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDER:?}"; fi
+perform_secure_copy_to_device 'app'
 
 if test "${API:?}" -ge 21; then
   perform_secure_copy_to_device 'etc/sysconfig'
