@@ -782,18 +782,20 @@ prepare_installation()
     ui_debug "Moving apps into subdirs..."
     if test -e "${TMP_PATH:?}/files/priv-app"; then
       for entry in "${TMP_PATH:?}/files/priv-app"/*; do
+        if test ! -f "${entry:?}"; then continue; fi
         path_without_ext="$(remove_ext "${entry:?}")"
 
-        mkdir -p -- "${path_without_ext:?}" || ui_error "Failed to create the dir '${path_without_ext:-}'"
-        mv -f -- "${entry:?}" "${path_without_ext:?}/" || ui_error "Failed to move the file '${entry:-}' to '${path_without_ext:-}'"
+        mkdir -p -- "${path_without_ext:?}" || ui_error "Failed to create the folder '${path_without_ext:-}'"
+        mv -f -- "${entry:?}" "${path_without_ext:?}/" || ui_error "Failed to move the file '${entry:-}' to folder '${path_without_ext:?}/'"
       done
     fi
     if test -e "${TMP_PATH:?}/files/app"; then
       for entry in "${TMP_PATH:?}/files/app"/*; do
+        if test ! -f "${entry:?}"; then continue; fi
         path_without_ext="$(remove_ext "${entry:?}")"
 
-        mkdir -p -- "${path_without_ext:?}" || ui_error "Failed to create the dir '${path_without_ext:-}'"
-        mv -f -- "${entry:?}" "${path_without_ext:?}/" || ui_error "Failed to move the file '${entry:-}' to '${path_without_ext:-}'"
+        mkdir -p -- "${path_without_ext:?}" || ui_error "Failed to create the folder '${path_without_ext:-}'"
+        mv -f -- "${entry:?}" "${path_without_ext:?}/" || ui_error "Failed to move the file '${entry:-}' to folder '${path_without_ext:?}/'"
       done
     fi
 
