@@ -1374,8 +1374,9 @@ setup_app()
   _min_api="$(string_split "${_app_conf:?}" 2)" || ui_error "Failed to get min API for '${2}'"
   _max_api="$(string_split "${_app_conf:?}" 3)" || ui_error "Failed to get max API for '${2}'"
   _output_name="$(string_split "${_app_conf:?}" 4)" || ui_error "Failed to get output name for '${2}'"
-  _internal_name="$(string_split "${_app_conf:?}" 5)" || ui_error "Failed to get internal name for '${2}'"
-  _file_hash="$(string_split "${_app_conf:?}" 6)" || ui_error "Failed to get the hash of '${2}'"
+  _extract_libs="$(string_split "${_app_conf:?}" 5)" || ui_error "Failed to get the value of extract libs for '${2}'"
+  _internal_name="$(string_split "${_app_conf:?}" 6)" || ui_error "Failed to get internal name for '${2}'"
+  _file_hash="$(string_split "${_app_conf:?}" 7)" || ui_error "Failed to get the hash of '${2}'"
   _url_handling="${5:-false}"
   _optional="${6:-true}"
 
