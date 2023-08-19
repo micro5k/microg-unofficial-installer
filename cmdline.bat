@@ -16,6 +16,6 @@ SET "PATHEXT=.SH;%PATHEXT%"
 SET "HOME=%~dp0"
 SET "SCRIPT_DIR=%~dp0"
 
-"%~dp0tools\win\busybox.exe" ash -s -c "unset A5K_FUNCTIONS_INCLUDED; . '%~dp0includes\common.sh' || exit 1; change_title 'Command-line'; unset JAVA_HOME; alias dir=ls; alias 'cd..'='cd ..'; alias 'cd.'='cd .'; alias 'cls'='reset'; alias 'profgen'='profile-generator.sh'" "ash" %*
+"%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0includes\common.sh' || exit 1; init_cmdline" "ash" %*
 
 ENDLOCAL 2> nul
