@@ -115,7 +115,7 @@ detect_os()
 
 change_title()
 {
-  if test "${CI:-false}" = 'false'; then printf '\033]0;%s\007\r' "${1:?}" && printf '%*s     \r' "${#1}" ''; fi
+  if test "${CI:-false}" = 'false'; then printf '\033]0;%s - %s\007\r' "${1:?}" "${MODULE_NAME:?}" && printf '       %*s   %*s    \r' "${#1}" '' "${#MODULE_NAME}" ''; fi
   A5K_LAST_TITLE="${1:?}"
   export A5K_LAST_TITLE
 }
