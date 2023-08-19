@@ -766,6 +766,7 @@ _move_app_into_subfolder()
   local _path_without_ext
   _path_without_ext="$(remove_ext "${1:?}")"
 
+  test ! -e "${_path_without_ext:?}" || ui_error "Folder already exists => '${_path_without_ext?}'"
   mkdir -p -- "${_path_without_ext:?}" || ui_error "Failed to create the folder '${_path_without_ext?}'"
   mv -f -- "${1:?}" "${_path_without_ext:?}/" || ui_error "Failed to move the file '${1?}' to folder '${_path_without_ext?}/'"
 }
