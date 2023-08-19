@@ -1407,6 +1407,13 @@ setup_app()
       fi
       create_dir "${TMP_PATH}/files/${4:?}" || ui_error "Failed to create the folder for '${2}'"
       move_rename_file "${TMP_PATH}/origin/${4:?}/${3:?}.apk" "${TMP_PATH}/files/${4:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${2}'"
+
+      case "${_extract_libs?}" in
+        'libs') extract_libs "${4:?}" "${_output_name:?}" ;;
+        '') ;;
+        *) ui_error "Invalid value of extract libs => ${_extract_libs?}" ;;
+      esac
+
       return 0
     else
       ui_debug "Disabling: ${2:?}"
