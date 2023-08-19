@@ -343,20 +343,28 @@ dl_list()
 
 init_cmdline()
 {
-  if test -n "${HOME:-}"; then HOME="$(realpath "${HOME:?}")" || ui_error 'Failed to set HOME'; fi
-  SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || ui_error 'Failed to set SCRIPT_DIR'
-  MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
   readonly SCRIPT_DIR MODULE_NAME
   export SCRIPT_DIR MODULE_NAME
 
   change_title 'Command-line'
+
   alias dir=ls
   alias 'cd..'='cd ..'
   alias 'cd.'='cd .'
   alias 'cls'='reset'
   alias 'profgen'='profile-generator.sh'
   unset JAVA_HOME
+
+  if test -n "${HOME:-}"; then HOME="$(realpath "${HOME:?}")" || ui_error 'Failed to set HOME'; fi
 }
+
+SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || ui_error 'Failed to set SCRIPT_DIR'
+MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
+
+if test "${DO_INIT_CMDLINE:-0}" = '1'; then
+  init_cmdline
+  unset DO_INIT_CMDLINE
+fi
 
 # Detect OS and set OS specific info
 PLATFORM="$(detect_os)"

@@ -16,6 +16,7 @@ SET "PATHEXT=.SH;%PATHEXT%"
 SET "HOME=%~dp0"
 SET "SCRIPT_DIR=%~dp0"
 
-"%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0includes\common.sh' || exit 1; init_cmdline" "ash" %*
+SET "DO_INIT_CMDLINE=1"
+"%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0includes\common.sh' || exit 1" "ash" %*
 
 ENDLOCAL 2> nul
