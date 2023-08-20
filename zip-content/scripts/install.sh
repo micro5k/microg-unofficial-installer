@@ -237,7 +237,6 @@ fi
 
 # Prepare installation
 prepare_installation
-set_perm 0 0 0755 "${TMP_PATH:?}/addon.d/00-1-microg.sh"
 
 # Installing
 ui_msg 'Installing...'

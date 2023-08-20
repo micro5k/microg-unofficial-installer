@@ -789,7 +789,7 @@ prepare_installation()
     IFS=''
 
     # Move apps into subfolders
-    ui_debug "Moving apps into subfolders..."
+    ui_debug 'Moving apps into subfolders...'
     if test -e "${TMP_PATH:?}/files/priv-app"; then
       for entry in "${TMP_PATH:?}/files/priv-app"/*; do
         if test ! -f "${entry:?}"; then continue; fi
@@ -802,12 +802,16 @@ prepare_installation()
         _move_app_into_subfolder "${entry:?}"
       done
     fi
+    ui_debug 'Done'
 
     IFS="${_backup_ifs:-}"
   fi
 
   set_std_perm_recursive "${TMP_PATH:?}/files"
-  if test -e "${TMP_PATH:?}/addon.d"; then set_std_perm_recursive "${TMP_PATH:?}/addon.d"; fi
+  if test -e "${TMP_PATH:?}/addon.d"; then
+    set_std_perm_recursive "${TMP_PATH:?}/addon.d"
+    find "${TMP_PATH:?}/addon.d" -type f -name '*.sh' -exec chmod 0755 '{}' '+' || ui_error 'Failed to chmod addon.d scripts'
+  fi
 }
 
 perform_secure_copy_to_device()
@@ -1102,7 +1106,7 @@ set_perm()
 
 set_std_perm_recursive()
 { # Use it only if you know your version of 'find' handle spaces correctly
-  find "$1" -type d -exec chmod 0755 '{}' + -o -type f -exec chmod 0644 '{}' +
+  find "${1:?}" -type d -exec chmod 0755 '{}' '+' -o -type f -exec chmod 0644 '{}' '+'
   validate_return_code "$?" 'Failed to set permissions recursively'
 }
 
