@@ -807,6 +807,17 @@ prepare_installation()
     IFS="${_backup_ifs:-}"
   fi
 
+  create_dir "${TMP_PATH:?}/files/etc/zips"
+  {
+    echo '# SPDX-FileCopyrightText: none'
+    echo '# SPDX-License-Identifier: CC0-1.0'
+    echo '# SPDX-FileType: OTHER'
+    echo ''
+    echo 'install.type=flashable-zip'
+    echo "install.version.code=${MODULE_VERCODE:?}"
+    echo "install.version=${MODULE_VERSION:?}"
+  } 1> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+
   set_std_perm_recursive "${TMP_PATH:?}/files"
   if test -e "${TMP_PATH:?}/addon.d"; then
     set_std_perm_recursive "${TMP_PATH:?}/addon.d"

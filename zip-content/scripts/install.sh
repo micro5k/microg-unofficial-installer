@@ -39,6 +39,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   custom_package_extract_dir 'origin' "${TMP_PATH:?}"
   custom_package_extract_dir 'files' "${TMP_PATH:?}"
   custom_package_extract_dir 'addon.d' "${TMP_PATH:?}"
+  create_dir "${TMP_PATH:?}/files/etc"
 
   # Verifying
   ui_msg_sameline_start 'Verifying... '
@@ -237,9 +238,14 @@ fi
 
 # Prepare installation
 prepare_installation
+printf '%s\n' "fakestore=${market_is_fakestore:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 
 # Installing
 ui_msg 'Installing...'
+
+set_perm 0 0 0640 "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+perform_secure_copy_to_device 'etc/zips'
+set_perm 0 0 0750 "${SYS_PATH:?}/etc/zips"
 
 if test "${API:?}" -lt 21; then
   if test "${CPU64}" != false; then
@@ -249,6 +255,7 @@ if test "${API:?}" -lt 21; then
     perform_secure_copy_to_device 'lib'
   fi
 fi
+
 if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg.xml" "${SYS_PATH:?}/etc"; fi
 if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
 
@@ -263,25 +270,6 @@ if test "${API:?}" -ge 21; then
 else
   delete_recursive "${TMP_PATH:?}/files/etc/sysconfig"
 fi
-
-create_dir "${TMP_PATH:?}/files/etc/zips"
-
-{
-  echo '# SPDX-FileCopyrightText: none'
-  echo '# SPDX-License-Identifier: CC0-1.0'
-  echo '# SPDX-FileType: OTHER'
-  echo ''
-  echo 'install.type=flashable-zip'
-  echo "install.version.code=${MODULE_VERCODE:?}"
-  echo "install.version=${MODULE_VERSION:?}"
-  echo "fakestore=${market_is_fakestore:?}"
-} > "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
-set_perm 0 0 0640 "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
-
-create_dir "${SYS_PATH:?}/etc/zips"
-set_perm 0 0 0750 "${SYS_PATH:?}/etc/zips"
-
-copy_dir_content "${TMP_PATH:?}/files/etc/zips" "${SYS_PATH:?}/etc/zips"
 
 # Install utilities
 if test "${API:?}" -ge 19; then
