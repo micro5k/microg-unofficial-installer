@@ -264,8 +264,7 @@ else
   delete_recursive "${TMP_PATH:?}/files/etc/sysconfig"
 fi
 
-USED_SETTINGS_PATH="${TMP_PATH:?}/files/etc/zips"
-create_dir "${USED_SETTINGS_PATH:?}"
+create_dir "${TMP_PATH:?}/files/etc/zips"
 
 {
   echo '# SPDX-FileCopyrightText: none'
@@ -276,13 +275,13 @@ create_dir "${USED_SETTINGS_PATH:?}"
   echo "install.version.code=${MODULE_VERCODE:?}"
   echo "install.version=${MODULE_VERSION:?}"
   echo "fakestore=${market_is_fakestore:?}"
-} > "${USED_SETTINGS_PATH:?}/${MODULE_ID:?}.prop"
-set_perm 0 0 0640 "${USED_SETTINGS_PATH:?}/${MODULE_ID:?}.prop"
+} > "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+set_perm 0 0 0640 "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 
 create_dir "${SYS_PATH:?}/etc/zips"
 set_perm 0 0 0750 "${SYS_PATH:?}/etc/zips"
 
-copy_dir_content "${USED_SETTINGS_PATH:?}" "${SYS_PATH:?}/etc/zips"
+copy_dir_content "${TMP_PATH:?}/files/etc/zips" "${SYS_PATH:?}/etc/zips"
 
 # Install utilities
 if test "${API:?}" -ge 19; then
