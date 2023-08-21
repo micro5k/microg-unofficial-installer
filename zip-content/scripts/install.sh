@@ -226,6 +226,12 @@ if test "${API:?}" -lt 9; then
   delete "${TMP_PATH:?}/files/etc/permissions/com.google.android.maps.xml"
 fi
 
+if test "${API:?}" -ge 19; then
+  move_rename_file "${TMP_PATH:?}/files/bin/minutil.sh" "${TMP_PATH:?}/files/bin/minutil"
+else
+  delete_recursive "${TMP_PATH:?}/files/bin"
+fi
+
 delete_dir_if_empty "${TMP_PATH:?}/files/etc/permissions"
 delete_dir_if_empty "${TMP_PATH:?}/files/framework"
 
@@ -239,6 +245,10 @@ fi
 # Prepare installation
 prepare_installation
 printf '%s\n' "fakestore=${market_is_fakestore:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+
+if test -e "${TMP_PATH:?}/files/bin/minutil"; then
+  set_perm 0 2000 0755 "${TMP_PATH:?}/files/bin/minutil"
+fi
 
 # Installing
 ui_msg 'Installing...'
@@ -272,13 +282,9 @@ else
 fi
 
 # Install utilities
-if test "${API:?}" -ge 19; then
+if test -e "${TMP_PATH:?}/files/bin"; then
   ui_msg 'Installing utilities...'
-  set_perm 0 2000 0755 "${TMP_PATH:?}/files/bin/minutil.sh"
-  move_rename_file "${TMP_PATH:?}/files/bin/minutil.sh" "${TMP_PATH:?}/files/bin/minutil"
-  copy_dir_content "${TMP_PATH:?}/files/bin" "${SYS_PATH:?}/bin"
-else
-  delete_recursive "${TMP_PATH:?}/files/bin"
+  perform_secure_copy_to_device 'bin'
 fi
 
 # Install survival script
