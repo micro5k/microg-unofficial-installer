@@ -105,6 +105,15 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   setup_app "${INSTALL_ANDROIDAUTO:-}" 'Android Auto stub' 'AndroidAuto' 'priv-app' true
 
+  if test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
+    choose 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
+    if test "$?" -eq 3; then
+      RESET_GMS_DATA_OF_ALL_APPS='1'
+    else
+      RESET_GMS_DATA_OF_ALL_APPS='0'
+    fi
+  fi
+
   delete "${TMP_PATH:?}/origin"
 else
   ui_msg 'Starting uninstallation...'
@@ -235,13 +244,6 @@ fi
 delete_dir_if_empty "${TMP_PATH:?}/files/etc/permissions"
 delete_dir_if_empty "${TMP_PATH:?}/files/framework"
 
-if test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
-  choose 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
-  if test "$?" -eq 3; then reset_gms_data_of_all_apps; fi
-elif test "${RESET_GMS_DATA_OF_ALL_APPS:?}" -ne 0; then
-  reset_gms_data_of_all_apps
-fi
-
 # Prepare installation
 prepare_installation
 printf '%s\n' "fakestore=${market_is_fakestore:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
@@ -250,7 +252,7 @@ if test -e "${TMP_PATH:?}/files/bin/minutil"; then
   set_perm 0 2000 0755 "${TMP_PATH:?}/files/bin/minutil"
 fi
 
-# Installing
+# Install
 ui_msg 'Installing...'
 
 set_perm 0 0 0640 "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
@@ -285,6 +287,11 @@ fi
 if test -e "${TMP_PATH:?}/files/bin"; then
   ui_msg 'Installing utilities...'
   perform_secure_copy_to_device 'bin'
+fi
+
+# Reset GMS data of all apps
+if test "${RESET_GMS_DATA_OF_ALL_APPS:?}" != '0'; then
+  reset_gms_data_of_all_apps
 fi
 
 # Install survival script
