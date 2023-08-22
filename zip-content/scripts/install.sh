@@ -257,30 +257,9 @@ if test -e "${TMP_PATH:?}/files/bin/minutil"; then
 fi
 
 # Install
-ui_msg 'Installing...'
-
-set_perm 0 0 0640 "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
-perform_secure_copy_to_device 'etc/zips'
-set_perm 0 0 0750 "${SYS_PATH:?}/etc/zips"
-
-if test "${API:?}" -lt 21; then
-  if test "${CPU64}" != false; then
-    perform_secure_copy_to_device 'lib64'
-  fi
-  if test "${CPU}" != false; then
-    perform_secure_copy_to_device 'lib'
-  fi
-fi
-
 if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg.xml" "${SYS_PATH:?}/etc"; fi
 if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
-
-perform_secure_copy_to_device 'etc/permissions'
-perform_secure_copy_to_device 'framework'
-perform_secure_copy_to_device 'etc/org.fdroid.fdroid'
-if test "${PRIVAPP_FOLDER:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDER:?}"; fi
-perform_secure_copy_to_device 'app'
-perform_secure_copy_to_device 'etc/sysconfig'
+perform_installation
 
 # Install utilities
 if test -e "${TMP_PATH:?}/files/bin"; then
