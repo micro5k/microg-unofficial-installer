@@ -230,6 +230,10 @@ else
   fi
 fi
 
+if test "${API:?}" -lt 21; then
+  delete_recursive "${TMP_PATH:?}/files/etc/sysconfig"
+fi
+
 if test "${API:?}" -lt 9; then
   delete "${TMP_PATH:?}/files/framework/com.google.android.maps.jar"
   delete "${TMP_PATH:?}/files/etc/permissions/com.google.android.maps.xml"
@@ -271,17 +275,12 @@ fi
 if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg.xml" "${SYS_PATH:?}/etc"; fi
 if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
 
-perform_secure_copy_to_device 'etc/org.fdroid.fdroid'
 perform_secure_copy_to_device 'etc/permissions'
 perform_secure_copy_to_device 'framework'
+perform_secure_copy_to_device 'etc/org.fdroid.fdroid'
 if test "${PRIVAPP_FOLDER:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDER:?}"; fi
 perform_secure_copy_to_device 'app'
-
-if test "${API:?}" -ge 21; then
-  perform_secure_copy_to_device 'etc/sysconfig'
-else
-  delete_recursive "${TMP_PATH:?}/files/etc/sysconfig"
-fi
+perform_secure_copy_to_device 'etc/sysconfig'
 
 # Install utilities
 if test -e "${TMP_PATH:?}/files/bin"; then
