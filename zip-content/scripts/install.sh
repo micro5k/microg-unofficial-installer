@@ -187,12 +187,7 @@ unmount_extra_partitions
 
 if test "${IS_INSTALLATION:?}" != 'true'; then
   reset_gms_data_of_all_apps
-  deinitialize
-
-  touch "${TMP_PATH:?}/installed"
-  ui_msg 'Uninstallation finished.'
-
-  exit 0
+  finalize_and_report_success
 fi
 
 # Configuring default Android permissions
@@ -288,7 +283,4 @@ if test "${BOOTMODE:?}" = 'true' && command -v am 1> /dev/null; then
   am broadcast -a 'org.microg.gms.gcm.FORCE_TRY_RECONNECT' -n 'com.google.android.gms/org.microg.gms.gcm.TriggerReceiver' 1> /dev/null 2>&1 || true
 fi
 
-deinitialize
-
-touch "${TMP_PATH:?}/installed"
-ui_msg 'Installation finished.'
+finalize_and_report_success

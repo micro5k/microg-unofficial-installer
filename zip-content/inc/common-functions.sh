@@ -866,6 +866,19 @@ perform_installation()
   perform_secure_copy_to_device 'etc/sysconfig'
 }
 
+finalize_and_report_success()
+{
+  deinitialize
+  touch "${TMP_PATH:?}/installed"
+
+  if test "${IS_INSTALLATION:?}" = 'true'; then
+    ui_msg 'Installation finished.'
+  else
+    ui_msg 'Uninstallation finished.'
+    exit 0
+  fi
+}
+
 # Message related functions
 _show_text_on_recovery()
 {
