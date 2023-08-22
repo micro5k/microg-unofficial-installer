@@ -777,6 +777,9 @@ prepare_installation()
 
   ui_msg 'Preparing installation...'
 
+  # Waste some time otherwise ui_debug may appear before the previous ui_msg
+  true
+
   if test "${PRIVAPP_FOLDER:?}" != 'priv-app' && test -e "${TMP_PATH:?}/files/priv-app"; then
     ui_debug "Merging priv-app folder with ${PRIVAPP_FOLDER:?} folder..."
     mkdir -p -- "${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}" || ui_error "Failed to create the dir '${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}'"
@@ -802,7 +805,6 @@ prepare_installation()
         _move_app_into_subfolder "${entry:?}"
       done
     fi
-    ui_debug 'Done'
 
     IFS="${_backup_ifs:-}"
   fi
@@ -832,6 +834,7 @@ perform_secure_copy_to_device()
 
   if test ! -e "${TMP_PATH:?}/files/${1:?}"; then return 1; fi
 
+  ui_debug "Copying the '${1:?}' folder to the device..."
   create_dir "${SYS_PATH:?}/${1:?}"
   cp 2> /dev/null -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ ||
     _error="$(cp 2>&1 -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)" ||
