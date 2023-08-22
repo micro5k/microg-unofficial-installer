@@ -777,7 +777,7 @@ replace_permission_placeholders()
     { grep -l -r -F -e "${2:?}" -- "${TMP_PATH:?}/files/etc/${1:?}" || true; } | while IFS='' read -r file_name; do
       ui_debug "Processing ${file_name?}..."
       replace_line_in_file "${file_name:?}" "${2:?}" "${3:?}"
-    done || ui_warning "Failed to replace '${2?}'"
+    done || ui_warning "Failed to replace '${2?}' in 'files/etc/${1?}'"
   fi
 }
 
@@ -868,6 +868,7 @@ perform_installation()
     fi
   fi
 
+  perform_secure_copy_to_device 'etc/default-permissions'
   perform_secure_copy_to_device 'etc/permissions'
   perform_secure_copy_to_device 'framework'
   perform_secure_copy_to_device 'etc/org.fdroid.fdroid'

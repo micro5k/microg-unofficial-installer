@@ -192,12 +192,6 @@ fi
 
 # Configuring default Android permissions
 if test "${API}" -ge 23; then
-  ui_debug 'Configuring default Android permissions...'
-  if ! test -e "${SYS_PATH}/etc/default-permissions"; then
-    ui_msg 'Creating the default permissions folder...'
-    create_dir "${SYS_PATH}/etc/default-permissions"
-  fi
-
   if test "${API}" -ge 29; then # Android 10+
     replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %ACCESS_BACKGROUND_LOCATION% -->' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
     if test -e "${TMP_PATH}/files/etc/default-permissions/default-permissions-IchnaeaNlpBackend.xml"; then
@@ -210,8 +204,6 @@ if test "${API}" -ge 23; then
       replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/default-permissions-Phonesky.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="false" />'
     fi
   fi
-
-  copy_dir_content "${TMP_PATH}/files/etc/default-permissions" "${SYS_PATH}/etc/default-permissions"
 else
   delete_recursive "${TMP_PATH}/files/etc/default-permissions"
 fi
