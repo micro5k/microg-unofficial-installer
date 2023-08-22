@@ -771,6 +771,16 @@ _move_app_into_subfolder()
   mv -f -- "${1:?}" "${_path_without_ext:?}/" || ui_error "Failed to move the file '${1?}' to folder '${_path_without_ext?}/'"
 }
 
+replace_permission_placeholders()
+{
+  if test -e "${TMP_PATH:?}/files/etc/${1:?}"; then
+    { grep -l -r -F -e "${2:?}" -- "${TMP_PATH:?}/files/etc/${1:?}" || true; } | while IFS='' read -r file_name; do
+      ui_debug "Processing ${file_name?}..."
+      replace_line_in_file "${file_name:?}" "${2:?}" "${3:?}"
+    done || ui_warning "Failed to replace '${2?}'"
+  fi
+}
+
 prepare_installation()
 {
   local _backup_ifs

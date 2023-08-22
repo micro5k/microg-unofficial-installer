@@ -219,10 +219,6 @@ fi
 # Preparing remaining files
 if test "${API:?}" -lt 26; then
   delete "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml"
-else
-  if test "${FAKE_SIGN:?}" = 'true'; then
-    replace_line_in_file "${TMP_PATH}/files/etc/permissions/privapp-permissions-google.xml" '<!-- %FAKE_PACKAGE_SIGNATURE% -->' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
-  fi
 fi
 
 if test "${API:?}" -lt 21; then
@@ -242,6 +238,10 @@ fi
 
 delete_dir_if_empty "${TMP_PATH:?}/files/etc/permissions"
 delete_dir_if_empty "${TMP_PATH:?}/files/framework"
+
+if test "${FAKE_SIGN:?}" = 'true'; then
+  replace_permission_placeholders 'permissions' '%FAKE_PACKAGE_SIGNATURE%' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
+fi
 
 # Prepare installation
 prepare_installation
