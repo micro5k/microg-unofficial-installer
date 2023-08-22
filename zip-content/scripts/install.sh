@@ -231,6 +231,8 @@ fi
 delete_dir_if_empty "${TMP_PATH:?}/files/etc/permissions"
 delete_dir_if_empty "${TMP_PATH:?}/files/framework"
 
+ui_debug ''
+
 if test "${FAKE_SIGN:?}" = 'true'; then
   replace_permission_placeholders 'permissions' '%FAKE_PACKAGE_SIGNATURE%' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
 fi
