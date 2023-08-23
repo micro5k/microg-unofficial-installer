@@ -183,12 +183,19 @@ export INSTALLER
 # shellcheck source=SCRIPTDIR/uninstall.sh
 . "${TMP_PATH:?}/uninstall.sh"
 
-unmount_extra_partitions
-
 if test "${IS_INSTALLATION:?}" != 'true'; then
+  clear_app com.android.vending
+  clear_app com.google.android.gsf.login
+  clear_app com.google.android.gsf
+  clear_app com.google.android.gms
+
   reset_gms_data_of_all_apps
+
+  unmount_extra_partitions
   finalize_and_report_success
 fi
+
+unmount_extra_partitions
 
 # Preparing remaining files
 if test "${API:?}" -ge 19; then
