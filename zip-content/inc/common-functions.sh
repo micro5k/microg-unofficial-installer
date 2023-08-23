@@ -739,7 +739,7 @@ initialize()
   readonly PRIVAPP_FOLDERNAME PRIVAPP_PATH
   export PRIVAPP_FOLDERNAME PRIVAPP_PATH
 
-  if test ! -e "${PRIVAPP_PATH:?}"; then
+  if test ! -e "${SYS_PATH:?}/${PRIVAPP_FOLDERNAME:?}"; then
     ui_error "The ${PRIVAPP_FOLDERNAME?} folder does NOT exist"
   fi
 
@@ -861,7 +861,7 @@ perform_secure_copy_to_device()
 
   if test ! -e "${TMP_PATH:?}/files/${1:?}"; then return 1; fi
 
-  ui_debug "  Copying the '${1:?}' folder to the device..."
+  ui_debug "  Copying the '${1?}' folder to the device..."
   create_dir "${SYS_PATH:?}/${1:?}"
   cp 2> /dev/null -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ ||
     _error="$(cp 2>&1 -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)" ||
