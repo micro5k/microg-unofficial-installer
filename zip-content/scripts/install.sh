@@ -222,21 +222,6 @@ delete_dir_if_empty "${TMP_PATH:?}/files/framework"
 
 ui_debug ''
 
-if test "${API:?}" -ge 29; then # Android 10+
-  ui_debug 'Processing ACCESS_BACKGROUND_LOCATION...'
-  replace_permission_placeholders 'default-permissions' '%ACCESS_BACKGROUND_LOCATION%' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
-  ui_debug 'Done'
-fi
-
-if test "${FAKE_SIGN:?}" = 'true'; then
-  ui_debug 'Processing FAKE_PACKAGE_SIGNATURE...'
-  replace_permission_placeholders 'permissions' '%FAKE_PACKAGE_SIGNATURE%' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
-  replace_permission_placeholders 'default-permissions' '%FAKE_PACKAGE_SIGNATURE%' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="false" />'
-  ui_debug 'Done'
-fi
-
-ui_debug ''
-
 # Prepare installation
 prepare_installation
 printf '%s\n' "fakestore=${market_is_fakestore:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
