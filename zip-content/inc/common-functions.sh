@@ -544,7 +544,7 @@ display_info()
   ui_msg "Priv-app path: ${PRIVAPP_PATH:?}"
   ui_msg_empty_line
   ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
-  ui_msg "Fake signature: ${FAKE_SIGN:?}"
+  ui_msg "Fake signature: ${FAKE_SIGN_PERMISSION:?}"
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 }
 
@@ -731,25 +731,25 @@ initialize()
   fi
 
   if test "${API:?}" -ge 19; then # KitKat or higher
-    PRIVAPP_FOLDER='priv-app'
+    PRIVAPP_FOLDERNAME='priv-app'
   else
-    PRIVAPP_FOLDER='app'
+    PRIVAPP_FOLDERNAME='app'
   fi
-  PRIVAPP_PATH="${SYS_PATH:?}/${PRIVAPP_FOLDER:?}"
-  readonly PRIVAPP_FOLDER PRIVAPP_PATH
-  export PRIVAPP_FOLDER PRIVAPP_PATH
+  PRIVAPP_PATH="${SYS_PATH:?}/${PRIVAPP_FOLDERNAME:?}"
+  readonly PRIVAPP_FOLDERNAME PRIVAPP_PATH
+  export PRIVAPP_FOLDERNAME PRIVAPP_PATH
 
   if test ! -e "${PRIVAPP_PATH:?}"; then
-    ui_error "The ${PRIVAPP_FOLDER?} folder does NOT exist"
+    ui_error "The ${PRIVAPP_FOLDERNAME?} folder does NOT exist"
   fi
 
-  FAKE_SIGN=false
+  FAKE_SIGN_PERMISSION='false'
   zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH}/framework-res"
   XML_MANIFEST="${TMP_PATH}/framework-res/AndroidManifest.xml"
   # Detect the presence of the fake signature permission
   # Note: It won't detect it if signature spoofing doesn't require a permission, but it is still fine for our case
   if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "${XML_MANIFEST}"; then
-    FAKE_SIGN=true
+    FAKE_SIGN_PERMISSION='true'
   fi
 
   unset LAST_MOUNTPOINT
@@ -775,7 +775,7 @@ replace_permission_placeholders()
 {
   if test -e "${TMP_PATH:?}/files/etc/${1:?}"; then
     { grep -l -r -F -e "${2:?}" -- "${TMP_PATH:?}/files/etc/${1:?}" || true; } | while IFS='' read -r file_name; do
-      ui_debug " ${file_name#"${TMP_PATH}/files/"}"
+      ui_debug "    ${file_name#"${TMP_PATH}/files/"}"
       replace_line_in_file "${file_name:?}" "${2:?}" "${3:?}"
     done || ui_warning "Failed to replace '${2?}' in 'files/etc/${1?}'"
   fi
@@ -793,24 +793,24 @@ prepare_installation()
   ui_debug ''
 
   if test "${API:?}" -ge 29; then # Android 10+
-    ui_debug 'Processing ACCESS_BACKGROUND_LOCATION...'
+    ui_debug '  Processing ACCESS_BACKGROUND_LOCATION...'
     replace_permission_placeholders 'default-permissions' '%ACCESS_BACKGROUND_LOCATION%' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
-    ui_debug 'Done'
+    ui_debug '  Done'
   fi
 
-  if test "${FAKE_SIGN:?}" = 'true'; then
-    ui_debug 'Processing FAKE_PACKAGE_SIGNATURE...'
+  if test "${FAKE_SIGN_PERMISSION:?}" = 'true'; then
+    ui_debug '  Processing FAKE_PACKAGE_SIGNATURE...'
     replace_permission_placeholders 'permissions' '%FAKE_PACKAGE_SIGNATURE%' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
     replace_permission_placeholders 'default-permissions' '%FAKE_PACKAGE_SIGNATURE%' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="false" />'
-    ui_debug 'Done'
+    ui_debug '  Done'
   fi
 
   ui_debug ''
 
-  if test "${PRIVAPP_FOLDER:?}" != 'priv-app' && test -e "${TMP_PATH:?}/files/priv-app"; then
-    ui_debug "Merging priv-app folder with ${PRIVAPP_FOLDER:?} folder..."
-    mkdir -p -- "${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}" || ui_error "Failed to create the dir '${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}'"
-    copy_dir_content "${TMP_PATH:?}/files/priv-app" "${TMP_PATH:?}/files/${PRIVAPP_FOLDER:?}"
+  if test "${PRIVAPP_FOLDERNAME:?}" != 'priv-app' && test -e "${TMP_PATH:?}/files/priv-app"; then
+    ui_debug "Merging priv-app folder with ${PRIVAPP_FOLDERNAME?} folder..."
+    mkdir -p -- "${TMP_PATH:?}/files/${PRIVAPP_FOLDERNAME:?}" || ui_error "Failed to create the dir '${TMP_PATH?}/files/${PRIVAPP_FOLDERNAME?}'"
+    copy_dir_content "${TMP_PATH:?}/files/priv-app" "${TMP_PATH:?}/files/${PRIVAPP_FOLDERNAME:?}"
     delete_temp "files/priv-app"
   fi
 
@@ -861,7 +861,7 @@ perform_secure_copy_to_device()
 
   if test ! -e "${TMP_PATH:?}/files/${1:?}"; then return 1; fi
 
-  ui_debug "Copying the '${1:?}' folder to the device..."
+  ui_debug "  Copying the '${1:?}' folder to the device..."
   create_dir "${SYS_PATH:?}/${1:?}"
   cp 2> /dev/null -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ ||
     _error="$(cp 2>&1 -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)" ||
@@ -889,7 +889,7 @@ perform_installation()
   perform_secure_copy_to_device 'etc/permissions'
   perform_secure_copy_to_device 'framework'
   perform_secure_copy_to_device 'etc/org.fdroid.fdroid'
-  if test "${PRIVAPP_FOLDER:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDER:?}"; fi
+  if test "${PRIVAPP_FOLDERNAME:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDERNAME:?}"; fi
   perform_secure_copy_to_device 'app'
   perform_secure_copy_to_device 'etc/sysconfig'
 }
