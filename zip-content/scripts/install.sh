@@ -120,24 +120,6 @@ else
   ui_msg_empty_line
 fi
 
-# Resetting Android runtime permissions
-if test "${API}" -ge 23; then
-  if test -e "${DATA_PATH:?}/system/users/0/runtime-permissions.xml"; then
-    if ! grep -q 'com.google.android.gms' "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml; then
-      # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
-      ui_msg "Resetting legacy Android runtime permissions..."
-      delete "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml
-    fi
-  fi
-  if test -e "${DATA_PATH:?}/misc_de/0/apexdata/com.android.permission/runtime-permissions.xml"; then
-    if ! grep -q 'com.google.android.gms' "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml; then
-      # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
-      ui_msg "Resetting Android runtime permissions..."
-      delete "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml
-    fi
-  fi
-fi
-
 if test "${IS_INSTALLATION:?}" = 'true'; then
   # Kill the apps if they were active and disable them
   kill_and_disable_app com.android.vending
@@ -238,6 +220,24 @@ fi
 if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg.xml" "${SYS_PATH:?}/etc"; fi
 if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
 perform_installation
+
+# Resetting Android runtime permissions
+if test "${API:?}" -ge 23; then
+  if test -e "${DATA_PATH:?}/system/users/0/runtime-permissions.xml"; then
+    if ! grep -q 'com.google.android.gms' "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml; then
+      # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
+      ui_msg "Resetting legacy Android runtime permissions..."
+      delete "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml
+    fi
+  fi
+  if test -e "${DATA_PATH:?}/misc_de/0/apexdata/com.android.permission/runtime-permissions.xml"; then
+    if ! grep -q 'com.google.android.gms' "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml; then
+      # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
+      ui_msg "Resetting Android runtime permissions..."
+      delete "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml
+    fi
+  fi
+fi
 
 # Install utilities
 if test -e "${TMP_PATH:?}/files/bin"; then
