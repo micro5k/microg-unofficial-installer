@@ -192,12 +192,7 @@ fi
 
 # Configuring default Android permissions
 if test "${API}" -ge 23; then
-  if test "${API}" -ge 29; then # Android 10+
-    replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/google-permissions.xml" '<!-- %ACCESS_BACKGROUND_LOCATION% -->' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
-    if test -e "${TMP_PATH}/files/etc/default-permissions/default-permissions-IchnaeaNlpBackend.xml"; then
-      replace_line_in_file "${TMP_PATH}/files/etc/default-permissions/default-permissions-IchnaeaNlpBackend.xml" '<!-- %ACCESS_BACKGROUND_LOCATION% -->' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
-    fi
-  fi
+  :
 else
   delete_recursive "${TMP_PATH}/files/etc/default-permissions"
 fi
@@ -227,10 +222,20 @@ delete_dir_if_empty "${TMP_PATH:?}/files/framework"
 
 ui_debug ''
 
+if test "${API:?}" -ge 29; then # Android 10+
+  ui_debug 'Processing ACCESS_BACKGROUND_LOCATION...'
+  replace_permission_placeholders 'default-permissions' '%ACCESS_BACKGROUND_LOCATION%' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
+  ui_debug 'Done'
+fi
+
 if test "${FAKE_SIGN:?}" = 'true'; then
+  ui_debug 'Processing FAKE_PACKAGE_SIGNATURE...'
   replace_permission_placeholders 'permissions' '%FAKE_PACKAGE_SIGNATURE%' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
   replace_permission_placeholders 'default-permissions' '%FAKE_PACKAGE_SIGNATURE%' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="false" />'
+  ui_debug 'Done'
 fi
+
+ui_debug ''
 
 # Prepare installation
 prepare_installation

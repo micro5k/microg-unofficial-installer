@@ -775,7 +775,7 @@ replace_permission_placeholders()
 {
   if test -e "${TMP_PATH:?}/files/etc/${1:?}"; then
     { grep -l -r -F -e "${2:?}" -- "${TMP_PATH:?}/files/etc/${1:?}" || true; } | while IFS='' read -r file_name; do
-      ui_debug "Processing ${file_name#"${TMP_PATH}/files/"}..."
+      ui_debug " ${file_name#"${TMP_PATH}/files/"}"
       replace_line_in_file "${file_name:?}" "${2:?}" "${3:?}"
     done || ui_warning "Failed to replace '${2?}' in 'files/etc/${1?}'"
   fi
