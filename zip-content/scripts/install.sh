@@ -62,11 +62,11 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   fi
 
   install_backends='false'
-  if test "${CPU:?}" = 'armeabi' && test "${CPU64:?}" = 'false' && setup_app 1 'microG Services Core (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
+  if test "${CPU:?}" = 'armeabi' && test "${CPU64:?}" = 'false' && setup_app 1 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
     install_backends='true'
-  elif setup_app 1 'microG Services Core' 'GmsCore' 'priv-app' false false; then
+  elif setup_app 1 'microG Services' 'GmsCore' 'priv-app' false false; then
     :
-  elif setup_app 1 'microG Services Core (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
+  elif setup_app 1 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
     install_backends='true'
   fi
 
