@@ -20,7 +20,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='1.0'
+readonly SCRIPT_VERSION='1.1'
 
 # shellcheck disable=SC2034
 {
@@ -347,8 +347,8 @@ validate_and_display_info()
 {
   if contains 'Requires READ_PHONE_STATE' "${2?}" || contains 'does not belong to' "${2?}"; then
     local _err
-    _err="$(printf '%s\n' "${2?}" | cut -c '2-70')"
-    show_warn "Unable to find ${1:-} due to: ${_err:-}"
+    _err="$(printf '%s\n' "${2?}" | cut -c '2-69')"
+    show_warn "Cannot find ${1:-} due to '${_err:-}'"
     return 3
   fi
 
@@ -374,7 +374,13 @@ get_imei()
 {
   local _val
 
-  _val="$(get_phone_info 1 s16 'com.android.shell')" || _val=''
+  if _val="$(adb shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && test -n "${_val?}" && test "${_val:?}" != 'null'; then
+    :
+  elif _val="$(get_phone_info 1 s16 'com.android.shell')"; then
+    :
+  else
+    _val=''
+  fi
   validate_and_display_info 'IMEI' "${_val?}" 15
 
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
