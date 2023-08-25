@@ -381,16 +381,17 @@ validate_and_display_info()
 
 get_imei()
 {
-  local _val
+  local _val _tmp
 
   if _val="$(adb shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && test -n "${_val?}" && test "${_val:?}" != 'null'; then
     :
-  elif _val="$(get_phone_info 1 s16 'com.android.shell')"; then
+  elif _val="$(get_phone_info 1 s16 'com.android.shell')" && is_valid_value "${_val?}" && is_iphonesubinfo_response_valid "${_val?}"; then
     :
-  else
-    _val=''
+  elif _tmp="$(chosen_getprop 'ro.ril.miui.imei0')" && is_valid_value "${_tmp?}"; then # Xiaomi
+    _val="${_tmp:?}"
   fi
   validate_and_display_info 'IMEI' "${_val?}" 15
+  _tmp=''
 
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     :
