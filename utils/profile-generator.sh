@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='1.4'
+readonly SCRIPT_VERSION='1.5'
 
 {
   readonly xml_comment_start='<!--' # Workaround for history substitution of Bash: don't insert ! directly in the printf but use a variable.
@@ -331,6 +331,8 @@ generate_rom_info()
   elif ROM_VERSION="$(get_and_check_prop 'ro.lineage.build.version')" || ROM_VERSION="$(get_and_check_prop 'ro.cm.build.version')" || ROM_VERSION="$(get_and_check_prop 'ro.lineage.version')" || ROM_VERSION="$(get_and_check_prop 'ro.cm.version')"; then
     if _temp_value="$(chosen_getprop 'ro.elegal.url')" && test -n "${_temp_value?}"; then
       ROM_INFO="/e/ OS v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
+    elif compare_nocase "$(chosen_getprop 'ro.lineage.releasetype' || true)" 'microG'; then
+      ROM_INFO="LineageOS for microG v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
     else
       ROM_INFO="LineageOS v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
     fi
