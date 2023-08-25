@@ -389,6 +389,14 @@ get_imei()
     :
   elif _tmp="$(chosen_getprop 'ro.ril.miui.imei0')" && is_valid_value "${_tmp?}"; then # Xiaomi
     _val="${_tmp:?}"
+  elif _tmp="$(chosen_getprop 'gsm.baseband.imei')" && is_valid_value "${_tmp?}"; then
+    _val="${_tmp:?}"
+  elif _tmp="$(chosen_getprop 'ro.gsm.imei')" && is_valid_value "${_tmp?}"; then
+    _val="${_tmp:?}"
+  elif _tmp="$(chosen_getprop 'gsm.imei')" && is_valid_value "${_tmp?}"; then
+    _val="${_tmp:?}"
+  elif _tmp="$(chosen_getprop 'ril.imei')" && is_valid_value "${_tmp?}"; then
+    _val="${_tmp:?}"
   fi
   validate_and_display_info 'IMEI' "${_val?}" 15
   _tmp=''
