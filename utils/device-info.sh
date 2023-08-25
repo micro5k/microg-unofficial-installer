@@ -338,6 +338,15 @@ get_phone_info()
   adb shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
 }
 
+is_iphonesubinfo_response_valid()
+{
+  if contains 'Requires READ_PHONE_STATE' "${1?}" || contains 'does not belong to' "${1?}"; then
+    return 1
+  fi
+
+  return 0
+}
+
 display_info()
 {
   show_msg "${1?}: ${2?}"
@@ -345,16 +354,16 @@ display_info()
 
 validate_and_display_info()
 {
-  if contains 'Requires READ_PHONE_STATE' "${2?}" || contains 'does not belong to' "${2?}"; then
+  if ! is_valid_value "${2?}"; then
+    show_warn "${1:-} not found"
+    return 1
+  fi
+
+  if ! is_iphonesubinfo_response_valid "${2?}"; then
     local _err
     _err="$(printf '%s\n' "${2?}" | cut -c '2-69')"
     show_warn "Cannot find ${1:-} due to '${_err:-}'"
     return 3
-  fi
-
-  if ! is_valid_value "${2?}"; then
-    show_warn "${1:-} not found"
-    return 1
   fi
 
   if test -n "${4:-}"; then
