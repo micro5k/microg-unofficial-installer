@@ -381,6 +381,8 @@ validate_and_display_info()
 
 get_imei_via_MMI_code()
 {
+  adb 1> /dev/null 2>&1 shell 'svc power stayon true; input keyevent KEYCODE_HOME' || true
+
   adb 2> /dev/null shell '
       test -e "/proc/self/fd/1" || exit 1
       am 1> /dev/null 2>&1 start -a "com.android.phone.action.TOUCH_DIALER"
@@ -397,7 +399,6 @@ get_imei_via_MMI_code()
 
       input keyevent KEYCODE_DPAD_UP
       input keyevent KEYCODE_ENTER
-      input keyevent KEYCODE_HOME
     ' |
     sed 's/>/>\n/g' |
     grep -F -m 1 -A 1 -e 'IMEI' |
@@ -406,6 +407,8 @@ get_imei_via_MMI_code()
     cut -d '"' -f '2' -s |
     LC_ALL=C tr -d ' ' |
     cut -d '/' -f '1' # Discard the other part for now: IMEI/IMEI SV
+
+  adb 1> /dev/null 2>&1 shell 'input keyevent KEYCODE_HOME; svc power stayon false' || true
 }
 
 get_imei()
