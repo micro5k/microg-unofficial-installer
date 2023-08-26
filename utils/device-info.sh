@@ -381,7 +381,29 @@ validate_and_display_info()
 
 get_imei_via_MMI_code()
 {
-  adb 2> /dev/null shell "test -e '/proc/self/fd/1' && am 1> /dev/null 2>&1 start -a 'android.intent.action.DIAL' && sleep 1 && input text '*#06#' && uiautomator dump --compressed '/proc/self/fd/1' && input keyevent KEYCODE_ENTER && input keyevent KEYCODE_ENTER && input keyevent KEYCODE_HOME" | sed 's/>/>\n/g' | grep -F -m 1 -A 1 -e 'IMEI' | tail -n 1 | grep -o -m 1 -e 'text="[0-9]*"' | cut -d '"' -f '2' -s
+  adb 2> /dev/null shell "
+      test -e '/proc/self/fd/1' || exit 1
+      am 1> /dev/null 2>&1 start -a 'android.intent.action.DIAL' || true
+
+      # If we're not in the dialpad, give up
+      uiautomator 2> /dev/null dump --compressed '/proc/self/fd/1' | grep -q -F -e 'com.android.dialer:id/dialpad_key_number' || exit 1
+
+      input keyevent KEYCODE_STAR &&
+      input keyevent KEYCODE_POUND &&
+      input text '06' &&
+      input keyevent KEYCODE_POUND
+
+      uiautomator 2> /dev/null dump --compressed '/proc/self/fd/1'
+
+      input keyevent KEYCODE_ENTER &&
+      input keyevent KEYCODE_ENTER &&
+      input keyevent KEYCODE_HOME
+    " |
+    sed 's/>/>\n/g' |
+    grep -F -m 1 -A 1 -e 'IMEI' |
+    tail -n 1 |
+    grep -o -m 1 -e 'text="[0-9]*"' |
+    cut -d '"' -f '2' -s
 }
 
 get_imei()
