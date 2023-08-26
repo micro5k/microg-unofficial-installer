@@ -395,7 +395,7 @@ get_imei_via_MMI_code()
 
       uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" || exit 3
 
-      input keyevent DPAD_DOWN
+      input keyevent KEYCODE_DPAD_UP
       input keyevent KEYCODE_ENTER
       input keyevent KEYCODE_HOME
     ' |
