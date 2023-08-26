@@ -20,7 +20,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='1.1'
+readonly SCRIPT_VERSION='1.2'
 
 # shellcheck disable=SC2034
 {
@@ -395,6 +395,7 @@ get_imei_via_MMI_code()
 
       uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" || exit 3
 
+      input keyevent DPAD_DOWN
       input keyevent KEYCODE_ENTER
       input keyevent KEYCODE_HOME
     ' |
@@ -403,7 +404,8 @@ get_imei_via_MMI_code()
     tail -n 1 |
     grep -o -m 1 -e 'text="[0-9 /]*"' |
     cut -d '"' -f '2' -s |
-    LC_ALL=C tr -d ' '
+    LC_ALL=C tr -d ' ' |
+    cut -d '/' -f '1' # Discard the other part for now: IMEI/IMEI SV
 }
 
 get_imei()
