@@ -418,6 +418,8 @@ get_imei()
   local _backup_ifs _tmp
   local _val _index _imei_sv
 
+  _imei_sv=''
+
   if _val="$(adb shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && test -n "${_val?}" && test "${_val:?}" != 'null'; then
     :
   elif _val="$(get_phone_info 1 s16 'com.android.shell')" && is_valid_value "${_val?}" && is_iphonesubinfo_response_valid "${_val?}"; then
