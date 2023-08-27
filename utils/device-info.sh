@@ -20,7 +20,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='1.2'
+readonly SCRIPT_VERSION='1.3'
 
 # shellcheck disable=SC2034
 {
@@ -44,6 +44,9 @@ readonly SCRIPT_VERSION='1.2'
   readonly ANDROID_13_SDK=33
   readonly ANDROID_14_SDK=34
 }
+
+readonly NL='
+'
 
 show_status_msg()
 {
@@ -405,15 +408,15 @@ get_imei_via_MMI_code()
     tail -n 1 |
     grep -o -m 1 -e 'text="[0-9 /]*"' |
     cut -d '"' -f '2' -s |
-    LC_ALL=C tr -d ' ' |
-    cut -d '/' -f '1' # Discard the other part for now: IMEI/IMEI SV
+    LC_ALL=C tr -d ' '
 
   adb 1> /dev/null 2>&1 shell 'input keyevent KEYCODE_HOME; svc power stayon false' || true
 }
 
 get_imei()
 {
-  local _val _tmp
+  local _backup_ifs _tmp
+  local _val _index _imei_sv
 
   if _val="$(adb shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && test -n "${_val?}" && test "${_val:?}" != 'null'; then
     :
@@ -432,13 +435,28 @@ get_imei()
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_4_4_SDK:?}" && test "${BUILD_VERSION_SDK:?}" -le "${ANDROID_5_1_SDK:?}"; then
     # Use only as absolute last resort
     if _tmp="$(get_imei_via_MMI_code)" && is_valid_value "${_tmp?}"; then
-      _val="${_tmp:?}"
+      _backup_ifs="${IFS:-}"
+      IFS="${NL:?}"
+
+      # It can also be in the format: IMEI/IMEI SV
+      _index=1
+      for elem in $(printf '%s\n' "${_tmp:?}" | tr '/' '\n'); do
+        case "${_index:?}" in
+          1) _val="${elem?}" ;;
+          2) _imei_sv="${elem?}" ;;
+          *) break ;;
+        esac
+        _index="$((_index + 1))"
+      done
+
+      IFS="${_backup_ifs:-}"
     fi
   fi
   validate_and_display_info 'IMEI' "${_val?}" 15
-  _tmp=''
 
-  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+  if test -n "${_imei_sv?}"; then
+    _val="${_imei_sv:?}"
+  elif test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     :
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
     _val="$(get_phone_info 6 s16 'com.android.shell')" || _val=''
