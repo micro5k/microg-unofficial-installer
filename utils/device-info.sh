@@ -397,23 +397,23 @@ get_imei_via_MMI_code()
   ' || true
 
   adb 2> /dev/null shell '
-      test -e "/proc/self/fd/1" || exit 1
+    test -e "/proc/self/fd/1" || exit 1
 
-      am 1> /dev/null 2>&1 start -a "com.android.phone.action.TOUCH_DIALER"
+    am 1> /dev/null 2>&1 start -a "com.android.phone.action.TOUCH_DIALER"
 
-      # If we are NOT in the dialpad, give up
-      uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" | grep -q -F -e "com.android.dialer:id/dialpad_key_number" -e "com.android.contacts:id/dialpad_key_letters" || exit 2
+    # If we are NOT in the dialpad, give up
+    uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" | grep -q -F -e "com.android.dialer:id/dialpad_key_number" -e "com.android.contacts:id/dialpad_key_letters" || exit 2
 
-      input keyevent KEYCODE_STAR &&
-        input keyevent KEYCODE_POUND &&
-        input text "06" &&
-        input keyevent KEYCODE_POUND
+    input keyevent KEYCODE_STAR &&
+      input keyevent KEYCODE_POUND &&
+      input text "06" &&
+      input keyevent KEYCODE_POUND
 
-      uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" || exit 3
+    uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" || exit 3
 
-      input keyevent KEYCODE_DPAD_UP
-      input keyevent KEYCODE_ENTER
-    ' |
+    input keyevent KEYCODE_DPAD_UP
+    input keyevent KEYCODE_ENTER
+  ' |
     sed 's/>/>\n/g' |
     grep -F -m 1 -A 1 -e 'IMEI' |
     tail -n 1 |
