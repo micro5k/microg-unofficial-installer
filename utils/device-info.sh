@@ -382,6 +382,31 @@ validate_and_display_info()
   show_msg "${1?}: ${2?}"
 }
 
+open_device_status_info()
+{
+  adb 1> /dev/null 2>&1 shell '
+    svc power stayon true
+
+    # If the screen is locked then unlock it (only swipe is supported)
+    if uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" | grep -q -F -e "com.android.systemui:id/keyguard_message_area"; then
+      #echo 1>&2 "Screen unlocking..."
+      input swipe 200 650 200 0
+    fi
+  ' || true
+
+  adb 2> /dev/null shell '
+    am 1> /dev/null 2>&1 start -a "android.settings.DEVICE_INFO_SETTINGS" &&
+      input keyevent KEYCODE_BACK &&
+      am 1> /dev/null 2>&1 start -a "android.settings.DEVICE_INFO_SETTINGS"
+
+    input keyevent KEYCODE_DPAD_UP &&
+      input keyevent KEYCODE_DPAD_DOWN &&
+      input keyevent KEYCODE_ENTER
+  '
+
+  adb 1> /dev/null 2>&1 shell 'svc power stayon false' || true
+}
+
 get_imei_via_MMI_code()
 {
   adb 1> /dev/null 2>&1 shell '
@@ -390,7 +415,7 @@ get_imei_via_MMI_code()
     # If the screen is locked then unlock it (only swipe is supported)
     if uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" | grep -q -F -e "com.android.systemui:id/keyguard_message_area"; then
       #echo 1>&2 "Screen unlocking..."
-      input swipe 200 500 200 0
+      input swipe 200 650 200 0
     fi
 
     input keyevent KEYCODE_HOME
