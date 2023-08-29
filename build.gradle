@@ -112,6 +112,6 @@ tasks.register('install')
 tasks.named('wrapper').configure {
     println 'Gradle: ' + gradleVersionTarget
     gradleVersion gradleVersionTarget
-    distributionType Wrapper.DistributionType.ALL
+    //distributionType Wrapper.DistributionType.ALL
     distributionSha256Sum gradleSha256Sum
 }
