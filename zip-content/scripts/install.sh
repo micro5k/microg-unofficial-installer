@@ -70,7 +70,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     install_backends='true'
   fi
 
-  setup_app 1 'microG Services Framework Proxy' 'GoogleServicesFramework' 'priv-app' false false
+  setup_app 1 'microG Services Framework Proxy' 'GsfProxy' 'priv-app' false false
 
   if test "${install_backends:?}" = 'true'; then
     setup_app "${INSTALL_MOZILLABACKEND:?}" 'Mozilla UnifiedNlp Backend' 'IchnaeaNlpBackend' 'app'
