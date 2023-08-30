@@ -87,7 +87,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   else
     # Fallback to FakeStore
     market_is_fakestore='true'
-    setup_app 1 'FakeStore' 'FakeStore' 'priv-app' false false
+    setup_app 1 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false
   fi
 
   if test "${market_is_fakestore:?}" = 'true'; then
