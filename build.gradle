@@ -13,13 +13,9 @@ plugins {
     //id 'com.github.spotbugs' version '4.7.6'
 }
 
-gradleEnterprise.buildScan {
-    termsOfServiceUrl 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree 'yes'
-    publishAlwaysIf System.getenv('UPLOAD_BUILD_SCAN') != null
-}
+/* ===FUNCTIONS=== */
 
-private void configure() {
+private void initialize() {
     println name
 
     rootProject.buildDir = "${projectDir}/output"
@@ -43,7 +39,6 @@ private void configure() {
         throw new GradleException('This require Java 11 or later')
     }
 }
-configure()
 
 private String getOurArchivesBaseName()
 {
@@ -54,9 +49,21 @@ private String getOurArchivesBaseName()
     return "${val}"
 }
 
+initialize()
+
+/* ===BLOCKS=== */
+
+gradleEnterprise.buildScan {
+    termsOfServiceUrl 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree 'yes'
+    publishAlwaysIf System.getenv('UPLOAD_BUILD_SCAN') != null
+}
+
 base {
     archivesName = getOurArchivesBaseName()
 }
+
+/* ==TASKS=== */
 
 tasks.register('cleanCache', Delete) {
     delete "${projectDir}/cache"
