@@ -18,11 +18,11 @@ plugins {
 private void initialize() {
     println name
 
-    rootProject.buildDir = "${projectDir}/output"
+    project.buildDir = "${project.projectDir}/output"
     defaultTasks 'tasks'
 
     Properties props = new Properties()
-    file("${projectDir}/zip-content/module.prop").withInputStream { props.load(it) }
+    file("${project.projectDir}/zip-content/module.prop").withInputStream { props.load(it) }
 
     description = String.valueOf(props.getProperty('description'))
     version = String.valueOf(props.getProperty('version')).toLowerCase(Locale.ENGLISH).trim()
