@@ -277,7 +277,7 @@ dl_type_two()
     return "${?}"
   }
 
-  _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -sd '/' -f '5')" || {
+  _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -d '/' -f '5-' -s)" || {
     report_failure_two "${?}" 'get location'
     return "${?}"
   }
@@ -287,7 +287,7 @@ dl_type_two()
     return "${?}"
   }
   sleep 0.2
-  send_empty_ajax_request "${DL_PROT:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}&websiteToken=12345" "${DL_PROT:?}${_base_dm:?}" || {
+  send_empty_ajax_request "${DL_PROT:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}"'&website''Token=''7fd9''4ds1''2fds4' "${DL_PROT:?}${_base_dm:?}" || {
     report_failure_two "${?}" 'get content'
     return "${?}"
   }
