@@ -17,12 +17,17 @@ user.gradle
 # Local configuration files
 local.properties
 
-# Code scanning, caches and log files
+# Code scanning, log and other files
 *.log
 *.sarif
 *.dex
 .ash_history
-.DS_Store
-Thumbs.db
-__pycache__/
+.bash_history
 coverage
+.wget-hsts
+
+# Caches and other files
+__pycache__/
+Thumbs.db
+.DS_Store
+desktop.ini
