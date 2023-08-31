@@ -48,6 +48,7 @@ ui_error()
 {
   echo 1>&2 "ERROR: $1"
   pause_if_needed
+  restore_saved_title_if_exist
   test -n "$2" && exit "$2"
   exit 1
 }
