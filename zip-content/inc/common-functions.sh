@@ -637,6 +637,11 @@ initialize()
   readonly MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
   export MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
 
+  if test -e "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed"; then
+    ui_warning 'The previous installation has failed!!!'
+    ui_msg_empty_line
+  fi
+
   # Previously installed module version code (0 if wasn't installed)
   PREV_MODULE_VERCODE="$(simple_file_getprop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
   case "${PREV_MODULE_VERCODE:-}" in
@@ -774,7 +779,9 @@ _move_app_into_subfolder()
 replace_permission_placeholders()
 {
   if test -e "${TMP_PATH:?}/files/etc/${1:?}"; then
-    { grep -l -r -F -e "${2:?}" -- "${TMP_PATH:?}/files/etc/${1:?}" || true; } | while IFS='' read -r file_name; do
+    {
+      grep -l -r -F -e "${2:?}" -- "${TMP_PATH:?}/files/etc/${1:?}" || true
+    } | while IFS='' read -r file_name; do
       ui_debug "    ${file_name#"${TMP_PATH}/files/"}"
       replace_line_in_file "${file_name:?}" "${2:?}" "${3:?}"
     done || ui_warning "Failed to replace '${2?}' in 'files/etc/${1?}'"
@@ -865,7 +872,10 @@ perform_secure_copy_to_device()
   create_dir "${SYS_PATH:?}/${1:?}"
   cp 2> /dev/null -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ ||
     _error="$(cp 2>&1 -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)" ||
-    ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error?}" | head -n 1 || true)"
+    {
+      touch "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || true
+      ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error?}" | head -n 1 || true)"
+    }
 }
 
 perform_installation()
@@ -896,6 +906,7 @@ perform_installation()
 
 finalize_and_report_success()
 {
+  rm -f -- "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || true
   deinitialize
   touch "${TMP_PATH:?}/installed"
 
