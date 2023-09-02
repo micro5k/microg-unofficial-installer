@@ -16,13 +16,12 @@ plugins {
 /* ===FUNCTIONS=== */
 
 private void initialize() {
-    println name
+    Properties props = new Properties()
 
-    project.buildDir = "${project.projectDir}/output"
     defaultTasks 'tasks'
 
-    Properties props = new Properties()
-    file("${project.projectDir}/zip-content/module.prop").withInputStream { props.load(it) }
+    project.buildDir = project.file("output")
+    project.file('zip-content/module.prop').withInputStream { props.load(it) }
 
     description = String.valueOf(props.getProperty('description'))
     version = String.valueOf(props.getProperty('version')).toLowerCase(Locale.ENGLISH).trim()
@@ -32,6 +31,7 @@ private void initialize() {
     //ext.isAlpha = version.endsWith('-alpha')
     //ext.isSnapshot = version.endsWith('-snapshot')
 
+    println name
     println 'Version: ' + version
     println 'OS: ' + System.properties['os.name']
 
@@ -47,6 +47,39 @@ private String getOurArchivesBaseName()
         throw new InvalidUserDataException('String is empty.')
 
     return "${val}"
+}
+
+private void configureSigning(def android, File keystorePropsFile)
+{
+    if(!keystorePropsFile.exists()) return
+    if(android == null) throw new GradleException('android is null inside configureSigning()')
+
+    println 'Signed build'
+
+    Properties keystoreProps = new Properties()
+    keystoreProps.load(new FileInputStream(keystorePropsFile))
+
+    String keyStorePassword
+    boolean fallbackToEnv = keystoreProps.containsKey('fallbackToEnv') && keystoreProps['fallbackToEnv'] == 'true'
+
+    if(keystoreProps.containsKey('keyStorePassword'))
+        keyStorePassword = keystoreProps['keyStorePassword']
+    else if(fallbackToEnv)
+        keyStorePassword = System.getenv('KEYSTORE_PASSWORD')
+
+    if(keyStorePassword == null || keyStorePassword.isEmpty())
+        throw new InvalidUserDataException('Keystore password is empty')
+
+    android.signingConfigs {
+        config {
+            storeFile = rootProject.file(keystoreProps['storeFile'])
+            storePassword = keyStorePassword
+            keyAlias = keystoreProps['keyAlias']
+            keyPassword = keyStorePassword
+        }
+    }
+
+    android.buildTypes.release.signingConfig android.signingConfigs.config
 }
 
 initialize()
