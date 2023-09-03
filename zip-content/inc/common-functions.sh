@@ -862,20 +862,132 @@ prepare_installation()
   fi
 }
 
+_something_exists()
+{
+  for filename in "${@}"; do
+    if test -e "${filename:?}"; then return 0; fi
+  done
+  return 1
+}
+
+_get_free_space()
+{
+  local _skip_first='true'
+
+  df -P -- "${SYS_MOUNTPOINT:?}" | while IFS=' ' read -r _ _ _ available_space _; do
+    if test "${_skip_first?}" = 'true'; then
+      _skip_first='false'
+      continue
+    fi
+
+    if test -n "${available_space?}" && printf '%s\n' "${available_space:?}"; then
+      return 4
+    fi
+  done
+  if test "${?}" -eq 4; then return 0; fi # Found
+
+  return 1 # NOT found
+}
+
+_wait_free_space_changes()
+{
+  local _max_attempts='15'
+
+  printf '  Waiting'
+
+  while test "${_max_attempts:?}" -gt 0 && _max_attempts="$((_max_attempts - 1))"; do
+    printf '.'
+    if test "$(_get_free_space || true)" != "${1:?}"; then
+      break
+    fi
+    sleep 1
+  done
+
+  printf '\n'
+}
+
+_rolling_back_last_app_internal()
+{
+  local _backup_ifs _skip_first _initial_free_space _installed_file_list
+  if test ! -s "${TMP_PATH:?}/processed-${1:?}s.log"; then return 1; fi
+
+  _initial_free_space="$(_get_free_space)" || return 2
+  _installed_file_list="$(tail -n '1' -- "${TMP_PATH:?}/processed-${1:?}s.log")" || ui_error "Failed to read processed-${1?}s.log"
+  test -n "${_installed_file_list?}" || return 3
+
+  ui_warning "Rolling back $(printf '%s\n' "${_installed_file_list:?}" | cut -d '|' -f '1' -s || true)..."
+
+  _backup_ifs="${IFS:-}"
+  IFS='|'
+  _skip_first='true'
+  for elem in ${_installed_file_list:?}; do
+    if test "${_skip_first?}" = 'true'; then
+      _skip_first='false'
+      continue
+    fi
+
+    if test -n "${elem?}"; then
+      delete "${SYS_PATH:?}/${elem:?}"
+      delete_temp "files/${elem:?}"
+    fi
+  done
+  IFS="${_backup_ifs:-}"
+
+  fstrim 2> /dev/null -- "${SYS_MOUNTPOINT:?}" || true
+
+  # Reclaiming free space may take some time
+  _wait_free_space_changes "${_initial_free_space:?}"
+
+  sed -ie '$ d' -- "${TMP_PATH:?}/processed-${1:?}s.log" || ui_error "Failed to remove the last line from read processed-${1?}s.log"
+
+  return 0
+}
+
+_rolling_back_last_app()
+{
+  if test "${1:?}" = 'priv-app'; then
+    _rolling_back_last_app_internal 'priv-app'
+    return "${?}"
+  elif test "${1:?}" = 'app'; then
+    _rolling_back_last_app_internal 'app' || _rolling_back_last_app_internal 'priv-app'
+    return "${?}"
+  fi
+
+  return 1
+}
+
 perform_secure_copy_to_device()
 {
-  local _error
-
-  if test ! -e "${TMP_PATH:?}/files/${1:?}"; then return 1; fi
+  if test ! -e "${TMP_PATH:?}/files/${1:?}"; then return 0; fi
+  local _first_error_text=''
+  local _error_text=''
 
   ui_debug "  Copying the '${1?}' folder to the device..."
   create_dir "${SYS_PATH:?}/${1:?}"
-  cp 2> /dev/null -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ ||
-    _error="$(cp 2>&1 -rpf -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)" ||
-    {
-      touch "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || true
-      ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error?}" | head -n 1 || true)"
-    }
+
+  if cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ || _first_error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)"; then
+    return 0
+  else
+    while _rolling_back_last_app "${1:?}"; do
+      if ! _something_exists "${TMP_PATH:?}/files/${1:?}"/* || _error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)"; then
+        if test -n "${_first_error_text?}"; then
+          ui_recovered_error "$(printf '%s\n' "${_first_error_text:?}" | head -n 1 || true)"
+        fi
+        return 0
+      fi
+    done
+  fi
+
+  touch "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || true
+
+  ui_debug ''
+  df -h -T -- "${SYS_MOUNTPOINT:?}" || true
+  ui_debug ''
+
+  if test -n "${_error_text?}"; then
+    ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error_text?}" | head -n 1 || true)"
+  fi
+  ui_error "Failed to copy '${1?}' to the device"
 }
 
 perform_installation()
@@ -944,6 +1056,15 @@ ui_error()
   fi
 
   exit "${ERROR_CODE:?}"
+}
+
+ui_recovered_error()
+{
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
+    _show_text_on_recovery "RECOVERED ERROR: ${1:?}"
+  else
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "RECOVERED ERROR: ${1:?}"
+  fi
 }
 
 ui_warning()
@@ -1339,8 +1460,8 @@ delete_temp()
 {
   for filename in "${@}"; do
     if test -e "${TMP_PATH:?}/${filename?}"; then
-      #ui_debug "Deleting '${TMP_PATH:?}/${filename?}'...."
-      rm -rf -- "${TMP_PATH:?}/${filename?}" || ui_error 'Failed to delete temp files/folders' 103
+      #ui_debug "Deleting '${TMP_PATH?}/${filename?}'...."
+      rm -rf -- "${TMP_PATH:?}/${filename:?}" || ui_error 'Failed to delete temp files/folders' 103
     fi
   done
 }
@@ -1508,7 +1629,6 @@ setup_app()
       fi
       create_dir "${TMP_PATH:?}/files/${4:?}" || ui_error "Failed to create the folder for '${2?}'"
       move_rename_file "${TMP_PATH:?}/origin/${4:?}/${3:?}.apk" "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${2?}'"
-      _installed_file_list="${_installed_file_list?}|${4:?}/${_output_name:?}.apk"
 
       case "${_extract_libs?}" in
         'libs') extract_libs "${4:?}" "${_output_name:?}" ;;
@@ -1516,8 +1636,10 @@ setup_app()
         *) ui_error "Invalid value of extract libs => ${_extract_libs?}" ;;
       esac
 
-      _installed_file_list="${_installed_file_list#|}"
-      printf '%s\n' "${2:?}|${_installed_file_list:?}" 1>> "${TMP_PATH:?}/processed-apps.log" || ui_error 'Failed to update processed-apps.log'
+      if test "${_optional:?}" = 'true' && test "$(wc -c -- "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" | cut -d ' ' -f '1' -s || printf '0')" -gt 300000; then
+        _installed_file_list="${_installed_file_list#|}"
+        printf '%s\n' "${2:?}|${4:?}/${_output_name:?}.apk|${_installed_file_list?}" 1>> "${TMP_PATH:?}/processed-${4:?}s.log" || ui_error "Failed to update processed-${4?}s.log"
+      fi
 
       return 0
     else
