@@ -1636,7 +1636,7 @@ setup_app()
         *) ui_error "Invalid value of extract libs => ${_extract_libs?}" ;;
       esac
 
-      if test "${_optional:?}" = 'true' && test "$(stat -c '%s' -- "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || printf '0')" -gt 300000; then
+      if test "${_optional:?}" = 'true' && test "$(stat -c '%s' -- "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || printf '0' || true)" -gt 300000; then
         _installed_file_list="${_installed_file_list#|}"
         printf '%s\n' "${2:?}|${4:?}/${_output_name:?}.apk|${_installed_file_list?}" 1>> "${TMP_PATH:?}/processed-${4:?}s.log" || ui_error "Failed to update processed-${4?}s.log"
       fi
