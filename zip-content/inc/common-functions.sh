@@ -891,9 +891,9 @@ _get_free_space()
 
 _wait_free_space_changes()
 {
-  local _max_attempts='15'
+  local _max_attempts='20'
 
-  printf '  Waiting'
+  printf '  Waiting...'
 
   while test "${_max_attempts:?}" -gt 0 && _max_attempts="$((_max_attempts - 1))"; do
     printf '.'
@@ -1636,7 +1636,7 @@ setup_app()
         *) ui_error "Invalid value of extract libs => ${_extract_libs?}" ;;
       esac
 
-      if test "${_optional:?}" = 'true' && test "$(wc -c -- "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" | cut -d ' ' -f '1' -s || printf '0')" -gt 300000; then
+      if test "${_optional:?}" = 'true' && test "$(stat -c '%s' -- "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || printf '0')" -gt 300000; then
         _installed_file_list="${_installed_file_list#|}"
         printf '%s\n' "${2:?}|${4:?}/${_output_name:?}.apk|${_installed_file_list?}" 1>> "${TMP_PATH:?}/processed-${4:?}s.log" || ui_error "Failed to update processed-${4?}s.log"
       fi
