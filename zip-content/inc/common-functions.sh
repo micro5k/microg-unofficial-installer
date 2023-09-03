@@ -1430,7 +1430,7 @@ delete()
 {
   for filename in "${@}"; do
     if test -e "${filename?}"; then
-      ui_debug "Deleting '${filename?}'...."
+      ui_debug "Deleting '${filename?}'..."
       rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders' 103
     fi
   done
@@ -1440,7 +1440,7 @@ delete_recursive()
 {
   for filename in "${@}"; do
     if test -e "${filename?}"; then
-      ui_debug "Deleting '${filename?}'...."
+      ui_debug "Deleting '${filename?}'..."
       rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders' 103
     fi
   done
@@ -1450,7 +1450,7 @@ delete_recursive_wildcard()
 {
   for filename in "${@}"; do
     if test -e "${filename?}"; then
-      ui_debug "Deleting '${filename?}'...."
+      ui_debug "Deleting '${filename?}'..."
       rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders' 103
     fi
   done
@@ -1460,7 +1460,7 @@ delete_temp()
 {
   for filename in "${@}"; do
     if test -e "${TMP_PATH:?}/${filename?}"; then
-      #ui_debug "Deleting '${TMP_PATH?}/${filename?}'...."
+      #ui_debug "Deleting '${TMP_PATH?}/${filename?}'..."
       rm -rf -- "${TMP_PATH:?}/${filename:?}" || ui_error 'Failed to delete temp files/folders' 103
     fi
   done
