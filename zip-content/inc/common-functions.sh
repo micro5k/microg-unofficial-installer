@@ -972,6 +972,8 @@ perform_secure_copy_to_device()
       if ! _something_exists "${TMP_PATH:?}/files/${1:?}"/* || _error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)"; then
         if test -n "${_first_error_text?}"; then
           ui_recovered_error "$(printf '%s\n' "${_first_error_text:?}" | head -n 1 || true)"
+        else
+          ui_recovered_error 'Unknown'
         fi
         return 0
       fi
