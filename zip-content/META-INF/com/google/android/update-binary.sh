@@ -23,6 +23,14 @@ export ZIPFILE="${3:?}"
 
 echo 'PRELOADER 1'
 
+command 1> /dev/null -v printf ||
+  {
+    printf()
+    {
+      echo "${2?}"
+    }
+  }
+
 # Detect whether we are in boot mode
 _ub_detect_bootmode()
 {

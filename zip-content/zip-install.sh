@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-readonly ZIPINSTALL_VERSION='0.7'
+readonly ZIPINSTALL_VERSION='0.8'
 
 umask 022 || exit 6
 
@@ -131,6 +131,8 @@ if test -z "${TMPDIR:-}" || test ! -w "${TMPDIR:?}"; then
 fi
 export TMPDIR
 
+PATH="${PATH:-}:."
+
 SCRIPT_NAME="${TMPDIR:?}/update-binary" || exit 12
 UPD_SCRIPT_NAME="${TMPDIR:?}/updater-script" || exit 12
 ZIPFILE="${1:?}"
@@ -147,11 +149,14 @@ test -s "${SCRIPT_NAME:?}" || {
 unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/updater-script' 1> "${UPD_SCRIPT_NAME:?}" || true # Not strictly needed
 
 STATUS=0
-if test '#!' = "$(head -q -c 2 -- "${SCRIPT_NAME:?}" || true)"; then
+if ! command 1> /dev/null -v head || test '#!' = "$(head -q -c 2 -- "${SCRIPT_NAME:?}" || true)"; then
+  printf '%s\n' 'Executing script...'
+
   # Use STDERR (2) for recovery messages to avoid possible problems with subshells intercepting output
   sh -- "${SCRIPT_NAME:?}" 3 2 "${ZIPFILE:?}" 'zip-install' "${ZIPINSTALL_VERSION:?}" || STATUS="${?}"
 else
   printf '%s\n' 'Executing binary...'
+
   # Legacy versions of chmod don't support +x and --
   chmod 0755 "${SCRIPT_NAME:?}" || {
     ui_show_error "chmod failed on '${SCRIPT_NAME:?}'"
