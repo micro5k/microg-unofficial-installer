@@ -3,17 +3,29 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-readonly ZIPINSTALL_VERSION='0.6'
+readonly ZIPINSTALL_VERSION='0.7'
 
 umask 022 || exit 6
 
-command 1> /dev/null -v printf || {
-  # Rogue printf emulation for device without it
-  printf()
+command 1> /dev/null -v printf ||
   {
-    echo "${2?}"
+    printf()
+    {
+      echo "${2?}"
+    }
   }
-}
+
+command 1> /dev/null -v whoami ||
+  {
+    whoami()
+    {
+      _whomi_val="$(id | grep -o -m '1' -e "uid=[0-9]*([a-z]*)" | grep -o -e "([a-z]*)")" || return "${?}"
+      _whomi_val="${_whomi_val#\(}"
+      _whomi_val="${_whomi_val%\)}"
+      echo "${_whomi_val?}"
+      unset _whomi_val
+    }
+  }
 
 ui_show_error()
 {
@@ -53,7 +65,7 @@ if test -z "${*}"; then
   exit 5
 fi
 
-if test "$(whoami || id -un || true)" != 'root'; then
+if test "$(whoami || true)" != 'root'; then
   if test "${AUTO_ELEVATED:-false}" = 'false'; then
     printf '%s\n' 'Auto-rooting attempt...'
 
