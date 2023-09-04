@@ -628,7 +628,7 @@ main()
     display_info 'Emulator' 'Leapdroid'
   fi
 
-  BUILD_MANUFACTURER="$(validated_chosen_getprop 'ro.product.manufacturer')"
+  BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.brand')"
   BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
   SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBER?}"
 
@@ -641,7 +641,7 @@ main()
   show_msg ''
 
   ANDROID_ID="$(get_android_id)"
-  validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
+  validate_and_display_info 'Android ID' "${ANDROID_ID?}" 15 16
 
   show_msg ''
   show_msg ''
