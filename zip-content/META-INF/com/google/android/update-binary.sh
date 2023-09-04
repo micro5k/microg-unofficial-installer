@@ -23,13 +23,31 @@ export ZIPFILE="${3:?}"
 
 echo 'PRELOADER 1'
 
-command 1> /dev/null -v printf ||
+command 1> /dev/null -v printf || {
+  printf()
   {
-    printf()
-    {
-      echo "${2?}"
-    }
+    echo "${2?}"
   }
+}
+
+command 1> /dev/null -v unzip || {
+  if command 1> /dev/null -v busybox; then alias unzip='busybox unzip'; fi
+}
+
+command 1> /dev/null -v dirname || {
+  dirname()
+  {
+    echo "${1%/*}"
+  }
+}
+
+command 1> /dev/null -v uname || {
+  uname()
+  {
+    # ToDO: Fix value
+    getprop ro.product.cpu.abi
+  }
+}
 
 # Detect whether we are in boot mode
 _ub_detect_bootmode()

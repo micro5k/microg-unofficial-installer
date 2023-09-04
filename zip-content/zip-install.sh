@@ -3,29 +3,32 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-readonly ZIPINSTALL_VERSION='0.8'
+readonly ZIPINSTALL_VERSION='0.8.1'
 
-umask 022 || exit 6
+umask 022 || true
+PATH="${PATH:-}:."
 
-command 1> /dev/null -v printf ||
+command 1> /dev/null -v printf || {
+  printf()
   {
-    printf()
-    {
-      echo "${2?}"
-    }
+    echo "${2?}"
   }
+}
 
-command 1> /dev/null -v whoami ||
+command 1> /dev/null -v whoami || {
+  whoami()
   {
-    whoami()
-    {
-      _whoami_val="$(id | grep -o -m '1' -e "uid=[0-9]*([a-z]*)" | grep -o -e "([a-z]*)")" || return "${?}"
-      _whoami_val="${_whoami_val#\(}"
-      _whoami_val="${_whoami_val%\)}"
-      echo "${_whoami_val?}"
-      unset _whoami_val
-    }
+    _whoami_val="$(id | grep -o -m '1' -e "uid=[0-9]*([a-z]*)" | grep -o -e "([a-z]*)")" || return "${?}"
+    _whoami_val="${_whoami_val#\(}"
+    _whoami_val="${_whoami_val%\)}"
+    echo "${_whoami_val?}"
+    unset _whoami_val
   }
+}
+
+command 1> /dev/null -v unzip || {
+  if command 1> /dev/null -v busybox; then alias unzip='busybox unzip'; fi
+}
 
 ui_show_error()
 {
@@ -130,8 +133,6 @@ if test -z "${TMPDIR:-}" || test ! -w "${TMPDIR:?}"; then
   exit 11
 fi
 export TMPDIR
-
-PATH="${PATH:-}:."
 
 SCRIPT_NAME="${TMPDIR:?}/update-binary" || exit 12
 UPD_SCRIPT_NAME="${TMPDIR:?}/updater-script" || exit 12
