@@ -20,7 +20,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='1.3'
+readonly SCRIPT_VERSION='1.4'
 
 # shellcheck disable=SC2034
 {
@@ -418,27 +418,36 @@ get_imei_via_MMI_code()
       #echo 1>&2 "Screen unlocking..."
       input swipe 200 650 200 0
     fi
-
-    input keyevent KEYCODE_HOME
   ' || true
 
   adb 2> /dev/null shell '
     test -e "/proc/self/fd/1" || exit 1
+    alias dump_ui="uiautomator 2> /dev/null dump --compressed \"/proc/self/fd/1\"" || exit 2
 
-    am 1> /dev/null 2>&1 start -a "com.android.phone.action.TOUCH_DIALER"
+    am 1> /dev/null 2>&1 start -a "com.android.phone.action.TOUCH_DIALER" || true
 
-    # If we are NOT in the dialpad, give up
-    uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" | grep -q -F -e "com.android.dialer:id/dialpad_key_number" -e "com.android.contacts:id/dialpad_key_letters" || exit 2
+    _current_ui="$(dump_ui)" || exit 3
 
-    input keyevent KEYCODE_STAR &&
-      input keyevent KEYCODE_POUND &&
-      input text "06" &&
-      input keyevent KEYCODE_POUND
+    if echo "${_current_ui?}" | grep -q -F -e "com.android.dialer:id/dialpad_key_number" -e "com.android.contacts:id/dialpad_key_letters"; then
+      # Dialpad
+      input keyevent KEYCODE_MOVE_HOME &&
+        input keyevent KEYCODE_STAR &&
+        input keyevent KEYCODE_POUND &&
+        input text "06" &&
+        input keyevent KEYCODE_POUND &&
+        _current_ui="$(dump_ui)"
+    fi
 
-    uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" || exit 3
+    if echo "${_current_ui?}" | grep -q -F -e "text=\"IMEI\""; then
+      # IMEI window
+      echo "${_current_ui?}"
 
-    input keyevent KEYCODE_DPAD_UP
-    input keyevent KEYCODE_ENTER
+      input keyevent KEYCODE_DPAD_UP
+      input keyevent KEYCODE_ENTER
+    else
+      # Failure
+      exit 4
+    fi
   ' |
     sed 's/>/>\n/g' |
     grep -F -m 1 -A 1 -e 'IMEI' |
