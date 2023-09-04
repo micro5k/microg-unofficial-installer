@@ -19,6 +19,13 @@ MINUTIL_VERSION='0.7'
 
 ### PREVENTIVE CHECKS ###
 
+command 1> /dev/null -v printf || {
+  printf()
+  {
+    echo "${2:-}"
+  }
+}
+
 _minutil_initialize()
 {
   case "${0:?}" in
@@ -395,7 +402,7 @@ while true; do
     *)
       _minutil_display_help='true'
       _minutil_newline='true'
-      \printf 1>&2 'MinUtil: invalid option -- %s\n' "'${1#-}'" || true
+      \printf 1>&2 '%s\n' "MinUtil: invalid option -- '${1#-}'" || true
       ;;
   esac
 
@@ -415,7 +422,7 @@ if test "${_minutil_display_help:?}" = 'true'; then
 
   printf '%s\n' "${MINUTIL_NAME:?} v${MINUTIL_VERSION:?} - Minimal utilities"
   printf '%s\n\n' 'Licensed under GPLv3+'
-  printf 'Usage: %s [OPTIONS] [--]\n\n' "${_minutil_script_name:?}"
+  printf '%s\n\n' "Usage: ${_minutil_script_name:?} [OPTIONS] [--]"
 
   _minutil_aligned_print '-h,--help' 'Show this help'
   _minutil_aligned_print '-s,--rescan-storage' 'Rescan storage to find file changes'

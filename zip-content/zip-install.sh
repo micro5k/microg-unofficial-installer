@@ -11,7 +11,7 @@ PATH="${PATH:-}:."
 command 1> /dev/null -v printf || {
   printf()
   {
-    echo "${2?}"
+    echo "${2:-}"
   }
 }
 
@@ -21,7 +21,7 @@ command 1> /dev/null -v whoami || {
     _whoami_val="$(id | grep -o -m '1' -e "uid=[0-9]*([a-z]*)" | grep -o -e "([a-z]*)")" || return "${?}"
     _whoami_val="${_whoami_val#\(}"
     _whoami_val="${_whoami_val%\)}"
-    echo "${_whoami_val?}"
+    printf '%s\n' "${_whoami_val?}"
     unset _whoami_val
   }
 }
