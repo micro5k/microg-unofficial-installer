@@ -367,6 +367,8 @@ generate_rom_info()
   if test "${_verify_emulator?}" = 'true'; then
     if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && test -n "${EMU_NAME?}"; then
       IS_EMU='true'
+    elif EMU_NAME="$(chosen_getprop 'ro.kernel.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && test -n "${EMU_NAME?}"; then
+      IS_EMU='true'
     elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && test -n "${LEAPD_VERSION?}"; then
       IS_EMU='true'
       EMU_NAME='Leapdroid'

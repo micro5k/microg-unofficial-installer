@@ -622,6 +622,8 @@ main()
 
   if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
     display_info 'Emulator' "${EMU_NAME?}"
+  elif EMU_NAME="$(chosen_getprop 'ro.kernel.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
+    display_info 'Emulator' "${EMU_NAME?}"
   elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
     display_info 'Emulator' 'Leapdroid'
   fi
