@@ -19,11 +19,11 @@ command 1> /dev/null -v whoami ||
   {
     whoami()
     {
-      _whomi_val="$(id | grep -o -m '1' -e "uid=[0-9]*([a-z]*)" | grep -o -e "([a-z]*)")" || return "${?}"
-      _whomi_val="${_whomi_val#\(}"
-      _whomi_val="${_whomi_val%\)}"
-      echo "${_whomi_val?}"
-      unset _whomi_val
+      _whoami_val="$(id | grep -o -m '1' -e "uid=[0-9]*([a-z]*)" | grep -o -e "([a-z]*)")" || return "${?}"
+      _whoami_val="${_whoami_val#\(}"
+      _whoami_val="${_whoami_val%\)}"
+      echo "${_whoami_val?}"
+      unset _whoami_val
     }
   }
 
