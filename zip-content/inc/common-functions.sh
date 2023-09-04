@@ -406,6 +406,15 @@ remount_read_write_if_needed()
   fi
 }
 
+is_string_starting_with()
+{
+  case "${2?}" in
+    "${1:?}"*) return 0 ;; # Found
+    *) ;;
+  esac
+  return 1 # NOT found
+}
+
 _detect_architectures()
 {
   # Info:
@@ -599,7 +608,7 @@ initialize()
   _find_and_mount_system
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
-  BUILD_MANUFACTURER="$(sys_getprop 'ro.product.manufacturer')" || BUILD_DEVICE="$(sys_getprop 'ro.product.brand')"
+  BUILD_MANUFACTURER="$(sys_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(sys_getprop 'ro.product.brand')"
   BUILD_DEVICE="$(sys_getprop 'ro.product.device')" || BUILD_DEVICE="$(sys_getprop 'ro.build.product')"
   BUILD_PRODUCT="$(sys_getprop 'ro.product.name')"
   readonly BUILD_MANUFACTURER BUILD_DEVICE BUILD_PRODUCT
@@ -618,13 +627,14 @@ initialize()
 
   IS_EMU='false'
   case "${BUILD_DEVICE?}" in
-    'windows_x86_64' | 'emu64x')
-      IS_EMU='true'
-      ;;
-    *)
-      if is_valid_prop "$(simple_getprop 'ro.leapdroid.version' || true)"; then IS_EMU='true'; fi
-      ;;
+    'windows_x86_64' | 'emu64x') IS_EMU='true' ;;
+    *) ;;
   esac
+
+  if is_string_starting_with 'sdk_google_phone_' "${BUILD_PRODUCT?}" || is_valid_prop "$(simple_getprop 'ro.leapdroid.version' || true)"; then
+    IS_EMU='true'
+  fi
+
   readonly IS_EMU
   export IS_EMU
 
