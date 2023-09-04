@@ -420,6 +420,7 @@ get_imei_via_MMI_code()
     fi
   ' || true
 
+  # shellcheck disable=SC2016
   adb 2> /dev/null shell '
     test -e "/proc/self/fd/1" || exit 1
     alias dump_ui="uiautomator 2> /dev/null dump --compressed \"/proc/self/fd/1\"" || exit 2
