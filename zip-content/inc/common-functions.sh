@@ -599,7 +599,7 @@ initialize()
   _find_and_mount_system
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
-  BUILD_MANUFACTURER="$(sys_getprop 'ro.product.manufacturer')"
+  BUILD_MANUFACTURER="$(sys_getprop 'ro.product.manufacturer')" || BUILD_DEVICE="$(sys_getprop 'ro.product.brand')"
   readonly BUILD_MANUFACTURER
   export BUILD_MANUFACTURER
 
