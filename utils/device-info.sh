@@ -302,7 +302,8 @@ find_serialno()
 
 get_android_id()
 {
-  adb shell 'settings get secure android_id 2> /dev/null' | LC_ALL=C tr -d '[:cntrl:]'
+  local _val
+  _val="$(adb shell 'settings get secure android_id 2> /dev/null' | LC_ALL=C tr -d '[:cntrl:]')" && test -n "${_val?}" && printf '%016x' "0x${_val:?}"
 }
 
 get_gsf_id()
@@ -641,7 +642,7 @@ main()
   show_msg ''
 
   ANDROID_ID="$(get_android_id)"
-  validate_and_display_info 'Android ID' "${ANDROID_ID?}" 15 16
+  validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
 
   show_msg ''
   show_msg ''
