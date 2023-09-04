@@ -956,22 +956,30 @@ _rolling_back_last_app()
   return 1
 }
 
+_is_free_space_error()
+{
+  case "${1?}" in
+    *'space left'*) return 0 ;; # Found
+    *) ;;                       # NOT found
+  esac
+  return 1 # NOT found
+}
+
 perform_secure_copy_to_device()
 {
   if test ! -e "${TMP_PATH:?}/files/${1:?}"; then return 0; fi
-  local _first_error_text=''
   local _error_text=''
 
   ui_debug "  Copying the '${1?}' folder to the device..."
   create_dir "${SYS_PATH:?}/${1:?}"
 
-  if cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ || _first_error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)"; then
+  if cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ || _error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)"; then
     return 0
-  else
+  elif _is_free_space_error "${_error_text?}"; then
     while _rolling_back_last_app "${1:?}"; do
-      if ! _something_exists "${TMP_PATH:?}/files/${1:?}"/* || _error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)"; then
-        if test -n "${_first_error_text?}"; then
-          ui_recovered_error "$(printf '%s\n' "${_first_error_text:?}" | head -n 1 || true)"
+      if ! _something_exists "${TMP_PATH:?}/files/${1:?}"/* || cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/; then
+        if test -n "${_error_text?}"; then
+          ui_recovered_error "$(printf '%s\n' "${_error_text:?}" | head -n 1 || true)"
         else
           ui_recovered_error 'Unknown'
         fi
@@ -980,7 +988,7 @@ perform_secure_copy_to_device()
     done
   fi
 
-  touch "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || true
+  touch 2> /dev/null "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || true
 
   ui_debug ''
   df -h -T -- "${SYS_MOUNTPOINT:?}" || true
