@@ -7,9 +7,17 @@ readonly ZIPINSTALL_VERSION='0.6'
 
 umask 022 || exit 6
 
+command 1> /dev/null -v printf || {
+  # Rogue printf emulation for device without it
+  printf()
+  {
+    echo "${2?}"
+  }
+}
+
 ui_show_error()
 {
-  printf 1>&2 '\033[1;31mERROR: %s\033[0m\n' "${1:-}"
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1:-}"
 }
 
 if test -n "${*}"; then
