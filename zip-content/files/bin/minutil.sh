@@ -1,11 +1,11 @@
 #!/system/bin/sh
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
-# shellcheck disable=SC2310 # This function is invoked in an 'if' condition so set -e will be disabled
+# shellcheck disable=SC2310 # This function is invoked in an 'if' condition so set -e will be disabled #
 
 set -e
+
 # shellcheck disable=SC3040,SC3041,SC2015
 {
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
@@ -14,15 +14,22 @@ set -e
   (set -o pipefail 2> /dev/null) && set -o pipefail || true
 }
 
+### GLOBAL VARIABLES ###
+
 MINUTIL_NAME='MinUtil'
-MINUTIL_VERSION='0.7'
+MINUTIL_VERSION='0.8'
 
 ### PREVENTIVE CHECKS ###
 
 command 1> /dev/null -v printf || {
   printf()
   {
-    echo "${2:-}"
+    if test "${1:-}" = '%s\n\n'; then _printf_newline='true'; fi
+    if test "${#}" -gt 1; then shift; fi
+    echo "${@}"
+
+    test "${_printf_newline:-false}" = 'false' || echo ''
+    unset _printf_newline
   }
 }
 
@@ -215,7 +222,7 @@ _minutil_reinstall_split_package()
   _file_index=0
   if test -z "${_install_sid:-}"; then return 2; fi
 
-  echo "${1:?}" | while IFS='' read -r _file; do
+  printf '%s\n' "${1:?}" | while IFS='' read -r _file; do
     if test -n "${_file:-}" && test -e "${_file:?}"; then
       pm install-write -- "${_install_sid:?}" "${_file_index:?}" "${_file:?}" || {
         pm install-abandon "${_install_sid:?}"
@@ -236,7 +243,7 @@ minutil_reinstall_package()
 {
   \_is_caller_adb_or_root || \return 1
 
-  echo "Reinstalling ${1:-}..."
+  printf '%s\n' "Reinstalling ${1:-}..."
   command -v pm 1> /dev/null || {
     _minutil_error 'Package manager is NOT available'
     return 1
@@ -272,14 +279,14 @@ minutil_reinstall_package()
   fi
 
   unset _package_path _apk_count
-  echo "Package ${1:-} reinstalled."
+  printf '%s\n' "Package ${1:-} reinstalled."
 }
 
 minutil_force_gcm_reconnection()
 {
   \_is_caller_adb_or_root || \return 1
 
-  echo "GCM reconnection..."
+  printf '%s\n' "GCM reconnection..."
   command -v am 1> /dev/null || {
     _minutil_error 'Activity manager is NOT available'
     return 1
@@ -289,7 +296,7 @@ minutil_force_gcm_reconnection()
     _minutil_error 'GCM reconnection failed!'
     return 3
   }
-  echo "Done!"
+  printf '%s\n' "Done!"
 }
 
 minutil_remove_all_accounts()
@@ -307,7 +314,7 @@ minutil_remove_all_accounts()
 
   _list_account_files | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
-      echo "Deleting '${_file:?}'..."
+      printf '%s\n' "Deleting '${_file:?}'..."
       rm -f -- "${_file}" || return 1
     fi
   done || {
@@ -315,14 +322,14 @@ minutil_remove_all_accounts()
     return 4
   }
 
-  echo "All accounts deleted. Now restart the device!!!"
+  printf '%s\n' "All accounts deleted. Now restart the device!!!"
 }
 
 minutil_media_rescan()
 {
   \_is_caller_root || \return 1
 
-  echo "Media rescanning..."
+  printf '%s\n' "Media rescanning..."
   command -v am 1> /dev/null || {
     _minutil_error 'Activity manager is NOT available'
     return 1
@@ -332,14 +339,14 @@ minutil_media_rescan()
     _minutil_error 'Media rescanning failed!'
     return 3
   }
-  echo "Done!"
+  printf '%s\n' "Done!"
 }
 
 minutil_manual_media_rescan()
 {
   \_is_caller_adb_or_root || \return 1
 
-  echo "Manual media rescanning..."
+  printf '%s\n' "Manual media rescanning..."
   command -v am 1> /dev/null || {
     _minutil_error 'Activity manager is NOT available'
     return 1
@@ -359,7 +366,7 @@ minutil_manual_media_rescan()
     _minutil_error 'Manual media rescanning failed!'
     return 3
   fi
-  echo "Done!"
+  printf '%s\n' "Done!"
   return 0
 }
 
@@ -383,32 +390,32 @@ while true; do
       ;;
 
     -i | --reinstall-package)
-      \minutil_reinstall_package "${2:?Package name not specified}"
+      minutil_reinstall_package "${2:?Package name not specified}"
       shift
       ;;
 
     --remove-all-accounts)
-      \minutil_remove_all_accounts
+      minutil_remove_all_accounts
       ;;
 
     -s | --rescan-storage)
       if \test "${_minutil_current_user?}" = 'root'; then
-        \minutil_media_rescan
+        minutil_media_rescan
       else
-        \minutil_manual_media_rescan
+        minutil_manual_media_rescan
       fi
       ;;
 
     --force-gcm-reconnection)
-      \minutil_force_gcm_reconnection
+      minutil_force_gcm_reconnection
       ;;
 
     -r | --reset-gms-data)
-      echo 'Not yet supported'
+      printf '%s\n' 'Not yet supported'
       ;;
 
     -R | --reset-permissions)
-      echo 'Not yet supported'
+      printf '%s\n' 'Not yet supported'
       ;;
 
     --)
@@ -420,23 +427,23 @@ while true; do
     *)
       _minutil_display_help='true'
       _minutil_newline='true'
-      \printf 1>&2 '%s\n' "MinUtil: invalid option -- '${1#-}'" || true
+      printf 1>&2 '%s\n' "MinUtil: invalid option -- '${1#-}'" || true
       ;;
   esac
 
   # Note: 'shift' with nothing to shift cause some shells to exit and it can't be avoided so check it before using
-  if \test "${#}" -gt 0; then
-    \shift 2> /dev/null || \break
+  if test "${#}" -gt 0; then
+    shift 2> /dev/null || break
   else
-    \break
+    break
   fi
 done
 
 if test "${_minutil_display_help:?}" = 'true'; then
 
   if test "${_minutil_newline:-false}" != 'false'; then printf '\n'; fi
-  _minutil_script_name="$(\basename "${0:?}")" || \exit 1
-  \readonly _minutil_script_name
+  _minutil_script_name="$(\basename "${0:?}")" || exit 1
+  readonly _minutil_script_name
 
   printf '%s\n' "${MINUTIL_NAME:?} v${MINUTIL_VERSION:?} - Minimal utilities"
   printf '%s\n\n' 'Licensed under GPLv3+'
@@ -448,13 +455,13 @@ if test "${_minutil_display_help:?}" = 'true'; then
   _minutil_aligned_print '--force-gcm-reconnection' 'Force GCM reconnection'
   _minutil_aligned_print '-i,--reinstall-package PACKAGE_NAME' 'Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions'
 
-  printf '
+  printf '%s\n' "
 Examples:
 
-%s -i org.schabi.newpipe
-%s --rescan-storage
-\n' "${_minutil_script_name:?}" "${_minutil_script_name:?}"
+${_minutil_script_name:?} -i org.schabi.newpipe
+${_minutil_script_name:?} --rescan-storage
+"
 
 fi
 
-\exit "${?}"
+exit "${?}"
