@@ -64,17 +64,20 @@ Notes
    https://microg.org/dl/core-nightly.apk
 
 
-Common
-------
-- **files/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.12 |star| |fire|
-- **files/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.5.0 |star| |fire|
-- **files/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star| |fire|
+UnifiedNlp backends (only installed when microG Services <= 0.2.27 are installed)
+---------------------------------------------------------------------------------
+- **origin/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.12 |star| |fire|
+- **origin/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.5.0 |star| |fire|
+- **origin/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star| |fire|
 
+
+Framework library
+-----------------
 - **files/framework/com.google.android.maps.jar** => microG Maps API v1 0.1.0 |fire|
 
 
 Scripts
--------------
+-------
 - microG / GApps removal script
 
 
