@@ -41,6 +41,7 @@ jobs:
           export OPENSOURCE_ONLY='true'
           #sudo apt-get -qq -y install moreutils 1>/dev/null
           bashcov "${workspace_path:?}/build.sh"  # To timestamp the output pipe it to: TZ=UTC ts '[%H:%M:%S]'
+          printf '\n'
           ### Testing zip installation...
           bash "${workspace_path:?}/recovery-simulator/recovery.sh" "${workspace_path:?}"/output/*.zip
           printf '\n'
