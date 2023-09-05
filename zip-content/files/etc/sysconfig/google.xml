@@ -33,6 +33,9 @@
     <!-- %CUSTOM_APP_LINKS-START% -->
     <!-- %CUSTOM_APP_LINKS-END% -->
 
+    <!-- Specify the explicit set of other applications whose app data directories are accessible by other applications -->
+    <app-data-isolation-whitelisted-app package="com.google.android.gms" />
+
     <!-- These are the packages that are exempted from private API blacklisting -->
     <hidden-api-whitelisted-app package="com.google.android.gms" />
 
@@ -42,9 +45,6 @@
     <system-user-whitelisted-app package="org.fdroid.fdroid.privileged" />
 
     <system-user-blacklisted-app package="com.google.android.googlequicksearchbox" />
-
-    <!-- Specify the explicit set of other applications whose app data directories are accessible by other applications -->
-    <app-data-isolation-whitelisted-app package="com.google.android.gms" />
 
     <!-- Whitelist of packages that are eligible for rollback -->
     <rollback-whitelisted-app package="com.android.vending" />
