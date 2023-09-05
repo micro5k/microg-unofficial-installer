@@ -26,6 +26,24 @@ command 1> /dev/null -v printf || {
   }
 }
 
+command 1> /dev/null -v whoami || {
+  whoami()
+  {
+    _whoami_val="$(id | grep -o -m '1' -e "uid=[0-9]*([a-z]*)" | grep -o -e "([a-z]*)")" || return "${?}"
+    _whoami_val="${_whoami_val#\(}"
+    _whoami_val="${_whoami_val%\)}"
+    printf '%s\n' "${_whoami_val?}"
+    unset _whoami_val
+  }
+}
+
+command 1> /dev/null -v basename || {
+  basename()
+  {
+    printf '%s\n' "${1##*/}"
+  }
+}
+
 _minutil_initialize()
 {
   case "${0:?}" in
@@ -37,7 +55,7 @@ _minutil_initialize()
     *) ;;
   esac
 
-  if ! _minutil_current_user="$(\whoami || \id -un)" || \test -z "${_minutil_current_user?}"; then
+  if ! _minutil_current_user="$(\whoami)" || \test -z "${_minutil_current_user?}"; then
     \printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: Invalid user"
     \exit 1
   fi
