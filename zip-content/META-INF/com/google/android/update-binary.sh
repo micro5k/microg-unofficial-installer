@@ -1,9 +1,12 @@
 #!/sbin/sh
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
-# shellcheck disable=SC3043 # In POSIX sh, local is undefined
+# shellcheck disable=SC3043 # In POSIX sh, local is undefined #
+
+echo 'PRELOADER'
+
+### INIT OPTIONS ###
 
 umask 022 || true
 set -u || true
@@ -19,21 +22,17 @@ set -u || true
 export OUTFD="${2:?}"
 export ZIPFILE="${3:?}"
 
-### FUNCTIONS AND CODE ###
-
-echo 'PRELOADER 1'
+### PREVENTIVE CHECKS ###
 
 command 1> /dev/null -v printf || {
   printf()
   {
-    echo "${2:-}"
-  }
-}
+    if test "${1:-}" = '%s\n\n'; then _printf_newline='true'; fi
+    if test "${#}" -gt 1; then shift; fi
+    echo "${@}"
 
-command 1> /dev/null -v dirname || {
-  dirname()
-  {
-    printf '%s\n' "${1%/*}"
+    test "${_printf_newline:-false}" = 'false' || echo ''
+    unset _printf_newline
   }
 }
 
@@ -56,9 +55,18 @@ command 1> /dev/null -v uname || {
   fi
 }
 
+command 1> /dev/null -v dirname || {
+  dirname()
+  {
+    printf '%s\n' "${1%/*}"
+  }
+}
+
 command 1> /dev/null -v unzip || {
   if command 1> /dev/null -v busybox; then alias unzip='busybox unzip'; fi
 }
+
+### FUNCTIONS AND CODE ###
 
 # Detect whether we are in boot mode
 _ub_detect_bootmode()

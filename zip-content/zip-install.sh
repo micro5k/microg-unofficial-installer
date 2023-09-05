@@ -1,9 +1,8 @@
 #!/system/bin/sh
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
-readonly ZIPINSTALL_VERSION='0.8.1'
+readonly ZIPINSTALL_VERSION='0.9'
 
 umask 022 || true
 PATH="${PATH:-}:."
@@ -11,7 +10,12 @@ PATH="${PATH:-}:."
 command 1> /dev/null -v printf || {
   printf()
   {
-    echo "${2:-}"
+    if test "${1:-}" = '%s\n\n'; then _printf_newline='true'; fi
+    if test "${#}" -gt 1; then shift; fi
+    echo "${@}"
+
+    test "${_printf_newline:-false}" = 'false' || echo ''
+    unset _printf_newline
   }
 }
 

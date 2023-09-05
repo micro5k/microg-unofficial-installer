@@ -1,9 +1,10 @@
 #!/sbin/sh
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
-# shellcheck disable=SC3043 # In POSIX sh, local is undefined
+# shellcheck disable=SC3043 # In POSIX sh, local is undefined #
+
+### INIT OPTIONS ###
 
 umask 022 || true
 set -u || true
@@ -286,7 +287,7 @@ delete_recursive_safe()
 
 ### CODE ###
 
-ui_debug 'PRELOADER 2'
+ui_debug 'LOADER'
 
 detect_recovery_arch()
 {

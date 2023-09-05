@@ -5,7 +5,6 @@
 # shellcheck disable=SC2310 # This function is invoked in an 'if' condition so set -e will be disabled #
 
 set -e
-
 # shellcheck disable=SC3040,SC3041,SC2015
 {
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
@@ -16,8 +15,8 @@ set -e
 
 ### GLOBAL VARIABLES ###
 
-MINUTIL_NAME='MinUtil'
-MINUTIL_VERSION='0.8'
+readonly MINUTIL_NAME='MinUtil'
+readonly MINUTIL_VERSION='0.8'
 
 ### PREVENTIVE CHECKS ###
 
@@ -56,31 +55,30 @@ _minutil_initialize()
   case "${0:?}" in
     *'.sh') ;; # $0 => minutil.sh
     *'sh')     # $0 => sh | ash | bash | ...sh
-      \printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: Cannot be sourced"
-      \exit 1
+      printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: Cannot be sourced"
+      exit 1
       ;;
     *) ;;
   esac
 
-  if ! _minutil_current_user="$(\whoami)" || \test -z "${_minutil_current_user?}"; then
-    \printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: Invalid user"
-    \exit 1
+  if ! _minutil_current_user="$(\whoami)" || test -z "${_minutil_current_user?}"; then
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: Invalid user"
+    exit 1
   fi
-  \readonly _minutil_current_user
+  readonly _minutil_current_user
 }
-\readonly MINUTIL_NAME MINUTIL_VERSION
-\_minutil_initialize
+_minutil_initialize
 
 ### BASE FUNCTIONS ###
 
 _minutil_error()
 {
-  \printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: ${*}"
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: ${*}"
 }
 
 _minutil_warn()
 {
-  \printf 1>&2 '\033[0;33m%s\033[0m\n\n' "WARNING: ${*}"
+  printf 1>&2 '\033[0;33m%s\033[0m\n\n' "WARNING: ${*}"
 }
 
 _minutil_aligned_print()
@@ -100,25 +98,25 @@ _is_caller_user_0()
 
 _is_caller_adb_or_root_or_user_0()
 {
-  if \test "${_minutil_current_user?}" != 'shell' && \test "${_minutil_current_user?}" != 'root' && ! _is_caller_user_0; then
-    \_minutil_error 'You must execute it as either ADB or root or user 0'
-    \return 1
+  if test "${_minutil_current_user?}" != 'shell' && test "${_minutil_current_user?}" != 'root' && ! _is_caller_user_0; then
+    _minutil_error 'You must execute it as either ADB or root or user 0'
+    return 1
   fi
 }
 
 _is_caller_adb_or_root()
 {
-  if \test "${_minutil_current_user?}" != 'shell' && \test "${_minutil_current_user?}" != 'root'; then
-    \_minutil_error 'You must execute it as either ADB or root'
-    \return 1
+  if test "${_minutil_current_user?}" != 'shell' && test "${_minutil_current_user?}" != 'root'; then
+    _minutil_error 'You must execute it as either ADB or root'
+    return 1
   fi
 }
 
 _is_caller_root()
 {
-  if \test "${_minutil_current_user?}" != 'root'; then
-    \_minutil_error 'You must execute it as root'
-    \return 1
+  if test "${_minutil_current_user?}" != 'root'; then
+    _minutil_error 'You must execute it as root'
+    return 1
   fi
 }
 
@@ -129,14 +127,14 @@ _minutil_getprop()
 
 _minutil_check_getopt()
 {
-  \unset GETOPT_COMPATIBLE
+  unset GETOPT_COMPATIBLE
   getopt_test='0'
   \getopt -T -- 2> /dev/null || getopt_test="${?}"
-  if \test "${getopt_test:?}" != '4'; then
-    \_minutil_warn 'Limited or missing getopt'
-    \return 1
+  if test "${getopt_test:?}" != '4'; then
+    _minutil_warn 'Limited or missing getopt'
+    return 1
   fi
-  \unset getopt_test
+  unset getopt_test
 
   return 0
 }
@@ -146,17 +144,17 @@ _minutil_check_getopt()
 MINUTIL_VERBOSE='false'
 _minutil_display_help='false'
 
-if \_minutil_check_getopt; then
+if _minutil_check_getopt; then
   if minutil_args="$(
-    \unset POSIXLY_CORRECT
+    unset POSIXLY_CORRECT
     \getopt -o 'vhsi:' -l 'help,version,remove-all-accounts,rescan-storage,force-gcm-reconnection,reinstall-package:' -n 'MinUtil' -- "${@}"
   )"; then
-    \eval ' \set' '--' "${minutil_args?}" || \exit 1
+    \eval ' \set' '--' "${minutil_args?}" || exit 1
   else
-    \set -- '--help' '--' || \exit 1
+    \set -- '--help' '--' || exit 1
     _minutil_newline='true'
   fi
-  \unset minutil_args
+  unset minutil_args
 fi
 
 if test -z "${*}" || test "${*}" = '--'; then
@@ -211,7 +209,7 @@ _minutil_find_package()
 
 _minutil_reinstall_split_package()
 {
-  \_is_caller_adb_or_root || \return 1
+  _is_caller_adb_or_root || return 1
 
   if test "${MINUTIL_SYSTEM_SDK:?}" -lt 23; then
     _minutil_error "Split package reinstalling isn't currently supported on this version of Android"
@@ -241,7 +239,7 @@ _minutil_reinstall_split_package()
 
 minutil_reinstall_package()
 {
-  \_is_caller_adb_or_root || \return 1
+  _is_caller_adb_or_root || return 1
 
   printf '%s\n' "Reinstalling ${1:-}..."
   command -v pm 1> /dev/null || {
@@ -284,7 +282,7 @@ minutil_reinstall_package()
 
 minutil_force_gcm_reconnection()
 {
-  \_is_caller_adb_or_root || \return 1
+  _is_caller_adb_or_root || return 1
 
   printf '%s\n' "GCM reconnection..."
   command -v am 1> /dev/null || {
@@ -301,7 +299,7 @@ minutil_force_gcm_reconnection()
 
 minutil_remove_all_accounts()
 {
-  \_is_caller_root || \return 1
+  _is_caller_root || return 1
 
   test -e '/data' || {
     _minutil_error '/data NOT found'
@@ -327,7 +325,7 @@ minutil_remove_all_accounts()
 
 minutil_media_rescan()
 {
-  \_is_caller_root || \return 1
+  _is_caller_root || return 1
 
   printf '%s\n' "Media rescanning..."
   command -v am 1> /dev/null || {
@@ -344,7 +342,7 @@ minutil_media_rescan()
 
 minutil_manual_media_rescan()
 {
-  \_is_caller_adb_or_root || \return 1
+  _is_caller_adb_or_root || return 1
 
   printf '%s\n' "Manual media rescanning..."
   command -v am 1> /dev/null || {
@@ -399,7 +397,7 @@ while true; do
       ;;
 
     -s | --rescan-storage)
-      if \test "${_minutil_current_user?}" = 'root'; then
+      if test "${_minutil_current_user?}" = 'root'; then
         minutil_media_rescan
       else
         minutil_manual_media_rescan
@@ -442,7 +440,7 @@ done
 if test "${_minutil_display_help:?}" = 'true'; then
 
   if test "${_minutil_newline:-false}" != 'false'; then printf '\n'; fi
-  _minutil_script_name="$(\basename "${0:?}")" || exit 1
+  _minutil_script_name="$(basename "${0:?}")" || exit 1
   readonly _minutil_script_name
 
   printf '%s\n' "${MINUTIL_NAME:?} v${MINUTIL_VERSION:?} - Minimal utilities"
