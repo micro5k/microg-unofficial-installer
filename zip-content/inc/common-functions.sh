@@ -4,10 +4,8 @@
 
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
-# shellcheck disable=SC3043
-# SC3043: In POSIX sh, local is undefined
+# shellcheck disable=SC3043 # SC3043: In POSIX sh, local is undefined #
 
 ### INIT ENV ###
 
@@ -798,12 +796,11 @@ replace_permission_placeholders()
 
 prepare_installation()
 {
-  local _backup_ifs
+  local _backup_ifs _need_newline
 
   ui_msg 'Preparing installation...'
-
-  # Waste some time otherwise ui_debug may appear before the previous ui_msg
-  true
+  true && true && true # Waste some time otherwise ui_debug may appear before the previous ui_msg
+  _need_newline='false'
 
   ui_debug ''
 
@@ -811,6 +808,7 @@ prepare_installation()
     ui_debug '  Processing ACCESS_BACKGROUND_LOCATION...'
     replace_permission_placeholders 'default-permissions' '%ACCESS_BACKGROUND_LOCATION%' '        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" whitelisted="true" />'
     ui_debug '  Done'
+    _need_newline='true'
   fi
 
   if test "${FAKE_SIGN_PERMISSION:?}" = 'true'; then
@@ -818,12 +816,13 @@ prepare_installation()
     replace_permission_placeholders 'permissions' '%FAKE_PACKAGE_SIGNATURE%' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />'
     replace_permission_placeholders 'default-permissions' '%FAKE_PACKAGE_SIGNATURE%' '        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" fixed="false" />'
     ui_debug '  Done'
+    _need_newline='true'
   fi
 
-  ui_debug ''
+  test "${_need_newline:?}" = 'false' || ui_debug ''
 
   if test "${PRIVAPP_FOLDERNAME:?}" != 'priv-app' && test -e "${TMP_PATH:?}/files/priv-app"; then
-    ui_debug "Merging priv-app folder with ${PRIVAPP_FOLDERNAME?} folder..."
+    ui_debug "  Merging priv-app folder with ${PRIVAPP_FOLDERNAME?} folder..."
     mkdir -p -- "${TMP_PATH:?}/files/${PRIVAPP_FOLDERNAME:?}" || ui_error "Failed to create the dir '${TMP_PATH?}/files/${PRIVAPP_FOLDERNAME?}'"
     copy_dir_content "${TMP_PATH:?}/files/priv-app" "${TMP_PATH:?}/files/${PRIVAPP_FOLDERNAME:?}"
     delete_temp "files/priv-app"
@@ -834,7 +833,7 @@ prepare_installation()
     IFS=''
 
     # Move apps into subfolders
-    ui_debug 'Moving apps into subfolders...'
+    ui_debug '  Moving apps into subfolders...'
     if test -e "${TMP_PATH:?}/files/priv-app"; then
       for entry in "${TMP_PATH:?}/files/priv-app"/*; do
         if test ! -f "${entry:?}"; then continue; fi
