@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: "Check out code"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: "ShellChecker"
         uses: a5k-actions/shellchecker@v0
 
@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: "Check out code"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: "Run Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
         with:
@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: "Check out code"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: "0"
       - name: "Remove build.gradle"
