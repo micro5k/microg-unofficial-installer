@@ -221,6 +221,10 @@ if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/f
 if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
 perform_installation
 
+enable_app com.google.android.gms
+enable_app com.google.android.gsf
+enable_app com.android.vending
+
 # Resetting Android runtime permissions
 if test "${API:?}" -ge 23; then
   if test -e "${DATA_PATH:?}/system/users/0/runtime-permissions.xml"; then
@@ -257,9 +261,5 @@ if test -e "${SYS_PATH:?}/addon.d"; then
   replace_line_in_file_with_file "${TMP_PATH}/addon.d/00-1-microg.sh" '%PLACEHOLDER-1%' "${TMP_PATH}/backup-filelist.lst"
   copy_file "${TMP_PATH}/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
 fi
-
-enable_app com.google.android.gms
-enable_app com.google.android.gsf
-enable_app com.android.vending
 
 finalize_and_report_success
