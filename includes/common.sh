@@ -234,19 +234,30 @@ dl_type_one()
     return "${?}"
   }
 
-  _referrer="${2:?}"; _url="${1:?}"
+  {
+    _referrer="${2:?}"
+    _url="${1:?}"
+  }
   _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton.*\"\shref=\"[^"]+\"')" || {
     report_failure_one "${?}" 'get link 1'
     return "${?}"
   }
+
   sleep 0.2
-  _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
+  {
+    _referrer="${_url:?}"
+    _url="${_base_url:?}${_result:?}"
+  }
   _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.+href=\"[^"]+\"')" || {
     report_failure_one "${?}" 'get link 2'
     return "${?}"
   }
+
   sleep 0.2
-  _referrer="${_url:?}"; _url="${_base_url:?}${_result:?}"
+  {
+    _referrer="${_url:?}"
+    _url="${_base_url:?}${_result:?}"
+  }
   dl_generic "${_url:?}" "${_referrer:?}" "${3:?}" || {
     report_failure_one "${?}" 'dl'
     return "${?}"
@@ -358,7 +369,10 @@ init_cmdline()
 {
   change_title 'Command-line'
 
-  if test -n "${HOME:-}"; then HOME="$(realpath "${HOME:?}")" || ui_error 'Failed to set HOME'; export HOME; fi
+  if test -n "${HOME:-}"; then
+    HOME="$(realpath "${HOME:?}")" || ui_error 'Failed to set HOME'
+    export HOME
+  fi
   export SCRIPT_DIR MODULE_NAME
 
   alias dir=ls
