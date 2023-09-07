@@ -886,7 +886,7 @@ _get_free_space()
       continue
     fi
 
-    if test -n "${available_space?}" && printf '%s\n' "${available_space:?}"; then
+    if test -n "${available_space?}" && test "${available_space:?}" -ge 0 && printf '%s\n' "${available_space:?}"; then
       return 4
     fi
   done
