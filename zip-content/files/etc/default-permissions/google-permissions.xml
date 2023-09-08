@@ -2,7 +2,6 @@
 <!--
     SPDX-FileCopyrightText: none
     SPDX-License-Identifier: CC0-1.0
-    SPDX-FileType: SOURCE
 
     This file contains permissions to be granted by default.
     Default permissions are granted to special platform components and to apps that are approved to get default grants.
@@ -12,7 +11,7 @@
 -->
 
 <exceptions>
-    <exception package="com.google.android.gms" sha256-cert-digest="9B:D0:67:27:E6:27:96:C0:13:0E:B6:DA:B3:9B:73:15:74:51:58:2C:BD:13:8E:86:C4:68:AC:C3:95:D1:41:65">
+    <exception package="com.google.android.gms">
         <!-- Body sensors -->
         <permission name="android.permission.BODY_SENSORS" fixed="false" />
         <!-- Account / Contacts -->

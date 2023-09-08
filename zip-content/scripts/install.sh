@@ -172,10 +172,6 @@ if test "${API:?}" -lt 21; then
   delete_recursive "${TMP_PATH:?}/files/etc/sysconfig"
 fi
 
-if test "${API:?}" -lt 26; then
-  delete "${TMP_PATH:?}/files/etc/permissions/privapp-permissions-google.xml"
-fi
-
 if test "${API:?}" -lt 9; then
   delete "${TMP_PATH:?}/files/framework/com.google.android.maps.jar"
   delete "${TMP_PATH:?}/files/etc/permissions/com.google.android.maps.xml"
