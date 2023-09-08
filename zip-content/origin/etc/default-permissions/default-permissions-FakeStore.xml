@@ -12,7 +12,7 @@
 -->
 
 <exceptions>
-    <exception package="com.android.vending" sha256-cert-digest="9B:D0:67:27:E6:27:96:C0:13:0E:B6:DA:B3:9B:73:15:74:51:58:2C:BD:13:8E:86:C4:68:AC:C3:95:D1:41:65">
+    <exception package="com.android.vending" sha256-cert-digest="94:11:67:9B:68:68:2A:20:BD:92:B7:9C:ED:B5:55:5C:4F:87:2C:EC:63:D6:51:F4:E1:47:36:36:89:BE:06:7F">
         <!-- Signature spoofing -->
         <!-- %FAKE_PACKAGE_SIGNATURE% -->
     </exception>
