@@ -135,12 +135,19 @@ fi
 
 # Clean previous installations
 {
+  ui_debug ''
+  _initial_free_space="$(_get_free_space)" || _initial_free_space='-1'
+
   readonly IS_INCLUDED='true'
   export IS_INCLUDED
   # shellcheck source=SCRIPTDIR/uninstall.sh
   . "${TMP_PATH:?}/uninstall.sh"
 
   delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
+
+  # Reclaiming free space may take some time
+  _wait_free_space_changes 5 "${_initial_free_space:?}"
+  unset _initial_free_space
 }
 
 if test "${IS_INSTALLATION:?}" != 'true'; then
