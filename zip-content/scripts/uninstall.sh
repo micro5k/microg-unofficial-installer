@@ -294,6 +294,31 @@ done
 STATUS="$?"
 if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
+if test "${API:?}" -lt 21; then
+  if test "${MAIN_64BIT_ABI:?}" != 'false'; then
+    delete "${SYS_PATH:?}/lib64/libmapbox-gl.so"
+    delete "${SYS_PATH:?}/lib64/libvtm-jni.so"
+    delete "${SYS_PATH:?}/lib64/libconscrypt_gmscore_jni.so"
+    delete "${SYS_PATH:?}/lib64/libconscrypt_jni.so"
+    delete "${SYS_PATH:?}/lib64/libcronet".*."so"
+    delete "${SYS_PATH:?}/lib64/libgmscore.so"
+    delete "${SYS_PATH:?}/lib64/"libempty_*.so
+    delete "${SYS_PATH:?}/lib64/"libmappedcountercacheversionjni.so
+    delete "${SYS_PATH:?}/lib64/"libphonesky_data_loader.so
+  fi
+  if test "${MAIN_32BIT_ABI:?}" != 'false'; then
+    delete "${SYS_PATH:?}/lib/libmapbox-gl.so"
+    delete "${SYS_PATH:?}/lib/libvtm-jni.so"
+    delete "${SYS_PATH:?}/lib/libconscrypt_gmscore_jni.so"
+    delete "${SYS_PATH:?}/lib/libconscrypt_jni.so"
+    delete "${SYS_PATH:?}/lib/libcronet".*."so"
+    delete "${SYS_PATH:?}/lib/libgmscore.so"
+    delete "${SYS_PATH:?}/lib/"libempty_*.so
+    delete "${SYS_PATH:?}/lib/"libmappedcountercacheversionjni.so
+    delete "${SYS_PATH:?}/lib/"libphonesky_data_loader.so
+  fi
+fi
+
 list_app_data_to_remove | while IFS='|' read -r FILENAME; do
   if [[ -z "${FILENAME}" ]]; then continue; fi
   delete "${DATA_PATH:?}/data/${FILENAME}"
