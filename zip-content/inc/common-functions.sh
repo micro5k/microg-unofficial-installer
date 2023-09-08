@@ -483,8 +483,14 @@ _detect_main_architectures()
     CPU='mips'
   fi
 
-  readonly CPU64 CPU
-  export CPU64 CPU
+  if test "${CPU64:?}" != 'false'; then
+    MAIN_ABI="${CPU64:?}"
+  else
+    MAIN_ABI="${CPU:?}"
+  fi
+
+  readonly CPU64 CPU MAIN_ABI
+  export CPU64 CPU MAIN_ABI
 }
 
 _generate_architectures_list()
@@ -1556,7 +1562,7 @@ extract_libs()
     if test "${_lib_selected:?}" = 'true'; then
       _move_app_into_subfolder "${TMP_PATH:?}/files/${1:?}/${2:?}.apk"
       move_rename_dir "${TMP_PATH:?}/selected-libs" "${TMP_PATH:?}/files/${1:?}/${2:?}/lib"
-    elif test "${CPU64:?}" = 'mips64' || test "${CPU:?}" = 'mips'; then
+    elif test "${MAIN_ABI:?}" = 'mips64' || test "${MAIN_ABI:?}" = 'mips'; then
       : # Tolerate missing libraries
     else
       ui_error "Failed to select library"
