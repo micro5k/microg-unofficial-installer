@@ -16,20 +16,26 @@ set -e
 ### GLOBAL VARIABLES ###
 
 readonly MINUTIL_NAME='MinUtil'
-readonly MINUTIL_VERSION='0.8'
+readonly MINUTIL_VERSION='0.9'
 
 ### PREVENTIVE CHECKS ###
 
 command 1> /dev/null -v printf || {
-  printf()
-  {
-    if test "${1:-}" = '%s\n\n'; then _printf_newline='true'; fi
-    if test "${#}" -gt 1; then shift; fi
-    echo "${@}"
+  if command 1> /dev/null -v busybox; then
+    alias printf='busybox printf'
+  else
+    {
+      printf()
+      {
+        if test "${1:-}" = '%s\n\n'; then _printf_newline='true'; fi
+        if test "${#}" -gt 1; then shift; fi
+        echo "${@}"
 
-    test "${_printf_newline:-false}" = 'false' || echo ''
-    unset _printf_newline
-  }
+        test "${_printf_newline:-false}" = 'false' || echo ''
+        unset _printf_newline
+      }
+    }
+  fi
 }
 
 command 1> /dev/null -v whoami || {
