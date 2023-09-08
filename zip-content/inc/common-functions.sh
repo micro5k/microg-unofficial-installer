@@ -740,7 +740,7 @@ initialize()
   _generate_architectures_list
 
   MAIN_64BIT_ABI="${CPU64:?}" # ToDO: fully rename
-  MAIN_32BIT_ABI="${CPU:?}" # ToDO: fully rename
+  MAIN_32BIT_ABI="${CPU:?}"   # ToDO: fully rename
   readonly MAIN_64BIT_ABI MAIN_32BIT_ABI
   export MAIN_64BIT_ABI MAIN_32BIT_ABI
 
