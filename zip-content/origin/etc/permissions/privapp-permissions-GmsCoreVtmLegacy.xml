@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SPDX-FileCopyrightText: (c) 2016 ale5000
+    SPDX-License-Identifier: Apache-2.0
+    SPDX-FileType: SOURCE
+
+    This XML file declares which privileged permissions should be granted to privileged applications
+-->
+
+<permissions>
+    <privapp-permissions package="com.google.android.gms" sha256-cert-digest="9B:D0:67:27:E6:27:96:C0:13:0E:B6:DA:B3:9B:73:15:74:51:58:2C:BD:13:8E:86:C4:68:AC:C3:95:D1:41:65">
+        <permission name="android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST" />
+        <permission name="android.permission.INSTALL_LOCATION_PROVIDER" />
+        <permission name="android.permission.LOCATION_HARDWARE" />
+        <permission name="android.permission.MANAGE_USB" />
+        <permission name="android.permission.MODIFY_PHONE_STATE" />
+        <permission name="android.permission.NETWORK_SCAN" />
+        <permission name="android.permission.UPDATE_APP_OPS_STATS" />
+        <permission name="android.permission.UPDATE_DEVICE_STATS" />
+        <permission name="android.permission.WATCH_APPOPS" />
+        <!-- %FAKE_PACKAGE_SIGNATURE% -->
+    </privapp-permissions>
+</permissions>
