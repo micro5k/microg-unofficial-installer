@@ -160,8 +160,8 @@ if test "${API:?}" -lt 21; then
 fi
 delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
 
-readonly INSTALLER='true'
-export INSTALLER
+readonly IS_INCLUDED='true'
+export IS_INCLUDED
 # shellcheck source=SCRIPTDIR/uninstall.sh
 . "${TMP_PATH:?}/uninstall.sh"
 
