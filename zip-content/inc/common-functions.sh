@@ -911,7 +911,8 @@ _wait_free_space_changes()
   local _max_attempts='15'
   if test -n "${1?}"; then _max_attempts="${1:?}"; fi
 
-  printf '  Waiting...'
+  ui_debug ''
+  printf 'Waiting..'
 
   while test "${_max_attempts:?}" -gt 0 && _max_attempts="$((_max_attempts - 1))"; do
     printf '.'
@@ -921,7 +922,8 @@ _wait_free_space_changes()
     sleep 1
   done
 
-  printf '\n'
+  ui_debug ''
+  ui_debug ''
 }
 
 _rolling_back_last_app_internal()

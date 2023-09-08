@@ -135,7 +135,6 @@ fi
 
 # Clean previous installations
 {
-  ui_debug ''
   _initial_free_space="$(_get_free_space)" || _initial_free_space='-1'
 
   readonly IS_INCLUDED='true'
