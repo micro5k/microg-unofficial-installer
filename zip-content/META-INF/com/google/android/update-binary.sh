@@ -43,20 +43,24 @@ command 1> /dev/null -v printf || {
 }
 
 command 1> /dev/null -v uname || {
-  if command 1> /dev/null -v getprop; then
-    uname()
+  if command 1> /dev/null -v busybox; then
+    alias uname='busybox uname'
+  elif command 1> /dev/null -v getprop; then
     {
-      if test "${1:-}" != '-m'; then ui_error 'Unsupported parameters for uname'; fi
+      uname()
+      {
+        if test "${1:-}" != '-m'; then ui_error 'Unsupported parameters for uname'; fi
 
-      _uname_val="$(getprop 'ro.product.cpu.abi')"
-      case "${_uname_val?}" in
-        'armeabi-v7a') _uname_val='armv7l' ;;
-        'armeabi') _uname_val='armv6l' ;;
-        *) ;;
-      esac
+        _uname_val="$(getprop 'ro.product.cpu.abi')"
+        case "${_uname_val?}" in
+          'armeabi-v7a') _uname_val='armv7l' ;;
+          'armeabi') _uname_val='armv6l' ;;
+          *) ;;
+        esac
 
-      printf '%s\n' "${_uname_val?}"
-      unset _uname_val
+        printf '%s\n' "${_uname_val?}"
+        unset _uname_val
+      }
     }
   fi
 }
