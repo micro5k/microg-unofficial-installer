@@ -908,13 +908,14 @@ _get_free_space()
 
 _wait_free_space_changes()
 {
-  local _max_attempts='20'
+  local _max_attempts='15'
+  if test -n "${1?}"; then _max_attempts="${1:?}"; fi
 
   printf '  Waiting...'
 
   while test "${_max_attempts:?}" -gt 0 && _max_attempts="$((_max_attempts - 1))"; do
     printf '.'
-    if test "$(_get_free_space || true)" != "${1:?}"; then
+    if test "$(_get_free_space || true)" != "${2:?}"; then
       break
     fi
     sleep 1
@@ -953,7 +954,7 @@ _rolling_back_last_app_internal()
   fstrim 2> /dev/null -- "${SYS_MOUNTPOINT:?}" || true
 
   # Reclaiming free space may take some time
-  _wait_free_space_changes "${_initial_free_space:?}"
+  _wait_free_space_changes '' "${_initial_free_space:?}"
 
   sed -ie '$ d' -- "${TMP_PATH:?}/processed-${1:?}s.log" || ui_error "Failed to remove the last line from read processed-${1?}s.log"
 
