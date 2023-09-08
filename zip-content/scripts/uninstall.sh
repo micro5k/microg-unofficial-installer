@@ -152,13 +152,16 @@ if test "${IS_INCLUDED:-false}" = 'false'; then
 
   ui_debug 'Uninstalling...'
 
-  API=99
-  MAIN_64BIT_ABI='false'
-  MAIN_32BIT_ABI='false'
-  SYS_PATH="${ANDROID_ROOT:-/system}"
-  PRIVAPP_PATH="${SYS_PATH}/app"
-  if test -e "${SYS_PATH}/priv-app"; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi
-  DATA_PATH="${ANDROID_DATA:-/data}"
+  # shellcheck disable=SC2034
+  {
+    API=99
+    MAIN_64BIT_ABI='false'
+    MAIN_32BIT_ABI='false'
+    SYS_PATH="${ANDROID_ROOT:-/system}"
+    PRIVAPP_PATH="${SYS_PATH}/app"
+    if test -e "${SYS_PATH}/priv-app"; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi
+    DATA_PATH="${ANDROID_DATA:-/data}"
+  }
 fi
 
 track_init()

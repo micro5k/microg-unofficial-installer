@@ -741,6 +741,8 @@ initialize()
 
   MAIN_64BIT_ABI="${CPU64:?}" # ToDO: fully rename
   MAIN_32BIT_ABI="${CPU:?}" # ToDO: fully rename
+  readonly MAIN_64BIT_ABI MAIN_32BIT_ABI
+  export MAIN_64BIT_ABI MAIN_32BIT_ABI
 
   if test "${CPU64:?}" = 'false' && test "${CPU:?}" = 'false'; then
     ui_error "Unsupported CPU, ABI list => $(printf '%s\n' "${_raw_arch_list?}" | LC_ALL=C tr -s -- ',' || true)"
