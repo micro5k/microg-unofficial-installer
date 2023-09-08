@@ -739,6 +739,9 @@ initialize()
   _detect_main_architectures
   _generate_architectures_list
 
+  MAIN_64BIT_ABI="${CPU64:?}" # ToDO: fully rename
+  MAIN_32BIT_ABI="${CPU:?}" # ToDO: fully rename
+
   if test "${CPU64:?}" = 'false' && test "${CPU:?}" = 'false'; then
     ui_error "Unsupported CPU, ABI list => $(printf '%s\n' "${_raw_arch_list?}" | LC_ALL=C tr -s -- ',' || true)"
   fi
