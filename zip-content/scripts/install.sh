@@ -134,12 +134,14 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 fi
 
 # Clean previous installations
-delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
+{
+  readonly IS_INCLUDED='true'
+  export IS_INCLUDED
+  # shellcheck source=SCRIPTDIR/uninstall.sh
+  . "${TMP_PATH:?}/uninstall.sh"
 
-readonly IS_INCLUDED='true'
-export IS_INCLUDED
-# shellcheck source=SCRIPTDIR/uninstall.sh
-. "${TMP_PATH:?}/uninstall.sh"
+  delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
+}
 
 if test "${IS_INSTALLATION:?}" != 'true'; then
   clear_app com.android.vending
