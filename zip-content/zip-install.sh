@@ -8,15 +8,21 @@ umask 022 || true
 PATH="${PATH:-}:."
 
 command 1> /dev/null -v printf || {
-  printf()
+  if command 1> /dev/null -v busybox; then
+    alias printf='busybox printf'
+  else
   {
-    if test "${1:-}" = '%s\n\n'; then _printf_newline='true'; fi
-    if test "${#}" -gt 1; then shift; fi
-    echo "${@}"
+    printf()
+    {
+      if test "${1:-}" = '%s\n\n'; then _printf_newline='true'; fi
+      if test "${#}" -gt 1; then shift; fi
+      echo "${@}"
 
-    test "${_printf_newline:-false}" = 'false' || echo ''
-    unset _printf_newline
+      test "${_printf_newline:-false}" = 'false' || echo ''
+      unset _printf_newline
+    }
   }
+  fi
 }
 
 command 1> /dev/null -v whoami || {
@@ -32,6 +38,10 @@ command 1> /dev/null -v whoami || {
 
 command 1> /dev/null -v unzip || {
   if command 1> /dev/null -v busybox; then alias unzip='busybox unzip'; fi
+}
+
+command 1> /dev/null -v head || {
+  if command 1> /dev/null -v busybox; then alias head='busybox head'; fi
 }
 
 ui_show_error()
