@@ -2,7 +2,6 @@
 <!--
     SPDX-FileCopyrightText: none
     SPDX-License-Identifier: CC0-1.0
-    SPDX-FileType: SOURCE
 
     This file contains permissions to be granted by default.
     Default permissions are granted to special platform components and to apps that are approved to get default grants.
