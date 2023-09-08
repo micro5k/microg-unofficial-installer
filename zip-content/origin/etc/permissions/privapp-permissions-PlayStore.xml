@@ -9,7 +9,7 @@
 -->
 
 <permissions>
-    <privapp-permissions package="com.android.vending">
+    <privapp-permissions package="com.android.vending" sha256-cert-digest="F0:FD:6C:5B:41:0F:25:CB:25:C3:B5:33:46:C8:97:2F:AE:30:F8:EE:74:11:DF:91:04:80:AD:6B:2D:60:DB:83">
         <permission name="android.permission.ALLOCATE_AGGRESSIVE" />
         <permission name="android.permission.BACKUP" />
         <permission name="android.permission.BATTERY_STATS" />
