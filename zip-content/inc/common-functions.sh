@@ -533,6 +533,7 @@ display_info()
   ui_msg "Device: ${BUILD_DEVICE?}"
   ui_msg "Emulator: ${IS_EMU:?}"
   ui_msg_empty_line
+  ui_msg "First installation: ${FIRST_INSTALLATION:?}"
   ui_msg "Boot mode: ${BOOTMODE:?}"
   ui_msg "Sideload: ${SIDELOAD:?}"
   if test "${ZIP_INSTALL:?}" = 'true'; then
@@ -656,12 +657,18 @@ initialize()
 
   # Previously installed module version code (0 if wasn't installed)
   PREV_MODULE_VERCODE="$(simple_file_getprop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
-  case "${PREV_MODULE_VERCODE:-}" in
+  case "${PREV_MODULE_VERCODE?}" in
     '' | *[!0-9]*) PREV_MODULE_VERCODE='0' ;; # Not installed (empty) or invalid data
     *) ;;                                     # OK
   esac
-  readonly PREV_MODULE_VERCODE
-  export PREV_MODULE_VERCODE
+
+  if test "${PREV_MODULE_VERCODE:?}" -ne 0; then
+    FIRST_INSTALLATION='false'
+  else
+    FIRST_INSTALLATION='true'
+  fi
+  readonly FIRST_INSTALLATION PREV_MODULE_VERCODE
+  export FIRST_INSTALLATION PREV_MODULE_VERCODE
 
   IS_INSTALLATION='true'
   if test "${LIVE_SETUP_ENABLED:?}" = 'true' && test "${PREV_MODULE_VERCODE:?}" -ge 3; then
