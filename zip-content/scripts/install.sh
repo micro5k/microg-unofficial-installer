@@ -62,12 +62,16 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   fi
 
   install_backends='false'
-  if test "${MAIN_ABI:?}" = 'armeabi' && setup_app 1 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
-    install_backends='true'
-  elif test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 'microG Services' 'GmsCore' 'priv-app' false false; then
+  if test "${USE_GMSCORE_SIGNED_BY_ALE5000:?}" != 0 && setup_app 1 'microG Services - signed by ale5000' 'GmsCore-ale5000' 'priv-app' false false; then
     :
-  elif setup_app 1 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
-    install_backends='true'
+  elif test "${USE_GMSCORE_SIGNED_BY_ALE5000:?}" = 0; then
+    if test "${MAIN_ABI:?}" = 'armeabi' && setup_app 1 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
+      install_backends='true'
+    elif test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 'microG Services' 'GmsCore' 'priv-app' false false; then
+      :
+    elif setup_app 1 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
+      install_backends='true'
+    fi
   fi
 
   setup_app 1 'microG Services Framework Proxy' 'GsfProxy' 'priv-app' false false
