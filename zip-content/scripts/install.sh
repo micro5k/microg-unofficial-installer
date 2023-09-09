@@ -142,7 +142,11 @@ fi
 
 # Clean previous installations
 {
-  _initial_free_space="$(_get_free_space)" || _initial_free_space='-1'
+  if test "${FIRST_INSTALLATION:?}" = 'true'; then
+    _initial_free_space='-1'
+  else
+    _initial_free_space="$(_get_free_space)" || _initial_free_space='-1'
+  fi
 
   readonly IS_INCLUDED='true'
   export IS_INCLUDED
