@@ -61,17 +61,20 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     move_rename_file "${TMP_PATH:?}/origin/profiles/lenovo_yoga_tab_3_pro_10_inches_23.xml" "${TMP_PATH:?}/files/etc/microg_device_profile.xml"
   fi
 
+  microg_gmscore_vanity_name='microG Services'
+  microg_gmscore_filename='GmsCore'
+  if test "${USE_GMSCORE_SIGNED_BY_ALE5000:?}" != 0; then
+    microg_gmscore_vanity_name='microG Services - signed by ale5000'
+    microg_gmscore_filename='GmsCore-ale5000'
+  fi
+
   install_backends='false'
-  if test "${USE_GMSCORE_SIGNED_BY_ALE5000:?}" != 0 && setup_app 1 'microG Services - signed by ale5000' 'GmsCore-ale5000' 'priv-app' false false; then
+  if test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 "${microg_gmscore_vanity_name:?}" "${microg_gmscore_filename:?}" 'priv-app' false false; then
     :
-  elif test "${USE_GMSCORE_SIGNED_BY_ALE5000:?}" = 0; then
-    if test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 'microG Services' 'GmsCore' 'priv-app' false false; then
-      :
-    elif test "${MAIN_ABI:?}" = 'armeabi' && setup_app 1 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
-      install_backends='true'
-    elif setup_app 1 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
-      install_backends='true'
-    fi
+  elif test "${MAIN_ABI:?}" = 'armeabi' && setup_app 1 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
+    install_backends='true'
+  elif setup_app 1 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
+    install_backends='true'
   fi
 
   setup_app 1 'microG Services Framework Proxy' 'GsfProxy' 'priv-app' false false
