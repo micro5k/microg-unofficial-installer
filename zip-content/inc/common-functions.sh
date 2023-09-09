@@ -811,8 +811,8 @@ prepare_installation()
 
   ui_msg 'Preparing installation...'
 
-  true && true && true # Waste some time otherwise ui_debug may appear before the previous ui_msg
   _need_newline='false'
+  printf '\r\r' # Waste some time otherwise ui_debug may appear before the previous ui_msg
 
   if test "${API:?}" -ge 29; then # Android 10+
     ui_debug '  Processing ACCESS_BACKGROUND_LOCATION...'
