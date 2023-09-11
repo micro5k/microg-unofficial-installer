@@ -802,7 +802,7 @@ clean_previous_installations()
 
   readonly IS_INCLUDED='true'
   export IS_INCLUDED
-  # shellcheck source=SCRIPTDIR/uninstall.sh
+  # shellcheck source=SCRIPTDIR/../scripts/uninstall.sh
   . "${TMP_PATH:?}/uninstall.sh"
 
   delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
