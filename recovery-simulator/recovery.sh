@@ -175,6 +175,7 @@ cd "${BASE_SIMULATION_PATH}" || fail_with_msg 'Failed to change dir to the base 
 mkdir -p "${_android_tmp}"
 mkdir -p "${_android_sys}"
 mkdir -p "${_android_sys}/addon.d"
+mkdir -p "${_android_sys}/etc"
 mkdir -p "${_android_sys}/priv-app"
 mkdir -p "${_android_sys}/app"
 mkdir -p "${_android_sys}/bin"
