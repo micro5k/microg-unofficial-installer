@@ -348,6 +348,7 @@ if test "${TEST_INSTALL:-false}" = 'false'; then
   export PATH="${TMP_PATH:?}/bin"
 
   # Setup BusyBox in the temp folder
+  "${OUR_BB:?}" cp -p -f -- "${OUR_BB:?}" "${TMP_PATH:?}/bin/busybox" || ui_error "Failed to setup BusyBox"
   "${OUR_BB:?}" --install -s "${TMP_PATH:?}/bin" || ui_error "Failed to setup BusyBox"
 fi
 
