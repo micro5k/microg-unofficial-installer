@@ -790,6 +790,27 @@ deinitialize()
   if test "${DATA_INIT_STATUS:?}" = '1' && test -n "${DATA_PATH:-}"; then unmount "${DATA_PATH:?}"; fi
 }
 
+clean_previous_installations()
+{
+  local _initial_free_space
+
+  if test "${FIRST_INSTALLATION:?}" = 'true'; then
+    _initial_free_space='-1'
+  else
+    _initial_free_space="$(_get_free_space)" || _initial_free_space='-1'
+  fi
+
+  readonly IS_INCLUDED='true'
+  export IS_INCLUDED
+  # shellcheck source=SCRIPTDIR/uninstall.sh
+  . "${TMP_PATH:?}/uninstall.sh"
+
+  delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
+
+  # Reclaiming free space may take some time
+  _wait_free_space_changes 5 "${_initial_free_space:?}"
+}
+
 _move_app_into_subfolder()
 {
   local _path_without_ext

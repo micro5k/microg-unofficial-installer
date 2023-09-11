@@ -142,24 +142,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 fi
 
 # Clean previous installations
-{
-  if test "${FIRST_INSTALLATION:?}" = 'true'; then
-    _initial_free_space='-1'
-  else
-    _initial_free_space="$(_get_free_space)" || _initial_free_space='-1'
-  fi
-
-  readonly IS_INCLUDED='true'
-  export IS_INCLUDED
-  # shellcheck source=SCRIPTDIR/uninstall.sh
-  . "${TMP_PATH:?}/uninstall.sh"
-
-  delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
-
-  # Reclaiming free space may take some time
-  _wait_free_space_changes 5 "${_initial_free_space:?}"
-  unset _initial_free_space
-}
+clean_previous_installations
 
 if test "${IS_INSTALLATION:?}" != 'true'; then
   clear_app com.android.vending
