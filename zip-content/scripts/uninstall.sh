@@ -216,6 +216,7 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     # Dalvik cache
     delete "${DATA_PATH:?}"/dalvik-cache/*/data@app@"${INTERNAL_NAME:?}"-*@classes*
     delete "${DATA_PATH:?}"/dalvik-cache/data@app@"${INTERNAL_NAME:?}"-*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/profiles/"${INTERNAL_NAME:?}"
   fi
 
   if test -n "${FILENAME}"; then
@@ -326,6 +327,8 @@ list_app_data_to_remove | while IFS='|' read -r FILENAME; do
   delete "${DATA_PATH:?}"/user_de/*/"${FILENAME}"
   delete "${INTERNAL_MEMORY_PATH}/Android/data/${FILENAME}"
 done
+
+delete "${DATA_PATH:?}"/backup/com.google.android.gms.backup.BackupTransportService
 
 delete "${SYS_PATH}"/addon.d/*-microg.sh
 delete "${SYS_PATH}"/addon.d/*-microg-*.sh
