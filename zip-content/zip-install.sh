@@ -2,13 +2,26 @@
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-readonly ZIPINSTALL_VERSION='1.0'
+readonly ZIPINSTALL_VERSION='1.1'
 
 umask 022 || true
-PATH="${PATH:-}:."
+PATH="${PATH:-/system/bin}:."
+
+### PREVENTIVE CHECKS ###
+
+_busybox_executability_check()
+{
+  if test ! -x busybox; then
+    chmod 0755 'busybox' || {
+      echo 1>&2 'ERROR: chmod failed on busybox'
+      exit 100
+    }
+  fi
+}
 
 command 1> /dev/null -v printf || {
   if command 1> /dev/null -v busybox; then
+    _busybox_executability_check
     alias printf='busybox printf'
   else
     {
@@ -38,6 +51,7 @@ command 1> /dev/null -v whoami || {
 
 command 1> /dev/null -v unzip || {
   if command 1> /dev/null -v busybox; then
+    _busybox_executability_check
     alias unzip='busybox unzip'
   else
     printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: Missing => unzip"
@@ -46,8 +60,13 @@ command 1> /dev/null -v unzip || {
 }
 
 command 1> /dev/null -v head || {
-  if command 1> /dev/null -v busybox; then alias head='busybox head'; fi
+  if command 1> /dev/null -v busybox; then
+    _busybox_executability_check
+    alias head='busybox head'
+  fi
 }
+
+### FUNCTIONS AND CODE ###
 
 ui_show_error()
 {
