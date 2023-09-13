@@ -131,14 +131,17 @@ fi
 if test "${IS_INSTALLATION:?}" = 'true'; then
   # Kill the apps if they were active and disable them
   kill_and_disable_app com.android.vending
+  kill_app com.google.android.gsf.login
   kill_and_disable_app com.google.android.gsf
-  kill_and_disable_app com.google.android.gms
 
   clear_app com.android.vending
+  clear_app com.google.android.gsf.login
   clear_app com.google.android.gsf
 
-  kill_app com.google.android.gsf.login
-  clear_app com.google.android.gsf.login
+  if test "${FIRST_INSTALLATION:?}" = 'true'; then
+    kill_and_disable_app com.google.android.gms
+    clear_app com.google.android.gms
+  fi
 fi
 
 # Clean previous installations
