@@ -134,10 +134,6 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   kill_app com.google.android.gsf.login
   kill_and_disable_app com.google.android.gsf
 
-  clear_app com.android.vending
-  clear_app com.google.android.gsf.login
-  clear_app com.google.android.gsf
-
   if test "${FIRST_INSTALLATION:?}" = 'true'; then
     kill_and_disable_app com.google.android.gms
     clear_app com.google.android.gms
@@ -147,12 +143,12 @@ fi
 # Clean previous installations
 clean_previous_installations
 
-if test "${IS_INSTALLATION:?}" != 'true'; then
-  clear_app com.android.vending
-  clear_app com.google.android.gsf.login
-  clear_app com.google.android.gsf
-  clear_app com.google.android.gms
+clear_app com.android.vending
+clear_app com.google.android.gsf.login
+clear_app com.google.android.gsf
 
+if test "${IS_INSTALLATION:?}" != 'true'; then
+  clear_app com.google.android.gms
   reset_gms_data_of_all_apps
 
   unmount_extra_partitions
