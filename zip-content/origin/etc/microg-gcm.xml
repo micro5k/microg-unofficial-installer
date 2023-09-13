@@ -6,6 +6,9 @@
 -->
 
 <map>
+    <boolean name="wifi_learning" value="true" />
+    <boolean name="cell_learning" value="true" />
+
     <boolean name="checkin_enable_service" value="true" />
     <boolean name="gcm_enable_mcs_service" value="true" />
 </map>

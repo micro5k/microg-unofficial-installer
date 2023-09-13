@@ -6,4 +6,6 @@
 -->
 
 <map>
+    <boolean name="wifi_learning" value="true" />
+    <boolean name="cell_learning" value="true" />
 </map>
