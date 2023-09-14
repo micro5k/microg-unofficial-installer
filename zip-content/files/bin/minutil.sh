@@ -16,7 +16,7 @@ set -e
 ### GLOBAL VARIABLES ###
 
 readonly MINUTIL_NAME='MinUtil'
-readonly MINUTIL_VERSION='0.9'
+readonly MINUTIL_VERSION='1.0'
 
 ### PREVENTIVE CHECKS ###
 
@@ -153,7 +153,7 @@ _minutil_display_help='false'
 if _minutil_check_getopt; then
   if minutil_args="$(
     unset POSIXLY_CORRECT
-    \getopt -o 'vhsi:' -l 'help,version,remove-all-accounts,rescan-storage,force-gcm-reconnection,reinstall-package:' -n 'MinUtil' -- "${@}"
+    \getopt -o 'vhsi:' -l 'help,version,remove-all-accounts,rescan-storage,reset-battery,force-gcm-reconnection,reinstall-package:' -n 'MinUtil' -- "${@}"
   )"; then
     \eval ' \set' '--' "${minutil_args?}" || exit 1
   else
@@ -374,6 +374,25 @@ minutil_manual_media_rescan()
   return 0
 }
 
+minutil_reset_battery()
+{
+  printf '%s\n' 'Resetting battery stats...'
+  rm -f -- '/data/system/batterystats.bin' || true
+  rm -f -- '/data/system/batterystats-daily.xml' || true
+  rm -f -- '/data/system/batterystats-checkin.bin' || true
+
+  _fuel_gauge_reset()
+  {
+    if test -e "${1:?}"; then
+      printf '%s\n' 'Resetting fuel gauge...'
+      printf '%s\n' '1' 1> "${1:?}" || true
+    fi
+  }
+
+  _fuel_gauge_reset '/sys/devices/platform/i2c-gpio.9/i2c-9/9-0036/power_supply/fuelgauge/fg_reset_soc' # Samsung Galaxy S2
+  _fuel_gauge_reset '/sys/class/power_supply/battery/fg_reset_cap' # Samsung Galaxy Tab 7.7 (maybe also others)
+}
+
 minutil_display_version()
 {
   printf '%s\n' "${MINUTIL_NAME:?} v${MINUTIL_VERSION:?} (Minimal utilities)"
@@ -408,6 +427,10 @@ while true; do
       else
         minutil_manual_media_rescan
       fi
+      ;;
+
+    --reset-battery)
+      minutil_reset_battery
       ;;
 
     --force-gcm-reconnection)
@@ -455,6 +478,7 @@ if test "${_minutil_display_help:?}" = 'true'; then
 
   _minutil_aligned_print '-h,--help' 'Show this help'
   _minutil_aligned_print '-s,--rescan-storage' 'Rescan storage to find file changes'
+  _minutil_aligned_print '--reset-battery' ''
   _minutil_aligned_print '--remove-all-accounts' 'Remove all accounts from the device (need root)'
   _minutil_aligned_print '--force-gcm-reconnection' 'Force GCM reconnection'
   _minutil_aligned_print '-i,--reinstall-package PACKAGE_NAME' 'Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions'
