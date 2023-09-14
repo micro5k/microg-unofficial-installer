@@ -271,6 +271,10 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
       delete "/mnt/asec/${INTERNAL_NAME}"-*
     fi
     # Check also /data/app-private /data/app-asec /data/preload
+
+    delete "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/code_cache"/*
+    delete "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/cache"/*
+    delete "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/app_cache_dg"/*
   fi
 done
 STATUS="$?"
