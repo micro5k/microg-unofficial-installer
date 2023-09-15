@@ -162,6 +162,16 @@ if test "${IS_INCLUDED:-false}" = 'false'; then
   }
 fi
 
+delete_symlinks()
+{
+  for filename in "${@}"; do
+    if test -h "${filename?}"; then
+      ui_debug "Deleting symlink '${filename?}'...."
+      rm -f -- "${filename:?}" || ui_debug 'Failed to delete symlink'
+    fi
+  done
+}
+
 delete_folder_content_silent()
 {
   if test -e "${1:?}"; then
@@ -273,7 +283,7 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
 
     # App libs
     delete "${DATA_PATH:?}/app-lib/${INTERNAL_NAME:?}"-*
-    delete "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/lib"
+    delete_symlinks "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/lib"
 
     # Dalvik caches
     delete "${DATA_PATH:?}"/dalvik-cache/data@app@"${INTERNAL_NAME:?}"-*@classes*
