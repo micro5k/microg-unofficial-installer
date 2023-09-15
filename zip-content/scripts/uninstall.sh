@@ -259,6 +259,7 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     # Caches
     delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/code_cache"
     delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/cache"
+    delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/app_webview/Cache"
     delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/app_cache_dg"
 
     # Legacy xml paths
