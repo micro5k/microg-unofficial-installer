@@ -184,19 +184,10 @@ if test -e '/mnt/sdcard'; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
 uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
   if test -n "${INTERNAL_NAME}"; then
-    delete "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME}.xml"
     delete "${PRIVAPP_PATH}/${INTERNAL_NAME}"
     delete "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
     delete "${SYS_PATH}/app/${INTERNAL_NAME}"
     delete "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
-
-    # Legacy xml paths
-    delete "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
-    # Other installers
-    delete "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
-    delete "${SYS_PATH}/etc/permissions/permissions_${INTERNAL_NAME:?}.xml"
-    delete "${SYS_PATH}/etc/permissions/${INTERNAL_NAME:?}.xml"
-    delete "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
   fi
 
   if test -n "${FILENAME}"; then
@@ -244,8 +235,6 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
   fi
 
   if test -n "${INTERNAL_NAME}"; then
-    # ToDO => Check also /data/app-private /data/app-asec /data/preload
-
     # Only delete app updates during uninstallation or first-time installation
     if test "${IS_INSTALLATION:?}" != 'true' || test "${FIRST_INSTALLATION:?}" = 'true'; then
       delete "${DATA_PATH:?}/app/${INTERNAL_NAME}"
@@ -254,6 +243,7 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
       delete "/mnt/asec/${INTERNAL_NAME}"
       delete "/mnt/asec/${INTERNAL_NAME}.apk"
       delete "/mnt/asec/${INTERNAL_NAME}"-*
+      # ToDO => Check also /data/app-private /data/app-asec /data/preload
 
       # App libs
       delete "${DATA_PATH:?}/app-lib/${INTERNAL_NAME:?}"
@@ -270,6 +260,16 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/code_cache"
     delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/cache"
     delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/app_cache_dg"
+
+    # Legacy xml paths
+    delete "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
+    # Other installers
+    delete "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH}/etc/permissions/permissions_${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH}/etc/permissions/${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
+
+    delete "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME:?}.xml"
   fi
 done
 STATUS="$?"
