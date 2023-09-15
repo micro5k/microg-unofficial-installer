@@ -184,7 +184,6 @@ if test -e '/mnt/sdcard'; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
 uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
   if test -n "${INTERNAL_NAME}"; then
-    delete "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
     delete "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME}.xml"
     delete "${PRIVAPP_PATH}/${INTERNAL_NAME}"
     delete "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
