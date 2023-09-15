@@ -152,15 +152,22 @@ if test "${IS_INCLUDED:-false}" = 'false'; then
 
   # shellcheck disable=SC2034
   {
-    API=99
-    MAIN_64BIT_ABI='false'
-    MAIN_32BIT_ABI='false'
+    IS_INSTALLATION='false'
+    FIRST_INSTALLATION='true'
+    API=999
     SYS_PATH="${ANDROID_ROOT:-/system}"
-    PRIVAPP_PATH="${SYS_PATH}/app"
-    if test -e "${SYS_PATH}/priv-app"; then PRIVAPP_PATH="${SYS_PATH}/priv-app"; fi
+    PRIVAPP_PATH="${SYS_PATH:?}/app"
+    if test -e "${SYS_PATH:?}/priv-app"; then PRIVAPP_PATH="${SYS_PATH:?}/priv-app"; fi
     DATA_PATH="${ANDROID_DATA:-/data}"
   }
 fi
+
+delete_folder_content_silent()
+{
+  if test -e "${1:?}"; then
+    find "${1:?}" -mindepth 1 -delete
+  fi
+}
 
 track_init()
 {
@@ -207,14 +214,6 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete "${SYS_PATH}/etc/permissions/permissions_${INTERNAL_NAME:?}.xml"
     delete "${SYS_PATH}/etc/permissions/${INTERNAL_NAME:?}.xml"
     delete "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
-
-    # App libs
-    delete "${DATA_PATH:?}"/app-lib/"${INTERNAL_NAME:?}"-*
-
-    # Dalvik cache
-    delete "${DATA_PATH:?}"/dalvik-cache/*/data@app@"${INTERNAL_NAME:?}"-*@classes*
-    delete "${DATA_PATH:?}"/dalvik-cache/data@app@"${INTERNAL_NAME:?}"-*@classes*
-    delete "${DATA_PATH:?}"/dalvik-cache/profiles/"${INTERNAL_NAME:?}"
   fi
 
   if test -n "${FILENAME}"; then
@@ -255,10 +254,10 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete "${SYS_PATH}/etc/default-permissions/${FILENAME:?}-permissions.xml"
 
     # Dalvik cache
-    delete "${DATA_PATH:?}"/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
-    delete "${DATA_PATH:?}"/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
     delete "${DATA_PATH:?}"/dalvik-cache/system@priv-app@"${FILENAME}"[@\.]*@classes*
     delete "${DATA_PATH:?}"/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
   fi
 
   if test -n "${INTERNAL_NAME}"; then
@@ -272,9 +271,19 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     fi
     # Check also /data/app-private /data/app-asec /data/preload
 
-    delete "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/code_cache"/*
-    delete "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/cache"/*
-    delete "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/app_cache_dg"/*
+    # App libs
+    delete "${DATA_PATH:?}/app-lib/${INTERNAL_NAME:?}"-*
+    delete "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/lib"
+
+    # Dalvik caches
+    delete "${DATA_PATH:?}"/dalvik-cache/data@app@"${INTERNAL_NAME:?}"-*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/data@app@"${INTERNAL_NAME:?}"-*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/profiles/"${INTERNAL_NAME:?}"
+
+    # Caches
+    delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/code_cache"
+    delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/cache"
+    delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/app_cache_dg"
   fi
 done
 STATUS="$?"
