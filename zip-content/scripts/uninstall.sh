@@ -247,6 +247,7 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
   if test -n "${INTERNAL_NAME}"; then
     # ToDO => Change "${DEL_SYS_APPS_ONLY:-false}
     # ToDO => Check also /data/app-private /data/app-asec /data/preload
+    : "UNUSED ${DEL_SYS_APPS_ONLY:-}"
 
     # Only delete app updates during uninstallation or first-time installation
     if test "${IS_INSTALLATION:?}" != 'true' || test "${FIRST_INSTALLATION:?}" = 'true'; then
