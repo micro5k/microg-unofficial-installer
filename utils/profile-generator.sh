@@ -671,7 +671,6 @@ main()
 ${xml_comment_start:?}
     SPDX-FileCopyrightText: none
     SPDX-License-Identifier: CC0-1.0
-    SPDX-FileType: SOURCE
 ${xml_comment_end:?}
 
 <profile name=\"${DEVICE_INFO?} (${ROM_INFO:?})\" product=\"${BUILD_PRODUCT:?}\" sdk=\"${BUILD_VERSION_SDK:?}\" id=\"${BUILD_PRODUCT:?}_${BUILD_VERSION_SDK:?}\" auto=\"true\">
