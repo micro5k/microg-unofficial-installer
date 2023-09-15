@@ -271,19 +271,23 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
   fi
 
   if test -n "${INTERNAL_NAME}"; then
-    if test "${DEL_SYS_APPS_ONLY:-false}" = false || track_really_deleted; then
+    # ToDO => Change "${DEL_SYS_APPS_ONLY:-false}
+    # ToDO => Check also /data/app-private /data/app-asec /data/preload
+
+    # Only delete app updates during uninstallation or first-time installation
+    if test "${IS_INSTALLATION:?}" != 'true' || test "${FIRST_INSTALLATION:?}" = 'true'; then
       delete "${DATA_PATH:?}/app/${INTERNAL_NAME}"
       delete "${DATA_PATH:?}/app/${INTERNAL_NAME}.apk"
       delete "${DATA_PATH:?}/app/${INTERNAL_NAME}"-*
       delete "/mnt/asec/${INTERNAL_NAME}"
       delete "/mnt/asec/${INTERNAL_NAME}.apk"
       delete "/mnt/asec/${INTERNAL_NAME}"-*
-    fi
-    # Check also /data/app-private /data/app-asec /data/preload
 
-    # App libs
-    delete "${DATA_PATH:?}/app-lib/${INTERNAL_NAME:?}"-*
-    delete_symlinks "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/lib"
+      # App libs
+      delete "${DATA_PATH:?}/app-lib/${INTERNAL_NAME:?}"
+      delete "${DATA_PATH:?}/app-lib/${INTERNAL_NAME:?}"-*
+      delete_symlinks "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/lib"
+    fi
 
     # Dalvik caches
     delete "${DATA_PATH:?}"/dalvik-cache/data@app@"${INTERNAL_NAME:?}"-*@classes*
