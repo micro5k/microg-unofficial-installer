@@ -389,11 +389,11 @@ delete "${SYS_PATH}"/etc/preferred-apps/google.xml
 delete "${SYS_PATH}/etc/org.fdroid.fdroid/additional_repos.xml"
 delete "${SYS_PATH}/etc/microg.xml"
 
+if test -e "${SYS_PATH:?}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/org.fdroid.fdroid" || true; fi
+
 # Legacy file
 delete "${SYS_PATH:?}/etc/zips/ug.prop"
 
-if test -e "${SYS_PATH:?}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/org.fdroid.fdroid" || true; fi
-
-if test -z "${IS_INCLUDED}"; then
+if test -z "${IS_INCLUDED:?}"; then
   ui_debug 'Done.'
 fi
