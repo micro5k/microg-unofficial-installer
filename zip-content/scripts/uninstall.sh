@@ -179,43 +179,17 @@ delete_folder_content_silent()
   fi
 }
 
-track_init()
-{
-  REALLY_DELETED='false'
-}
-
-track_really_deleted()
-{
-  if test "${REALLY_DELETED:?}" = 'true'; then
-    return 0
-  fi
-  return 1
-}
-
-delete_tracked()
-{
-  for filename in "${@}"; do
-    if test -e "${filename?}"; then
-      REALLY_DELETED='true'
-      ui_debug "Deleting '${filename?}'...."
-      rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders'
-    fi
-  done
-}
-
 INTERNAL_MEMORY_PATH='/sdcard0'
 if test -e '/mnt/sdcard'; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
 uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY _; do
-  track_init
-
   if test -n "${INTERNAL_NAME}"; then
     delete "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
     delete "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME}.xml"
-    delete_tracked "${PRIVAPP_PATH}/${INTERNAL_NAME}"
-    delete_tracked "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
-    delete_tracked "${SYS_PATH}/app/${INTERNAL_NAME}"
-    delete_tracked "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
+    delete "${PRIVAPP_PATH}/${INTERNAL_NAME}"
+    delete "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
+    delete "${SYS_PATH}/app/${INTERNAL_NAME}"
+    delete "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
 
     # Legacy xml paths
     delete "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
@@ -227,27 +201,33 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
   fi
 
   if test -n "${FILENAME}"; then
-    delete_tracked "${PRIVAPP_PATH}/${FILENAME}"
-    delete_tracked "${PRIVAPP_PATH}/${FILENAME}.apk"
-    delete_tracked "${PRIVAPP_PATH}/${FILENAME}.odex"
-    delete_tracked "${SYS_PATH}/app/${FILENAME}"
-    delete_tracked "${SYS_PATH}/app/${FILENAME}.apk"
-    delete_tracked "${SYS_PATH}/app/${FILENAME}.odex"
+    delete "${PRIVAPP_PATH}/${FILENAME}"
+    delete "${PRIVAPP_PATH}/${FILENAME}.apk"
+    delete "${PRIVAPP_PATH}/${FILENAME}.odex"
+    delete "${SYS_PATH}/app/${FILENAME}"
+    delete "${SYS_PATH}/app/${FILENAME}.apk"
+    delete "${SYS_PATH}/app/${FILENAME}.odex"
 
-    delete_tracked "${SYS_PATH}/system_ext/priv-app/${FILENAME}"
-    delete_tracked "${SYS_PATH}/system_ext/app/${FILENAME}"
-    delete_tracked "/system_ext/priv-app/${FILENAME}"
-    delete_tracked "/system_ext/app/${FILENAME}"
+    delete "${SYS_PATH}/system_ext/priv-app/${FILENAME}"
+    delete "${SYS_PATH}/system_ext/app/${FILENAME}"
+    delete "/system_ext/priv-app/${FILENAME}"
+    delete "/system_ext/app/${FILENAME}"
 
-    delete_tracked "${SYS_PATH}/product/priv-app/${FILENAME}"
-    delete_tracked "${SYS_PATH}/product/app/${FILENAME}"
-    delete_tracked "/product/priv-app/${FILENAME}"
-    delete_tracked "/product/app/${FILENAME}"
+    delete "${SYS_PATH}/product/priv-app/${FILENAME}"
+    delete "${SYS_PATH}/product/app/${FILENAME}"
+    delete "/product/priv-app/${FILENAME}"
+    delete "/product/app/${FILENAME}"
 
-    delete_tracked "${SYS_PATH}/vendor/priv-app/${FILENAME}"
-    delete_tracked "${SYS_PATH}/vendor/app/${FILENAME}"
-    delete_tracked "/vendor/priv-app/${FILENAME}"
-    delete_tracked "/vendor/app/${FILENAME}"
+    delete "${SYS_PATH}/vendor/priv-app/${FILENAME}"
+    delete "${SYS_PATH}/vendor/app/${FILENAME}"
+    delete "/vendor/priv-app/${FILENAME}"
+    delete "/vendor/app/${FILENAME}"
+
+    # Dalvik cache
+    delete "${DATA_PATH:?}"/dalvik-cache/system@priv-app@"${FILENAME}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
 
     # Delete legacy libs (very unlikely to be present but possible)
     delete "${SYS_PATH:?}/lib64/${FILENAME:?}"
@@ -262,12 +242,6 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
     delete "${SYS_PATH}/etc/default-permissions/default-permissions-${FILENAME:?}.xml"
     # Legacy xml paths
     delete "${SYS_PATH}/etc/default-permissions/${FILENAME:?}-permissions.xml"
-
-    # Dalvik cache
-    delete "${DATA_PATH:?}"/dalvik-cache/system@priv-app@"${FILENAME}"[@\.]*@classes*
-    delete "${DATA_PATH:?}"/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
-    delete "${DATA_PATH:?}"/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
-    delete "${DATA_PATH:?}"/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
   fi
 
   if test -n "${INTERNAL_NAME}"; then
