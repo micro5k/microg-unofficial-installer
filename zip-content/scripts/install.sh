@@ -218,9 +218,11 @@ if test "${API:?}" -ge 23; then
 fi
 
 # Reset to avoid problems with signature changes
-delete "${DATA_PATH:?}/system/registered_services/android.accounts.AccountAuthenticator.xml"
-delete "${DATA_PATH:?}/system/registered_services/android.content.SyncAdapter.xml"
-delete "${DATA_PATH:?}/system/uiderrors.txt"
+delete "${DATA_PATH:?}"/system/registered_services/android.accounts.AccountAuthenticator.xml
+delete "${DATA_PATH:?}"/system/registered_services/android.content.SyncAdapter.xml
+delete "${DATA_PATH:?}"/system/users/*/registered_services/android.accounts.AccountAuthenticator.xml
+delete "${DATA_PATH:?}"/system/users/*/registered_services/android.content.SyncAdapter.xml
+delete "${DATA_PATH:?}"/system/uiderrors.txt
 
 # Install utilities
 if test -e "${TMP_PATH:?}/files/bin"; then
