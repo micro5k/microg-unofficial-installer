@@ -6,13 +6,14 @@
 list_app_data_to_remove()
 {
   cat << 'EOF'
-com.mgoogle.android.gms
 com.google.android.feedback
 com.google.android.gsf.login
 com.google.android.gsf
 com.android.vending
 
 com.google.android.youtube
+
+com.mgoogle.android.gms
 
 com.qualcomm.location
 com.amap.android.location
