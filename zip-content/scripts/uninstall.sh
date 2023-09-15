@@ -52,9 +52,9 @@ BetaFeedback|com.google.android.apps.betterbug
 PlayAutoInstallConfig|android.autoinstalls.config.google.nexus
 |android.autoinstalls.config.sony.xperia
 
-Velvet|com.google.android.googlequicksearchbox|true
+Velvet|com.google.android.googlequicksearchbox
 GoogleQuickSearchBox|
-PrebuiltGmail|com.google.android.gm|true
+PrebuiltGmail|com.google.android.gm
 PlayGames|com.google.android.play.games
 
 Phonesky|com.android.vending
@@ -182,7 +182,7 @@ delete_folder_content_silent()
 INTERNAL_MEMORY_PATH='/sdcard0'
 if test -e '/mnt/sdcard'; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
-uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY _; do
+uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
   if test -n "${INTERNAL_NAME}"; then
     delete "${SYS_PATH}/etc/permissions/${INTERNAL_NAME}.xml"
     delete "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME}.xml"
@@ -245,9 +245,7 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME DEL_SYS_APPS_ONLY 
   fi
 
   if test -n "${INTERNAL_NAME}"; then
-    # ToDO => Change "${DEL_SYS_APPS_ONLY:-false}
     # ToDO => Check also /data/app-private /data/app-asec /data/preload
-    : "UNUSED ${DEL_SYS_APPS_ONLY:-}"
 
     # Only delete app updates during uninstallation or first-time installation
     if test "${IS_INSTALLATION:?}" != 'true' || test "${FIRST_INSTALLATION:?}" = 'true'; then
