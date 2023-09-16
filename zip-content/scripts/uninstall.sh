@@ -362,6 +362,7 @@ delete "${SYS_PATH}"/etc/preferred-apps/google.xml
 
 delete "${SYS_PATH}/etc/org.fdroid.fdroid/additional_repos.xml"
 delete "${SYS_PATH}/etc/microg.xml"
+delete "${SYS_PATH}/etc/microg_device_profile.xml"
 
 if test -e "${SYS_PATH:?}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/org.fdroid.fdroid" || true; fi
 
