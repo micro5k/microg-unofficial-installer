@@ -1704,16 +1704,17 @@ setup_app()
       create_dir "${TMP_PATH:?}/files/${4:?}" || ui_error "Failed to create the folder for '${2?}'"
       move_rename_file "${TMP_PATH:?}/origin/${4:?}/${3:?}.apk" "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${2?}'"
 
+      if test "${_optional:?}" = 'true' && test "$(stat -c '%s' -- "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || printf '0' || true)" -gt 300000; then
+        _installed_file_list="${_installed_file_list#|}"
+        printf '%s\n' "${2:?}|${4:?}/${_output_name:?}.apk|${_installed_file_list?}" 1>> "${TMP_PATH:?}/processed-${4:?}s.log" || ui_error "Failed to update processed-${4?}s.log"
+      fi
+
+      # IMPORTANT: extract_libs can move the apk file in a subdir
       case "${_extract_libs?}" in
         'libs') extract_libs "${4:?}" "${_output_name:?}" ;;
         '') ;;
         *) ui_error "Invalid value of extract libs => ${_extract_libs?}" ;;
       esac
-
-      if test "${_optional:?}" = 'true' && test "$(stat -c '%s' -- "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || printf '0' || true)" -gt 300000; then
-        _installed_file_list="${_installed_file_list#|}"
-        printf '%s\n' "${2:?}|${4:?}/${_output_name:?}.apk|${_installed_file_list?}" 1>> "${TMP_PATH:?}/processed-${4:?}s.log" || ui_error "Failed to update processed-${4?}s.log"
-      fi
 
       return 0
     else
