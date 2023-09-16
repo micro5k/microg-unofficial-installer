@@ -12,6 +12,18 @@ TMP_PATH="${2:?}"
 # shellcheck source=SCRIPTDIR/../inc/common-functions.sh
 . "${TMP_PATH:?}/inc/common-functions.sh" || exit "${?}"
 
+rollback_complete_callback()
+{
+  case "${1:?}" in
+    'Google Play Store' | 'Google Play Store (legacy)')
+      # Fallback to FakeStore
+      setup_app 1 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false
+      ;;
+
+    *) ;;
+  esac
+}
+
 ### CODE ###
 
 USE_GMSCORE_BY_ALE5000="$(parse_setting 'USE_GMSCORE_BY_ALE5000' "${USE_GMSCORE_BY_ALE5000:?}")"
@@ -121,8 +133,6 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
       RESET_GMS_DATA_OF_ALL_APPS='0'
     fi
   fi
-
-  delete "${TMP_PATH:?}/origin"
 else
   ui_msg 'Starting uninstallation...'
   ui_msg_empty_line

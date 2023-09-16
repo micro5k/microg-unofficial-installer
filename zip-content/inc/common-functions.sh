@@ -963,14 +963,15 @@ _wait_free_space_changes()
 
 _rolling_back_last_app_internal()
 {
-  local _backup_ifs _skip_first _initial_free_space _installed_file_list
+  local _backup_ifs _skip_first _initial_free_space _vanity_name _installed_file_list
   if test ! -s "${TMP_PATH:?}/processed-${1:?}s.log"; then return 1; fi
 
   _initial_free_space="$(_get_free_space)" || return 2
   _installed_file_list="$(tail -n '1' -- "${TMP_PATH:?}/processed-${1:?}s.log")" || ui_error "Failed to read processed-${1?}s.log"
   test -n "${_installed_file_list?}" || return 3
 
-  ui_warning "Rolling back $(printf '%s\n' "${_installed_file_list:?}" | cut -d '|' -f '1' -s || true)..."
+  _vanity_name="$(printf '%s\n' "${_installed_file_list:?}" | cut -d '|' -f '1' -s)"
+  ui_warning "Rolling back '${_vanity_name?}'..."
 
   _backup_ifs="${IFS:-}"
   IFS='|'
@@ -994,6 +995,12 @@ _rolling_back_last_app_internal()
   _wait_free_space_changes '' "${_initial_free_space:?}"
 
   sed -ie '$ d' -- "${TMP_PATH:?}/processed-${1:?}s.log" || ui_error "Failed to remove the last line from read processed-${1?}s.log"
+
+  if command 1> /dev/null -v 'rollback_complete_callback'; then
+    rollback_complete_callback "${_vanity_name:?}"
+  else
+    ui_warning "The function 'rollback_complete_callback' is missing"
+  fi
 
   return 0
 }
@@ -1079,6 +1086,7 @@ perform_installation()
   if test "${PRIVAPP_FOLDERNAME:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDERNAME:?}"; fi
   perform_secure_copy_to_device 'app'
   perform_secure_copy_to_device 'etc/sysconfig'
+  delete "${TMP_PATH:?}/origin"
 }
 
 finalize_and_report_success()
