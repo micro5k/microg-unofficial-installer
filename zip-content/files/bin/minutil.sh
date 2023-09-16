@@ -390,7 +390,7 @@ minutil_reset_battery()
   }
 
   _fuel_gauge_reset '/sys/devices/platform/i2c-gpio.9/i2c-9/9-0036/power_supply/fuelgauge/fg_reset_soc' # Samsung Galaxy S2
-  _fuel_gauge_reset '/sys/class/power_supply/battery/fg_reset_cap' # Samsung Galaxy Tab 7.7 (maybe also others)
+  _fuel_gauge_reset '/sys/class/power_supply/battery/fg_reset_cap'                                      # Samsung Galaxy Tab 7.7 (maybe also others)
 }
 
 minutil_display_version()
