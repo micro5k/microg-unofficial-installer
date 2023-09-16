@@ -3,7 +3,7 @@ priv-app/GmsCore|14||GmsCore|libs|com.google.android.gms|794e18f140b1b1439a7eefd
 priv-app/GmsCoreVtm|14||GmsCore|libs|com.google.android.gms|dd5ed6eadc470b7b99379832dfe40b2e4e41ab59
 priv-app/GmsCoreVtmLegacy|9|13|GmsCore|libs|com.google.android.gms|da538490beadc760a7a8519ec5ed367f19ae8d7b
 priv-app/GsfProxy|9||GoogleServicesFramework||com.google.android.gsf|e74d70ab587af8890df10d4f6c66a84ad1403964
-priv-app/FakeStore|9||Phonesky||com.android.vending|9fe1682e75200a29af8af1602d69b9c7136ef584
+priv-app/FakeStore|9||Phonesky||com.android.vending|613c46eb19d12ac7d7c1b4aa4da1d722f655503e
 priv-app/FDroidPrivilegedExtension|8||FDroidPrivilegedExtension||org.fdroid.fdroid.privileged|cb05a14c986f7c470c0eeb2b3f57c27fe2a72a23
 priv-app/AuroraServices|21||AuroraServices||com.aurora.services|a5fde752b5c7526615699cd21424106fae46ee10
 app/IchnaeaNlpBackend|10||IchnaeaNlpBackend||org.microg.nlp.backend.ichnaea|b853c1b177b611310219cc6571576bd455fa3e9e
