@@ -1136,7 +1136,7 @@ ui_recovered_error()
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _show_text_on_recovery "RECOVERED ERROR: ${1:?}"
   else
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "RECOVERED ERROR: ${1:?}"
+    printf 1>&2 '\033[1;31;103m%s\033[0m\n' "RECOVERED ERROR: ${1:?}"
   fi
 }
 
