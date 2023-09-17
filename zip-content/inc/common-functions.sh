@@ -782,6 +782,7 @@ initialize()
   fi
 
   unset LAST_MOUNTPOINT
+  unset CURRENTLY_ROLLBACKING
 }
 
 deinitialize()
@@ -997,7 +998,9 @@ _rolling_back_last_app_internal()
   sed -ie '$ d' -- "${TMP_PATH:?}/processed-${1:?}s.log" || ui_error "Failed to remove the last line from read processed-${1?}s.log"
 
   if command 1> /dev/null -v 'rollback_complete_callback'; then
+    export CURRENTLY_ROLLBACKING='true'
     rollback_complete_callback "${_vanity_name:?}"
+    unset CURRENTLY_ROLLBACKING
   else
     ui_warning "The function 'rollback_complete_callback' is missing"
   fi
@@ -1704,7 +1707,7 @@ setup_app()
       create_dir "${TMP_PATH:?}/files/${4:?}" || ui_error "Failed to create the folder for '${2?}'"
       move_rename_file "${TMP_PATH:?}/origin/${4:?}/${3:?}.apk" "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${2?}'"
 
-      if test "${_optional:?}" = 'true' && test "$(stat -c '%s' -- "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || printf '0' || true)" -gt 300000; then
+      if test "${CURRENTLY_ROLLBACKING:-false}" != 'true' && test "${_optional:?}" = 'true' && test "$(stat -c '%s' -- "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || printf '0' || true)" -gt 300000; then
         _installed_file_list="${_installed_file_list#|}"
         printf '%s\n' "${2:?}|${4:?}/${_output_name:?}.apk|${_installed_file_list?}" 1>> "${TMP_PATH:?}/processed-${4:?}s.log" || ui_error "Failed to update processed-${4?}s.log"
       fi
