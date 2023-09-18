@@ -373,7 +373,7 @@ dl_list()
   set 2> /dev/null +o posix || true
 
   for _current_line in ${1?}; do
-    IFS='|' read -r local_filename local_path _ _ _ _ dl_hash dl_url dl_mirror _ < <(printf '%s\n' "${_current_line:?}") || return "${?}"
+    IFS='|' read -r local_filename local_path _ _ _ _ dl_hash dl_url dl_mirror _ 0< <(printf '%s\n' "${_current_line:?}") || return "${?}"
     dl_file "${local_path:?}" "${local_filename:?}.apk" "${dl_hash:?}" "${dl_url:?}" "${dl_mirror?}" || return "${?}"
   done || return "${?}"
 
