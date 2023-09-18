@@ -40,5 +40,5 @@ quote_type = double
 [zip-content/customize.sh]
 keep_padding = true
 
-[{build.sh,recovery-simulator/recovery.sh}]
+[{includes/common.sh,recovery-simulator/recovery.sh}]
 shell_variant = bash

@@ -130,25 +130,23 @@ if test -e "${SCRIPT_DIR:?}/zip-content/origin/file-list.dat"; then
 fi
 
 # Download files if they are missing
-mkdir -p "${SCRIPT_DIR}/cache"
+{
+  mkdir -p "${SCRIPT_DIR}/cache"
 
-# shellcheck disable=SC3040
-set +o posix 2> /dev/null || true
+  current_dl_list="$(oss_files_to_download)" || ui_error 'Missing download list'
+  dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files'
 
-# shellcheck disable=SC3001,SC2312
-dl_list < <(oss_files_to_download || ui_error 'Missing download list') || ui_error 'Failed to download the necessary files'
+  if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
+    current_dl_list="$(files_to_download)" || ui_error 'Missing download list'
+    dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files'
 
-if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
-  # shellcheck disable=SC3001,SC2312
-  dl_list < <(files_to_download || ui_error 'Missing download list') || ui_error 'Failed to download the necessary files'
+    dl_file 'misc/keycheck' 'keycheck-arm.bin' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
+  else
+    echo 'Skipped not OSS files!'
+  fi
 
-  dl_file 'misc/keycheck' 'keycheck-arm.bin' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
-else
-  echo 'Skipped not OSS files!'
-fi
-
-# shellcheck disable=SC3040
-set -o posix 2> /dev/null || true
+  unset current_dl_list
+}
 
 # Copy data
 cp -rf "${SCRIPT_DIR}/zip-content" "${TEMP_DIR}/" || ui_error 'Failed to copy data to the temp dir'

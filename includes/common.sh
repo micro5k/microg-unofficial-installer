@@ -33,10 +33,13 @@ unset JAVA_TOOL_OPTIONS
 unset _JAVA_OPTIONS
 unset CDPATH
 
+readonly NL='
+'
+
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
-  if test "${CI:-false}" = 'false' && test "${APP_BASE_NAME:-false}" != 'gradlew' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
+  if test "${CI:-false}" = 'false' && test "${APP_BASE_NAME:-false}" != 'gradlew' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 2; then
     printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit...' || true
     # shellcheck disable=SC3045
     IFS='' read 1>&2 -r -s -n 1 _ || true
@@ -360,9 +363,24 @@ dl_file()
 
 dl_list()
 {
-  while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH _ _ _ _ DL_HASH DL_URL DL_MIRROR _; do
-    dl_file "${LOCAL_PATH:?}" "${LOCAL_FILENAME:?}.apk" "${DL_HASH:?}" "${DL_URL:?}" "${DL_MIRROR?}" || return "${?}"
+  local local_filename local_path dl_hash dl_url dl_mirror
+  local _backup_ifs _current_line
+
+  _backup_ifs="${IFS:-}"
+  IFS="${NL:?}"
+
+  # shellcheck disable=SC3040
+  set 2> /dev/null +o posix || true
+
+  for _current_line in ${1?}; do
+    IFS='|' read -r local_filename local_path _ _ _ _ dl_hash dl_url dl_mirror _ < <(printf '%s\n' "${_current_line:?}" || return "${?}") || return "${?}"
+    dl_file "${local_path:?}" "${local_filename:?}.apk" "${dl_hash:?}" "${dl_url:?}" "${dl_mirror?}" || return "${?}"
   done || return "${?}"
+
+  # shellcheck disable=SC3040
+  set 2> /dev/null -o posix || true
+
+  IFS="${_backup_ifs:-}"
 }
 
 init_cmdline()
