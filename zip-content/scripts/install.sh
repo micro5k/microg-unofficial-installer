@@ -245,17 +245,17 @@ if test -e "${TMP_PATH:?}/files/bin"; then
   perform_secure_copy_to_device 'bin'
 fi
 
-# Reset GMS data of all apps
-if test "${RESET_GMS_DATA_OF_ALL_APPS:?}" != '0'; then
-  reset_gms_data_of_all_apps
-fi
-
 # Install survival script
 if test -e "${SYS_PATH:?}/addon.d"; then
   ui_msg 'Installing survival script...'
   write_file_list "${TMP_PATH}/files" "${TMP_PATH}/files/" "${TMP_PATH}/backup-filelist.lst"
   replace_line_in_file_with_file "${TMP_PATH}/addon.d/00-1-microg.sh" '%PLACEHOLDER-1%' "${TMP_PATH}/backup-filelist.lst"
   copy_file "${TMP_PATH}/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
+fi
+
+# Reset GMS data of all apps
+if test "${RESET_GMS_DATA_OF_ALL_APPS:?}" != '0'; then
+  reset_gms_data_of_all_apps
 fi
 
 finalize_and_report_success
