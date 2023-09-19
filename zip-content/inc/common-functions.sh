@@ -2389,34 +2389,39 @@ live_setup_choice()
 }
 
 # Other
-clear_app()
+soft_kill_app()
 {
-  if command -v pm 1> /dev/null; then
-    pm clear "${1:?}" 2> /dev/null || true
+  if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_AM?}"; then
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null kill "${1:?}" || true
   fi
 }
 
 kill_app()
 {
-  if command -v am 1> /dev/null; then
-    am force-stop "${1:?}" 2> /dev/null || am kill "${1:?}" 2> /dev/null || true
+  if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_AM?}"; then
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null force-stop "${1:?}" || PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null kill "${1:?}" || true
   fi
 }
 
-kill_and_disable_app()
+disable_app()
 {
-  if command -v am 1> /dev/null; then
-    am force-stop "${1:?}" 2> /dev/null || am kill "${1:?}" 2> /dev/null || true
-  fi
-  if command -v pm 1> /dev/null; then
-    pm disable "${1:?}" 2> /dev/null || true
+  if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_PM?}"; then
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" 2> /dev/null disable "${1:?}" || true
   fi
 }
 
-enable_app()
+clear_app()
 {
-  if command -v pm 1> /dev/null; then
-    pm enable "${1:?}" 2> /dev/null || true
+  if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_PM?}"; then
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" 2> /dev/null clear "${1:?}" || true
+  fi
+}
+
+clear_and_enable_app()
+{
+  if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_PM?}"; then
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" 2> /dev/null clear "${1:?}" || true
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" 2> /dev/null enable "${1:?}" || true
   fi
 }
 

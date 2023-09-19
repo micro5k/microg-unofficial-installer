@@ -339,8 +339,10 @@ set_perm_safe 0 0 0755 "${TMP_PATH:?}"
 PREVIOUS_PATH="${PATH}"
 DEVICE_GETPROP="$(command -v getprop)" || DEVICE_GETPROP=''
 DEVICE_MOUNT="$(command -v mount)" || DEVICE_MOUNT=''
-readonly PREVIOUS_PATH DEVICE_GETPROP DEVICE_MOUNT
-export PREVIOUS_PATH DEVICE_GETPROP DEVICE_MOUNT
+DEVICE_PM="$(command -v pm)" || DEVICE_PM=''
+DEVICE_AM="$(command -v am)" || DEVICE_AM=''
+readonly PREVIOUS_PATH DEVICE_GETPROP DEVICE_MOUNT DEVICE_PM DEVICE_AM
+export PREVIOUS_PATH DEVICE_GETPROP DEVICE_MOUNT DEVICE_PM DEVICE_AM
 
 if test "${TEST_INSTALL:-false}" = 'false'; then
   create_dir_safe "${TMP_PATH:?}/bin"

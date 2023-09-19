@@ -142,26 +142,22 @@ else
 fi
 
 if test "${IS_INSTALLATION:?}" = 'true'; then
-  # Kill the apps if they were active and disable them
-  kill_and_disable_app com.android.vending
-  kill_app com.google.android.gsf.login
-  kill_and_disable_app com.google.android.gsf
-
+  disable_app 'com.android.vending'
+  disable_app 'com.google.android.gsf'
+  kill_app 'com.google.android.gsf.login'
   if test "${FIRST_INSTALLATION:?}" = 'true'; then
-    kill_and_disable_app com.google.android.gms
-    clear_app com.google.android.gms
+    disable_app 'com.google.android.gms'
   fi
 fi
 
 # Clean previous installations
 clean_previous_installations
 
-clear_app com.android.vending
-clear_app com.google.android.gsf.login
-clear_app com.google.android.gsf
-
 if test "${IS_INSTALLATION:?}" != 'true'; then
-  clear_app com.google.android.gms
+  clear_app 'com.android.vending'
+  clear_app 'com.google.android.gsf'
+  clear_app 'com.google.android.gsf.login'
+  clear_app 'com.google.android.gms'
   reset_gms_data_of_all_apps
 
   unmount_extra_partitions
@@ -208,9 +204,18 @@ if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/f
 if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
 perform_installation
 
-enable_app com.google.android.gms
-enable_app com.google.android.gsf
-enable_app com.android.vending
+if test "${FIRST_INSTALLATION:?}" = 'true'; then
+  clear_and_enable_app 'com.google.android.gms'
+fi
+clear_and_enable_app 'com.google.android.gsf'
+clear_and_enable_app 'com.android.vending'
+
+# Reset to avoid problems with signature changes
+delete "${DATA_PATH:?}"/system/registered_services/android.accounts.AccountAuthenticator.xml
+delete "${DATA_PATH:?}"/system/registered_services/android.content.SyncAdapter.xml
+delete "${DATA_PATH:?}"/system/users/*/registered_services/android.accounts.AccountAuthenticator.xml
+delete "${DATA_PATH:?}"/system/users/*/registered_services/android.content.SyncAdapter.xml
+delete "${DATA_PATH:?}"/system/uiderrors.txt
 
 # Resetting Android runtime permissions
 if test "${API:?}" -ge 23; then
@@ -230,12 +235,9 @@ if test "${API:?}" -ge 23; then
   fi
 fi
 
-# Reset to avoid problems with signature changes
-delete "${DATA_PATH:?}"/system/registered_services/android.accounts.AccountAuthenticator.xml
-delete "${DATA_PATH:?}"/system/registered_services/android.content.SyncAdapter.xml
-delete "${DATA_PATH:?}"/system/users/*/registered_services/android.accounts.AccountAuthenticator.xml
-delete "${DATA_PATH:?}"/system/users/*/registered_services/android.content.SyncAdapter.xml
-delete "${DATA_PATH:?}"/system/uiderrors.txt
+#if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_AM?}"; then
+#  PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null broadcast -a 'org.microg.gms.gcm.FORCE_TRY_RECONNECT' -n 'com.google.android.gms/org.microg.gms.gcm.TriggerReceiver' || true
+#fi
 
 # Install utilities
 if test -e "${TMP_PATH:?}/files/bin"; then
