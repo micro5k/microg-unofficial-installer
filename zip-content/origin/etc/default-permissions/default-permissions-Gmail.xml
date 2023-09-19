@@ -11,9 +11,11 @@
 -->
 
 <exceptions>
-    <exception package="com.android.vending" sha256-cert-digest="F0:FD:6C:5B:41:0F:25:CB:25:C3:B5:33:46:C8:97:2F:AE:30:F8:EE:74:11:DF:91:04:80:AD:6B:2D:60:DB:83">
-        <!-- Account -->
+    <exception package="com.google.android.gm" sha256-cert-digest="F0:FD:6C:5B:41:0F:25:CB:25:C3:B5:33:46:C8:97:2F:AE:30:F8:EE:74:11:DF:91:04:80:AD:6B:2D:60:DB:83">
+        <!-- Account / Contacts -->
         <permission name="android.permission.GET_ACCOUNTS" fixed="false" />
+        <permission name="android.permission.READ_CONTACTS" fixed="false" />
+        <permission name="android.permission.WRITE_CONTACTS" fixed="false" />
         <!-- Storage -->
         <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false" />
         <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false" />
