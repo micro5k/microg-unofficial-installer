@@ -75,10 +75,16 @@ UnifiedNlp backends (only installed when microG Services <= 0.2.27 are installed
 - **origin/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.5.0 |star| |fire|
 - **origin/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star| |fire|
 
+|star| *Can be updated through F-Droid*.
+
+|fire| *Original version*.
+
 
 Framework library
 -----------------
 - **files/framework/com.google.android.maps.jar** => microG Maps API v1 0.1.0 |fire|
+
+|fire| *Original version*.
 
 
 Scripts
@@ -89,9 +95,3 @@ Scripts
 Components used only during setup (not installed)
 -------------------------------------------------
 - BusyBox for Android (available `here <https://forum.xda-developers.com/showthread.php?t=3348543>`_) - See `here <misc/README.rst>`_ for more info
-
-|
-
-|star| *Can be updated through F-Droid*.
-
-|fire| *Original version*.
