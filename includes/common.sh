@@ -505,9 +505,13 @@ dl_file()
         ;;
     esac
 
-    if test "${_status:?}" != 0; then
+    if test "${_status:?}" -ne 0; then
       if test -n "${5:-}"; then
-        printf '%s\n' 'Download failed, trying a mirror...'
+        if test "${_status:?}" -eq 128; then
+          printf '%s\n' 'Download skipped, trying a mirror...'
+        else
+          printf '%s\n' 'Download failed, trying a mirror...'
+        fi
         dl_file "${1:?}" "${2:?}" "${3:?}" "${5:?}"
         return "${?}"
       else
