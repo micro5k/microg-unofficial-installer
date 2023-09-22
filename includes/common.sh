@@ -73,7 +73,6 @@ readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/x
 readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
 readonly DL_DNT='DNT: 1'
 readonly DL_PROT='https://'
-readonly DL_WEB_PREFIX='www.'
 
 _uname_saved="$(uname)"
 compare_start_uname()
@@ -302,7 +301,9 @@ get_link_from_html()
     fi
 
     if test "${_status:?}" -ne 0 || test -z "${_parsed_url?}"; then
-      ui_error_msg "Web page parsing failed, error code => ${_status?}"
+      if test "${DL_DEBUG:?}" = 'true'; then
+        ui_error_msg "Web page parsing failed, error code => ${_status?}"
+      fi
       return 1
     fi
   } 0< <("${WGET_CMD:?}" -q -S -O '-' "${@}" -- "${_url:?}" 2> >(_parse_and_store_all_cookies "${_domain:?}" || { ui_error_msg "Header parsing failed, error code => ${?}"; return 2; }))
@@ -376,7 +377,10 @@ _direct_download()
 report_failure_one()
 {
   readonly DL_TYPE_1_FAILED='true'
+
   #printf '%s - ' "Failed at '${2}' with ret. code ${1:?}"
+  if test -n "${3:-}"; then printf '%s\n' "${3:?}"; fi
+
   return "${1:?}"
 }
 
@@ -388,8 +392,7 @@ dl_type_one()
   _clear_cookies
 
   _base_url="$(get_base_url "${2:?}")" || {
-    report_failure_one "${?}"
-    return "${?}"
+    report_failure_one "${?}" || return "${?}"
   }
 
   {
@@ -397,9 +400,7 @@ dl_type_one()
     _url="${1:?}"
   }
   _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton[^"]*\"\s*href=\"[^"]*\"')" || {
-    printf '%s\n' "${_result?}"
-    report_failure_one "${?}" 'get link 1'
-    return "${?}"
+    report_failure_one "${?}" 'get link 1' "${_result?}" || return "${?}"
   }
 
   sleep 0.2
@@ -408,9 +409,7 @@ dl_type_one()
     _url="${_base_url:?}${_result:?}"
   }
   _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.*href=\"[^"]*\"')" || {
-    printf '%s\n' "${_result?}"
-    report_failure_one "${?}" 'get link 2'
-    return "${?}"
+    report_failure_one "${?}" 'get link 2' "${_result?}" || return "${?}"
   }
 
   sleep 0.2
@@ -419,8 +418,7 @@ dl_type_one()
     _url="${_base_url:?}${_result:?}"
   }
   _direct_download "${_url:?}" "${_referrer:?}" "${3:?}" || {
-    report_failure_one "${?}" 'dl'
-    return "${?}"
+    report_failure_one "${?}" 'dl' || return "${?}"
   }
 
   _clear_cookies
@@ -429,7 +427,10 @@ dl_type_one()
 report_failure_two()
 {
   readonly DL_TYPE_2_FAILED='true'
+
   printf '%s - ' "Failed at '${2}' with ret. code ${1:?}"
+  if test -n "${3:-}"; then printf '%s\n' "${3:?}"; fi
+
   return "${1:?}"
 }
 
@@ -441,36 +442,30 @@ dl_type_two()
   _clear_cookies
 
   _url="${1:?}" || {
-    report_failure_two "${?}"
-    return "${?}"
+    report_failure_two "${?}" || return "${?}"
   }
   _domain="$(get_domain_from_url "${_url:?}")" || {
-    report_failure_two "${?}"
-    return "${?}"
+    report_failure_two "${?}" || return "${?}"
   }
   _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || {
-    report_failure_two "${?}"
-    return "${?}"
+    report_failure_two "${?}" || return "${?}"
   }
 
   _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -d '/' -f '5-' -s)" || {
-    report_failure_two "${?}" 'get location'
-    return "${?}"
+    report_failure_two "${?}" 'get location' || return "${?}"
   }
   sleep 0.2
   _other_code="$(get_JSON_value_from_ajax_request "${DL_PROT:?}api.${_base_dm:?}/createAccount" "${DL_PROT:?}${_base_dm:?}" 'token')" || {
-    report_failure_two "${?}" 'get JSON'
-    return "${?}"
+    report_failure_two "${?}" 'get JSON' || return "${?}"
+    
   }
   sleep 0.2
   send_empty_ajax_request "${DL_PROT:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}"'&website''Token=''7fd9''4ds1''2fds4' "${DL_PROT:?}${_base_dm:?}" || {
-    report_failure_two "${?}" 'get content'
-    return "${?}"
+    report_failure_two "${?}" 'get content' || return "${?}"
   }
   sleep 0.3
   dl_generic_with_cookie "${_url:?}" 'account''Token='"${_other_code:?}" "${3:?}" || {
-    report_failure_two "${?}" 'dl'
-    return "${?}"
+    report_failure_two "${?}" 'dl' || return "${?}"
   }
 
   _clear_cookies
@@ -495,7 +490,7 @@ dl_file()
         printf '\n %s: ' 'DL type 2'
         dl_type_two "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
         ;;
-      "${DL_WEB_PREFIX:?}"'apk''mirror''.com')
+      *\.'apk''mirror''.com')
         printf '\n %s: ' 'DL type 1'
         dl_type_one "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
         ;;
