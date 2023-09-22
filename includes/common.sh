@@ -254,7 +254,7 @@ dl_generic()
   "${WGET_CMD:?}" -q -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header 'DNT: 1' --header "Referer: ${2:?}" --no-cache -- "${1:?}" || return "${?}"
 }
 
-get_link_from_html()
+_parse_webpage_and_get_url()
 {
   local _url _referrer _search_pattern
   local _domain _cookies _parsed_code _parsed_url _status
@@ -302,7 +302,7 @@ get_link_from_html()
 
     if test "${_status:?}" -ne 0 || test -z "${_parsed_url?}"; then
       if test "${DL_DEBUG:?}" = 'true'; then
-        ui_error_msg "Web page parsing failed, error code => ${_status?}"
+        ui_error_msg "Webpage parsing failed, error code => ${_status?}"
       fi
       return 1
     fi
@@ -399,7 +399,7 @@ dl_type_one()
     _referrer="${2:?}"
     _url="${1:?}"
   }
-  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'downloadButton[^"]*\"\s*href=\"[^"]*\"')" || {
+  _result="$(_parse_webpage_and_get_url "${_url:?}" "${_referrer:?}" 'downloadButton[^"]*\"\s*href=\"[^"]*\"')" || {
     report_failure_one "${?}" 'get link 1' "${_result?}" || return "${?}"
   }
 
@@ -408,7 +408,7 @@ dl_type_one()
     _referrer="${_url:?}"
     _url="${_base_url:?}${_result:?}"
   }
-  _result="$(get_link_from_html "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.*href=\"[^"]*\"')" || {
+  _result="$(_parse_webpage_and_get_url "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.*href=\"[^"]*\"')" || {
     report_failure_one "${?}" 'get link 2' "${_result?}" || return "${?}"
   }
 
