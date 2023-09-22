@@ -290,6 +290,7 @@ _parse_webpage_and_get_url()
     ui_debug ''
   fi
 
+  # shellcheck disable=SC2312
   {
     _parsed_code="$(grep -o -m 1 -e "${_search_pattern:?}")" || _status="${?}"
     if test "${_status:?}" -eq 0; then
