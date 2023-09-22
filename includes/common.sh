@@ -401,7 +401,7 @@ dl_type_one()
     _url="${1:?}"
   }
   _result="$(_parse_webpage_and_get_url "${_url:?}" "${_referrer:?}" 'downloadButton[^"]*\"\s*href=\"[^"]*\"')" || {
-    report_failure_one "${?}" 'get link 1' "${_result?}" || return "${?}"
+    report_failure_one "${?}" 'get link 1' "${_result:-}" || return "${?}"
   }
 
   sleep 0.2
@@ -410,7 +410,7 @@ dl_type_one()
     _url="${_base_url:?}${_result:?}"
   }
   _result="$(_parse_webpage_and_get_url "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.*href=\"[^"]*\"')" || {
-    report_failure_one "${?}" 'get link 2' "${_result?}" || return "${?}"
+    report_failure_one "${?}" 'get link 2' "${_result:-}" || return "${?}"
   }
 
   sleep 0.2
