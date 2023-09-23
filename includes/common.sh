@@ -224,7 +224,6 @@ _load_cookies()
   while IFS='=' read -r name val; do
     if test -z "${name?}"; then continue; fi
     printf '%s; ' "${name:?}=${val?}"
-
   done 0< "${SCRIPT_DIR:?}/cache/temp/cookies/${1:?}.dat" || return "${?}"
 }
 
