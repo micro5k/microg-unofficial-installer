@@ -177,7 +177,8 @@ get_base_url()
 
 _clear_cookies()
 {
-  rm -f -r "${SCRIPT_DIR:?}/cache/temp/cookies"
+  rm -f -r "${SCRIPT_DIR:?}/cache/temp/cookies" || return "${?}"
+  mkdir -p "${SCRIPT_DIR:?}/cache/temp/cookies" || return "${?}"
 }
 
 _parse_and_store_cookie()
@@ -206,8 +207,6 @@ _parse_and_store_cookie()
 
 _parse_and_store_all_cookies()
 {
-  mkdir -p "${SCRIPT_DIR:?}/cache/temp/cookies" || return "${?}"
-
   grep -e '^\s*Set-Cookie:' | cut -d ':' -f '2-' -s | while IFS='' read -r cookie_line; do
     if test -z "${cookie_line?}"; then continue; fi
     _parse_and_store_cookie "${1:?}" "${cookie_line:?}" || return "${?}"
@@ -460,8 +459,7 @@ dl_type_two()
   }
 
   sleep 0.3
-  mkdir -p "${SCRIPT_DIR:?}/cache/temp/cookies" || return "${?}"
-  _parse_and_store_cookie "${_domain:?}" 'account''Token='"${_other_code:?}"
+  _parse_and_store_cookie "${_domain:?}" 'account''Token='"${_other_code:?}" || return "${?}"
   _direct_download "${_url:?}" '' "${3:?}" || {
     report_failure_two "${?}" 'dl' || return "${?}"
   }
@@ -477,7 +475,7 @@ dl_file()
   _url="${DL_PROT:?}${4:?}" || return "${?}"
   _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
 
-  _clear_cookies
+  _clear_cookies || return "${?}"
 
   if ! test -e "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}"; then
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
