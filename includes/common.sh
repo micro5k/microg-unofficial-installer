@@ -195,7 +195,7 @@ _parse_and_store_cookie()
     _elem="${_elem# }"
     IFS='=' read -r name val 0< <(printf '%s\n' "${_elem?}") || return "${?}"
     if test -n "${name?}"; then
-      if _line_no="$(grep -n -F -m 1 -e "${name:?}=" -- "${_cookie_file:?}")" && _line_no="$(printf '%s\n' "${_line_no?}" | cut -d ':' -f '1' -s)" && test -n "${_line_no?}"; then
+      if test -e "${_cookie_file:?}" && _line_no="$(grep -n -F -m 1 -e "${name:?}=" -- "${_cookie_file:?}")" && _line_no="$(printf '%s\n' "${_line_no?}" | cut -d ':' -f '1' -s)" && test -n "${_line_no?}"; then
         sed -i -e "${_line_no:?}d" -- "${_cookie_file:?}" || return "${?}"
       fi
       printf '%s\n' "${name:?}=${val?}" >> "${_cookie_file:?}" || return "${?}"
@@ -207,7 +207,6 @@ _parse_and_store_cookie()
 _parse_and_store_all_cookies()
 {
   mkdir -p "${SCRIPT_DIR:?}/cache/temp/cookies" || return "${?}"
-  touch "${SCRIPT_DIR:?}/cache/temp/cookies/${1:?}.dat" || return "${?}"
 
   grep -e '^\s*Set-Cookie:' | cut -d ':' -f '2-' -s | while IFS='' read -r cookie_line; do
     if test -z "${cookie_line?}"; then continue; fi
@@ -316,12 +315,6 @@ _parse_webpage_and_get_url()
 get_JSON_value_from_ajax_request()
 {
   "${WGET_CMD:?}" -qO '-' -U "${DL_UA:?}" --header 'Accept: */*' --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Origin: ${2:?}" --header 'DNT: 1' -- "${1:?}" | grep -Eom 1 -e "\"${3:?}\""'\s*:\s*"([^"]+)' | grep -Eom 1 -e ':\s*"([^"]+)' | grep -Eom 1 -e '"([^"]+)' | cut -c '2-' || return "${?}"
-}
-
-# 1 => URL; 2 => Cookie; 3 => Output
-dl_generic_with_cookie()
-{
-  "${WGET_CMD:?}" -q -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header 'DNT: 1' --header "Cookie: ${2:?}" -- "${1:?}" || return "${?}"
 }
 
 # 1 => URL
@@ -458,14 +451,16 @@ dl_type_two()
   sleep 0.2
   _other_code="$(get_JSON_value_from_ajax_request "${DL_PROT:?}api.${_base_dm:?}/createAccount" "${DL_PROT:?}${_base_dm:?}" 'token')" || {
     report_failure_two "${?}" 'get JSON' || return "${?}"
-    
   }
   sleep 0.2
   send_empty_ajax_request "${DL_PROT:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}"'&website''Token=''7fd9''4ds1''2fds4' "${DL_PROT:?}${_base_dm:?}" || {
     report_failure_two "${?}" 'get content' || return "${?}"
   }
+
   sleep 0.3
-  dl_generic_with_cookie "${_url:?}" 'account''Token='"${_other_code:?}" "${3:?}" || {
+  mkdir -p "${SCRIPT_DIR:?}/cache/temp/cookies" || return "${?}"
+  _parse_and_store_cookie "${_domain:?}" 'account''Token='"${_other_code:?}"
+  _direct_download "${_url:?}" '' "${3:?}" || {
     report_failure_two "${?}" 'dl' || return "${?}"
   }
 
