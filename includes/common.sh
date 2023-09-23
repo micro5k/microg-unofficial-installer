@@ -364,14 +364,12 @@ _direct_download()
   "${WGET_CMD:?}" -q -O "${_output:?}" "${@}" -- "${_url:?}" || return "${?}"
 }
 
-dl_type_zero()
+report_failure()
 {
-  local _url _referrer _output
-  _url="${1:?}" || return "${?}"
-  _referrer="${2?}" || return "${?}"
-  _output="${3:?}" || return "${?}"
+  printf 1>&2 '%s - ' "DL type ${1?} failed at '${3:-}' with ret. code ${2?}"
+  if test -n "${4:-}"; then printf 1>&2 '\n%s\n' "${4:?}"; fi
 
-  _direct_download "${_url:?}" "${_referrer?}" "${_output:?}" || report_failure 0 "${?}" 'dl' || return "${?}"
+  return "${2:?}"
 }
 
 report_failure_one()
@@ -382,6 +380,16 @@ report_failure_one()
   if test -n "${3:-}"; then printf '%s\n' "${3:?}"; fi
 
   return "${1:?}"
+}
+
+dl_type_zero()
+{
+  local _url _referrer _output
+  _url="${1:?}" || return "${?}"
+  _referrer="${2?}" || return "${?}"
+  _output="${3:?}" || return "${?}"
+
+  _direct_download "${_url:?}" "${_referrer?}" "${_output:?}" || report_failure 0 "${?}" 'dl' || return "${?}"
 }
 
 dl_type_one()
@@ -418,14 +426,6 @@ dl_type_one()
   _direct_download "${_url:?}" "${_referrer:?}" "${3:?}" || {
     report_failure_one "${?}" 'dl' || return "${?}"
   }
-}
-
-report_failure()
-{
-  printf 1>&2 '%s - ' "DL type ${1?} failed at '${3:-}' with ret. code ${2?}"
-  if test -n "${4:-}"; then printf 1>&2 '\n%s\n' "${4:?}"; fi
-
-  return "${2:?}"
 }
 
 dl_type_two()
