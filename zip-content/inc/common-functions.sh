@@ -796,17 +796,15 @@ clean_previous_installations()
   local _initial_free_space
 
   create_dir "${SYS_PATH:?}/etc"
-  if touch 2> /dev/null "${SYS_PATH:?}/etc/write-test-file.dat" && test -e "${SYS_PATH:?}/etc/write-test-file.dat" && rm -f -- "${SYS_PATH:?}/etc/write-test-file.dat"; then
+  if touch 2> /dev/null "${SYS_PATH:?}/etc/write-test-file.dat" && printf '%512000s' '' 1> "${SYS_PATH:?}/etc/write-test-file.dat" && test -e "${SYS_PATH:?}/etc/write-test-file.dat"; then
     : # Really writable
   else
     ui_error "Something is wrong because '${SYS_PATH?}' is NOT really writable!!!"
   fi
 
-  if test "${FIRST_INSTALLATION:?}" = 'true'; then
-    _initial_free_space='-1'
-  else
-    _initial_free_space="$(_get_free_space)" || _initial_free_space='-1'
-  fi
+  _initial_free_space="$(_get_free_space)" || _initial_free_space='-1'
+
+  rm -f -- "${SYS_PATH:?}/etc/write-test-file.dat" || ui_error 'Failed to delete the test file'
 
   readonly IS_INCLUDED='true'
   export IS_INCLUDED
