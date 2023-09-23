@@ -131,7 +131,7 @@ fi
 
 # Download files if they are missing
 {
-  mkdir -p "${SCRIPT_DIR}/cache"
+  mkdir -p "${SCRIPT_DIR:?}/cache" || ui_error 'Failed to create "cache" dir'
 
   current_dl_list="$(oss_files_to_download)" || ui_error 'Missing download list'
   dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files'
@@ -144,6 +144,8 @@ fi
   else
     echo 'Skipped not OSS files!'
   fi
+
+  rm -f -r "${SCRIPT_DIR:?}/cache/temp" || ui_error 'Failed to remove "cache/temp" dir'
 
   unset current_dl_list
 }
