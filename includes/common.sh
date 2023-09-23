@@ -224,7 +224,7 @@ _load_cookies()
   while IFS='=' read -r name val; do
     if test -z "${name?}"; then continue; fi
     printf '%s; ' "${name:?}=${val?}"
-    
+
   done 0< "${SCRIPT_DIR:?}/cache/temp/cookies/${1:?}.dat" || return "${?}"
 }
 
@@ -299,7 +299,10 @@ _parse_webpage_and_get_url()
       fi
       return 1
     fi
-  } 0< <("${WGET_CMD:?}" -q -S -O '-' "${@}" -- "${_url:?}" 2> >(_parse_and_store_all_cookies "${_domain:?}" || { ui_error_msg "Header parsing failed, error code => ${?}"; return 2; }))
+  } 0< <("${WGET_CMD:?}" -q -S -O '-' "${@}" -- "${_url:?}" 2> >(_parse_and_store_all_cookies "${_domain:?}" || {
+    ui_error_msg "Header parsing failed, error code => ${?}"
+    return 2
+  }))
 
   printf '%s\n' "${_parsed_url?}"
 }
@@ -427,31 +430,32 @@ report_failure()
 
 dl_type_two()
 {
-  local _url _domain _base_dm
+  local _url _output
+  local _domain _base_dm
+  local _loc_code _other_code
 
-  _url="${1:?}" || report_failure 2 "${?}" || return "${?}"
+  _url="${1:?}" || return "${?}"
+  _output="${2:?}" || return "${?}"
+
   _domain="$(get_domain_from_url "${_url:?}")" || report_failure 2 "${?}" || return "${?}"
-  _base_dm="$(printf '%s' "${_domain:?}" | cut -sd '.' -f '2-3')" || report_failure 2 "${?}" || return "${?}"
+  _base_dm="$(printf '%s\n' "${_domain:?}" | cut -d '.' -f '2-' -s)" || report_failure 2 "${?}" || return "${?}"
 
-  _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -d '/' -f '5-' -s)" || {
+  _loc_code="$(get_location_header_from_http_request "${_url:?}" | cut -d '/' -f '5-' -s)" ||
     report_failure 2 "${?}" 'get location' || return "${?}"
-  }
 
   sleep 0.2
-  _other_code="$(get_JSON_value_from_ajax_request "${DL_PROT:?}api.${_base_dm:?}/createAccount" "${DL_PROT:?}${_base_dm:?}" 'token')" || {
+  _other_code="$(get_JSON_value_from_ajax_request "${DL_PROT:?}api.${_base_dm:?}/createAccount" "${DL_PROT:?}${_base_dm:?}" 'token')" ||
     report_failure 2 "${?}" 'get JSON' || return "${?}"
-  }
 
   sleep 0.2
-  send_empty_ajax_request "${DL_PROT:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}"'&website''Token=''7fd9''4ds1''2fds4' "${DL_PROT:?}${_base_dm:?}" || {
+  send_empty_ajax_request "${DL_PROT:?}api.${_base_dm:?}/getContent?contentId=${_loc_code:?}&token=${_other_code:?}"'&website''Token=''7fd9''4ds1''2fds4' "${DL_PROT:?}${_base_dm:?}" ||
     report_failure 2 "${?}" 'get content' || return "${?}"
-  }
 
   sleep 0.3
-  _parse_and_store_cookie "${_domain:?}" 'account''Token='"${_other_code:?}" || report_failure 2 "${?}" || return "${?}"
-  _direct_download "${_url:?}" '' "${3:?}" || {
+  _parse_and_store_cookie "${_domain:?}" 'account''Token='"${_other_code:?}" ||
+    report_failure 2 "${?}" 'set cookie' || return "${?}"
+  _direct_download "${_url:?}" '' "${_output:?}" ||
     report_failure 2 "${?}" 'dl' || return "${?}"
-  }
 }
 
 dl_file()
@@ -473,7 +477,7 @@ dl_file()
     case "${_domain:?}" in
       *\.'go''file''.io')
         printf '\n %s: ' 'DL type 2'
-        dl_type_two "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+        dl_type_two "${_url:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
         ;;
       *\.'apk''mirror''.com')
         printf '\n %s: ' 'DL type 1'
