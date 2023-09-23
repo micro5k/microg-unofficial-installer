@@ -246,12 +246,6 @@ corrupted_file()
   ui_error "The file '$1' is corrupted."
 }
 
-# 1 => URL; 2 => Referrer; 3 => Output
-dl_generic()
-{
-  "${WGET_CMD:?}" -q -O "${3:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header 'DNT: 1' --header "Referer: ${2:?}" --no-cache -- "${1:?}" || return "${?}"
-}
-
 _parse_webpage_and_get_url()
 {
   local _url _referrer _search_pattern
@@ -369,10 +363,12 @@ _direct_download()
 
 dl_type_zero()
 {
-  local _url
-
+  local _url _referrer _output
   _url="${1:?}" || return "${?}"
-  dl_generic "${_url:?}" "${2:?}" "${3:?}" || return "${?}"
+  _referrer="${2?}" || return "${?}"
+  _output="${3:?}" || return "${?}"
+
+  _direct_download "${_url:?}" "${_referrer?}" "${_output:?}" || report_failure 0 "${?}" 'dl' || return "${?}"
 }
 
 report_failure_one()
