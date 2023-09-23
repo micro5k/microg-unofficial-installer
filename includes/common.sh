@@ -368,6 +368,14 @@ _direct_download()
   "${WGET_CMD:?}" -q -O "${_output:?}" "${@}" -- "${_url:?}" || return "${?}"
 }
 
+dl_type_zero()
+{
+  local _url
+
+  _url="${1:?}" || return "${?}"
+  dl_generic "${_url:?}" "${2:?}" "${3:?}" || return "${?}"
+}
+
 report_failure_one()
 {
   readonly DL_TYPE_1_FAILED='true'
@@ -382,8 +390,6 @@ dl_type_one()
 {
   if test "${DL_TYPE_1_FAILED:-false}" != 'false'; then return 128; fi
   local _url _base_url _referrer _result
-
-  _clear_cookies
 
   _base_url="$(get_base_url "${2:?}")" || {
     report_failure_one "${?}" || return "${?}"
@@ -414,8 +420,6 @@ dl_type_one()
   _direct_download "${_url:?}" "${_referrer:?}" "${3:?}" || {
     report_failure_one "${?}" 'dl' || return "${?}"
   }
-
-  _clear_cookies
 }
 
 report_failure_two()
@@ -432,8 +436,6 @@ dl_type_two()
 {
   if test "${DL_TYPE_2_FAILED:-false}" != 'false'; then return 128; fi
   local _url _domain
-
-  _clear_cookies
 
   _url="${1:?}" || {
     report_failure_two "${?}" || return "${?}"
@@ -463,8 +465,6 @@ dl_type_two()
   _direct_download "${_url:?}" '' "${3:?}" || {
     report_failure_two "${?}" 'dl' || return "${?}"
   }
-
-  _clear_cookies
 }
 
 dl_file()
@@ -476,6 +476,8 @@ dl_file()
   _status=0
   _url="${DL_PROT:?}${4:?}" || return "${?}"
   _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
+
+  _clear_cookies
 
   if ! test -e "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}"; then
     mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
@@ -492,9 +494,7 @@ dl_file()
         ;;
       ????*)
         printf '\n %s: ' 'DL type 0'
-        _clear_cookies
-        dl_generic "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
-        _clear_cookies
+        dl_type_zero "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
         ;;
       *)
         ui_error "Invalid download URL => '${_url?}'"
