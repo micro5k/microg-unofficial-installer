@@ -368,14 +368,21 @@ _get_local_settings()
 
 parse_setting()
 {
-  local _var
+  local _var _use_last_choice
 
+  _use_last_choice="${3:-true}"
   _get_local_settings
 
   _var="$(printf '%s\n' "${LOCAL_SETTINGS?}" | grep -m 1 -F -e "[zip.${MODULE_ID:?}.${1:?}]" | cut -d ':' -f '2-' -s)" || _var=''
   _var="${_var# }"
   if test "${#_var}" -gt 2; then
     printf '%s\n' "${_var?}" | cut -c "2-$((${#_var} - 1))"
+    return
+  fi
+
+  # Fallback to the last choice
+  if test "${_use_last_choice:?}" = 'true' && _var="$(simple_file_getprop "${1:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
+    printf '%s\n' "${_var:?}"
     return
   fi
 
@@ -600,8 +607,8 @@ initialize()
   _get_local_settings
 
   if test "${INPUT_FROM_TERMINAL:?}" = 'true' && test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then LIVE_SETUP_TIMEOUT="$((LIVE_SETUP_TIMEOUT + 3))"; fi
-  LIVE_SETUP_DEFAULT="$(parse_setting 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}")"
-  LIVE_SETUP_TIMEOUT="$(parse_setting 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}")"
+  LIVE_SETUP_DEFAULT="$(parse_setting 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
+  LIVE_SETUP_TIMEOUT="$(parse_setting 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
 
   ui_debug ''
 

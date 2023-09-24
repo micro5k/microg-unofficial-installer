@@ -31,7 +31,7 @@ INSTALL_FDROIDPRIVEXT="$(parse_setting 'INSTALL_FDROIDPRIVEXT' "${INSTALL_FDROID
 INSTALL_AURORASERVICES="$(parse_setting 'INSTALL_AURORASERVICES' "${INSTALL_AURORASERVICES:?}")"
 INSTALL_NEWPIPE="$(parse_setting 'INSTALL_NEWPIPE' "${INSTALL_NEWPIPE:?}")"
 
-INSTALL_PLAYSTORE="$(parse_setting 'INSTALL_PLAYSTORE' "${INSTALL_PLAYSTORE:-}")"
+INSTALL_PLAYSTORE="$(parse_setting 'INSTALL_PLAYSTORE' "${INSTALL_PLAYSTORE:-}" 'false')"
 INSTALL_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7:-}")"
 INSTALL_ANDROIDAUTO="$(parse_setting 'INSTALL_ANDROIDAUTO' "${INSTALL_ANDROIDAUTO:-}")"
 
@@ -118,12 +118,12 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     move_rename_file "${TMP_PATH:?}/origin/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
   fi
 
-  setup_app "${INSTALL_FDROIDPRIVEXT:?}" '' 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
-  setup_app "${INSTALL_AURORASERVICES:?}" '' 'Aurora Services' 'AuroraServices' 'priv-app'
+  setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'INSTALL_FDROIDPRIVEXT' 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
+  setup_app "${INSTALL_AURORASERVICES:?}" 'INSTALL_AURORASERVICES' 'Aurora Services' 'AuroraServices' 'priv-app'
 
-  setup_app "${INSTALL_NEWPIPE:?}" '' 'NewPipe' 'NewPipe' 'app' true ||
-    setup_app "${INSTALL_NEWPIPE:?}" '' 'NewPipe (old)' 'NewPipeOld' 'app' true ||
-    setup_app "${INSTALL_NEWPIPE:?}" '' 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
+  setup_app "${INSTALL_NEWPIPE:?}" 'INSTALL_NEWPIPE' 'NewPipe' 'NewPipe' 'app' true ||
+    setup_app "${INSTALL_NEWPIPE:?}" 'INSTALL_NEWPIPE' 'NewPipe (old)' 'NewPipeOld' 'app' true ||
+    setup_app "${INSTALL_NEWPIPE:?}" 'INSTALL_NEWPIPE' 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
 
   setup_app "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7:-}" 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' 'Gmail' 'Gmail' 'app' true
   setup_app "${INSTALL_ANDROIDAUTO:-}" 'INSTALL_ANDROIDAUTO' 'Android Auto stub' 'AndroidAuto' 'priv-app' true
