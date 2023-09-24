@@ -1685,10 +1685,9 @@ setup_app()
   _dir="${4:?}"
   _url_handling="${5:-false}"
   _optional="${6:-true}"
+  if test "${_optional:?}" = 'true' && test ! -f "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.apk"; then return 1; fi
 
-  if test "${6:-true}" = 'true' && test ! -f "${TMP_PATH:?}/origin/${4:?}/${3:?}.apk"; then return 1; fi
-
-  _app_conf="$(file_get_first_line_that_start_with "${4:?}/${3:?}|" "${TMP_PATH:?}/origin/file-list.dat")" || ui_error "Failed to get app config for '${_vanity_name?}'"
+  _app_conf="$(file_get_first_line_that_start_with "${_dir:?}/${_filename:?}|" "${TMP_PATH:?}/origin/file-list.dat")" || ui_error "Failed to get app config for '${_vanity_name?}'"
   _min_api="$(string_split "${_app_conf:?}" 2)" || ui_error "Failed to get min API for '${_vanity_name?}'"
   _max_api="$(string_split "${_app_conf:?}" 3)" || ui_error "Failed to get max API for '${_vanity_name?}'"
   _output_name="$(string_split "${_app_conf:?}" 4)" || ui_error "Failed to get output name for '${_vanity_name?}'"
@@ -1709,33 +1708,33 @@ setup_app()
 
       ui_msg_sameline_start 'Verifying... '
       ui_debug ''
-      verify_sha1 "${TMP_PATH:?}/origin/${4:?}/${3:?}.apk" "${_file_hash:?}" || ui_error "Failed hash verification of '${_vanity_name?}'"
+      verify_sha1 "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.apk" "${_file_hash:?}" || ui_error "Failed hash verification of '${_vanity_name?}'"
       ui_msg_sameline_end 'OK'
 
-      if test "${4:?}" = 'priv-app' && test "${API:?}" -ge 26 && test -f "${TMP_PATH:?}/origin/etc/permissions/privapp-permissions-${3:?}.xml"; then
+      if test "${_dir:?}" = 'priv-app' && test "${API:?}" -ge 26 && test -f "${TMP_PATH:?}/origin/etc/permissions/privapp-permissions-${_filename:?}.xml"; then
         create_dir "${TMP_PATH:?}/files/etc/permissions" || ui_error "Failed to create the permissions folder for '${_vanity_name?}'"
-        move_rename_file "${TMP_PATH:?}/origin/etc/permissions/privapp-permissions-${3:?}.xml" "${TMP_PATH:?}/files/etc/permissions/privapp-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the priv-app xml of '${_vanity_name?}'"
+        move_rename_file "${TMP_PATH:?}/origin/etc/permissions/privapp-permissions-${_filename:?}.xml" "${TMP_PATH:?}/files/etc/permissions/privapp-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the priv-app xml of '${_vanity_name?}'"
         _installed_file_list="${_installed_file_list?}|etc/permissions/privapp-permissions-${_output_name:?}.xml"
       fi
-      if test "${API:?}" -ge 23 && test -f "${TMP_PATH:?}/origin/etc/default-permissions/default-permissions-${3:?}.xml"; then
+      if test "${API:?}" -ge 23 && test -f "${TMP_PATH:?}/origin/etc/default-permissions/default-permissions-${_filename:?}.xml"; then
         create_dir "${TMP_PATH:?}/files/etc/default-permissions" || ui_error "Failed to create the default permissions folder for '${_vanity_name?}'"
-        move_rename_file "${TMP_PATH:?}/origin/etc/default-permissions/default-permissions-${3:?}.xml" "${TMP_PATH:?}/files/etc/default-permissions/default-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the default permissions xml of '${_vanity_name?}'"
+        move_rename_file "${TMP_PATH:?}/origin/etc/default-permissions/default-permissions-${_filename:?}.xml" "${TMP_PATH:?}/files/etc/default-permissions/default-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the default permissions xml of '${_vanity_name?}'"
         _installed_file_list="${_installed_file_list?}|etc/default-permissions/default-permissions-${_output_name:?}.xml"
       fi
       if test "${_url_handling:?}" != 'false'; then
         add_line_in_file_after_string "${TMP_PATH:?}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${_vanity_name?}'"
       fi
-      create_dir "${TMP_PATH:?}/files/${4:?}" || ui_error "Failed to create the folder for '${_vanity_name?}'"
-      move_rename_file "${TMP_PATH:?}/origin/${4:?}/${3:?}.apk" "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${_vanity_name?}'"
+      create_dir "${TMP_PATH:?}/files/${_dir:?}" || ui_error "Failed to create the folder for '${_vanity_name?}'"
+      move_rename_file "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.apk" "${TMP_PATH:?}/files/${_dir:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${_vanity_name?}'"
 
-      if test "${CURRENTLY_ROLLBACKING:-false}" != 'true' && test "${_optional:?}" = 'true' && test "$(stat -c '%s' -- "${TMP_PATH:?}/files/${4:?}/${_output_name:?}.apk" || printf '0' || true)" -gt 300000; then
+      if test "${CURRENTLY_ROLLBACKING:-false}" != 'true' && test "${_optional:?}" = 'true' && test "$(stat -c '%s' -- "${TMP_PATH:?}/files/${_dir:?}/${_output_name:?}.apk" || printf '0' || true)" -gt 300000; then
         _installed_file_list="${_installed_file_list#|}"
-        printf '%s\n' "${_vanity_name:?}|${4:?}/${_output_name:?}.apk|${_installed_file_list?}" 1>> "${TMP_PATH:?}/processed-${4:?}s.log" || ui_error "Failed to update processed-${4?}s.log"
+        printf '%s\n' "${_vanity_name:?}|${_dir:?}/${_output_name:?}.apk|${_installed_file_list?}" 1>> "${TMP_PATH:?}/processed-${_dir:?}s.log" || ui_error "Failed to update processed-${_dir?}s.log"
       fi
 
       # IMPORTANT: extract_libs can move the apk file in a subdir
       case "${_extract_libs?}" in
-        'libs') extract_libs "${4:?}" "${_output_name:?}" ;;
+        'libs') extract_libs "${_dir:?}" "${_output_name:?}" ;;
         '') ;;
         *) ui_error "Invalid value of extract libs => ${_extract_libs?}" ;;
       esac
