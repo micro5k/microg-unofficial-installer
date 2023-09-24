@@ -125,8 +125,8 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     setup_app "${INSTALL_NEWPIPE:?}" '' 'NewPipe (old)' 'NewPipeOld' 'app' true ||
     setup_app "${INSTALL_NEWPIPE:?}" '' 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
 
-  setup_app "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7:-}" '' 'Gmail' 'Gmail' 'app' true
-  setup_app "${INSTALL_ANDROIDAUTO:-}" '' 'Android Auto stub' 'AndroidAuto' 'priv-app' true
+  setup_app "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7:-}" 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' 'Gmail' 'Gmail' 'app' true
+  setup_app "${INSTALL_ANDROIDAUTO:-}" 'INSTALL_ANDROIDAUTO' 'Android Auto stub' 'AndroidAuto' 'priv-app' true
 
   if test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
     choose 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
@@ -194,6 +194,7 @@ ui_debug ''
 # Prepare installation
 prepare_installation
 printf '%s\n' "fakestore=${market_is_fakestore:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+printf '%s\n' "USE_GMSCORE_BY_ALE5000=${USE_GMSCORE_BY_ALE5000:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 
 if test -e "${TMP_PATH:?}/files/bin/minutil"; then
   set_perm 0 2000 0755 "${TMP_PATH:?}/files/bin/minutil"

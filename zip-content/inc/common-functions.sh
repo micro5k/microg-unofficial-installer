@@ -923,6 +923,10 @@ prepare_installation()
     echo "install.version=${MODULE_VERSION:?}"
   } 1> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop" || ui_error 'Failed to generate the prop file of this zip'
 
+  if test -f "${TMP_PATH:?}/saved-choices.dat"; then
+    cat "${TMP_PATH:?}/saved-choices.dat" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop" || ui_error 'Failed to update the prop file of this zip'
+  fi
+
   set_std_perm_recursive "${TMP_PATH:?}/files"
   if test -e "${TMP_PATH:?}/addon.d"; then
     set_std_perm_recursive "${TMP_PATH:?}/addon.d"
@@ -1678,7 +1682,7 @@ string_split()
 # @exitcode 1 If NOT installed.
 setup_app()
 {
-  local _install _vanity_name _filename _dir _url_handling _optional _app_conf _min_api _max_api _output_name _extract_libs _internal_name _file_hash _installed_file_list
+  local _install _chosen_option_name _vanity_name _filename _dir _url_handling _optional _app_conf _min_api _max_api _output_name _extract_libs _internal_name _file_hash _installed_file_list
 
   _install="${1:-0}"
   _chosen_option_name="${2:-}"
@@ -1703,6 +1707,10 @@ setup_app()
     if test "${_optional:?}" = 'true' && test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
       choose "Do you want to install ${_vanity_name:?}?" '+) Yes' '-) No'
       if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
+    fi
+
+    if test -n "${_chosen_option_name?}" && test "${_optional:?}" = 'true'; then
+      printf '%s\n' "${_chosen_option_name:?}=${_install:?}" 1>> "${TMP_PATH:?}/saved-choices.dat" || ui_error 'Failed to update saved-choices.dat'
     fi
 
     if test "${_install:?}" -ne 0 || test "${_optional:?}" != 'true'; then
