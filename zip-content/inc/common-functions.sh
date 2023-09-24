@@ -413,6 +413,24 @@ is_string_starting_with()
   return 1 # NOT found
 }
 
+_write_test()
+{
+  if test ! -d "${1:?}"; then
+    mkdir -p "${1:?}" || return 1
+    set_perm 0 0 0755 "${1:?}"
+  fi
+
+  touch 2> /dev/null "${1:?}/write-test-file.dat" || return 1
+
+  if test "${FIRST_INSTALLATION:?}" = 'true'; then
+    printf '%512000s' '' 1> "${1:?}/write-test-file.dat" || return 1
+  fi
+
+  test -e "${1:?}/write-test-file.dat" || return 1
+
+  return 0
+}
+
 _detect_architectures()
 {
   # Info:
@@ -795,8 +813,7 @@ clean_previous_installations()
 {
   local _initial_free_space
 
-  create_dir "${SYS_PATH:?}/etc"
-  if touch 2> /dev/null "${SYS_PATH:?}/etc/write-test-file.dat" && printf '%512000s' '' 1> "${SYS_PATH:?}/etc/write-test-file.dat" && test -e "${SYS_PATH:?}/etc/write-test-file.dat"; then
+  if _write_test "${SYS_PATH:?}/etc"; then
     : # Really writable
   else
     ui_error "Something is wrong because '${SYS_PATH?}' is NOT really writable!!!"
