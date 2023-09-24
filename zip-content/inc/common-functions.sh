@@ -1677,16 +1677,18 @@ string_split()
 # @exitcode 1 If NOT installed.
 setup_app()
 {
-  local _install _vanity_name _app_conf _url_handling _optional _min_api _max_api _output_name _extract_libs _internal_name _file_hash _installed_file_list
-
-  if test "${6:-true}" = 'true' && test ! -f "${TMP_PATH:?}/origin/${4:?}/${3:?}.apk"; then return 1; fi
+  local _install _vanity_name _filename _dir _url_handling _optional _app_conf _min_api _max_api _output_name _extract_libs _internal_name _file_hash _installed_file_list
 
   _install="${1:-0}"
   _vanity_name="${2:?}"
-  _app_conf="$(file_get_first_line_that_start_with "${4:?}/${3:?}|" "${TMP_PATH:?}/origin/file-list.dat")" || ui_error "Failed to get app config for '${_vanity_name?}'"
+  _filename="${3:?}"
+  _dir="${4:?}"
   _url_handling="${5:-false}"
   _optional="${6:-true}"
 
+  if test "${6:-true}" = 'true' && test ! -f "${TMP_PATH:?}/origin/${4:?}/${3:?}.apk"; then return 1; fi
+
+  _app_conf="$(file_get_first_line_that_start_with "${4:?}/${3:?}|" "${TMP_PATH:?}/origin/file-list.dat")" || ui_error "Failed to get app config for '${_vanity_name?}'"
   _min_api="$(string_split "${_app_conf:?}" 2)" || ui_error "Failed to get min API for '${_vanity_name?}'"
   _max_api="$(string_split "${_app_conf:?}" 3)" || ui_error "Failed to get max API for '${_vanity_name?}'"
   _output_name="$(string_split "${_app_conf:?}" 4)" || ui_error "Failed to get output name for '${_vanity_name?}'"
