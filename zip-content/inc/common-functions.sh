@@ -1667,11 +1667,12 @@ string_split()
 # (it automatically handle the API compatibility)
 #
 # @arg $1 integer Default installation setting (default 0)
-# @arg $2 string Vanity name of the app
-# @arg $3 string Filename of the app
-# @arg $4 string Folder of the app
-# @arg $5 boolean Auto-enable URL handling (default false)
-# @arg $6 boolean Is the installation of this app optional? (default true)
+# @arg $2 string Name of the chosen option to be stored (default empty string)
+# @arg $3 string Vanity name of the app
+# @arg $4 string Filename of the app
+# @arg $5 string Folder of the app
+# @arg $6 boolean Auto-enable URL handling (default false)
+# @arg $7 boolean Is the installation of this app optional? (default true)
 #
 # @exitcode 0 If installed.
 # @exitcode 1 If NOT installed.
@@ -1680,11 +1681,12 @@ setup_app()
   local _install _vanity_name _filename _dir _url_handling _optional _app_conf _min_api _max_api _output_name _extract_libs _internal_name _file_hash _installed_file_list
 
   _install="${1:-0}"
-  _vanity_name="${2:?}"
-  _filename="${3:?}"
-  _dir="${4:?}"
-  _url_handling="${5:-false}"
-  _optional="${6:-true}"
+  _chosen_option_name="${2:-}"
+  _vanity_name="${3:?}"
+  _filename="${4:?}"
+  _dir="${5:?}"
+  _url_handling="${6:-false}"
+  _optional="${7:-true}"
   if test "${_optional:?}" = 'true' && test ! -f "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.apk"; then return 1; fi
 
   _app_conf="$(file_get_first_line_that_start_with "${_dir:?}/${_filename:?}|" "${TMP_PATH:?}/origin/file-list.dat")" || ui_error "Failed to get app config for '${_vanity_name?}'"

@@ -17,7 +17,7 @@ rollback_complete_callback()
   case "${1:?}" in
     'Google Play Store' | 'Google Play Store (legacy)')
       # Fallback to FakeStore
-      setup_app 1 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false
+      setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false
       ;;
 
     *) ;;
@@ -70,7 +70,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   # Configuring
   ui_msg 'Configuring...'
 
-  setup_app 1 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
+  setup_app 1 '' 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
 
   if test "${IS_EMU:?}" = 'true'; then
     move_rename_file "${TMP_PATH:?}/origin/profiles/lenovo_yoga_tab_3_pro_10_inches_23.xml" "${TMP_PATH:?}/files/etc/microg_device_profile.xml"
@@ -84,32 +84,32 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   fi
 
   install_backends='false'
-  if test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 "${microg_gmscore_vanity_name:?}" "${microg_gmscore_filename:?}" 'priv-app' false false; then
+  if test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' "${microg_gmscore_vanity_name:?}" "${microg_gmscore_filename:?}" 'priv-app' false false; then
     :
-  elif test "${MAIN_ABI:?}" = 'armeabi' && setup_app 1 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
+  elif test "${MAIN_ABI:?}" = 'armeabi' && setup_app 1 '' 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
     install_backends='true'
-  elif setup_app 1 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
+  elif setup_app 1 '' 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
     install_backends='true'
   fi
 
-  setup_app 1 'microG Services Framework Proxy' 'GsfProxy' 'priv-app' false false
+  setup_app 1 '' 'microG Services Framework Proxy' 'GsfProxy' 'priv-app' false false
 
   if test "${install_backends:?}" = 'true'; then
-    setup_app "${INSTALL_MOZILLABACKEND:?}" 'Mozilla UnifiedNlp Backend' 'IchnaeaNlpBackend' 'app'
-    setup_app "${INSTALL_DEJAVUBACKEND:?}" 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
-    setup_app "${INSTALL_NOMINATIMGEOBACKEND:?}" 'Nominatim Geocoder Backend' 'NominatimGeocoderBackend' 'app'
+    setup_app "${INSTALL_MOZILLABACKEND:?}" '' 'Mozilla UnifiedNlp Backend' 'IchnaeaNlpBackend' 'app'
+    setup_app "${INSTALL_DEJAVUBACKEND:?}" '' 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
+    setup_app "${INSTALL_NOMINATIMGEOBACKEND:?}" '' 'Nominatim Geocoder Backend' 'NominatimGeocoderBackend' 'app'
   fi
 
   # Store selection
   market_is_fakestore='false'
-  if setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store' 'PlayStore' 'priv-app' true; then
+  if setup_app "${INSTALL_PLAYSTORE:-}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
     :
-  elif setup_app "${INSTALL_PLAYSTORE:-}" 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
+  elif setup_app "${INSTALL_PLAYSTORE:-}" '' 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
     :
   else
     # Fallback to FakeStore
     market_is_fakestore='true'
-    setup_app 1 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false
+    setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false
   fi
 
   if test "${market_is_fakestore:?}" = 'true'; then
@@ -118,15 +118,15 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     move_rename_file "${TMP_PATH:?}/origin/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
   fi
 
-  setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
-  setup_app "${INSTALL_AURORASERVICES:?}" 'Aurora Services' 'AuroraServices' 'priv-app'
+  setup_app "${INSTALL_FDROIDPRIVEXT:?}" '' 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
+  setup_app "${INSTALL_AURORASERVICES:?}" '' 'Aurora Services' 'AuroraServices' 'priv-app'
 
-  setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe' 'NewPipe' 'app' true ||
-    setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe (old)' 'NewPipeOld' 'app' true ||
-    setup_app "${INSTALL_NEWPIPE:?}" 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
+  setup_app "${INSTALL_NEWPIPE:?}" '' 'NewPipe' 'NewPipe' 'app' true ||
+    setup_app "${INSTALL_NEWPIPE:?}" '' 'NewPipe (old)' 'NewPipeOld' 'app' true ||
+    setup_app "${INSTALL_NEWPIPE:?}" '' 'NewPipe Legacy' 'NewPipeLegacy' 'app' true
 
-  setup_app "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7:-}" 'Gmail' 'Gmail' 'app' true
-  setup_app "${INSTALL_ANDROIDAUTO:-}" 'Android Auto stub' 'AndroidAuto' 'priv-app' true
+  setup_app "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7:-}" '' 'Gmail' 'Gmail' 'app' true
+  setup_app "${INSTALL_ANDROIDAUTO:-}" '' 'Android Auto stub' 'AndroidAuto' 'priv-app' true
 
   if test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
     choose 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
