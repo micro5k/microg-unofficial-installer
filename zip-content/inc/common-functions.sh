@@ -384,6 +384,12 @@ parse_setting()
   if test "${_use_last_choice:?}" = 'true' && _var="$(simple_file_getprop "${1:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
     printf '%s\n' "${_var:?}"
     return
+  elif test "${_use_last_choice:?}" = 'custom' && _var="$(simple_file_getprop "${4:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
+    case "${_var:?}" in
+      "${5:?}") printf '1\n' ;;
+      *) printf '0\n' ;;
+    esac
+    return
   fi
 
   # Fallback to the default value

@@ -31,7 +31,7 @@ INSTALL_FDROIDPRIVEXT="$(parse_setting 'INSTALL_FDROIDPRIVEXT' "${INSTALL_FDROID
 INSTALL_AURORASERVICES="$(parse_setting 'INSTALL_AURORASERVICES' "${INSTALL_AURORASERVICES:?}")"
 INSTALL_NEWPIPE="$(parse_setting 'INSTALL_NEWPIPE' "${INSTALL_NEWPIPE:?}")"
 
-INSTALL_PLAYSTORE="$(parse_setting 'INSTALL_PLAYSTORE' "${INSTALL_PLAYSTORE:-}" 'false')"
+INSTALL_PLAYSTORE="$(parse_setting 'INSTALL_PLAYSTORE' "${INSTALL_PLAYSTORE:-}" 'custom' 'SELECTED_MARKET' 'PlayStore')"
 INSTALL_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7:-}")"
 INSTALL_ANDROIDAUTO="$(parse_setting 'INSTALL_ANDROIDAUTO' "${INSTALL_ANDROIDAUTO:-}")"
 
@@ -101,18 +101,17 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   fi
 
   # Store selection
-  market_is_fakestore='false'
+  SELECTED_MARKET='FakeStore'
   if setup_app "${INSTALL_PLAYSTORE:-}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
-    :
+    SELECTED_MARKET='PlayStore'
   elif setup_app "${INSTALL_PLAYSTORE:-}" '' 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
-    :
+    SELECTED_MARKET='PlayStore'
   else
     # Fallback to FakeStore
-    market_is_fakestore='true'
     setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false
   fi
 
-  if test "${market_is_fakestore:?}" = 'true'; then
+  if test "${SELECTED_MARKET:?}" = 'FakeStore'; then
     move_rename_file "${TMP_PATH:?}/origin/etc/microg.xml" "${TMP_PATH:?}/files/etc/microg.xml"
   else
     move_rename_file "${TMP_PATH:?}/origin/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
@@ -193,8 +192,8 @@ ui_debug ''
 
 # Prepare installation
 prepare_installation
-printf '%s\n' "fakestore=${market_is_fakestore:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 printf '%s\n' "USE_GMSCORE_BY_ALE5000=${USE_GMSCORE_BY_ALE5000:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 
 if test -e "${TMP_PATH:?}/files/bin/minutil"; then
   set_perm 0 2000 0755 "${TMP_PATH:?}/files/bin/minutil"
