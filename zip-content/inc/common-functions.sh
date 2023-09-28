@@ -37,9 +37,9 @@ fi
 
 mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions temp folder'
 
-NL='
+readonly ROLLBACK_TEST='false'
+readonly NL='
 '
-readonly NL
 
 ### FUNCTIONS ###
 
@@ -994,6 +994,17 @@ _wait_free_space_changes()
   ui_debug ''
 }
 
+_custom_rollback()
+{
+  if test "${ROLLBACK_TEST:?}" = 'false'; then
+    return 0
+  elif test "${1:?}" = 'priv-app' || test "${1:?}" = 'app'; then
+    return 1
+  fi
+
+  return 0
+}
+
 _rolling_back_last_app_internal()
 {
   local _backup_ifs _skip_first _initial_free_space _vanity_name _installed_file_list
@@ -1055,6 +1066,8 @@ _rolling_back_last_app()
 
 _is_free_space_error()
 {
+  if test "${ROLLBACK_TEST:?}" != 'false'; then return 0; fi
+
   case "${1?}" in
     *'space left'*) return 0 ;; # Found
     *) ;;                       # NOT found
@@ -1070,7 +1083,10 @@ perform_secure_copy_to_device()
   ui_debug "  Copying the '${1?}' folder to the device..."
   create_dir "${SYS_PATH:?}/${1:?}"
 
-  if cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ || _error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)"; then
+  if {
+    cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ ||
+      _error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)"
+  } && _custom_rollback "${1:?}"; then
     return 0
   elif _is_free_space_error "${_error_text?}"; then
     while _rolling_back_last_app "${1:?}"; do
