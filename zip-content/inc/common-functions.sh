@@ -1005,7 +1005,7 @@ _custom_rollback()
   return 0
 }
 
-_rolling_back_last_app_internal()
+_do_rollback_last_app_internal()
 {
   local _backup_ifs _skip_first _initial_free_space _vanity_name _installed_file_list
   if test ! -s "${TMP_PATH:?}/processed-${1:?}s.log"; then return 1; fi
@@ -1051,13 +1051,13 @@ _rolling_back_last_app_internal()
   return 0
 }
 
-_rolling_back_last_app()
+_do_rollback_last_app()
 {
   if test "${1:?}" = 'priv-app'; then
-    _rolling_back_last_app_internal 'priv-app'
+    _do_rollback_last_app_internal 'priv-app'
     return "${?}"
   elif test "${1:?}" = 'app'; then
-    _rolling_back_last_app_internal 'app' || _rolling_back_last_app_internal 'priv-app'
+    _do_rollback_last_app_internal 'app' || _do_rollback_last_app_internal 'priv-app'
     return "${?}"
   fi
 
@@ -1089,7 +1089,7 @@ perform_secure_copy_to_device()
   } && _custom_rollback "${1:?}"; then
     return 0
   elif _is_free_space_error "${_error_text?}"; then
-    while _rolling_back_last_app "${1:?}"; do
+    while _do_rollback_last_app "${1:?}"; do
       if ! _something_exists "${TMP_PATH:?}/files/${1:?}"/* || cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/; then
         if test -n "${_error_text?}"; then
           ui_recovered_error "$(printf '%s\n' "${_error_text:?}" | head -n 1 || true)"
