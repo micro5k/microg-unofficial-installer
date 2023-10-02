@@ -20,7 +20,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='1.4'
+readonly SCRIPT_VERSION='1.5'
 
 # shellcheck disable=SC2034
 {
@@ -521,7 +521,7 @@ get_imei()
 
 get_line_number()
 {
-  local _val
+  local _val=''
 
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     :
@@ -543,7 +543,7 @@ get_line_number()
 
 get_iccid()
 {
-  local _val
+  local _val=''
 
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     :
@@ -625,7 +625,7 @@ main()
   check_boot_completed
   show_status_msg ''
 
-  BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')"
+  BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" || BUILD_VERSION_SDK='999'
   readonly BUILD_VERSION_SDK
 
   show_section 'BASIC INFO'
