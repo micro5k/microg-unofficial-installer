@@ -618,10 +618,11 @@ initialize()
 
   ui_debug ''
 
-  # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64.
+  # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64 or, in some rare cases, just bin and usr.
   # Usable binaries are under the fake /system/bin so the /system mountpoint mustn't be used while in this recovery.
   if test "${BOOTMODE:?}" != 'true' &&
-    test -e '/system/bin/sh' &&
+    test -e '/system/bin' &&
+    test ! -e '/system/app' &&
     test ! -e '/system/build.prop' &&
     test ! -e '/system/system/build.prop'; then
     readonly RECOVERY_FAKE_SYSTEM='true'
