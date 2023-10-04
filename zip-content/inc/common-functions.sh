@@ -1118,9 +1118,13 @@ perform_installation()
 {
   ui_msg 'Installing...'
 
+  if test ! -d "${SYS_PATH:?}/etc/zips"; then
+    mkdir -p "${SYS_PATH:?}/etc/zips" || ui_error "Failed to create the dir '${SYS_PATH:?}/etc/zips'"
+    set_perm 0 0 0750 "${SYS_PATH:?}/etc/zips"
+  fi
+
   set_perm 0 0 0640 "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
   perform_secure_copy_to_device 'etc/zips'
-  set_perm 0 0 0750 "${SYS_PATH:?}/etc/zips"
 
   if test "${API:?}" -lt 21; then
     if test "${CPU64}" != false; then
