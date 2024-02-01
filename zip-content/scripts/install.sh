@@ -26,7 +26,7 @@ rollback_complete_callback()
 
 ### CODE ###
 
-USE_GMSCORE_BY_ALE5000="$(parse_setting 'USE_GMSCORE_BY_ALE5000' "${USE_GMSCORE_BY_ALE5000:?}")"
+USE_MICROG_BY_ALE5000="$(parse_setting 'USE_MICROG_BY_ALE5000' "${USE_MICROG_BY_ALE5000:?}")"
 INSTALL_FDROIDPRIVEXT="$(parse_setting 'INSTALL_FDROIDPRIVEXT' "${INSTALL_FDROIDPRIVEXT:?}")"
 INSTALL_AURORASERVICES="$(parse_setting 'INSTALL_AURORASERVICES' "${INSTALL_AURORASERVICES:?}")"
 INSTALL_NEWPIPE="$(parse_setting 'INSTALL_NEWPIPE' "${INSTALL_NEWPIPE:?}")"
@@ -78,7 +78,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   microg_gmscore_vanity_name='microG Services'
   microg_gmscore_filename='GmsCore'
-  if test "${USE_GMSCORE_BY_ALE5000:?}" != 0; then
+  if test "${USE_MICROG_BY_ALE5000:?}" != 0; then
     microg_gmscore_vanity_name='microG Services - signed by ale5000'
     microg_gmscore_filename='GmsCore-ale5000'
   fi
@@ -192,7 +192,7 @@ ui_debug ''
 
 # Prepare installation
 prepare_installation
-printf '%s\n' "USE_GMSCORE_BY_ALE5000=${USE_GMSCORE_BY_ALE5000:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+printf '%s\n' "USE_MICROG_BY_ALE5000=${USE_MICROG_BY_ALE5000:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 
 if test -e "${TMP_PATH:?}/files/bin/minutil"; then
