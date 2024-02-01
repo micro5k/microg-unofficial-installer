@@ -108,7 +108,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     SELECTED_MARKET='PlayStore'
   else
     # Fallback to FakeStore
-    setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false
+    setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore-ale5000' 'priv-app' false false
   fi
 
   if test "${SELECTED_MARKET:?}" = 'FakeStore'; then
