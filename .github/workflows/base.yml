@@ -76,3 +76,4 @@ jobs:
         with:
           fail_ci_if_error: true
           files: "${{ github.workspace }}/coverage/codecov-result.json"
+          token: "${{ secrets.CODECOV_TOKEN }}"
