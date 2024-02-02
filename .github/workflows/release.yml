@@ -30,7 +30,6 @@ jobs:
           workspace_path='${{ github.workspace }}'; readonly workspace_path
           "${workspace_path:?}/gradlew" clean buildOtaOSS
       - name: "Upload release"
-        if: "${{ github.repository_owner == 'micro5k' }}"
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
