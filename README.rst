@@ -61,4 +61,4 @@ Code analysis
 
 .. image:: https://app.codacy.com/project/badge/Grade/892e0ecec7b744ad8f26b97b30d552f1
    :alt: Codacy Badge
-   :target: https://www.codacy.com/gh/micro5k/microg-unofficial-installer/dashboard
+   :target: https://app.codacy.com/gh/micro5k/microg-unofficial-installer/dashboard
