@@ -436,7 +436,7 @@ _write_test()
   touch 2> /dev/null "${1:?}/write-test-file.dat" || return 1
 
   if test "${FIRST_INSTALLATION:?}" = 'true'; then
-    printf '%512000s' '' 1> "${1:?}/write-test-file.dat" || return 1
+    printf '%5120s' '' 1> "${1:?}/write-test-file.dat" || return 1
   fi
 
   test -e "${1:?}/write-test-file.dat" || return 1
