@@ -1738,6 +1738,8 @@ setup_app()
   _output_dir=''
   _installed_file_list=''
 
+  ui_debug ''
+
   if test "${API:?}" -ge "${_min_api:?}" && test "${API:?}" -le "${_max_api:-999}"; then
     if test "${_optional:?}" = 'true' && test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
       choose "Do you want to install ${_vanity_name:?}?" '+) Yes' '-) No'
