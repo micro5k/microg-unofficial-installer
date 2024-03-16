@@ -664,7 +664,7 @@ initialize()
 
   IS_EMU='false'
   case "${BUILD_DEVICE?}" in
-    'windows_x86_64' | 'emu64x') IS_EMU='true' ;;
+    'windows_x86_64' | 'emu64'*) IS_EMU='true' ;;
     *) ;;
   esac
 
