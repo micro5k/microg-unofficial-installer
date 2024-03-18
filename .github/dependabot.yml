@@ -8,12 +8,14 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "codecov/codecov-action"
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
       interval: "daily"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     ignore:
       - dependency-name: "com.github.hierynomus.license-report"
       - dependency-name: "com.github.spotbugs"
