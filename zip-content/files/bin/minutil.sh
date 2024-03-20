@@ -16,7 +16,7 @@ set -e
 ### GLOBAL VARIABLES ###
 
 readonly MINUTIL_NAME='MinUtil'
-readonly MINUTIL_VERSION='1.0'
+readonly MINUTIL_VERSION='1.1'
 
 ### PREVENTIVE CHECKS ###
 
@@ -376,6 +376,8 @@ minutil_manual_media_rescan()
 
 minutil_reset_battery()
 {
+  _is_caller_root || return 1
+
   printf '%s\n' 'Resetting battery stats...'
   rm -f -- '/data/system/batterystats.bin' || true
   rm -f -- '/data/system/batterystats-daily.xml' || true
@@ -478,7 +480,7 @@ if test "${_minutil_display_help:?}" = 'true'; then
 
   _minutil_aligned_print '-h,--help' 'Show this help'
   _minutil_aligned_print '-s,--rescan-storage' 'Rescan storage to find file changes'
-  _minutil_aligned_print '--reset-battery' ''
+  _minutil_aligned_print '--reset-battery' 'Reset battery stats and, if possible, also reset battery fuel gauge chip (need root)'
   _minutil_aligned_print '--remove-all-accounts' 'Remove all accounts from the device (need root)'
   _minutil_aligned_print '--force-gcm-reconnection' 'Force GCM reconnection'
   _minutil_aligned_print '-i,--reinstall-package PACKAGE_NAME' 'Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions'
