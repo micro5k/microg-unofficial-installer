@@ -210,18 +210,13 @@ if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/f
 if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
 perform_installation
 
+reset_authenticator_and_sync_adapter_caches
+
 if test "${FIRST_INSTALLATION:?}" = 'true'; then
   clear_and_enable_app 'com.google.android.gms'
 fi
 clear_and_enable_app 'com.google.android.gsf'
 clear_and_enable_app 'com.android.vending'
-
-# Reset to avoid problems with signature changes
-delete "${DATA_PATH:?}"/system/registered_services/android.accounts.AccountAuthenticator.xml
-delete "${DATA_PATH:?}"/system/registered_services/android.content.SyncAdapter.xml
-delete "${DATA_PATH:?}"/system/users/*/registered_services/android.accounts.AccountAuthenticator.xml
-delete "${DATA_PATH:?}"/system/users/*/registered_services/android.content.SyncAdapter.xml
-delete "${DATA_PATH:?}"/system/uiderrors.txt
 
 # Resetting Android runtime permissions
 if test "${API:?}" -ge 23; then

@@ -2497,6 +2497,16 @@ clear_and_enable_app()
   fi
 }
 
+reset_authenticator_and_sync_adapter_caches()
+{
+  # Reset to avoid problems with signature changes
+  delete "${DATA_PATH:?}"/system/registered_services/android.accounts.AccountAuthenticator.xml
+  delete "${DATA_PATH:?}"/system/registered_services/android.content.SyncAdapter.xml
+  delete "${DATA_PATH:?}"/system/users/*/registered_services/android.accounts.AccountAuthenticator.xml
+  delete "${DATA_PATH:?}"/system/users/*/registered_services/android.content.SyncAdapter.xml
+  delete "${DATA_PATH:?}"/system/uiderrors.txt
+}
+
 parse_busybox_version()
 {
   grep -m 1 -o -e 'BusyBox v[0-9]*\.[0-9]*\.[0-9]*' | cut -d 'v' -f '2-' -s
