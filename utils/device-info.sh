@@ -20,7 +20,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='1.5'
+readonly SCRIPT_VERSION='1.6'
 
 # shellcheck disable=SC2034
 {
@@ -697,5 +697,9 @@ main()
 }
 
 show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
-main "${@}"
+if test "${#}" -gt 0; then
+  main "${@}"
+else
+  main ''
+fi
 pause_if_needed
