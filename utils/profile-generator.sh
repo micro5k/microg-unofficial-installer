@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='1.6'
+readonly SCRIPT_VERSION='1.7'
 
 {
   readonly xml_comment_start='<!--' # Workaround for history substitution of Bash: don't insert ! directly in the printf but use a variable.
@@ -546,10 +546,10 @@ anonymize_serialno()
 
 main()
 {
-  if test -z "${*}"; then
-    readonly INPUT_TYPE='adb'
-  else
+  if test "${#}" -gt 0; then
     readonly INPUT_TYPE="${1:?}"
+  else
+    readonly INPUT_TYPE='adb'
   fi
 
   if test "${INPUT_TYPE:?}" = 'adb'; then
@@ -712,5 +712,9 @@ ${xml_comment_end:?}
 }
 
 show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
-main "${@}"
+if test "${#}" -gt 0; then
+  main "${@}"
+else
+  main
+fi
 pause_if_needed
