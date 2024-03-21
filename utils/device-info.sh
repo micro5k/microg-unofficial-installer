@@ -700,6 +700,6 @@ show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 if test "${#}" -gt 0; then
   main "${@}"
 else
-  main ''
+  main
 fi
 pause_if_needed
