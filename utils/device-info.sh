@@ -281,6 +281,11 @@ check_boot_completed()
   }
 }
 
+get_device_file_content()
+{
+  adb -s "${1:?}" shell "test -r '${2:?}' && cat '${2:?}'"
+}
+
 find_serialno()
 {
   local _val
@@ -619,16 +624,6 @@ parse_nv_data()
   rm -f "${_path:?}/nv_data.bin" || return 1
 }
 
-get_csc_region_code()
-{
-  adb -s "${1:?}" shell 'if test -r "/efs/imei/mps_code.dat"; then cat "/efs/imei/mps_code.dat"; fi'
-}
-
-get_efs_serialno()
-{
-  adb -s "${1:?}" shell 'if test -r "/efs/FactoryApp/serial_no"; then cat "/efs/FactoryApp/serial_no"; fi'
-}
-
 main()
 {
   verify_adb
@@ -705,10 +700,10 @@ main()
   validate_and_display_info 'Hardware version' "${HARDWARE_VERSION?}"
   validate_and_display_info 'Product code' "${PRODUCT_CODE?}"
 
-  CSC_REGION_CODE="$(get_csc_region_code "${SELECTED_DEVICE:?}")"
+  CSC_REGION_CODE="$(get_device_file_content "${SELECTED_DEVICE:?}" '/efs/imei/mps_code.dat')"
   validate_and_display_info 'CSC region code' "${CSC_REGION_CODE?}" 3
 
-  EFS_SERIALNO="$(get_efs_serialno "${SELECTED_DEVICE:?}")"
+  EFS_SERIALNO="$(get_device_file_content "${SELECTED_DEVICE:?}" '/efs/FactoryApp/serial_no')"
   validate_and_display_info 'Serial number' "${EFS_SERIALNO?}"
 }
 
