@@ -98,9 +98,14 @@ start_adb_server()
   adb 2> /dev/null 'start-server' || true
 }
 
+adb_get_serial()
+{
+  adb 'get-serialno'
+}
+
 is_recovery()
 {
-  if test "$(adb 2> /dev/null 'get-state' || true)" = 'recovery'; then
+  if test "$(adb 2> /dev/null -s "${1:?}" 'get-state' || true)" = 'recovery'; then
     return 0
   fi
   return 1
@@ -108,7 +113,7 @@ is_recovery()
 
 verify_device_status()
 {
-  if is_recovery; then
+  if is_recovery "${1:?}"; then
     DEVICE_IN_RECOVERY='true'
   else
     DEVICE_IN_RECOVERY='false'
@@ -119,9 +124,9 @@ wait_connection()
 {
   show_status_msg 'Waiting for the device...'
   if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
-    adb 'wait-for-recovery'
+    adb -s "${1:?}" 'wait-for-recovery'
   else
-    adb 'wait-for-device'
+    adb -s "${1:?}" 'wait-for-device'
   fi
 }
 
@@ -206,7 +211,7 @@ is_string_nocase_starting_with()
 
 device_getprop()
 {
-  adb shell "getprop '${1:?}'" | LC_ALL=C tr -d '[:cntrl:]'
+  adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '[:cntrl:]'
 }
 
 getprop_output_parse()
@@ -231,7 +236,7 @@ prop_output_parse()
 chosen_getprop()
 {
   if test "${INPUT_TYPE:?}" = 'adb'; then
-    device_getprop "${@}"
+    device_getprop "${SELECTED_DEVICE:?}" "${@}"
   elif test "${PROP_TYPE:?}" = '1'; then
     getprop_output_parse "${INPUT_TYPE:?}" "${@}"
   else
@@ -555,13 +560,18 @@ main()
   if test "${INPUT_TYPE:?}" = 'adb'; then
     verify_adb
     start_adb_server
-    verify_device_status
+    SELECTED_DEVICE="$(adb_get_serial)" || {
+      show_error 'Failed to get the selected device'
+      pause_if_needed
+      exit 1
+    }
+    verify_device_status "${SELECTED_DEVICE:?}"
     if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
       show_error "Recovery isn't currently supported"
       pause_if_needed
       exit 1
     fi
-    wait_connection
+    wait_connection "${SELECTED_DEVICE:?}"
     show_status_msg 'Generating profile...'
     check_boot_completed
   else

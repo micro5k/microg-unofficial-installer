@@ -65,7 +65,11 @@ show_error()
 
 show_section()
 {
-  printf '\033[1;36m%s\033[0m\n' "${*}"
+  if test -t 1; then
+    printf '\033[1;36m%s\033[0m\n' "${*}"
+  else
+    printf '%s\n' "${*}"
+  fi
 }
 
 show_msg()
@@ -123,9 +127,14 @@ start_adb_server()
   adb 2> /dev/null 'start-server' || true
 }
 
+adb_get_serial()
+{
+  adb 'get-serialno'
+}
+
 is_recovery()
 {
-  if test "$(adb 2> /dev/null 'get-state' || true)" = 'recovery'; then
+  if test "$(adb 2> /dev/null -s "${1:?}" 'get-state' || true)" = 'recovery'; then
     return 0
   fi
   return 1
@@ -133,7 +142,7 @@ is_recovery()
 
 verify_device_status()
 {
-  if is_recovery; then
+  if is_recovery "${1:?}"; then
     DEVICE_IN_RECOVERY='true'
   else
     DEVICE_IN_RECOVERY='false'
@@ -144,23 +153,23 @@ wait_connection()
 {
   show_status_msg 'Waiting for the device...'
   if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
-    adb 'wait-for-recovery'
+    adb -s "${1:?}" 'wait-for-recovery'
   else
-    adb 'wait-for-device'
+    adb -s "${1:?}" 'wait-for-device'
   fi
 }
 
 adb_root()
 {
-  adb 1> /dev/null 'root' &
-  adb 1> /dev/null 'reconnect' # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
-  wait_connection
+  adb 1> /dev/null -s "${1:?}" 'root' &
+  adb 1> /dev/null -s "${1:?}" 'reconnect' # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
+  wait_connection "${1:?}"
 }
 
 adb_unroot()
 {
-  adb 1> /dev/null 2> /dev/null 'unroot' &
-  adb 1> /dev/null 'reconnect' & # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
+  adb 1> /dev/null 2>&1 -s "${1:?}" 'unroot' &
+  adb 1> /dev/null -s "${1:?}" 'reconnect' & # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
 }
 
 is_all_zeros()
@@ -235,12 +244,12 @@ convert_dec_to_hex()
 
 device_getprop()
 {
-  adb shell "getprop '${1:?}'" | LC_ALL=C tr -d '[:cntrl:]'
+  adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '[:cntrl:]'
 }
 
 chosen_getprop()
 {
-  device_getprop "${@}"
+  device_getprop "${SELECTED_DEVICE:?}" "${@}"
 }
 
 validated_chosen_getprop()
@@ -303,7 +312,7 @@ find_serialno()
 get_android_id()
 {
   local _val
-  _val="$(adb shell 'settings get secure android_id 2> /dev/null' | LC_ALL=C tr -d '[:cntrl:]')" && test -n "${_val?}" && printf '%016x' "0x${_val:?}"
+  _val="$(adb -s "${1:?}" shell 'settings get secure android_id 2> /dev/null' | LC_ALL=C tr -d '[:cntrl:]')" && test -n "${_val?}" && printf '%016x' "0x${_val:?}"
 }
 
 get_gsf_id()
@@ -314,9 +323,9 @@ get_gsf_id()
   # shellcheck disable=SC2016
   _my_command='PATH="${PATH:-/sbin}:/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin"; export PATH; readonly my_query="SELECT * FROM main WHERE name = \"android_id\";"; { test -e "/data/data/com.google.android.gsf/databases/gservices.db" && sqlite3 2> /dev/null -line "/data/data/com.google.android.gsf/databases/gservices.db" "${my_query?}"; } || { test -e "/data/data/com.google.android.gms/databases/gservices.db" && sqlite3 2> /dev/null -line "/data/data/com.google.android.gms/databases/gservices.db" "${my_query?}"; }'
 
-  _val="$(adb shell "${_my_command:?}")" || _val=''
+  _val="$(adb -s "${1:?}" shell "${_my_command:?}")" || _val=''
   if test -z "${_val?}"; then
-    _val="$(adb shell "su 0 sh -c '${_my_command:?}'")" || _val=''
+    _val="$(adb -s "${1:?}" shell "su 2> /dev/null 0 sh -c '${_my_command:?}'")" || _val=''
   fi
 
   test -n "${_val?}" || return 1
@@ -329,7 +338,7 @@ get_advertising_id()
 {
   local adid
 
-  adid="$(adb shell 'cat "/data/data/com.google.android.gms/shared_prefs/adid_settings.xml" 2> /dev/null')" || adid=''
+  adid="$(adb -s "${1:?}" shell 'cat "/data/data/com.google.android.gms/shared_prefs/adid_settings.xml" 2> /dev/null')" || adid=''
   test "${adid?}" != '' || return 1
 
   adid="$(printf '%s' "${adid?}" | grep -m 1 -o -e '"adid_key"[^<]*' | grep -o -e ">.*$")"
@@ -339,7 +348,12 @@ get_advertising_id()
 
 get_phone_info()
 {
-  adb shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
+  local _selected_device
+
+  _selected_device="${1:?}"
+  shift
+
+  adb -s "${_selected_device:?}" shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
 }
 
 is_iphonesubinfo_response_valid()
@@ -467,9 +481,9 @@ get_imei()
 
   _imei_sv=''
 
-  if _val="$(adb shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && test -n "${_val?}" && test "${_val:?}" != 'null'; then
+  if _val="$(adb -s "${1:?}" shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && test -n "${_val?}" && test "${_val:?}" != 'null'; then
     :
-  elif _val="$(get_phone_info 1 s16 'com.android.shell')" && is_valid_value "${_val?}" && is_iphonesubinfo_response_valid "${_val?}"; then
+  elif _val="$(get_phone_info "${1:?}" 1 s16 'com.android.shell')" && is_valid_value "${_val?}" && is_iphonesubinfo_response_valid "${_val?}"; then
     :
   elif _tmp="$(chosen_getprop 'ro.ril.miui.imei0')" && is_valid_value "${_tmp?}"; then # Xiaomi
     _val="${_tmp:?}"
@@ -508,13 +522,13 @@ get_imei()
   elif test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     :
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(get_phone_info 6 s16 'com.android.shell')" || _val=''
+    _val="$(get_phone_info "${1:?}" 6 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(get_phone_info 5 s16 'com.android.shell')" || _val=''
+    _val="$(get_phone_info "${1:?}" 5 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
-    _val="$(get_phone_info 4)" || _val=''
+    _val="$(get_phone_info "${1:?}" 4)" || _val=''
   else
-    _val="$(get_phone_info 2)" || _val=''
+    _val="$(get_phone_info "${1:?}" 2)" || _val=''
   fi
   validate_and_display_info 'IMEI SV' "${_val?}" 2
 }
@@ -526,17 +540,17 @@ get_line_number()
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     :
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(get_phone_info 15 s16 'com.android.shell')" || _val=''
+    _val="$(get_phone_info "${1:?}" 15 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
-    _val="$(get_phone_info 12 s16 'com.android.shell')" || _val=''
+    _val="$(get_phone_info "${1:?}" 12 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(get_phone_info 13 s16 'com.android.shell')" || _val=''
+    _val="$(get_phone_info "${1:?}" 13 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
-    _val="$(get_phone_info 11)" || _val=''
+    _val="$(get_phone_info "${1:?}" 11)" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_4_3_SDK:?}"; then
-    _val="$(get_phone_info 6)" || _val=''
+    _val="$(get_phone_info "${1:?}" 6)" || _val=''
   else
-    _val="$(get_phone_info 5)" || _val=''
+    _val="$(get_phone_info "${1:?}" 5)" || _val=''
   fi
   validate_and_display_info 'Line number' "${_val?}"
 }
@@ -548,17 +562,17 @@ get_iccid()
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     :
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(get_phone_info 12 s16 'com.android.shell')" || _val=''
+    _val="$(get_phone_info "${1:?}" 12 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
-    _val="$(get_phone_info 10 s16 'com.android.shell')" || _val=''
+    _val="$(get_phone_info "${1:?}" 10 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(get_phone_info 11 s16 'com.android.shell')" || _val=''
+    _val="$(get_phone_info "${1:?}" 11 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
-    _val="$(get_phone_info 9)" || _val=''
+    _val="$(get_phone_info "${1:?}" 9)" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_4_3_SDK:?}"; then
-    _val="$(get_phone_info 5)" || _val=''
+    _val="$(get_phone_info "${1:?}" 5)" || _val=''
   else
-    _val="$(get_phone_info 4)" || _val=''
+    _val="$(get_phone_info "${1:?}" 4)" || _val=''
   fi
   validate_and_display_info 'ICCID' "${_val?}" 19 20
 }
@@ -596,7 +610,7 @@ parse_nv_data()
   _path="$(get_data_folder)" || return 1
   rm -f "${_path:?}/nv_data.bin" || return 1
 
-  adb 1> /dev/null pull '/efs/nv_data.bin' "${_path:?}/nv_data.bin" || return 1
+  adb 1> /dev/null -s "${1:?}" pull '/efs/nv_data.bin' "${_path:?}/nv_data.bin" || return 1
   if test ! -r "${_path:?}/nv_data.bin"; then return 1; fi
 
   HARDWARE_VERSION="$(dd if="${_path:?}/nv_data.bin" skip=1605636 count=18 iflag=skip_bytes,count_bytes status=none)"
@@ -607,20 +621,25 @@ parse_nv_data()
 
 get_csc_region_code()
 {
-  adb shell 'if test -r "/efs/imei/mps_code.dat"; then cat "/efs/imei/mps_code.dat"; fi'
+  adb -s "${1:?}" shell 'if test -r "/efs/imei/mps_code.dat"; then cat "/efs/imei/mps_code.dat"; fi'
 }
 
 get_efs_serialno()
 {
-  adb shell 'if test -r "/efs/FactoryApp/serial_no"; then cat "/efs/FactoryApp/serial_no"; fi'
+  adb -s "${1:?}" shell 'if test -r "/efs/FactoryApp/serial_no"; then cat "/efs/FactoryApp/serial_no"; fi'
 }
 
 main()
 {
   verify_adb
   start_adb_server
-  verify_device_status
-  wait_connection
+  SELECTED_DEVICE="$(adb_get_serial)" || {
+    show_error 'Failed to get the selected device'
+    pause_if_needed
+    exit 1
+  }
+  verify_device_status "${SELECTED_DEVICE:?}"
+  wait_connection "${SELECTED_DEVICE:?}"
   show_status_msg 'Finding info...'
   check_boot_completed
   show_status_msg ''
@@ -644,28 +663,28 @@ main()
 
   show_msg ''
 
-  get_imei
-  get_iccid
-  get_line_number
+  get_imei "${SELECTED_DEVICE:?}"
+  get_iccid "${SELECTED_DEVICE:?}"
+  get_line_number "${SELECTED_DEVICE:?}"
 
   show_msg ''
 
-  ANDROID_ID="$(get_android_id)"
+  ANDROID_ID="$(get_android_id "${SELECTED_DEVICE:?}")"
   validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
 
   show_msg ''
   show_msg ''
 
   show_section 'ADVANCED INFO (root may be required)'
-  adb_root
+  adb_root "${SELECTED_DEVICE:?}"
   show_msg ''
 
-  adb shell "if test -e '/system' && test ! -e '/system/bin/sh'; then mount -t 'auto' -o 'ro' '/system' 2> /dev/null || true; fi"
-  adb shell "if test -e '/data' && test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
-  adb shell "if test -e '/efs'; then mount -t 'auto' -o 'ro' '/efs' 2> /dev/null || true; fi"
+  adb -s "${SELECTED_DEVICE:?}" shell "if test -e '/system' && test ! -e '/system/bin/sh'; then mount -t 'auto' -o 'ro' '/system' 2> /dev/null || true; fi"
+  adb -s "${SELECTED_DEVICE:?}" shell "if test -e '/data' && test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
+  adb -s "${SELECTED_DEVICE:?}" shell "if test -e '/efs'; then mount -t 'auto' -o 'ro' '/efs' 2> /dev/null || true; fi"
 
   GSF_ID=''
-  GSF_ID_DEC="$(get_gsf_id)"
+  GSF_ID_DEC="$(get_gsf_id "${SELECTED_DEVICE:?}")"
   if validate_and_display_info 'GSF ID (decimal)' "${GSF_ID_DEC?}" 19; then
     GSF_ID="$(convert_dec_to_hex "${GSF_ID_DEC?}")"
     validate_and_display_info 'GSF ID' "${GSF_ID?}" 16
@@ -673,7 +692,7 @@ main()
 
   show_msg ''
 
-  ADVERTISING_ID="$(get_advertising_id)"
+  ADVERTISING_ID="$(get_advertising_id "${SELECTED_DEVICE:?}")"
   validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
   show_msg ''
@@ -682,17 +701,15 @@ main()
   show_section 'EFS INFO (root may be required)'
   show_msg ''
 
-  parse_nv_data
+  parse_nv_data "${SELECTED_DEVICE:?}"
   validate_and_display_info 'Hardware version' "${HARDWARE_VERSION?}"
   validate_and_display_info 'Product code' "${PRODUCT_CODE?}"
 
-  CSC_REGION_CODE="$(get_csc_region_code)"
+  CSC_REGION_CODE="$(get_csc_region_code "${SELECTED_DEVICE:?}")"
   validate_and_display_info 'CSC region code' "${CSC_REGION_CODE?}" 3
 
-  EFS_SERIALNO="$(get_efs_serialno)"
+  EFS_SERIALNO="$(get_efs_serialno "${SELECTED_DEVICE:?}")"
   validate_and_display_info 'Serial number' "${EFS_SERIALNO?}"
-
-  adb_unroot
 }
 
 show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
