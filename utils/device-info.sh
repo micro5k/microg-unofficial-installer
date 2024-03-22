@@ -134,9 +134,9 @@ is_recovery()
 verify_device_status()
 {
   if is_recovery; then
-    readonly DEVICE_IN_RECOVERY='true'
+    DEVICE_IN_RECOVERY='true'
   else
-    readonly DEVICE_IN_RECOVERY='false'
+    DEVICE_IN_RECOVERY='false'
   fi
 }
 
@@ -626,7 +626,6 @@ main()
   show_status_msg ''
 
   BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" || BUILD_VERSION_SDK='999'
-  readonly BUILD_VERSION_SDK
 
   show_section 'BASIC INFO'
   show_msg ''

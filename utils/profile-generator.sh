@@ -109,9 +109,9 @@ is_recovery()
 verify_device_status()
 {
   if is_recovery; then
-    readonly DEVICE_IN_RECOVERY='true'
+    DEVICE_IN_RECOVERY='true'
   else
-    readonly DEVICE_IN_RECOVERY='false'
+    DEVICE_IN_RECOVERY='false'
   fi
 }
 
@@ -547,9 +547,9 @@ anonymize_serialno()
 main()
 {
   if test "${#}" -gt 0; then
-    readonly INPUT_TYPE="${1:?}"
+    INPUT_TYPE="${1:?}"
   else
-    readonly INPUT_TYPE='adb'
+    INPUT_TYPE='adb'
   fi
 
   if test "${INPUT_TYPE:?}" = 'adb'; then
@@ -573,11 +573,11 @@ main()
 
     show_status_msg 'Generating profile...'
     if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
-      readonly PROP_TYPE='1'
-      readonly DEVICE_IN_RECOVERY='false'
+      PROP_TYPE='1'
+      DEVICE_IN_RECOVERY='false'
       check_boot_completed
     else
-      readonly PROP_TYPE='2'
+      PROP_TYPE='2'
       show_error 'Profiles generated in this way will be incomplete!!!'
     fi
   fi
