@@ -314,6 +314,20 @@ find_serialno()
   printf '%s' "${_val?}"
 }
 
+find_cpu_serialno()
+{
+  local _val
+
+  if _val="$(get_device_file_content "${1:?}" '/proc/cpuinfo' | grep -i -F -e "serial" | cut -d ':' -f '2-' -s | trim_space_on_sides)" && is_valid_serial "${_val?}"; then
+    :
+  else
+    show_warn 'CPU serial number not found'
+    return 1
+  fi
+
+  printf '%s' "${_val?}"
+}
+
 get_android_id()
 {
   local _val
@@ -652,9 +666,15 @@ main()
     display_info 'Emulator' 'Leapdroid'
   fi
 
-  BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.brand')"
+  { BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.brand')"; } && display_info 'Manufacturer' "${BUILD_MANUFACTURER?}"
   BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
+  { BUILD_DEVICE="$(chosen_getprop 'ro.product.device')" || BUILD_DEVICE="$(chosen_getprop 'ro.build.product')"; } && display_info 'Device' "${BUILD_DEVICE?}"
+  ANDROID_VERSION="$(validated_chosen_getprop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
+
+  show_msg ''
+
   SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBER?}"
+  CPU_SERIAL_NUMBER="$(find_cpu_serialno "${SELECTED_DEVICE:?}")" && display_info 'CPU serial number' "${CPU_SERIAL_NUMBER?}"
 
   show_msg ''
 
@@ -666,6 +686,11 @@ main()
 
   ANDROID_ID="$(get_android_id "${SELECTED_DEVICE:?}")"
   validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
+
+  show_msg ''
+
+  adb -s "${SELECTED_DEVICE:?}" shell wm size
+  adb -s "${SELECTED_DEVICE:?}" shell wm density
 
   show_msg ''
   show_msg ''
