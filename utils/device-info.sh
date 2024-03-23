@@ -666,10 +666,15 @@ main()
     display_info 'Emulator' 'Leapdroid'
   fi
 
-  { BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.brand')"; } && display_info 'Manufacturer' "${BUILD_MANUFACTURER?}"
+  {
+    BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.brand')"
+  } && display_info 'Manufacturer' "${BUILD_MANUFACTURER?}"
   BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
-  { BUILD_DEVICE="$(chosen_getprop 'ro.product.device')" || BUILD_DEVICE="$(chosen_getprop 'ro.build.product')"; } && display_info 'Device' "${BUILD_DEVICE?}"
+  {
+    BUILD_DEVICE="$(chosen_getprop 'ro.product.device')" || BUILD_DEVICE="$(chosen_getprop 'ro.build.product')"
+  } && display_info 'Device' "${BUILD_DEVICE?}"
   ANDROID_VERSION="$(validated_chosen_getprop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
+  KERNEL_VERSION="$(adb -s "${SELECTED_DEVICE:?}" shell 'uname -r')" && display_info 'Kernel version' "${KERNEL_VERSION?}"
 
   show_msg ''
 
@@ -689,8 +694,8 @@ main()
 
   show_msg ''
 
-  adb -s "${SELECTED_DEVICE:?}" shell wm size
-  adb -s "${SELECTED_DEVICE:?}" shell wm density
+  adb -s "${SELECTED_DEVICE:?}" shell 'wm size'
+  adb -s "${SELECTED_DEVICE:?}" shell 'wm density'
 
   show_msg ''
   show_msg ''
