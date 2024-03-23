@@ -127,11 +127,6 @@ start_adb_server()
   adb 2> /dev/null 'start-server' || true
 }
 
-adb_get_serial()
-{
-  adb 'get-serialno'
-}
-
 is_recovery()
 {
   if test "$(adb 2> /dev/null -s "${1:?}" 'get-state' || true)" = 'recovery'; then
@@ -638,15 +633,10 @@ parse_nv_data()
   rm -f "${_path:?}/nv_data.bin" || return 1
 }
 
-main()
+extract_all_info()
 {
-  verify_adb
-  start_adb_server
-  SELECTED_DEVICE="$(adb_get_serial)" || {
-    show_error 'Failed to get the selected device'
-    pause_if_needed
-    exit 1
-  }
+  SELECTED_DEVICE="${1:?}"
+
   verify_device_status "${SELECTED_DEVICE:?}"
   wait_connection "${SELECTED_DEVICE:?}"
   show_status_msg 'Finding info...'
@@ -694,8 +684,8 @@ main()
 
   show_msg ''
 
-  adb -s "${SELECTED_DEVICE:?}" shell 'wm size'
-  adb -s "${SELECTED_DEVICE:?}" shell 'wm density'
+  adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null size'
+  adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null density'
 
   show_msg ''
   show_msg ''
@@ -737,10 +727,34 @@ main()
   validate_and_display_info 'Serial number' "${EFS_SERIALNO?}"
 }
 
-show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+main()
+{
+  local _device _found
+
+  show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+
+  verify_adb
+  start_adb_server
+
+  _found=false
+  for _device in $(adb devices | grep -v -i -F -e "list" | cut -f '1' -s); do
+    if test -n "${_device?}"; then
+      _found=true
+      extract_all_info "${_device:?}" "${@}"
+    fi
+  done
+
+  if test "${_found:?}" = 'false'; then
+    show_error 'No devices/emulators found'
+    pause_if_needed
+    exit 1
+  fi
+
+  pause_if_needed
+}
+
 if test "${#}" -gt 0; then
   main "${@}"
 else
-  main
+  main ''
 fi
-pause_if_needed
