@@ -43,6 +43,7 @@ readonly SCRIPT_VERSION='1.7'
   readonly ANDROID_12_1_SDK=32
   readonly ANDROID_13_SDK=33
   readonly ANDROID_14_SDK=34
+  readonly ANDROID_15_SDK=35 # Not yet released
 }
 
 readonly NL='
@@ -376,6 +377,8 @@ get_phone_info()
   _selected_device="${1:?}"
   shift
 
+  # https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl
+  # https://android.googlesource.com/platform/frameworks/opt/telephony/+/master/src/java/com/android/internal/telephony/PhoneSubInfoController.java
   adb -s "${_selected_device:?}" shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
 }
 
@@ -505,9 +508,9 @@ get_imei()
   _imei_sv=''
 
   if _val="$(adb -s "${1:?}" shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && test -n "${_val?}" && test "${_val:?}" != 'null'; then
-    :
+    : # Presumably Android 1.0-4.4W (but it doesn't work on all devices)
   elif _val="$(get_phone_info "${1:?}" 1 s16 'com.android.shell')" && is_valid_value "${_val?}" && is_iphonesubinfo_response_valid "${_val?}"; then
-    :
+    : # Android 1.0-14 => Function: String getDeviceId(String callingPackage)
   elif _tmp="$(chosen_getprop 'ro.ril.miui.imei0')" && is_valid_value "${_tmp?}"; then # Xiaomi
     _val="${_tmp:?}"
   elif _tmp="$(chosen_getprop 'gsm.baseband.imei')" && is_valid_value "${_tmp?}"; then
@@ -537,21 +540,24 @@ get_imei()
 
       IFS="${_backup_ifs:-}"
     fi
+  else
+    _val=''
   fi
   validate_and_display_info 'IMEI' "${_val?}" 15
 
+  # Function: String getDeviceSvn(String callingPackage, optional String callingFeatureId)
   if test -n "${_imei_sv?}"; then
     _val="${_imei_sv:?}"
   elif test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
-    :
+    _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 6 s16 'com.android.shell')" || _val=''
+    _val="$(get_phone_info "${1:?}" 6 s16 'com.android.shell')" || _val='' # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 5 s16 'com.android.shell')" || _val=''
+    _val="$(get_phone_info "${1:?}" 5 s16 'com.android.shell')" || _val='' # Android 5.1-10
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 4)" || _val=''
+    _val="$(get_phone_info "${1:?}" 4)" || _val='' # Android 5.0
   else
-    _val="$(get_phone_info "${1:?}" 2)" || _val=''
+    _val="$(get_phone_info "${1:?}" 2)" || _val='' # Android 1.0-4.4W (untested)
   fi
   validate_and_display_info 'IMEI SV' "${_val?}" 2
 }
