@@ -20,7 +20,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='1.6'
+readonly SCRIPT_VERSION='1.7'
 
 # shellcheck disable=SC2034
 {
