@@ -63,6 +63,20 @@ show_error()
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
 }
 
+show_msg()
+{
+  printf '%s\n' "${*}"
+}
+
+show_selected_device()
+{
+  if test -t 1; then
+    printf '\033[1;31;103mSELECTED: %s\033[0m\n' "${*}"
+  else
+    printf '%s\n' "${*}"
+  fi
+}
+
 show_section()
 {
   if test -t 1; then
@@ -70,11 +84,6 @@ show_section()
   else
     printf '%s\n' "${*}"
   fi
-}
-
-show_msg()
-{
-  printf '%s\n' "${*}"
 }
 
 pause_if_needed()
@@ -636,6 +645,7 @@ parse_nv_data()
 extract_all_info()
 {
   SELECTED_DEVICE="${1:?}"
+  show_selected_device "${SELECTED_DEVICE:?}"
 
   verify_device_status "${SELECTED_DEVICE:?}"
   wait_connection "${SELECTED_DEVICE:?}"
@@ -665,6 +675,9 @@ extract_all_info()
   } && display_info 'Device' "${BUILD_DEVICE?}"
   ANDROID_VERSION="$(validated_chosen_getprop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
   KERNEL_VERSION="$(adb -s "${SELECTED_DEVICE:?}" shell 'uname -r')" && display_info 'Kernel version' "${KERNEL_VERSION?}"
+  if DEVICE_PATH="$(adb -s "${SELECTED_DEVICE:?}" 'get-devpath')" && is_valid_value "${DEVICE_PATH?}"; then
+    display_info 'Device path' "${DEVICE_PATH?}"
+  fi
 
   show_msg ''
 
@@ -732,12 +745,13 @@ main()
   local _device _found
 
   show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+  show_msg ''
 
   verify_adb
   start_adb_server
 
   _found=false
-  for _device in $(adb devices | grep -v -i -F -e "list" | cut -f '1' -s); do
+  for _device in $(adb devices | grep -v -i -F -e 'list' | cut -f '1' -s); do
     if test -n "${_device?}"; then
       _found=true
       extract_all_info "${_device:?}" "${@}"
