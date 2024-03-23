@@ -562,6 +562,7 @@ display_info()
 {
   ui_msg "Manufacturer: ${BUILD_MANUFACTURER?}"
   ui_msg "Device: ${BUILD_DEVICE?}"
+  ui_msg "Product: ${BUILD_PRODUCT?}"
   ui_msg "Emulator: ${IS_EMU:?}"
   ui_msg_empty_line
   ui_msg "First installation: ${FIRST_INSTALLATION:?}"
