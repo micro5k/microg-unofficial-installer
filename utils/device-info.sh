@@ -510,8 +510,8 @@ get_imei_multi_slot()
     _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
     _val="$(get_phone_info "${1:?}" 4 i32 "${_slot:?}" s16 'com.android.shell')" || _val='' # Android 11-14
-  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_10_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 3 i32 "${_slot:?}" s16 'com.android.shell')" || _val='' # Android 10
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
+    _val="$(get_phone_info "${1:?}" 3 i32 "${_slot:?}" s16 'com.android.shell')" || _val='' # Android 5.1-10
   else
     _val='' # ToDO: Find it
   fi
