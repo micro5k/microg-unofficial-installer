@@ -503,7 +503,7 @@ get_imei_via_MMI_code()
 get_imei_multi_slot()
 {
   local _val _slot
-  _slot="$(($2 - 1))"
+  _slot="$(($2 - 1))" # Slot index start from 0
 
   # Function: String getDeviceIdForPhone(int phoneId, String callingPackage, optional String callingFeatureId)
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
@@ -530,8 +530,8 @@ get_imei()
     : # Presumably Android 1.0-4.4W (but it doesn't work on all devices)
   elif _val="$(get_phone_info "${1:?}" 1 s16 'com.android.shell')" && is_valid_value "${_val?}" && is_iphonesubinfo_response_valid "${_val?}"; then
     : # Android 1.0-14 => Function: String getDeviceId(String callingPackage)
-  elif _tmp="$(chosen_getprop 'ro.ril.miui.imei0')" && is_valid_value "${_tmp?}"; then # Xiaomi
-    _val="${_tmp:?}"
+  elif _tmp="$(chosen_getprop 'ro.ril.miui.imei0')" && is_valid_value "${_tmp?}"; then
+    _val="${_tmp:?}" # Xiaomi
   elif _tmp="$(chosen_getprop 'gsm.baseband.imei')" && is_valid_value "${_tmp?}"; then
     _val="${_tmp:?}"
   elif _tmp="$(chosen_getprop 'ro.gsm.imei')" && is_valid_value "${_tmp?}"; then
@@ -829,11 +829,11 @@ main()
 
   _found=false
   for _device in $(adb devices | grep -v -i -F -e 'list' | cut -f '1' -s); do
-    if test -n "${_device?}"; then
-      _found=true
-      show_msg ''
-      extract_all_info "${_device:?}" "${@}"
-    fi
+    if test -z "${_device?}"; then continue; fi
+
+    _found=true
+    show_msg ''
+    extract_all_info "${_device:?}" "${@}"
   done
 
   if test "${_found:?}" = 'false'; then
