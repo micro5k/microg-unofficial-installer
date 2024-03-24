@@ -503,7 +503,7 @@ get_imei_via_MMI_code()
 get_imei_multi_slot()
 {
   local _val _slot
-  _slot="${2:?}"
+  _slot="$(($2 - 1))"
 
   # Function: String getDeviceIdForPhone(int phoneId, String callingPackage, optional String callingFeatureId)
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
