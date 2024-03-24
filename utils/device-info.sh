@@ -678,21 +678,11 @@ get_slot_info()
   for _state in ${_states}; do
     _i="$((_i + 1))"
     case "${_i:?}" in
-      1)
-        SLOT1_STATE="${_state?}"
-        ;;
-      2)
-        SLOT2_STATE="${_state?}"
-        ;;
-      3)
-        SLOT3_STATE="${_state?}"
-        ;;
-      4)
-        SLOT4_STATE="${_state?}"
-        ;;
-      *)
-        break
-        ;;
+      1) SLOT1_STATE="${_state?}" ;;
+      2) SLOT2_STATE="${_state?}" ;;
+      3) SLOT3_STATE="${_state?}" ;;
+      4) SLOT4_STATE="${_state?}" ;;
+      *) break ;;
     esac
   done
 
@@ -751,6 +741,16 @@ extract_all_info()
 
   show_msg ''
 
+  ANDROID_ID="$(get_android_id "${SELECTED_DEVICE:?}")"
+  validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
+
+  show_msg ''
+
+  adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null size'
+  adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null density'
+
+  show_msg ''
+
   show_section 'SLOT INFO'
   show_msg ''
 
@@ -760,8 +760,7 @@ extract_all_info()
   show_msg ''
 
   local i slot_state
-  for i in $(seq "${SLOT_COUNT?}")
-  do
+  for i in $(seq "${SLOT_COUNT?}"); do
     show_msg "SLOT ${i:?}"
     case "${i:?}" in
       1) slot_state="${SLOT1_STATE?}" ;;
@@ -780,16 +779,6 @@ extract_all_info()
   get_imei "${SELECTED_DEVICE:?}"
   get_iccid "${SELECTED_DEVICE:?}"
   get_line_number "${SELECTED_DEVICE:?}"
-
-  show_msg ''
-
-  ANDROID_ID="$(get_android_id "${SELECTED_DEVICE:?}")"
-  validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
-
-  show_msg ''
-
-  adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null size'
-  adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null density'
 
   show_msg ''
 
