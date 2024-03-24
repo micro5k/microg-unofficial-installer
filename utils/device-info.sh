@@ -370,16 +370,15 @@ get_advertising_id()
   printf '%s' "${adid#>}"
 }
 
-get_phone_info()
+call_phonesubinfo()
 {
-  local _selected_device
-
-  _selected_device="${1:?}"
+  local _device
+  _device="${1:?}"
   shift
 
   # https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl
   # https://android.googlesource.com/platform/frameworks/opt/telephony/+/master/src/java/com/android/internal/telephony/PhoneSubInfoController.java
-  adb -s "${_selected_device:?}" shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
+  adb -s "${_device:?}" shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
 }
 
 is_iphonesubinfo_response_valid()
@@ -509,9 +508,9 @@ get_imei_multi_slot()
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 4 i32 "${_slot:?}" s16 'com.android.shell')" || _val='' # Android 11-14
+    _val="$(call_phonesubinfo "${1:?}" 4 i32 "${_slot:?}" s16 'com.android.shell')" || _val='' # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 3 i32 "${_slot:?}" s16 'com.android.shell')" || _val='' # Android 5.1-10
+    _val="$(call_phonesubinfo "${1:?}" 3 i32 "${_slot:?}" s16 'com.android.shell')" || _val='' # Android 5.1-10
   else
     _val='' # ToDO: Find it
   fi
@@ -528,7 +527,7 @@ get_imei()
 
   if _val="$(adb -s "${1:?}" shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && test -n "${_val?}" && test "${_val:?}" != 'null'; then
     : # Presumably Android 1.0-4.4W (but it doesn't work on all devices)
-  elif _val="$(get_phone_info "${1:?}" 1 s16 'com.android.shell')" && is_valid_value "${_val?}" && is_iphonesubinfo_response_valid "${_val?}"; then
+  elif _val="$(call_phonesubinfo "${1:?}" 1 s16 'com.android.shell')" && is_valid_value "${_val?}" && is_iphonesubinfo_response_valid "${_val?}"; then
     : # Android 1.0-14 => Function: String getDeviceId(String callingPackage)
   elif _tmp="$(chosen_getprop 'ro.ril.miui.imei0')" && is_valid_value "${_tmp?}"; then
     _val="${_tmp:?}" # Xiaomi
@@ -570,13 +569,13 @@ get_imei()
   elif test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 6 s16 'com.android.shell')" || _val='' # Android 11-14
+    _val="$(call_phonesubinfo "${1:?}" 6 s16 'com.android.shell')" || _val='' # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 5 s16 'com.android.shell')" || _val='' # Android 5.1-10
+    _val="$(call_phonesubinfo "${1:?}" 5 s16 'com.android.shell')" || _val='' # Android 5.1-10
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 4)" || _val='' # Android 5.0
+    _val="$(call_phonesubinfo "${1:?}" 4)" || _val='' # Android 5.0
   else
-    _val="$(get_phone_info "${1:?}" 2)" || _val='' # Android 1.0-4.4W (untested)
+    _val="$(call_phonesubinfo "${1:?}" 2)" || _val='' # Android 1.0-4.4W (untested)
   fi
   validate_and_display_info 'IMEI SV' "${_val?}" 2
 }
@@ -588,17 +587,17 @@ get_line_number()
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     :
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 15 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 15 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 12 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 12 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 13 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 13 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 11)" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 11)" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_4_3_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 6)" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 6)" || _val=''
   else
-    _val="$(get_phone_info "${1:?}" 5)" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 5)" || _val=''
   fi
   validate_and_display_info 'Line number' "${_val?}"
 }
@@ -610,17 +609,17 @@ get_iccid()
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     :
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 12 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 12 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 10 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 10 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 11 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 11 s16 'com.android.shell')" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 9)" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 9)" || _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_4_3_SDK:?}"; then
-    _val="$(get_phone_info "${1:?}" 5)" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 5)" || _val=''
   else
-    _val="$(get_phone_info "${1:?}" 4)" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 4)" || _val=''
   fi
   validate_and_display_info 'ICCID' "${_val?}" 19 20
 }
