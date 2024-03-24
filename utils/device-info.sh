@@ -20,7 +20,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='1.7'
+readonly SCRIPT_VERSION='1.8'
 
 # shellcheck disable=SC2034
 {
@@ -500,6 +500,25 @@ get_imei_via_MMI_code()
   adb 1> /dev/null 2>&1 shell 'input keyevent KEYCODE_HOME; svc power stayon false' || true
 }
 
+get_imei_multi_slot()
+{
+  local _val _slot
+  _slot="${2:?}"
+
+  # Function: String getDeviceIdForPhone(int phoneId, String callingPackage, optional String callingFeatureId)
+  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+    _val=''
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
+    _val="$(get_phone_info "${1:?}" 4 i32 "${_slot:?}" s16 'com.android.shell')" || _val='' # Android 11-14
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_10_SDK:?}"; then
+    _val="$(get_phone_info "${1:?}" 3 i32 "${_slot:?}" s16 'com.android.shell')" || _val='' # Android 10
+  else
+    _val='' # ToDO: Find it
+  fi
+
+  validate_and_display_info 'IMEI' "${_val?}" 15
+}
+
 get_imei()
 {
   local _backup_ifs _tmp
@@ -648,6 +667,46 @@ parse_nv_data()
   rm -f "${_path:?}/nv_data.bin" || return 1
 }
 
+get_slot_info()
+{
+  local IFS _states _state _i
+  _states="$(chosen_getprop 'gsm.sim.state')" || _states=''
+  SLOT1_STATE=''
+
+  IFS=','
+  _i=0
+  for _state in ${_states}; do
+    _i="$((_i + 1))"
+    case "${_i:?}" in
+      1)
+        SLOT1_STATE="${_state?}"
+        ;;
+      2)
+        SLOT2_STATE="${_state?}"
+        ;;
+      3)
+        SLOT3_STATE="${_state?}"
+        ;;
+      4)
+        SLOT4_STATE="${_state?}"
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  if test "${_i:?}" -lt 1 || test "${_i:?}" -gt 4; then
+    show_warn 'Unable to get slot count, defaulting to 1'
+    #printf '%s\n' '1'
+    SLOT_COUNT='1'
+    return
+  fi
+
+  #printf '%s\n' "${_i:?}"
+  SLOT_COUNT="${_i:?}"
+}
+
 extract_all_info()
 {
   SELECTED_DEVICE="${1:?}"
@@ -692,6 +751,32 @@ extract_all_info()
 
   show_msg ''
 
+  show_section 'SLOT INFO'
+  show_msg ''
+
+  get_slot_info
+  display_info 'Slot count' "${SLOT_COUNT?}"
+
+  show_msg ''
+
+  local i slot_state
+  for i in $(seq "${SLOT_COUNT?}")
+  do
+    show_msg "SLOT ${i:?}"
+    case "${i:?}" in
+      1) slot_state="${SLOT1_STATE?}" ;;
+      2) slot_state="${SLOT2_STATE?}" ;;
+      3) slot_state="${SLOT3_STATE?}" ;;
+      4) slot_state="${SLOT4_STATE?}" ;;
+      *) slot_state='' ;;
+    esac
+    display_info "Slot state" "${slot_state?}"
+    get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
+
+    show_msg ''
+  done
+
+  show_msg "DEFAULT SLOT"
   get_imei "${SELECTED_DEVICE:?}"
   get_iccid "${SELECTED_DEVICE:?}"
   get_line_number "${SELECTED_DEVICE:?}"
@@ -706,7 +791,6 @@ extract_all_info()
   adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null size'
   adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null density'
 
-  show_msg ''
   show_msg ''
 
   show_section 'ADVANCED INFO (root may be required)'
@@ -730,7 +814,6 @@ extract_all_info()
   validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
   show_msg ''
-  show_msg ''
 
   show_section 'EFS INFO (root may be required)'
   show_msg ''
@@ -751,7 +834,6 @@ main()
   local _device _found
 
   show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
-  show_msg ''
 
   verify_adb
   start_adb_server
@@ -760,6 +842,7 @@ main()
   for _device in $(adb devices | grep -v -i -F -e 'list' | cut -f '1' -s); do
     if test -n "${_device?}"; then
       _found=true
+      show_msg ''
       extract_all_info "${_device:?}" "${@}"
     fi
   done
