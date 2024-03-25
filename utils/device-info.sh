@@ -379,15 +379,34 @@ get_advertising_id()
   printf '%s' "${adid#>}"
 }
 
+apply_phonesubinfo_deviation()
+{
+  local _method_code
+  _method_code="${1:?}"
+
+  if compare_nocase "${BUILD_MANUFACTURER?}" 'HUAWEI' && test "${BUILD_VERSION_SDK:?}" -eq "${ANDROID_9_SDK:?}"; then
+
+    if test "${1:?}" -ge 3; then
+      _method_code="$((_method_code + 1))"
+    fi
+
+  fi
+
+  printf '%s\n' "${_method_code:?}"
+}
+
 call_phonesubinfo()
 {
-  local _device
+  local _device _method_code
   _device="${1:?}"
-  shift
+  _method_code="$(apply_phonesubinfo_deviation "${2:?}")"
+  shift 2
+
+  if test "${#}" -eq 0; then set ''; fi # Avoid issues on Bash under Mac
 
   # https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl
   # https://android.googlesource.com/platform/frameworks/opt/telephony/+/master/src/java/com/android/internal/telephony/PhoneSubInfoController.java
-  adb -s "${_device:?}" shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
+  adb -s "${_device:?}" shell "service call iphonesubinfo ${_method_code:?} ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
 }
 
 is_phonesubinfo_response_valid()
@@ -882,8 +901,8 @@ extract_all_info()
     # Huawei seems to have also a not standard slot state: LOADED
     display_info "Slot state" "${slot_state?}"
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
-    display_info "Operator" "${slot_operator?}"
     if ! compare_nocase "${slot_state?}" 'ABSENT'; then
+      display_info "Operator" "${slot_operator?}"
       get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     fi
 
