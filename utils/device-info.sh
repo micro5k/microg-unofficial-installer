@@ -502,22 +502,27 @@ get_imei_via_MMI_code()
 get_imei_multi_slot()
 {
   local _val _slot _slot_index
-  _slot="${1:?}"
-  _slot_index="$((slot - 1))" # Slot index start from 0
+  _slot="${2:?}"
+  _slot_index="$(($_slot - 1))" # Slot index start from 0
 
   # Function: String getDeviceIdForPhone(int phoneId, String callingPackage, optional String callingFeatureId)
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 4 i32 "${_slot_index:?}" s16 'com.android.shell')" || _val='' # Android 11-14
+    _val="$(call_phonesubinfo "${1:?}" 4 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 3 i32 "${_slot_index:?}" s16 'com.android.shell')" || _val='' # Android 5.1-10
+    _val="$(call_phonesubinfo "${1:?}" 3 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 5.1-10
   else
     _val='' # ToDO: Find it
   fi
 
-  #if ! is_phonesubinfo_response_valid "${_val?}"; then
-  #fi
+  if ! is_phonesubinfo_response_valid "${_val?}"; then
+    if _val="$(chosen_getprop "ro.ril.miui.imei${_slot_index:?}")" && is_valid_value "${_val?}"; then # Xiaomi
+      :
+    else
+      _val=''
+    fi
+  fi
 
   validate_and_display_info 'IMEI' "${_val?}" 15
 }
@@ -533,8 +538,6 @@ get_imei()
     : # Presumably Android 1.0-4.4W (but it doesn't work on all devices)
   elif _val="$(call_phonesubinfo "${1:?}" 1 s16 'com.android.shell')" && is_phonesubinfo_response_valid "${_val?}"; then
     : # Android 1.0-14 => Function: String getDeviceId(String callingPackage)
-  elif _tmp="$(chosen_getprop 'ro.ril.miui.imei0')" && is_valid_value "${_tmp?}"; then
-    _val="${_tmp:?}" # Xiaomi
   elif _tmp="$(chosen_getprop 'gsm.baseband.imei')" && is_valid_value "${_tmp?}"; then
     _val="${_tmp:?}"
   elif _tmp="$(chosen_getprop 'ro.gsm.imei')" && is_valid_value "${_tmp?}"; then
