@@ -503,7 +503,7 @@ get_imei_multi_slot()
 {
   local _val _slot _slot_index
   _slot="${2:?}"
-  _slot_index="$(($_slot - 1))" # Slot index start from 0
+  _slot_index="$((_slot - 1))" # Slot index start from 0
 
   # Function: String getDeviceIdForPhone(int phoneId, String callingPackage, optional String callingFeatureId)
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
