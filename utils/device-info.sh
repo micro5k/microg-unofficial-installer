@@ -205,6 +205,15 @@ is_valid_serial()
   return 0 # Valid
 }
 
+is_valid_line_number()
+{
+  case "${1?}" in
+    '+'*) return 0 ;; # Found
+    *) ;;
+  esac
+  return 1 # NOT found
+}
+
 lc_text()
 {
   printf '%s' "${1?}" | LC_ALL=C tr '[:upper:]' '[:lower:]'
@@ -516,7 +525,7 @@ get_imei_multi_slot()
     _val='' # ToDO: Find it
   fi
 
-  if ! is_phonesubinfo_response_valid "${_val?}"; then
+  if ! is_phonesubinfo_response_valid "${_val?}" || is_all_zeros "${_val?}"; then
     if _val="$(chosen_getprop "ro.ril.miui.imei${_slot_index:?}")" && is_valid_value "${_val?}"; then # Xiaomi
       :
     elif _val="$(chosen_getprop "ro.ril.oem.imei${_slot:?}")" && is_valid_value "${_val?}"; then
@@ -616,7 +625,7 @@ get_line_number_multi_slot()
     _val=''
   fi
 
-  if ! is_phonesubinfo_response_valid "${_val?}"; then
+  if ! is_phonesubinfo_response_valid "${_val?}" || ! is_valid_line_number "${_val?}"; then
     # Function: String getMsisdnForSubscriber(int subId, String callingPackage, optional String callingFeatureId)
     if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
       _val=''
@@ -836,6 +845,7 @@ extract_all_info()
   show_section 'SLOT INFO'
   show_msg ''
 
+  # https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/TelephonyProperties.java
   get_slot_info
   display_info 'Slot count' "${SLOT_COUNT?}"
 
