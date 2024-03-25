@@ -591,13 +591,36 @@ get_imei()
   validate_and_display_info 'IMEI SV' "${_val?}" 2
 }
 
+get_line_number_multi_slot()
+{
+  local _val _slot _slot_index
+  _slot="${2:?}"
+  _slot_index="$((_slot - 1))" # Slot index start from 0
+
+  # Function: String getLine1NumberForSubscriber(int subId, String callingPackage, optional String callingFeatureId)
+  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+    _val=''
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
+    _val="$(call_phonesubinfo "${1:?}" 16 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 11-14
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
+    _val="$(call_phonesubinfo "${1:?}" 13 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 9-10
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
+    _val="$(call_phonesubinfo "${1:?}" 14 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 5.1-8.1
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
+    _val="$(call_phonesubinfo "${1:?}" 12 i32 "${_slot_index:?}")" # Android 5.0
+  else
+    return # No multi-SIM support
+  fi
+  validate_and_display_info 'Line number' "${_val?}"
+}
+
 get_line_number()
 {
-  local _val=''
+  local _val
 
   # Function: String getLine1Number(String callingPackage, optional String callingFeatureId)
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
-    :
+    _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
     _val="$(call_phonesubinfo "${1:?}" 15 s16 'com.android.shell')" # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
@@ -681,8 +704,11 @@ parse_nv_data()
 get_slot_info()
 {
   local IFS _states _state _i
-  _states="$(chosen_getprop 'gsm.sim.state')" || _states=''
   SLOT1_STATE=''
+  SLOT2_STATE=''
+  SLOT3_STATE=''
+  SLOT4_STATE=''
+  _states="$(chosen_getprop 'gsm.sim.state')" || _states=''
 
   IFS=','
   _i=0
@@ -771,7 +797,7 @@ extract_all_info()
   show_msg ''
 
   local i slot_state
-  for i in $(seq "${SLOT_COUNT?}"); do
+  for i in $(seq "${SLOT_COUNT:?}"); do
     show_msg "SLOT ${i:?}"
     case "${i:?}" in
       1) slot_state="${SLOT1_STATE?}" ;;
@@ -782,6 +808,9 @@ extract_all_info()
     esac
     display_info "Slot state" "${slot_state?}"
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
+    if ! compare_nocase "${slot_state?}" 'ABSENT'; then
+      get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
+    fi
 
     show_msg ''
   done
