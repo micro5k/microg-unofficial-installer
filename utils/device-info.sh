@@ -381,9 +381,9 @@ call_phonesubinfo()
   adb -s "${_device:?}" shell "service call iphonesubinfo ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
 }
 
-is_iphonesubinfo_response_valid()
+is_phonesubinfo_response_valid()
 {
-  if contains 'Requires READ_PHONE_STATE' "${1?}" || contains 'does not belong to' "${1?}"; then
+  if test -z "${1?}" || contains 'Requires READ_PHONE_STATE' "${1?}" || contains 'does not belong to' "${1?}"; then
     return 1
   fi
 
@@ -402,7 +402,7 @@ validate_and_display_info()
     return 1
   fi
 
-  if ! is_iphonesubinfo_response_valid "${2?}"; then
+  if ! is_phonesubinfo_response_valid "${2?}"; then
     local _err
     _err="$(printf '%s\n' "${2?}" | cut -c '2-69')"
     show_warn "Cannot find ${1:-} due to '${_err:-}'"
@@ -501,19 +501,23 @@ get_imei_via_MMI_code()
 
 get_imei_multi_slot()
 {
-  local _val _slot
-  _slot="$(($2 - 1))" # Slot index start from 0
+  local _val _slot _slot_index
+  _slot="${1:?}"
+  _slot_index="$((slot - 1))" # Slot index start from 0
 
   # Function: String getDeviceIdForPhone(int phoneId, String callingPackage, optional String callingFeatureId)
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 4 i32 "${_slot:?}" s16 'com.android.shell')" || _val='' # Android 11-14
+    _val="$(call_phonesubinfo "${1:?}" 4 i32 "${_slot_index:?}" s16 'com.android.shell')" || _val='' # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 3 i32 "${_slot:?}" s16 'com.android.shell')" || _val='' # Android 5.1-10
+    _val="$(call_phonesubinfo "${1:?}" 3 i32 "${_slot_index:?}" s16 'com.android.shell')" || _val='' # Android 5.1-10
   else
     _val='' # ToDO: Find it
   fi
+
+  #if ! is_phonesubinfo_response_valid "${_val?}"; then
+  #fi
 
   validate_and_display_info 'IMEI' "${_val?}" 15
 }
@@ -527,7 +531,7 @@ get_imei()
 
   if _val="$(adb -s "${1:?}" shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && test -n "${_val?}" && test "${_val:?}" != 'null'; then
     : # Presumably Android 1.0-4.4W (but it doesn't work on all devices)
-  elif _val="$(call_phonesubinfo "${1:?}" 1 s16 'com.android.shell')" && is_valid_value "${_val?}" && is_iphonesubinfo_response_valid "${_val?}"; then
+  elif _val="$(call_phonesubinfo "${1:?}" 1 s16 'com.android.shell')" && is_phonesubinfo_response_valid "${_val?}"; then
     : # Android 1.0-14 => Function: String getDeviceId(String callingPackage)
   elif _tmp="$(chosen_getprop 'ro.ril.miui.imei0')" && is_valid_value "${_tmp?}"; then
     _val="${_tmp:?}" # Xiaomi
