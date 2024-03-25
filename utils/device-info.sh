@@ -533,6 +533,10 @@ get_imei_multi_slot()
   _slot="${2:?}"
   _slot_index="$((_slot - 1))" # Slot index start from 0
 
+  if test "${BUILD_VERSION_SDK:?}" -lt "${ANDROID_5_SDK:?}"; then
+    return # No multi-SIM support
+  fi
+
   # Function: String getDeviceIdForPhone(int phoneId, String callingPackage, optional String callingFeatureId)
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     _val=''
@@ -540,8 +544,10 @@ get_imei_multi_slot()
     _val="$(call_phonesubinfo "${1:?}" 4 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
     _val="$(call_phonesubinfo "${1:?}" 3 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 5.1-10
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
+    _val="$(call_phonesubinfo "${1:?}" 2 i32 "${_slot_index:?}")" # Android 5.0 (need test)
   else
-    _val='' # ToDO: Find it
+    _val=''
   fi
 
   if ! is_phonesubinfo_response_valid "${_val?}" || is_all_zeros "${_val?}"; then
@@ -898,7 +904,7 @@ extract_all_info()
         ;;
     esac
 
-    # Huawei seems to have also a not standard slot state: LOADED
+    # On some devices there also seems to be a non-standard slot status: LOADED
     display_info "Slot state" "${slot_state?}"
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     if ! compare_nocase "${slot_state?}" 'ABSENT'; then
