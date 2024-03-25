@@ -586,7 +586,7 @@ get_imei()
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
     _val="$(call_phonesubinfo "${1:?}" 4)" || _val='' # Android 5.0
   else
-    _val="$(call_phonesubinfo "${1:?}" 2)" || _val='' # Android 1.0-4.4W (untested)
+    _val="$(call_phonesubinfo "${1:?}" 2)" || _val='' # Android 1.0-4.4W (unverified)
   fi
   validate_and_display_info 'IMEI SV' "${_val?}" 2
 }
@@ -595,20 +595,21 @@ get_line_number()
 {
   local _val=''
 
+  # Function: String getLine1Number(String callingPackage, optional String callingFeatureId)
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
     :
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 15 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 15 s16 'com.android.shell')" # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 12 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 12 s16 'com.android.shell')" # Android 9-10
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 13 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 13 s16 'com.android.shell')" # Android 5.1-8.1
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 11)" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 11)" # Android 5.0
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_4_3_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 6)" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 6)" # Android 4.3-4.4W
   else
-    _val="$(call_phonesubinfo "${1:?}" 5)" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 5)" # Android 1.0-4.2 (unverified)
   fi
   validate_and_display_info 'Line number' "${_val?}"
 }
