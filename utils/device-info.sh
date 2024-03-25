@@ -519,6 +519,10 @@ get_imei_multi_slot()
   if ! is_phonesubinfo_response_valid "${_val?}"; then
     if _val="$(chosen_getprop "ro.ril.miui.imei${_slot_index:?}")" && is_valid_value "${_val?}"; then # Xiaomi
       :
+    elif _val="$(chosen_getprop "ro.ril.oem.imei${_slot:?}")" && is_valid_value "${_val?}"; then
+      :
+    elif _val="$(chosen_getprop "persist.radio.imei${_slot:?}")" && is_valid_value "${_val?}"; then
+      :
     else
       _val=''
     fi
