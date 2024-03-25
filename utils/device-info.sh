@@ -20,7 +20,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='1.8'
+readonly SCRIPT_VERSION='1.9'
 
 # shellcheck disable=SC2034
 {
@@ -712,7 +712,7 @@ get_slot_info()
 
   IFS=','
   _i=0
-  for _state in ${_states}; do
+  for _state in ${_states?}; do
     _i="$((_i + 1))"
     case "${_i:?}" in
       1) SLOT1_STATE="${_state?}" ;;
@@ -732,6 +732,29 @@ get_slot_info()
 
   #printf '%s\n' "${_i:?}"
   SLOT_COUNT="${_i:?}"
+}
+
+get_operator_info()
+{
+  local IFS _operators _operator _i
+  SLOT1_OPERATOR=''
+  SLOT2_OPERATOR=''
+  SLOT3_OPERATOR=''
+  SLOT4_OPERATOR=''
+  _operators="$(chosen_getprop 'gsm.sim.operator.alpha')" || _operators=''
+
+  IFS=','
+  _i=0
+  for _operator in ${_operators?}; do
+    _i="$((_i + 1))"
+    case "${_i:?}" in
+      1) SLOT1_OPERATOR="${_operator?}" ;;
+      2) SLOT2_OPERATOR="${_operator?}" ;;
+      3) SLOT3_OPERATOR="${_operator?}" ;;
+      4) SLOT4_OPERATOR="${_operator?}" ;;
+      *) break ;;
+    esac
+  done
 }
 
 extract_all_info()
@@ -796,18 +819,38 @@ extract_all_info()
 
   show_msg ''
 
+  get_operator_info
+
   local i slot_state
   for i in $(seq "${SLOT_COUNT:?}"); do
     show_msg "SLOT ${i:?}"
     case "${i:?}" in
-      1) slot_state="${SLOT1_STATE?}" ;;
-      2) slot_state="${SLOT2_STATE?}" ;;
-      3) slot_state="${SLOT3_STATE?}" ;;
-      4) slot_state="${SLOT4_STATE?}" ;;
-      *) slot_state='' ;;
+      1)
+        slot_state="${SLOT1_STATE?}"
+        slot_operator="${SLOT1_OPERATOR?}"
+        ;;
+      2)
+        slot_state="${SLOT2_STATE?}"
+        slot_operator="${SLOT2_OPERATOR?}"
+        ;;
+      3)
+        slot_state="${SLOT3_STATE?}"
+        slot_operator="${SLOT3_OPERATOR?}"
+        ;;
+      4)
+        slot_state="${SLOT4_STATE?}"
+        slot_operator="${SLOT4_OPERATOR?}"
+        ;;
+      *)
+        slot_state=''
+        slot_operator=''
+        ;;
     esac
+
+    # Huawei seems to have also a not standard slot state: LOADED
     display_info "Slot state" "${slot_state?}"
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
+    display_info "Operator" "${slot_operator?}"
     if ! compare_nocase "${slot_state?}" 'ABSENT'; then
       get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     fi
