@@ -137,21 +137,29 @@ start_adb_server()
   adb 2> /dev/null 'start-server' || true
 }
 
-is_recovery()
+detect_status()
 {
-  if test "$(adb 2> /dev/null -s "${1:?}" 'get-state' || true)" = 'recovery'; then
-    return 0
-  fi
-  return 1
-}
+  local _status
 
-verify_device_status()
-{
-  if is_recovery "${1:?}"; then
+  for _ in 1 2 3 4 5; do
+    _status="$(adb 2>&1 -s "${1:?}" 'get-state' || true)"
+    if ! contains 'offline' "${_status?}"; then break; fi
+
+    show_status_msg 'Device seems to be offline, waiting...'
+    sleep 1
+  done
+
+  if contains 'offline' "${_status?}" || contains 'not found' "${_status?}"; then
+    return 1
+  fi
+
+  if test "${_status?}" = 'recovery'; then
     DEVICE_IN_RECOVERY='true'
   else
     DEVICE_IN_RECOVERY='false'
   fi
+
+  return 0
 }
 
 wait_connection()
@@ -818,7 +826,11 @@ extract_all_info()
   SELECTED_DEVICE="${1:?}"
   show_selected_device "${SELECTED_DEVICE:?}"
 
-  verify_device_status "${SELECTED_DEVICE:?}"
+  if ! detect_status "${SELECTED_DEVICE:?}"; then
+    show_warn 'Device is offline, skipped'
+    return
+  fi
+
   wait_connection "${SELECTED_DEVICE:?}"
   show_status_msg 'Finding info...'
   check_boot_completed
@@ -870,7 +882,7 @@ extract_all_info()
   show_section 'SLOT INFO'
   show_msg ''
 
-  # https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/TelephonyProperties.java
+  # https://android.googlesource.com/platform/frameworks/base/+/HEAD/telephony/java/com/android/internal/telephony/TelephonyProperties.java
   get_slot_info
   display_info 'Slot count' "${SLOT_COUNT?}"
 
@@ -904,8 +916,7 @@ extract_all_info()
         ;;
     esac
 
-    # On some devices there also seems to be a non-standard slot status: LOADED
-    display_info "Slot state" "${slot_state?}"
+    display_info "Slot state" "${slot_state?}" # ABSENT, PIN_REQUIRED, PUK_REQUIRED, NETWORK_LOCKED, LOADED, READY, NOT_READY, UNKNOWN
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     if ! compare_nocase "${slot_state?}" 'ABSENT'; then
       display_info "Operator" "${slot_operator?}"
