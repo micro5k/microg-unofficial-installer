@@ -137,12 +137,12 @@ start_adb_server()
   adb 2> /dev/null 'start-server' || true
 }
 
-detect_status()
+detect_status_and_wait_if_needed()
 {
   local _status
 
   for _ in 1 2 3 4 5; do
-    _status="$(adb 2>&1 -s "${1:?}" 'get-state' || true)"
+    _status="$(LC_ALL=C adb 2>&1 -s "${1:?}" 'get-state' || true)"
     if ! contains 'offline' "${_status?}"; then break; fi
 
     show_status_msg 'Device seems to be offline, waiting...'
@@ -297,10 +297,11 @@ is_boot_completed()
 check_boot_completed()
 {
   is_boot_completed || {
-    show_error 'The device has not finished booting yet!!!'
-    pause_if_needed
-    exit 1
+    show_warn 'Device has not finished booting yet, skipped!!!'
+    return 1
   }
+
+  return 0
 }
 
 get_device_file_content()
@@ -826,14 +827,14 @@ extract_all_info()
   SELECTED_DEVICE="${1:?}"
   show_selected_device "${SELECTED_DEVICE:?}"
 
-  if ! detect_status "${SELECTED_DEVICE:?}"; then
-    show_warn 'Device is offline, skipped'
+  if ! detect_status_and_wait_if_needed "${SELECTED_DEVICE:?}"; then
+    show_warn 'Device is offline, skipped!!!'
     return
   fi
 
   wait_connection "${SELECTED_DEVICE:?}"
   show_status_msg 'Finding info...'
-  check_boot_completed
+  if ! check_boot_completed; then return; fi
   show_status_msg ''
 
   BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" || BUILD_VERSION_SDK='999'
