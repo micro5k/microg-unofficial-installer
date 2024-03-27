@@ -215,11 +215,11 @@ is_valid_serial()
 
 is_valid_line_number()
 {
-  case "${1?}" in
-    '+'*) return 0 ;; # Found
-    *) ;;
-  esac
-  return 1 # NOT found
+  if printf '%s\n' "${1?}" | grep -q -e '^+\{0,1\}[0-9-]\{5,15\}$'; then
+    return 0 # Valid
+  fi
+
+  return 1 # NOT valid
 }
 
 lc_text()
