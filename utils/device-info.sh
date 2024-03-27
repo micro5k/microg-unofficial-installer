@@ -455,9 +455,17 @@ display_info()
 
 display_info_or_warn()
 {
+  local _is_valid
+  _is_valid="${3:?}" # It is a return value, so 0 is true
+
   if test -z "${2?}"; then
     show_warn "${1?} not found"
     return 1
+  fi
+
+  if test "${_is_valid:?}" -ne 0; then
+    show_warn "Invalid ${1?}: ${2?}"
+    return 2
   fi
 
   display_info "${1?}" "${2?}"
@@ -469,20 +477,21 @@ display_phonesubinfo_or_warn()
   local _is_valid
   _is_valid="${3:?}" # It is a return value, so 0 is true
 
-  if test -n "${2?}" && ! is_phonesubinfo_response_valid "${2?}"; then
+  if test -z "${2?}"; then
+    show_warn "${1?} not found"
+    return 1
+  fi
+
+  if ! is_phonesubinfo_response_valid "${2?}"; then
     local _err
     _err="$(printf '%s\n' "${2?}" | cut -c '2-69')"
     show_warn "Cannot find ${1?} due to '${_err?}'"
-    return 2
+    return 3
   fi
 
   if test "${_is_valid:?}" -ne 0; then
-    if test -n "${2?}"; then
-      show_warn "Invalid ${1?}: ${2?}"
-    else
-      show_warn "${1?} not found"
-    fi
-    return 1
+    show_warn "Invalid ${1?}: ${2?}"
+    return 2
   fi
 
   display_info "${1?}" "${2?}"
@@ -975,12 +984,12 @@ extract_all_info()
 
     # https://developer.android.com/reference/android/telephony/TelephonyManager#SIM_STATE_ABSENT
     # https://android.googlesource.com/platform/frameworks/base.git/+/HEAD/telephony/java/com/android/internal/telephony/IccCardConstants.java
-    display_info_or_warn "Slot state" "${slot_state?}"
+    display_info_or_warn "Slot state" "${slot_state?}" 0
     # UNKNOWN, ABSENT, PIN_REQUIRED, PUK_REQUIRED, NETWORK_LOCKED, READY, NOT_READY, PERM_DISABLED, CARD_IO_ERROR, CARD_RESTRICTED, LOADED
 
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     if ! compare_nocase "${slot_state?}" 'ABSENT' && ! compare_nocase "${slot_state?}" 'NOT_READY'; then
-      display_info_or_warn "Operator" "${slot_operator?}"
+      display_info_or_warn "Operator" "${slot_operator?}" 0
       get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     fi
 
