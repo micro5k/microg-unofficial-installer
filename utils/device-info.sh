@@ -50,6 +50,12 @@ readonly SCRIPT_VERSION='2.0'
 readonly NL='
 '
 
+show_script_name()
+{
+  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
+  if test ! -t 1; then printf '%s\n' "${*}"; fi
+}
+
 show_status_msg()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
@@ -75,7 +81,7 @@ show_selected_device()
   if test -t 1; then
     printf '\033[1;31;103mSELECTED: %s\033[0m\n' "${*}"
   else
-    printf '%s\n' "${*}"
+    printf 'SELECTED: %s\n' "${*}"
   fi
 }
 
@@ -227,7 +233,7 @@ is_valid_imei()
 {
   # We should also have checked the following invalid values: unknown, null
   # but they are already excluded from the length check.
-  if ! is_valid_length "${1?}" 15 15 || test "${1:?}" = '000000000000000' || test "${1:?}" = '004999010640000'; then
+  if test "${#1}" -ne 15 || test "${1:?}" = '000000000000000' || test "${1:?}" = '004999010640000'; then
     return 1 # NOT valid
   fi
 
@@ -553,7 +559,10 @@ open_device_status_info()
 
 get_imei_via_MMI_code()
 {
-  adb 1> /dev/null 2>&1 shell '
+  local _device
+  _device="${1:?}"
+
+  adb 1> /dev/null 2>&1 -s "${_device:?}" shell '
     svc power stayon true
 
     # If the screen is locked then unlock it (only swipe is supported)
@@ -564,7 +573,7 @@ get_imei_via_MMI_code()
   ' || true
 
   # shellcheck disable=SC2016
-  adb 2> /dev/null shell '
+  adb 2> /dev/null -s "${_device:?}" shell '
     test -e "/proc/self/fd/1" || exit 1
     alias dump_ui="uiautomator 2> /dev/null dump --compressed \"/proc/self/fd/1\"" || exit 2
 
@@ -600,7 +609,7 @@ get_imei_via_MMI_code()
     cut -d '"' -f '2' -s |
     LC_ALL=C tr -d ' '
 
-  adb 1> /dev/null 2>&1 shell 'input keyevent KEYCODE_HOME; svc power stayon false' || true
+  adb 1> /dev/null 2>&1 -s "${_device:?}" shell 'input keyevent KEYCODE_HOME; svc power stayon false' || true
 }
 
 get_imei_multi_slot()
@@ -644,11 +653,12 @@ get_imei()
   local _backup_ifs _tmp
   local _val _index _imei_sv
 
+  _val=''
   _imei_sv=''
 
-  if _val="$(adb -s "${1:?}" shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && test -n "${_val?}" && test "${_val:?}" != 'null'; then
+  if _val="$(adb -s "${1:?}" shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && is_valid_imei "${_val?}"; then
     : # Presumably Android 1.0-4.4W (but it doesn't work on all devices)
-  elif _val="$(call_phonesubinfo "${1:?}" 1 s16 'com.android.shell')" && is_phonesubinfo_response_valid "${_val?}"; then
+  elif _val="$(call_phonesubinfo "${1:?}" 1 s16 'com.android.shell')" && is_valid_imei "${_val?}"; then
     : # Android 1.0-14 => Function: String getDeviceId(String callingPackage)
   elif _tmp="$(chosen_getprop 'gsm.baseband.imei')" && is_valid_value "${_tmp?}"; then
     _val="${_tmp:?}"
@@ -660,7 +670,7 @@ get_imei()
     _val="${_tmp:?}"
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_4_4_SDK:?}" && test "${BUILD_VERSION_SDK:?}" -le "${ANDROID_5_1_SDK:?}"; then
     # Use only as absolute last resort
-    if _tmp="$(get_imei_via_MMI_code)" && is_valid_value "${_tmp?}"; then
+    if _tmp="$(get_imei_via_MMI_code "${1:?}")" && is_valid_value "${_tmp?}"; then
       _backup_ifs="${IFS:-}"
       IFS="${NL:?}"
 
@@ -680,7 +690,9 @@ get_imei()
   else
     _val=''
   fi
-  validate_and_display_info 'IMEI' "${_val?}" 15
+
+  is_valid_imei "${_val?}"
+  display_phonesubinfo_or_warn 'IMEI' "${_val?}" "${?}"
 
   # Function: String getDeviceSvn(String callingPackage, optional String callingFeatureId)
   if test -n "${_imei_sv?}"; then
@@ -1043,7 +1055,7 @@ main()
 {
   local _device _found
 
-  show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+  show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
   verify_adb
   start_adb_server
