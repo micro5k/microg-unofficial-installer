@@ -8,6 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
+# shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 set -u
@@ -187,7 +188,7 @@ adb_unroot()
 
 is_all_zeros()
 {
-  if test -n "${1?}" && test "$(printf '%s' "${1?}" | LC_ALL=C tr -d '0' || true)" = ''; then
+  if test -n "${1?}" && test "$(printf '%s\n' "${1:?}" | LC_ALL=C tr -d '0' || true)" = ''; then
     return 0 # True
   fi
 
@@ -204,9 +205,29 @@ is_valid_value()
   return 0 # Valid
 }
 
+is_valid_length()
+{
+  if test "${#1}" -lt "${2:?}" || test "${#1}" -gt "${3:?}"; then
+    return 1 # NOT valid
+  fi
+
+  return 0 # Valid
+}
+
 is_valid_serial()
 {
   if test -z "${1?}" || test "${#1}" -lt 2 || test "${1?}" = 'unknown' || is_all_zeros "${1?}"; then
+    return 1 # NOT valid
+  fi
+
+  return 0 # Valid
+}
+
+is_valid_imei()
+{
+  # We should also have checked the following invalid values: unknown, null
+  # but they are already excluded from the length check.
+  if ! is_valid_length "${1?}" 15 15 || test "${1:?}" = '000000000000000' || test "${1:?}" = '004999010640000'; then
     return 1 # NOT valid
   fi
 
@@ -420,7 +441,7 @@ call_phonesubinfo()
 
 is_phonesubinfo_response_valid()
 {
-  if test -z "${1?}" || contains 'Requires READ_PHONE_STATE' "${1?}" || contains 'does not belong to' "${1?}"; then
+  if test -z "${1?}" || contains 'Requires READ_PHONE_STATE' "${1?}" || contains 'does not belong to' "${1?}" || contains 'Parcel data not fully consumed' "${1?}"; then
     return 1
   fi
 
@@ -432,6 +453,32 @@ display_info()
   show_msg "${1?}: ${2?}"
 }
 
+display_phonesubinfo_or_warn()
+{
+  local _is_valid
+  _is_valid="${3:?}" # It is a return value, so 0 is true
+
+  if test -n "${2?}" && ! is_phonesubinfo_response_valid "${2?}"; then
+    local _err
+    _err="$(printf '%s\n' "${2?}" | cut -c '2-69')"
+    show_warn "Cannot find ${1?} due to '${_err?}'"
+    return 2
+  fi
+
+  if test "${_is_valid:?}" -ne 0; then
+    if test -n "${2?}"; then
+      show_warn "Invalid ${1?}: ${2?}"
+    else
+      show_warn "${1?} not found"
+    fi
+    return 1
+  fi
+
+  display_info "${1?}" "${2?}"
+  return 0
+}
+
+# Deprecated
 validate_and_display_info()
 {
   if ! is_valid_value "${2?}"; then
@@ -538,7 +585,8 @@ get_imei_via_MMI_code()
 
 get_imei_multi_slot()
 {
-  local _val _slot _slot_index
+  local _val _prop _slot _slot_index
+  _val=''
   _slot="${2:?}"
   _slot_index="$((_slot - 1))" # Slot index start from 0
 
@@ -548,30 +596,27 @@ get_imei_multi_slot()
 
   # Function: String getDeviceIdForPhone(int phoneId, String callingPackage, optional String callingFeatureId)
   if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
-    _val=''
+    :
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
     _val="$(call_phonesubinfo "${1:?}" 4 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
     _val="$(call_phonesubinfo "${1:?}" 3 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 5.1-10
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
     _val="$(call_phonesubinfo "${1:?}" 2 i32 "${_slot_index:?}")" # Android 5.0 (need test)
-  else
-    _val=''
   fi
 
-  if ! is_phonesubinfo_response_valid "${_val?}" || is_all_zeros "${_val?}"; then
-    if _val="$(chosen_getprop "ro.ril.miui.imei${_slot_index:?}")" && is_valid_value "${_val?}"; then # Xiaomi
-      :
-    elif _val="$(chosen_getprop "ro.ril.oem.imei${_slot:?}")" && is_valid_value "${_val?}"; then
-      :
-    elif _val="$(chosen_getprop "persist.radio.imei${_slot:?}")" && is_valid_value "${_val?}"; then
-      :
-    else
-      _val=''
+  if ! is_valid_imei "${_val?}"; then
+    if _prop="$(chosen_getprop "ro.ril.miui.imei${_slot_index:?}")" && is_valid_value "${_prop?}"; then # Xiaomi
+      _val="${_prop:?}"
+    elif _prop="$(chosen_getprop "ro.ril.oem.imei${_slot:?}")" && is_valid_value "${_prop?}"; then
+      _val="${_prop:?}"
+    elif _prop="$(chosen_getprop "persist.radio.imei${_slot:?}")" && is_valid_value "${_prop?}"; then
+      _val="${_prop:?}"
     fi
   fi
 
-  validate_and_display_info 'IMEI' "${_val?}" 15
+  is_valid_imei "${_val?}"
+  display_phonesubinfo_or_warn 'IMEI' "${_val?}" "${?}"
 }
 
 get_imei()
@@ -919,9 +964,9 @@ extract_all_info()
 
     # https://developer.android.com/reference/android/telephony/TelephonyManager#SIM_STATE_ABSENT
     # https://android.googlesource.com/platform/frameworks/base.git/+/HEAD/telephony/java/com/android/internal/telephony/IccCardConstants.java
+    display_info "Slot state" "${slot_state?}"
     # UNKNOWN, ABSENT, PIN_REQUIRED, PUK_REQUIRED, NETWORK_LOCKED, READY, NOT_READY, PERM_DISABLED, CARD_IO_ERROR, CARD_RESTRICTED, LOADED
 
-    display_info "Slot state" "${slot_state?}"
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     if ! compare_nocase "${slot_state?}" 'ABSENT' && ! compare_nocase "${slot_state?}" 'NOT_READY'; then
       display_info "Operator" "${slot_operator?}"
