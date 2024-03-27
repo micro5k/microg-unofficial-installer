@@ -453,6 +453,17 @@ display_info()
   show_msg "${1?}: ${2?}"
 }
 
+display_info_or_warn()
+{
+  if test -z "${2?}"; then
+    show_warn "${1?} not found"
+    return 1
+  fi
+
+  display_info "${1?}" "${2?}"
+  return 0
+}
+
 display_phonesubinfo_or_warn()
 {
   local _is_valid
@@ -964,12 +975,12 @@ extract_all_info()
 
     # https://developer.android.com/reference/android/telephony/TelephonyManager#SIM_STATE_ABSENT
     # https://android.googlesource.com/platform/frameworks/base.git/+/HEAD/telephony/java/com/android/internal/telephony/IccCardConstants.java
-    display_info "Slot state" "${slot_state?}"
+    display_info_or_warn "Slot state" "${slot_state?}"
     # UNKNOWN, ABSENT, PIN_REQUIRED, PUK_REQUIRED, NETWORK_LOCKED, READY, NOT_READY, PERM_DISABLED, CARD_IO_ERROR, CARD_RESTRICTED, LOADED
 
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     if ! compare_nocase "${slot_state?}" 'ABSENT' && ! compare_nocase "${slot_state?}" 'NOT_READY'; then
-      display_info "Operator" "${slot_operator?}"
+      display_info_or_warn "Operator" "${slot_operator?}"
       get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     fi
 
