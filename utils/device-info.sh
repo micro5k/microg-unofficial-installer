@@ -181,6 +181,8 @@ wait_connection()
 
 adb_root()
 {
+  if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '[:cntrl:]' || true)" = 'root'; then return; fi
+
   adb 1> /dev/null -s "${1:?}" 'root' &
   adb 1> /dev/null -s "${1:?}" 'reconnect' # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
   wait_connection "${1:?}"
