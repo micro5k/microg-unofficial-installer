@@ -919,7 +919,9 @@ extract_all_info()
 
     # https://developer.android.com/reference/android/telephony/TelephonyManager#SIM_STATE_ABSENT
     # https://android.googlesource.com/platform/frameworks/base.git/+/HEAD/telephony/java/com/android/internal/telephony/IccCardConstants.java
-    display_info "Slot state" "${slot_state?}" # ABSENT, PIN_REQUIRED, PUK_REQUIRED, NETWORK_LOCKED, LOADED, READY, NOT_READY, UNKNOWN
+    # UNKNOWN, ABSENT, PIN_REQUIRED, PUK_REQUIRED, NETWORK_LOCKED, READY, NOT_READY, PERM_DISABLED, CARD_IO_ERROR, CARD_RESTRICTED, LOADED
+
+    display_info "Slot state" "${slot_state?}"
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     if ! compare_nocase "${slot_state?}" 'ABSENT' && ! compare_nocase "${slot_state?}" 'NOT_READY'; then
       display_info "Operator" "${slot_operator?}"
