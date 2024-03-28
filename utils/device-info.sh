@@ -82,6 +82,11 @@ show_error()
   if test ! -t 1; then printf '%s\n' "ERROR: ${*}"; fi
 }
 
+set_title()
+{
+  if test "${CI:-false}" = 'false' && test -t 2; then printf 1>&2 '\033]0;%s\007\r' "${1:?}" && printf 1>&2 '       %*s    \r' "${#1}" ''; fi
+}
+
 show_script_name()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
@@ -1115,6 +1120,7 @@ main()
 {
   local _device _found
 
+  set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
   show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
   verify_dependencies
