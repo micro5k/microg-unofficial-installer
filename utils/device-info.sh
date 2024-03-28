@@ -1004,8 +1004,10 @@ extract_all_info()
 
   show_msg ''
 
-  adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null size'
-  adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null density'
+  DISPLAY_SIZE="$(adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null size' | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '[:cntrl:] | trim_space_on_sides')"
+  display_info_or_warn 'Display size' "${DISPLAY_SIZE?}" "${?}"
+  DISPLAY_DENSITY="$(adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null density' | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '[:cntrl:] | trim_space_on_sides')"
+  display_info_or_warn 'Display density' "${DISPLAY_DENSITY?}" "${?}"
 
   show_msg ''
 
