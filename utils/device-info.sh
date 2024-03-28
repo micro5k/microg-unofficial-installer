@@ -50,23 +50,17 @@ readonly SCRIPT_VERSION='2.0'
 readonly NL='
 '
 
-show_script_name()
-{
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
-  if test ! -t 1; then printf '%s\n' "${*}"; fi
-}
-
 show_status_msg()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
 }
 
-show_warn()
+show_status_warn()
 {
   printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
 }
 
-show_error()
+show_status_error()
 {
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
 }
@@ -76,12 +70,30 @@ show_msg()
   printf '%s\n' "${*}"
 }
 
+show_warn()
+{
+  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
+  if test ! -t 1; then printf '%s\n' "WARNING: ${*}"; fi
+}
+
+show_error()
+{
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
+  if test ! -t 1; then printf '%s\n' "ERROR: ${*}"; fi
+}
+
+show_script_name()
+{
+  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
+  if test ! -t 1; then printf '%s\n' "${*}"; fi
+}
+
 show_selected_device()
 {
   if test -t 1; then
-    printf '\033[1;31;103mSELECTED: %s\033[0m\n' "${*}"
+    printf '\033[1;31;103m%s\033[0m\n' "SELECTED: ${*}"
   else
-    printf 'SELECTED: %s\n' "${*}"
+    printf '%s\n' "SELECTED: ${*}"
   fi
 }
 
@@ -134,7 +146,7 @@ verify_adb()
     fi
   fi
 
-  show_error 'adb is NOT available'
+  show_status_error 'adb is NOT available'
   pause_if_needed
   exit 1
 }
@@ -181,7 +193,7 @@ wait_connection()
 
 adb_unfroze()
 {
-  show_error 'adb was frozen, reconnecting...'
+  show_status_error 'adb was frozen, reconnecting...'
   adb 1> /dev/null -s "${1:?}" reconnect # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
   wait_connection "${1:?}"
 }
@@ -191,7 +203,7 @@ adb_root()
   if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '[:cntrl:]' || true)" = 'root'; then return; fi # Already rooted
 
   if ! command -v timeout 1> /dev/null; then
-    show_error 'timeout is NOT available'
+    show_status_error 'timeout is NOT available'
     return
   fi
 
@@ -345,7 +357,7 @@ is_boot_completed()
 check_boot_completed()
 {
   is_boot_completed || {
-    show_warn 'Device has not finished booting yet, skipped!!!'
+    show_status_warn 'Device has not finished booting yet, skipped!!!'
     return 1
   }
 
@@ -485,7 +497,7 @@ display_info_or_warn()
   local _is_valid
   _is_valid="${3:?}" # It is a return value, so 0 is true
 
-  if test -z "${2?}"; then
+  if test -z "${2?}" || test "${2:?}" = 'unknown'; then
     show_warn "${1?} not found"
     return 1
   fi
@@ -944,7 +956,7 @@ extract_all_info()
   show_selected_device "${SELECTED_DEVICE:?}"
 
   if ! detect_status_and_wait_if_needed "${SELECTED_DEVICE:?}"; then
-    show_warn 'Device is offline, skipped!!!'
+    show_status_warn 'Device is offline, skipped!!!'
     return
   fi
 
@@ -975,9 +987,10 @@ extract_all_info()
   } && display_info 'Device' "${BUILD_DEVICE?}"
   ANDROID_VERSION="$(validated_chosen_getprop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
   KERNEL_VERSION="$(get_kernel_version "${SELECTED_DEVICE:?}")" && display_info 'Kernel version' "${KERNEL_VERSION?}"
-  if DEVICE_PATH="$(adb -s "${SELECTED_DEVICE:?}" 'get-devpath')" && is_valid_value "${DEVICE_PATH?}"; then
-    display_info 'Device path' "${DEVICE_PATH?}"
-  fi
+  {
+    DEVICE_PATH="$(adb -s "${SELECTED_DEVICE:?}" 'get-devpath')"
+    display_info_or_warn 'Device path' "${DEVICE_PATH?}" "${?}"
+  }
 
   show_msg ''
 
@@ -1109,7 +1122,7 @@ main()
   done
 
   if test "${_found:?}" = 'false'; then
-    show_error 'No devices/emulators found'
+    show_status_error 'No devices/emulators found'
     pause_if_needed
     exit 1
   fi
