@@ -1065,7 +1065,7 @@ extract_all_info()
     # UNKNOWN, ABSENT, PIN_REQUIRED, PUK_REQUIRED, NETWORK_LOCKED, READY, NOT_READY, PERM_DISABLED, CARD_IO_ERROR, CARD_RESTRICTED, LOADED
 
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
-    if ! compare_nocase "${slot_state?}" 'ABSENT' && ! compare_nocase "${slot_state?}" 'NOT_READY'; then
+    if ! compare_nocase "${slot_state?}" 'ABSENT'; then #  && ! compare_nocase "${slot_state?}" 'NOT_READY'
       display_info_or_warn "Operator" "${slot_operator?}" 0
       get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     fi
