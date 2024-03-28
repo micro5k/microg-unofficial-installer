@@ -21,7 +21,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='2.0'
+readonly SCRIPT_VERSION='2.1'
 
 # shellcheck disable=SC2034
 {
@@ -151,6 +151,17 @@ verify_adb()
   exit 1
 }
 
+verify_dependencies()
+{
+  verify_adb
+
+  if ! command -v timeout 1> /dev/null; then
+    show_status_error 'timeout is NOT available'
+    pause_if_needed
+    exit 1
+  fi
+}
+
 start_adb_server()
 {
   adb 2> /dev/null 'start-server' || true
@@ -201,11 +212,6 @@ adb_unfroze()
 adb_root()
 {
   if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '[:cntrl:]' || true)" = 'root'; then return; fi # Already rooted
-
-  if ! command -v timeout 1> /dev/null; then
-    show_status_error 'timeout is NOT available'
-    return
-  fi
 
   timeout -- 6 adb -s "${1:?}" root 1> /dev/null
   if test "${?}" -ne 0; then
@@ -1111,7 +1117,7 @@ main()
 
   show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
-  verify_adb
+  verify_dependencies
   start_adb_server
 
   _found=false
