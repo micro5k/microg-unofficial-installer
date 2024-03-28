@@ -181,17 +181,29 @@ wait_connection()
 
 adb_root()
 {
-  if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '[:cntrl:]' || true)" = 'root'; then return; fi
+  if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '[:cntrl:]' || true)" = 'root'; then return; fi # Already rooted
 
-  adb 1> /dev/null -s "${1:?}" 'root' &
-  adb 1> /dev/null -s "${1:?}" 'reconnect' # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
+  if ! command -v timeout 1> /dev/null; then
+    show_error 'timeout is NOT available'
+    return
+  fi
+
+  local _status
+  timeout -- 6 adb -s "${1:?}" root 1> /dev/null
+  _status='${?}'
+
+  # Timed out
+  if test "${_status:?}" = '124' || test "${_status:?}" = '143'; then
+    adb 1> /dev/null -s "${1:?}" reconnect # Root command may freeze the adb connection of some devices, workaround the problem
+  fi
+
   wait_connection "${1:?}"
 }
 
 adb_unroot()
 {
-  adb 1> /dev/null 2>&1 -s "${1:?}" 'unroot' &
-  adb 1> /dev/null -s "${1:?}" 'reconnect' & # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
+  adb 1> /dev/null -s "${1:?}" unroot &
+  adb 1> /dev/null -s "${1:?}" reconnect # Unroot command may freeze the adb connection of some devices, workaround the problem
 }
 
 is_all_zeros()
