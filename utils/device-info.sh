@@ -183,6 +183,7 @@ adb_unfroze()
 {
   show_error 'adb was frozen, reconnecting...'
   adb 1> /dev/null -s "${1:?}" reconnect # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
+  wait_connection "${1:?}"
 }
 
 adb_root()
@@ -195,13 +196,15 @@ adb_root()
   fi
 
   timeout -- 6 adb -s "${1:?}" root 1> /dev/null
-  if test "${?}" -ne 0; then adb_unfroze "${1:?}"; fi # Timed out
+  if test "${?}" -ne 0; then
+    adb_unfroze "${1:?}" # Timed out
+  else
+    wait_connection "${1:?}"
+  fi
 
   # Dummy command to check if adb is frozen
   timeout -- 6 adb -s "${1:?}" shell ':'
   if test "${?}" -ne 0; then adb_unfroze "${1:?}"; fi # Timed out
-
-  wait_connection "${1:?}"
 }
 
 adb_unroot()
@@ -508,7 +511,7 @@ display_phonesubinfo_or_warn()
 
   if ! is_phonesubinfo_response_valid "${2?}"; then
     local _err
-    _err="$(printf '%s\n' "${2?}" | cut -c '2-69')"
+    _err="$(printf '%s\n' "${2?}" | cut -c '2-70')"
     show_warn "Cannot find ${1?} due to '${_err?}'"
     return 3
   fi
@@ -573,6 +576,21 @@ open_device_status_info()
   '
 
   adb 1> /dev/null 2>&1 shell 'svc power stayon false' || true
+}
+
+get_kernel_version()
+{
+  local _val
+
+  if _val="$(adb -s "${1:?}" shell 'if command 1> /dev/null -v "uname"; then uname -r; else grep -m 1 -o -e "^Linux version [^(]*" -- "/proc/version"; fi')"; then
+    case "${_val?}" in
+      'Linux version '*) printf '%s\n' "${_val?}" | cut -c '15-' ;;
+      *) printf '%s\n' "${_val?}" ;;
+    esac
+    return 0
+  fi
+
+  return 1
 }
 
 get_imei_via_MMI_code()
@@ -956,7 +974,7 @@ extract_all_info()
     BUILD_DEVICE="$(chosen_getprop 'ro.product.device')" || BUILD_DEVICE="$(chosen_getprop 'ro.build.product')"
   } && display_info 'Device' "${BUILD_DEVICE?}"
   ANDROID_VERSION="$(validated_chosen_getprop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
-  KERNEL_VERSION="$(adb -s "${SELECTED_DEVICE:?}" shell 'uname -r')" && display_info 'Kernel version' "${KERNEL_VERSION?}"
+  KERNEL_VERSION="$(get_kernel_version "${SELECTED_DEVICE:?}")" && display_info 'Kernel version' "${KERNEL_VERSION?}"
   if DEVICE_PATH="$(adb -s "${SELECTED_DEVICE:?}" 'get-devpath')" && is_valid_value "${DEVICE_PATH?}"; then
     display_info 'Device path' "${DEVICE_PATH?}"
   fi
