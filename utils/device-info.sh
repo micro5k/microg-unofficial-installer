@@ -293,6 +293,15 @@ is_valid_line_number()
   return 1 # NOT valid
 }
 
+is_valid_color()
+{
+  if test -z "${1?}" || test "${1:?}" = 'unknown' || compare_nocase "${1:?}" 'Unknown touchpad'; then
+    return 1 # NOT valid
+  fi
+
+  return 0 # Valid
+}
+
 lc_text()
 {
   printf '%s' "${1?}" | LC_ALL=C tr '[:upper:]' '[:lower:]'
@@ -457,6 +466,36 @@ get_advertising_id()
   adid="$(printf '%s' "${adid?}" | grep -m 1 -o -e '"adid_key"[^<]*' | grep -o -e ">.*$")"
 
   printf '%s' "${adid#>}"
+}
+
+get_device_color()
+{
+  local _val
+
+  if _val="$(chosen_getprop 'ro.config.devicecolor')" && is_valid_color "${_val?}"; then # Huawei (possibly others)
+    :
+  elif _val="$(chosen_getprop 'vendor.panel.color')" && is_valid_color "${_val?}"; then # Xiaomi (possibly others)
+    :
+  elif _val="$(chosen_getprop 'sys.panel.color')" && is_valid_color "${_val?}"; then # Xiaomi (possibly others)
+    :
+  else
+    _val=''
+  fi
+
+  display_info_or_warn 'Device color' "${_val?}" 0
+}
+
+get_device_back_color()
+{
+  local _val
+
+  if _val="$(chosen_getprop 'ro.config.backcolor')" && is_valid_color "${_val?}"; then # Huawei (possibly others)
+    :
+  else
+    _val=''
+  fi
+
+  display_info_or_warn 'Device back color' "${_val?}" 0
 }
 
 apply_phonesubinfo_deviation()
@@ -1002,6 +1041,8 @@ extract_all_info()
     DEVICE_PATH="$(adb -s "${SELECTED_DEVICE:?}" 'get-devpath')"
     display_info_or_warn 'Device path' "${DEVICE_PATH?}" "${?}"
   }
+  get_device_color
+  get_device_back_color
 
   show_msg ''
 
