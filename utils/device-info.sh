@@ -644,12 +644,18 @@ get_kernel_version()
 {
   local _val
 
-  if _val="$(adb -s "${1:?}" shell 'if command 1> /dev/null -v "uname"; then uname -r; else grep -m 1 -o -e "^Linux version [^(]*" -- "/proc/version"; fi')"; then
+  if _val="$(adb -s "${1:?}" shell 'if command 1> /dev/null -v "uname"; then uname -r; elif test -r "/proc/version"; then cat "/proc/version"; fi')"; then
     case "${_val?}" in
-      'Linux version '*) printf '%s\n' "${_val?}" | cut -c '15-' ;;
-      *) printf '%s\n' "${_val?}" ;;
+      '') ;;
+      'Linux version '*)
+        printf '%s\n' "${_val?}" | cut -c '15-' | grep -m 1 -o -e "^[^(]*"
+        return 0
+        ;;
+      *)
+        printf '%s\n' "${_val?}"
+        return 0
+        ;;
     esac
-    return 0
   fi
 
   return 1
