@@ -325,6 +325,15 @@ contains()
   return 1 # NOT found
 }
 
+trim_space_left()
+{
+  local _var
+  _var="$(cat)" || return 1
+
+  printf '%s\n' "${_var# }"
+  return 0
+}
+
 trim_space_on_sides()
 {
   local _var
@@ -498,6 +507,15 @@ get_device_back_color()
   display_info_or_warn 'Device back color' "${_val?}" 0
 }
 
+adb_shell()
+{
+  local _device
+  _device="${1:?}"
+  shift
+
+  adb -s "${_device:?}" shell "${*}" | LC_ALL=C tr -d '\r'
+}
+
 apply_phonesubinfo_deviation()
 {
   local _method_code
@@ -644,16 +662,14 @@ get_kernel_version()
 {
   local _val
 
-  if _val="$(adb -s "${1:?}" shell 'if command 1> /dev/null -v "uname"; then uname -r; elif test -r "/proc/version"; then cat "/proc/version"; fi')"; then
+  if _val="$(adb -s "${1:?}" shell 'if command 1> /dev/null -v "uname"; then uname -r; elif test -r "/proc/version"; then cat "/proc/version"; fi' | LC_ALL=C tr -d '\r')"; then
     case "${_val?}" in
       '') ;;
       'Linux version '*)
-        printf '%s\n' "${_val?}" | cut -c '15-' | grep -m 1 -o -e "^[^(]*"
-        return 0
+        printf '%s\n' "${_val?}" | cut -c '15-' | grep -m 1 -o -e "^[^(]*" && return 0
         ;;
       *)
-        printf '%s\n' "${_val?}"
-        return 0
+        printf '%s\n' "${_val?}" && return 0
         ;;
     esac
   fi
@@ -1062,9 +1078,9 @@ extract_all_info()
 
   show_msg ''
 
-  DISPLAY_SIZE="$(adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null size' | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '[:cntrl:] | trim_space_on_sides')"
+  DISPLAY_SIZE="$(adb_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null size' | cut -d ':' -f '2-' -s | trim_space_left)"
   display_info_or_warn 'Display size' "${DISPLAY_SIZE?}" "${?}"
-  DISPLAY_DENSITY="$(adb -s "${SELECTED_DEVICE:?}" shell 'wm 2> /dev/null density' | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '[:cntrl:] | trim_space_on_sides')"
+  DISPLAY_DENSITY="$(adb_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null density' | cut -d ':' -f '2-' -s | trim_space_left)"
   display_info_or_warn 'Display density' "${DISPLAY_DENSITY?}" "${?}"
 
   show_msg ''
