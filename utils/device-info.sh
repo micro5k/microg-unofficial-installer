@@ -358,7 +358,7 @@ device_getprop()
   adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '\r'
 }
 
-chosen_getprop()
+auto_getprop()
 {
   local _val
 
@@ -375,7 +375,7 @@ chosen_getprop()
 validated_chosen_getprop()
 {
   local _value
-  if ! _value="$(chosen_getprop "${1:?}")" || ! is_valid_value "${_value?}" "${2:-}"; then
+  if ! _value="$(auto_getprop "${1:?}")" || ! is_valid_value "${_value?}" "${2:-}"; then
     show_error "Invalid value for ${1:-}"
     return 1
   fi
@@ -385,7 +385,7 @@ validated_chosen_getprop()
 
 is_boot_completed()
 {
-  if test "${DEVICE_IN_RECOVERY:?}" = 'true' || test "$(chosen_getprop 'sys.boot_completed' || true)" = '1'; then
+  if test "${DEVICE_IN_RECOVERY:?}" = 'true' || test "$(auto_getprop 'sys.boot_completed' || true)" = '1'; then
     return 0
   fi
 
@@ -411,21 +411,21 @@ find_serialno()
 {
   local _val
 
-  if compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo' && _val="$(chosen_getprop 'ro.lenovosn2')" && is_valid_serial "${_val?}"; then # Lenovo tablets
+  if compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo' && _val="$(auto_getprop 'ro.lenovosn2')" && is_valid_serial "${_val?}"; then # Lenovo tablets
     :
-  elif _val="$(chosen_getprop 'ril.serialnumber')" && is_valid_serial "${_val?}"; then # Samsung phones / tablets (possibly others)
+  elif _val="$(auto_getprop 'ril.serialnumber')" && is_valid_serial "${_val?}"; then # Samsung phones / tablets (possibly others)
     :
-  elif _val="$(chosen_getprop 'ro.ril.oem.psno')" && is_valid_serial "${_val?}"; then # Xiaomi phones (possibly others)
+  elif _val="$(auto_getprop 'ro.ril.oem.psno')" && is_valid_serial "${_val?}"; then # Xiaomi phones (possibly others)
     :
-  elif _val="$(chosen_getprop 'ro.ril.oem.sno')" && is_valid_serial "${_val?}"; then # Xiaomi phones (possibly others)
+  elif _val="$(auto_getprop 'ro.ril.oem.sno')" && is_valid_serial "${_val?}"; then # Xiaomi phones (possibly others)
     :
-  elif _val="$(chosen_getprop 'ro.serialno')" && is_valid_serial "${_val?}"; then
+  elif _val="$(auto_getprop 'ro.serialno')" && is_valid_serial "${_val?}"; then
     :
-  elif _val="$(chosen_getprop 'sys.serialnumber')" && is_valid_serial "${_val?}"; then
+  elif _val="$(auto_getprop 'sys.serialnumber')" && is_valid_serial "${_val?}"; then
     :
-  elif _val="$(chosen_getprop 'ro.boot.serialno')" && is_valid_serial "${_val?}"; then
+  elif _val="$(auto_getprop 'ro.boot.serialno')" && is_valid_serial "${_val?}"; then
     :
-  elif _val="$(chosen_getprop 'ro.kernel.androidboot.serialno')" && is_valid_serial "${_val?}"; then
+  elif _val="$(auto_getprop 'ro.kernel.androidboot.serialno')" && is_valid_serial "${_val?}"; then
     :
   else
     show_warn 'Serial number not found'
@@ -490,11 +490,11 @@ get_device_color()
 {
   local _val
 
-  if _val="$(chosen_getprop 'ro.config.devicecolor')" && is_valid_color "${_val?}"; then # Huawei (possibly others)
+  if _val="$(auto_getprop 'ro.config.devicecolor')" && is_valid_color "${_val?}"; then # Huawei (possibly others)
     :
-  elif _val="$(chosen_getprop 'vendor.panel.color')" && is_valid_color "${_val?}"; then # Xiaomi (possibly others)
+  elif _val="$(auto_getprop 'vendor.panel.color')" && is_valid_color "${_val?}"; then # Xiaomi (possibly others)
     :
-  elif _val="$(chosen_getprop 'sys.panel.color')" && is_valid_color "${_val?}"; then # Xiaomi (possibly others)
+  elif _val="$(auto_getprop 'sys.panel.color')" && is_valid_color "${_val?}"; then # Xiaomi (possibly others)
     :
   else
     _val=''
@@ -507,7 +507,7 @@ get_device_back_color()
 {
   local _val
 
-  if _val="$(chosen_getprop 'ro.config.backcolor')" && is_valid_color "${_val?}"; then # Huawei (possibly others)
+  if _val="$(auto_getprop 'ro.config.backcolor')" && is_valid_color "${_val?}"; then # Huawei (possibly others)
     :
   else
     _val=''
@@ -516,7 +516,7 @@ get_device_back_color()
   display_info_or_warn 'Device back color' "${_val?}" 0
 }
 
-adb_shell()
+device_shell()
 {
   local _device
   _device="${1:?}"
@@ -776,11 +776,11 @@ get_imei_multi_slot()
   fi
 
   if ! is_valid_imei "${_val?}"; then
-    if _prop="$(chosen_getprop "ro.ril.miui.imei${_slot_index:?}")" && is_valid_value "${_prop?}"; then # Xiaomi
+    if _prop="$(auto_getprop "ro.ril.miui.imei${_slot_index:?}")" && is_valid_value "${_prop?}"; then # Xiaomi
       _val="${_prop:?}"
-    elif _prop="$(chosen_getprop "ro.ril.oem.imei${_slot:?}")" && is_valid_value "${_prop?}"; then
+    elif _prop="$(auto_getprop "ro.ril.oem.imei${_slot:?}")" && is_valid_value "${_prop?}"; then
       _val="${_prop:?}"
-    elif _prop="$(chosen_getprop "persist.radio.imei${_slot:?}")" && is_valid_value "${_prop?}"; then
+    elif _prop="$(auto_getprop "persist.radio.imei${_slot:?}")" && is_valid_value "${_prop?}"; then
       _val="${_prop:?}"
     fi
   fi
@@ -801,13 +801,13 @@ get_imei()
     : # Presumably Android 1.0-4.4W (but it doesn't work on all devices)
   elif _val="$(call_phonesubinfo "${1:?}" 1 s16 'com.android.shell')" && is_valid_imei "${_val?}"; then
     : # Android 1.0-14 => Function: String getDeviceId(String callingPackage)
-  elif _tmp="$(chosen_getprop 'gsm.baseband.imei')" && is_valid_value "${_tmp?}"; then
+  elif _tmp="$(auto_getprop 'gsm.baseband.imei')" && is_valid_value "${_tmp?}"; then
     _val="${_tmp:?}"
-  elif _tmp="$(chosen_getprop 'ro.gsm.imei')" && is_valid_value "${_tmp?}"; then
+  elif _tmp="$(auto_getprop 'ro.gsm.imei')" && is_valid_value "${_tmp?}"; then
     _val="${_tmp:?}"
-  elif _tmp="$(chosen_getprop 'gsm.imei')" && is_valid_value "${_tmp?}"; then
+  elif _tmp="$(auto_getprop 'gsm.imei')" && is_valid_value "${_tmp?}"; then
     _val="${_tmp:?}"
-  elif _tmp="$(chosen_getprop 'ril.imei')" && is_valid_value "${_tmp?}"; then
+  elif _tmp="$(auto_getprop 'ril.imei')" && is_valid_value "${_tmp?}"; then
     _val="${_tmp:?}"
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_4_4_SDK:?}" && test "${BUILD_VERSION_SDK:?}" -le "${ANDROID_5_1_SDK:?}"; then
     # Use only as absolute last resort
@@ -994,7 +994,7 @@ get_slot_info()
   SLOT2_STATE=''
   SLOT3_STATE=''
   SLOT4_STATE=''
-  _states="$(chosen_getprop 'gsm.sim.state')" || _states=''
+  _states="$(auto_getprop 'gsm.sim.state')" || _states=''
 
   IFS=','
   _i=0
@@ -1027,7 +1027,7 @@ get_operator_info()
   SLOT2_OPERATOR=''
   SLOT3_OPERATOR=''
   SLOT4_OPERATOR=''
-  _operators="$(chosen_getprop 'gsm.sim.operator.alpha')" || _operators=''
+  _operators="$(auto_getprop 'gsm.sim.operator.alpha')" || _operators=''
 
   IFS=','
   _i=0
@@ -1063,20 +1063,20 @@ extract_all_info()
   show_section 'BASIC INFO'
   show_msg ''
 
-  if EMU_NAME="$(chosen_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
+  if EMU_NAME="$(auto_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
     display_info 'Emulator' "${EMU_NAME?}"
-  elif EMU_NAME="$(chosen_getprop 'ro.kernel.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
+  elif EMU_NAME="$(auto_getprop 'ro.kernel.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
     display_info 'Emulator' "${EMU_NAME?}"
-  elif LEAPD_VERSION="$(chosen_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
+  elif LEAPD_VERSION="$(auto_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
     display_info 'Emulator' 'Leapdroid'
   fi
 
   {
-    BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(chosen_getprop 'ro.product.brand')"
+    BUILD_MANUFACTURER="$(auto_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(auto_getprop 'ro.product.brand')"
   } && display_info 'Manufacturer' "${BUILD_MANUFACTURER?}"
   BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
   {
-    BUILD_DEVICE="$(chosen_getprop 'ro.product.device')" || BUILD_DEVICE="$(chosen_getprop 'ro.build.product')"
+    BUILD_DEVICE="$(auto_getprop 'ro.product.device')" || BUILD_DEVICE="$(auto_getprop 'ro.build.product')"
   } && display_info 'Device' "${BUILD_DEVICE?}"
   ANDROID_VERSION="$(validated_chosen_getprop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
   KERNEL_VERSION="$(get_kernel_version "${SELECTED_DEVICE:?}")" && display_info 'Kernel version' "${KERNEL_VERSION?}"
@@ -1099,9 +1099,9 @@ extract_all_info()
 
   show_msg ''
 
-  DISPLAY_SIZE="$(adb_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null size' | cut -d ':' -f '2-' -s | trim_space_left)"
+  DISPLAY_SIZE="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null size' | cut -d ':' -f '2-' -s | trim_space_left)"
   display_info_or_warn 'Display size' "${DISPLAY_SIZE?}" "${?}"
-  DISPLAY_DENSITY="$(adb_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null density' | cut -d ':' -f '2-' -s | trim_space_left)"
+  DISPLAY_DENSITY="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null density' | cut -d ':' -f '2-' -s | trim_space_left)"
   display_info_or_warn 'Display density' "${DISPLAY_DENSITY?}" "${?}"
 
   show_msg ''
