@@ -264,44 +264,6 @@ is_valid_length()
   return 0 # Valid
 }
 
-is_valid_serial()
-{
-  if test -z "${1?}" || test "${#1}" -lt 2 || is_all_zeros "${1?}"; then
-    return 1 # NOT valid
-  fi
-
-  return 0 # Valid
-}
-
-is_valid_imei()
-{
-  # We should have also checked the following invalid value: null
-  # but it is already excluded from the length check.
-  if test "${#1}" -ne 15 || test "${1:?}" = '000000000000000' || test "${1:?}" = '004999010640000'; then
-    return 1 # NOT valid
-  fi
-
-  return 0 # Valid
-}
-
-is_valid_line_number()
-{
-  if printf '%s\n' "${1?}" | grep -q -e '^+\{0,1\}[0-9-]\{5,15\}$'; then
-    return 0 # Valid
-  fi
-
-  return 1 # NOT valid
-}
-
-is_valid_color()
-{
-  if test -z "${1?}" || compare_nocase "${1:?}" 'Unknown touchpad'; then
-    return 1 # NOT valid
-  fi
-
-  return 0 # Valid
-}
-
 lc_text()
 {
   printf '%s' "${1?}" | LC_ALL=C tr '[:upper:]' '[:lower:]'
@@ -353,6 +315,44 @@ convert_dec_to_hex()
   fi
 }
 
+is_valid_serial()
+{
+  if test "${#1}" -lt 2 || is_all_zeros "${1:?}"; then
+    return 1 # NOT valid
+  fi
+
+  return 0 # Valid
+}
+
+is_valid_imei()
+{
+  # We should have also checked the following invalid value: null
+  # but it is already excluded from the length check.
+  if test "${#1}" -ne 15 || test "${1:?}" = '000000000000000' || test "${1:?}" = '004999010640000'; then
+    return 1 # NOT valid
+  fi
+
+  return 0 # Valid
+}
+
+is_valid_line_number()
+{
+  if printf '%s\n' "${1?}" | grep -q -e '^+\{0,1\}[0-9-]\{5,15\}$'; then
+    return 0 # Valid
+  fi
+
+  return 1 # NOT valid
+}
+
+is_valid_color()
+{
+  if test -z "${1?}" || compare_nocase "${1:?}" 'Unknown touchpad'; then
+    return 1 # NOT valid
+  fi
+
+  return 0 # Valid
+}
+
 device_getprop()
 {
   adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '\r'
@@ -402,7 +402,7 @@ check_boot_completed()
   return 0
 }
 
-get_device_file_content()
+device_get_file_content()
 {
   adb -s "${1:?}" shell "test -r '${2:?}' && cat '${2:?}'" | LC_ALL=C tr -d '\r'
 }
@@ -439,7 +439,7 @@ find_cpu_serialno()
 {
   local _val
 
-  if _val="$(get_device_file_content "${1:?}" '/proc/cpuinfo' | grep -i -F -e "serial" | cut -d ':' -f '2-' -s | trim_space_on_sides)" && is_valid_serial "${_val?}"; then
+  if _val="$(device_get_file_content "${1:?}" '/proc/cpuinfo' | grep -i -F -e "serial" | cut -d ':' -f '2-' -s | trim_space_on_sides)" && is_valid_serial "${_val?}"; then
     :
   else
     show_warn 'CPU serial number not found'
@@ -1193,10 +1193,10 @@ extract_all_info()
   validate_and_display_info 'Hardware version' "${HARDWARE_VERSION?}"
   validate_and_display_info 'Product code' "${PRODUCT_CODE?}"
 
-  CSC_REGION_CODE="$(get_device_file_content "${SELECTED_DEVICE:?}" '/efs/imei/mps_code.dat')"
+  CSC_REGION_CODE="$(device_get_file_content "${SELECTED_DEVICE:?}" '/efs/imei/mps_code.dat')"
   validate_and_display_info 'CSC region code' "${CSC_REGION_CODE?}" 3
 
-  EFS_SERIALNO="$(get_device_file_content "${SELECTED_DEVICE:?}" '/efs/FactoryApp/serial_no')"
+  EFS_SERIALNO="$(device_get_file_content "${SELECTED_DEVICE:?}" '/efs/FactoryApp/serial_no')"
   validate_and_display_info 'Serial number' "${EFS_SERIALNO?}"
 }
 

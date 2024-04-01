@@ -132,7 +132,7 @@ wait_connection()
 
 is_all_zeros()
 {
-  if test -n "${1?}" && test "$(printf '%s' "${1?}" | LC_ALL=C tr -d '0' || true)" = ''; then
+  if test -n "${1?}" && test "$(printf '%s\n' "${1:?}" | LC_ALL=C tr -d '0' || true)" = ''; then
     return 0 # True
   fi
 
@@ -145,15 +145,6 @@ is_valid_value()
 
   if test -z "${1?}" && test "${2:-0}" != '2'; then return 1; fi
   if test "${1?}" = 'unknown'; then return 1; fi
-
-  return 0 # Valid
-}
-
-is_valid_serial()
-{
-  if test -z "${1?}" || test "${#1}" -lt 2 || is_all_zeros "${1?}" || is_string_nocase_starting_with 'EMULATOR' "${1?}"; then
-    return 1 # NOT valid
-  fi
 
   return 0 # Valid
 }
@@ -172,6 +163,11 @@ uc_first_char()
 {
   printf '%s' "${1?}" | cut -c '1' | LC_ALL=C tr -d '\r\n' | LC_ALL=C tr '[:lower:]' '[:upper:]'
   printf '%s\n' "${1?}" | cut -c '2-'
+}
+
+convert_time_to_human_readable_form()
+{
+  LC_ALL=C date -u -d "@${1:?}" '+%a %b %d %H:%M:%S %Z %Y'
 }
 
 compare_nocase()
@@ -209,6 +205,15 @@ is_string_nocase_starting_with()
   return 1 # NOT found
 }
 
+is_valid_serial()
+{
+  if test "${#1}" -lt 2 || is_all_zeros "${1:?}" || is_string_nocase_starting_with 'EMULATOR' "${1:?}"; then
+    return 1 # NOT valid
+  fi
+
+  return 0 # Valid
+}
+
 device_getprop()
 {
   adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '\r'
@@ -235,6 +240,8 @@ prop_output_parse()
 
 chosen_getprop()
 {
+  local _val
+
   if test "${INPUT_TYPE:?}" = 'adb'; then
     _val="$(device_getprop "${SELECTED_DEVICE:?}" "${@}")" || return 1
   elif test "${PROP_TYPE:?}" = '1'; then
@@ -278,11 +285,6 @@ check_boot_completed()
     pause_if_needed
     exit 1
   }
-}
-
-convert_time_to_human_readable_form()
-{
-  LC_ALL=C date -u -d "@${1:?}" '+%a %b %d %H:%M:%S %Z %Y'
 }
 
 get_and_check_prop()
