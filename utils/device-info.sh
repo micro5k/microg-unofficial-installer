@@ -266,7 +266,7 @@ is_valid_length()
 
 is_valid_serial()
 {
-  if test -z "${1?}" || test "${#1}" -lt 2 || test "${1?}" = 'unknown' || is_all_zeros "${1?}"; then
+  if test -z "${1?}" || test "${#1}" -lt 2 || is_all_zeros "${1?}"; then
     return 1 # NOT valid
   fi
 
@@ -275,8 +275,8 @@ is_valid_serial()
 
 is_valid_imei()
 {
-  # We should also have checked the following invalid values: unknown, null
-  # but they are already excluded from the length check.
+  # We should have also checked the following invalid value: null
+  # but it is already excluded from the length check.
   if test "${#1}" -ne 15 || test "${1:?}" = '000000000000000' || test "${1:?}" = '004999010640000'; then
     return 1 # NOT valid
   fi
@@ -295,7 +295,7 @@ is_valid_line_number()
 
 is_valid_color()
 {
-  if test -z "${1?}" || test "${1:?}" = 'unknown' || compare_nocase "${1:?}" 'Unknown touchpad'; then
+  if test -z "${1?}" || compare_nocase "${1:?}" 'Unknown touchpad'; then
     return 1 # NOT valid
   fi
 
@@ -404,7 +404,7 @@ check_boot_completed()
 
 get_device_file_content()
 {
-  adb -s "${1:?}" shell "test -r '${2:?}' && cat '${2:?}'"
+  adb -s "${1:?}" shell "test -r '${2:?}' && cat '${2:?}'" | LC_ALL=C tr -d '\r'
 }
 
 find_serialno()
@@ -525,6 +525,18 @@ adb_shell()
   adb -s "${_device:?}" shell "${*}" | LC_ALL=C tr -d '\r'
 }
 
+device_get_devpath()
+{
+  local _val
+
+  if _val="$(adb -s "${1:?}" 'get-devpath' | LC_ALL=C tr -d '\r')" && test "${_val?}" != 'unknown'; then
+    printf '%s\n' "${_val?}"
+    return 0
+  fi
+
+  return 1
+}
+
 apply_phonesubinfo_deviation()
 {
   local _method_code
@@ -574,7 +586,7 @@ display_info_or_warn()
   local _is_valid
   _is_valid="${3:?}" # It is a return value, so 0 is true
 
-  if test -z "${2?}" || test "${2:?}" = 'unknown'; then
+  if test -z "${2?}"; then
     show_warn "${1?} not found"
     return 1
   fi
@@ -1069,7 +1081,7 @@ extract_all_info()
   ANDROID_VERSION="$(validated_chosen_getprop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
   KERNEL_VERSION="$(get_kernel_version "${SELECTED_DEVICE:?}")" && display_info 'Kernel version' "${KERNEL_VERSION?}"
   {
-    DEVICE_PATH="$(adb -s "${SELECTED_DEVICE:?}" 'get-devpath')"
+    DEVICE_PATH="$(device_get_devpath "${SELECTED_DEVICE:?}")"
     display_info_or_warn 'Device path' "${DEVICE_PATH?}" "${?}"
   }
   get_device_color

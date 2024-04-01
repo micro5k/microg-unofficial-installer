@@ -151,7 +151,7 @@ is_valid_value()
 
 is_valid_serial()
 {
-  if test -z "${1?}" || test "${#1}" -lt 2 || test "${1?}" = 'unknown' || is_all_zeros "${1?}" || is_string_nocase_starting_with 'EMULATOR' "${1?}"; then
+  if test -z "${1?}" || test "${#1}" -lt 2 || is_all_zeros "${1?}" || is_string_nocase_starting_with 'EMULATOR' "${1?}"; then
     return 1 # NOT valid
   fi
 
