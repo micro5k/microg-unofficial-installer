@@ -211,7 +211,7 @@ is_string_nocase_starting_with()
 
 device_getprop()
 {
-  adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '[:cntrl:]'
+  adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '\r'
 }
 
 getprop_output_parse()
@@ -236,12 +236,19 @@ prop_output_parse()
 chosen_getprop()
 {
   if test "${INPUT_TYPE:?}" = 'adb'; then
-    device_getprop "${SELECTED_DEVICE:?}" "${@}"
+    _val="$(device_getprop "${SELECTED_DEVICE:?}" "${@}")" || return 1
   elif test "${PROP_TYPE:?}" = '1'; then
-    getprop_output_parse "${INPUT_TYPE:?}" "${@}"
+    _val="$(getprop_output_parse "${INPUT_TYPE:?}" "${@}")" || return 1
   else
-    prop_output_parse "${INPUT_TYPE:?}" "${@}"
+    _val="$(prop_output_parse "${INPUT_TYPE:?}" "${@}")" || return 1
   fi
+
+  if test -z "${_val?}" || test "${_val:?}" = 'unknown'; then
+    return 2
+  fi
+
+  printf '%s\n' "${_val:?}"
+  return 0
 }
 
 validated_chosen_getprop()

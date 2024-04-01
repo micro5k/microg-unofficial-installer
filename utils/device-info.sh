@@ -355,12 +355,21 @@ convert_dec_to_hex()
 
 device_getprop()
 {
-  adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '[:cntrl:]'
+  adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '\r'
 }
 
 chosen_getprop()
 {
-  device_getprop "${SELECTED_DEVICE:?}" "${@}"
+  local _val
+
+  _val="$(device_getprop "${SELECTED_DEVICE:?}" "${@}")" || return 1
+
+  if test -z "${_val?}" || test "${_val:?}" = 'unknown'; then
+    return 2
+  fi
+
+  printf '%s\n' "${_val:?}"
+  return 0
 }
 
 validated_chosen_getprop()
