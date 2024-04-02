@@ -21,7 +21,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='2.2'
+readonly SCRIPT_VERSION='2.3'
 
 # shellcheck disable=SC2034
 {
@@ -211,6 +211,15 @@ wait_connection()
   fi
 }
 
+is_timeout()
+{
+  if test "${1:?}" -eq 124 || test "${1:?}" -eq 143; then
+    return 0 # Timed out
+  fi
+
+  return 1 # OK
+}
+
 adb_unfroze()
 {
   if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
@@ -226,15 +235,15 @@ adb_root()
   if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '[:cntrl:]' || true)" = 'root'; then return; fi # Already rooted
 
   timeout -- 6 adb -s "${1:?}" root 1> /dev/null
-  if test "${?}" -ne 0; then
-    adb_unfroze "${1:?}" # Timed out
+  if is_timeout "${?}"; then
+    adb_unfroze "${1:?}"
   else
     wait_connection "${1:?}"
   fi
 
   # Dummy command to check if adb is frozen
   timeout -- 6 adb -s "${1:?}" shell ':'
-  if test "${?}" -ne 0; then adb_unfroze "${1:?}"; fi # Timed out
+  if is_timeout "${?}"; then adb_unfroze "${1:?}"; fi
 }
 
 adb_unroot()
