@@ -1139,12 +1139,12 @@ extract_all_info()
   } && display_info 'Device' "${BUILD_DEVICE?}"
   ANDROID_VERSION="$(validated_chosen_getprop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
   KERNEL_VERSION="$(get_kernel_version "${SELECTED_DEVICE:?}")" && display_info 'Kernel version' "${KERNEL_VERSION?}"
+  get_device_color
+  get_device_back_color
   {
     DEVICE_PATH="$(device_get_devpath "${SELECTED_DEVICE:?}")"
     display_info_or_warn 'Device path' "${DEVICE_PATH?}" "${?}"
   }
-  get_device_color
-  get_device_back_color
 
   show_msg ''
 
