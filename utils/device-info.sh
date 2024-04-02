@@ -21,7 +21,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='2.1'
+readonly SCRIPT_VERSION='2.2'
 
 # shellcheck disable=SC2034
 {
@@ -156,7 +156,7 @@ verify_adb()
   exit 1
 }
 
-verify_dependencies()
+verify_adb_mode_deps()
 {
   verify_adb
 
@@ -169,7 +169,9 @@ verify_dependencies()
 
 start_adb_server()
 {
-  adb 2> /dev/null 'start-server' || true
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 0; fi
+
+  adb 2> /dev/null 'start-server'
 }
 
 detect_status_and_wait_if_needed()
@@ -199,6 +201,8 @@ detect_status_and_wait_if_needed()
 
 wait_connection()
 {
+  if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
+
   show_status_msg 'Waiting for the device...'
   if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
     adb -s "${1:?}" 'wait-for-recovery'
@@ -209,13 +213,16 @@ wait_connection()
 
 adb_unfroze()
 {
+  if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
+
   show_status_error 'adb was frozen, reconnecting...'
-  adb 1> /dev/null -s "${1:?}" reconnect # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
+  adb 1> /dev/null -s "${1:?}" reconnect || true # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
   wait_connection "${1:?}"
 }
 
 adb_root()
 {
+  if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
   if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '[:cntrl:]' || true)" = 'root'; then return; fi # Already rooted
 
   timeout -- 6 adb -s "${1:?}" root 1> /dev/null
@@ -232,6 +239,8 @@ adb_root()
 
 adb_unroot()
 {
+  if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
+
   adb 1> /dev/null -s "${1:?}" unroot &
   adb 1> /dev/null -s "${1:?}" reconnect # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
 }
@@ -358,11 +367,36 @@ device_getprop()
   adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '\r'
 }
 
+getprop_output_parse()
+{
+  local _value
+
+  # Return success even if the property isn't found, it will be checked later
+  _value="$(grep -m 1 -e "^\[${2:?}\]\:" "${1:?}" | LC_ALL=C tr -d '[:cntrl:]' | cut -d ':' -f '2-' -s | grep -m 1 -o -e '^[[:blank:]]\[.*\]$')" || return 0
+  if test "${#_value}" -gt 3; then
+    printf '%s' "${_value?}" | cut -c "3-$((${#_value} - 1))"
+  fi
+}
+
+prop_output_parse()
+{
+  local _value
+
+  # Return success even if the property isn't found, it will be checked later
+  grep -m 1 -e "^${2:?}=" "${1:?}" | LC_ALL=C tr -d '[:cntrl:]' | cut -d '=' -f '2-' -s || return 0
+}
+
 auto_getprop()
 {
   local _val
 
-  _val="$(device_getprop "${SELECTED_DEVICE:?}" "${@}")" || return 1
+  if test "${INPUT_TYPE:?}" = 'adb'; then
+    _val="$(device_getprop "${SELECTED_DEVICE:?}" "${@}")" || return 1
+  elif test "${PROP_TYPE:?}" = '1'; then
+    _val="$(getprop_output_parse "${INPUT_SELECTION:?}" "${@}")" || return 1
+  else
+    _val="$(prop_output_parse "${INPUT_SELECTION:?}" "${@}")" || return 1
+  fi
 
   if test -z "${_val?}" || test "${_val:?}" = 'unknown'; then
     return 2
@@ -385,7 +419,7 @@ validated_chosen_getprop()
 
 is_boot_completed()
 {
-  if test "${DEVICE_IN_RECOVERY:?}" = 'true' || test "$(auto_getprop 'sys.boot_completed' || true)" = '1'; then
+  if test "$(auto_getprop 'sys.boot_completed' || true)" = '1'; then
     return 0
   fi
 
@@ -394,16 +428,24 @@ is_boot_completed()
 
 check_boot_completed()
 {
-  is_boot_completed || {
-    show_status_warn 'Device has not finished booting yet, skipped!!!'
-    return 1
-  }
+  if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_IN_RECOVERY:?}" != 'true'; then
+    is_boot_completed || {
+      show_status_error 'Device has not finished booting yet, skipped!'
+      return 1
+    }
+  elif test "${INPUT_TYPE:?}" = 'file' && test "${PROP_TYPE:?}" = 1; then
+    is_boot_completed || {
+      show_status_error 'Getprop comes from a device that has not finished booting yet, skipped!'
+      return 1
+    }
+  fi
 
   return 0
 }
 
 device_get_file_content()
 {
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
   adb -s "${1:?}" shell "test -r '${2:?}' && cat '${2:?}'" | LC_ALL=C tr -d '\r'
 }
 
@@ -452,12 +494,14 @@ find_cpu_serialno()
 get_android_id()
 {
   local _val
-  _val="$(adb -s "${1:?}" shell 'settings get secure android_id 2> /dev/null' | LC_ALL=C tr -d '[:cntrl:]')" && test -n "${_val?}" && printf '%016x' "0x${_val:?}"
+  _val="$(device_shell "${1:?}" 'settings 2> /dev/null get secure android_id')" && test -n "${_val?}" && printf '%016x' "0x${_val:?}"
 }
 
 get_gsf_id()
 {
   local _val _my_command
+
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
 
   # We want this without expansion, since it will happens later inside adb shell
   # shellcheck disable=SC2016
@@ -477,6 +521,8 @@ get_gsf_id()
 get_advertising_id()
 {
   local adid
+
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
 
   adid="$(adb -s "${1:?}" shell 'cat "/data/data/com.google.android.gms/shared_prefs/adid_settings.xml" 2> /dev/null')" || adid=''
   test "${adid?}" != '' || return 1
@@ -519,6 +565,8 @@ get_device_back_color()
 device_shell()
 {
   local _device
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+
   _device="${1:?}"
   shift
 
@@ -528,6 +576,7 @@ device_shell()
 device_get_devpath()
 {
   local _val
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
 
   if _val="$(adb -s "${1:?}" 'get-devpath' | LC_ALL=C tr -d '\r')" && test "${_val?}" != 'unknown'; then
     printf '%s\n' "${_val?}"
@@ -556,14 +605,16 @@ apply_phonesubinfo_deviation()
 call_phonesubinfo()
 {
   local _device _method_code
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+
   _device="${1:?}"
   _method_code="$(apply_phonesubinfo_deviation "${2:?}")"
   shift 2
 
-  if test "${#}" -eq 0; then set ''; fi # Avoid issues on Bash under Mac
-
   # https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl
   # https://android.googlesource.com/platform/frameworks/opt/telephony/+/master/src/java/com/android/internal/telephony/PhoneSubInfoController.java
+
+  if test "${#}" -eq 0; then set ''; fi # Avoid issues on Bash under Mac
   adb -s "${_device:?}" shell "service call iphonesubinfo ${_method_code:?} ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
 }
 
@@ -682,6 +733,7 @@ open_device_status_info()
 get_kernel_version()
 {
   local _val
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
 
   if _val="$(adb -s "${1:?}" shell 'if command 1> /dev/null -v "uname"; then uname -r; elif test -r "/proc/version"; then cat "/proc/version"; fi' | LC_ALL=C tr -d '\r')"; then
     case "${_val?}" in
@@ -702,6 +754,8 @@ get_imei_via_MMI_code()
 {
   local _device
   _device="${1:?}"
+
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
 
   adb 1> /dev/null 2>&1 -s "${_device:?}" shell '
     svc power stayon true
@@ -797,7 +851,7 @@ get_imei()
   _val=''
   _imei_sv=''
 
-  if _val="$(adb -s "${1:?}" shell 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && is_valid_imei "${_val?}"; then
+  if _val="$(device_shell "${1:?}" 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && is_valid_imei "${_val?}"; then
     : # Presumably Android 1.0-4.4W (but it doesn't work on all devices)
   elif _val="$(call_phonesubinfo "${1:?}" 1 s16 'com.android.shell')" && is_valid_imei "${_val?}"; then
     : # Android 1.0-14 => Function: String getDeviceId(String callingPackage)
@@ -972,9 +1026,11 @@ get_data_folder()
 parse_nv_data()
 {
   local _path
-
   HARDWARE_VERSION=''
   PRODUCT_CODE=''
+
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+
   _path="$(get_data_folder)" || return 1
   rm -f "${_path:?}/nv_data.bin" || return 1
 
@@ -1046,16 +1102,10 @@ get_operator_info()
 extract_all_info()
 {
   SELECTED_DEVICE="${1:?}"
-  show_selected_device "${SELECTED_DEVICE:?}"
-
-  if ! detect_status_and_wait_if_needed "${SELECTED_DEVICE:?}"; then
-    show_status_warn 'Device is offline, skipped!!!'
-    return
-  fi
-
   wait_connection "${SELECTED_DEVICE:?}"
+  if ! check_boot_completed; then return 1; fi
+
   show_status_msg 'Finding info...'
-  if ! check_boot_completed; then return; fi
   show_status_msg ''
 
   BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" || BUILD_VERSION_SDK='999'
@@ -1168,9 +1218,9 @@ extract_all_info()
   adb_root "${SELECTED_DEVICE:?}"
   show_msg ''
 
-  adb -s "${SELECTED_DEVICE:?}" shell "if test -e '/system' && test ! -e '/system/bin/sh'; then mount -t 'auto' -o 'ro' '/system' 2> /dev/null || true; fi"
-  adb -s "${SELECTED_DEVICE:?}" shell "if test -e '/data' && test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
-  adb -s "${SELECTED_DEVICE:?}" shell "if test -e '/efs'; then mount -t 'auto' -o 'ro' '/efs' 2> /dev/null || true; fi"
+  device_shell "${SELECTED_DEVICE:?}" "if test -e '/system' && test ! -e '/system/bin/sh'; then mount -t 'auto' -o 'ro' '/system' 2> /dev/null || true; fi"
+  device_shell "${SELECTED_DEVICE:?}" "if test -e '/data' && test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
+  device_shell "${SELECTED_DEVICE:?}" "if test -e '/efs'; then mount -t 'auto' -o 'ro' '/efs' 2> /dev/null || true; fi"
 
   GSF_ID=''
   GSF_ID_DEC="$(get_gsf_id "${SELECTED_DEVICE:?}")"
@@ -1202,30 +1252,73 @@ extract_all_info()
 
 main()
 {
-  local _device _found
-
   set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
   show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
-  verify_dependencies
-  start_adb_server
-
-  _found=false
-  for _device in $(adb devices | grep -v -i -F -e 'list' | cut -f '1' -s); do
-    if test -z "${_device?}"; then continue; fi
-
-    _found=true
-    show_msg ''
-    extract_all_info "${_device:?}" "${@}"
-  done
-
-  if test "${_found:?}" = 'false'; then
-    show_status_error 'No devices/emulators found'
-    pause_if_needed
-    exit 1
+  if test -z "${1?}" || test "${1:?}" = 'adb'; then
+    INPUT_TYPE='adb'
+    INPUT_SELECTION=''
+    PROP_TYPE=''
+  else
+    INPUT_TYPE='file'
+    INPUT_SELECTION="${1:?}"
   fi
 
-  pause_if_needed
+  if test "${INPUT_TYPE:?}" = 'adb'; then
+
+    verify_adb_mode_deps
+    start_adb_server || {
+      show_status_error 'Failed to start ADB'
+      return 1
+    }
+
+    local _device _found
+
+    _found='false'
+    for _device in $(adb devices | grep -v -i -F -e 'list' | cut -f '1' -s); do
+      if test -z "${_device?}"; then continue; fi
+
+      show_msg ''
+      show_selected_device "${_device:?}"
+
+      if detect_status_and_wait_if_needed "${_device:?}"; then
+        _found='true'
+        extract_all_info "${_device:?}"
+      else
+        show_status_error 'Device is offline, skipped!'
+      fi
+    done
+
+    if test "${_found:?}" = 'false'; then
+      show_status_error 'No devices/emulators found'
+      return 2
+    fi
+
+  else
+
+    test -f "${INPUT_SELECTION:?}" || {
+      show_status_error "Input file doesn't exist => '${INPUT_SELECTION?}'"
+      return 2
+    }
+
+    show_selected_device "${INPUT_SELECTION:?}"
+
+    if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_SELECTION:?}"; then
+      PROP_TYPE='1'
+      show_warn 'Operating in getprop mode, the extracted info will be severely limited!!!'
+
+      extract_all_info "${INPUT_SELECTION:?}"
+    elif grep -m 1 -q -e '^.*\..*=' -- "${INPUT_SELECTION:?}"; then
+      PROP_TYPE='2'
+      show_warn 'Operating in build.prop mode, the extracted info will be severely limited!!!'
+
+      extract_all_info "${INPUT_SELECTION:?}"
+    else
+      show_status_error "Unknown input file => '${INPUT_SELECTION?}'"
+      return 3
+    fi
+
+  fi
 }
 
 if test "${#}" -gt 0; then
@@ -1233,3 +1326,4 @@ if test "${#}" -gt 0; then
 else
   main ''
 fi
+pause_if_needed
