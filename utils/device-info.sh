@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # @name Android device info extractor
-# @brief It can automatically extract device information from a device connected via adb.
+# @brief It can automatically extract device information from all devices connected via adb of from a file.
 # @author ale5000
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils
 
