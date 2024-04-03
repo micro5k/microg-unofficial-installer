@@ -342,6 +342,15 @@ is_valid_serial()
   return 0 # Valid
 }
 
+is_valid_android_id()
+{
+  if test "${#1}" -ne 16 || test "${1:?}" = '9774d56d682e549c'; then
+    return 1 # NOT valid
+  fi
+
+  return 0 # Valid
+}
+
 is_valid_imei()
 {
   # We should have also checked the following invalid value: null
@@ -1154,7 +1163,8 @@ extract_all_info()
   show_msg ''
 
   ANDROID_ID="$(get_android_id "${SELECTED_DEVICE:?}")"
-  validate_and_display_info 'Android ID' "${ANDROID_ID?}" 16
+  is_valid_android_id "${ANDROID_ID?}"
+  display_info_or_warn 'Android ID' "${ANDROID_ID?}" "${?}"
 
   show_msg ''
 
