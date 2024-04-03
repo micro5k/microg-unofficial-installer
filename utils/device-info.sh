@@ -1014,7 +1014,8 @@ get_iccid()
   else
     _val="$(call_phonesubinfo "${1:?}" 4)" || _val=''
   fi
-  validate_and_display_info 'ICCID' "${_val?}" 19 20
+  is_valid_length "${_val?}" 19 20
+  display_phonesubinfo_or_warn 'ICCID (SIM serial number)' "${_val?}" "${?}"
 }
 
 get_data_folder()
