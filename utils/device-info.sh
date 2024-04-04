@@ -204,16 +204,23 @@ parse_device_status()
 
 detect_status_and_wait_if_needed()
 {
-  local _status
+  local _status _first
 
+  _first='true'
   for _ in 1 2 3 4 5; do
     _status="$(LC_ALL=C adb 2>&1 -s "${1:?}" 'get-state' | LC_ALL=C tr -d '\r' || true)"
     parse_device_status "${_status?}"
     if test "${?}" -ne 1; then break; fi # Wait only for transitory status
 
-    show_status_msg 'Device is not ready, waiting...'
+    if test "${_first:?}" = 'true'; then
+      _first='false'
+      printf 1>&2 '\033[1;32m%s\033[0m' 'Device is not ready, waiting...'
+    else
+      printf 1>&2 '\033[1;32m%s\033[0m' '.'
+    fi
     sleep 1
   done
+  test "${_first:?}" = 'true' || printf 1>&2 '\n'
 
   parse_device_status "${_status?}"
   if test "${?}" -ge 1; then
