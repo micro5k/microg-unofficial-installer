@@ -177,13 +177,13 @@ start_adb_server()
 parse_device_status()
 {
   case "${1?}" in
-    'device' | 'recovery') return 0 ;; # OK
-    *'offline'*) return 1 ;;           # Offline, may return after some time
-    *'unauthorized'*) return 2 ;;      # Unauthorized
-    *'no permissions'*) return 3 ;;    #
-    *'not found'*) return 3 ;;         # Disconnected (unrecoverable)
-    *'no device'*) return 3 ;;         # No devices/emulators (unrecoverable)
-    *) ;;                              # Unknown, ignored
+    'device' | 'recovery') return 0 ;;                      # OK
+    'connecting' | 'authorizing' | *'offline'*) return 1 ;; # Connecting (transitory) / Authorizing (transitory) / Offline (may be transitory)
+    *'unauthorized'*) return 2 ;;                           # Unauthorized
+    *'no permissions'*) return 3 ;;                         #
+    *'not found'*) return 3 ;;                              # Disconnected (unrecoverable)
+    *'no device'*) return 3 ;;                              # No devices/emulators (unrecoverable)
+    *) ;;                                                   # Others / Unknown => ignored
   esac
   return 0
 
@@ -192,6 +192,7 @@ parse_device_status()
   # - recovery
   # - unauthorized
   # - offline
+  # - unknown
   # - no device
   # - error: device unauthorized.
   # - error: device offline
@@ -206,7 +207,7 @@ detect_status_and_wait_if_needed()
   for _ in 1 2 3 4 5; do
     _status="$(LC_ALL=C adb 2>&1 -s "${1:?}" 'get-state' | LC_ALL=C tr -d '\r' || true)"
     parse_device_status "${_status?}"
-    if test "${?}" -ne 1; then break; fi # Wait only for the offline status
+    if test "${?}" -ne 1; then break; fi # Wait only for transitory status
 
     show_status_msg 'Device is not ready, waiting...'
     sleep 1
