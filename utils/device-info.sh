@@ -174,19 +174,44 @@ start_adb_server()
   adb 2> /dev/null 'start-server'
 }
 
+parse_device_status()
+{
+  case "${1?}" in
+    'device' | 'recovery') return 0 ;; # OK
+    *'offline'*) return 1 ;;           # Offline, may return after some time
+    *'unauthorized'*) return 2 ;;      # Unauthorized
+    *'not found'*) return 3 ;;         # Disconnected
+    *'no devices'*) return 3 ;;        # No devices/emulators
+    *) ;;                              # Unknown, ignored
+  esac
+  return 0
+
+  # Possible status:
+  # - device
+  # - recovery
+  # - unauthorized
+  # - offline
+  # - error: device unauthorized.
+  # - error: device offline
+  # - error: device 'xxx' not found
+  # - error: no devices/emulators found
+}
+
 detect_status_and_wait_if_needed()
 {
   local _status
 
   for _ in 1 2 3 4 5; do
-    _status="$(LC_ALL=C adb 2>&1 -s "${1:?}" 'get-state' || true)"
-    if ! contains 'offline' "${_status?}"; then break; fi
+    _status="$(LC_ALL=C adb 2>&1 -s "${1:?}" 'get-state' | LC_ALL=C tr -d '\r' || true)"
+    parse_device_status "${_status?}"
+    if test "${?}" -ne 1; then break; fi # Wait only for the offline status
 
-    show_status_msg 'Device seems to be offline, waiting...'
+    show_status_msg 'Device is not ready, waiting...'
     sleep 1
   done
 
-  if contains 'offline' "${_status?}" || contains 'not found' "${_status?}"; then
+  parse_device_status "${_status?}"
+  if test "${?}" -ge 1; then
     return 1
   fi
 
