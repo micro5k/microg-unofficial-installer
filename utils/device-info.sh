@@ -177,13 +177,13 @@ start_adb_server()
 parse_device_status()
 {
   case "${1?}" in
-    'device' | 'recovery') return 0 ;;                      # OK
-    'connecting' | 'authorizing' | *'offline'*) return 1 ;; # Connecting (transitory) / Authorizing (transitory) / Offline (may be transitory)
-    *'unauthorized'*) return 2 ;;                           # Unauthorized
-    *'no permissions'*) return 3 ;;                         #
-    *'not found'*) return 3 ;;                              # Disconnected (unrecoverable)
-    *'no device'*) return 3 ;;                              # No devices/emulators (unrecoverable)
-    *) ;;                                                   # Others / Unknown => ignored
+    'device' | 'recovery') return 0 ;;                          # OK
+    *'connecting'* | *'authorizing'* | *'offline'*) return 1 ;; # Connecting (transitory) / Authorizing (transitory) / Offline (may be transitory)
+    *'unauthorized'*) return 2 ;;                               # Unauthorized
+    *'no permissions'*) return 3 ;;                             #
+    *'not found'*) return 3 ;;                                  # Disconnected (unrecoverable)
+    *'no device'*) return 3 ;;                                  # No devices/emulators (unrecoverable)
+    *) ;;                                                       # Others / Unknown => ignored
   esac
   return 0
 
@@ -191,10 +191,12 @@ parse_device_status()
   # - device
   # - recovery
   # - unauthorized
+  # - authorizing
   # - offline
-  # - unknown
   # - no device
+  # - unknown
   # - error: device unauthorized.
+  # - error: device still authorizing
   # - error: device offline
   # - error: device 'xxx' not found
   # - error: no devices/emulators found
