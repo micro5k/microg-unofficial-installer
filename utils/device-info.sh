@@ -180,8 +180,9 @@ parse_device_status()
     'device' | 'recovery') return 0 ;; # OK
     *'offline'*) return 1 ;;           # Offline, may return after some time
     *'unauthorized'*) return 2 ;;      # Unauthorized
-    *'not found'*) return 3 ;;         # Disconnected
-    *'no device'*) return 3 ;;        # No devices/emulators
+    *'no permissions'*) return 3 ;;    #
+    *'not found'*) return 3 ;;         # Disconnected (unrecoverable)
+    *'no device'*) return 3 ;;         # No devices/emulators (unrecoverable)
     *) ;;                              # Unknown, ignored
   esac
   return 0
