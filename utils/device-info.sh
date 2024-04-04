@@ -412,21 +412,19 @@ device_getprop()
 
 getprop_output_parse()
 {
-  local _value
+  local _val
 
-  # Return success even if the property isn't found, it will be checked later
-  _value="$(grep -m 1 -e "^\[${2:?}\]\:" "${1:?}" | LC_ALL=C tr -d '[:cntrl:]' | cut -d ':' -f '2-' -s | grep -m 1 -o -e '^[[:blank:]]\[.*\]$')" || return 0
-  if test "${#_value}" -gt 3; then
-    printf '%s' "${_value?}" | cut -c "3-$((${#_value} - 1))"
+  if _val="$(grep -m 1 -e "^\[${2:?}\]\:" -- "${1:?}" | LC_ALL=C tr -d '\r' | cut -d ':' -f '2-' -s | grep -m 1 -o -e '^[[:blank:]]\[.*\]$')" && test "${#_val}" -gt 3; then
+    printf '%s\n' "${_val?}" | cut -c "3-$((${#_val} - 1))"
+    return "${?}"
   fi
+
+  return 1
 }
 
 prop_output_parse()
 {
-  local _value
-
-  # Return success even if the property isn't found, it will be checked later
-  grep -m 1 -e "^${2:?}=" "${1:?}" | LC_ALL=C tr -d '[:cntrl:]' | cut -d '=' -f '2-' -s || return 0
+  grep -m 1 -e "^${2:?}=" -- "${1:?}" | LC_ALL=C tr -d '\r' | cut -d '=' -f '2-' -s
 }
 
 auto_getprop()
