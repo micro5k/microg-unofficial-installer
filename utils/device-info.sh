@@ -208,13 +208,25 @@ parse_device_status()
 
 detect_status_and_wait_if_needed()
 {
-  local _status _first
+  local _status _reconnected _first
 
+  _reconnected='false'
   _first='true'
-  for _ in 1 2 3 4 5; do
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
     _status="$(LC_ALL=C adb 2>&1 -s "${1:?}" 'get-state' | LC_ALL=C tr -d '\r' || true)"
     parse_device_status "${_status?}"
-    if test "${?}" -ne 1; then break; fi # Wait only for transitory status
+    case "${?}" in
+      1) ;; # Wait 5 seconds maximum for transitory states
+      2)
+        if test "${_reconnected:?}" = 'false'; then
+          _reconnected='true'
+          _first='false'
+          printf 1>&2 '\033[1;32m%s\033[0m' 'Device is not ready, waiting...'
+          adb 1> /dev/null 2>&1 -s "${1:?}" reconnect offline && sleep 3 # If the device is unauthorized, reconnect to request authorization and then wait
+        fi
+        ;;
+      *) break ;;
+    esac
 
     if test "${_first:?}" = 'true'; then
       _first='false'
@@ -222,12 +234,13 @@ detect_status_and_wait_if_needed()
     else
       printf 1>&2 '\033[1;32m%s\033[0m' '.'
     fi
-    sleep 1
+
+    sleep 0.5
   done
   test "${_first:?}" = 'true' || printf 1>&2 '\n'
 
   parse_device_status "${_status?}"
-  if test "${?}" -ge 1; then
+  if test "${?}" -ne 0; then
     return 1
   fi
 
@@ -485,7 +498,7 @@ is_boot_completed()
   return 1
 }
 
-check_boot_completed()
+ensure_boot_completed()
 {
   if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_IN_RECOVERY:?}" != 'true'; then
     is_boot_completed || {
@@ -1166,7 +1179,7 @@ extract_all_info()
     show_status_error 'Waiting failed, skipped!'
     return 1
   }
-  if ! check_boot_completed; then return 2; fi
+  if ! ensure_boot_completed; then return 2; fi
 
   show_status_msg 'Finding info...'
   show_status_msg ''
@@ -1344,12 +1357,13 @@ main()
 
       show_msg ''
       show_selected_device "${_device:?}"
+      _found='true'
 
       if detect_status_and_wait_if_needed "${_device:?}"; then
-        _found='true'
+
         extract_all_info "${_device:?}"
       else
-        show_status_error 'Device is offline, skipped!'
+        show_status_error 'Device is offline/unauthorized, skipped!'
       fi
     done
 
