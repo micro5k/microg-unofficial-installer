@@ -183,6 +183,8 @@ parse_device_status()
     *'no permissions'*) return 3 ;;                             #
     *'not found'*) return 3 ;;                                  # Disconnected (unrecoverable)
     *'no device'*) return 3 ;;                                  # No devices/emulators (unrecoverable)
+    *'closed'*) return 3 ;;                                     # ADB connection forcibly terminated on device side
+    *'protocol fault'*) return 3 ;;                             # ADB connection forcibly terminated on server side
     *) ;;                                                       # Others / Unknown => ignored
   esac
   return 0
@@ -200,6 +202,8 @@ parse_device_status()
   # - error: device offline
   # - error: device 'xxx' not found
   # - error: no devices/emulators found
+  # - error: closed
+  # - error: protocol fault (couldn't read status): connection reset
 }
 
 detect_status_and_wait_if_needed()
@@ -242,10 +246,12 @@ wait_connection()
 
   show_status_msg 'Waiting for the device...'
   if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
-    adb -s "${1:?}" 'wait-for-recovery'
+    adb 2> /dev/null -s "${1:?}" 'wait-for-recovery'
   else
-    adb -s "${1:?}" 'wait-for-device'
+    adb 2> /dev/null -s "${1:?}" 'wait-for-device'
   fi
+
+  return "${?}"
 }
 
 is_timeout()
@@ -1156,8 +1162,11 @@ get_operator_info()
 extract_all_info()
 {
   SELECTED_DEVICE="${1:?}"
-  wait_connection "${SELECTED_DEVICE:?}"
-  if ! check_boot_completed; then return 1; fi
+  wait_connection "${SELECTED_DEVICE:?}" || {
+    show_status_error 'Waiting failed, skipped!'
+    return 1
+  }
+  if ! check_boot_completed; then return 2; fi
 
   show_status_msg 'Finding info...'
   show_status_msg ''
