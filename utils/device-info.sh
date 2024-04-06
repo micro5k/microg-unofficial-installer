@@ -1166,7 +1166,7 @@ get_slot_info()
   SLOT_COUNT="${_i:?}"
 }
 
-get_prop_helper_multi_slot()
+parse_prop_helper_multi_slot()
 {
   if test "${1:?}" -eq 1; then
     printf '%s\n' "${2?}" | cut -d ',' -f '1'
@@ -1177,15 +1177,14 @@ get_prop_helper_multi_slot()
 
 get_operator_alpha_multi_slot()
 {
-  local _val _slot _slot_index
+  local _val _slot
   _slot="${1:?}"
-  _slot_index="$((_slot - 1))" # Slot index start from 0
 
-  if _val="$(get_prop_helper_multi_slot "${_slot:?}" "${DATA_RAW_OPERATOR1?}")" && test -n "${_val?}"; then
+  if _val="$(parse_prop_helper_multi_slot "${_slot:?}" "${DATA_RAW_OPERATOR1?}")" && test -n "${_val?}"; then
     :
-  elif _val="$(get_prop_helper_multi_slot "${_slot:?}" "${DATA_RAW_OPERATOR2?}")" && test -n "${_val?}"; then
+  elif _val="$(parse_prop_helper_multi_slot "${_slot:?}" "${DATA_RAW_OPERATOR2?}")" && test -n "${_val?}"; then
     :
-  elif _val="$(get_prop_helper_multi_slot "${_slot:?}" "${DATA_RAW_OPERATOR3?}")" && test -n "${_val?}"; then
+  elif _val="$(parse_prop_helper_multi_slot "${_slot:?}" "${DATA_RAW_OPERATOR3?}")" && test -n "${_val?}"; then
     :
   else
     return 1
@@ -1265,6 +1264,7 @@ extract_all_info()
   DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.alpha')" || DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.orig.alpha')"
   DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.alpha')" || DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.orig.alpha')"
   DATA_RAW_OPERATOR3="$(auto_getprop 'gsm.sim.operator.spn')"
+  # ToDO: Check 'gsm.operator.alpha.vsim'
 
   show_msg ''
 
