@@ -307,7 +307,7 @@ adb_root()
   if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
   if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '[:cntrl:]' || true)" = 'root'; then return; fi # Already rooted
 
-  timeout -- 6 adb -s "${1:?}" root 1> /dev/null
+  timeout 1> /dev/null 2>&1 -- 6 adb -s "${1:?}" root
   if is_timeout "${?}"; then
     adb_unfroze "${1:?}"
   else
@@ -508,7 +508,7 @@ validated_chosen_getprop()
 
 is_boot_completed()
 {
-  if test "$(auto_getprop 'sys.boot_completed' || true)" = '1'; then
+  if test "$(auto_getprop 2> /dev/null 'sys.boot_completed' || true)" = '1'; then
     return 0
   fi
 
