@@ -1166,27 +1166,17 @@ get_slot_info()
   SLOT_COUNT="${_i:?}"
 }
 
-get_operator_info()
+get_operator_alpha_multi_slot()
 {
-  local IFS _operators _operator _i
-  SLOT1_OPERATOR=''
-  SLOT2_OPERATOR=''
-  SLOT3_OPERATOR=''
-  SLOT4_OPERATOR=''
-  _operators="$(auto_getprop 'gsm.sim.operator.alpha')" || _operators=''
+  local _slot _slot_index
+  _slot="${1:?}"
+  _slot_index="$((_slot - 1))" # Slot index start from 0
 
-  IFS=','
-  _i=0
-  for _operator in ${_operators?}; do
-    _i="$((_i + 1))"
-    case "${_i:?}" in
-      1) SLOT1_OPERATOR="${_operator?}" ;;
-      2) SLOT2_OPERATOR="${_operator?}" ;;
-      3) SLOT3_OPERATOR="${_operator?}" ;;
-      4) SLOT4_OPERATOR="${_operator?}" ;;
-      *) break ;;
-    esac
-  done
+  if test "${_slot:?}" -eq 1; then
+    printf '%s\n' "${DATA_OPERATOR_NAME_MULTI_SLOT?}" | cut -d ',' -f "${_slot:?}"
+  else
+    printf '%s\n' "${DATA_OPERATOR_NAME_MULTI_SLOT?}" | cut -d ',' -f "${_slot:?}" -s
+  fi
 }
 
 extract_all_info()
@@ -1255,35 +1245,30 @@ extract_all_info()
 
   # https://android.googlesource.com/platform/frameworks/base/+/HEAD/telephony/java/com/android/internal/telephony/TelephonyProperties.java
   get_slot_info
+
   display_info 'Slot count' "${SLOT_COUNT?}"
+  DATA_OPERATOR_NAME_MULTI_SLOT="$(auto_getprop 'gsm.sim.operator.alpha')" || DATA_OPERATOR_NAME_MULTI_SLOT="$(auto_getprop 'gsm.operator.alpha')"
 
   show_msg ''
 
-  get_operator_info
-
-  local i slot_state
+  local i slot_state operator_current_slot
   for i in $(seq "${SLOT_COUNT:?}"); do
     show_msg "SLOT ${i:?}"
     case "${i:?}" in
       1)
         slot_state="${SLOT1_STATE?}"
-        slot_operator="${SLOT1_OPERATOR?}"
         ;;
       2)
         slot_state="${SLOT2_STATE?}"
-        slot_operator="${SLOT2_OPERATOR?}"
         ;;
       3)
         slot_state="${SLOT3_STATE?}"
-        slot_operator="${SLOT3_OPERATOR?}"
         ;;
       4)
         slot_state="${SLOT4_STATE?}"
-        slot_operator="${SLOT4_OPERATOR?}"
         ;;
       *)
         slot_state=''
-        slot_operator=''
         ;;
     esac
 
@@ -1293,7 +1278,10 @@ extract_all_info()
     # UNKNOWN, ABSENT, PIN_REQUIRED, PUK_REQUIRED, NETWORK_LOCKED, READY, NOT_READY, PERM_DISABLED, CARD_IO_ERROR, CARD_RESTRICTED, LOADED
 
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
-    display_info_or_warn "Operator" "${slot_operator?}" 0
+
+    operator_current_slot="$(get_operator_alpha_multi_slot "${i:?}")"
+    display_info_or_warn "Operator" "${operator_current_slot?}" "${?}"
+
     if ! compare_nocase "${slot_state?}" 'ABSENT'; then
       get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
     fi
