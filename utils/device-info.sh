@@ -122,7 +122,28 @@ show_error()
 
 set_title()
 {
-  if test "${CI:-false}" = 'false' && test -t 2; then printf 1>&2 '\033]0;%s\007\r' "${1:?}" && printf 1>&2 '       %*s    \r' "${#1}" ''; fi
+  if test "${CI:-false}" != 'false'; then return 1; fi
+
+  if test -t 1; then
+    printf '\033[22;0t\r' && printf '       \r'                         # Save current title on stack
+    printf '\033]0;%s\007\r' "${1:?}" && printf '    %*s \r' "${#1}" '' # Set new title
+  elif test -t 2; then
+    printf 1>&2 '\033[22;0t\r' && printf 1>&2 '       \r'                         # Save current title on stack
+    printf 1>&2 '\033]0;%s\007\r' "${1:?}" && printf 1>&2 '    %*s \r' "${#1}" '' # Set new title
+  fi
+}
+
+restore_title()
+{
+  if test "${CI:-false}" != 'false'; then return 1; fi
+
+  if test -t 1; then
+    printf '\033]0;\007\r' && printf '     \r'  # Set empty title (in case saving/restoring title doesn't work)
+    printf '\033[23;0t\r' && printf '       \r' # Restore title from stack
+  elif test -t 2; then
+    printf 1>&2 '\033]0;\007\r' && printf 1>&2 '     \r'  # Set empty title (in case saving/restoring title doesn't work)
+    printf 1>&2 '\033[23;0t\r' && printf 1>&2 '       \r' # Restore title from stack
+  fi
 }
 
 show_script_name()
@@ -1378,8 +1399,6 @@ main()
   }
 
   set_utf8_codepage
-
-  set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
   show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
   DEVICE_STATE='none'
@@ -1452,9 +1471,11 @@ main()
   restore_codepage
 }
 
+set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 if test "${#}" -gt 0; then
   main "${@}"
 else
   main ''
 fi
 pause_if_needed
+restore_title
