@@ -280,8 +280,8 @@ detect_status_and_wait_if_needed()
   fi
 
   case "${_status?}" in
-    'recovery') DEVICE_IN_RECOVERY="${_status:?}" ;;
-    *) DEVICE_IN_RECOVERY='device' ;;
+    'recovery') DEVICE_STATE="${_status:?}" ;;
+    *) DEVICE_STATE='device' ;;
   esac
 
   return 0
@@ -292,7 +292,7 @@ wait_connection()
   if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
 
   show_status_msg 'Waiting for the device...'
-  adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_IN_RECOVERY:?}"
+  adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE:?}"
 
   return "${?}"
 }
@@ -530,7 +530,7 @@ is_boot_completed()
 
 ensure_boot_completed()
 {
-  if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_IN_RECOVERY:?}" = 'device'; then
+  if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_STATE:?}" = 'device'; then
     is_boot_completed || {
       show_status_error 'Device has not finished booting yet, skipped!'
       return 1
@@ -1382,6 +1382,8 @@ main()
   set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
   show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
+  DEVICE_STATE='none'
+
   if test -z "${1?}" || test "${1:?}" = 'adb'; then
     INPUT_TYPE='adb'
     INPUT_SELECTION=''
@@ -1410,7 +1412,6 @@ main()
       _found='true'
 
       if detect_status_and_wait_if_needed "${_device:?}"; then
-
         extract_all_info "${_device:?}"
       else
         show_status_error 'Device is offline/unauthorized, skipped!'
