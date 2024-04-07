@@ -223,6 +223,7 @@ parse_device_status()
     *'no device'*) return 4 ;;                                  # No devices/emulators (unrecoverable)
     *'closed'*) return 4 ;;                                     # ADB connection forcibly terminated on device side
     *'protocol fault'*) return 4 ;;                             # ADB connection forcibly terminated on server side
+    'sideload') return 5 ;;                                     # Sideload (not supported)
     *) ;;                                                       # Others / Unknown => ignored
   esac
   return 0
@@ -278,11 +279,10 @@ detect_status_and_wait_if_needed()
     return 1
   fi
 
-  if test "${_status?}" = 'recovery'; then
-    DEVICE_IN_RECOVERY='true'
-  else
-    DEVICE_IN_RECOVERY='false'
-  fi
+  case "${_status?}" in
+    'recovery') DEVICE_IN_RECOVERY="${_status:?}" ;;
+    *) DEVICE_IN_RECOVERY='device' ;;
+  esac
 
   return 0
 }
@@ -292,11 +292,7 @@ wait_connection()
   if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
 
   show_status_msg 'Waiting for the device...'
-  if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
-    adb 2> /dev/null -s "${1:?}" 'wait-for-recovery'
-  else
-    adb 2> /dev/null -s "${1:?}" 'wait-for-device'
-  fi
+  adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_IN_RECOVERY:?}"
 
   return "${?}"
 }
@@ -534,7 +530,7 @@ is_boot_completed()
 
 ensure_boot_completed()
 {
-  if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_IN_RECOVERY:?}" != 'true'; then
+  if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_IN_RECOVERY:?}" = 'device'; then
     is_boot_completed || {
       show_status_error 'Device has not finished booting yet, skipped!'
       return 1
