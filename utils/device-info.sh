@@ -218,11 +218,11 @@ parse_device_status()
     'device' | 'recovery') return 0 ;;                          # OK
     *'connecting'* | *'authorizing'* | *'offline'*) return 1 ;; # Connecting (transitory) / Authorizing (transitory) / Offline (may be transitory)
     *'unauthorized'*) return 2 ;;                               # Unauthorized
-    *'no permissions'*) return 3 ;;                             #
     *'not found'*) return 3 ;;                                  # Disconnected (unrecoverable)
-    *'no device'*) return 3 ;;                                  # No devices/emulators (unrecoverable)
-    *'closed'*) return 3 ;;                                     # ADB connection forcibly terminated on device side
-    *'protocol fault'*) return 3 ;;                             # ADB connection forcibly terminated on server side
+    *'no permissions'*) return 4 ;;                             #
+    *'no device'*) return 4 ;;                                  # No devices/emulators (unrecoverable)
+    *'closed'*) return 4 ;;                                     # ADB connection forcibly terminated on device side
+    *'protocol fault'*) return 4 ;;                             # ADB connection forcibly terminated on server side
     *) ;;                                                       # Others / Unknown => ignored
   esac
   return 0
