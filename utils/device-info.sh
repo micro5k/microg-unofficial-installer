@@ -1268,17 +1268,18 @@ extract_all_info()
   get_slot_info
 
   display_info 'Slot count' "${SLOT_COUNT?}"
+
+  show_msg ''
+
   DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.alpha')" || DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.orig.alpha')"
   DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.alpha')" || DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.orig.alpha')"
   DATA_RAW_OPERATOR3="$(auto_getprop 'gsm.sim.operator.spn')"
   # ToDO: Check 'gsm.operator.alpha.vsim'
 
-  show_msg ''
-
-  local i slot_state operator_current_slot
-  for i in $(seq "${SLOT_COUNT:?}"); do
-    show_msg "SLOT ${i:?}"
-    case "${i:?}" in
+  local _index slot_state operator_current_slot
+  for _index in $(seq "${SLOT_COUNT:?}"); do
+    show_msg "SLOT ${_index:?}"
+    case "${_index:?}" in
       1)
         slot_state="${SLOT1_STATE?}"
         ;;
@@ -1298,16 +1299,16 @@ extract_all_info()
 
     # https://developer.android.com/reference/android/telephony/TelephonyManager#SIM_STATE_ABSENT
     # https://android.googlesource.com/platform/frameworks/base.git/+/HEAD/telephony/java/com/android/internal/telephony/IccCardConstants.java
-    display_info_or_warn "Slot state" "${slot_state?}" 0
     # UNKNOWN, ABSENT, PIN_REQUIRED, PUK_REQUIRED, NETWORK_LOCKED, READY, NOT_READY, PERM_DISABLED, CARD_IO_ERROR, CARD_RESTRICTED, LOADED
+    display_info_or_warn "Slot state" "${slot_state?}" 0
 
-    get_imei_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
+    get_imei_multi_slot "${SELECTED_DEVICE:?}" "${_index:?}"
 
-    operator_current_slot="$(get_operator_alpha_multi_slot "${i:?}")"
+    operator_current_slot="$(get_operator_alpha_multi_slot "${_index:?}")"
     display_info_or_warn "Operator" "${operator_current_slot?}" "${?}"
 
     if ! compare_nocase "${slot_state?}" 'ABSENT'; then
-      get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${i:?}"
+      get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${_index:?}"
     fi
 
     show_msg ''
@@ -1358,6 +1359,11 @@ extract_all_info()
 
 main()
 {
+  local _found || {
+    show_status_error "Local variables aren't supported!!!"
+    return 99
+  }
+
   set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
   show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
@@ -1378,7 +1384,7 @@ main()
       return 1
     }
 
-    local _device _found
+    local _device
 
     _found='false'
     for _device in $(adb devices | grep -v -i -F -e 'list' | cut -f '1' -s); do
