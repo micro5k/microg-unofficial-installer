@@ -824,7 +824,7 @@ get_kernel_version()
   local _val
   if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
 
-  if _val="$(adb -s "${1:?}" shell 'if command 1> /dev/null -v "uname"; then uname -r; elif test -r "/proc/version"; then cat "/proc/version"; fi' | LC_ALL=C tr -d '\r')"; then
+  if _val="$(adb -s "${1:?}" shell 'if command 1> /dev/null -v "uname" && uname 2> /dev/null -r; then :; elif test -r "/proc/version"; then cat "/proc/version"; fi' | LC_ALL=C tr -d '\r')"; then
     case "${_val?}" in
       '') ;;
       'Linux version '*)
@@ -1227,8 +1227,15 @@ extract_all_info()
   } && display_info 'Device' "${BUILD_DEVICE?}"
   ANDROID_VERSION="$(validated_chosen_getprop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
   KERNEL_VERSION="$(get_kernel_version "${SELECTED_DEVICE:?}")" && display_info 'Kernel version' "${KERNEL_VERSION?}"
+
+  {
+    SQLITE_VERSION="$(device_shell "${SELECTED_DEVICE:?}" 'sqlite3 2> /dev/null --version' | cut -d ' ' -f '1')"
+    display_info_or_warn 'SQLite version' "${SQLITE_VERSION?}" "${?}"
+  }
+
   get_device_color
   get_device_back_color
+
   {
     DEVICE_PATH="$(device_get_devpath "${SELECTED_DEVICE:?}")"
     display_info_or_warn 'Device path' "${DEVICE_PATH?}" "${?}"
