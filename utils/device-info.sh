@@ -120,6 +120,30 @@ show_error()
   if test ! -t 1; then printf '%s\n' "ERROR: ${*}"; fi
 }
 
+show_script_name()
+{
+  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
+  if test ! -t 1; then printf '%s\n' "${*}"; fi
+}
+
+show_selected_device()
+{
+  if test -t 1; then
+    printf '\033[1;31;103m%s\033[0m\n' "SELECTED: ${*}"
+  else
+    printf '%s\n' "SELECTED: ${*}"
+  fi
+}
+
+show_section()
+{
+  if test -t 1; then
+    printf '\033[1;36m%s\033[0m\n' "${*}"
+  else
+    printf '%s\n' "${*}"
+  fi
+}
+
 set_title()
 {
   if test "${CI:-false}" != 'false'; then return 1; fi
@@ -143,30 +167,6 @@ restore_title()
   elif test -t 2; then
     printf 1>&2 '\033]0;\007\r' && printf 1>&2 '     \r'  # Set empty title (in case saving/restoring title doesn't work)
     printf 1>&2 '\033[23;0t\r' && printf 1>&2 '       \r' # Restore title from stack
-  fi
-}
-
-show_script_name()
-{
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
-  if test ! -t 1; then printf '%s\n' "${*}"; fi
-}
-
-show_selected_device()
-{
-  if test -t 1; then
-    printf '\033[1;31;103m%s\033[0m\n' "SELECTED: ${*}"
-  else
-    printf '%s\n' "SELECTED: ${*}"
-  fi
-}
-
-show_section()
-{
-  if test -t 1; then
-    printf '\033[1;36m%s\033[0m\n' "${*}"
-  else
-    printf '%s\n' "${*}"
   fi
 }
 
@@ -310,8 +310,6 @@ detect_status_and_wait_if_needed()
 
 wait_connection()
 {
-  if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
-
   show_status_msg 'Waiting for the device...'
   adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE:?}"
 
@@ -1230,10 +1228,6 @@ get_operator_alpha_multi_slot()
 extract_all_info()
 {
   SELECTED_DEVICE="${1:?}"
-  wait_connection "${SELECTED_DEVICE:?}" || {
-    show_status_error 'Waiting failed, skipped!'
-    return 1
-  }
   if ! ensure_boot_completed; then return 2; fi
 
   show_status_msg 'Finding info...'
@@ -1430,7 +1424,7 @@ main()
       show_selected_device "${_device:?}"
       _found='true'
 
-      if detect_status_and_wait_if_needed "${_device:?}"; then
+      if detect_status_and_wait_if_needed "${_device:?}" && wait_connection "${_device:?}"; then
         extract_all_info "${_device:?}"
       else
         show_status_error 'Device is offline/unauthorized, skipped!'
