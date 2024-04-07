@@ -21,7 +21,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='2.3'
+readonly SCRIPT_VERSION='2.4'
 
 # shellcheck disable=SC2034
 {
@@ -49,6 +49,23 @@ readonly SCRIPT_VERSION='2.3'
 
 readonly NL='
 '
+
+set_utf8_codepage()
+{
+  PREVIOUS_CODEPAGE=''
+  if command 1> /dev/null -v chcp.com; then
+    PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | LC_ALL=C tr -d '\r' | cut -d ':' -f '2-' -s | trim_space_left)"
+    chcp.com 1> /dev/null 65001
+  fi
+}
+
+restore_codepage()
+{
+  if test -n "${PREVIOUS_CODEPAGE?}" && test "${PREVIOUS_CODEPAGE:?}" -ne 65001; then
+    chcp.com 1> /dev/null "${PREVIOUS_CODEPAGE:?}"
+  fi
+  PREVIOUS_CODEPAGE=''
+}
 
 show_status_msg()
 {
@@ -1364,6 +1381,8 @@ main()
     return 99
   }
 
+  set_utf8_codepage
+
   set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
   show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
@@ -1432,6 +1451,8 @@ main()
     fi
 
   fi
+
+  restore_codepage
 }
 
 if test "${#}" -gt 0; then
