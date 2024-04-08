@@ -82,7 +82,7 @@ show_status_error()
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
 }
 
-device_not_ready_status_msg_init()
+device_not_ready_status_msg_initialize()
 {
   static_device_not_ready_displayed='false'
 }
@@ -270,7 +270,7 @@ detect_status_and_wait_if_needed()
 {
   local _status _reconnected
 
-  device_not_ready_status_msg_init
+  device_not_ready_status_msg_initialize
 
   _reconnected='false'
   for _ in 1 2 3 4 5 6 7 8 9 10; do
@@ -1305,6 +1305,13 @@ extract_all_info()
 
   show_msg ''
 
+  show_msg "DEFAULT SLOT"
+  get_imei "${SELECTED_DEVICE:?}"
+  get_iccid "${SELECTED_DEVICE:?}"
+  get_line_number "${SELECTED_DEVICE:?}"
+
+  show_msg ''
+
   DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.alpha')" || DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.orig.alpha')"
   DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.alpha')" || DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.orig.alpha')"
   DATA_RAW_OPERATOR3="$(auto_getprop 'gsm.sim.operator.spn')"
@@ -1347,13 +1354,6 @@ extract_all_info()
 
     show_msg ''
   done
-
-  show_msg "DEFAULT SLOT"
-  get_imei "${SELECTED_DEVICE:?}"
-  get_iccid "${SELECTED_DEVICE:?}"
-  get_line_number "${SELECTED_DEVICE:?}"
-
-  show_msg ''
 
   show_section 'ADVANCED INFO (root may be required)'
   adb_root "${SELECTED_DEVICE:?}"
