@@ -21,7 +21,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='2.4'
+readonly SCRIPT_VERSION='2.5'
 
 # shellcheck disable=SC2034
 {
@@ -306,6 +306,13 @@ detect_status_and_wait_if_needed()
           adb 1> /dev/null 2>&1 -s "${1:?}" reconnect offline && sleep 3 # If the device is unauthorized, reconnect to request authorization and then wait
         fi
         ;;
+      3)
+        if test "${2:-false}" = 'false'; then
+          show_device_not_ready_status_msg # Note: The device may disappear for a few seconds after "adb root", "adb unroot" or "adb reconnect"
+        else
+          break
+        fi
+        ;;
       *) break ;;
     esac
 
@@ -356,7 +363,7 @@ adb_unfroze()
 
   show_status_error 'adb was frozen, reconnecting...'
   adb 1> /dev/null -s "${1:?}" reconnect || true # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
-  wait_connection "${1:?}"
+  detect_status_and_wait_if_needed "${1:?}" && wait_connection "${1:?}"
 }
 
 adb_root()
@@ -368,7 +375,7 @@ adb_root()
   if is_timeout "${?}"; then
     adb_unfroze "${1:?}"
   else
-    wait_connection "${1:?}"
+    detect_status_and_wait_if_needed "${1:?}" && wait_connection "${1:?}"
   fi
 
   # Dummy command to check if adb is frozen
