@@ -161,7 +161,10 @@ set_title()
 {
   if test "${CI:-false}" != 'false'; then return 1; fi
 
-  if test -t 1; then
+  if command 1> /dev/null -v title; then
+    PREVIOUS_TITLE="$(title)" # Save current title
+    title "${1:?}"            # Set new title
+  elif test -t 1; then
     printf '\033[22;0t\r' && printf '       \r'                         # Save current title on stack
     printf '\033]0;%s\007\r' "${1:?}" && printf '    %*s \r' "${#1}" '' # Set new title
   elif test -t 2; then
@@ -174,11 +177,14 @@ restore_title()
 {
   if test "${CI:-false}" != 'false'; then return 1; fi
 
-  if test -t 1; then
-    printf '\033]0;\007\r' && printf '     \r'  # Set empty title (in case saving/restoring title doesn't work)
+  if command 1> /dev/null -v title; then
+    title "${PREVIOUS_TITLE?}" # Restore saved title
+    PREVIOUS_TITLE=''
+  elif test -t 1; then
+    printf '\033]0;\007\r' && printf '     \r'  # Set empty title (fallback in case saving/restoring title doesn't work)
     printf '\033[23;0t\r' && printf '       \r' # Restore title from stack
   elif test -t 2; then
-    printf 1>&2 '\033]0;\007\r' && printf 1>&2 '     \r'  # Set empty title (in case saving/restoring title doesn't work)
+    printf 1>&2 '\033]0;\007\r' && printf 1>&2 '     \r'  # Set empty title (fallback in case saving/restoring title doesn't work)
     printf 1>&2 '\033[23;0t\r' && printf 1>&2 '       \r' # Restore title from stack
   fi
 }
