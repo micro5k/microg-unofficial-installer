@@ -136,7 +136,7 @@ show_error()
 show_script_name()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
-  if test ! -t 1; then printf '%s\n' "${*}"; fi
+  if "${STDOUT_REDIRECTED?}"; then printf 1>&3 '%s\n' "${*}"; fi
 }
 
 show_selected_device()
@@ -1482,16 +1482,23 @@ main()
   fi
 
   restore_codepage
+
+  return 0
 }
 
 if test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
 exec 3>&1 # Create a copy of stdout
 
 set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+
 if test "${#}" -gt 0; then
   main "${@}"
 else
   main ''
 fi
+STATUS="${?}"
 pause_if_needed
+
 restore_title
+
+exit "${STATUS:?}"
