@@ -50,6 +50,8 @@ readonly SCRIPT_VERSION='2.4'
 readonly NL='
 '
 
+DEBUG="${DEBUG:-0}"
+
 set_utf8_codepage()
 {
   PREVIOUS_CODEPAGE=''
@@ -67,7 +69,7 @@ restore_codepage()
   PREVIOUS_CODEPAGE=''
 }
 
-show_status_msg()
+show_status_info()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
 }
@@ -75,11 +77,13 @@ show_status_msg()
 show_status_warn()
 {
   printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
+  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${*}"; fi
 }
 
 show_status_error()
 {
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
+  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "ERROR: ${*}"; fi
 }
 
 device_not_ready_status_msg_initialize()
@@ -103,6 +107,15 @@ device_not_ready_status_msg_terminate()
   static_device_not_ready_displayed=''
 }
 
+show_device_waiting_status_msg()
+{
+  if test "${static_device_not_ready_displayed?}" = 'true'; then
+    printf 1>&2 '\033[0;32m%s\033[0m' '.'
+  elif test -z "${static_device_not_ready_displayed?}"; then
+    printf 1>&2 '\033[1;32m%s\033[0m\n' 'Waiting for the device...'
+  fi
+}
+
 show_msg()
 {
   printf '%s\n' "${*}"
@@ -111,13 +124,13 @@ show_msg()
 show_warn()
 {
   printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
-  if test ! -t 1; then printf '%s\n' "WARNING: ${*}"; fi
+  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${*}"; fi
 }
 
 show_error()
 {
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
-  if test ! -t 1; then printf '%s\n' "ERROR: ${*}"; fi
+  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "ERROR: ${*}"; fi
 }
 
 show_script_name()
@@ -317,7 +330,7 @@ detect_status_and_wait_if_needed()
 
 wait_connection()
 {
-  show_status_msg 'Waiting for the device...'
+  show_device_waiting_status_msg
   adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE:?}"
   return "${?}"
 }
@@ -557,12 +570,12 @@ ensure_boot_completed()
 {
   if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_STATE?}" = 'device'; then
     is_boot_completed || {
-      show_status_error 'Device has not finished booting yet, skipped!'
+      show_status_warn 'Device has not finished booting yet, skipped'
       return 1
     }
   elif test "${INPUT_TYPE:?}" = 'file' && test "${PROP_TYPE:?}" = 1; then
     is_boot_completed || {
-      show_status_error 'Getprop comes from a device that has not finished booting yet, skipped!'
+      show_status_error 'Getprop comes from a device that has not finished booting yet, skipped'
       return 1
     }
   fi
@@ -1236,8 +1249,8 @@ extract_all_info()
   SELECTED_DEVICE="${1:?}"
   if ! ensure_boot_completed; then return 2; fi
 
-  show_status_msg 'Finding info...'
-  show_status_msg ''
+  show_status_info 'Finding info...'
+  show_status_info ''
 
   BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" || BUILD_VERSION_SDK='999'
 
@@ -1428,12 +1441,12 @@ main()
 
       show_msg ''
       show_selected_device "${_device:?}"
-      _found='true'
 
       if detect_status_and_wait_if_needed "${_device:?}" 'true' && wait_connection "${_device:?}"; then
+        _found='true'
         extract_all_info "${_device:?}"
       else
-        show_status_error 'Device is offline/unauthorized, skipped!'
+        show_status_warn 'Device is offline/unauthorized, skipped'
       fi
     done
 
@@ -1470,6 +1483,9 @@ main()
 
   restore_codepage
 }
+
+if test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
+exec 3>&1 # Create a copy of stdout
 
 set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 if test "${#}" -gt 0; then
