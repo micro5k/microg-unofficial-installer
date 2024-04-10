@@ -968,6 +968,11 @@ get_imei_multi_slot()
   _slot_index="$((_slot - 1))" # Slot index start from 0
 
   if test "${BUILD_VERSION_SDK:?}" -lt "${ANDROID_5_SDK:?}"; then
+    if test "${_slot:?}" -eq 1; then
+      is_valid_imei "${INFO_IMEI?}"
+      display_phonesubinfo_or_warn 'IMEI' "${INFO_IMEI?}" "${?}"
+    fi
+
     return # No multi-SIM support
   fi
 
@@ -1039,6 +1044,7 @@ get_imei()
     _val=''
   fi
 
+  INFO_IMEI="${_val?}"
   is_valid_imei "${_val?}"
   display_phonesubinfo_or_warn 'IMEI' "${_val?}" "${?}"
 
@@ -1057,6 +1063,7 @@ get_imei()
     _val="$(call_phonesubinfo "${1:?}" 2)" || _val='' # Android 1.0-4.4W (unverified)
   fi
 
+  INFO_IMEI_SV="${_val?}"
   is_valid_length "${_val?}" 2 2
   display_phonesubinfo_or_warn 'IMEI SV' "${_val?}" "${?}"
 }
@@ -1069,6 +1076,11 @@ get_line_number_multi_slot()
   _slot_index="$((_slot - 1))" # Slot index start from 0
 
   if test "${BUILD_VERSION_SDK:?}" -lt "${ANDROID_5_SDK:?}"; then
+    if test "${_slot:?}" -eq 1; then
+      is_valid_line_number "${INFO_LINE_NUMBER?}"
+      display_phonesubinfo_or_warn 'Line number' "${INFO_LINE_NUMBER?}" "${?}"
+    fi
+
     return # No multi-SIM support
   fi
 
@@ -1126,6 +1138,7 @@ get_line_number()
     _val="$(call_phonesubinfo "${1:?}" 5)" # Android 1.0-4.2 (unverified)
   fi
 
+  INFO_LINE_NUMBER="${_val?}"
   is_valid_line_number "${_val?}"
   display_phonesubinfo_or_warn 'Line number' "${_val?}" "${?}"
 }
