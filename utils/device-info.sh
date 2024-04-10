@@ -641,7 +641,6 @@ find_serialno()
   elif _val="$(auto_getprop 'ro.kernel.androidboot.serialno')" && is_valid_serial "${_val?}"; then
     :
   else
-    show_warn 'Serial number not found'
     return 1
   fi
 
@@ -655,7 +654,6 @@ find_cpu_serialno()
   if _val="$(device_get_file_content "${1:?}" '/proc/cpuinfo' | grep -i -F -e "serial" | cut -d ':' -f '2-' -s | trim_space_on_sides)" && is_valid_serial "${_val?}"; then
     :
   else
-    show_warn 'CPU serial number not found'
     return 1
   fi
 
