@@ -21,7 +21,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='2.5'
+readonly SCRIPT_VERSION='2.6'
 
 # shellcheck disable=SC2034
 {
@@ -95,7 +95,7 @@ show_device_not_ready_status_msg()
 {
   if test "${static_device_not_ready_displayed:?}" = 'false'; then
     static_device_not_ready_displayed='true'
-    printf 1>&2 '\033[1;32m%s\033[0m' 'Device is not ready, waiting...'
+    printf 1>&2 '\033[1;32m%s\033[0m' 'Device is not ready, waiting.'
   else
     printf 1>&2 '\033[1;32m%s\033[0m' '.'
   fi
@@ -109,10 +109,10 @@ device_not_ready_status_msg_terminate()
 
 show_device_waiting_status_msg()
 {
-  if test "${static_device_not_ready_displayed?}" = 'true'; then
-    printf 1>&2 '\033[0;32m%s\033[0m' '.'
-  elif test -z "${static_device_not_ready_displayed?}"; then
+  if test "${static_device_not_ready_displayed:?}" = 'false'; then
     printf 1>&2 '\033[1;32m%s\033[0m\n' 'Waiting for the device...'
+  else
+    printf 1>&2 '\033[32m%s\033[0m' '.'
   fi
 }
 
@@ -285,7 +285,7 @@ parse_device_status()
   # - error: protocol fault (couldn't read status): connection reset
 }
 
-detect_status_and_wait_if_needed()
+detect_status_and_wait_connection()
 {
   local _status _reconnected
 
@@ -319,10 +319,9 @@ detect_status_and_wait_if_needed()
     sleep 0.5
   done
 
-  device_not_ready_status_msg_terminate
-
   parse_device_status "${_status?}"
   if test "${?}" -ne 0; then
+    device_not_ready_status_msg_terminate
     return 1
   fi
 
@@ -331,19 +330,12 @@ detect_status_and_wait_if_needed()
       'recovery' | 'sideload') DEVICE_STATE="${_status:?}" ;;
       *) DEVICE_STATE='device' ;;
     esac
-  else
-    test -n "${DEVICE_STATE?}" || {
-      show_status_error 'DEVICE_STATE is not set!'
-      return 1
-    }
   fi
 
-  return 0
-}
-
-wait_connection()
-{
   show_device_waiting_status_msg
+
+  device_not_ready_status_msg_terminate
+
   adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE:?}"
   return "${?}"
 }
@@ -363,7 +355,7 @@ adb_unfroze()
 
   show_status_error 'adb was frozen, reconnecting...'
   adb 1> /dev/null -s "${1:?}" reconnect || true # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
-  detect_status_and_wait_if_needed "${1:?}" && wait_connection "${1:?}"
+  detect_status_and_wait_connection "${1:?}"
 }
 
 adb_root()
@@ -375,7 +367,7 @@ adb_root()
   if is_timeout "${?}"; then
     adb_unfroze "${1:?}"
   else
-    detect_status_and_wait_if_needed "${1:?}" && wait_connection "${1:?}"
+    detect_status_and_wait_connection "${1:?}"
   fi
 
   # Dummy command to check if adb is frozen
@@ -1468,7 +1460,7 @@ main()
       show_msg ''
       show_selected_device "${_device:?}"
 
-      if detect_status_and_wait_if_needed "${_device:?}" 'true' && wait_connection "${_device:?}"; then
+      if detect_status_and_wait_connection "${_device:?}" 'true'; then
         _found='true'
         extract_all_info "${_device:?}"
       else
