@@ -1063,7 +1063,7 @@ get_imei()
     _val="$(call_phonesubinfo "${1:?}" 2)" || _val='' # Android 1.0-4.4W (unverified)
   fi
 
-  INFO_IMEI_SV="${_val?}"
+  #INFO_IMEI_SV="${_val?}"
   is_valid_length "${_val?}" 2 2
   display_phonesubinfo_or_warn 'IMEI SV' "${_val?}" "${?}"
 }
