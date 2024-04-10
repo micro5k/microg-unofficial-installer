@@ -21,7 +21,8 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_VERSION='2.6'
+readonly SCRIPT_SHORTNAME='DeviceInfo'
+readonly SCRIPT_VERSION='2.7'
 
 # shellcheck disable=SC2034
 {
@@ -371,7 +372,7 @@ adb_root()
   fi
 
   # Dummy command to check if adb is frozen
-  timeout -- 6 adb -s "${1:?}" shell ':'
+  timeout -- 3 adb -s "${1:?}" shell ':'
   if is_timeout "${?}"; then adb_unfroze "${1:?}"; fi
 }
 
@@ -455,11 +456,36 @@ trim_space_on_sides()
 
 convert_dec_to_hex()
 {
-  if command -v bc 1> /dev/null; then
-    printf 'obase=16;%s' "${1?}" | bc -s | LC_ALL=C tr '[:upper:]' '[:lower:]'
+  if test -z "${1?}"; then return; fi
+
+  if command 1> /dev/null -v bc; then
+    printf 'obase=16;%s\n' "${1?}" | bc -s | LC_ALL=C tr '[:upper:]' '[:lower:]'
   else
-    printf '%x' "${1?}"
+    printf '%x\n' "${1?}"
   fi
+}
+
+anonymize_string()
+{
+  printf '%s' "${1?}" | LC_ALL=C tr '[:digit:]' '0' | LC_ALL=C tr 'a-f' 'f' | LC_ALL=C tr 'g-z' 'x' | LC_ALL=C tr 'A-F' 'F' | LC_ALL=C tr 'G-Z' 'X'
+}
+
+anonymize_code()
+{
+  local _string _prefix_length
+
+  if test "${#1}" -lt 2; then
+    anonymize_string "${1:?}"
+    return
+  fi
+
+  _prefix_length="$((${#1} / 2))"
+  if test "${_prefix_length:?}" -gt 6; then _prefix_length='6'; fi
+
+  printf '%s\n' "${1:?}" | cut -c "-${_prefix_length:?}" | LC_ALL=C tr -d '\n'
+
+  _string="$(printf '%s\n' "${1:?}" | cut -c "$((${_prefix_length:?} + 1))-")"
+  anonymize_string "${_string:?}"
 }
 
 is_valid_serial()
@@ -691,7 +717,7 @@ get_device_color()
     _val=''
   fi
 
-  display_info_or_warn 'Device color' "${_val?}" 0
+  display_info_or_warn 'Device color' "${_val?}" 0 'non-sensitive'
 }
 
 get_device_back_color()
@@ -704,7 +730,7 @@ get_device_back_color()
     _val=''
   fi
 
-  display_info_or_warn 'Device back color' "${_val?}" 0
+  display_info_or_warn 'Device back color' "${_val?}" 0 'non-sensitive'
 }
 
 device_shell()
@@ -792,7 +818,11 @@ display_info_or_warn()
     return 2
   fi
 
-  display_info "${1?}" "${2?}"
+  if test "${PRIVACY_MODE?}" = 'true' && test "${4:-}" != 'non-sensitive'; then
+    display_info "${1?}" "$(anonymize_code "${2?}" || true)"
+  else
+    display_info "${1?}" "${2?}"
+  fi
   return 0
 }
 
@@ -818,7 +848,11 @@ display_phonesubinfo_or_warn()
     return 2
   fi
 
-  display_info "${1?}" "${2?}"
+  if test "${PRIVACY_MODE?}" = 'true' && test "${4:-}" != 'non-sensitive'; then
+    display_info "${1?}" "$(anonymize_code "${2?}" || true)"
+  else
+    display_info "${1?}" "${2?}"
+  fi
   return 0
 }
 
@@ -1057,7 +1091,7 @@ get_imei()
 
   #INFO_IMEI_SV="${_val?}"
   is_valid_length "${_val?}" 2 2
-  display_phonesubinfo_or_warn 'IMEI SV' "${_val?}" "${?}"
+  display_phonesubinfo_or_warn 'IMEI SV' "${_val?}" "${?}" 'non-sensitive'
 }
 
 get_line_number_multi_slot()
@@ -1295,7 +1329,7 @@ extract_all_info()
 
   {
     SQLITE_VERSION="$(device_shell "${SELECTED_DEVICE:?}" 'sqlite3 2> /dev/null --version' | cut -d ' ' -f '1')"
-    display_info_or_warn 'SQLite version' "${SQLITE_VERSION?}" "${?}"
+    display_info_or_warn 'SQLite version' "${SQLITE_VERSION?}" "${?}" 'non-sensitive'
   }
 
   get_device_color
@@ -1303,13 +1337,15 @@ extract_all_info()
 
   {
     DEVICE_PATH="$(device_get_devpath "${SELECTED_DEVICE:?}")"
-    display_info_or_warn 'Device path' "${DEVICE_PATH?}" "${?}"
+    display_info_or_warn 'Device path' "${DEVICE_PATH?}" "${?}" 'non-sensitive'
   }
 
   show_msg ''
 
-  SERIAL_NUMBER="$(find_serialno)" && display_info 'Serial number' "${SERIAL_NUMBER?}"
-  CPU_SERIAL_NUMBER="$(find_cpu_serialno "${SELECTED_DEVICE:?}")" && display_info 'CPU serial number' "${CPU_SERIAL_NUMBER?}"
+  SERIAL_NUMBER="$(find_serialno)"
+  display_info_or_warn 'Serial number' "${SERIAL_NUMBER?}" "${?}"
+  CPU_SERIAL_NUMBER="$(find_cpu_serialno "${SELECTED_DEVICE:?}")"
+  display_info_or_warn 'CPU serial number' "${CPU_SERIAL_NUMBER?}" "${?}"
 
   show_msg ''
 
@@ -1320,9 +1356,9 @@ extract_all_info()
   show_msg ''
 
   DISPLAY_SIZE="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null size' | cut -d ':' -f '2-' -s | trim_space_left)"
-  display_info_or_warn 'Display size' "${DISPLAY_SIZE?}" "${?}"
+  display_info_or_warn 'Display size' "${DISPLAY_SIZE?}" "${?}" 'non-sensitive'
   DISPLAY_DENSITY="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null density' | cut -d ':' -f '2-' -s | trim_space_left)"
-  display_info_or_warn 'Display density' "${DISPLAY_DENSITY?}" "${?}"
+  display_info_or_warn 'Display density' "${DISPLAY_DENSITY?}" "${?}" 'non-sensitive'
 
   show_msg ''
 
@@ -1372,12 +1408,12 @@ extract_all_info()
     # https://developer.android.com/reference/android/telephony/TelephonyManager#SIM_STATE_ABSENT
     # https://android.googlesource.com/platform/frameworks/base.git/+/HEAD/telephony/java/com/android/internal/telephony/IccCardConstants.java
     # UNKNOWN, ABSENT, PIN_REQUIRED, PUK_REQUIRED, NETWORK_LOCKED, READY, NOT_READY, PERM_DISABLED, CARD_IO_ERROR, CARD_RESTRICTED, LOADED
-    display_info_or_warn "Slot state" "${slot_state?}" 0
+    display_info_or_warn "Slot state" "${slot_state?}" 0 'non-sensitive'
 
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${_index:?}"
 
     operator_current_slot="$(get_operator_alpha_multi_slot "${_index:?}")"
-    display_info_or_warn "Operator" "${operator_current_slot?}" "${?}"
+    display_info_or_warn "Operator" "${operator_current_slot?}" "${?}" 'non-sensitive'
 
     if ! compare_nocase "${slot_state?}" 'ABSENT'; then
       get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${_index:?}"
@@ -1394,12 +1430,15 @@ extract_all_info()
   device_shell "${SELECTED_DEVICE:?}" "if test -e '/data' && test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
   device_shell "${SELECTED_DEVICE:?}" "if test -e '/efs'; then mount -t 'auto' -o 'ro' '/efs' 2> /dev/null || true; fi"
 
-  GSF_ID=''
-  GSF_ID_DEC="$(get_gsf_id "${SELECTED_DEVICE:?}")"
-  if validate_and_display_info 'GSF ID (decimal)' "${GSF_ID_DEC?}" 19; then
-    GSF_ID="$(convert_dec_to_hex "${GSF_ID_DEC?}")"
-    validate_and_display_info 'GSF ID' "${GSF_ID?}" 16
-  fi
+  {
+    GSF_ID_DEC="$(get_gsf_id "${SELECTED_DEVICE:?}")"
+
+    GSF_ID="$(convert_dec_to_hex "${GSF_ID_DEC?}")" && is_valid_length "${GSF_ID?}" 16 16
+    display_info_or_warn 'GSF ID' "${GSF_ID?}" "${?}"
+
+    is_valid_length "${GSF_ID_DEC?}" 19 19
+    display_info_or_warn 'GSF ID (decimal)' "${GSF_ID_DEC?}" "${?}"
+  }
 
   show_msg ''
 
@@ -1448,7 +1487,7 @@ main()
     verify_adb_mode_deps
     start_adb_server || {
       show_status_error 'Failed to start ADB'
-      return 1
+      return 10
     }
 
     local _device
@@ -1470,14 +1509,14 @@ main()
 
     if test "${_found:?}" = 'false'; then
       show_status_error 'No devices/emulators found'
-      return 2
+      return 11
     fi
 
   else
 
     test -f "${INPUT_SELECTION:?}" || {
       show_status_error "Input file doesn't exist => '${INPUT_SELECTION?}'"
-      return 2
+      return 12
     }
 
     show_selected_device "${INPUT_SELECTION:?}"
@@ -1494,7 +1533,7 @@ main()
       extract_all_info "${INPUT_SELECTION:?}"
     else
       show_status_error "Unknown input file => '${INPUT_SELECTION?}'"
-      return 3
+      return 13
     fi
 
   fi
@@ -1504,17 +1543,56 @@ main()
   return 0
 }
 
+set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+execute_script='true'
+
+STATUS=0
+PRIVACY_MODE='false'
 if test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
 exec 3>&1 # Create a copy of stdout
 
-set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+while test "${#}" -gt 0; do
+  case "${1}" in
+    --version)
+      printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
+      printf '%s\n' 'Copyright (c) 2024 ale5000'
+      printf '%s\n' 'License GPLv3+'
+      execute_script='false'
+      ;;
 
-if test "${#}" -gt 0; then
+    -p | --privacy-mode)
+      PRIVACY_MODE='true'
+      ;;
+
+    --)
+      break
+      ;;
+
+    --*)
+      printf 1>&3 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
+      execute_script='false'
+      STATUS=2
+      ;;
+
+    -*)
+      printf 1>&3 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
+      execute_script='false'
+      STATUS=2
+      ;;
+
+    *)
+      break
+      ;;
+  esac
+
+  if test "${#}" -ne 0; then shift; fi # Important: 'shift' with nothing to shift cause some shells to exit so check it before using
+done
+
+if test "${execute_script:?}" = 'true'; then
+  if test "${#}" -eq 0; then set ''; fi
   main "${@}"
-else
-  main ''
+  STATUS="${?}"
 fi
-STATUS="${?}"
 pause_if_needed
 
 restore_title
