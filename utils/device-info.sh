@@ -259,12 +259,12 @@ parse_device_status()
     'device' | 'recovery') return 0 ;;                          # OK
     *'connecting'* | *'authorizing'* | *'offline'*) return 1 ;; # Connecting (transitory) / Authorizing (transitory) / Offline (may be transitory)
     *'unauthorized'*) return 2 ;;                               # Unauthorized
-    *'not found'*) return 3 ;;                                  # Disconnected (unrecoverable)
+    *'not found'* | 'disconnect') return 3 ;;                   # Disconnected (transitory after 'root', 'unroot' or 'reconnect' otherwise unrecoverable)
     *'no permissions'*) return 4 ;;                             #
     *'no device'*) return 4 ;;                                  # No devices/emulators (unrecoverable)
     *'closed'*) return 4 ;;                                     # ADB connection forcibly terminated on device side
     *'protocol fault'*) return 4 ;;                             # ADB connection forcibly terminated on server side
-    'sideload') return 5 ;;                                     # Sideload (not supported)
+    'sideload' | 'bootloader') return 5 ;;                      # Sideload / Bootloader (not supported)
     *) ;;                                                       # Others / Unknown => ignored
   esac
   return 0
@@ -328,7 +328,7 @@ detect_status_and_wait_connection()
 
   if test "${2:-false}" != 'false'; then
     case "${_status?}" in
-      'recovery' | 'sideload') DEVICE_STATE="${_status:?}" ;;
+      'recovery' | 'sideload' | 'bootloader') DEVICE_STATE="${_status:?}" ;;
       *) DEVICE_STATE='device' ;;
     esac
   fi
@@ -1591,6 +1591,9 @@ if test "${execute_script:?}" = 'true'; then
   main "${@}"
   STATUS="${?}"
 fi
+
+exec 3>&- # Close descriptor
+
 pause_if_needed
 
 restore_title
