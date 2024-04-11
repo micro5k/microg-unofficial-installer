@@ -64,7 +64,7 @@ set_utf8_codepage()
 
 restore_codepage()
 {
-  if test -n "${PREVIOUS_CODEPAGE?}" && test "${PREVIOUS_CODEPAGE:?}" -ne 65001; then
+  if test -n "${PREVIOUS_CODEPAGE:-}" && test "${PREVIOUS_CODEPAGE:?}" -ne 65001; then
     chcp.com 1> /dev/null "${PREVIOUS_CODEPAGE:?}"
   fi
   PREVIOUS_CODEPAGE=''
@@ -260,12 +260,12 @@ parse_device_status()
     *'connecting'* | *'authorizing'* | *'offline'*) return 1 ;;    # Connecting (transitory) / Authorizing (transitory) / Offline (may be transitory)
     *'unauthorized'*) return 2 ;;                                  # Unauthorized
     *'not found'* | 'disconnect') return 3 ;;                      # Disconnected (transitory after 'root', 'unroot' or 'reconnect' otherwise unrecoverable)
-    *'no permissions'* | *'insufficient permissions'*) return 4 ;; # ADB configuration issue under Linux
+    *'no permissions'* | *'insufficient permissions'*) return 4 ;; # ADB configuration issue under Linux (unrecoverable)
     *'no device'*) return 4 ;;                                     # No devices/emulators (unrecoverable)
     *'closed'*) return 4 ;;                                        # ADB connection forcibly terminated on device side
     *'protocol fault'*) return 4 ;;                                # ADB connection forcibly terminated on server side
     'sideload' | 'bootloader') return 5 ;;                         # Sideload / Bootloader (not supported)
-    *) ;;                                                          # Unknown => ignored
+    *) ;;                                                          # Unknown (ignored)
   esac
   return 0
 
@@ -1468,7 +1468,6 @@ main()
     return 99
   }
 
-  set_utf8_codepage
   show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
   DEVICE_STATE=''
@@ -1538,22 +1537,20 @@ main()
 
   fi
 
-  restore_codepage
-
   return 0
 }
 
 set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 execute_script='true'
-
 STATUS=0
 PRIVACY_MODE='false'
+
 if test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
 exec 3>&1 # Create a copy of stdout
 
 while test "${#}" -gt 0; do
   case "${1}" in
-    --version)
+    -V | --version)
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
       printf '%s\n' 'Copyright (c) 2024 ale5000'
       printf '%s\n' 'License GPLv3+'
@@ -1589,15 +1586,17 @@ while test "${#}" -gt 0; do
 done
 
 if test "${execute_script:?}" = 'true'; then
+  set_utf8_codepage
+
   if test "${#}" -eq 0; then set ''; fi
   main "${@}"
   STATUS="${?}"
+
+  restore_codepage
 fi
 
 exec 3>&- # Close descriptor
 
 pause_if_needed
-
 restore_title
-
 exit "${STATUS:?}"
