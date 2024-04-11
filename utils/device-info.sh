@@ -256,16 +256,16 @@ start_adb_server()
 parse_device_status()
 {
   case "${1?}" in
-    'device' | 'recovery') return 0 ;;                          # OK
-    *'connecting'* | *'authorizing'* | *'offline'*) return 1 ;; # Connecting (transitory) / Authorizing (transitory) / Offline (may be transitory)
-    *'unauthorized'*) return 2 ;;                               # Unauthorized
-    *'not found'* | 'disconnect') return 3 ;;                   # Disconnected (transitory after 'root', 'unroot' or 'reconnect' otherwise unrecoverable)
-    *'no permissions'*) return 4 ;;                             #
-    *'no device'*) return 4 ;;                                  # No devices/emulators (unrecoverable)
-    *'closed'*) return 4 ;;                                     # ADB connection forcibly terminated on device side
-    *'protocol fault'*) return 4 ;;                             # ADB connection forcibly terminated on server side
-    'sideload' | 'bootloader') return 5 ;;                      # Sideload / Bootloader (not supported)
-    *) ;;                                                       # Others / Unknown => ignored
+    'device' | 'recovery') return 0 ;;                             # OK
+    *'connecting'* | *'authorizing'* | *'offline'*) return 1 ;;    # Connecting (transitory) / Authorizing (transitory) / Offline (may be transitory)
+    *'unauthorized'*) return 2 ;;                                  # Unauthorized
+    *'not found'* | 'disconnect') return 3 ;;                      # Disconnected (transitory after 'root', 'unroot' or 'reconnect' otherwise unrecoverable)
+    *'no permissions'* | *'insufficient permissions'*) return 4 ;; # ADB configuration issue under Linux
+    *'no device'*) return 4 ;;                                     # No devices/emulators (unrecoverable)
+    *'closed'*) return 4 ;;                                        # ADB connection forcibly terminated on device side
+    *'protocol fault'*) return 4 ;;                                # ADB connection forcibly terminated on server side
+    'sideload' | 'bootloader') return 5 ;;                         # Sideload / Bootloader (not supported)
+    *) ;;                                                          # Unknown => ignored
   esac
   return 0
 
@@ -275,12 +275,14 @@ parse_device_status()
   # - unauthorized
   # - authorizing
   # - offline
+  # - no permissions
   # - no device
   # - unknown
   # - error: device unauthorized.
   # - error: device still authorizing
   # - error: device offline
   # - error: device 'xxx' not found
+  # - error: insufficient permissions for device
   # - error: no devices/emulators found
   # - error: closed
   # - error: protocol fault (couldn't read status): connection reset
