@@ -264,7 +264,7 @@ parse_device_status()
     *'no device'*) return 4 ;;                                     # No devices/emulators (unrecoverable)
     *'closed'*) return 4 ;;                                        # ADB connection forcibly terminated on device side
     *'protocol fault'*) return 4 ;;                                # ADB connection forcibly terminated on server side
-    'sideload' | 'bootloader') return 5 ;;                         # Sideload / Bootloader (not supported)
+    'sideload' | 'rescue' | 'bootloader') return 5 ;;              # Sideload / Rescue / Bootloader (not supported)
     *) ;;                                                          # Unknown (ignored)
   esac
   return 0
@@ -330,7 +330,7 @@ detect_status_and_wait_connection()
 
   if test "${2:-false}" != 'false'; then
     case "${_status?}" in
-      'recovery' | 'sideload' | 'bootloader') DEVICE_STATE="${_status:?}" ;;
+      'recovery' | 'sideload' | 'rescue' | 'bootloader') DEVICE_STATE="${_status:?}" ;;
       *) DEVICE_STATE='device' ;;
     esac
   fi
@@ -782,12 +782,13 @@ call_phonesubinfo()
   _method_code="$(apply_phonesubinfo_deviation "${2:?}")"
   shift 2
 
-  # https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl
-  # https://android.googlesource.com/platform/frameworks/opt/telephony/+/master/src/java/com/android/internal/telephony/PhoneSubInfoController.java
-
   if test "${#}" -eq 0; then set ''; fi # Avoid issues on Bash under Mac
   adb -s "${_device:?}" shell "service call iphonesubinfo ${_method_code:?} ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
 }
+# https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl
+# https://android.googlesource.com/platform/frameworks/opt/telephony/+/master/src/java/com/android/internal/telephony/PhoneSubInfoController.java
+# https://android.googlesource.com/platform/frameworks/opt/telephony/+/master/src/java/com/android/internal/telephony/PhoneFactory.java
+# https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/android/telephony/SubscriptionManager.java
 
 is_phonesubinfo_response_valid()
 {
