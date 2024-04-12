@@ -378,14 +378,6 @@ adb_root()
   if is_timeout "${?}"; then adb_unfroze "${1:?}"; fi
 }
 
-adb_unroot()
-{
-  if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
-
-  adb 1> /dev/null -s "${1:?}" unroot &
-  adb 1> /dev/null -s "${1:?}" reconnect # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
-}
-
 is_all_zeros()
 {
   if test -n "${1?}" && test "$(printf '%s\n' "${1:?}" | LC_ALL=C tr -d '0' || true)" = ''; then
@@ -1366,6 +1358,11 @@ extract_all_info()
   show_section 'SLOT INFO'
   show_msg ''
 
+  DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.alpha')" || DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.orig.alpha')"
+  DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.alpha')" || DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.orig.alpha')"
+  DATA_RAW_OPERATOR3="$(auto_getprop 'gsm.sim.operator.spn')"
+  # ToDO: Check 'gsm.operator.alpha.vsim'
+
   # https://android.googlesource.com/platform/frameworks/base/+/HEAD/telephony/java/com/android/internal/telephony/TelephonyProperties.java
   get_slot_info
 
@@ -1376,14 +1373,13 @@ extract_all_info()
   show_msg "DEFAULT SLOT"
   get_imei "${SELECTED_DEVICE:?}"
   get_iccid "${SELECTED_DEVICE:?}"
+
+  operator_current_slot="$(get_operator_alpha_multi_slot '1')"
+  display_info_or_warn "Operator" "${operator_current_slot?}" "${?}" 'non-sensitive'
+
   get_line_number "${SELECTED_DEVICE:?}"
 
   show_msg ''
-
-  DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.alpha')" || DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.orig.alpha')"
-  DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.alpha')" || DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.orig.alpha')"
-  DATA_RAW_OPERATOR3="$(auto_getprop 'gsm.sim.operator.spn')"
-  # ToDO: Check 'gsm.operator.alpha.vsim'
 
   local _index slot_state operator_current_slot
   for _index in $(seq "${SLOT_COUNT:?}"); do
