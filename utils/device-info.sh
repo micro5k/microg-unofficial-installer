@@ -357,14 +357,14 @@ adb_unfroze()
   if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
 
   show_status_error 'adb was frozen, reconnecting...'
-  adb 1> /dev/null -s "${1:?}" reconnect || true # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
+  adb 1> /dev/null 2>&1 -s "${1:?}" reconnect # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
   detect_status_and_wait_connection "${1:?}"
 }
 
 adb_root()
 {
   if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
-  if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '[:cntrl:]' || true)" = 'root'; then return; fi # Already rooted
+  if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '\r' || true)" = 'root'; then return; fi # Already rooted
 
   timeout 1> /dev/null 2>&1 -- 6 adb -s "${1:?}" root
   if is_timeout "${?}"; then
