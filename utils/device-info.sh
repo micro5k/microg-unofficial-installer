@@ -264,6 +264,7 @@ parse_device_status()
     *'no device'*) return 4 ;;                                     # No devices/emulators (unrecoverable)
     *'closed'*) return 4 ;;                                        # ADB connection forcibly terminated on device side
     *'protocol fault'*) return 4 ;;                                # ADB connection forcibly terminated on server side
+    '') return 4 ;;                                                # Unknown issue
     'sideload' | 'rescue' | 'bootloader') return 5 ;;              # Sideload / Rescue / Bootloader (not supported)
     *) ;;                                                          # Unknown (ignored)
   esac
@@ -369,9 +370,10 @@ adb_root()
   timeout 1> /dev/null 2>&1 -- 6 adb -s "${1:?}" root
   if is_timeout "${?}"; then
     adb_unfroze "${1:?}"
-  else
-    detect_status_and_wait_connection "${1:?}"
+    return
   fi
+
+  detect_status_and_wait_connection "${1:?}"
 
   # Dummy command to check if adb is frozen
   timeout -- 3 adb -s "${1:?}" shell ':'
