@@ -51,6 +51,7 @@ readonly SCRIPT_VERSION='2.7'
 readonly NL='
 '
 
+export LANG='en_US.UTF-8'
 DEBUG="${DEBUG:-0}"
 
 set_utf8_codepage()

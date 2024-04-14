@@ -28,6 +28,25 @@ readonly SCRIPT_VERSION='1.7'
   readonly xml_comment_end='-->'
 }
 
+export LANG='en_US.UTF-8'
+
+set_utf8_codepage()
+{
+  PREVIOUS_CODEPAGE=''
+  if command 1> /dev/null -v chcp.com; then
+    PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | LC_ALL=C tr -d '\r' | cut -d ':' -f '2-' -s | trim_space_left)"
+    chcp.com 1> /dev/null 65001
+  fi
+}
+
+restore_codepage()
+{
+  if test -n "${PREVIOUS_CODEPAGE:-}" && test "${PREVIOUS_CODEPAGE:?}" -ne 65001; then
+    chcp.com 1> /dev/null "${PREVIOUS_CODEPAGE:?}"
+  fi
+  PREVIOUS_CODEPAGE=''
+}
+
 show_status_msg()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
@@ -203,6 +222,15 @@ is_string_nocase_starting_with()
     *) ;;
   esac
   return 1 # NOT found
+}
+
+trim_space_left()
+{
+  local _var
+  _var="$(cat)" || return 1
+
+  printf '%s\n' "${_var# }"
+  return 0
 }
 
 is_valid_serial()
@@ -730,10 +758,12 @@ ${xml_comment_end:?}
 </profile>"
 }
 
+set_utf8_codepage
 show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 if test "${#}" -gt 0; then
   main "${@}"
 else
   main
 fi
+restore_codepage
 pause_if_needed
