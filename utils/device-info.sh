@@ -56,19 +56,19 @@ DEBUG="${DEBUG:-0}"
 
 set_utf8_codepage()
 {
-  PREVIOUS_CODEPAGE=''
-  if command 1> /dev/null -v chcp.com; then
-    PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | LC_ALL=C tr -d '\r' | cut -d ':' -f '2-' -s | trim_space_left)"
-    chcp.com 1> /dev/null 65001
+  if command 1> /dev/null -v 'chcp.com' && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '\r' | trim_space_left)" && test "${PREVIOUS_CODEPAGE?}" -ne 65001; then
+    'chcp.com' 1> /dev/null 65001
+  else
+    PREVIOUS_CODEPAGE=''
   fi
 }
 
 restore_codepage()
 {
-  if test -n "${PREVIOUS_CODEPAGE:-}" && test "${PREVIOUS_CODEPAGE:?}" -ne 65001; then
-    chcp.com 1> /dev/null "${PREVIOUS_CODEPAGE:?}"
+  if test -n "${PREVIOUS_CODEPAGE-}"; then
+    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}"
+    PREVIOUS_CODEPAGE=''
   fi
-  PREVIOUS_CODEPAGE=''
 }
 
 show_status_info()
@@ -541,7 +541,7 @@ getprop_output_parse()
 {
   local _val
 
-  if _val="$(grep -m 1 -e "^\[${2:?}\]\:" -- "${1:?}" | LC_ALL=C tr -d '\r' | cut -d ':' -f '2-' -s | grep -m 1 -o -e '^[[:blank:]]\[.*\]$')" && test "${#_val}" -gt 3; then
+  if _val="$(grep -m 1 -e "^\[${2:?}\]\:" -- "${1:?}" | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '\r' | LC_ALL='' grep -m 1 -o -e '^[[:blank:]]\[.*\]$')" && test "${#_val}" -gt 3; then
     printf '%s\n' "${_val?}" | cut -c "3-$((${#_val} - 1))"
     return "${?}"
   fi
@@ -551,7 +551,7 @@ getprop_output_parse()
 
 prop_output_parse()
 {
-  grep -m 1 -e "^${2:?}=" -- "${1:?}" | LC_ALL=C tr -d '\r' | cut -d '=' -f '2-' -s
+  grep -m 1 -e "^${2:?}=" -- "${1:?}" | cut -d '=' -f '2-' -s | LC_ALL=C tr -d '\r'
 }
 
 auto_getprop()
