@@ -22,7 +22,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DeviceInfo'
-readonly SCRIPT_VERSION='2.7'
+readonly SCRIPT_VERSION='2.8'
 
 # shellcheck disable=SC2034
 {
@@ -180,7 +180,7 @@ restore_title()
   if test "${CI:-false}" != 'false'; then return 1; fi
 
   if command 1> /dev/null -v title; then
-    title "${PREVIOUS_TITLE?}" # Restore saved title
+    title "${PREVIOUS_TITLE-}" # Restore saved title
     PREVIOUS_TITLE=''
   elif test -t 1; then
     printf '\033]0;\007\r' && printf '     \r'  # Set empty title (fallback in case saving/restoring title doesn't work)
@@ -1549,11 +1549,8 @@ execute_script='true'
 STATUS=0
 PRIVACY_MODE='false'
 
-if test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
-exec 3>&1 # Create a copy of stdout
-
 while test "${#}" -gt 0; do
-  case "${1}" in
+  case "${1?}" in
     -V | --version)
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
       printf '%s\n' 'Copyright (c) 2023 ale5000'
@@ -1566,17 +1563,18 @@ while test "${#}" -gt 0; do
       ;;
 
     --)
+      shift
       break
       ;;
 
     --*)
-      printf 1>&3 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
       execute_script='false'
       STATUS=2
       ;;
 
     -*)
-      printf 1>&3 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
       execute_script='false'
       STATUS=2
       ;;
@@ -1586,10 +1584,13 @@ while test "${#}" -gt 0; do
       ;;
   esac
 
-  if test "${#}" -ne 0; then shift; fi # Important: 'shift' with nothing to shift cause some shells to exit so check it before using
+  shift
 done
 
 if test "${execute_script:?}" = 'true'; then
+  if test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
+  exec 3>&1 # Create a copy of stdout
+
   set_utf8_codepage
 
   if test "${#}" -eq 0; then set ''; fi
@@ -1597,9 +1598,9 @@ if test "${execute_script:?}" = 'true'; then
   STATUS="${?}"
 
   restore_codepage
-fi
 
-exec 3>&- # Close descriptor
+  exec 3>&- # Close descriptor
+fi
 
 pause_if_needed
 restore_title
