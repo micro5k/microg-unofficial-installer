@@ -1556,7 +1556,7 @@ while test "${#}" -gt 0; do
   case "${1}" in
     -V | --version)
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' 'Copyright (c) 2024 ale5000'
+      printf '%s\n' 'Copyright (c) 2023 ale5000'
       printf '%s\n' 'License GPLv3+'
       execute_script='false'
       ;;
