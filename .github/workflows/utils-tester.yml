@@ -1,0 +1,28 @@
+---
+# SPDX-FileCopyrightText: (c) 2024 ale5000
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: "Utils tester"
+permissions: {}
+on:
+  - push
+  - pull_request
+  - workflow_dispatch
+
+jobs:
+  deviceinfo:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-11]
+    name: "DeviceInfo on ${{ matrix.os }}"
+
+    steps:
+      - name: "Checkout sources"
+        uses: actions/checkout@v4
+      - name: "Test script"
+        shell: bash
+        run: |
+          # Testing script...
+          '${{ github.workspace }}/utils/device-info.sh' --version
+          printf '\n'
+          '${{ github.workspace }}/utils/device-info.sh' -- '${{ github.workspace }}/utils/test-files/Getprop-EMU-Pixel 4 API 33.txt'
