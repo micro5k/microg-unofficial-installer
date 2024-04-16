@@ -17,7 +17,7 @@ set -u
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
   (set -o posix 2> /dev/null) && set -o posix || true
   (set +H 2> /dev/null) && set +H || true
-  (set -o pipefail) && set -o pipefail || true
+  (set -o pipefail 2> /dev/null) && set -o pipefail || true
 }
 
 readonly SCRIPT_NAME='Android device info extractor'
@@ -53,6 +53,7 @@ readonly NL='
 
 export LANG='en_US.UTF-8'
 DEBUG="${DEBUG:-0}"
+CI="${CI:-false}"
 
 set_utf8_codepage()
 {
@@ -161,7 +162,7 @@ show_section()
 
 set_title()
 {
-  if test "${CI:-false}" != 'false'; then return 1; fi
+  if test "${CI:?}" != 'false'; then return 1; fi
 
   if command 1> /dev/null -v title; then
     PREVIOUS_TITLE="$(title)" # Save current title
@@ -177,7 +178,7 @@ set_title()
 
 restore_title()
 {
-  if test "${CI:-false}" != 'false'; then return 1; fi
+  if test "${CI:?}" != 'false'; then return 1; fi
 
   if command 1> /dev/null -v title; then
     title "${PREVIOUS_TITLE-}" # Restore saved title
@@ -194,7 +195,7 @@ restore_title()
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
-  if test "${CI:-false}" = 'false' && test "${SHLVL:-}" = '1' && test -t 0 && test -t 1 && test -t 2; then
+  if test "${CI:?}" = 'false' && test "${SHLVL:-}" = '1' && test -t 0 && test -t 1 && test -t 2; then
     printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit...' || true
     # shellcheck disable=SC3045
     IFS='' read 1>&2 -r -s -n 1 _ || true
@@ -1588,7 +1589,7 @@ while test "${#}" -gt 0; do
 done
 
 if test "${execute_script:?}" = 'true'; then
-  if test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
+  if test "${CI:?}" != 'false' || test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
   exec 3>&1 # Create a copy of stdout
 
   set_utf8_codepage
