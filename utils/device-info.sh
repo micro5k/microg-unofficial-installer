@@ -1297,6 +1297,10 @@ extract_all_info()
   SELECTED_DEVICE="${1:?}"
   if ! ensure_boot_completed; then return 2; fi
 
+  if test "${PRIVACY_MODE?}" = 'true'; then
+    show_warn 'PRIVACY MODE is enabled, all sensitive data will be anonymized!'
+  fi
+
   show_status_info 'Finding info...'
   show_status_info ''
 
