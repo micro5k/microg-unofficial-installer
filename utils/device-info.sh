@@ -55,6 +55,11 @@ export LANG='en_US.UTF-8'
 DEBUG="${DEBUG:-0}"
 CI="${CI:-false}"
 
+# IFS change is intended
+# nosemgrep
+IFS=' 	
+'
+
 set_utf8_codepage()
 {
   if command 1> /dev/null -v 'chcp.com' && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '\r' | trim_space_left)" && test "${PREVIOUS_CODEPAGE?}" -ne 65001; then
