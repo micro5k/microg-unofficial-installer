@@ -168,6 +168,7 @@ show_section()
 set_title()
 {
   if test "${CI:?}" != 'false'; then return 1; fi
+  TITLE_SET='true'
 
   if command 1> /dev/null -v title; then
     PREVIOUS_TITLE="$(title)" # Save current title
@@ -178,12 +179,14 @@ set_title()
   elif test -t 2; then
     printf 1>&2 '\033[22;0t\r' && printf 1>&2 '       \r'                         # Save current title on stack
     printf 1>&2 '\033]0;%s\007\r' "${1:?}" && printf 1>&2 '    %*s \r' "${#1}" '' # Set new title
+  else
+    TITLE_SET='false'
   fi
 }
 
 restore_title()
 {
-  if test "${CI:?}" != 'false'; then return 1; fi
+  if test "${CI:?}" != 'false' || test "${TITLE_SET:-false}" = 'false'; then return 1; fi
 
   if command 1> /dev/null -v title; then
     title "${PREVIOUS_TITLE-}" # Restore saved title
@@ -195,6 +198,8 @@ restore_title()
     printf 1>&2 '\033]0;\007\r' && printf 1>&2 '     \r'  # Set empty title (fallback in case saving/restoring title doesn't work)
     printf 1>&2 '\033[23;0t\r' && printf 1>&2 '       \r' # Restore title from stack
   fi
+
+  TITLE_SET='false'
 }
 
 pause_if_needed()
@@ -1550,8 +1555,8 @@ main()
   return 0
 }
 
-set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 execute_script='true'
+change_title='true'
 STATUS=0
 PRIVACY_MODE='false'
 
@@ -1566,6 +1571,10 @@ while test "${#}" -gt 0; do
 
     -p | --privacy-mode)
       PRIVACY_MODE='true'
+      ;;
+
+    --no-title)
+      change_title='false'
       ;;
 
     --)
@@ -1594,6 +1603,8 @@ while test "${#}" -gt 0; do
 done
 
 if test "${execute_script:?}" = 'true'; then
+  if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
+
   if test "${CI:?}" != 'false' || test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
   exec 3>&1 # Create a copy of stdout
 
