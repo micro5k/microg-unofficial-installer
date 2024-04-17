@@ -20,7 +20,8 @@ unset OSTYPE
 unset OPTERR
 unset OPTIND
 
-# nosemgrep: IFS change is intended
+# IFS change is intended
+# nosemgrep
 IFS=' 	
 '
 PS1='\w \$ '
