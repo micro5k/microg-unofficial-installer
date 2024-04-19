@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined #
 
 echo 'PRELOADER'
@@ -134,6 +135,26 @@ package_extract_file()
   if ! test -e "${2:?}"; then ui_error "Failed to extract the file '${1}' from this archive"; fi
 }
 
+seed_random_generator()
+{
+  # Seed the RANDOM variable
+  RANDOM="${$:?}${$:?}"
+}
+
+generate_random()
+{
+  # shellcheck disable=SC3028
+  LAST_RANDOM="${RANDOM?}" # Both BusyBox and Toybox support ${RANDOM}
+
+  if test "${LAST_RANDOM:?}" != "${$:?}${$:?}"; then
+    : # OK
+  elif test -e '/dev/urandom' && command 1> /dev/null -v tr && command 1> /dev/null -v head && LAST_RANDOM="$(tr 0< '/dev/urandom' 2> /dev/null -d -c '[:digit:]' | head -c 5)"; then
+    : # OK
+  else
+    ui_error 'Unable to generate a random number'
+  fi
+}
+
 _ub_detect_bootmode
 _ub_we_mounted_tmp=false
 
@@ -185,14 +206,9 @@ _ub_we_mounted_tmp=false
   export TMPDIR
 }
 
-# Seed the RANDOM variable
-RANDOM="${$:?}${$:?}"
-
-# shellcheck disable=SC3028
-{
-  if test "${RANDOM:?}" = "${$:?}${$:?}"; then ui_error "\$RANDOM is not supported"; fi # Both BusyBox and Toybox support $RANDOM
-  _ub_our_main_script="${TMPDIR:?}/${RANDOM:?}-customize.sh"
-}
+seed_random_generator
+generate_random
+_ub_our_main_script="${TMPDIR:?}/${LAST_RANDOM:?}-customize.sh"
 
 STATUS=1
 UNKNOWN_ERROR=1
