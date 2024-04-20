@@ -788,7 +788,7 @@ call_phonesubinfo()
   _method_code="$(apply_phonesubinfo_deviation "${2:?}")"
   shift 2
 
-  if test "${#}" -eq 0; then set ''; fi # Avoid issues on Bash under Mac
+  if test "${#}" -eq 0; then set -- ''; fi # Avoid issues on Bash under Mac
   adb -s "${_device:?}" shell "service call iphonesubinfo ${_method_code:?} ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
 }
 # https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl
@@ -1610,7 +1610,7 @@ if test "${execute_script:?}" = 'true'; then
 
   set_utf8_codepage
 
-  if test "${#}" -eq 0; then set ''; fi
+  if test "${#}" -eq 0; then set -- ''; fi
   main "${@}"
   STATUS="${?}"
 
