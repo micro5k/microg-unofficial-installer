@@ -136,6 +136,19 @@ package_extract_file()
   if ! test -e "${2:?}"; then ui_error "Failed to extract the file '${1}' from this archive"; fi
 }
 
+generate_awk_random_seed()
+{
+  local _seed _pid
+
+  if _seed="$(LC_ALL=C date 2> /dev/null -u -- '+%N')" && test -n "${_seed?}" && test "${_seed:?}" != 'N'; then
+    printf '%s\n' "${_seed:?}"
+  elif command 1> /dev/null -v tail; then
+    _pid="$(printf '%s' "${$:?}" | tail -c 4)" && LC_ALL=C date 2> /dev/null -u -- "+%-I%M%S${_pid:?}"
+  else
+    return 1
+  fi
+}
+
 generate_random()
 {
   local _seed
@@ -153,7 +166,9 @@ generate_random()
     : # OK
   elif command 1> /dev/null -v shuf && LAST_RANDOM="$(shuf -n '1' -i '0-32767')"; then
     : # OK
-  elif command 1> /dev/null -v awk && command 1> /dev/null -v date && _seed="$(LC_ALL=C date -u -- '+%N')" && test -n "${_seed?}" && test "${_seed:?}" != 'N' && LAST_RANDOM="$(awk -v seed="${_seed:?}" -- 'BEGIN { srand(seed); print int( rand()*(32767+1) ) }')"; then
+  elif command 1> /dev/null -v hexdump && test -e '/dev/urandom' && LAST_RANDOM="$(hexdump -v -n '2' -e '1/2 "%u"' -- '/dev/urandom')"; then
+    : # OK
+  elif command 1> /dev/null -v awk && command 1> /dev/null -v date && _seed="$(generate_awk_random_seed)" && test -n "${_seed?}" && LAST_RANDOM="$(awk -v seed="${_seed:?}" -- 'BEGIN { srand(seed); print int( rand()*(32767+1) ) }')"; then
     : # OK
   elif test -e '/dev/urandom' && command 1> /dev/null -v tr && command 1> /dev/null -v head && LAST_RANDOM="$(tr 0< '/dev/urandom' 2> /dev/null -d -c '[:digit:]' | head -c 5)" && test -n "${LAST_RANDOM?}"; then
     : # OK
