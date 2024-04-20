@@ -22,6 +22,7 @@ set -u || true
 
 export OUTFD="${2:?}"
 export ZIPFILE="${3:?}"
+unset RANDOM_IS_SEEDED
 
 ### PREVENTIVE CHECKS ###
 
@@ -135,22 +136,29 @@ package_extract_file()
   if ! test -e "${2:?}"; then ui_error "Failed to extract the file '${1}' from this archive"; fi
 }
 
-seed_random_generator()
-{
-  # Seed the RANDOM variable
-  RANDOM="${$:?}${$:?}"
-}
-
 generate_random()
 {
-  # shellcheck disable=SC3028
-  LAST_RANDOM="${RANDOM?}" # Both BusyBox and Toybox support ${RANDOM}
+  local _seed
 
-  if test "${LAST_RANDOM:?}" != "${$:?}${$:?}"; then
+  if test "${RANDOM_IS_SEEDED:-false}" = 'false'; then
+    # Seed the RANDOM variable
+    RANDOM="${$:?}${$:?}"
+    RANDOM_IS_SEEDED='true'
+  fi
+
+  # shellcheck disable=SC3028
+  LAST_RANDOM="${RANDOM-}"
+
+  if test -n "${LAST_RANDOM?}" && test "${LAST_RANDOM:?}" != "${$:?}${$:?}"; then
     : # OK
-  elif test -e '/dev/urandom' && command 1> /dev/null -v tr && command 1> /dev/null -v head && LAST_RANDOM="$(tr 0< '/dev/urandom' 2> /dev/null -d -c '[:digit:]' | head -c 5)"; then
+  elif command 1> /dev/null -v shuf && LAST_RANDOM="$(shuf -n '1' -i '0-32767')"; then
+    : # OK
+  elif command 1> /dev/null -v awk && command 1> /dev/null -v date && _seed="$(LC_ALL=C date -u -- '+%N')" && test -n "${_seed?}" && test "${_seed:?}" != 'N' && LAST_RANDOM="$(awk -v seed="${_seed:?}" -- 'BEGIN { srand(seed); print int( rand()*(32767+1) ) }')"; then
+    : # OK
+  elif test -e '/dev/urandom' && command 1> /dev/null -v tr && command 1> /dev/null -v head && LAST_RANDOM="$(tr 0< '/dev/urandom' 2> /dev/null -d -c '[:digit:]' | head -c 5)" && test -n "${LAST_RANDOM?}"; then
     : # OK
   else
+    LAST_RANDOM=''
     ui_error 'Unable to generate a random number'
   fi
 }
@@ -206,7 +214,6 @@ _ub_we_mounted_tmp=false
   export TMPDIR
 }
 
-seed_random_generator
 generate_random
 _ub_our_main_script="${TMPDIR:?}/${LAST_RANDOM:?}-customize.sh"
 
