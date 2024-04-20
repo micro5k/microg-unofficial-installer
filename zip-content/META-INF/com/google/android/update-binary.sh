@@ -143,7 +143,7 @@ generate_random()
   if test "${RANDOM_IS_SEEDED:-false}" = 'false'; then
     # Seed the RANDOM variable
     RANDOM="${$:?}${$:?}"
-    RANDOM_IS_SEEDED='true'
+    readonly RANDOM_IS_SEEDED='true'
   fi
 
   # shellcheck disable=SC3028
