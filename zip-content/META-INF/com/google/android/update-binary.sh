@@ -141,9 +141,9 @@ generate_awk_random_seed()
   local _seed _pid
 
   if _seed="$(LC_ALL=C date 2> /dev/null -u -- '+%N')" && test -n "${_seed?}" && test "${_seed:?}" != 'N'; then
-    printf '%s\n' "${_seed:?}"
-  elif command 1> /dev/null -v tail; then
-    _pid="$(printf '%s' "${$:?}" | tail -c 4)" && LC_ALL=C date 2> /dev/null -u -- "+%-I%M%S${_pid:?}"
+    echo "${_seed:?}"
+  elif command 1> /dev/null -v tail && _pid="$(printf '%s' "${$:?}" | tail -c 4)" && LC_ALL=C date 2> /dev/null -u -- "+%-I%M%S${_pid:?}"; then
+    echo 1>&2 'Seed: using unsafe seed'
   else
     return 1
   fi
@@ -167,11 +167,11 @@ generate_random()
   elif command 1> /dev/null -v shuf && LAST_RANDOM="$(shuf -n '1' -i '0-32767')"; then
     : # OK
   elif command 1> /dev/null -v hexdump && test -e '/dev/urandom' && LAST_RANDOM="$(hexdump -v -n '2' -e '1/2 "%u"' -- '/dev/urandom')"; then
-    : # OK
+    echo 'Random: using hexdump' # OK
   elif command 1> /dev/null -v awk && command 1> /dev/null -v date && _seed="$(generate_awk_random_seed)" && test -n "${_seed?}" && LAST_RANDOM="$(awk -v seed="${_seed:?}" -- 'BEGIN { srand(seed); print int( rand()*(32767+1) ) }')"; then
-    : # OK
+    echo 'Random: using awk' # OK
   elif test -e '/dev/urandom' && command 1> /dev/null -v tr && command 1> /dev/null -v head && LAST_RANDOM="$(tr 0< '/dev/urandom' -d -c '[:digit:]' | head -c 5 || true)" 2> /dev/null && test -n "${LAST_RANDOM?}"; then
-    : # OK
+    echo 'Random: using tr/head' # OK
   else
     LAST_RANDOM=''
     ui_error 'Unable to generate a random number'
@@ -236,6 +236,8 @@ STATUS=1
 UNKNOWN_ERROR=1
 
 package_extract_file 'customize.sh' "${_ub_our_main_script:?}"
+
+echo "Loading ${LAST_RANDOM:?}-customize.sh..."
 # shellcheck source=SCRIPTDIR/../../../../customize.sh
 . "${_ub_our_main_script:?}" || ui_error "Failed to source customize.sh"
 rm -f "${_ub_our_main_script:?}" || ui_error "Failed to delete customize.sh"
