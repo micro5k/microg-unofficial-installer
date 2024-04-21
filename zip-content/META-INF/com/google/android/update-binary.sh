@@ -170,7 +170,7 @@ generate_random()
     : # OK
   elif command 1> /dev/null -v awk && command 1> /dev/null -v date && _seed="$(generate_awk_random_seed)" && test -n "${_seed?}" && LAST_RANDOM="$(awk -v seed="${_seed:?}" -- 'BEGIN { srand(seed); print int( rand()*(32767+1) ) }')"; then
     : # OK
-  elif test -e '/dev/urandom' && command 1> /dev/null -v tr && command 1> /dev/null -v head && LAST_RANDOM="$(tr 0< '/dev/urandom' 2> /dev/null -d -c '[:digit:]' | head -c 5)" && test -n "${LAST_RANDOM?}"; then
+  elif test -e '/dev/urandom' && command 1> /dev/null -v tr && command 1> /dev/null -v head && LAST_RANDOM="$(tr 0< '/dev/urandom' -d -c '[:digit:]' | head -c 5 || true)" 2> /dev/null && test -n "${LAST_RANDOM?}"; then
     : # OK
   else
     LAST_RANDOM=''
