@@ -5,9 +5,13 @@
 name: "Utils tester"
 permissions: {}
 on:
-  - push
-  - pull_request
-  - workflow_dispatch
+  push:
+    paths:
+      - "utils/**"
+  pull_request:
+    paths:
+      - "utils/**"
+  workflow_dispatch:
 
 jobs:
   deviceinfo:
