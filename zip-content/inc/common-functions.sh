@@ -125,7 +125,13 @@ _mount_and_verify_system_partition()
   IFS="${NL:?}"
 
   for _path in ${1?}; do
-    if test -z "${_path:-}" || test "${_path:?}" = '/mnt/system'; then continue; fi # Note: '/mnt/system' can only be manually mounted
+    test -n "${_path?}" || continue
+
+    case "${_path:?}" in
+      '/mnt/'* | "${TMP_PATH:?}/"*) continue ;; # Note: These paths can only be mounted manually (example: /mnt/system)
+      *) ;;
+    esac
+
     _path="$(_canonicalize "${_path:?}")"
     _mount_helper '-o' 'rw' "${_path:?}" || true
 
@@ -245,6 +251,18 @@ _find_block()
   return 1
 }
 
+_ensure_mountpoint_exist()
+{
+  if test -e "${1:?}"; then return 0; fi
+
+  ui_debug "Creating mountpoint '${1?}'..."
+  mkdir -p "${1:?}" || {
+    ui_warning "Failed to create mountpoint '${1?}'"
+    return 1
+  }
+  set_perm 0 0 0755 "${1:?}"
+}
+
 _manual_partition_mount()
 {
   local _backup_ifs _path _block _found
@@ -276,17 +294,20 @@ _manual_partition_mount()
 
   if test "${_found:?}" != 'false'; then
     for _path in ${2?}; do
-      if test -z "${_path:-}"; then continue; fi
+      test -n "${_path?}" || continue
+      _ensure_mountpoint_exist "${_path:?}" || continue
       _path="$(_canonicalize "${_path:?}")"
 
-      umount "${_path:?}" 2> /dev/null || true
+      umount 2> /dev/null "${_path:?}" || true
       if _mount_helper '-o' 'rw' "${_block:?}" "${_path:?}"; then
         IFS="${_backup_ifs:-}"
+        ui_debug "Mounted: ${_path?}"
         LAST_MOUNTPOINT="${_path:?}"
-        ui_debug "Mounted: ${_path:-}"
         return 0
       fi
     done
+
+    ui_warning 'Not mounted'
   fi
 
   IFS="${_backup_ifs:-}"
@@ -297,13 +318,13 @@ _find_and_mount_system()
 {
   local _sys_mountpoint_list='' # This is a list of paths separated by newlines
 
-  if test "${TEST_INSTALL:-false}" != 'false' && test -n "${ANDROID_ROOT:-}" && test -e "${ANDROID_ROOT:?}"; then
+  if test "${TEST_INSTALL:-false}" != 'false' && test -n "${ANDROID_ROOT-}" && test -e "${ANDROID_ROOT:?}"; then
     _sys_mountpoint_list="${ANDROID_ROOT:?}${NL:?}"
   else
     if test -e '/mnt/system'; then
       _sys_mountpoint_list="${_sys_mountpoint_list?}/mnt/system${NL:?}"
     fi
-    if test -n "${ANDROID_ROOT:-}" &&
+    if test -n "${ANDROID_ROOT-}" &&
       test "${ANDROID_ROOT:?}" != '/system_root' &&
       test "${ANDROID_ROOT:?}" != '/system' &&
       test -e "${ANDROID_ROOT:?}"; then
@@ -315,12 +336,13 @@ _find_and_mount_system()
     if test "${RECOVERY_FAKE_SYSTEM:?}" = 'false' && test -e '/system'; then
       _sys_mountpoint_list="${_sys_mountpoint_list?}/system${NL:?}"
     fi
+    _sys_mountpoint_list="${_sys_mountpoint_list?}${TMP_PATH:?}/system_mountpoint${NL:?}"
   fi
   ui_debug 'System mountpoint list:'
-  ui_debug "${_sys_mountpoint_list:-}"
+  ui_debug "${_sys_mountpoint_list?}"
 
   if _verify_system_partition "${_sys_mountpoint_list?}"; then
-    : # Found
+    : # Found (it was already mounted)
   else
     UNMOUNT_SYSTEM=1
     ui_debug "Mounting system..."
