@@ -434,6 +434,12 @@ ui_debug 'Starting main script...'
 export STATUS="${?}"
 if test -f "${TMP_PATH:?}/installed"; then export UNKNOWN_ERROR=0; else export UNKNOWN_ERROR=1; fi
 
+# Safety check to allow unmounting even in case of failure
+if test -e "${TMP_PATH:?}/system_mountpoint"; then
+  "${OUR_BB:?}" 2> /dev/null umount "${TMP_PATH:?}/system_mountpoint" || umount 2> /dev/null "${TMP_PATH:?}/system_mountpoint" || true
+  "${OUR_BB:?}" rmdir -- "${TMP_PATH:?}/system_mountpoint" || ui_error 'Failed to unmount/delete the temp mountpoint'
+fi
+
 ui_debug ''
 disable_debug_log # Disable debug log if it was enabled and restore normal output
 

@@ -843,6 +843,10 @@ initialize()
 deinitialize()
 {
   if test "${UNMOUNT_SYSTEM:?}" -eq 1 && test -n "${SYS_MOUNTPOINT-}"; then unmount "${SYS_MOUNTPOINT:?}"; fi
+  if test -e "${TMP_PATH:?}/system_mountpoint"; then
+    rmdir -- "${TMP_PATH:?}/system_mountpoint" || ui_error 'Failed to delete the temp mountpoint'
+  fi
+
   if test "${DATA_INIT_STATUS:?}" -eq 1 && test -n "${DATA_PATH-}"; then unmount "${DATA_PATH:?}"; fi
 }
 
