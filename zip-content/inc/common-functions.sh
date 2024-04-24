@@ -322,7 +322,7 @@ _find_and_mount_system()
   if _verify_system_partition "${_sys_mountpoint_list?}"; then
     : # Found
   else
-    SYS_INIT_STATUS=1
+    UNMOUNT_SYSTEM=1
     ui_debug "Mounting system..."
 
     if _mount_and_verify_system_partition "${_sys_mountpoint_list?}"; then
@@ -597,7 +597,7 @@ display_info()
 initialize()
 {
   local _raw_arch_list
-  SYS_INIT_STATUS=0
+  UNMOUNT_SYSTEM=0
   DATA_INIT_STATUS=0
 
   # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
@@ -820,8 +820,8 @@ initialize()
 
 deinitialize()
 {
-  if test "${SYS_INIT_STATUS:?}" = '1' && test -n "${SYS_MOUNTPOINT:-}"; then unmount "${SYS_MOUNTPOINT:?}"; fi
-  if test "${DATA_INIT_STATUS:?}" = '1' && test -n "${DATA_PATH:-}"; then unmount "${DATA_PATH:?}"; fi
+  if test "${UNMOUNT_SYSTEM:?}" -eq 1 && test -n "${SYS_MOUNTPOINT-}"; then unmount "${SYS_MOUNTPOINT:?}"; fi
+  if test "${DATA_INIT_STATUS:?}" -eq 1 && test -n "${DATA_PATH-}"; then unmount "${DATA_PATH:?}"; fi
 }
 
 clean_previous_installations()
