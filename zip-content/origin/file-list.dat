@@ -12,6 +12,6 @@ app/IchnaeaNlpBackend|10||IchnaeaNlpBackend||org.microg.nlp.backend.ichnaea|b853
 app/DejaVuBackend|18||DejaVuBackend||org.fitchfamily.android.dejavu|9a6ffed69c510a06a719a2d52c3fd49218f71806
 app/NominatimGeocoderBackend|9||NominatimGeocoderBackend||org.microg.nlp.backend.nominatim|40b0917e9805cdab5abc53925f8732bff9ba8d84
 app/LegacyNetworkLocation|9|18|NetworkLocation||com.google.android.location|8121295640985fad6c5b98890a156aafd18c2053
-app/NewPipe|21||NewPipe||org.schabi.newpipe|ea26dd5a63aa354b7d6c00fc3c0824ed27c0c754
+app/NewPipe|21||NewPipe||org.schabi.newpipe|976a977df9e360f54e8699f0286ca49f09bfe945
 app/NewPipeOld|19|20|NewPipe||org.schabi.newpipe|319efaac4eba849fd390cda3d4cc935394ddc01b
 app/NewPipeLegacy|16|18|NewPipe||org.schabi.newpipelegacy|95413ee2bf576e4c7b0bdc9e9e79fd2187d444a9
