@@ -68,6 +68,7 @@ Notes
 .. [#] <origin/priv-app/PlayStoreLegacy.apk>
 .. [#] <origin/priv-app/AndroidAuto.apk>
 .. [#] <origin/app/Gmail.apk>
+
 |boom| *Only in the full version*.
 
 ..
@@ -99,4 +100,4 @@ Scripts
 
 Components used only during setup (not installed)
 -------------------------------------------------
-- BusyBox for Android (available `here <https://forum.xda-developers.com/showthread.php?t=3348543>`_) - See `here <misc/README.rst>`_ for more info
+- BusyBox for Android (`original thread <https://forum.xda-developers.com/showthread.php?t=3348543>`_) - `More info here <misc/README.rst>`_
