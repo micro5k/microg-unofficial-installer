@@ -12,6 +12,12 @@
 
 <exceptions>
     <exception package="com.android.vending" sha256-cert-digest="94:11:67:9B:68:68:2A:20:BD:92:B7:9C:ED:B5:55:5C:4F:87:2C:EC:63:D6:51:F4:E1:47:36:36:89:BE:06:7F">
+        <!-- Account -->
+        <permission name="android.permission.GET_ACCOUNTS" fixed="false" />
+
+        <!-- Notifications -->
+        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false" />
+
         <!-- Signature spoofing -->
         <!-- %FAKE_PACKAGE_SIGNATURE% -->
     </exception>
