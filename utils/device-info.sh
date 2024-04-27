@@ -1474,6 +1474,8 @@ extract_all_info()
 
   EFS_SERIALNO="$(device_get_file_content "${SELECTED_DEVICE:?}" '/efs/FactoryApp/serial_no')"
   validate_and_display_info 'Serial number' "${EFS_SERIALNO?}"
+
+  return 0
 }
 
 main()
@@ -1504,9 +1506,10 @@ main()
       return 10
     }
 
-    local _device
+    local _device _status_code _last_error_code
 
     _found='false'
+    _last_error_code=0
     for _device in $(adb devices | grep -v -i -F -e 'list' | cut -f '1' -s); do
       if test -z "${_device?}"; then continue; fi
 
@@ -1516,6 +1519,12 @@ main()
       if detect_status_and_wait_connection "${_device:?}" 'true'; then
         _found='true'
         extract_all_info "${_device:?}"
+        _status_code="${?}"
+
+        case "${_status_code:?}" in
+          0) ;;
+          *) _last_error_code="${_status_code:?}" ;;
+        esac
       else
         show_status_warn 'Device is offline/unauthorized, skipped'
       fi
@@ -1526,6 +1535,7 @@ main()
       return 11
     fi
 
+    return "${_last_error_code:?}"
   else
 
     test -f "${INPUT_SELECTION:?}" || {
