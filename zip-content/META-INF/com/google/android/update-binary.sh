@@ -140,6 +140,8 @@ generate_awk_random_seed()
 {
   local _seed _pid
 
+  # IMPORTANT: On old versions of awk the maximum value of seed is 4294967295 (2^32 − 1); if you exceed the maximum then awk always returns the same random number (which is no longer random)
+
   if _seed="$(LC_ALL=C date 2> /dev/null -u -- '+%N')" && test -n "${_seed?}" && test "${_seed:?}" != 'N'; then
     echo "${_seed:?}"
   elif command 1> /dev/null -v tail && _pid="$(echo "${$:?}" | tail -c 5)" && LC_ALL=C date 2> /dev/null -u -- "+%-I%M%S${_pid:?}"; then # tail -c 5 => Last 4 bytes + '\n'
