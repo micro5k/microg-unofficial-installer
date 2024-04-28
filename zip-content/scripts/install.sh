@@ -72,7 +72,10 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   setup_app 1 '' 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
 
-  if test "${IS_EMU:?}" = 'true'; then
+  profile_filename="$(printf '%s\n' "${BUILD_MANUFACTURER?}-${BUILD_MODEL?}.xml" | tr -- '[:upper:]' '[:lower:]')"
+  if test -e "${TMP_PATH:?}/origin/profiles/${profile_filename:?}"; then
+    move_rename_file "${TMP_PATH:?}/origin/profiles/${profile_filename:?}" "${TMP_PATH:?}/files/etc/microg_device_profile.xml"
+  elif test "${IS_EMU:?}" = 'true'; then
     move_rename_file "${TMP_PATH:?}/origin/profiles/lenovo_yoga_tab_3_pro_10_inches_23.xml" "${TMP_PATH:?}/files/etc/microg_device_profile.xml"
   fi
 
