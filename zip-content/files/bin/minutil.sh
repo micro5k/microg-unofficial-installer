@@ -153,7 +153,7 @@ _minutil_display_help='false'
 if _minutil_check_getopt; then
   if minutil_args="$(
     unset POSIXLY_CORRECT
-    \getopt -o 'Vhsri:' -l 'version,help,rescan-storage,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n 'MinUtil' -- "${@}"
+    \getopt -o 'vVhsri:' -l 'version,help,rescan-storage,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n 'MinUtil' -- "${@}"
   )"; then
     \eval ' \set' '--' "${minutil_args?}" || exit 1
   else
@@ -416,12 +416,12 @@ while true; do
   case "${1}" in
     -v) ;; # Early parameters, already parsed
 
-    -h | --help)
-      _minutil_display_help='true'
+    -V | --version)
+      minutil_display_version
       ;;
 
-    --version)
-      minutil_display_version
+    -h | --help | '-?')
+      _minutil_display_help='true'
       ;;
 
     -i | --reinstall-package)
