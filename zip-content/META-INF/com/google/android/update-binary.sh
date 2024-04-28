@@ -142,7 +142,7 @@ generate_awk_random_seed()
 
   if _seed="$(LC_ALL=C date 2> /dev/null -u -- '+%N')" && test -n "${_seed?}" && test "${_seed:?}" != 'N'; then
     echo "${_seed:?}"
-  elif command 1> /dev/null -v tail && _pid="$(printf '%s' "${$:?}" | tail -c 4)" && LC_ALL=C date 2> /dev/null -u -- "+%-I%M%S${_pid:?}"; then
+  elif command 1> /dev/null -v tail && _pid="$(echo "${$:?}" | tail -c 5)" && LC_ALL=C date 2> /dev/null -u -- "+%-I%M%S${_pid:?}"; then # tail -c 5 => Last 4 bytes + '\n'
     echo 1>&2 'Seed: using unsafe seed'
   else
     return 1
