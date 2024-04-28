@@ -305,6 +305,8 @@ minutil_force_gcm_reconnection()
 
 minutil_reset_gms_data()
 {
+  _is_caller_root || return 1
+
   printf '%s\n' 'Resetting GMS data of all apps...'
   if test -e '/data/data/'; then
     find /data/data/*/shared_prefs -name 'com.google.android.gms.*.xml' -delete
@@ -491,7 +493,7 @@ if test "${_minutil_display_help:?}" = 'true'; then
   _minutil_aligned_print '--reset-battery' 'Reset battery stats and, if possible, also reset battery fuel gauge chip (need root)'
   _minutil_aligned_print '--remove-all-accounts' 'Remove all accounts from the device (need root)'
   _minutil_aligned_print '--force-gcm-reconnection' 'Force GCM reconnection'
-  _minutil_aligned_print '-r,--reset-gms-data' 'Reset GMS data of all apps'
+  _minutil_aligned_print '-r,--reset-gms-data' 'Reset GMS data of all apps (need root)'
   _minutil_aligned_print '-i,--reinstall-package PACKAGE_NAME' 'Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions'
 
   printf '%s\n' "
