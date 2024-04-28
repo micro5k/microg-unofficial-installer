@@ -582,7 +582,9 @@ _generate_architectures_list()
 
 display_info()
 {
+  ui_msg "Brand: ${BUILD_BRAND?}"
   ui_msg "Manufacturer: ${BUILD_MANUFACTURER?}"
+  ui_msg "Model: ${BUILD_MODEL?}"
   ui_msg "Device: ${BUILD_DEVICE?}"
   ui_msg "Product: ${BUILD_PRODUCT?}"
   ui_msg "Emulator: ${IS_EMU:?}"
@@ -668,11 +670,13 @@ initialize()
   _find_and_mount_system
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
+  BUILD_BRAND="$(sys_getprop 'ro.product.brand')"
   BUILD_MANUFACTURER="$(sys_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(sys_getprop 'ro.product.brand')"
+  BUILD_MODEL="$(sys_getprop 'ro.product.model')"
   BUILD_DEVICE="$(sys_getprop 'ro.product.device')" || BUILD_DEVICE="$(sys_getprop 'ro.build.product')"
   BUILD_PRODUCT="$(sys_getprop 'ro.product.name')"
-  readonly BUILD_MANUFACTURER BUILD_DEVICE BUILD_PRODUCT
-  export UILD_MANUFACTURER BUILD_DEVICE BUILD_PRODUCT
+  readonly BUILD_BRAND BUILD_MANUFACTURER BUILD_MODEL BUILD_DEVICE BUILD_PRODUCT
+  export BUILD_BRAND BUILD_MANUFACTURER BUILD_MODEL BUILD_DEVICE BUILD_PRODUCT
 
   if test "${BUILD_MANUFACTURER?}" = 'OnePlus' && test "${BUILD_DEVICE?}" = 'OnePlus6'; then
     export KEYCHECK_ENABLED='false' # It doesn't work properly on this device
