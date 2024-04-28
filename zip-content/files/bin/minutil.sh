@@ -16,7 +16,7 @@ set -e
 ### GLOBAL VARIABLES ###
 
 readonly MINUTIL_NAME='MinUtil'
-readonly MINUTIL_VERSION='1.1'
+readonly MINUTIL_VERSION='1.2'
 
 ### PREVENTIVE CHECKS ###
 
@@ -153,7 +153,7 @@ _minutil_display_help='false'
 if _minutil_check_getopt; then
   if minutil_args="$(
     unset POSIXLY_CORRECT
-    \getopt -o 'vhsi:' -l 'help,version,remove-all-accounts,rescan-storage,reset-battery,force-gcm-reconnection,reinstall-package:' -n 'MinUtil' -- "${@}"
+    \getopt -o 'Vhsri:' -l 'version,help,rescan-storage,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n 'MinUtil' -- "${@}"
   )"; then
     \eval ' \set' '--' "${minutil_args?}" || exit 1
   else
@@ -303,6 +303,14 @@ minutil_force_gcm_reconnection()
   printf '%s\n' "Done!"
 }
 
+minutil_reset_gms_data()
+{
+  printf '%s\n' 'Resetting GMS data of all apps...'
+  if test -e '/data/data/'; then
+    find /data/data/*/shared_prefs -name 'com.google.android.gms.*.xml' -delete
+  fi
+}
+
 minutil_remove_all_accounts()
 {
   _is_caller_root || return 1
@@ -440,7 +448,7 @@ while true; do
       ;;
 
     -r | --reset-gms-data)
-      printf '%s\n' 'Not yet supported'
+      minutil_reset_gms_data
       ;;
 
     -R | --reset-permissions)
@@ -483,6 +491,7 @@ if test "${_minutil_display_help:?}" = 'true'; then
   _minutil_aligned_print '--reset-battery' 'Reset battery stats and, if possible, also reset battery fuel gauge chip (need root)'
   _minutil_aligned_print '--remove-all-accounts' 'Remove all accounts from the device (need root)'
   _minutil_aligned_print '--force-gcm-reconnection' 'Force GCM reconnection'
+  _minutil_aligned_print '-r,--reset-gms-data' 'Reset GMS data of all apps'
   _minutil_aligned_print '-i,--reinstall-package PACKAGE_NAME' 'Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions'
 
   printf '%s\n' "
