@@ -21,7 +21,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='1.7'
+readonly SCRIPT_VERSION='1.8'
 
 {
   readonly xml_comment_start='<!--' # Workaround for history substitution of Bash: don't insert ! directly in the printf but use a variable.
@@ -29,22 +29,23 @@ readonly SCRIPT_VERSION='1.7'
 }
 
 export LANG='en_US.UTF-8'
+CI="${CI:-false}"
 
 set_utf8_codepage()
 {
-  PREVIOUS_CODEPAGE=''
-  if command 1> /dev/null -v chcp.com; then
-    PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | LC_ALL=C tr -d '\r' | cut -d ':' -f '2-' -s | trim_space_left)"
-    chcp.com 1> /dev/null 65001
+  if command 1> /dev/null -v 'chcp.com' && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '\r' | trim_space_left)" && test "${PREVIOUS_CODEPAGE?}" -ne 65001; then
+    'chcp.com' 1> /dev/null 65001
+  else
+    PREVIOUS_CODEPAGE=''
   fi
 }
 
 restore_codepage()
 {
-  if test -n "${PREVIOUS_CODEPAGE:-}" && test "${PREVIOUS_CODEPAGE:?}" -ne 65001; then
-    chcp.com 1> /dev/null "${PREVIOUS_CODEPAGE:?}"
+  if test -n "${PREVIOUS_CODEPAGE-}"; then
+    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}"
+    PREVIOUS_CODEPAGE=''
   fi
-  PREVIOUS_CODEPAGE=''
 }
 
 show_status_msg()
@@ -65,6 +66,43 @@ show_error()
 show_negative_info()
 {
   printf 1>&2 '\033[1;32m%s\033[1;31m%s\033[0m\n' "${1:?}" "${2:?}"
+}
+
+set_title()
+{
+  if test "${CI:?}" != 'false'; then return 1; fi
+  TITLE_SET='true'
+
+  if command 1> /dev/null -v title; then
+    PREVIOUS_TITLE="$(title)" # Save current title
+    title "${1:?}"            # Set new title
+  elif test -t 1; then
+    printf '\033[22;0t\r' && printf '       \r'                         # Save current title on stack
+    printf '\033]0;%s\007\r' "${1:?}" && printf '    %*s \r' "${#1}" '' # Set new title
+  elif test -t 2; then
+    printf 1>&2 '\033[22;0t\r' && printf 1>&2 '       \r'                         # Save current title on stack
+    printf 1>&2 '\033]0;%s\007\r' "${1:?}" && printf 1>&2 '    %*s \r' "${#1}" '' # Set new title
+  else
+    TITLE_SET='false'
+  fi
+}
+
+restore_title()
+{
+  if test "${CI:?}" != 'false' || test "${TITLE_SET:-false}" = 'false'; then return 1; fi
+
+  if command 1> /dev/null -v title; then
+    title "${PREVIOUS_TITLE-}" # Restore saved title
+    PREVIOUS_TITLE=''
+  elif test -t 1; then
+    printf '\033]0;\007\r' && printf '     \r'  # Set empty title (fallback in case saving/restoring title doesn't work)
+    printf '\033[23;0t\r' && printf '       \r' # Restore title from stack
+  elif test -t 2; then
+    printf 1>&2 '\033]0;\007\r' && printf 1>&2 '     \r'  # Set empty title (fallback in case saving/restoring title doesn't work)
+    printf 1>&2 '\033[23;0t\r' && printf 1>&2 '       \r' # Restore title from stack
+  fi
+
+  TITLE_SET='false'
 }
 
 pause_if_needed()
@@ -588,10 +626,10 @@ anonymize_code()
 
 main()
 {
-  if test "${#}" -gt 0; then
-    INPUT_TYPE="${1:?}"
-  else
+  if test -z "${1-}" || test "${1:?}" = 'adb'; then
     INPUT_TYPE='adb'
+  else
+    INPUT_TYPE="${1:?}"
   fi
 
   if test "${INPUT_TYPE:?}" = 'adb'; then
@@ -600,13 +638,13 @@ main()
     SELECTED_DEVICE="$(adb_get_serial)" || {
       show_error 'Failed to get the selected device'
       pause_if_needed
-      exit 1
+      return 1
     }
     verify_device_status "${SELECTED_DEVICE:?}"
     if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
       show_error "Recovery isn't currently supported"
       pause_if_needed
-      exit 1
+      return 1
     fi
     wait_connection "${SELECTED_DEVICE:?}"
     show_status_msg 'Generating profile...'
@@ -615,7 +653,7 @@ main()
     test -e "${INPUT_TYPE:?}" || {
       show_error "Input file doesn't exist => '${INPUT_TYPE:-}'"
       pause_if_needed
-      exit 1
+      return 1
     }
 
     show_status_msg 'Generating profile...'
@@ -756,14 +794,69 @@ ${xml_comment_end:?}
 
     <serial template=\"${ANON_SERIAL_NUMBER?}\" />
 </profile>"
+
+  return 0
 }
 
-set_utf8_codepage
-show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
-if test "${#}" -gt 0; then
+execute_script='true'
+change_title='true'
+STATUS=0
+
+while test "${#}" -gt 0; do
+  case "${1?}" in
+    -V | --version)
+      printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
+      printf '%s\n' 'Copyright (c) 2023 ale5000'
+      printf '%s\n' 'License GPLv3+'
+      execute_script='false'
+      ;;
+
+    -p | --privacy-mode)
+      ;;
+
+    --no-title)
+      change_title='false'
+      ;;
+
+    --)
+      shift
+      break
+      ;;
+
+    --*)
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
+      execute_script='false'
+      STATUS=2
+      ;;
+
+    -*)
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
+      execute_script='false'
+      STATUS=2
+      ;;
+
+    *)
+      break
+      ;;
+  esac
+
+  shift
+done
+
+if test "${execute_script:?}" = 'true'; then
+  if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
+
+  set_utf8_codepage
+
+  show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+
+  if test "${#}" -eq 0; then set -- ''; fi
   main "${@}"
-else
-  main
+  STATUS="${?}"
+
+  restore_codepage
 fi
-restore_codepage
+
 pause_if_needed
+restore_title
+exit "${STATUS:?}"

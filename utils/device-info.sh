@@ -1489,7 +1489,7 @@ main()
 
   DEVICE_STATE=''
 
-  if test -z "${1?}" || test "${1:?}" = 'adb'; then
+  if test -z "${1-}" || test "${1:?}" = 'adb'; then
     INPUT_TYPE='adb'
     INPUT_SELECTION=''
     PROP_TYPE=''
