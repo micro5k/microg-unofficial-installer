@@ -565,24 +565,24 @@ find_serialno()
 
 anonymize_string()
 {
-  printf '%s' "${1?}" | LC_ALL=C tr '[:digit:]' '0' | LC_ALL=C tr 'a-f' 'f' | LC_ALL=C tr 'g-z' 'x' | LC_ALL=C tr 'A-F' 'F' | LC_ALL=C tr 'G-Z' 'X'
+  printf '%s\n' "${1?}" | LC_ALL=C tr '[:digit:]' '0' | tr 'a-f' 'f' | tr 'g-z' 'x' | tr 'A-F' 'F' | tr 'G-Z' 'X'
 }
 
-anonymize_serialno()
+anonymize_code()
 {
   local _string _prefix_length
 
   if test "${#1}" -lt 2; then
-    show_error 'Invalid serial number'
-    return 1
+    anonymize_string "${1?}"
+    return
   fi
 
   _prefix_length="$((${#1} / 2))"
   if test "${_prefix_length:?}" -gt 6; then _prefix_length='6'; fi
 
-  printf '%s' "${1:?}" | cut -c "-${_prefix_length:?}" | LC_ALL=C tr -d '[:cntrl:]'
+  printf '%s\n' "${1:?}" | cut -c "-${_prefix_length:?}" | LC_ALL=C tr -d '\n'
 
-  _string="$(printf '%s' "${1:?}" | cut -c "$((${_prefix_length:?} + 1))-" | LC_ALL=C tr -d '[:cntrl:]')"
+  _string="$(printf '%s\n' "${1:?}" | cut -c "$((${_prefix_length:?} + 1))-")"
   anonymize_string "${_string:?}"
 }
 
@@ -703,7 +703,7 @@ main()
   ANON_SERIAL_NUMBER=''
   if SERIAL_NUMBER="$(find_serialno)"; then
     show_status_msg "Serial number: ${SERIAL_NUMBER:-}"
-    ANON_SERIAL_NUMBER="$(anonymize_serialno "${SERIAL_NUMBER:?}")"
+    ANON_SERIAL_NUMBER="$(anonymize_code "${SERIAL_NUMBER:?}")"
   fi
 
   XML_ID="${BUILD_PRODUCT:?}_${BUILD_VERSION_SDK:?}"

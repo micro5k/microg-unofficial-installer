@@ -475,7 +475,7 @@ convert_dec_to_hex()
 
 anonymize_string()
 {
-  printf '%s' "${1?}" | LC_ALL=C tr '[:digit:]' '0' | LC_ALL=C tr 'a-f' 'f' | LC_ALL=C tr 'g-z' 'x' | LC_ALL=C tr 'A-F' 'F' | LC_ALL=C tr 'G-Z' 'X'
+  printf '%s\n' "${1?}" | LC_ALL=C tr '[:digit:]' '0' | tr 'a-f' 'f' | tr 'g-z' 'x' | tr 'A-F' 'F' | tr 'G-Z' 'X'
 }
 
 anonymize_code()
@@ -483,7 +483,7 @@ anonymize_code()
   local _string _prefix_length
 
   if test "${#1}" -lt 2; then
-    anonymize_string "${1:?}"
+    anonymize_string "${1?}"
     return
   fi
 
