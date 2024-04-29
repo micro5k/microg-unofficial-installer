@@ -157,20 +157,20 @@ generate_random()
 
   if test "${RANDOM_IS_SEEDED:-false}" = 'false'; then
     # Seed the RANDOM variable
-    RANDOM="${$:?}${$:?}"
+    RANDOM="${$:?}"
     readonly RANDOM_IS_SEEDED='true'
   fi
 
   # shellcheck disable=SC3028
   LAST_RANDOM="${RANDOM-}"
 
-  if test -n "${LAST_RANDOM?}" && test "${LAST_RANDOM:?}" != "${$:?}${$:?}"; then
+  if test -n "${LAST_RANDOM?}" && test "${LAST_RANDOM:?}" != "${$:?}"; then
     : # OK
-  elif command 1> /dev/null -v shuf && LAST_RANDOM="$(shuf -n '1' -i '0-32767')"; then
+  elif command 1> /dev/null -v shuf && LAST_RANDOM="$(shuf -n '1' -i '0-99999')"; then
     : # OK
   elif command 1> /dev/null -v hexdump && test -e '/dev/urandom' && LAST_RANDOM="$(hexdump -v -n '2' -e '1/2 "%u"' -- '/dev/urandom')"; then
     echo 'Random: using hexdump' # OK
-  elif command 1> /dev/null -v awk && command 1> /dev/null -v date && _seed="$(generate_awk_random_seed)" && test -n "${_seed?}" && LAST_RANDOM="$(awk -v seed="${_seed:?}" -- 'BEGIN { srand(seed); print int( rand()*(32767+1) ) }')"; then
+  elif command 1> /dev/null -v awk && command 1> /dev/null -v date && _seed="$(generate_awk_random_seed)" && test -n "${_seed?}" && LAST_RANDOM="$(awk -v seed="${_seed:?}" -- 'BEGIN { srand(seed); print int( rand()*(99999+1) ) }')"; then
     echo 'Random: using awk' # OK
   elif test -e '/dev/urandom' && command 1> /dev/null -v tr && command 1> /dev/null -v head && LAST_RANDOM="$(tr 0< '/dev/urandom' -d -c '[:digit:]' | head -c 5 || true)" 2> /dev/null && test -n "${LAST_RANDOM?}"; then
     echo 'Random: using tr/head' # OK
