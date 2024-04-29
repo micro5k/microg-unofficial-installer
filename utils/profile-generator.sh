@@ -811,8 +811,7 @@ while test "${#}" -gt 0; do
       execute_script='false'
       ;;
 
-    -p | --privacy-mode)
-      ;;
+    -p | --privacy-mode) ;;
 
     --no-title)
       change_title='false'
