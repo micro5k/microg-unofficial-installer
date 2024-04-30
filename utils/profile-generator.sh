@@ -8,6 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
+# shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 set -u
@@ -16,7 +17,7 @@ set -u
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
   (set -o posix 2> /dev/null) && set -o posix || true
   (set +H 2> /dev/null) && set +H || true
-  (set -o pipefail) && set -o pipefail || true
+  (set -o pipefail 2> /dev/null) && set -o pipefail || true
 }
 
 readonly SCRIPT_NAME='Android device profile generator'
@@ -51,6 +52,36 @@ restore_codepage()
 show_status_msg()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
+}
+
+device_not_ready_status_msg_initialize()
+{
+  static_device_not_ready_displayed='false'
+}
+
+show_device_not_ready_status_msg()
+{
+  if test "${static_device_not_ready_displayed:?}" = 'false'; then
+    static_device_not_ready_displayed='true'
+    printf 1>&2 '\033[1;32m%s\033[0m' 'Device is not ready, waiting.'
+  else
+    printf 1>&2 '\033[1;32m%s\033[0m' '.'
+  fi
+}
+
+device_not_ready_status_msg_terminate()
+{
+  if test "${static_device_not_ready_displayed:?}" != 'false'; then printf 1>&2 '\n'; fi
+  static_device_not_ready_displayed=''
+}
+
+show_device_waiting_status_msg()
+{
+  if test "${static_device_not_ready_displayed:?}" = 'false'; then
+    printf 1>&2 '\033[1;32m%s\033[0m\n' 'Waiting for the device...'
+  else
+    printf 1>&2 '\033[32m%s\033[0m' '.'
+  fi
 }
 
 show_warn()
@@ -152,7 +183,99 @@ verify_adb()
 
 start_adb_server()
 {
-  adb 2> /dev/null 'start-server' || true
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 0; fi
+
+  adb 2> /dev/null 'start-server'
+}
+
+parse_device_status()
+{
+  case "${1?}" in
+    'device' | 'recovery') return 0 ;;                             # OK
+    *'connecting'* | *'authorizing'* | *'offline'*) return 1 ;;    # Connecting (transitory) / Authorizing (transitory) / Offline (may be transitory)
+    *'unauthorized'*) return 2 ;;                                  # Unauthorized
+    *'not found'* | 'disconnect') return 3 ;;                      # Disconnected (transitory after 'root', 'unroot' or 'reconnect' otherwise unrecoverable)
+    *'no permissions'* | *'insufficient permissions'*) return 4 ;; # ADB configuration issue under Linux (unrecoverable)
+    *'no device'*) return 4 ;;                                     # No devices/emulators (unrecoverable)
+    *'closed'*) return 4 ;;                                        # ADB connection forcibly terminated on device side
+    *'protocol fault'*) return 4 ;;                                # ADB connection forcibly terminated on server side
+    '') return 4 ;;                                                # Unknown issue
+    'sideload' | 'rescue' | 'bootloader') return 5 ;;              # Sideload / Rescue / Bootloader (not supported)
+    *) ;;                                                          # Unknown (ignored)
+  esac
+  return 0
+}
+  # Possible status:
+  # - device
+  # - recovery
+  # - unauthorized
+  # - authorizing
+  # - offline
+  # - no permissions
+  # - no device
+  # - unknown
+  # - error: device unauthorized.
+  # - error: device still authorizing
+  # - error: device offline
+  # - error: device 'xxx' not found
+  # - error: insufficient permissions for device
+  # - error: no devices/emulators found
+  # - error: closed
+  # - error: protocol fault (couldn't read status): connection reset
+
+detect_status_and_wait_connection()
+{
+  local _status _reconnected
+
+  device_not_ready_status_msg_initialize
+
+  _reconnected='false'
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    _status="$(LC_ALL=C adb 2>&1 -s "${1:?}" 'get-state' | LC_ALL=C tr -d '\r' || true)"
+    parse_device_status "${_status?}"
+    case "${?}" in
+      1)
+        show_device_not_ready_status_msg # Wait 5 seconds maximum for transitory states
+        ;;
+      2)
+        show_device_not_ready_status_msg
+        if test "${_reconnected:?}" = 'false'; then
+          _reconnected='true'
+          adb 1> /dev/null 2>&1 -s "${1:?}" reconnect offline && sleep 3 # If the device is unauthorized, reconnect to request authorization and then wait
+        fi
+        ;;
+      3)
+        if test "${2:-false}" = 'false'; then
+          show_device_not_ready_status_msg # Note: The device may disappear for a few seconds after "adb root", "adb unroot" or "adb reconnect"
+        else
+          break
+        fi
+        ;;
+      *) break ;;
+    esac
+
+    sleep 0.5
+  done
+
+  parse_device_status "${_status?}"
+  if test "${?}" -ne 0; then
+    device_not_ready_status_msg_terminate
+    return 1
+  fi
+
+  if test "${2:-false}" != 'false'; then
+    case "${_status?}" in
+      'recovery' | 'sideload' | 'rescue' | 'bootloader') DEVICE_STATE="${_status:?}" ;;
+      *) DEVICE_STATE='device' ;;
+    esac
+  fi
+
+  show_device_waiting_status_msg
+
+  device_not_ready_status_msg_terminate
+
+  adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE:?}"
+  return "${?}"
 }
 
 adb_get_serial()
@@ -626,6 +749,11 @@ anonymize_code()
 
 main()
 {
+  local _found || {
+    show_status_error "Local variables aren't supported!!!"
+    return 99
+  }
+
   if test -z "${1-}" || test "${1:?}" = 'adb'; then
     INPUT_TYPE='adb'
   else
@@ -634,7 +762,10 @@ main()
 
   if test "${INPUT_TYPE:?}" = 'adb'; then
     verify_adb
-    start_adb_server
+    start_adb_server || {
+      show_status_error 'Failed to start ADB'
+      return 10
+    }
     SELECTED_DEVICE="$(adb_get_serial)" || {
       show_error 'Failed to get the selected device'
       pause_if_needed

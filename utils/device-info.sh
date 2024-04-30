@@ -281,7 +281,7 @@ parse_device_status()
     *) ;;                                                          # Unknown (ignored)
   esac
   return 0
-
+}
   # Possible status:
   # - device
   # - recovery
@@ -299,7 +299,6 @@ parse_device_status()
   # - error: no devices/emulators found
   # - error: closed
   # - error: protocol fault (couldn't read status): connection reset
-}
 
 detect_status_and_wait_connection()
 {
