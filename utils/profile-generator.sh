@@ -205,23 +205,23 @@ parse_device_status()
   esac
   return 0
 }
-  # Possible status:
-  # - device
-  # - recovery
-  # - unauthorized
-  # - authorizing
-  # - offline
-  # - no permissions
-  # - no device
-  # - unknown
-  # - error: device unauthorized.
-  # - error: device still authorizing
-  # - error: device offline
-  # - error: device 'xxx' not found
-  # - error: insufficient permissions for device
-  # - error: no devices/emulators found
-  # - error: closed
-  # - error: protocol fault (couldn't read status): connection reset
+# Possible status:
+# - device
+# - recovery
+# - unauthorized
+# - authorizing
+# - offline
+# - no permissions
+# - no device
+# - unknown
+# - error: device unauthorized.
+# - error: device still authorizing
+# - error: device offline
+# - error: device 'xxx' not found
+# - error: insufficient permissions for device
+# - error: no devices/emulators found
+# - error: closed
+# - error: protocol fault (couldn't read status): connection reset
 
 detect_status_and_wait_connection()
 {
@@ -798,6 +798,11 @@ main()
     fi
   fi
 
+  generate_profile
+}
+
+generate_profile()
+{
   # Infos:
   # - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
   # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java

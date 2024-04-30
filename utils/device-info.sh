@@ -282,23 +282,23 @@ parse_device_status()
   esac
   return 0
 }
-  # Possible status:
-  # - device
-  # - recovery
-  # - unauthorized
-  # - authorizing
-  # - offline
-  # - no permissions
-  # - no device
-  # - unknown
-  # - error: device unauthorized.
-  # - error: device still authorizing
-  # - error: device offline
-  # - error: device 'xxx' not found
-  # - error: insufficient permissions for device
-  # - error: no devices/emulators found
-  # - error: closed
-  # - error: protocol fault (couldn't read status): connection reset
+# Possible status:
+# - device
+# - recovery
+# - unauthorized
+# - authorizing
+# - offline
+# - no permissions
+# - no device
+# - unknown
+# - error: device unauthorized.
+# - error: device still authorizing
+# - error: device offline
+# - error: device 'xxx' not found
+# - error: insufficient permissions for device
+# - error: no devices/emulators found
+# - error: closed
+# - error: protocol fault (couldn't read status): connection reset
 
 detect_status_and_wait_connection()
 {
