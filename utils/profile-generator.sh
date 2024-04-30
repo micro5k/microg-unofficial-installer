@@ -747,60 +747,6 @@ anonymize_code()
   anonymize_string "${_string:?}"
 }
 
-main()
-{
-  local _found || {
-    show_status_error "Local variables aren't supported!!!"
-    return 99
-  }
-
-  if test -z "${1-}" || test "${1:?}" = 'adb'; then
-    INPUT_TYPE='adb'
-  else
-    INPUT_TYPE="${1:?}"
-  fi
-
-  if test "${INPUT_TYPE:?}" = 'adb'; then
-    verify_adb
-    start_adb_server || {
-      show_status_error 'Failed to start ADB'
-      return 10
-    }
-    SELECTED_DEVICE="$(adb_get_serial)" || {
-      show_error 'Failed to get the selected device'
-      pause_if_needed
-      return 1
-    }
-    verify_device_status "${SELECTED_DEVICE:?}"
-    if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
-      show_error "Recovery isn't currently supported"
-      pause_if_needed
-      return 1
-    fi
-    wait_connection "${SELECTED_DEVICE:?}"
-    show_status_msg 'Generating profile...'
-    check_boot_completed
-  else
-    test -e "${INPUT_TYPE:?}" || {
-      show_error "Input file doesn't exist => '${INPUT_TYPE:-}'"
-      pause_if_needed
-      return 1
-    }
-
-    show_status_msg 'Generating profile...'
-    if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
-      PROP_TYPE='1'
-      DEVICE_IN_RECOVERY='false'
-      check_boot_completed
-    else
-      PROP_TYPE='2'
-      show_error 'Profiles generated in this way will be incomplete!!!'
-    fi
-  fi
-
-  generate_profile
-}
-
 generate_profile()
 {
   # Infos:
@@ -932,6 +878,60 @@ ${xml_comment_end:?}
 </profile>"
 
   return 0
+}
+
+main()
+{
+  local _found || {
+    show_status_error "Local variables aren't supported!!!"
+    return 99
+  }
+
+  if test -z "${1-}" || test "${1:?}" = 'adb'; then
+    INPUT_TYPE='adb'
+  else
+    INPUT_TYPE="${1:?}"
+  fi
+
+  if test "${INPUT_TYPE:?}" = 'adb'; then
+    verify_adb
+    start_adb_server || {
+      show_status_error 'Failed to start ADB'
+      return 10
+    }
+    SELECTED_DEVICE="$(adb_get_serial)" || {
+      show_error 'Failed to get the selected device'
+      pause_if_needed
+      return 1
+    }
+    verify_device_status "${SELECTED_DEVICE:?}"
+    if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
+      show_error "Recovery isn't currently supported"
+      pause_if_needed
+      return 1
+    fi
+    wait_connection "${SELECTED_DEVICE:?}"
+    show_status_msg 'Generating profile...'
+    check_boot_completed
+  else
+    test -e "${INPUT_TYPE:?}" || {
+      show_error "Input file doesn't exist => '${INPUT_TYPE:-}'"
+      pause_if_needed
+      return 1
+    }
+
+    show_status_msg 'Generating profile...'
+    if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
+      PROP_TYPE='1'
+      DEVICE_IN_RECOVERY='false'
+      check_boot_completed
+    else
+      PROP_TYPE='2'
+      show_error 'Profiles generated in this way will be incomplete!!!'
+    fi
+  fi
+
+  generate_profile
 }
 
 execute_script='true'
