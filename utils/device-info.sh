@@ -768,11 +768,11 @@ apply_phonesubinfo_deviation()
   _method_code="${1:?}"
 
   if compare_nocase "${BUILD_MANUFACTURER?}" 'HUAWEI' && test "${BUILD_VERSION_SDK:?}" -eq "${ANDROID_9_SDK:?}"; then
-
-    if test "${1:?}" -ge 3; then
-      _method_code="$((_method_code + 1))"
-    fi
-
+    if test "${1:?}" -ge 3; then _method_code="$((_method_code + 1))"; fi
+  elif compare_nocase "${BUILD_MANUFACTURER?}" 'samsung' && test "${BUILD_VERSION_SDK:?}" -eq "${ANDROID_11_SDK:?}"; then
+    # Seen on Samsung Galaxy A50 (Android 11)
+    # An unknown method at position 11 shift everything by 1
+    if test "${1:?}" -ge 11; then _method_code="$((_method_code + 1))"; fi
   fi
 
   printf '%s\n' "${_method_code:?}"
