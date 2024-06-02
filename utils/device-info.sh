@@ -1578,6 +1578,11 @@ while test "${#}" -gt 0; do
       execute_script='false'
       ;;
 
+    --open-device-status-info)
+      open_device_status_info
+      execute_script='false'
+      ;;
+
     -p | --privacy-mode)
       PRIVACY_MODE='true'
       ;;
