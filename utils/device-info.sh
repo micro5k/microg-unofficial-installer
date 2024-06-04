@@ -894,23 +894,26 @@ open_device_status_info()
 {
   local _device
   _device="${1:?}"
-
   if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
 
+  show_msg 'Waiting...'
   adb -s "${_device:?}" shell 'svc 2> /dev/null power stayon true'
 
   adb -s "${_device:?}" shell '
     # If the screen is locked then unlock it (only swipe is supported)
     if uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" | grep -q -F -e "com.android.systemui:id/keyguard_message_area"; then
-      #echo 1>&2 "Screen unlocking..."
+      echo 1>&2 "Unlocking screen..."
       input swipe 200 650 200 0
     fi
-  '
 
-  adb -s "${_device:?}" shell '
     am 1> /dev/null 2>&1 start -a "android.settings.DEVICE_INFO_SETTINGS"
     input 2> /dev/null keyevent KEYCODE_BACK
-    #input 2> /dev/null keyevent KEYCODE_BACK
+
+    # If we are still in Android settings, let it go back again
+    if uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" | grep -q -F -e "package=\"com.android.settings\""; then
+      input 2> /dev/null keyevent KEYCODE_BACK
+    fi
+
     am start -a "android.settings.DEVICE_INFO_SETTINGS"
 
     input 2> /dev/null keyevent KEYCODE_DPAD_UP
@@ -955,7 +958,7 @@ get_imei_via_MMI_code()
 
     # If the screen is locked then unlock it (only swipe is supported)
     if uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" | grep -q -F -e "com.android.systemui:id/keyguard_message_area"; then
-      #echo 1>&2 "Screen unlocking..."
+      #echo 1>&2 "Unlocking screen..."
       input swipe 200 650 200 0
     fi
   ' || true
