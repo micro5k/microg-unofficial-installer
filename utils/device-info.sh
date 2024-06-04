@@ -892,27 +892,35 @@ validate_and_display_info()
 
 open_device_status_info()
 {
-  adb 1> /dev/null 2>&1 shell '
-    svc power stayon true
+  local _device
+  _device="${1:?}"
 
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+
+  adb -s "${_device:?}" shell 'svc 2> /dev/null power stayon true'
+
+  adb -s "${_device:?}" shell '
     # If the screen is locked then unlock it (only swipe is supported)
     if uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" | grep -q -F -e "com.android.systemui:id/keyguard_message_area"; then
       #echo 1>&2 "Screen unlocking..."
       input swipe 200 650 200 0
     fi
-  ' || true
-
-  adb 2> /dev/null shell '
-    am 1> /dev/null 2>&1 start -a "android.settings.DEVICE_INFO_SETTINGS" &&
-      input keyevent KEYCODE_BACK &&
-      am 1> /dev/null 2>&1 start -a "android.settings.DEVICE_INFO_SETTINGS"
-
-    input keyevent KEYCODE_DPAD_UP &&
-      input keyevent KEYCODE_DPAD_DOWN &&
-      input keyevent KEYCODE_ENTER
   '
 
-  adb 1> /dev/null 2>&1 shell 'svc power stayon false' || true
+  adb -s "${_device:?}" shell '
+    am 1> /dev/null 2>&1 start -a "android.settings.DEVICE_INFO_SETTINGS"
+    input 2> /dev/null keyevent KEYCODE_BACK
+    #input 2> /dev/null keyevent KEYCODE_BACK
+    am start -a "android.settings.DEVICE_INFO_SETTINGS"
+
+    input 2> /dev/null keyevent KEYCODE_DPAD_UP
+    input 2> /dev/null keyevent KEYCODE_DPAD_UP
+    input 2> /dev/null keyevent KEYCODE_DPAD_UP
+    input 2> /dev/null keyevent KEYCODE_DPAD_DOWN
+    input 2> /dev/null keyevent KEYCODE_ENTER
+  '
+
+  adb -s "${_device:?}" shell 'svc 2> /dev/null power stayon false'
 }
 
 get_kernel_version()
@@ -1517,6 +1525,12 @@ main()
 
       if detect_status_and_wait_connection "${_device:?}" 'true'; then
         _found='true'
+
+        if test "${OPEN_DEVICE_STATUS_INFO_ONLY:?}" = 'true'; then
+          open_device_status_info "${_device:?}"
+          continue
+        fi
+
         extract_all_info "${_device:?}"
         _status_code="${?}"
 
@@ -1568,6 +1582,7 @@ execute_script='true'
 change_title='true'
 STATUS=0
 PRIVACY_MODE='false'
+OPEN_DEVICE_STATUS_INFO_ONLY='false'
 
 while test "${#}" -gt 0; do
   case "${1?}" in
@@ -1579,8 +1594,7 @@ while test "${#}" -gt 0; do
       ;;
 
     --open-device-status-info)
-      open_device_status_info
-      execute_script='false'
+      OPEN_DEVICE_STATUS_INFO_ONLY='true'
       ;;
 
     -p | --privacy-mode)
