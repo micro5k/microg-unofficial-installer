@@ -1,0 +1,227 @@
+PDPMAKE(1)                       Usage Manual                       PDPMAKE(1)
+
+NAME
+       pdpmake - Public domain POSIX make
+
+SYNOPSIS
+       pdpmake [--posix] [-ehiknpqrSst] [-C dir] [-f mkfile] [-j num_jobs]
+               [-x pragma] [macro[::[:]]=value ...] [target ...]
+
+DESCRIPTION
+       The  pdpmake utility creates or updates files following a set of rules.
+       The created or updated files, called  targets,  are  typically  derived
+       from  other  files, called prerequisites. Targets are derived according
+       to rules describing file dependencies and listing commands to  be  exe-
+       cuted.   Rules  may be inferred by the utility or explicitly defined in
+       one or more makefiles.
+
+OPTIONS
+       -C dir Change to dir before reading the  makefiles  or  doing  anything
+              else.  If multiple -C options are specified, each is interpreted
+              relative to the previous one: '-C / -C etc' is equivalent to '-C
+              /etc'.
+
+       -e     Let environment  variables  override  macro  assignments  within
+              makefiles.
+
+       -f mkfile
+              Specify  a different makefile. The argument mkfile may be a path
+              to a file, or a minus sign '-'  for  standard  input.   Multiple
+              files may be specified and are read in that order.
+
+       -h     Display help information.
+
+       -i     Ignore  non-zero exit codes returned by commands executed to re-
+              build files. This is equivalent to using the special target .IG-
+              NORE without prerequisites.
+
+       -j num_jobs
+              Unused, provided only for compatibility.
+
+       -k     Continue processing after errors are encountered, but  only  for
+              targets  that  don't  depend on the target whose creation caused
+              the error.
+
+       -n     Print commands that would have been executed, but don't actually
+              execute them unless the command is prefixed with '+'.
+
+       -p     Print the macro definitions and rules that result  from  reading
+              the makefiles, then continue with any processing required.
+
+       --posix
+              Enable  strict  POSIX-compliant  mode.   This option must be the
+              first given on the command line.
+
+       -q     Do  not  execute  any commands, instead exit 0 if the  specified
+              targets are up to date, and 1 otherwise.
+
+       -r     Do not use the built-in rules. Clear the suffix list.
+
+       -S     Stop  processing if an error is encountered. This is the default
+              behaviour and the opposite of -k.
+
+       -s     Do not print the commands as they are executed. This is  equiva-
+              lent to using the special target .SILENT without prerequisites.
+
+       -t     Touch  files  instead  of running the commands required to build
+              them, but not for targets that have no commands or that are  al-
+              ready up-to-date.
+
+       -x pragma
+              Allow  certain  pdpmake extensions to apply in strict POSIX-com-
+              pliant mode. For a list of supported pragmas see PRAGMAS  below.
+              Multiple -x options can be given.
+
+       macro[::]=value
+              Assign  value  to  macro,  overriding  the value of macro in the
+              makefile, if it exists.  Macro assignments and  targets  may  be
+              mixed  on  the  command line.  All assignments will be processed
+              first, then the targets.
+
+PRAGMAS
+       macro_name
+              Allow '-' as a valid character in macro names.
+
+       target_name
+              Allow '-' and '/' as valid characters in target names.
+
+       command_comment
+              Don't treat the '#' character as introducing a comment  in  com-
+              mands or in target and inference rules.
+
+       empty_suffix
+              Permit   an  empty  suffix  in  macro  expansions  of  the  form
+              $(VAR:=.c).
+
+       posix_2017
+              Enforce the current POSIX 2017 standard rather than  the  future
+              POSIX 202X.
+
+       posix_202x
+              Enforce  the  future POSIX 202X standard rather than the current
+              POSIX 2017. In this case the macro_name and target_name  pragmas
+              aren't  required  as  the  future standard allows the additional
+              characters.
+
+EXTENDED DESCRIPTION
+       pdpmake   is   a   make   utility   following   the   POSIX   standard:
+       https://pubs.opengroup.org/onlinepubs/9699919799/utilities/make.html
+
+       The  behavior of the utility should match the behavior described in the
+       POSIX standard specification, while allowing a set  of  extensions  for
+       convenience. The behavior may be fine-tuned using command line options,
+       environment variables, or special targets defined inside makefiles.
+
+       By default pdpmake allows all extensions. To disable all extensions and
+       enable strict POSIX-compliant mode, do any of the following:
+
+              *  Add  the  special target .POSIX as the first non-comment line
+                 in the first makefile to be processed. This is  the  standard
+                 approach for declaring a makefile to be POSIX-compliant.
+
+              *  Add  the  --posix flag as the first command line option given
+                 to pdpmake. This flag is unique to pdpmake  and  may  not  be
+                 available in other make utilities.
+
+              *  Set  the  PDPMAKE_POSIXLY_CORRECT environment variable to any
+                 value. This environment variable is unique to pdpmake and may
+                 not be available in other make utilities.
+
+       While in strict POSIX-compliant mode, you may selectively  enable  cer-
+       tain  extensions  through the use of pragmas (see PRAGMAS).  To use one
+       or more pragmas, do any of the following:
+
+              *  Add -x pragma as a command  line  option  given  to  pdpmake.
+                 Multiple -x options can be given. This flag is unique to pdp-
+                 make and may not be available in other make utilities.
+
+              *  Add  the special target .PRAGMA: pragma to the first makefile
+                 to be processed. Multiple pragmas  can  be  specified.   This
+                 special  target is unique to pdpmake and may not be available
+                 in other make utilities.
+
+       pdpmake implements a set of extensions from the future  POSIX  standard
+       as well as other make utilities. The set of available extensions are:
+
+              *  Nested macro expansion. e.g. $(FOO$(BAR))
+
+              *  Prerequisites of the .PHONY special target are always treated
+                 as being out-of-date.
+
+              *  More than one file can be specified on each include line.
+
+              *  Missing  include  files can be ignored by using -include file
+                 instead of include file.
+
+              *  Missing or out-of-date include files are rebuilt if an appro-
+                 priate rule can be found.
+
+              *  The $^ and $+ internal macros evaluate to  all  prerequisites
+                 of  the  current  target  (not just out-of-date ones, as with
+                 $?). $^ removes duplicated prerequisites from  the  list,  $+
+                 doesn't.
+
+              *  If no MAKE environment variable is provided the MAKE macro is
+                 initialised  from  argv[0], with a relative path converted to
+                 absolute.
+
+              *  The macro assignments ::=, :::=, +=, ?= and != are permitted.
+
+              *  Pattern macros extend the  standard  suffix  substitution  in
+                 macro expansion to allow changes to prefixes as well.
+
+              *  An escaped newline within a macro expansion on a command line
+                 is replaced by a space.
+
+              *  The  CURDIR macro is set to the current directory during pro-
+                 gram start up.
+
+              *  The -C directory command  line  option  changes  the  current
+                 working directory.
+
+              *  Double colon rules are allowed.
+
+              *  The  following  conditional keywords are allowed: ifdef, ifn-
+                 def, ifeq, ifneq, else, endif
+
+              *  Archive members can be specified using the form  lib.a(mem1.o
+                 mem2.o...).
+
+              *  The macro assignment := is permitted. It is equivalent to ::=
+                 in POSIX.
+
+              *  Chained  inference  rules  can be used when searching for the
+                 prerequisites of a target. Thus, if there are inference rules
+                 .p.q and .q.r and the file thing.p exists, make  is  able  to
+                 deduce how to create thing.r.
+
+              *  The  wildcards  '*',  '?' and '[]' can be used in the targets
+                 and prerequisites of target rules.
+
+              *  ’#' on a command line or in a macro expansion  doesn't  indi-
+                 cate  the  start  of a comment. In other locations '#' can be
+                 escaped by preceding it with a backslash.
+
+              *  Duplicated prerequisites are removed when the internal  macro
+                 $? is expanded.
+
+              *  An  include line with no files specified is silently ignored.
+                 At least one blank must follow the include for the line to be
+                 valid.
+
+              *  The shell used to process build commands isn't  started  with
+                 the -e option when errors aren't being ignored.
+
+              *  Macro  definitions  and  targets  may be mixed on the command
+                 line.  The macro definitions are processed  first,  then  the
+                 targets.
+
+              *  The  $<  and  $*  internal  macros are given values in target
+                 rules.
+
+              *  When a build command receives a signal the target is removed.
+
+COPYRIGHT
+       pdpmake is in the public domain. See https://unlicense.org
+
+Ron Yorston                       29 May 2024                       PDPMAKE(1)

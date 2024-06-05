@@ -54,6 +54,9 @@ gradlew           text eol=lf
 fastlane/Appfile  text eol=lf
 fastlane/Fastfile text eol=lf
 
+# Uncompressed text manuals
+*.1               text eol=lf
+
 # Binaries
 *.exe             binary
 *.bin             binary
