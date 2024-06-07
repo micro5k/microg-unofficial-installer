@@ -72,7 +72,7 @@ OPTIONS
               pliant mode. For a list of supported pragmas see PRAGMAS  below.
               Multiple -x options can be given.
 
-       macro[::]=value
+       macro[::[:]]=value
               Assign  value  to  macro,  overriding  the value of macro in the
               makefile, if it exists.  Macro assignments and  targets  may  be
               mixed  on  the  command line.  All assignments will be processed
@@ -102,6 +102,10 @@ PRAGMAS
               POSIX 2017. In this case the macro_name and target_name  pragmas
               aren't  required  as  the  future standard allows the additional
               characters.
+
+       windows
+              Allow  target  names of the form C:/path in builds for Microsoft
+              Windows. This may also require setting target_name.
 
 EXTENDED DESCRIPTION
        pdpmake   is   a   make   utility   following   the   POSIX   standard:
@@ -198,9 +202,9 @@ EXTENDED DESCRIPTION
               *  The  wildcards  '*',  '?' and '[]' can be used in the targets
                  and prerequisites of target rules.
 
-              *  '#' on a command line or in a macro expansion  doesn't  indi-
-                 cate  the  start  of a comment. In other locations '#' can be
-                 escaped by preceding it with a backslash.
+              *  The  '#'  character on a command line or in a macro expansion
+                 doesn't  indicate  the start of a comment. In other locations
+                 '#' can be escaped by preceding it with a backslash.
 
               *  Duplicated prerequisites are removed when the internal  macro
                  $? is expanded.
@@ -224,4 +228,4 @@ EXTENDED DESCRIPTION
 COPYRIGHT
        pdpmake is in the public domain. See https://unlicense.org
 
-Ron Yorston                       29 May 2024                       PDPMAKE(1)
+Ron Yorston                       07 June 2024                      PDPMAKE(1)
