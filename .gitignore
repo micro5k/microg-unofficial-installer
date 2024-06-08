@@ -4,9 +4,8 @@
 
 # Custom project folders
 local/
-utils/debug/
-utils/data/
 cache/
+utils/data/
 output/
 recovery-simulator/output/
 
