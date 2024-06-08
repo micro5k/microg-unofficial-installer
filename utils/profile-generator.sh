@@ -813,7 +813,7 @@ generate_profile()
   BUILD_VERSION_CODENAME="$(validated_chosen_getprop 'ro.build.version.codename')"
   BUILD_VERSION_INCREMENTAL="$(validated_chosen_getprop 'ro.build.version.incremental')"
   BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop 'ro.build.version.security_patch' 2)"
-  BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" # ToDO: If not numeric or empty return 0
+  BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" || BUILD_VERSION_SDK=0 # ToDO: Check if not numeric or empty
   BUILD_VERSION_DEVICE_INITIAL_SDK_INT="$(auto_getprop 'ro.product.first_api_level')"
   BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop 'ro.product.cpu.abilist' 2)" # ToDO: Auto-generate it if missing
 
