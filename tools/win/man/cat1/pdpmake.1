@@ -5,7 +5,7 @@ NAME
 
 SYNOPSIS
        pdpmake [--posix] [-ehiknpqrSst] [-C dir] [-f mkfile] [-j num_jobs]
-               [-x pragma] [macro[::[:]]=value ...] [target ...]
+               [-x pragma] [macro[:[:[:]]]=value ...] [target ...]
 
 DESCRIPTION
        The  pdpmake utility creates or updates files following a set of rules.
@@ -72,7 +72,7 @@ OPTIONS
               pliant mode. For a list of supported pragmas see PRAGMAS  below.
               Multiple -x options can be given.
 
-       macro[::[:]]=value
+       macro[:[:[:]]]=value
               Assign  value  to  macro,  overriding  the value of macro in the
               makefile, if it exists.  Macro assignments and  targets  may  be
               mixed  on  the  command line.  All assignments will be processed
@@ -228,4 +228,4 @@ EXTENDED DESCRIPTION
 COPYRIGHT
        pdpmake is in the public domain. See https://unlicense.org
 
-Ron Yorston                       07 June 2024                      PDPMAKE(1)
+Ron Yorston                       08 June 2024                      PDPMAKE(1)
