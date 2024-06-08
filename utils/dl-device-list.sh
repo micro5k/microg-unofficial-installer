@@ -8,6 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
+# shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 set -u
@@ -16,7 +17,24 @@ set -u
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
   (set -o posix 2> /dev/null) && set -o posix || true
   (set +H 2> /dev/null) && set +H || true
-  (set -o pipefail) && set -o pipefail || true
+  (set -o pipefail 2> /dev/null) && set -o pipefail || true
+}
+
+set_utf8_codepage()
+{
+  if command 1> /dev/null -v 'chcp.com' && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2-' -s | LC_ALL=C tr -d ' \r')" && test "${PREVIOUS_CODEPAGE?}" -ne 65001; then
+    'chcp.com' 1> /dev/null 65001
+  else
+    PREVIOUS_CODEPAGE=''
+  fi
+}
+
+restore_codepage()
+{
+  if test -n "${PREVIOUS_CODEPAGE-}"; then
+    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}"
+    PREVIOUS_CODEPAGE=''
+  fi
 }
 
 show_error()
@@ -119,19 +137,27 @@ dl_and_convert_device_list()
   _var="$(printf '\342\200\235')"
   sed -i "s/${_var:?}/\"/g" "${_file:?}-temp" || return "${?}"
 
-  iconv_compat "${_file:?}-temp" "${_file:?}" -c -f 'UTF-8' -t 'WINDOWS-1252//IGNORE' || return "${?}"
-  rm -f "${_file:?}-temp" || return "${?}"
+  if test "${SAVE_AS_UTF8}" = 'true'; then
+    mv -f -T -- "${_file:?}-temp" "${_file:?}" || return "${?}"
+  else
+    iconv_compat "${_file:?}-temp" "${_file:?}" -c -f 'UTF-8' -t 'WINDOWS-1252//IGNORE' || return "${?}"
+    rm -f "${_file:?}-temp" || return "${?}"
+  fi
 }
 
 main()
 {
+  set_utf8_codepage
+
   if dl_and_convert_device_list; then
     show_info 'File downloaded correctly :)'
   else
-    show_error 'Failed!!!'
+    show_error 'Download failed!!!'
   fi
 
+  restore_codepage
   pause_if_needed
 }
 
+readonly SAVE_AS_UTF8='true'
 main
