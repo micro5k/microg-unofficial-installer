@@ -537,6 +537,10 @@ init_cmdline()
 {
   change_title 'Command-line'
 
+  # Set some environment variables
+  PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
+  PROMPT_COMMAND=''
+
   if test -n "${HOME:-}"; then
     HOME="$(realpath "${HOME:?}")" || ui_error 'Failed to set HOME'
     export HOME
@@ -555,11 +559,6 @@ SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || ui_error 'Failed to set SCRIPT_DIR
 MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
 readonly SCRIPT_DIR MODULE_NAME
 
-if test "${DO_INIT_CMDLINE:-0}" = '1'; then
-  init_cmdline
-  unset DO_INIT_CMDLINE
-fi
-
 # Detect OS and set OS specific info
 PLATFORM="$(detect_os)"
 SEP='/'
@@ -568,6 +567,11 @@ if test "${PLATFORM?}" = 'win' && test "$(uname -o 2> /dev/null | LC_ALL=C tr '[
   PATHSEP=';' # BusyBox-w32
 fi
 readonly PLATFORM SEP PATHSEP
+
+if test "${DO_INIT_CMDLINE:-0}" = '1'; then
+  init_cmdline
+  unset DO_INIT_CMDLINE
+fi
 
 # Set the path of Android SDK if not already set
 if test -z "${ANDROID_SDK_ROOT:-}" && test -n "${LOCALAPPDATA:-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
@@ -582,14 +586,13 @@ if test -n "${ANDROID_SDK_ROOT:-}" && test -e "${ANDROID_SDK_ROOT:?}/emulator/em
 fi
 
 # Set some environment variables
-PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
-PROMPT_COMMAND=
-
 UTILS_DIR="${SCRIPT_DIR:?}${SEP:?}utils"
 export UTILS_DIR
 UTILS_DATA_DIR="${UTILS_DIR:?}${SEP:?}data"
 export UTILS_DATA_DIR
 
 TOOLS_DIR="${SCRIPT_DIR:?}${SEP:?}tools${SEP:?}${PLATFORM:?}"
+
+PATH="${PATH%"${PATHSEP}"}"
 PATH="${UTILS_DIR:?}${PATHSEP:?}${TOOLS_DIR:?}${PATHSEP:?}${PATH}"
 export PATH
