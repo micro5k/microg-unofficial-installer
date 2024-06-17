@@ -11,8 +11,7 @@ IF "%CD%" == "%windir%\system32" CD /D "%~dp0"
 SET "LANG=C.UTF-8"
 
 SET "BB_FIX_BACKSLASH=1"
-SET "PATH=.;%PATH%"
-SET "PATHEXT=.SH;%PATHEXT%"
+SET "PATHEXT=%PATHEXT%;.SH"
 SET "HOME=%~dp0"
 SET "SCRIPT_DIR=%~dp0"
 

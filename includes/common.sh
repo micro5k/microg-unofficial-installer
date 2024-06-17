@@ -586,13 +586,13 @@ if test -n "${ANDROID_SDK_ROOT:-}" && test -e "${ANDROID_SDK_ROOT:?}/emulator/em
 fi
 
 # Set some environment variables
-UTILS_DIR="${SCRIPT_DIR:?}${SEP:?}utils"
+UTILS_DIR="${SCRIPT_DIR:?}/utils"
 export UTILS_DIR
-UTILS_DATA_DIR="${UTILS_DIR:?}${SEP:?}data"
+UTILS_DATA_DIR="${UTILS_DIR:?}/data"
 export UTILS_DATA_DIR
 
-TOOLS_DIR="${SCRIPT_DIR:?}${SEP:?}tools${SEP:?}${PLATFORM:?}"
+TOOLS_DIR="${SCRIPT_DIR:?}/tools/${PLATFORM:?}"
 
 PATH="${PATH%"${PATHSEP}"}"
-PATH="${UTILS_DIR:?}${PATHSEP:?}${TOOLS_DIR:?}${PATHSEP:?}${PATH}"
+PATH="${SCRIPT_DIR:?}${PATHSEP:?}${UTILS_DIR:?}${PATHSEP:?}${TOOLS_DIR:?}${PATHSEP:?}${PATH}"
 export PATH
