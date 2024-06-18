@@ -561,12 +561,11 @@ readonly SCRIPT_DIR MODULE_NAME
 
 # Detect OS and set OS specific info
 PLATFORM="$(detect_os)"
-SEP='/'
 PATHSEP=':'
 if test "${PLATFORM?}" = 'win' && test "$(uname -o 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" = 'ms/windows'; then
   PATHSEP=';' # BusyBox-w32
 fi
-readonly PLATFORM SEP PATHSEP
+readonly PLATFORM PATHSEP
 
 if test "${DO_INIT_CMDLINE:-0}" = '1'; then
   init_cmdline
