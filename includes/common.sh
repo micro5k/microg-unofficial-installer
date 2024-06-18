@@ -533,6 +533,21 @@ dl_list()
   IFS="${_backup_ifs:-}"
 }
 
+is_in_path()
+{
+  case "${PATHSEP:?}${PATH?}${PATHSEP:?}" in
+    *"${PATHSEP:?}${1:?}${PATHSEP:?}"*) return 0 ;; # Found
+    *) ;;
+  esac
+  return 1 # NOT found
+}
+
+add_to_path()
+{
+  if test -z "${1?}" || is_in_path "${1:?}"; then return; fi
+  PATH="${1:?}${PATHSEP:?}${PATH?}"
+}
+
 init_cmdline()
 {
   change_title 'Command-line'
@@ -547,7 +562,8 @@ init_cmdline()
   readonly UTILS_DIR UTILS_DATA_DIR
   export UTILS_DIR UTILS_DATA_DIR
 
-  PATH="${SCRIPT_DIR:?}${PATHSEP:?}${UTILS_DIR:?}${PATHSEP:?}${PATH}"
+  add_to_path "${UTILS_DIR:?}"
+  add_to_path "${SCRIPT_DIR:?}"
 
   if test -n "${HOME-}"; then
     HOME="$(realpath "${HOME:?}")" || ui_error 'Failed to set HOME env var'
@@ -577,8 +593,8 @@ MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")
 readonly SCRIPT_DIR TOOLS_DIR MODULE_NAME
 export SCRIPT_DIR TOOLS_DIR MODULE_NAME
 
-PATH="${PATH%"${PATHSEP}"}"
-PATH="${TOOLS_DIR:?}${PATHSEP:?}${PATH}"
+PATH="${PATH%"${PATHSEP:?}"}"
+add_to_path "${TOOLS_DIR:?}"
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
   unset DO_INIT_CMDLINE
