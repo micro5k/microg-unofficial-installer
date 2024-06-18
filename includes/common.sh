@@ -544,7 +544,7 @@ is_in_path()
 
 add_to_path()
 {
-  if test -z "${1?}" || is_in_path "${1:?}"; then return; fi
+  if test -z "${1?}" || is_in_path "${1:?}" || test ! -e "${1:?}"; then return; fi
   PATH="${1:?}${PATHSEP:?}${PATH?}"
 }
 
