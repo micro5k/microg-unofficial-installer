@@ -12,8 +12,8 @@ SET "LANG=C.UTF-8"
 
 SET "BB_FIX_BACKSLASH=1"
 SET "PATHEXT=%PATHEXT%;.SH"
-SET "HOME=%~dp0"
 SET "SCRIPT_DIR=%~dp0"
+SET "HOME=%SCRIPT_DIR%"
 
 SET "DO_INIT_CMDLINE=1"
 "%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0includes\common.sh' || exit 1" "ash" %*

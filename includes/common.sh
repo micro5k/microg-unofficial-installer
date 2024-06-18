@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileType: SOURCE
 
-# shellcheck disable=SC3043
-# SC3043: In POSIX sh, local is undefined
+# shellcheck enable=all
+# shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTIONS_INCLUDED='true'; fi
 
@@ -541,13 +541,20 @@ init_cmdline()
   PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
   PROMPT_COMMAND=''
 
-  if test -n "${HOME:-}"; then
-    HOME="$(realpath "${HOME:?}")" || ui_error 'Failed to set HOME'
+  # Set environment variables
+  UTILS_DIR="${SCRIPT_DIR:?}/utils"
+  UTILS_DATA_DIR="${UTILS_DIR:?}/data"
+  readonly UTILS_DIR UTILS_DATA_DIR
+  export UTILS_DIR UTILS_DATA_DIR
+
+  PATH="${SCRIPT_DIR:?}${PATHSEP:?}${UTILS_DIR:?}${PATHSEP:?}${PATH}"
+
+  if test -n "${HOME-}"; then
+    HOME="$(realpath "${HOME:?}")" || ui_error 'Failed to set HOME env var'
     export HOME
   fi
-  export SCRIPT_DIR MODULE_NAME
 
-  alias dir=ls
+  alias 'dir'='ls'
   alias 'cd..'='cd ..'
   alias 'cd.'='cd .'
   alias 'cls'='reset'
@@ -555,22 +562,30 @@ init_cmdline()
   unset JAVA_HOME
 }
 
-SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || ui_error 'Failed to set SCRIPT_DIR'
-MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
-readonly SCRIPT_DIR MODULE_NAME
-
-# Detect OS and set OS specific info
+# Set environment variables
 PLATFORM="$(detect_os)"
 PATHSEP=':'
 if test "${PLATFORM?}" = 'win' && test "$(uname -o 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" = 'ms/windows'; then
   PATHSEP=';' # BusyBox-w32
 fi
 readonly PLATFORM PATHSEP
+export PLATFORM PATHSEP
 
-if test "${DO_INIT_CMDLINE:-0}" = '1'; then
-  init_cmdline
+SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || ui_error 'Failed to set SCRIPT_DIR env var'
+TOOLS_DIR="${SCRIPT_DIR:?}/tools/${PLATFORM:?}"
+MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
+readonly SCRIPT_DIR TOOLS_DIR MODULE_NAME
+export SCRIPT_DIR TOOLS_DIR MODULE_NAME
+
+PATH="${PATH%"${PATHSEP}"}"
+PATH="${TOOLS_DIR:?}${PATHSEP:?}${PATH}"
+
+if test "${DO_INIT_CMDLINE:-0}" != '0'; then
   unset DO_INIT_CMDLINE
+  init_cmdline
 fi
+
+export PATH
 
 # Set the path of Android SDK if not already set
 if test -z "${ANDROID_SDK_ROOT:-}" && test -n "${LOCALAPPDATA:-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
@@ -583,15 +598,3 @@ if test -n "${ANDROID_SDK_ROOT:-}" && test -e "${ANDROID_SDK_ROOT:?}/emulator/em
     alias 'emu-w'="'${ANDROID_SDK_ROOT:?}/emulator/emulator.exe' -writable-system"
   }
 fi
-
-# Set some environment variables
-UTILS_DIR="${SCRIPT_DIR:?}/utils"
-export UTILS_DIR
-UTILS_DATA_DIR="${UTILS_DIR:?}/data"
-export UTILS_DATA_DIR
-
-TOOLS_DIR="${SCRIPT_DIR:?}/tools/${PLATFORM:?}"
-
-PATH="${PATH%"${PATHSEP}"}"
-PATH="${SCRIPT_DIR:?}${PATHSEP:?}${UTILS_DIR:?}${PATHSEP:?}${TOOLS_DIR:?}${PATHSEP:?}${PATH}"
-export PATH
