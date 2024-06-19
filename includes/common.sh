@@ -61,6 +61,11 @@ ui_error_msg()
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
 }
 
+ui_warning()
+{
+  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
+}
+
 ui_debug()
 {
   printf 1>&2 '%s\n' "${1?}"
@@ -592,6 +597,11 @@ TOOLS_DIR="${SCRIPT_DIR:?}/tools/${PLATFORM:?}"
 MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
 readonly SCRIPT_DIR TOOLS_DIR MODULE_NAME
 export SCRIPT_DIR TOOLS_DIR MODULE_NAME
+
+if test -z "${PATH-}"; then
+  ui_warning 'PATH env is empty'
+  PATH="${TOOLS_DIR:?}"
+fi
 
 PATH="${PATH%"${PATHSEP:?}"}"
 add_to_path "${TOOLS_DIR:?}"
