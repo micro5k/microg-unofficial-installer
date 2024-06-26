@@ -540,7 +540,7 @@ dl_list()
 
 is_in_path()
 {
-  case "${PATHSEP:?}${PATH?}${PATHSEP:?}" in
+  case "${PATHSEP:?}${PATH-}${PATHSEP:?}" in
     *"${PATHSEP:?}${1:?}${PATHSEP:?}"*) return 0 ;; # Found
     *) ;;
   esac
@@ -550,7 +550,21 @@ is_in_path()
 add_to_path()
 {
   if test -z "${1?}" || is_in_path "${1:?}" || test ! -e "${1:?}"; then return; fi
-  PATH="${1:?}${PATHSEP:?}${PATH?}"
+
+  if test -z "${PATH-}"; then
+    ui_warning 'PATH env is empty'
+    PATH="${1:?}"
+  else
+    PATH="${1:?}${PATHSEP:?}${PATH?}"
+  fi
+}
+
+init_path()
+{
+  if test -n "${PATH-}"; then
+    PATH="${PATH%"${PATHSEP:?}"}"
+  fi
+  add_to_path "${TOOLS_DIR:?}"
 }
 
 init_cmdline()
@@ -598,13 +612,7 @@ MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")
 readonly SCRIPT_DIR TOOLS_DIR MODULE_NAME
 export SCRIPT_DIR TOOLS_DIR MODULE_NAME
 
-if test -z "${PATH-}"; then
-  ui_warning 'PATH env is empty'
-  PATH="${TOOLS_DIR:?}"
-fi
-
-PATH="${PATH%"${PATHSEP:?}"}"
-add_to_path "${TOOLS_DIR:?}"
+init_path
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
   unset DO_INIT_CMDLINE
