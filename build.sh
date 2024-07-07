@@ -94,8 +94,8 @@ OUT_DIR="${SCRIPT_DIR}/output"
 mkdir -p "${OUT_DIR}" || ui_error 'Failed to create the output dir'
 
 # Workaround for an issue with Bash under Windows
-if test "${PLATFORM:?}" = 'win' && test "${TMPDIR:-}" = '/tmp' && test -n "${LOCALAPPDATA:-}" && test -e "${LOCALAPPDATA:?}/Temp"; then
-  TMPDIR="$(realpath "${LOCALAPPDATA:?}/Temp")" || TMPDIR="${LOCALAPPDATA:?}/Temp" || ui_error 'Failed to set the temp dir'
+if test "${PLATFORM:?}" = 'win' && test "${TMPDIR:-${TEMP:-${TMP:-}}}" = '/tmp' && command 1> /dev/null -v 'cygpath'; then
+  TMPDIR="$(cygpath -m -a -l -- "${TMPDIR:-${TEMP:-${TMP:?}}}")" || ui_error 'Failed to set the temp dir'
   export TMPDIR
 fi
 

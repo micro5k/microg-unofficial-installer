@@ -607,6 +607,7 @@ readonly PLATFORM PATHSEP
 export PLATFORM PATHSEP
 
 export PATH_SEPARATOR="${PATHSEP:?}"
+export DIRECTORY_SEPARATOR='/'
 
 SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || ui_error 'Failed to set SCRIPT_DIR env var'
 TOOLS_DIR="${SCRIPT_DIR:?}/tools/${PLATFORM:?}"
