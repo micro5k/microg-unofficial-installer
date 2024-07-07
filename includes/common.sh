@@ -559,12 +559,30 @@ add_to_path()
   fi
 }
 
+remove_from_path()
+{
+  local _path
+
+  if _path="$(printf '%s\n' "${PATH-}" | tr "${PATHSEP:?}" '\n' | grep -v -x -F "${1:?}" | tr '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
+    PATH="${_path?}"
+  fi
+}
+
 init_path()
 {
-  if test -n "${PATH-}"; then
-    PATH="${PATH%"${PATHSEP:?}"}"
+  if test "${IS_PATH_INITIALIZED:-false}" != 'false'; then return; fi
+  if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
+
+  # This happens on Bash under Windows (for example the one included inside Git for Windows)
+  if test "${PLATFORM:?}" = 'win' && test -e '/usr/bin'; then
+    # We need to move '/usr/bin' before 'C:/Windows/System32' otherwise it will use the 'find' of Windows instead of the Unix compatible one (and this will break the script)
+    remove_from_path '/usr/bin'
+    add_to_path '/usr/bin'
   fi
+
   add_to_path "${TOOLS_DIR:?}"
+
+  readonly IS_PATH_INITIALIZED='true'
 }
 
 init_cmdline()

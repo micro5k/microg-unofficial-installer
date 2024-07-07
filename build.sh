@@ -99,11 +99,6 @@ if test "${PLATFORM:?}" = 'win' && command 1> /dev/null -v 'cygpath'; then
     TMPDIR="$(cygpath -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || ui_error 'Failed to retrieve the temp directory path'
     export TMPDIR
   fi
-
-  if test -e '/usr/bin/find'; then
-    FIND_CMD="$(cygpath -m -a -l -- '/usr/bin/find')" || ui_error "Failed to retrieve the path of 'find'"
-    alias find="'${FIND_CMD:?}'"
-  fi
 fi
 
 # Create the temp dir
