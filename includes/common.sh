@@ -606,6 +606,8 @@ fi
 readonly PLATFORM PATHSEP
 export PLATFORM PATHSEP
 
+export PATH_SEPARATOR="${PATHSEP:?}"
+
 SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || ui_error 'Failed to set SCRIPT_DIR env var'
 TOOLS_DIR="${SCRIPT_DIR:?}/tools/${PLATFORM:?}"
 MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
