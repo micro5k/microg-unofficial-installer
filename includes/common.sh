@@ -570,7 +570,10 @@ remove_from_path()
 
 init_path()
 {
-  if test "${IS_PATH_INITIALIZED:-false}" != 'false'; then return; fi
+  test "${IS_PATH_INITIALIZED:-false}" = 'false' || return
+  readonly IS_PATH_INITIALIZED='true'
+  if is_in_path "${TOOLS_DIR:?}"; then return; fi
+
   if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
 
   # This happens on Bash under Windows (for example the one included inside Git for Windows)
@@ -581,8 +584,6 @@ init_path()
   fi
 
   add_to_path "${TOOLS_DIR:?}"
-
-  readonly IS_PATH_INITIALIZED='true'
 }
 
 init_cmdline()
