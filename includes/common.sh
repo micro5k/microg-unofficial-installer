@@ -614,6 +614,21 @@ init_cmdline()
   alias 'cls'='reset'
   alias 'profgen'='profile-generator.sh'
   unset JAVA_HOME
+
+  # Set the path of Android SDK if not already set
+  if test -z "${ANDROID_SDK_ROOT-}" && test -n "${LOCALAPPDATA-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
+    export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
+  fi
+
+  if test -n "${ANDROID_SDK_ROOT-}" && test -d "${ANDROID_SDK_ROOT-}/build-tools"; then
+    if AAPT2_PATH="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -iname 'aapt2*' | LC_ALL=C sort -V -r | head -n 1)" && test -n "${AAPT2_PATH?}"; then
+      export AAPT2_PATH
+      # shellcheck disable=SC2139
+      alias 'aapt2'="'${AAPT2_PATH:?}'"
+    else
+      unset AAPT2_PATH
+    fi
+  fi
 }
 
 # Set environment variables
@@ -643,10 +658,6 @@ fi
 
 export PATH
 
-# Set the path of Android SDK if not already set
-if test -z "${ANDROID_SDK_ROOT:-}" && test -n "${LOCALAPPDATA:-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
-  export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
-fi
 if test -n "${ANDROID_SDK_ROOT:-}" && test -e "${ANDROID_SDK_ROOT:?}/emulator/emulator.exe"; then
   # shellcheck disable=SC2139
   {
