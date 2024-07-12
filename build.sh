@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
 # shellcheck disable=SC2310 # This function is invoked in an 'if' condition so set -e will be disabled
 last_command="${_}" # IMPORTANT: This line must be at the start of the script before any other command otherwise it will not work
@@ -11,7 +10,7 @@ set -e
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
   (set -o posix 2> /dev/null) && set -o posix || true
   (set +H 2> /dev/null) && set +H || true
-  (set -o pipefail) && set -o pipefail || true
+  (set -o pipefail 2> /dev/null) && set -o pipefail || true
 }
 
 cat << 'LICENSE'
