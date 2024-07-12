@@ -555,7 +555,7 @@ add_to_path()
     ui_warning 'PATH env is empty'
     PATH="${1:?}"
   else
-    PATH="${1:?}${PATHSEP:?}${PATH?}"
+    PATH="${1:?}${PATHSEP:?}${PATH:?}"
   fi
 }
 
@@ -563,7 +563,7 @@ remove_from_path()
 {
   local _path
 
-  if _path="$(printf '%s\n' "${PATH-}" | tr "${PATHSEP:?}" '\n' | grep -v -x -F "${1:?}" | tr '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
+  if _path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | grep -v -x -F -e "${1:?}" | tr -- '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
     PATH="${_path?}"
   fi
 }
