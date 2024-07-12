@@ -549,7 +549,14 @@ is_in_path()
 
 add_to_path()
 {
-  if test -z "${1?}" || is_in_path "${1:?}" || test ! -e "${1:?}"; then return; fi
+  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath'; then
+    # Only on Bash under Windows
+    local _path
+    _path="$(cygpath -u -a -- "${1:?}")" || ui_error 'Unable to convert a path in add_to_path()'
+    set -- "${_path:?}"
+  fi
+
+  if is_in_path "${1:?}" || test ! -e "${1:?}"; then return; fi
 
   if test -z "${PATH-}"; then
     ui_warning 'PATH env is empty'
@@ -597,6 +604,28 @@ remove_duplicates_from_path_env()
   PATH="${_path?}"
 }
 
+init_vars()
+{
+  local _main_dir
+
+  # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
+  if test -z "${SCRIPT_DIR-}" && test -n "${BASH_SOURCE-}" && _main_dir="$(dirname "${BASH_SOURCE:?}")" && _main_dir="$(realpath "${_main_dir:?}/../")"; then
+    if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath'; then
+      # Only on Bash under Windows
+      _main_dir="$(cygpath -m -a -l -- "${_main_dir:?}")" || ui_error 'Unable to convert the main script dir'
+    fi
+    SCRIPT_DIR="${_main_dir:?}"
+  elif test -n "${SCRIPT_DIR-}"; then
+    SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || ui_error 'Unable to resolve the main script dir'
+  fi
+
+  test -n "${SCRIPT_DIR-}" || ui_error 'SCRIPT_DIR env var is empty'
+  TOOLS_DIR="${SCRIPT_DIR:?}/tools/${PLATFORM:?}"
+  MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
+  readonly SCRIPT_DIR TOOLS_DIR MODULE_NAME
+  export SCRIPT_DIR TOOLS_DIR MODULE_NAME
+}
+
 init_path()
 {
   test "${IS_PATH_INITIALIZED:-false}" = 'false' || return
@@ -610,7 +639,6 @@ init_path()
   if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':'; then move_to_begin_of_path_env '/usr/bin'; fi
 
   remove_duplicates_from_path_env
-
   add_to_path "${TOOLS_DIR:?}"
 }
 
@@ -663,6 +691,9 @@ init_cmdline()
       unset AAPT2_PATH
     fi
   fi
+
+  export PATH_SEPARATOR="${PATHSEP:?}"
+  export DIRECTORY_SEPARATOR='/'
 }
 
 # Set environment variables
@@ -674,15 +705,7 @@ fi
 readonly PLATFORM PATHSEP
 export PLATFORM PATHSEP
 
-export PATH_SEPARATOR="${PATHSEP:?}"
-export DIRECTORY_SEPARATOR='/'
-
-SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || ui_error 'Failed to set SCRIPT_DIR env var'
-TOOLS_DIR="${SCRIPT_DIR:?}/tools/${PLATFORM:?}"
-MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
-readonly SCRIPT_DIR TOOLS_DIR MODULE_NAME
-export SCRIPT_DIR TOOLS_DIR MODULE_NAME
-
+init_vars
 init_path
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
