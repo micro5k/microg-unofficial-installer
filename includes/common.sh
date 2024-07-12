@@ -581,19 +581,20 @@ move_to_begin_of_path_env()
   fi
 }
 
-remove_duplicates_from_path()
+remove_duplicates_from_path_env()
 {
   local _path
 
-  if test "${PLATFORM:?}" = 'win'; then
-    if _path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | awk -- '!x[tolower($0)]++' - | tr '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
-      PATH="${_path?}"
-    fi
+  if test "${PLATFORM:?}" = 'win' && _path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | awk -- '!x[tolower($0)]++' - | tr -- '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
+    :
+  elif test "${PLATFORM:?}" != 'win' && _path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | awk -- '!x[$0]++' - | tr -- '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
+    :
   else
-    if _path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | awk -- '!x[$0]++' - | tr '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
-      PATH="${_path?}"
-    fi
+    ui_warning 'Removing duplicates from PATH env failed'
+    return
   fi
+
+  PATH="${_path?}"
 }
 
 init_path()
@@ -608,7 +609,7 @@ init_path()
   # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
   if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':'; then move_to_begin_of_path_env '/usr/bin'; fi
 
-  remove_duplicates_from_path
+  remove_duplicates_from_path_env
 
   add_to_path "${TOOLS_DIR:?}"
 }
