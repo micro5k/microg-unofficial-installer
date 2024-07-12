@@ -568,12 +568,31 @@ remove_from_path()
   fi
 }
 
+move_to_begin_of_path_env()
+{
+  local _path
+  if test ! -e "${1:?}"; then return; fi
+
+  if test -z "${PATH-}"; then
+    ui_warning 'PATH env is empty'
+    PATH="${1:?}"
+  elif _path="$(printf '%s\n' "${PATH:?}" | tr -- "${PATHSEP:?}" '\n' | grep -v -x -F -e "${1:?}" | tr -- '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}" && test -n "${_path?}"; then
+    PATH="${1:?}${PATHSEP:?}${_path:?}"
+  fi
+}
+
 remove_duplicates_from_path()
 {
   local _path
 
-  if test "${PLATFORM:?}" = 'win' && _path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | awk -- '!x[tolower($0)]++' - | tr '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
-    PATH="${_path?}"
+  if test "${PLATFORM:?}" = 'win'; then
+    if _path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | awk -- '!x[tolower($0)]++' - | tr '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
+      PATH="${_path?}"
+    fi
+  else
+    if _path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | awk -- '!x[$0]++' - | tr '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
+      PATH="${_path?}"
+    fi
   fi
 }
 
@@ -584,14 +603,12 @@ init_path()
   if is_in_path "${TOOLS_DIR:?}"; then return; fi
 
   if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
-  remove_duplicates_from_path
 
-  # This happens on Bash under Windows (for example the one included inside Git for Windows)
-  if test "${PLATFORM:?}" = 'win' && test -e '/usr/bin'; then
-    # We need to move '/usr/bin' before 'C:/Windows/System32' otherwise it will use the 'find' of Windows instead of the Unix compatible one (and this will break the script)
-    remove_from_path '/usr/bin'
-    add_to_path '/usr/bin'
-  fi
+  # On Bash under Windows (for example the one included inside Git for Windows) we need to move '/usr/bin'
+  # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
+  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':'; then move_to_begin_of_path_env '/usr/bin'; fi
+
+  remove_duplicates_from_path
 
   add_to_path "${TOOLS_DIR:?}"
 }
