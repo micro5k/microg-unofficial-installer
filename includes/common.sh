@@ -568,6 +568,15 @@ remove_from_path()
   fi
 }
 
+remove_duplicates_from_path()
+{
+  local _path
+
+  if test "${PLATFORM:?}" = 'win' && _path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | awk -- '!x[tolower($0)]++' - | tr '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
+    PATH="${_path?}"
+  fi
+}
+
 init_path()
 {
   test "${IS_PATH_INITIALIZED:-false}" = 'false' || return
@@ -575,6 +584,7 @@ init_path()
   if is_in_path "${TOOLS_DIR:?}"; then return; fi
 
   if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
+  remove_duplicates_from_path
 
   # This happens on Bash under Windows (for example the one included inside Git for Windows)
   if test "${PLATFORM:?}" = 'win' && test -e '/usr/bin'; then
@@ -593,6 +603,12 @@ init_cmdline()
   # Set some environment variables
   PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
   PROMPT_COMMAND=''
+
+  # Clean useless directories from the $PATH env
+  if test "${PLATFORM?}" = 'win'; then
+    remove_from_path "${SYSTEMDRIVE-}/Windows/System32/Wbem"
+    remove_from_path "${LOCALAPPDATA-}/Microsoft/WindowsApps"
+  fi
 
   # Set environment variables
   UTILS_DIR="${SCRIPT_DIR:?}/utils"
