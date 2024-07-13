@@ -13,4 +13,24 @@ set -u
   (set -o pipefail 2> /dev/null) && set -o pipefail || true
 }
 
-if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then DO_INIT_CMDLINE=1 bash --init-file './includes/common.sh'; fi
+if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
+  unset STARTED_FROM_BATCH_FILE
+  unset IS_PATH_INITIALIZED
+  unset TERM_PROGRAM
+
+  if test -z "${SCRIPT_DIR-}"; then
+    # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
+    if test -n "${BASH_SOURCE-}" && SCRIPT_DIR="$(dirname "${BASH_SOURCE:?}")" && SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")"; then
+      export SCRIPT_DIR
+    else
+      unset SCRIPT_DIR
+    fi
+  fi
+
+  if test -n "${SCRIPT_DIR-}"; then
+    HOME="${SCRIPT_DIR:?}"
+    export HOME
+  fi
+
+  DO_INIT_CMDLINE=1 bash --init-file './includes/common.sh'
+fi

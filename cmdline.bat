@@ -16,7 +16,9 @@ SET "SCRIPT_DIR=%~dp0"
 SET "HOME=%SCRIPT_DIR%"
 
 SET "DO_INIT_CMDLINE=1"
+SET "STARTED_FROM_BATCH_FILE=1"
 SET "IS_PATH_INITIALIZED="
+SET "TERM_PROGRAM="
 "%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0includes\common.sh' || exit 1" "ash" %*
 
 ENDLOCAL 2> nul

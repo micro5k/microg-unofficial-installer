@@ -645,6 +645,14 @@ init_cmdline()
 {
   change_title 'Command-line'
 
+  if test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${HOME-}"; then
+    HOME="$(realpath "${HOME:?}")" || ui_error 'Unable to resolve the home dir'
+  fi
+  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath' && test -n "${HOME-}"; then
+    # Only on Bash under Windows
+    HOME="$(cygpath -u -a -- "${HOME:?}")" || ui_error 'Unable to convert the home dir'
+  fi
+
   # Set some environment variables
   PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
   PROMPT_COMMAND=''
@@ -664,17 +672,12 @@ init_cmdline()
   add_to_path "${UTILS_DIR:?}"
   add_to_path "${SCRIPT_DIR:?}"
 
-  if test -n "${HOME-}"; then
-    HOME="$(realpath "${HOME:?}")" || ui_error 'Failed to set HOME env var'
-    export HOME
-  fi
-
   alias 'dir'='ls'
   alias 'cd..'='cd ..'
   alias 'cd.'='cd .'
   alias 'cls'='reset'
   alias 'profgen'='profile-generator.sh'
-  unset JAVA_HOME
+  if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
 
   # Set the path of Android SDK if not already set
   if test -z "${ANDROID_SDK_ROOT-}" && test -n "${LOCALAPPDATA-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
