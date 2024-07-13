@@ -618,7 +618,6 @@ init_vars()
     # Only on Bash under Windows
     SCRIPT_DIR="$(cygpath -m -l -- "${SCRIPT_DIR:?}")" || ui_error 'Unable to convert the main script dir'
   fi
-  
 
   test -n "${SCRIPT_DIR-}" || ui_error 'SCRIPT_DIR env var is empty'
   TOOLS_DIR="${SCRIPT_DIR:?}/tools/${PLATFORM:?}"
@@ -684,6 +683,10 @@ init_cmdline()
   # Set the path of Android SDK if not already set
   if test -z "${ANDROID_SDK_ROOT-}" && test -n "${LOCALAPPDATA-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
     export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
+  fi
+  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath' && test -n "${ANDROID_SDK_ROOT-}"; then
+    # Only on Bash under Windows
+    ANDROID_SDK_ROOT="$(cygpath -m -l -a -- "${ANDROID_SDK_ROOT:?}")" || ui_error 'Unable to convert the Android SDK dir'
   fi
 
   if test -n "${ANDROID_SDK_ROOT-}" && test -d "${ANDROID_SDK_ROOT-}/build-tools"; then
