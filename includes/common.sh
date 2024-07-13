@@ -608,15 +608,17 @@ init_vars()
   local _main_dir
 
   # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
-  if test -z "${SCRIPT_DIR-}" && test -n "${BASH_SOURCE-}" && _main_dir="$(dirname "${BASH_SOURCE:?}")" && _main_dir="$(realpath "${_main_dir:?}/../")"; then
-    if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath'; then
-      # Only on Bash under Windows
-      _main_dir="$(cygpath -m -a -l -- "${_main_dir:?}")" || ui_error 'Unable to convert the main script dir'
-    fi
+  if test -z "${SCRIPT_DIR-}" && test -n "${BASH_SOURCE-}" && _main_dir="$(dirname "${BASH_SOURCE:?}")" && _main_dir="$(realpath "${_main_dir:?}/..")"; then
     SCRIPT_DIR="${_main_dir:?}"
-  elif test -n "${SCRIPT_DIR-}"; then
+  elif test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${SCRIPT_DIR-}"; then
     SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || ui_error 'Unable to resolve the main script dir'
   fi
+
+  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath' && test -n "${SCRIPT_DIR-}"; then
+    # Only on Bash under Windows
+    SCRIPT_DIR="$(cygpath -m -l -- "${SCRIPT_DIR:?}")" || ui_error 'Unable to convert the main script dir'
+  fi
+  
 
   test -n "${SCRIPT_DIR-}" || ui_error 'SCRIPT_DIR env var is empty'
   TOOLS_DIR="${SCRIPT_DIR:?}/tools/${PLATFORM:?}"
@@ -650,12 +652,12 @@ init_cmdline()
   fi
   if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath' && test -n "${HOME-}"; then
     # Only on Bash under Windows
-    HOME="$(cygpath -u -a -- "${HOME:?}")" || ui_error 'Unable to convert the home dir'
+    HOME="$(cygpath -u -- "${HOME:?}")" || ui_error 'Unable to convert the home dir'
   fi
 
-  # Set some environment variables
+  # Set some shell variables
   PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
-  PROMPT_COMMAND=''
+  unset PROMPT_COMMAND
 
   # Clean useless directories from the $PATH env
   if test "${PLATFORM?}" = 'win'; then
