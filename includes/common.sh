@@ -10,10 +10,8 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTION
 # shellcheck disable=SC3040
 set -o pipefail || true
 
-export TZ=UTC
-export LC_ALL=C
-export LANG=C.UTF-8
-export LC_CTYPE=UTF-8
+export LANG='en_US.UTF-8'
+export TZ='UTC'
 
 unset LANGUAGE
 unset LC_CTYPE
