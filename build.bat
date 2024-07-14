@@ -8,7 +8,7 @@ SETLOCAL 2> nul
 REM Fix the working directory when using "Run as administrator"
 IF "%CD%" == "%windir%\system32" CD /D "%~dp0"
 
-SET "LANG=C.UTF-8"
+SET "LANG=en_US.UTF-8"
 
 "%~dp0tools\win\busybox.exe" ash -- "%~dp0build.sh" %*
 
