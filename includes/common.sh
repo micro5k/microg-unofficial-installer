@@ -701,7 +701,11 @@ init_cmdline()
     . "${SCRIPT_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
   fi
 
-  export BB_FIX_BACKSLASH=1
+  if test "${PLATFORM:?}" = 'win'; then
+    export BB_FIX_BACKSLASH=1
+    export PATHEXT="${PATHEXT:-.BAT};.SH"
+  fi
+
   export PATH_SEPARATOR="${PATHSEP:?}"
   export DIRECTORY_SEPARATOR='/'
 }
