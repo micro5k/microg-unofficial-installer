@@ -675,7 +675,6 @@ init_cmdline()
   alias 'cd..'='cd ..'
   alias 'cd.'='cd .'
   alias 'cls'='reset'
-  alias 'profgen'='profile-generator.sh'
   if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
 
   # Set the path of Android SDK if not already set
@@ -695,6 +694,11 @@ init_cmdline()
     else
       unset AAPT2_PATH
     fi
+  fi
+
+  if test -f "${SCRIPT_DIR:?}/includes/custom-aliases.sh"; then
+    # shellcheck source=SCRIPTDIR/custom-aliases.sh
+    . "${SCRIPT_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
   fi
 
   export PATH_SEPARATOR="${PATHSEP:?}"
