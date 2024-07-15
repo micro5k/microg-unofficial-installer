@@ -697,7 +697,7 @@ init_cmdline()
   fi
 
   if test -f "${SCRIPT_DIR:?}/includes/custom-aliases.sh"; then
-    # shellcheck source=SCRIPTDIR/custom-aliases.sh
+    # shellcheck source=/dev/null
     . "${SCRIPT_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
   fi
 
