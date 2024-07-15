@@ -7,7 +7,7 @@
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTIONS_INCLUDED='true'; fi
 
-# shellcheck disable=SC3040
+# shellcheck disable=SC3040,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / C may run when A is true.
 (set 2> /dev/null -o pipefail) && set -o pipefail || true
 
 export LANG='en_US.UTF-8'
@@ -521,7 +521,7 @@ dl_list()
   _backup_ifs="${IFS:-}"
   IFS="${NL:?}"
 
-  # shellcheck disable=SC3040
+  # shellcheck disable=SC3040,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / C may run when A is true.
   (set 2> /dev/null +o posix) && set +o posix || true
 
   for _current_line in ${1?}; do
@@ -529,7 +529,7 @@ dl_list()
     dl_file "${local_path:?}" "${local_filename:?}.apk" "${dl_hash:?}" "${dl_url:?}" "${dl_mirror?}" || return "${?}"
   done || return "${?}"
 
-  # shellcheck disable=SC3040
+  # shellcheck disable=SC3040,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / C may run when A is true.
   (set 2> /dev/null -o posix) && set -o posix || true
 
   IFS="${_backup_ifs:-}"
