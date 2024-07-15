@@ -653,8 +653,9 @@ init_cmdline()
   fi
 
   # Set some shell variables
-  PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
   unset PROMPT_COMMAND
+  unset PS1
+  PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
 
   # Clean useless directories from the $PATH env
   if test "${PLATFORM?}" = 'win'; then
