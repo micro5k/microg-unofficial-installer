@@ -5,12 +5,12 @@
 # shellcheck enable=all
 
 set -u
-# shellcheck disable=SC3040,SC3041,SC2015
+# shellcheck disable=SC3040,SC3041,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / In POSIX sh, set flag -X is undefined. / C may run when A is true.
 {
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-  (set -o posix 2> /dev/null) && set -o posix || true
-  (set +H 2> /dev/null) && set +H || true
-  (set -o pipefail 2> /dev/null) && set -o pipefail || true
+  (set 2> /dev/null -o posix) && set -o posix || true
+  (set 2> /dev/null +H) && set +H || true
+  (set 2> /dev/null -o pipefail) && set -o pipefail || true
 }
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then

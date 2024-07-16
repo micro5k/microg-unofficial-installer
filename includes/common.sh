@@ -7,9 +7,6 @@
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTIONS_INCLUDED='true'; fi
 
-# shellcheck disable=SC3040,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / C may run when A is true.
-(set 2> /dev/null -o pipefail) && set -o pipefail || true
-
 export LANG='en_US.UTF-8'
 export TZ='UTC'
 
@@ -567,6 +564,13 @@ remove_from_path()
 {
   local _path
 
+  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath'; then
+    # Only on Bash under Windows
+    local _single_path
+    _single_path="$(cygpath -u -- "${1:?}")" || ui_error 'Unable to convert a path in remove_from_path()'
+    set -- "${_single_path:?}"
+  fi
+
   if _path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | grep -v -x -F -e "${1:?}" | tr -- '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
     PATH="${_path?}"
   fi
@@ -710,6 +714,16 @@ init_cmdline()
   export PATH_SEPARATOR="${PATHSEP:?}"
   export DIRECTORY_SEPARATOR='/'
 }
+
+if test "${DO_INIT_CMDLINE:-0}" != '0'; then
+  # shellcheck disable=SC3040,SC3041,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / In POSIX sh, set flag -X is undefined. / C may run when A is true.
+  {
+    # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
+    (set 2> /dev/null -o posix) && set -o posix || true
+    (set 2> /dev/null +H) && set +H || true
+    (set 2> /dev/null -o pipefail) && set -o pipefail || true
+  }
+fi
 
 # Set environment variables
 PLATFORM="$(detect_os)"
