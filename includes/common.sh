@@ -682,6 +682,8 @@ init_cmdline()
   alias 'cls'='reset'
   if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
 
+  alias build='build.sh'
+
   # Set the path of Android SDK if not already set
   if test -z "${ANDROID_SDK_ROOT-}" && test -n "${LOCALAPPDATA-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
     export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
