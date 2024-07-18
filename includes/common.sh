@@ -685,8 +685,17 @@ init_cmdline()
   alias build='build.sh'
 
   # Set the path of Android SDK if not already set
-  if test -z "${ANDROID_SDK_ROOT-}" && test -n "${LOCALAPPDATA-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
-    export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
+  if test -z "${ANDROID_SDK_ROOT-}"; then
+    if test -n "${USER_HOME-}" && test -e "${USER_HOME:?}/Android/Sdk"; then
+      # Linux
+      export ANDROID_SDK_ROOT="${USER_HOME:?}/Android/Sdk"
+    elif test -n "${LOCALAPPDATA-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
+      # Windows
+      export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
+    elif test -n "${USER_HOME-}" && test -e "${USER_HOME:?}/Library/Android/sdk"; then
+      # macOS
+      export ANDROID_SDK_ROOT="${USER_HOME:?}/Library/Android/sdk"
+    fi
   fi
   if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath' && test -n "${ANDROID_SDK_ROOT-}"; then
     # Only on Bash under Windows
