@@ -28,9 +28,10 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   fi
 
   if test -n "${SCRIPT_DIR-}"; then
-    HOME="${SCRIPT_DIR:?}"
-    export HOME
-  fi
+    export HOME="${SCRIPT_DIR:?}"
 
-  DO_INIT_CMDLINE=1 bash --init-file './includes/common.sh'
+    DO_INIT_CMDLINE=1 bash --init-file "${SCRIPT_DIR:?}/includes/common.sh"
+  else
+    DO_INIT_CMDLINE=1 bash --init-file './includes/common.sh'
+  fi
 fi
