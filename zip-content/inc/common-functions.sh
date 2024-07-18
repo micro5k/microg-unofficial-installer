@@ -1147,6 +1147,10 @@ perform_secure_copy_to_device()
 
 perform_installation()
 {
+  ui_msg_empty_line
+  ui_msg "Disk space required: $(du -s -h -- "${TMP_PATH:?}/files" | cut -f 1 -s || true)"
+  ui_msg_empty_line
+
   ui_msg 'Installing...'
 
   if test ! -d "${SYS_PATH:?}/etc/zips"; then
