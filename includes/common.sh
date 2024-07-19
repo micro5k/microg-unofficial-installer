@@ -696,7 +696,7 @@ init_cmdline()
 
     add_to_path "${ANDROID_SDK_ROOT:?}/platform-tools"
 
-    if test -d "${ANDROID_SDK_ROOT:?}/build-tools"; then
+    if test -e "${ANDROID_SDK_ROOT:?}/build-tools"; then
       if AAPT2_PATH="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -iname 'aapt2*' | LC_ALL=C sort -V -r | head -n 1)" && test -n "${AAPT2_PATH?}"; then
         export AAPT2_PATH
         # shellcheck disable=SC2139
