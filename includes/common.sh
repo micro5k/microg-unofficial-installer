@@ -541,12 +541,12 @@ is_in_path()
   return 1 # NOT found
 }
 
-add_to_path()
+add_to_path_env()
 {
   if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath'; then
     # Only on Bash under Windows
     local _path
-    _path="$(cygpath -u -a -- "${1:?}")" || ui_error 'Unable to convert a path in add_to_path()'
+    _path="$(cygpath -u -a -- "${1:?}")" || ui_error 'Unable to convert a path in add_to_path_env()'
     set -- "${_path:?}"
   fi
 
@@ -560,14 +560,14 @@ add_to_path()
   fi
 }
 
-remove_from_path()
+remove_from_path_env()
 {
   local _path
 
   if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath'; then
     # Only on Bash under Windows
     local _single_path
-    _single_path="$(cygpath -u -- "${1:?}")" || ui_error 'Unable to convert a path in remove_from_path()'
+    _single_path="$(cygpath -u -- "${1:?}")" || ui_error 'Unable to convert a path in remove_from_path_env()'
     set -- "${_single_path:?}"
   fi
 
@@ -641,7 +641,7 @@ init_path()
   if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':'; then move_to_begin_of_path_env '/usr/bin'; fi
 
   remove_duplicates_from_path_env
-  add_to_path "${TOOLS_DIR:?}"
+  add_to_path_env "${TOOLS_DIR:?}"
 }
 
 init_cmdline()
@@ -664,8 +664,8 @@ init_cmdline()
 
   # Clean useless directories from the $PATH env
   if test "${PLATFORM?}" = 'win'; then
-    remove_from_path "${SYSTEMDRIVE-}/Windows/System32/Wbem"
-    remove_from_path "${LOCALAPPDATA-}/Microsoft/WindowsApps"
+    remove_from_path_env "${SYSTEMDRIVE-}/Windows/System32/Wbem"
+    remove_from_path_env "${LOCALAPPDATA-}/Microsoft/WindowsApps"
   fi
 
   # Set environment variables
@@ -694,7 +694,7 @@ init_cmdline()
       ANDROID_SDK_ROOT="$(cygpath -m -l -a -- "${ANDROID_SDK_ROOT:?}")" || ui_error 'Unable to convert the Android SDK dir'
     fi
 
-    add_to_path "${ANDROID_SDK_ROOT:?}/platform-tools"
+    add_to_path_env "${ANDROID_SDK_ROOT:?}/platform-tools"
 
     if test -e "${ANDROID_SDK_ROOT:?}/build-tools"; then
       if AAPT2_PATH="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -iname 'aapt2*' | LC_ALL=C sort -V -r | head -n 1)" && test -n "${AAPT2_PATH?}"; then
@@ -707,8 +707,8 @@ init_cmdline()
     fi
   fi
 
-  add_to_path "${UTILS_DIR:?}"
-  add_to_path "${SCRIPT_DIR:?}"
+  add_to_path_env "${UTILS_DIR:?}"
+  add_to_path_env "${SCRIPT_DIR:?}"
 
   alias 'dir'='ls'
   alias 'cd..'='cd ..'
