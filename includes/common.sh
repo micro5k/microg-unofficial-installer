@@ -660,6 +660,7 @@ init_cmdline()
   unset PROMPT_COMMAND
   unset PS1
   PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
+  if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
 
   # Clean useless directories from the $PATH env
   if test "${PLATFORM?}" = 'win'; then
@@ -672,17 +673,6 @@ init_cmdline()
   UTILS_DATA_DIR="${UTILS_DIR:?}/data"
   readonly UTILS_DIR UTILS_DATA_DIR
   export UTILS_DIR UTILS_DATA_DIR
-
-  add_to_path "${UTILS_DIR:?}"
-  add_to_path "${SCRIPT_DIR:?}"
-
-  alias 'dir'='ls'
-  alias 'cd..'='cd ..'
-  alias 'cd.'='cd .'
-  alias 'cls'='reset'
-  if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
-
-  alias build='build.sh'
 
   # Set the path of Android SDK if not already set
   if test -z "${ANDROID_SDK_ROOT-}"; then
@@ -717,10 +707,20 @@ init_cmdline()
     fi
   fi
 
+  add_to_path "${UTILS_DIR:?}"
+  add_to_path "${SCRIPT_DIR:?}"
+
+  alias 'dir'='ls'
+  alias 'cd..'='cd ..'
+  alias 'cd.'='cd .'
+  alias 'cls'='reset'
+
   if test -f "${SCRIPT_DIR:?}/includes/custom-aliases.sh"; then
     # shellcheck source=/dev/null
     . "${SCRIPT_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
   fi
+
+  alias build='build.sh'
 
   if test "${PLATFORM:?}" = 'win'; then
     export BB_FIX_BACKSLASH=1
