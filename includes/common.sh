@@ -697,18 +697,23 @@ init_cmdline()
       export ANDROID_SDK_ROOT="${USER_HOME:?}/Library/Android/sdk"
     fi
   fi
-  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath' && test -n "${ANDROID_SDK_ROOT-}"; then
-    # Only on Bash under Windows
-    ANDROID_SDK_ROOT="$(cygpath -m -l -a -- "${ANDROID_SDK_ROOT:?}")" || ui_error 'Unable to convert the Android SDK dir'
-  fi
 
-  if test -n "${ANDROID_SDK_ROOT-}" && test -d "${ANDROID_SDK_ROOT-}/build-tools"; then
-    if AAPT2_PATH="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -iname 'aapt2*' | LC_ALL=C sort -V -r | head -n 1)" && test -n "${AAPT2_PATH?}"; then
-      export AAPT2_PATH
-      # shellcheck disable=SC2139
-      alias 'aapt2'="'${AAPT2_PATH:?}'"
-    else
-      unset AAPT2_PATH
+  if test -n "${ANDROID_SDK_ROOT-}"; then
+    if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath'; then
+      # Only on Bash under Windows
+      ANDROID_SDK_ROOT="$(cygpath -m -l -a -- "${ANDROID_SDK_ROOT:?}")" || ui_error 'Unable to convert the Android SDK dir'
+    fi
+
+    add_to_path "${ANDROID_SDK_ROOT:?}/platform-tools"
+
+    if test -d "${ANDROID_SDK_ROOT:?}/build-tools"; then
+      if AAPT2_PATH="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -iname 'aapt2*' | LC_ALL=C sort -V -r | head -n 1)" && test -n "${AAPT2_PATH?}"; then
+        export AAPT2_PATH
+        # shellcheck disable=SC2139
+        alias 'aapt2'="'${AAPT2_PATH:?}'"
+      else
+        unset AAPT2_PATH
+      fi
     fi
   fi
 
