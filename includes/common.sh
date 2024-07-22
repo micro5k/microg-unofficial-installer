@@ -67,7 +67,7 @@ ui_debug()
 
 readonly DL_DEBUG='false'
 readonly WGET_CMD='wget'
-readonly DL_UA='Mozilla/5.0 (Linux x86_64; rv:115.0) Gecko/20100101 Firefox/115.0'
+readonly DL_UA='Mozilla/5.0 (Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0'
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
 readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
 readonly DL_DNT='DNT: 1'
