@@ -383,7 +383,7 @@ do_AJAX_post_request_and_output_response_to_stdout()
   "${WGET_CMD:?}" -q -O '-' "${@}" --post-data "${_post_data?}" -- "${_url:?}"
 }
 
-# 1 => JSON response; 2 => Field to get
+# 1 => JSON response; 2 => Field to retrieve
 parse_JSON_response()
 {
   printf '%s\n' "${1:?}" | grep -o -m 1 -E -e "\"${2:?}\""'\s*:\s*"[^"]+' | cut -d ':' -f '2-' -s | grep -o -e '".*' | cut -c '2-'
