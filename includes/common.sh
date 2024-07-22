@@ -306,12 +306,54 @@ _parse_webpage_and_get_url()
   printf '%s\n' "${_parsed_url?}"
 }
 
+dl_debug()
+{
+  ui_debug ''
+  ui_debug '--------'
+  ui_debug "URL: ${1:?}"
+  ui_debug 'REQUEST:'
+  ui_debug ''
+  ui_debug "${2:?} /$(printf '%s\n' "${1:?}" | cut -d '/' -f '4-' -s || true) HTTP/1.1"
+  shift 2
+
+  while test "${#}" -gt 0; do
+    case "${1?}" in
+      -U)
+        if test "${#}" -ge 2; then
+          shift
+          ui_debug "User-Agent: ${1?}"
+        fi
+        ;;
+
+      --header)
+        if test "${#}" -ge 2; then
+          shift
+          ui_debug "${1?}"
+        fi
+        ;;
+
+      --)
+        break
+        ;;
+
+      *)
+        ui_debug "Invalid parameter: ${1?}"
+        break
+        ;;
+    esac
+
+    shift
+  done
+
+  ui_debug '--------'
+}
+
 do_AJAX_get_request_and_output_response_to_stdout()
 {
   local _url _origin _referrer _authorization
   _url="${1:?}"
   _origin="${2:?}"
-  _referrer="${3-}" # Optional
+  _referrer="${3-}"      # Optional
   _authorization="${4-}" # Optional
 
   set -- -U "${DL_UA:?}" --header "${DL_AJAX_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
@@ -319,6 +361,7 @@ do_AJAX_get_request_and_output_response_to_stdout()
   if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
   set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"
 
+  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" 'GET' "${@}"; fi
   "${WGET_CMD:?}" -q -O '-' "${@}" -- "${_url:?}"
 }
 
@@ -328,7 +371,7 @@ do_AJAX_post_request_and_output_response_to_stdout()
   _url="${1:?}"
   _origin="${2:?}"
   _post_data="${3?}"
-  _referrer="${4-}" # Optional
+  _referrer="${4-}"      # Optional
   _authorization="${5-}" # Optional
 
   set -- -U "${DL_UA:?}" --header "${DL_AJAX_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
@@ -336,27 +379,51 @@ do_AJAX_post_request_and_output_response_to_stdout()
   if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
   set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"
 
+  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" 'POST' "${@}"; fi
   "${WGET_CMD:?}" -q -O '-' "${@}" --post-data "${_post_data?}" -- "${_url:?}"
 }
 
-# 1 => JSON response; 2 => Field to parse
+# 1 => JSON response; 2 => Field to get
 parse_JSON_response()
 {
   printf '%s\n' "${1:?}" | grep -o -m 1 -E -e "\"${2:?}\""'\s*:\s*"[^"]+' | cut -d ':' -f '2-' -s | grep -o -e '".*' | cut -c '2-'
 }
 
-# 1 => URL
-get_location_header_from_http_request()
+retrieve_location_header_from_web_request()
 {
+  local _url
+  _url="${1:?}"
+
+  set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+
+  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" 'GET' "${@}"; fi
   {
-    "${WGET_CMD:?}" 2>&1 --spider -qSO '-' -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header 'DNT: 1' -- "${1:?}" || true
-  } | grep -aom 1 -e 'Location:[[:space:]][^[:cntrl:]]*$' | cut -d ':' -f '2-' -s | cut -c '2-' || return "${?}"
+    "${WGET_CMD:?}" 2>&1 --spider -q -S -O '-' "${@}" -- "${_url:?}" || true
+  } | grep -o -m 1 -e 'Location:[[:space:]][^[:cntrl:]]*$' | cut -d ':' -f '2-' -s | cut -c '2-'
 }
 
-# 1 => URL; # 2 => Origin header
-send_empty_ajax_request()
+send_empty_web_get_request()
 {
-  "${WGET_CMD:?}" --spider -qO '-' -U "${DL_UA:?}" --header 'Accept: */*' --header "${DL_ACCEPT_LANG_HEADER:?}" --header "Origin: ${2:?}" --header 'DNT: 1' -- "${1:?}" || return "${?}"
+  local _url _accept_all _referrer _authorization
+  local _accept _domain _cookies
+
+  _url="${1:?}"
+  _accept_all="${2-}"    # Optional
+  _referrer="${3-}"      # Optional
+  _authorization="${4-}" # Optional
+
+  if test "${_accept_all?}" = 'yes'; then _accept="${DL_AJAX_ACCEPT_HEADER:?}"; else _accept="${DL_ACCEPT_HEADER:?}"; fi
+  _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
+  _cookies="$(_load_cookies "${_domain:?}")" || return "${?}"
+  _cookies="${_cookies%; }" || return "${?}"
+
+  set -- -U "${DL_UA:?}" --header "${_accept:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
+  if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
+  if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"; fi
+
+  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" 'GET' "${@}"; fi
+  "${WGET_CMD:?}" --spider -q -O '-' "${@}" -- "${_url:?}"
 }
 
 _direct_download()
@@ -476,17 +543,17 @@ dl_type_two()
   _base_origin="${DL_PROT:?}${_base_dm:?}"
   _base_referrer="${_base_origin:?}/"
 
-  _location_header="$(get_location_header_from_http_request "${_url:?}")" ||
+  _location_header="$(retrieve_location_header_from_web_request "${_url:?}")" ||
     report_failure 2 "${?}" 'get location header 1' 'THE FILE HAS PROBABLY BEEN DELETED ON THE SERVER!!!' || return "${?}"
   # DEBUG => echo "${_location_header:?}"
 
   if ! printf '%s\n' "${_location_header:?}" | grep -q -m 1 -F -e "${_base_referrer:?}d/"; then
-    _location_header="$(get_location_header_from_http_request "${_location_header:?}")" ||
+    _location_header="$(retrieve_location_header_from_web_request "${_location_header:?}")" ||
       report_failure 2 "${?}" 'get location header 2' 'THE FILE HAS PROBABLY BEEN DELETED ON THE SERVER!!!' || return "${?}"
     # DEBUG => echo "${_location_header:?}"
-    
+
     if ! printf '%s\n' "${_location_header:?}" | grep -q -m 1 -F -e "${_base_referrer:?}d/"; then
-      _location_header="$(get_location_header_from_http_request "${_location_header:?}")" ||
+      _location_header="$(retrieve_location_header_from_web_request "${_location_header:?}")" ||
         report_failure 2 "${?}" 'get location header 3' 'THE FILE HAS PROBABLY BEEN DELETED ON THE SERVER!!!' || return "${?}"
       # DEBUG => echo "${_location_header:?}"
 
@@ -515,17 +582,17 @@ dl_type_two()
     report_failure 2 "${?}" 'do AJAX get req 1' || return "${?}"
   # DEBUG => echo "${_json_response:?}"
 
-  sleep 0.2
   _parse_and_store_cookie "${_domain:?}" 'account''Token='"${_token_code:?}" ||
     report_failure 2 "${?}" 'set cookie' || return "${?}"
 
-  do_AJAX_get_request_and_output_response_to_stdout 1> /dev/null "${DL_PROT:?}${_base_dm:?}/contents/files.html" "${_base_origin:?}" "${_base_referrer:?}" ||
-    report_failure 2 "${?}" 'do AJAX get req 2' || return "${?}"
-  # DEBUG => echo "${_json_response:?}"
+  sleep 0.2
+  send_empty_web_get_request "${DL_PROT:?}${_base_dm:?}/contents/files.html" 'yes' "${_base_referrer:?}" ||
+    report_failure 2 "${?}" 'do web get req' || return "${?}"
 
   sleep 0.2
-  do_AJAX_get_request_and_output_response_to_stdout 1> /dev/null "${_base_api_url:?}/contents/${_loc_code:?}?"'wt''=''4fd6''sg89''d7s6' "${_base_origin:?}" "${_base_referrer:?}" "Bearer ${_token_code:?}" ||
-    report_failure 2 "${?}" 'do AJAX get req 3' || return "${?}"
+  _json_response="$(do_AJAX_get_request_and_output_response_to_stdout "${_base_api_url:?}/contents/${_loc_code:?}?"'wt''=''4fd6''sg89''d7s6' "${_base_origin:?}" "${_base_referrer:?}" "Bearer ${_token_code:?}")" ||
+    report_failure 2 "${?}" 'do AJAX get req 2' || return "${?}"
+  # DEBUG => echo "${_json_response:?}"
 
   sleep 0.3
   _direct_download "${_url:?}" "${_base_referrer:?}" "${_output:?}" ||
