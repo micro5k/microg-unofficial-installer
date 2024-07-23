@@ -441,24 +441,10 @@ _direct_download()
   _status=0
 
   set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
-  if test -n "${_referrer?}"; then
-    set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"
-  fi
-  if test -n "${_cookies?}"; then
-    set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"
-  fi
+  if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
+  if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"; fi
 
-  if test "${DL_DEBUG:?}" = 'true'; then
-    ui_debug ''
-    ui_debug "URL: ${_url?}"
-    ui_debug "User-Agent: ${DL_UA?}"
-    ui_debug "${DL_ACCEPT_HEADER?}"
-    ui_debug "${DL_ACCEPT_LANG_HEADER?}"
-    ui_debug "Referer: ${_referrer?}"
-    ui_debug "Cookie: ${_cookies?}"
-    ui_debug ''
-  fi
-
+  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" 'GET' "${@}"; fi
   "${WGET_CMD:?}" -q -O "${_output:?}" "${@}" -- "${_url:?}" || return "${?}"
 }
 
