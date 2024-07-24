@@ -333,8 +333,7 @@ dl_debug()
   ui_debug '--------'
   ui_debug "URL: ${1:?}"
   ui_debug 'REQUEST:'
-  ui_debug ''
-  ui_debug "${2:?} /$(printf '%s\n' "${1:?}" | cut -d '/' -f '4-' -s || true) HTTP/1.1"
+  ui_debug "  ${2:?} /$(printf '%s\n' "${1:?}" | cut -d '/' -f '4-' -s || true) HTTP/1.1"
   shift 2
 
   while test "${#}" -gt 0; do
@@ -342,14 +341,14 @@ dl_debug()
       -U)
         if test "${#}" -ge 2; then
           shift
-          ui_debug "User-Agent: ${1?}"
+          ui_debug "  User-Agent: ${1?}"
         fi
         ;;
 
       --header)
         if test "${#}" -ge 2; then
           shift
-          ui_debug "${1?}"
+          ui_debug "  ${1?}"
         fi
         ;;
 
