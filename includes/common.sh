@@ -66,13 +66,16 @@ ui_debug()
 }
 
 export DL_DEBUG="${DL_DEBUG:-false}"
-readonly WGET_CMD='wget'
-readonly DL_UA='Mozilla/5.0 (Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0'
-readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
-readonly DL_ACCEPT_ALL_HEADER='Accept: */*'
-readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
-readonly DL_DNT_HEADER='DNT: 1'
-readonly DL_PROT='https://'
+# shellcheck disable=SC2034
+{
+  readonly WGET_CMD='wget'
+  readonly DL_UA='Mozilla/5.0 (Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0'
+  readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+  readonly DL_ACCEPT_ALL_HEADER='Accept: */*'
+  readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
+  readonly DL_DNT_HEADER='DNT: 1'
+  readonly DL_PROT='https://'
+}
 
 _uname_saved="$(uname)"
 compare_start_uname()
