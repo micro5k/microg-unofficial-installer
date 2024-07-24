@@ -275,8 +275,7 @@ _parse_webpage_and_get_url()
   _search_pattern="${3:?}"
 
   _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
-  _cookies="$(_load_cookies "${_url:?}")" || return "${?}"
-  _cookies="${_cookies%; }" || return "${?}"
+  if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
   _parsed_code=''
   _parsed_url=''
   _status=0
@@ -458,8 +457,7 @@ send_empty_web_get_request()
   _authorization="${4-}" # Optional
 
   if test "${_accept_all?}" = 'yes'; then _accept="${DL_AJAX_ACCEPT_HEADER:?}"; else _accept="${DL_ACCEPT_HEADER:?}"; fi
-  _cookies="$(_load_cookies "${_url:?}")" || return "${?}"
-  _cookies="${_cookies%; }" || return "${?}"
+  if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
 
   set -- -U "${DL_UA:?}" --header "${_accept:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
@@ -479,8 +477,7 @@ _direct_download()
   _referrer="${2?}"
   _output="${3:?}"
 
-  _cookies="$(_load_cookies "${_url:?}")" || return "${?}"
-  _cookies="${_cookies%; }" || return "${?}"
+  if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
   _status=0
 
   set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
@@ -560,7 +557,7 @@ dl_type_two()
   local _url _output
   local _domain _base_dm
   local _base_api_url _base_origin _base_referrer
-  local _last_location_url _http_headers _status_code
+  local _http_headers _status_code
   local _loc_code _json_response _id_code _token_code
 
   _url="${1:?}" || return "${?}"
@@ -573,7 +570,8 @@ dl_type_two()
   _base_origin="${DL_PROT:?}${_base_dm:?}"
   _base_referrer="${_base_origin:?}/"
 
-  _last_location_url="${_url:?}"
+  local _count=1
+  local _last_location_url="${_url:?}"
   while true; do
     _http_headers="$(send_web_request_and_output_only_headers "${_last_location_url:?}" 'GET')"
     _status_code="$(parse_headers_and_get_status_code "${_http_headers?}")"
@@ -585,19 +583,21 @@ dl_type_two()
       3*) # Continue until the redirects run out (usually 302)
         _last_location_url="$(parse_headers_and_get_location_url "${_http_headers?}")" ||
           {
-            report_failure 2 "${?}" 'get location url'
+            report_failure 2 "${?}" "get location url ${_count:?}"
             return "${?}"
           }
         ;;
       404)
-        report_failure 2 "77" 'get location url' 'THE FILE HAS BEEN DELETED ON THE SERVER!!!'
+        report_failure 2 "77" "get location url ${_count:?}" 'THE FILE HAS BEEN DELETED ON THE SERVER!!!'
         return "${?}"
         ;;
       *)
-        report_failure 2 "78" 'get location url' "HTTP STATUS CODE: ${_status_code?}"
+        report_failure 2 "78" "get location url ${_count:?}" "UNSUPPORTED HTTP STATUS CODE: ${_status_code?}"
         return "${?}"
         ;;
     esac
+
+    if ! _count="$((_count + 1))" || test "${_count:?}" -gt 5; then break; fi
   done
 
   _loc_code="$(printf '%s\n' "${_last_location_url:?}" | cut -d '/' -f '5-' -s)" ||
