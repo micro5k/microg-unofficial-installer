@@ -190,6 +190,8 @@ _parse_and_store_cookie()
 {
   local IFS _line_no _cookie_file _elem
 
+  if test ! -e "${SCRIPT_DIR:?}/cache/temp/cookies"; then mkdir -p "${SCRIPT_DIR:?}/cache/temp/cookies" || return "${?}"; fi
+
   if test "${DL_DEBUG:?}" = 'true'; then
     printf '%s\n' "Set-Cookie: ${2:?}" >> "${SCRIPT_DIR:?}/cache/temp/cookies/${1:?}.dat.debug"
   fi
