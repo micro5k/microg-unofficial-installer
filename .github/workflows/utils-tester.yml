@@ -23,7 +23,7 @@ jobs:
           - ubuntu-latest
           - windows-latest
           - macos-latest
-          - macos-11
+          - macos-12
     name: "DeviceInfo (${{ matrix.os }})"
     runs-on: "${{ matrix.os }}"
 
