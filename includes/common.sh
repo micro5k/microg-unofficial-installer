@@ -71,7 +71,7 @@ readonly DL_UA='Mozilla/5.0 (Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
 readonly DL_ACCEPT_ALL_HEADER='Accept: */*'
 readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
-readonly DL_DNT='DNT: 1'
+readonly DL_DNT_HEADER='DNT: 1'
 readonly DL_PROT='https://'
 
 _uname_saved="$(uname)"
@@ -280,7 +280,7 @@ _parse_webpage_and_get_url()
   _parsed_url=''
   _status=0
 
-  set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --header "${DL_DNT:?}" || return "${?}"
+  set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
   if test -n "${_referrer?}"; then
     set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"
   fi
@@ -294,7 +294,6 @@ _parse_webpage_and_get_url()
     ui_debug "User-Agent: ${DL_UA?}"
     ui_debug "${DL_ACCEPT_HEADER?}"
     ui_debug "${DL_ACCEPT_LANG_HEADER?}"
-    ui_debug "${DL_DNT?}"
     ui_debug "Referer: ${_referrer?}"
     ui_debug "Cookie: ${_cookies?}"
     ui_debug ''
@@ -564,12 +563,11 @@ report_failure_one()
 
 dl_type_zero()
 {
-  local _url _referrer _output
-  _url="${1:?}" || return "${?}"
-  _referrer="${2?}" || return "${?}"
-  _output="${3:?}" || return "${?}"
+  local _url _output
+  _url="${1:?}"
+  _output="${2:?}"
 
-  _direct_download "${_url:?}" "${_output:?}" 'GET' "${_referrer?}" ||
+  _direct_download "${_url:?}" "${_output:?}" 'GET' ||
     report_failure 0 "${?}" 'dl' || return "${?}"
 }
 
@@ -612,19 +610,19 @@ dl_type_one()
 dl_type_two()
 {
   local _url _output
-  local _domain _base_dm
+  local _domain _second_level_domain
   local _base_api_url _base_origin _base_referrer
   local _http_headers _status_code
   local _loc_code _json_response _id_code _token_code
 
-  _url="${1:?}" || return "${?}"
-  _output="${2:?}" || return "${?}"
+  _url="${1:?}"
+  _output="${2:?}"
 
   _domain="$(get_domain_from_url "${_url:?}")" || report_failure 2 "${?}" || return "${?}"
-  _base_dm="$(get_second_level_domain_from_url "${_url:?}")" || report_failure 2 "${?}" || return "${?}"
+  _second_level_domain="$(get_second_level_domain_from_url "${_url:?}")" || report_failure 2 "${?}" || return "${?}"
 
-  _base_api_url="${DL_PROT:?}api.${_base_dm:?}"
-  _base_origin="${DL_PROT:?}${_base_dm:?}"
+  _base_api_url="${DL_PROT:?}api.${_second_level_domain:?}"
+  _base_origin="${DL_PROT:?}${_second_level_domain:?}"
   _base_referrer="${_base_origin:?}/"
 
   local _count=1
@@ -679,11 +677,11 @@ dl_type_two()
     report_failure 2 "${?}" 'do AJAX get req 1' || return "${?}"
   # DEBUG => echo "${_json_response:?}"
 
-  _parse_and_store_cookie "${_base_dm:?}" 'account''Token='"${_token_code:?}" ||
+  _parse_and_store_cookie "${_second_level_domain:?}" 'account''Token='"${_token_code:?}" ||
     report_failure 2 "${?}" 'set cookie' || return "${?}"
 
   sleep 0.2
-  send_web_request_and_no_output "${DL_PROT:?}${_base_dm:?}/contents/files.html" 'GET' "${_base_referrer:?}" '' '' 'all' ||
+  send_web_request_and_no_output "${DL_PROT:?}${_second_level_domain:?}/contents/files.html" 'GET' "${_base_referrer:?}" '' '' 'all' ||
     report_failure 2 "${?}" 'do web get req' || return "${?}"
 
   sleep 0.2
@@ -723,7 +721,7 @@ dl_file()
         ;;
       ????*)
         printf '\n %s: ' 'DL type 0'
-        dl_type_zero "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+        dl_type_zero "${_url:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
         ;;
       *)
         ui_error "Invalid download URL => '${_url?}'"
