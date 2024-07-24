@@ -351,6 +351,12 @@ dl_debug()
         fi
         ;;
 
+      --post-data)
+        if test "${#}" -ge 2; then
+          shift
+        fi
+        ;;
+
       --)
         break
         ;;
@@ -452,46 +458,74 @@ parse_headers_and_get_location_url()
   printf '%s\n' "${1?}" | grep -o -m 1 -e 'Location:[[:space:]].*' | cut -d ':' -f '2-' -s | cut -c '2-'
 }
 
-send_empty_web_get_request()
+send_web_request_and_no_output()
 {
-  local _url _accept_all _referrer _authorization
-  local _accept _cookies
+  local _url _method _referrer _origin _authorization _accept
+  local _is_ajax='false'
+  local _cookies=''
 
   _url="${1:?}"
-  _accept_all="${2-}"    # Optional
+  _method="${2:-GET}"    # Optional (only GET and POST are supported, GET is default)
   _referrer="${3-}"      # Optional
-  _authorization="${4-}" # Optional
+  _origin="${4-}"        # Optional (empty or unset for normal requests but not empty for AJAX requests)
+  _authorization="${5-}" # Optional
+  _accept="${6-}"        # Optional
+  if test -n "${_origin?}"; then _is_ajax='true'; fi
 
-  if test "${_accept_all?}" = 'yes'; then _accept="${DL_ACCEPT_ALL_HEADER:?}"; else _accept="${DL_ACCEPT_HEADER:?}"; fi
-  if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
+  if test "${_is_ajax:?}" = 'true' || test "${_accept?}" = 'all'; then
+    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  else
+    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  fi
 
-  set -- -U "${DL_UA:?}" --header "${_accept:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  if test "${_is_ajax:?}" != 'true'; then
+    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
+  fi
+
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
   if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
+  if test -n "${_origin?}"; then set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"; fi
   if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"; fi
+  if test "${_method:?}" = 'POST'; then set -- "${@}" --post-data '' || return "${?}"; fi
 
-  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" 'GET' "${@}"; fi
+  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" "${_method:?}" "${@}"; fi
   "${WGET_CMD:?}" --spider -q -O '-' "${@}" -- "${_url:?}"
 }
 
 _direct_download()
 {
-  local _url _referrer _output
-  local _cookies _status
+  local _output
+  local _url _method _referrer _origin _authorization _accept
+  local _is_ajax='false'
+  local _cookies=''
 
   _url="${1:?}"
-  _referrer="${2?}"
-  _output="${3:?}"
+  _output="${2:?}"
+  _method="${3:-GET}"    # Optional (only GET and POST are supported, GET is default)
+  _referrer="${4-}"      # Optional
+  _origin="${5-}"        # Optional (empty or unset for normal requests but not empty for AJAX requests)
+  _authorization="${6-}" # Optional
+  _accept="${7-}"        # Optional
+  if test -n "${_origin?}"; then _is_ajax='true'; fi
 
-  if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
-  _status=0
+  if test "${_is_ajax:?}" = 'true' || test "${_accept?}" = 'all'; then
+    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  else
+    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  fi
 
-  set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  if test "${_is_ajax:?}" != 'true'; then
+    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
+  fi
+
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
+  if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
+  if test -n "${_origin?}"; then set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"; fi
   if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"; fi
+  if test "${_method:?}" = 'POST'; then set -- "${@}" --post-data '' || return "${?}"; fi
 
-  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" 'GET' "${@}"; fi
-  "${WGET_CMD:?}" -q -O "${_output:?}" "${@}" -- "${_url:?}" || return "${?}"
+  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" "${_method:?}" "${@}"; fi
+  "${WGET_CMD:?}" -q -O "${_output:?}" "${@}" -- "${_url:?}"
 }
 
 report_failure()
@@ -519,7 +553,8 @@ dl_type_zero()
   _referrer="${2?}" || return "${?}"
   _output="${3:?}" || return "${?}"
 
-  _direct_download "${_url:?}" "${_referrer?}" "${_output:?}" || report_failure 0 "${?}" 'dl' || return "${?}"
+  _direct_download "${_url:?}" "${_output:?}" 'GET' "${_referrer?}" ||
+    report_failure 0 "${?}" 'dl' || return "${?}"
 }
 
 dl_type_one()
@@ -553,7 +588,7 @@ dl_type_one()
     _referrer="${_url:?}"
     _url="${_base_url:?}${_result:?}"
   }
-  _direct_download "${_url:?}" "${_referrer:?}" "${3:?}" || {
+  _direct_download "${_url:?}" "${3:?}" 'GET' "${_referrer:?}" || {
     report_failure_one "${?}" 'dl' || return "${?}"
   }
 }
@@ -629,7 +664,7 @@ dl_type_two()
     report_failure 2 "${?}" 'set cookie' || return "${?}"
 
   sleep 0.2
-  send_empty_web_get_request "${DL_PROT:?}${_base_dm:?}/contents/files.html" 'yes' "${_base_referrer:?}" ||
+  send_web_request_and_no_output "${DL_PROT:?}${_base_dm:?}/contents/files.html" 'GET' "${_base_referrer:?}" '' '' 'all' ||
     report_failure 2 "${?}" 'do web get req' || return "${?}"
 
   sleep 0.2
@@ -638,7 +673,7 @@ dl_type_two()
   # DEBUG => echo "${_json_response:?}"
 
   sleep 0.3
-  _direct_download "${_url:?}" "${_base_referrer:?}" "${_output:?}" ||
+  _direct_download "${_url:?}" "${_output:?}" 'GET' "${_base_referrer:?}" ||
     report_failure 2 "${?}" 'dl' || return "${?}"
 }
 
