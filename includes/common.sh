@@ -180,10 +180,14 @@ get_base_url()
   echo "${1:?}" | cut -d '/' -f '1,2,3' || return "${?}"
 }
 
+clear_dl_temp_dir()
+{
+  rm -f -r "${SCRIPT_DIR:?}/cache/temp"
+}
+
 _clear_cookies()
 {
-  rm -f -r "${SCRIPT_DIR:?}/cache/temp/cookies" || return "${?}"
-  mkdir -p "${SCRIPT_DIR:?}/cache/temp/cookies" || return "${?}"
+  rm -f -r "${SCRIPT_DIR:?}/cache/temp/cookies"
 }
 
 _parse_and_store_cookie()
@@ -220,7 +224,7 @@ _parse_and_store_all_cookies()
   done
 
   if test "${DL_DEBUG:?}" = 'true'; then
-    printf '\n' >> "${SCRIPT_DIR:?}/cache/temp/cookies/${1:?}.dat.debug"
+    if test -e "${SCRIPT_DIR:?}/cache/temp/cookies"; then printf '\n' >> "${SCRIPT_DIR:?}/cache/temp/cookies/${1:?}.dat.debug"; fi
   fi
 }
 
@@ -665,6 +669,8 @@ dl_file()
         ui_error "Invalid download URL => '${_url?}'"
         ;;
     esac
+
+    _clear_cookies || return "${?}"
 
     if test "${_status:?}" -ne 0; then
       if test -n "${5:-}"; then

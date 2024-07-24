@@ -146,7 +146,7 @@ fi
     echo 'Skipped not OSS files!'
   fi
 
-  rm -f -r "${SCRIPT_DIR:?}/cache/temp" || ui_error 'Failed to remove "cache/temp" dir'
+  clear_dl_temp_dir || ui_error 'Failed to remove the DL temp dir'
 
   unset current_dl_list
 }
