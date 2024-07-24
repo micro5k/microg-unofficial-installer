@@ -390,22 +390,38 @@ do_AJAX_get_request_and_output_response_to_stdout()
   "${WGET_CMD:?}" -q -O '-' "${@}" -- "${_url:?}"
 }
 
-do_AJAX_post_request_and_output_response_to_stdout()
+send_web_request_and_output_response()
 {
-  local _url _origin _post_data _referrer _authorization
-  _url="${1:?}"
-  _origin="${2:?}"
-  _post_data="${3?}"
-  _referrer="${4-}"      # Optional
-  _authorization="${5-}" # Optional
+  local _url _method _referrer _origin _authorization _accept
+  local _is_ajax='false'
+  local _cookies=''
 
-  set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  _url="${1:?}"
+  _method="${2:-GET}"    # Optional (only GET and POST are supported, GET is default)
+  _referrer="${3-}"      # Optional
+  _origin="${4-}"        # Optional (empty or unset for normal requests but not empty for AJAX requests)
+  _authorization="${5-}" # Optional
+  _accept="${6-}"        # Optional
+  if test -n "${_origin?}"; then _is_ajax='true'; fi
+
+  if test "${_is_ajax:?}" = 'true' || test "${_accept?}" = 'all'; then
+    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  else
+    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  fi
+
+  if test "${_is_ajax:?}" != 'true'; then
+    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
+  fi
+
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
   if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
-  set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"
+  if test -n "${_origin?}"; then set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"; fi
+  if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"; fi
+  if test "${_method:?}" = 'POST'; then set -- "${@}" --post-data '' || return "${?}"; fi
 
-  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" 'POST' "${@}"; fi
-  "${WGET_CMD:?}" -q -O '-' "${@}" --post-data "${_post_data?}" -- "${_url:?}"
+  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" "${_method:?}" "${@}"; fi
+  "${WGET_CMD:?}" -q -O '-' "${@}" -- "${_url:?}"
 }
 
 # 1 => JSON response; 2 => Field to retrieve
@@ -414,7 +430,7 @@ parse_JSON_response()
   printf '%s\n' "${1:?}" | grep -o -m 1 -E -e "\"${2:?}\""'\s*:\s*"[^"]+' | cut -d ':' -f '2-' -s | grep -o -e '".*' | cut -c '2-'
 }
 
-send_web_request_and_output_only_headers()
+send_web_request_and_output_headers()
 {
   local _url _method _referrer _origin _authorization _accept
   local _is_ajax='false'
@@ -614,7 +630,7 @@ dl_type_two()
   local _count=1
   local _last_location_url="${_url:?}"
   while true; do
-    _http_headers="$(send_web_request_and_output_only_headers "${_last_location_url:?}" 'GET')"
+    _http_headers="$(send_web_request_and_output_headers "${_last_location_url:?}" 'GET')"
     _status_code="$(parse_headers_and_get_status_code "${_http_headers?}")"
 
     case "${_status_code?}" in
@@ -649,7 +665,7 @@ dl_type_two()
   # DEBUG => echo "${_loc_code:?}"
 
   sleep 0.2
-  _json_response="$(do_AJAX_post_request_and_output_response_to_stdout "${_base_api_url:?}/accounts" "${_base_origin:?}" '' "${_base_referrer:?}")" ||
+  _json_response="$(send_web_request_and_output_response "${_base_api_url:?}/accounts" 'POST' "${_base_referrer:?}" "${_base_origin:?}")" ||
     report_failure 2 "${?}" 'do AJAX post req' || return "${?}"
   # DEBUG => echo "${_json_response:?}"
 
