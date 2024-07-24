@@ -638,7 +638,10 @@ dl_type_two()
         ;;
     esac
 
-    if ! _count="$((_count + 1))" || test "${_count:?}" -gt 5; then break; fi
+    if ! _count="$((_count + 1))" || test "${_count:?}" -gt 5; then
+      report_failure 2 "79" "get location url ${_count:?}" 'Redirection limit reached!!!'
+      return "${?}"
+    fi
   done
 
   _loc_code="$(printf '%s\n' "${_last_location_url:?}" | cut -d '/' -f '5-' -s)" ||
