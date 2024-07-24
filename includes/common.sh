@@ -69,8 +69,8 @@ export DL_DEBUG="${DL_DEBUG:-false}"
 readonly WGET_CMD='wget'
 readonly DL_UA='Mozilla/5.0 (Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0'
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+readonly DL_ACCEPT_ALL_HEADER='Accept: */*'
 readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
-readonly DL_AJAX_ACCEPT_HEADER='Accept: */*'
 readonly DL_DNT='DNT: 1'
 readonly DL_PROT='https://'
 
@@ -375,7 +375,7 @@ do_AJAX_get_request_and_output_response_to_stdout()
   _referrer="${3-}"      # Optional
   _authorization="${4-}" # Optional
 
-  set -- -U "${DL_UA:?}" --header "${DL_AJAX_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
   if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
   set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"
@@ -393,7 +393,7 @@ do_AJAX_post_request_and_output_response_to_stdout()
   _referrer="${4-}"      # Optional
   _authorization="${5-}" # Optional
 
-  set -- -U "${DL_UA:?}" --header "${DL_AJAX_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
   if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
   set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"
@@ -410,26 +410,32 @@ parse_JSON_response()
 
 send_web_request_and_output_only_headers()
 {
-  local _url _method _referrer _origin _authorization
+  local _url _method _referrer _origin _authorization _accept
   local _is_ajax='false'
+  local _cookies=''
 
   _url="${1:?}"
   _method="${2:-GET}"    # Optional (only GET and POST are supported, GET is default)
   _referrer="${3-}"      # Optional
   _origin="${4-}"        # Optional (empty or unset for normal requests but not empty for AJAX requests)
   _authorization="${5-}" # Optional
-
+  _accept="${6-}"        # Optional
   if test -n "${_origin?}"; then _is_ajax='true'; fi
 
-  if test "${_is_ajax:?}" = 'true'; then
-    set -- -U "${DL_UA:?}" --header "${DL_AJAX_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  if test "${_is_ajax:?}" = 'true' || test "${_accept?}" = 'all'; then
+    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
   else
     set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
   fi
 
+  if test "${_is_ajax:?}" != 'true'; then
+    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
+  fi
+
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
   if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
-  if test "${_is_ajax:?}" = 'true'; then set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"; fi
+  if test -n "${_origin?}"; then set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"; fi
+  if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"; fi
   if test "${_method:?}" = 'POST'; then set -- "${@}" --post-data '' || return "${?}"; fi
 
   if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" "${_method:?}" "${@}"; fi
@@ -456,7 +462,7 @@ send_empty_web_get_request()
   _referrer="${3-}"      # Optional
   _authorization="${4-}" # Optional
 
-  if test "${_accept_all?}" = 'yes'; then _accept="${DL_AJAX_ACCEPT_HEADER:?}"; else _accept="${DL_ACCEPT_HEADER:?}"; fi
+  if test "${_accept_all?}" = 'yes'; then _accept="${DL_ACCEPT_ALL_HEADER:?}"; else _accept="${DL_ACCEPT_HEADER:?}"; fi
   if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
 
   set -- -U "${DL_UA:?}" --header "${_accept:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
