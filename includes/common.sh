@@ -276,6 +276,7 @@ _parse_webpage_and_get_url()
   _url="${1:?}"
   _referrer="${2?}"
   _search_pattern="${3:?}"
+  PREVIOUS_URL="${_url:?}"
 
   _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
   if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
@@ -294,11 +295,12 @@ _parse_webpage_and_get_url()
   if test "${DL_DEBUG:?}" = 'true'; then
     ui_debug ''
     ui_debug "URL: ${_url?}"
-    ui_debug "User-Agent: ${DL_UA?}"
-    ui_debug "${DL_ACCEPT_HEADER?}"
-    ui_debug "${DL_ACCEPT_LANG_HEADER?}"
-    ui_debug "Referer: ${_referrer?}"
-    ui_debug "Cookie: ${_cookies?}"
+    ui_debug "  User-Agent: ${DL_UA?}"
+    ui_debug "  ${DL_ACCEPT_HEADER?}"
+    ui_debug "  ${DL_ACCEPT_LANG_HEADER?}"
+    ui_debug "  Referer: ${_referrer?}"
+    ui_debug "  Cookie: ${_cookies?}"
+    if test -n "${_cookies?}"; then ui_debug "  Cookie: ${_cookies?}"; fi
     ui_debug ''
   fi
 
@@ -374,6 +376,16 @@ dl_debug()
   ui_debug '--------'
 }
 
+clear_previous_url()
+{
+  PREVIOUS_URL=''
+}
+
+get_previous_url()
+{
+  printf '%s\n' "${PREVIOUS_URL-}"
+}
+
 do_AJAX_get_request_and_output_response_to_stdout()
 {
   local _url _origin _referrer _authorization
@@ -381,6 +393,7 @@ do_AJAX_get_request_and_output_response_to_stdout()
   _origin="${2:?}"
   _referrer="${3-}"      # Optional
   _authorization="${4-}" # Optional
+  PREVIOUS_URL="${_url:?}"
 
   set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
@@ -404,6 +417,7 @@ send_web_request_and_output_response()
   _authorization="${5-}" # Optional
   _accept="${6-}"        # Optional
   if test -n "${_origin?}"; then _is_ajax='true'; fi
+  PREVIOUS_URL="${_url:?}"
 
   if test "${_is_ajax:?}" = 'true' || test "${_accept?}" = 'all'; then
     set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
@@ -444,6 +458,7 @@ send_web_request_and_output_headers()
   _authorization="${5-}" # Optional
   _accept="${6-}"        # Optional
   if test -n "${_origin?}"; then _is_ajax='true'; fi
+  PREVIOUS_URL="${_url:?}"
 
   if test "${_is_ajax:?}" = 'true' || test "${_accept?}" = 'all'; then
     set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
@@ -488,6 +503,7 @@ send_web_request_and_no_output()
   _authorization="${5-}" # Optional
   _accept="${6-}"        # Optional
   if test -n "${_origin?}"; then _is_ajax='true'; fi
+  PREVIOUS_URL="${_url:?}"
 
   if test "${_is_ajax:?}" = 'true' || test "${_accept?}" = 'all'; then
     set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
@@ -524,6 +540,7 @@ _direct_download()
   _authorization="${6-}" # Optional
   _accept="${7-}"        # Optional
   if test -n "${_origin?}"; then _is_ajax='true'; fi
+  PREVIOUS_URL="${_url:?}"
 
   if test "${_is_ajax:?}" = 'true' || test "${_accept?}" = 'all'; then
     set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
@@ -566,6 +583,9 @@ report_failure_one()
 dl_type_zero()
 {
   local _url _output
+
+  clear_previous_url
+
   _url="${1:?}"
   _output="${2:?}"
 
@@ -578,9 +598,9 @@ dl_type_one()
   if test "${DL_TYPE_1_FAILED:-false}" != 'false'; then return 128; fi
   local _url _base_url _referrer _result
 
-  _base_url="$(get_base_url "${2:?}")" || {
-    report_failure_one "${?}" || return "${?}"
-  }
+  clear_previous_url
+
+  _base_url="$(get_base_url "${2:?}")" || report_failure_one "${?}" || return "${?}"
 
   {
     _referrer="${2:?}"
@@ -616,6 +636,8 @@ dl_type_two()
   local _base_api_url _base_origin _base_referrer
   local _http_headers _status_code
   local _loc_code _json_response _id_code _token_code
+
+  clear_previous_url
 
   _url="${1:?}"
   _output="${2:?}"
