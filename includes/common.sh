@@ -65,7 +65,7 @@ ui_debug()
   printf 1>&2 '%s\n' "${1?}"
 }
 
-readonly DL_DEBUG='false'
+export DL_DEBUG="${DL_DEBUG:-false}"
 readonly WGET_CMD='wget'
 readonly DL_UA='Mozilla/5.0 (Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0'
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
@@ -167,7 +167,12 @@ simple_get_prop()
 
 get_domain_from_url()
 {
-  echo "${1:?}" | cut -d '/' -f '3' -s || return "${?}"
+  printf '%s\n' "${1:?}" | cut -d '/' -f '3' -s
+}
+
+get_second_level_domain_from_url()
+{
+  printf '%s\n' "${1:?}" | cut -d '/' -f '3' -s | rev | cut -d '.' -f '-2' -s | rev
 }
 
 get_base_url()
@@ -219,12 +224,21 @@ _parse_and_store_all_cookies()
 
 _load_cookies()
 {
-  if test ! -e "${SCRIPT_DIR:?}/cache/temp/cookies/${1:?}.dat"; then return 0; fi
+  local _domain _cookie_file
+
+  _domain="$(get_domain_from_url "${1:?}")" || return "${?}"
+  _cookie_file="${SCRIPT_DIR:?}/cache/temp/cookies/${_domain:?}.dat"
+
+  if test ! -e "${_cookie_file:?}"; then
+    _domain="$(get_second_level_domain_from_url "${1:?}")" || return "${?}"
+    _cookie_file="${SCRIPT_DIR:?}/cache/temp/cookies/${_domain:?}.dat"
+    if test ! -e "${_cookie_file:?}"; then return 0; fi
+  fi
 
   while IFS='=' read -r name val; do
     if test -z "${name?}"; then continue; fi
     printf '%s; ' "${name:?}=${val?}"
-  done 0< "${SCRIPT_DIR:?}/cache/temp/cookies/${1:?}.dat" || return "${?}"
+  done 0< "${_cookie_file:?}" || return "${?}"
 }
 
 verify_sha1()
@@ -255,7 +269,7 @@ _parse_webpage_and_get_url()
   _search_pattern="${3:?}"
 
   _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
-  _cookies="$(_load_cookies "${_domain:?}")" || return "${?}"
+  _cookies="$(_load_cookies "${_url:?}")" || return "${?}"
   _cookies="${_cookies%; }" || return "${?}"
   _parsed_code=''
   _parsed_url=''
@@ -430,7 +444,7 @@ parse_headers_and_get_location_url()
 send_empty_web_get_request()
 {
   local _url _accept_all _referrer _authorization
-  local _accept _domain _cookies
+  local _accept _cookies
 
   _url="${1:?}"
   _accept_all="${2-}"    # Optional
@@ -438,8 +452,7 @@ send_empty_web_get_request()
   _authorization="${4-}" # Optional
 
   if test "${_accept_all?}" = 'yes'; then _accept="${DL_AJAX_ACCEPT_HEADER:?}"; else _accept="${DL_ACCEPT_HEADER:?}"; fi
-  _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
-  _cookies="$(_load_cookies "${_domain:?}")" || return "${?}"
+  _cookies="$(_load_cookies "${_url:?}")" || return "${?}"
   _cookies="${_cookies%; }" || return "${?}"
 
   set -- -U "${DL_UA:?}" --header "${_accept:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
@@ -454,14 +467,13 @@ send_empty_web_get_request()
 _direct_download()
 {
   local _url _referrer _output
-  local _domain _cookies _status
+  local _cookies _status
 
   _url="${1:?}"
   _referrer="${2?}"
   _output="${3:?}"
 
-  _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
-  _cookies="$(_load_cookies "${_domain:?}")" || return "${?}"
+  _cookies="$(_load_cookies "${_url:?}")" || return "${?}"
   _cookies="${_cookies%; }" || return "${?}"
   _status=0
 
@@ -549,7 +561,7 @@ dl_type_two()
   _output="${2:?}" || return "${?}"
 
   _domain="$(get_domain_from_url "${_url:?}")" || report_failure 2 "${?}" || return "${?}"
-  _base_dm="$(printf '%s\n' "${_domain:?}" | cut -d '.' -f '2-' -s)" || report_failure 2 "${?}" || return "${?}"
+  _base_dm="$(get_second_level_domain_from_url "${_url:?}")" || report_failure 2 "${?}" || return "${?}"
 
   _base_api_url="${DL_PROT:?}api.${_base_dm:?}"
   _base_origin="${DL_PROT:?}${_base_dm:?}"
@@ -601,7 +613,7 @@ dl_type_two()
     report_failure 2 "${?}" 'do AJAX get req 1' || return "${?}"
   # DEBUG => echo "${_json_response:?}"
 
-  _parse_and_store_cookie "${_domain:?}" 'account''Token='"${_token_code:?}" ||
+  _parse_and_store_cookie "${_base_dm:?}" 'account''Token='"${_token_code:?}" ||
     report_failure 2 "${?}" 'set cookie' || return "${?}"
 
   sleep 0.2
