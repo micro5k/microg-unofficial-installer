@@ -389,17 +389,42 @@ parse_JSON_response()
   printf '%s\n' "${1:?}" | grep -o -m 1 -E -e "\"${2:?}\""'\s*:\s*"[^"]+' | cut -d ':' -f '2-' -s | grep -o -e '".*' | cut -c '2-'
 }
 
-retrieve_location_header_from_web_request()
+send_web_request_and_output_only_headers()
 {
-  local _url
+  local _url _method _referrer _origin _authorization
+  local _is_ajax='false'
+
   _url="${1:?}"
+  _method="${2:-GET}"    # Optional (only GET and POST are supported, GET is default)
+  _referrer="${3-}"      # Optional
+  _origin="${4-}"        # Optional (empty or unset for normal requests but not empty for AJAX requests)
+  _authorization="${5-}" # Optional
 
-  set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  if test -n "${_origin?}"; then _is_ajax='true'; fi
 
-  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" 'GET' "${@}"; fi
-  {
-    "${WGET_CMD:?}" 2>&1 --spider -q -S -O '-' "${@}" -- "${_url:?}" || true
-  } | grep -o -m 1 -e 'Location:[[:space:]][^[:cntrl:]]*$' | cut -d ':' -f '2-' -s | cut -c '2-'
+  if test "${_is_ajax:?}" = 'true'; then
+    set -- -U "${DL_UA:?}" --header "${DL_AJAX_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  else
+    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+  fi
+
+  if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
+  if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
+  if test "${_is_ajax:?}" = 'true'; then set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"; fi
+  if test "${_method:?}" = 'POST'; then set -- "${@}" --post-data '' || return "${?}"; fi
+
+  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" "${_method:?}" "${@}"; fi
+  "${WGET_CMD:?}" 2>&1 --spider -q -S -O '-' "${@}" -- "${_url:?}" || true
+}
+
+parse_headers_and_get_status_code()
+{
+  printf '%s\n' "${1?}" | head -n 1 | grep -o -m 1 -e 'HTTP/.*' | cut -d ' ' -f '2' -s
+}
+
+parse_headers_and_get_location_url()
+{
+  printf '%s\n' "${1?}" | grep -o -m 1 -e 'Location:[[:space:]].*' | cut -d ':' -f '2-' -s | cut -c '2-'
 }
 
 send_empty_web_get_request()
@@ -517,7 +542,8 @@ dl_type_two()
   local _url _output
   local _domain _base_dm
   local _base_api_url _base_origin _base_referrer
-  local _json_response _location_header _loc_code _id_code _token_code
+  local _last_location_url _http_headers _status_code
+  local _loc_code _json_response _id_code _token_code
 
   _url="${1:?}" || return "${?}"
   _output="${2:?}" || return "${?}"
@@ -529,27 +555,34 @@ dl_type_two()
   _base_origin="${DL_PROT:?}${_base_dm:?}"
   _base_referrer="${_base_origin:?}/"
 
-  _location_header="$(retrieve_location_header_from_web_request "${_url:?}")" ||
-    report_failure 2 "${?}" 'get location header 1' 'THE FILE HAS PROBABLY BEEN DELETED ON THE SERVER!!!' || return "${?}"
-  # DEBUG => echo "${_location_header:?}"
+  _last_location_url="${_url:?}"
+  while true; do
+    _http_headers="$(send_web_request_and_output_only_headers "${_last_location_url:?}" 'GET')"
+    _status_code="$(parse_headers_and_get_status_code "${_http_headers?}")"
 
-  if ! printf '%s\n' "${_location_header:?}" | grep -q -m 1 -F -e "${_base_referrer:?}d/"; then
-    _location_header="$(retrieve_location_header_from_web_request "${_location_header:?}")" ||
-      report_failure 2 "${?}" 'get location header 2' 'THE FILE HAS PROBABLY BEEN DELETED ON THE SERVER!!!' || return "${?}"
-    # DEBUG => echo "${_location_header:?}"
+    case "${_status_code?}" in
+      2*) # Final location URL found (usually 200)
+        break
+        ;;
+      3*) # Continue until the redirects run out (usually 302)
+        _last_location_url="$(parse_headers_and_get_location_url "${_http_headers?}")" ||
+          {
+            report_failure 2 "${?}" 'get location url'
+            return "${?}"
+          }
+        ;;
+      404)
+        report_failure 2 "77" 'get location url' 'THE FILE HAS BEEN DELETED ON THE SERVER!!!'
+        return "${?}"
+        ;;
+      *)
+        report_failure 2 "78" 'get location url' "HTTP STATUS CODE: ${_status_code?}"
+        return "${?}"
+        ;;
+    esac
+  done
 
-    if ! printf '%s\n' "${_location_header:?}" | grep -q -m 1 -F -e "${_base_referrer:?}d/"; then
-      _location_header="$(retrieve_location_header_from_web_request "${_location_header:?}")" ||
-        report_failure 2 "${?}" 'get location header 3' 'THE FILE HAS PROBABLY BEEN DELETED ON THE SERVER!!!' || return "${?}"
-      # DEBUG => echo "${_location_header:?}"
-
-      if ! printf '%s\n' "${_location_header:?}" | grep -q -m 1 -F -e "${_base_referrer:?}d/"; then
-        report_failure 2 "77" 'get location header 4' 'THE FILE HAS PROBABLY BEEN DELETED ON THE SERVER!!!' || return "${?}"
-      fi
-    fi
-  fi
-
-  _loc_code="$(printf '%s\n' "${_location_header:?}" | cut -d '/' -f '5-' -s)" ||
+  _loc_code="$(printf '%s\n' "${_last_location_url:?}" | cut -d '/' -f '5-' -s)" ||
     report_failure 2 "${?}" 'get location code' || return "${?}"
   # DEBUG => echo "${_loc_code:?}"
 
