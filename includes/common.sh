@@ -299,7 +299,6 @@ _parse_webpage_and_get_url()
     ui_debug "  ${DL_ACCEPT_HEADER?}"
     ui_debug "  ${DL_ACCEPT_LANG_HEADER?}"
     ui_debug "  Referer: ${_referrer?}"
-    ui_debug "  Cookie: ${_cookies?}"
     if test -n "${_cookies?}"; then ui_debug "  Cookie: ${_cookies?}"; fi
     ui_debug ''
   fi
