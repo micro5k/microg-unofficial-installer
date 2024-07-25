@@ -330,6 +330,8 @@ _parse_webpage_and_get_url()
 
 dl_debug()
 {
+  local _show_response='false'
+
   ui_debug ''
   ui_debug '--------'
   ui_debug "URL: ${1:?}"
@@ -353,6 +355,10 @@ dl_debug()
         fi
         ;;
 
+      -S)
+        _show_response='true'
+        ;;
+
       --post-data)
         if test "${#}" -ge 2; then
           shift
@@ -372,7 +378,11 @@ dl_debug()
     shift
   done
 
-  ui_debug '--------'
+  if test "${_show_response:?}" = 'true'; then
+    ui_debug 'RESPONSE:'
+  else
+    ui_debug '--------'
+  fi
 }
 
 clear_previous_url()
@@ -383,24 +393,6 @@ clear_previous_url()
 get_previous_url()
 {
   printf '%s\n' "${PREVIOUS_URL-}"
-}
-
-do_AJAX_get_request_and_output_response_to_stdout()
-{
-  local _url _origin _referrer _authorization
-  _url="${1:?}"
-  _origin="${2:?}"
-  _referrer="${3-}"      # Optional
-  _authorization="${4-}" # Optional
-  PREVIOUS_URL="${_url:?}"
-
-  set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
-  if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
-  if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
-  set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"
-
-  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" 'GET' "${@}"; fi
-  "${WGET_CMD:?}" -q -O '-' "${@}" -- "${_url:?}"
 }
 
 send_web_request_and_output_response()
@@ -437,9 +429,8 @@ send_web_request_and_output_response()
   if test "${_method:?}" = 'POST'; then set -- "${@}" --post-data "${_body_data?}" || return "${?}"; fi
 
   if test "${DL_DEBUG:?}" = 'true'; then
-    dl_debug "${_url:?}" "${_method:?}" "${@}"
     set -- -S "${@}" || return "${?}"
-    ui_debug 'RESPONSE:'
+    dl_debug "${_url:?}" "${_method:?}" "${@}"
   fi
   "${WGET_CMD:?}" -q -O '-' "${@}" -- "${_url:?}"
 }
@@ -694,7 +685,7 @@ dl_type_two()
   sleep 0.2
   _json_response="$(send_web_request_and_output_response "${_base_api_url:?}/accounts" 'POST' "${_base_referrer:?}" "${_base_origin:?}" '' '' '{}')" ||
     report_failure 2 "${?}" 'do AJAX post req' || return "${?}"
-  # DEBUG => echo "${_json_response:?}"
+  if test "${DL_DEBUG:?}" = 'true'; then printf '%s\n' "${_json_response?}"; fi
 
   _id_code="$(parse_JSON_response "${_json_response:?}" 'id')" ||
     report_failure 2 "${?}" 'parse JSON 1' || return "${?}"
@@ -702,21 +693,22 @@ dl_type_two()
     report_failure 2 "${?}" 'parse JSON 2' || return "${?}"
 
   sleep 0.2
-  _json_response="$(do_AJAX_get_request_and_output_response_to_stdout "${_base_api_url:?}/accounts/${_id_code:?}" "${_base_origin:?}" "${_base_referrer:?}" "Bearer ${_token_code:?}")" ||
+  _json_response="$(send_web_request_and_output_response "${_base_api_url:?}/accounts/${_id_code:?}" 'GET' "${_base_referrer:?}" "${_base_origin:?}" "Bearer ${_token_code:?}")" ||
     report_failure 2 "${?}" 'do AJAX get req 1' || return "${?}"
-  # DEBUG => echo "${_json_response:?}"
+  if test "${DL_DEBUG:?}" = 'true'; then printf '%s\n' "${_json_response?}"; fi
 
   _parse_and_store_cookie "${_second_level_domain:?}" 'account''Token='"${_token_code:?}" ||
     report_failure 2 "${?}" 'set cookie' || return "${?}"
 
-  sleep 0.2
-  send_web_request_and_no_output "${DL_PROT:?}${_second_level_domain:?}/contents/files.html" 'GET' "${_base_referrer:?}" '' '' 'all' ||
-    report_failure 2 "${?}" 'do web get req' || return "${?}"
+  ### NOTE: This is not required ###
+  #sleep 0.2
+  #send_web_request_and_no_output "${DL_PROT:?}${_second_level_domain:?}/contents/files.html" 'GET' "${_base_referrer:?}" '' '' 'all' ||
+  #  report_failure 2 "${?}" 'do req files.html' || return "${?}"
 
   sleep 0.2
-  _json_response="$(do_AJAX_get_request_and_output_response_to_stdout "${_base_api_url:?}/contents/${_loc_code:?}?"'wt''=''4fd6''sg89''d7s6' "${_base_origin:?}" "${_base_referrer:?}" "Bearer ${_token_code:?}")" ||
+  _json_response="$(send_web_request_and_output_response "${_base_api_url:?}/contents/${_loc_code:?}?"'wt''=''4fd6''sg89''d7s6' 'GET' "${_base_referrer:?}" "${_base_origin:?}" "Bearer ${_token_code:?}")" ||
     report_failure 2 "${?}" 'do AJAX get req 2' || return "${?}"
-  # DEBUG => echo "${_json_response:?}"
+  if test "${DL_DEBUG:?}" = 'true'; then printf '%s\n' "${_json_response?}"; fi
 
   sleep 0.3
   _direct_download "${_url:?}" "${_output:?}" 'GET' "${_base_referrer:?}" ||
