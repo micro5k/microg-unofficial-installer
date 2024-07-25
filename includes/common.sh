@@ -405,7 +405,7 @@ do_AJAX_get_request_and_output_response_to_stdout()
 
 send_web_request_and_output_response()
 {
-  local _url _method _referrer _origin _authorization _accept
+  local _url _method _referrer _origin _authorization _accept _body_data
   local _is_ajax='false'
   local _cookies=''
 
@@ -415,6 +415,7 @@ send_web_request_and_output_response()
   _origin="${4-}"        # Optional (empty or unset for normal requests but not empty for AJAX requests)
   _authorization="${5-}" # Optional
   _accept="${6-}"        # Optional
+  _body_data="${7-}"     # Optional
   if test -n "${_origin?}"; then _is_ajax='true'; fi
   PREVIOUS_URL="${_url:?}"
 
@@ -430,11 +431,16 @@ send_web_request_and_output_response()
 
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
   if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
+  if test "${_method:?}" = 'POST'; then set -- "${@}" --header 'Content-Type: text/plain;charset=UTF-8' || return "${?}"; fi
   if test -n "${_origin?}"; then set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"; fi
   if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"; fi
-  if test "${_method:?}" = 'POST'; then set -- "${@}" --post-data '' || return "${?}"; fi
+  if test "${_method:?}" = 'POST'; then set -- "${@}" --post-data "${_body_data?}" || return "${?}"; fi
 
-  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" "${_method:?}" "${@}"; fi
+  if test "${DL_DEBUG:?}" = 'true'; then
+    dl_debug "${_url:?}" "${_method:?}" "${@}"
+    set -- -S "${@}" || return "${?}"
+    ui_debug 'RESPONSE:'
+  fi
   "${WGET_CMD:?}" -q -O '-' "${@}" -- "${_url:?}"
 }
 
@@ -686,7 +692,7 @@ dl_type_two()
   # DEBUG => echo "${_loc_code:?}"
 
   sleep 0.2
-  _json_response="$(send_web_request_and_output_response "${_base_api_url:?}/accounts" 'POST' "${_base_referrer:?}" "${_base_origin:?}")" ||
+  _json_response="$(send_web_request_and_output_response "${_base_api_url:?}/accounts" 'POST' "${_base_referrer:?}" "${_base_origin:?}" '' '' '{}')" ||
     report_failure 2 "${?}" 'do AJAX post req' || return "${?}"
   # DEBUG => echo "${_json_response:?}"
 
