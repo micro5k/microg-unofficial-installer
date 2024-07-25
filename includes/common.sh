@@ -435,10 +435,17 @@ send_web_request_and_output_response()
   "${WGET_CMD:?}" -q -O '-' "${@}" -- "${_url:?}"
 }
 
-# 1 => JSON response; 2 => Field to retrieve
-parse_JSON_response()
+# 1 => JSON string; 2 => Key to search
+parse_json_and_retrieve_first_value_by_key()
 {
-  printf '%s\n' "${1:?}" | grep -o -m 1 -E -e "\"${2:?}\""'\s*:\s*"[^"]+' | cut -d ':' -f '2-' -s | grep -o -e '".*' | cut -c '2-'
+  printf '%s\n' "${1:?}" | grep -o -m 1 -E -e "\"${2:?}\""'\s*:\s*"[^"]+' | head -n 1 | cut -d ':' -f '2-' -s | grep -o -e '".*' | cut -c '2-'
+}
+
+# 1 => JSON string; 2 => Object to search
+# NOTE: The object cannot contains other objects
+parse_json_and_retrieve_object()
+{
+  printf '%s\n' "${1:?}" | grep -o -m 1 -e "\"${2:?}\""'\s*:\s*{[^}]*}' | head -n 1 | cut -d ':' -f '2-' -s
 }
 
 send_web_request_and_output_headers()
@@ -687,9 +694,9 @@ dl_type_two()
     report_failure 2 "${?}" 'do AJAX post req' || return "${?}"
   if test "${DL_DEBUG:?}" = 'true'; then printf '%s\n' "${_json_response?}"; fi
 
-  _id_code="$(parse_JSON_response "${_json_response:?}" 'id')" ||
+  _id_code="$(parse_json_and_retrieve_first_value_by_key "${_json_response:?}" 'id')" ||
     report_failure 2 "${?}" 'parse JSON 1' || return "${?}"
-  _token_code="$(parse_JSON_response "${_json_response:?}" 'token')" ||
+  _token_code="$(parse_json_and_retrieve_first_value_by_key "${_json_response:?}" 'token')" ||
     report_failure 2 "${?}" 'parse JSON 2' || return "${?}"
 
   sleep 0.2
@@ -710,8 +717,27 @@ dl_type_two()
     report_failure 2 "${?}" 'do AJAX get req 2' || return "${?}"
   if test "${DL_DEBUG:?}" = 'true'; then printf '%s\n' "${_json_response?}"; fi
 
+  local _dl_unique_id _json_object _parsed_link
+
+  _dl_unique_id="$(printf '%s\n' "${_url:?}" | rev | cut -d '/' -f '2' -s | rev)" ||
+    report_failure 2 "${?}" 'parse DL unique ID' || return "${?}"
+
+  if test "${_dl_unique_id?}" = 'd'; then
+    # If it is a folder link then choose the first download
+    _parsed_link="$(parse_json_and_retrieve_first_value_by_key "${_json_response:?}" 'link')" ||
+      report_failure 2 "${?}" 'parse last JSON' || return "${?}"
+  else
+    if test "${DL_DEBUG:?}" = 'true'; then printf '\n%s\n' "DL unique ID: ${_dl_unique_id?}"; fi
+
+    _json_object="$(parse_json_and_retrieve_object "${_json_response:?}" "${_dl_unique_id:?}")" ||
+      report_failure 2 "${?}" 'parse last JSON 1' || return "${?}"
+    _parsed_link="$(parse_json_and_retrieve_first_value_by_key "${_json_object:?}" 'link')" ||
+      report_failure 2 "${?}" 'parse last JSON 2' || return "${?}"
+  fi
+  if test "${DL_DEBUG:?}" = 'true'; then printf '\n%s\n' "Parsed link: ${_parsed_link?}"; fi
+
   sleep 0.3
-  _direct_download "${_url:?}" "${_output:?}" 'GET' "${_base_referrer:?}" ||
+  _direct_download "${_parsed_link:?}" "${_output:?}" 'GET' "${_base_referrer:?}" ||
     report_failure 2 "${?}" 'dl' || return "${?}"
 }
 
