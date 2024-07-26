@@ -16,7 +16,7 @@ set -u
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   unset STARTED_FROM_BATCH_FILE
   unset IS_PATH_INITIALIZED
-  unset TERM_PROGRAM
+  if test "${TERM_PROGRAM-}" = 'mintty'; then unset TERM_PROGRAM; fi
 
   if test -z "${SCRIPT_DIR-}"; then
     # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
