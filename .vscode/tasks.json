@@ -41,6 +41,38 @@
                 "kind": "build"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "installTest",
+            "detail": "Emulate an Android recovery on your PC and inside it execute the flashable zip to see the result.",
+            "type": "shell",
+            "command": "${workspaceFolder}/recovery-simulator/recovery.sh",
+            "windows": {
+                "command": "${workspaceFolder}\\recovery-simulator\\recovery.bat"
+            },
+            "args": [
+                "${workspaceFolder}/output/*.zip"
+            ],
+            "options": {
+                "env": {
+                    "LIVE_SETUP_ALLOWED": "false",
+                    "BB_GLOBBING": "1"
+                }
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "dummy (do not use)",
+            "detail": " ",
+            "type": "java (build)",
+            "paths": [
+                "${workspace}"
+            ],
+            "isFullBuild": true
         }
     ]
 }

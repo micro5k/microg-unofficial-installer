@@ -385,7 +385,7 @@ unset -f _get_common_setting
 
 test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
 
-LIVE_SETUP_ALLOWED='true'
+LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED:-true}"
 KEYCHECK_PATH=''
 if test "${TEST_INSTALL:-false}" != 'false'; then
   "${OUR_BB:?}" rm -f "${BASE_TMP_PATH:?}/keycheck" || ui_error "Failed to remove keycheck"
