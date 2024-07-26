@@ -4,6 +4,9 @@
     // https://code.visualstudio.com/docs/editor/variables-reference
 
     "version": "2.0.0",
+    "presentation": {
+        "revealProblems": "onProblem"
+    },
     "tasks": [
         {
             "label": "buildOta",
@@ -63,6 +66,9 @@
                 "kind": "test",
                 "isDefault": true
             },
+            "presentation": {
+                "panel": "dedicated"
+            },
             "problemMatcher": []
         },
         {
@@ -72,7 +78,10 @@
             "paths": [
                 "${workspace}"
             ],
-            "isFullBuild": true
+            "isFullBuild": true,
+            "presentation": {
+                "panel": "dedicated"
+            },
         }
     ]
 }
