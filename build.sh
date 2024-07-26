@@ -269,7 +269,7 @@ change_title 'Done'
 set +e
 
 # Ring bell
-if test "${CI:-false}" = 'false'; then printf '%b' '\007' || true; fi
+beep
 
 #wait "${pid:?}" || true
 
