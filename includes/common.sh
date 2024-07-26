@@ -268,6 +268,13 @@ corrupted_file()
   ui_error "The file '$1' is corrupted."
 }
 
+_get_byte_length()
+{
+  local LC_ALL
+  export LC_ALL=C
+  printf '%s\n' "${#1}"
+}
+
 _parse_webpage_and_get_url()
 {
   local _url _referrer _search_pattern
@@ -397,7 +404,7 @@ get_previous_url()
 
 send_web_request_and_output_response()
 {
-  local _url _method _referrer _origin _authorization _accept _body_data
+  local _url _method _referrer _origin _authorization _accept _body_data _body_data_length
   local _is_ajax='false'
   local _cookies=''
 
@@ -423,7 +430,11 @@ send_web_request_and_output_response()
 
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
   if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
-  if test "${_method:?}" = 'POST'; then set -- "${@}" --header 'Content-Type: text/plain;charset=UTF-8' || return "${?}"; fi
+  if test "${_method:?}" = 'POST'; then
+    _body_data_length="$(_get_byte_length "${_body_data?}")" || return "${?}"
+    #set -- "${@}" --header 'Content-Type: text/plain;charset=UTF-8' --header "Content-Length: ${_body_data_length:?}" || return "${?}"
+    set -- "${@}" --header 'Content-Type: text/plain;charset=UTF-8' || return "${?}"
+  fi
   if test -n "${_origin?}"; then set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"; fi
   if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"; fi
   if test "${_method:?}" = 'POST'; then set -- "${@}" --post-data "${_body_data?}" || return "${?}"; fi
