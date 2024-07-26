@@ -81,7 +81,7 @@
             "isFullBuild": true,
             "presentation": {
                 "panel": "dedicated"
-            },
+            }
         }
     ]
 }
