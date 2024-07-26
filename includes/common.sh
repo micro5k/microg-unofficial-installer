@@ -346,6 +346,7 @@ dl_debug()
   ui_debug "URL: ${1:?}"
   ui_debug 'REQUEST:'
   ui_debug "  ${2:?} /$(printf '%s\n' "${1:?}" | cut -d '/' -f '4-' -s || true) HTTP/1.1"
+  ui_debug "  Host: $(get_domain_from_url "${1:?}" || true)"
   shift 2
 
   while test "${#}" -gt 0; do
@@ -434,8 +435,7 @@ send_web_request_and_output_response()
   if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
   if test "${_method:?}" = 'POST'; then
     _body_data_length="$(_get_byte_length "${_body_data?}")" || return "${?}"
-    #set -- "${@}" --header 'Content-Type: text/plain;charset=UTF-8' --header "Content-Length: ${_body_data_length:?}" || return "${?}"
-    set -- "${@}" --header 'Content-Type: text/plain;charset=UTF-8' || return "${?}"
+    set -- "${@}" --header 'Content-Type: text/plain;charset=UTF-8' --header "Content-Length: ${_body_data_length:?}" || return "${?}"
   fi
   if test -n "${_origin?}"; then set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"; fi
   if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"; fi
