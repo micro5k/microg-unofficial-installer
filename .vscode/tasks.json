@@ -1,0 +1,46 @@
+{
+    // Useful links:
+    // https://code.visualstudio.com/docs/editor/tasks
+    // https://code.visualstudio.com/docs/editor/variables-reference
+
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "buildOta",
+            "detail": "$(tools) Build the flashable OTA zip.",
+            "type": "shell",
+            "command": "${workspaceFolder}/build.sh",
+            "windows": {
+                "command": "${workspaceFolder}\\build.bat"
+            },
+            "options": {
+                "env": {
+                    "OPENSOURCE_ONLY": "false"
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "buildOtaOSS",
+            "detail": "$(tools) Build the flashable OTA zip (open-source components only).",
+            "type": "shell",
+            "command": "${workspaceFolder}/build.sh",
+            "windows": {
+                "command": "${workspaceFolder}\\build.bat"
+            },
+            "options": {
+                "env": {
+                    "OPENSOURCE_ONLY": "true"
+                }
+            },
+            "group": {
+                "kind": "build"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

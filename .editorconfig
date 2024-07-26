@@ -31,10 +31,10 @@ function_next_line = true
 [*.bat]
 end_of_line = crlf
 
-[*.xml]
+[*.{xml,json}]
 indent_size = 4
 
-[*.{yml,yaml,rst,md}]
+[*.{yml,yaml,rst,md,json}]
 quote_type = double
 
 [zip-content/customize.sh]
