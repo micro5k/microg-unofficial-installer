@@ -24,6 +24,71 @@ case ":${SHELLOPTS:-}:" in
   *) ;;
 esac
 
+detect_os()
+{
+  local _os
+  _os="$(uname | tr -- '[:upper:]' '[:lower:]')"
+
+  case "${_os?}" in
+    'linux') # Returned by both Linux and Android, it will be identified later in the code
+      _os='linux'
+      ;;
+    'android') # Currently never returned, but may be in the future
+      _os='android'
+      ;;
+    'windows'*) # BusyBox-w32 on Windows => Windows_NT (other Windows cases will be detected in the default case)
+      _os='win'
+      ;;
+    'darwin')
+      _os='macos'
+      ;;
+    'freebsd')
+      _os='freebsd'
+      ;;
+    '')
+      _os='unknown'
+      ;;
+
+    *)
+      case "$(uname 2> /dev/null -o | tr -- '[:upper:]' '[:lower:]')" in
+        # Output of uname -o:
+        # - MinGW => Msys
+        # - MSYS => Msys
+        # - Cygwin => Cygwin
+        # - BusyBox-w32 => MS/Windows
+        'msys' | 'cygwin' | 'ms/windows')
+          _os='win'
+          ;;
+        *)
+          printf '%s\n' "${_os:?}" | tr -d '/' || ui_error 'Failed to get uname'
+          return 0
+          ;;
+      esac
+      ;;
+  esac
+
+  # Android identify itself as Linux
+  if test "${_os?}" = 'linux'; then
+    case "$(uname 2> /dev/null -a | tr -- '[:upper:]' '[:lower:]')" in
+      *' android'* | *'-lineage-'* | *'-leapdroid-'*)
+        _os='android'
+        ;;
+      *) ;;
+    esac
+  fi
+
+  printf '%s\n' "${_os:?}"
+}
+
+detect_path_sep()
+{
+  if test "${PLATFORM?}" = 'win' && test "$(uname 2> /dev/null -o | tr -- '[:upper:]' '[:lower:]' || true)" = 'ms/windows'; then
+    printf ';\n' # BusyBox-w32
+  else
+    printf ':\n'
+  fi
+}
+
 fail_with_msg()
 {
   echo "${1:?}"
@@ -40,6 +105,26 @@ link_folder()
 {
   # shellcheck disable=SC2310
   ln -sf "${2:?}" "${1:?}" 2> /dev/null || create_junction "${2:?}" "${1:?}" || mkdir -p "${1:?}" || fail_with_msg "Failed to link dir '${1}' to '${2}'"
+}
+
+is_in_path_env()
+{
+  case "${PATHSEP:?}${PATH-}${PATHSEP:?}" in
+    *"${PATHSEP:?}${1:?}${PATHSEP:?}"*) return 0 ;; # Found
+    *) ;;
+  esac
+  return 1 # NOT found
+}
+
+add_to_path_env()
+{
+  if is_in_path_env "${1:?}" || test ! -e "${1:?}"; then return; fi
+
+  if test -z "${PATH-}"; then
+    PATH="${1:?}"
+  else
+    PATH="${1:?}${PATHSEP:?}${PATH:?}"
+  fi
 }
 
 recovery_flash_start()
@@ -127,15 +212,22 @@ if test -z "${SHELLOPTS-}"; then unset SHELLOPTS; fi
 _backup_path="${PATH:?}"
 uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
+# Set variables that we need
+PLATFORM="$(detect_os)"
+PATHSEP="$(detect_path_sep)"
+readonly PLATFORM PATHSEP
+
+# Get dir of this script
+THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
+unset THIS_SCRIPT
+
+add_to_path_env "${THIS_SCRIPT_DIR:?}/../tools/${PLATFORM:?}"
+
 # Check dependencies
 _our_busybox="$(env -- which -- busybox)" || fail_with_msg 'BusyBox is missing'
 if test "${COVERAGE:-false}" != 'false'; then
   COVERAGE="$(command -v bashcov)" || fail_with_msg 'Bashcov is missing'
 fi
-
-# Get dir of this script
-THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
-unset THIS_SCRIPT
 
 case "${*}" in
   *'*.zip') fail_with_msg 'The flashable ZIP is missing, you have to build it before being able to test it' ;;
