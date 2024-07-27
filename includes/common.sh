@@ -852,7 +852,7 @@ is_in_path_env()
 
 add_to_path_env()
 {
-  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath'; then
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && command 1> /dev/null -v 'cygpath'; then
     # Only on Bash under Windows
     local _path
     _path="$(cygpath -u -a -- "${1:?}")" || ui_error 'Unable to convert a path in add_to_path_env()'
@@ -958,7 +958,7 @@ init_path()
 
   # On Bash under Windows (for example the one included inside Git for Windows) we need to move '/usr/bin'
   # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
-  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':'; then move_to_begin_of_path_env '/usr/bin'; fi
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then move_to_begin_of_path_env '/usr/bin'; fi
 
   remove_duplicates_from_path_env
   add_to_path_env "${TOOLS_DIR:?}"

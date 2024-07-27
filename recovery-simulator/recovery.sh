@@ -27,6 +27,12 @@ case ":${SHELLOPTS:-}:" in
   *) ;;
 esac
 
+fail_with_msg()
+{
+  echo "${1:?}"
+  exit 1
+}
+
 show_cmdline()
 {
   printf "'%s'" "${0-}"
@@ -66,7 +72,7 @@ detect_os()
           IS_BUSYBOX='true'
           ;;
         'msys' | 'cygwin') PLATFORM='win' ;;
-        *) PLATFORM="$(printf '%s\n' "${PLATFORM:?}" | tr -d '/')" || ui_error 'Failed to get uname' ;;
+        *) PLATFORM="$(printf '%s\n' "${PLATFORM:?}" | tr -d '/')" || fail_with_msg 'Failed to get uname' ;;
       esac
       ;;
   esac
@@ -92,23 +98,6 @@ detect_path_sep()
   fi
 }
 
-fail_with_msg()
-{
-  echo "${1:?}"
-  exit 1
-}
-
-create_junction()
-{
-  if test "${uname_o_saved}" != 'MS/Windows'; then return 1; fi
-  jn -- "${1:?}" "${2:?}"
-}
-
-link_folder()
-{
-  ln -sf "${2:?}" "${1:?}" 2> /dev/null || create_junction "${2:?}" "${1:?}" || mkdir -p "${1:?}" || fail_with_msg "Failed to link dir '${1}' to '${2}'"
-}
-
 is_in_path_env()
 {
   case "${PATHSEP:?}${PATH-}${PATHSEP:?}" in
@@ -120,6 +109,13 @@ is_in_path_env()
 
 add_to_path_env()
 {
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && command 1> /dev/null -v 'cygpath'; then
+    # Only on Bash under Windows
+    local _path
+    _path="$(cygpath -u -a -- "${1:?}")" || fail_with_msg 'Unable to convert a path in add_to_path_env()'
+    set -- "${_path:?}"
+  fi
+
   if is_in_path_env "${1:?}" || test ! -e "${1:?}"; then return; fi
 
   if test -z "${PATH-}"; then
@@ -127,6 +123,43 @@ add_to_path_env()
   else
     PATH="${1:?}${PATHSEP:?}${PATH:?}"
   fi
+}
+
+move_to_begin_of_path_env()
+{
+  local _path
+  if test ! -e "${1:?}"; then return; fi
+
+  if test -z "${PATH-}"; then
+    PATH="${1:?}"
+  elif _path="$(printf '%s\n' "${PATH:?}" | tr -- "${PATHSEP:?}" '\n' | grep -v -x -F -e "${1:?}" | tr -- '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}" && test -n "${_path?}"; then
+    PATH="${1:?}${PATHSEP:?}${_path:?}"
+  fi
+}
+
+init_path()
+{
+  test "${IS_PATH_INITIALIZED:-false}" = 'false' || return
+  readonly IS_PATH_INITIALIZED='true'
+
+  if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
+
+  # On Bash under Windows (for example the one included inside Git for Windows) we need to move '/usr/bin'
+  # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then move_to_begin_of_path_env '/usr/bin'; fi
+
+  add_to_path_env "$(realpath "${THIS_SCRIPT_DIR:?}/../tools/${PLATFORM:?}" || true)" || fail_with_msg 'Unable to add the tools dir to the PATH env'
+}
+
+create_junction()
+{
+  if test "${uname_o_saved}" != 'MS/Windows'; then return 1; fi
+  jn -- "${1:?}" "${2:?}"
+}
+
+link_folder()
+{
+  ln -sf "${2:?}" "${1:?}" 2> /dev/null || create_junction "${2:?}" "${1:?}" || mkdir -p "${1:?}" || fail_with_msg "Failed to link dir '${1}' to '${2}'"
 }
 
 recovery_flash_start()
@@ -227,7 +260,7 @@ readonly PATHSEP
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
 unset THIS_SCRIPT
 
-add_to_path_env "$(realpath "${THIS_SCRIPT_DIR:?}/../tools/${PLATFORM:?}" || true)" || ui_error 'Unable to add the tools dir to the PATH env'
+init_path
 
 # Check dependencies
 _our_busybox="$(env -- which -- busybox)" || fail_with_msg 'BusyBox is missing'
