@@ -9,7 +9,6 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTION
 
 export LANG='en_US.UTF-8'
 export TZ='UTC'
-export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
 
 unset LANGUAGE
 unset LC_CTYPE
@@ -1046,6 +1045,7 @@ init_cmdline()
 
   export PATH_SEPARATOR="${PATHSEP:?}"
   export DIRECTORY_SEPARATOR='/'
+  export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
 }
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
