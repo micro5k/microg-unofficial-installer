@@ -92,14 +92,6 @@ command -v 'java' 1> /dev/null || ui_error 'Java is missing'
 OUT_DIR="${SCRIPT_DIR}/output"
 mkdir -p "${OUT_DIR}" || ui_error 'Failed to create the output dir'
 
-# Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
-if test "${PLATFORM:?}" = 'win' && command 1> /dev/null -v 'cygpath'; then
-  if test "${TMPDIR:-${TMP:-${TEMP-}}}" = '/tmp'; then
-    TMPDIR="$(cygpath -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || ui_error 'Failed to retrieve the temp directory path'
-    export TMPDIR
-  fi
-fi
-
 # Create the temp dir
 TEMP_DIR="$(mktemp -d -t ZIPBUILDER-XXXXXX)" || ui_error 'Failed to create our temp dir'
 if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi

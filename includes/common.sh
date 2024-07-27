@@ -935,6 +935,17 @@ init_vars()
   MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
   readonly SCRIPT_DIR TOOLS_DIR MODULE_NAME
   export SCRIPT_DIR TOOLS_DIR MODULE_NAME
+
+  # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && command 1> /dev/null -v 'cygpath'; then
+    if test "${TMPDIR:-${TMP:-${TEMP-}}}" = '/tmp'; then
+      TMPDIR="$(cygpath -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || ui_error 'Failed to retrieve the temp directory'
+      export TMPDIR
+
+      TMP="${TMPDIR:?}"
+      TEMP="${TMPDIR:?}"
+    fi
+  fi
 }
 
 init_path()
