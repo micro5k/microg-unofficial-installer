@@ -50,12 +50,15 @@
             "detail": "Emulate an Android recovery on your PC and inside it execute the flashable zip to see the result.",
             "type": "shell",
             "command": "${workspaceFolder}/recovery-simulator/recovery.sh",
-            "windows": {
-                "command": "${workspaceFolder}\\recovery-simulator\\recovery.bat"
-            },
             "args": [
                 "${workspaceFolder}/output/*.zip"
             ],
+            "windows": {
+                "command": "${workspaceFolder}\\recovery-simulator\\recovery.bat",
+                "args": [
+                    "${workspaceFolder}\\output\\*.zip"
+                ]
+            },
             "options": {
                 "env": {
                     "LIVE_SETUP_ALLOWED": "false",
