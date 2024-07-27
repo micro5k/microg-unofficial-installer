@@ -227,7 +227,7 @@ readonly PATHSEP
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
 unset THIS_SCRIPT
 
-add_to_path_env "${THIS_SCRIPT_DIR:?}/../tools/${PLATFORM:?}"
+add_to_path_env "$(realpath "${THIS_SCRIPT_DIR:?}/../tools/${PLATFORM:?}" || true)" || ui_error 'Unable to add the tools dir to the PATH env'
 
 # Check dependencies
 _our_busybox="$(env -- which -- busybox)" || fail_with_msg 'BusyBox is missing'
