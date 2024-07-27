@@ -99,7 +99,7 @@ compare_start_uname()
 detect_os()
 {
   local _os
-  _os="$(uname | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)"
+  _os="$(uname | tr -- '[:upper:]' '[:lower:]')"
 
   case "${_os?}" in
     'linux') # Returned by both Linux and Android, it will be identified later in the code
@@ -122,7 +122,7 @@ detect_os()
       ;;
 
     *)
-      case "$(uname 2> /dev/null -o | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" in
+      case "$(uname 2> /dev/null -o | tr -- '[:upper:]' '[:lower:]')" in
         # Output of uname -o:
         # - MinGW => Msys
         # - MSYS => Msys
@@ -132,7 +132,7 @@ detect_os()
           _os='win'
           ;;
         *)
-          printf '%s\n' "${_os:?}" | LC_ALL=C tr -d '/' || ui_error 'Failed to get uname'
+          printf '%s\n' "${_os:?}" | tr -d '/' || ui_error 'Failed to get uname'
           return 0
           ;;
       esac
@@ -141,7 +141,7 @@ detect_os()
 
   # Android identify itself as Linux
   if test "${_os?}" = 'linux'; then
-    case "$(uname 2> /dev/null -a | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" in
+    case "$(uname 2> /dev/null -a | tr -- '[:upper:]' '[:lower:]')" in
       *' android'* | *'-lineage-'* | *'-leapdroid-'*)
         _os='android'
         ;;
@@ -150,6 +150,15 @@ detect_os()
   fi
 
   printf '%s\n' "${_os:?}"
+}
+
+detect_path_sep()
+{
+  if test "${PLATFORM?}" = 'win' && test "$(uname 2> /dev/null -o | tr -- '[:upper:]' '[:lower:]' || true)" = 'ms/windows'; then
+    printf ';\n' # BusyBox-w32
+  else
+    printf ':\n'
+  fi
 }
 
 change_title()
@@ -1050,10 +1059,7 @@ fi
 
 # Set environment variables
 PLATFORM="$(detect_os)"
-PATHSEP=':'
-if test "${PLATFORM?}" = 'win' && test "$(uname -o 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" = 'ms/windows'; then
-  PATHSEP=';' # BusyBox-w32
-fi
+PATHSEP="$(detect_path_sep)"
 readonly PLATFORM PATHSEP
 export PLATFORM PATHSEP
 
