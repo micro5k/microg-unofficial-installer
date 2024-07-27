@@ -215,8 +215,8 @@ _backup_path="${PATH:?}"
 uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
 # Set variables that we need
-PLATFORM="$(detect_os)"
-PATHSEP="$(detect_path_sep)"
+if test -z "${PLATFORM-}"; then PLATFORM="$(detect_os)"; fi
+if test -z "${PATHSEP-}"; then PATHSEP="$(detect_path_sep)"; fi
 readonly PLATFORM PATHSEP
 
 # Get dir of this script
