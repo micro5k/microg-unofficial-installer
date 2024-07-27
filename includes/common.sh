@@ -98,64 +98,57 @@ compare_start_uname()
 
 detect_os()
 {
-  local _os
-  _os="$(uname | tr -- '[:upper:]' '[:lower:]')"
+  if test -n "${PLATFORM-}"; then return; fi
 
-  case "${_os?}" in
-    'linux') # Returned by both Linux and Android, it will be identified later in the code
-      _os='linux'
+  PLATFORM="$(uname | tr -- '[:upper:]' '[:lower:]')"
+  IS_BUSYBOX='false'
+
+  case "${PLATFORM?}" in
+    'linux') ;;   # Returned by both Linux and Android, Android will be identified later in the function
+    'android') ;; # Currently never returned by Android
+    'windows_nt') # BusyBox-w32 on Windows => Windows_NT
+      PLATFORM='win'
+      IS_BUSYBOX='true'
       ;;
-    'android') # Currently never returned, but may be in the future
-      _os='android'
-      ;;
-    'windows'*) # BusyBox-w32 on Windows => Windows_NT (other Windows cases will be detected in the default case)
-      _os='win'
-      ;;
-    'darwin')
-      _os='macos'
-      ;;
-    'freebsd')
-      _os='freebsd'
-      ;;
-    '')
-      _os='unknown'
-      ;;
+    'msys_'* | 'cygwin_'* | 'mingw32_'* | 'mingw64_'*) PLATFORM='win' ;;
+    'windows'*) PLATFORM='win' ;; # Unknown shell on Windows
+    'darwin') PLATFORM='macos' ;;
+    'freebsd') ;;
+    '') PLATFORM='unknown' ;;
 
     *)
+      # Output of uname -o:
+      # - MinGW => Msys
+      # - MSYS => Msys
+      # - Cygwin => Cygwin
+      # - BusyBox-w32 => MS/Windows
       case "$(uname 2> /dev/null -o | tr -- '[:upper:]' '[:lower:]')" in
-        # Output of uname -o:
-        # - MinGW => Msys
-        # - MSYS => Msys
-        # - Cygwin => Cygwin
-        # - BusyBox-w32 => MS/Windows
-        'msys' | 'cygwin' | 'ms/windows')
-          _os='win'
+        'ms/windows')
+          PLATFORM='win'
+          IS_BUSYBOX='true'
           ;;
-        *)
-          printf '%s\n' "${_os:?}" | tr -d '/' || ui_error 'Failed to get uname'
-          return 0
-          ;;
+        'msys' | 'cygwin') PLATFORM='win' ;;
+        *) PLATFORM="$(printf '%s\n' "${PLATFORM:?}" | tr -d '/')" || ui_error 'Failed to get uname' ;;
       esac
       ;;
   esac
 
   # Android identify itself as Linux
-  if test "${_os?}" = 'linux'; then
+  if test "${PLATFORM?}" = 'linux'; then
     case "$(uname 2> /dev/null -a | tr -- '[:upper:]' '[:lower:]')" in
-      *' android'* | *'-lineage-'* | *'-leapdroid-'*)
-        _os='android'
-        ;;
+      *' android'* | *'-lineage-'* | *'-leapdroid-'*) PLATFORM='android' ;;
       *) ;;
     esac
   fi
 
-  printf '%s\n' "${_os:?}"
+  readonly PLATFORM IS_BUSYBOX
+  export PLATFORM IS_BUSYBOX
 }
 
 detect_path_sep()
 {
-  if test "${PLATFORM?}" = 'win' && test "$(uname 2> /dev/null -o | tr -- '[:upper:]' '[:lower:]' || true)" = 'ms/windows'; then
-    printf ';\n' # BusyBox-w32
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then
+    printf ';\n'
   else
     printf ':\n'
   fi
@@ -1059,10 +1052,10 @@ if test "${DO_INIT_CMDLINE:-0}" != '0'; then
 fi
 
 # Set environment variables
-PLATFORM="$(detect_os)"
+detect_os
 PATHSEP="$(detect_path_sep)"
-readonly PLATFORM PATHSEP
-export PLATFORM PATHSEP
+readonly PATHSEP
+export PATHSEP
 
 init_vars
 init_path
