@@ -16,13 +16,24 @@ jobs:
   shellchecker:
     name: "ShellChecker"
     runs-on: ubuntu-latest
-    permissions: {}
 
     steps:
       - name: "Check out code"
         uses: actions/checkout@v4
       - name: "ShellChecker"
         uses: a5k-actions/shellchecker@v0
+
+  json-yaml-validate:
+    name: "JSON and YAML"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Check out code"
+        uses: actions/checkout@v4
+      - name: "JSON and YAML - Validator"
+        uses: GrantBirki/json-yaml-validate@v3
+        with:
+          json_exclude_regex: "^\\.vscode/tasks\\.json$"
 
   codacy:
     name: "Codacy"
@@ -59,7 +70,6 @@ jobs:
     name: "SonarCloud"
     if: "${{ github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
     runs-on: ubuntu-latest
-    permissions: {}
 
     steps:
       - name: "Check out code"
