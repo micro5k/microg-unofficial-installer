@@ -839,7 +839,7 @@ dl_list()
   IFS="${_backup_ifs:-}"
 }
 
-is_in_path()
+is_in_path_env()
 {
   case "${PATHSEP:?}${PATH-}${PATHSEP:?}" in
     *"${PATHSEP:?}${1:?}${PATHSEP:?}"*) return 0 ;; # Found
@@ -857,7 +857,7 @@ add_to_path_env()
     set -- "${_path:?}"
   fi
 
-  if is_in_path "${1:?}" || test ! -e "${1:?}"; then return; fi
+  if is_in_path_env "${1:?}" || test ! -e "${1:?}"; then return; fi
 
   if test -z "${PATH-}"; then
     ui_warning 'PATH env is empty'
@@ -939,7 +939,7 @@ init_path()
 {
   test "${IS_PATH_INITIALIZED:-false}" = 'false' || return
   readonly IS_PATH_INITIALIZED='true'
-  if is_in_path "${TOOLS_DIR:?}"; then return; fi
+  if is_in_path_env "${TOOLS_DIR:?}"; then return; fi
 
   if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
 
