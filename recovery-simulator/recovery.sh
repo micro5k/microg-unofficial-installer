@@ -6,6 +6,9 @@
 # NOTE: This script simulate a real recovery but it relies on the flashable zip to use the suggested paths.
 # REALLY IMPORTANT: A misbehaving flashable zip can damage your real system.
 
+# shellcheck enable=all
+# shellcheck disable=SC2310 # This function is invoked in an XXX condition so set -e will be disabled. Invoke separately if failures should cause the script to exit
+
 set -e
 # shellcheck disable=SC3040,SC3041,SC2015
 {
@@ -103,7 +106,6 @@ create_junction()
 
 link_folder()
 {
-  # shellcheck disable=SC2310
   ln -sf "${2:?}" "${1:?}" 2> /dev/null || create_junction "${2:?}" "${1:?}" || mkdir -p "${1:?}" || fail_with_msg "Failed to link dir '${1}' to '${2}'"
 }
 
@@ -314,7 +316,6 @@ _is_export_f_supported=0
     : | export -f -- test_export_f 2> /dev/null
     return "${?}"
   }
-  # shellcheck disable=SC2310
   test_export_f || _is_export_f_supported="${?}"
   unset -f test_export_f
 }
@@ -362,15 +363,10 @@ simulate_env()
     "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
   fi
 
-  # shellcheck disable=SC2310
   override_command mount || return 123
-  # shellcheck disable=SC2310
   override_command umount || return 123
-  # shellcheck disable=SC2310
   override_command chown || return 123
-  # shellcheck disable=SC2310
   override_command su || return 123
-  # shellcheck disable=SC2310
   override_command sudo || return 123
 }
 
@@ -419,7 +415,6 @@ flash_zips()
     cp -f -- "${_current_zip_fullpath:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" || fail_with_msg 'Failed to copy the flashable ZIP'
 
     # Simulate the environment variables of a real recovery
-    # shellcheck disable=SC2310
     simulate_env || return "${?}"
 
     "${CUSTOM_BUSYBOX:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_tmp:?}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
@@ -437,13 +432,11 @@ flash_zips()
     echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
     echo ''
 
-    # shellcheck disable=SC2310
     restore_env || return "${?}"
     if test "${STATUS:?}" -ne 0; then return "${STATUS:?}"; fi
   done
 }
 STATUS=0
-# shellcheck disable=SC2310
 flash_zips "${@}" || STATUS="${?}"
 
 # Close recovery output
