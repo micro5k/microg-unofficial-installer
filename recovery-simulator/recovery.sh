@@ -27,6 +27,13 @@ case ":${SHELLOPTS:-}:" in
   *) ;;
 esac
 
+show_cmdline()
+{
+  printf "'%s'" "${0-}"
+  if test "${#}" -gt 0; then printf " '%s'" "${@}"; fi
+  printf '\n'
+}
+
 detect_os()
 {
   local _os
@@ -184,10 +191,14 @@ recovery_flash_end()
   echo ''
 }
 
-if test -z "${*}"; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
-
 # Reset environment
-if ! "${ENV_RESETTED:-false}"; then
+if test "${ENV_RESETTED:-false}" = 'false'; then
+  printf '%s\n' 'FULL COMMAND LINE:'
+  show_cmdline "${@}"
+  printf '\n'
+
+  if test "${#}" -eq 0; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
+
   THIS_SCRIPT="$(realpath "${0:?}" 2> /dev/null)" || fail_with_msg 'Failed to get script filename'
   # Create the temp dir (must be done before resetting environment)
   OUR_TEMP_DIR="$(mktemp -d -t ANDR-RECOV-XXXXXX)" || fail_with_msg 'Failed to create our temp dir'
