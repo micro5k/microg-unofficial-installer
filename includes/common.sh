@@ -102,6 +102,8 @@ detect_os()
 
   PLATFORM="$(uname | tr -- '[:upper:]' '[:lower:]')"
   IS_BUSYBOX='false'
+  PATHSEP=':'
+  CYGPATH=''
 
   case "${PLATFORM?}" in
     'linux') ;;   # Returned by both Linux and Android, Android will be identified later in the function
@@ -141,17 +143,15 @@ detect_os()
     esac
   fi
 
-  readonly PLATFORM IS_BUSYBOX
-  export PLATFORM IS_BUSYBOX
-}
-
-detect_path_sep()
-{
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then
-    printf ';\n'
-  else
-    printf ':\n'
+    PATHSEP=';'
   fi
+
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && PATH="/usr/bin${PATHSEP:?}${PATH-}" command 1> /dev/null -v 'cygpath'; then
+    CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)" || ui_error 'Unable to find the path of cygpath'
+  fi
+
+  readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH
 }
 
 change_title()
@@ -914,37 +914,35 @@ remove_duplicates_from_path_env()
   PATH="${_path?}"
 }
 
-init_vars()
+init_base()
 {
-  local _main_dir
-
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
-  if test -z "${MAIN_DIR-}" && test -n "${BASH_SOURCE-}" && _main_dir="$(dirname "${BASH_SOURCE:?}")" && _main_dir="$(realpath "${_main_dir:?}/..")"; then
-    MAIN_DIR="${_main_dir:?}"
-  elif test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${MAIN_DIR-}"; then
-    MAIN_DIR="$(realpath "${MAIN_DIR:?}")" || ui_error 'Unable to resolve the main script dir'
+  if test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${MAIN_DIR-}"; then
+    MAIN_DIR="$(realpath "${MAIN_DIR:?}")" || ui_error 'Unable to resolve the main dir'
   fi
 
-  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath' && test -n "${MAIN_DIR-}"; then
+  if test -n "${CYGPATH?}" && test -n "${MAIN_DIR-}"; then
     # Only on Bash under Windows
-    MAIN_DIR="$(cygpath -m -l -- "${MAIN_DIR:?}")" || ui_error 'Unable to convert the main script dir'
+    MAIN_DIR="$("${CYGPATH:?}" -m -l -- "${MAIN_DIR:?}")" || ui_error 'Unable to convert the main dir'
   fi
 
   test -n "${MAIN_DIR-}" || ui_error 'MAIN_DIR env var is empty'
-  TOOLS_DIR="${MAIN_DIR:?}/tools/${PLATFORM:?}"
+
+  readonly MAIN_DIR
+}
+
+init_vars()
+{
   MODULE_NAME="$(simple_get_prop 'name' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
-  readonly MAIN_DIR TOOLS_DIR MODULE_NAME
-  export MAIN_DIR TOOLS_DIR MODULE_NAME
+  readonly MODULE_NAME
+  export MODULE_NAME
 
-  # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
-  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && command 1> /dev/null -v 'cygpath'; then
-    if test "${TMPDIR:-${TMP:-${TEMP-}}}" = '/tmp'; then
-      TMPDIR="$(cygpath -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || ui_error 'Failed to retrieve the temp directory'
-      export TMPDIR
+  if test -n "${CYGPATH?}" && test "${TMPDIR:-${TMP:-${TEMP-}}}" = '/tmp'; then
+    # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
+    TMPDIR="$(cygpath -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || ui_error 'Failed to retrieve the temp directory'
+    export TMPDIR
 
-      TMP="${TMPDIR:?}"
-      TEMP="${TMPDIR:?}"
-    fi
+    TMP="${TMPDIR:?}"
+    TEMP="${TMPDIR:?}"
   fi
 }
 
@@ -952,6 +950,8 @@ init_path()
 {
   test "${IS_PATH_INITIALIZED:-false}" = 'false' || return
   readonly IS_PATH_INITIALIZED='true'
+
+  TOOLS_DIR="${MAIN_DIR:?}/tools/${PLATFORM:?}"
   if is_in_path_env "${TOOLS_DIR:?}"; then return; fi
 
   if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
@@ -1064,12 +1064,12 @@ fi
 
 # Set environment variables
 detect_os
-PATHSEP="$(detect_path_sep)"
-readonly PATHSEP
-export PATHSEP
-
+export PLATFORM IS_BUSYBOX PATHSEP CYGPATH
+init_base
+export MAIN_DIR
 init_vars
 init_path
+export TOOLS_DIR
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
   unset DO_INIT_CMDLINE
