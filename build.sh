@@ -57,20 +57,20 @@ detect_script_dir()
   unset last_command
 
   this_script="$(realpath "${this_script}" 2> /dev/null)" || return 1
-  SCRIPT_DIR="$(dirname "${this_script}")" || return 1
+  MAIN_DIR="$(dirname "${this_script}")" || return 1
 }
 detect_script_dir || return 1 2>&- || exit 1
 
 # shellcheck source=SCRIPTDIR/includes/common.sh
-if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${SCRIPT_DIR}/includes/common.sh"; fi
+if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR}/includes/common.sh"; fi
 
 save_last_title
 change_title 'Building the flashable OTA zip...'
 
 # shellcheck source=SCRIPTDIR/conf-1.sh
-. "${SCRIPT_DIR}/conf-1.sh"
+. "${MAIN_DIR}/conf-1.sh"
 # shellcheck source=SCRIPTDIR/conf-2.sh
-if test "${OPENSOURCE_ONLY:-false}" = 'false'; then . "${SCRIPT_DIR}/conf-2.sh"; fi
+if test "${OPENSOURCE_ONLY:-false}" = 'false'; then . "${MAIN_DIR}/conf-2.sh"; fi
 
 if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
   if ! is_oss_only_build_enabled; then
@@ -79,7 +79,7 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
     # shellcheck disable=SC2317
     return 0 2>&- || exit 0
   fi
-  if test ! -f "${SCRIPT_DIR:?}/zip-content/settings-oss.conf"; then ui_error 'The settings file is missing'; fi
+  if test ! -f "${MAIN_DIR:?}/zip-content/settings-oss.conf"; then ui_error 'The settings file is missing'; fi
 fi
 
 _init_dir="$(pwd)" || ui_error 'Failed to read the current dir'
@@ -89,7 +89,7 @@ command -v 'zip' 1> /dev/null || ui_error 'Zip is missing'
 command -v 'java' 1> /dev/null || ui_error 'Java is missing'
 
 # Create the output dir
-OUT_DIR="${SCRIPT_DIR}/output"
+OUT_DIR="${MAIN_DIR}/output"
 mkdir -p "${OUT_DIR}" || ui_error 'Failed to create the output dir'
 
 # Create the temp dir
@@ -100,31 +100,31 @@ if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
 rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
 
 # Set filename and version
-MODULE_ID="$(simple_get_prop 'id' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module id string'
-MODULE_VER="$(simple_get_prop 'version' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module version string'
-MODULE_AUTHOR="$(simple_get_prop 'author' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module author string'
+MODULE_ID="$(simple_get_prop 'id' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module id string'
+MODULE_VER="$(simple_get_prop 'version' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module version string'
+MODULE_AUTHOR="$(simple_get_prop 'author' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module author string'
 FILENAME="${MODULE_ID:?}-${MODULE_VER:?}-by-${MODULE_AUTHOR:?}"
 # shellcheck disable=SC2154
 if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS"; fi
 
 # shellcheck source=SCRIPTDIR/addition.sh
-. "${SCRIPT_DIR}/addition.sh"
+. "${MAIN_DIR}/addition.sh"
 
 # Verify files in the files list to avoid creating broken packages
-if test -e "${SCRIPT_DIR:?}/zip-content/origin/file-list.dat"; then
+if test -e "${MAIN_DIR:?}/zip-content/origin/file-list.dat"; then
   while IFS='|' read -r LOCAL_FILENAME _ _ _ _ _ FILE_HASH _; do
     printf '.'
-    verify_sha1 "${SCRIPT_DIR:?}/zip-content/origin/${LOCAL_FILENAME:?}.apk" "${FILE_HASH:?}" || {
+    verify_sha1 "${MAIN_DIR:?}/zip-content/origin/${LOCAL_FILENAME:?}.apk" "${FILE_HASH:?}" || {
       printf '\n'
       ui_error "Verification of '${LOCAL_FILENAME:-}' failed"
     }
-  done 0< "${SCRIPT_DIR:?}/zip-content/origin/file-list.dat" || ui_error 'Failed to open the list of files to verify'
+  done 0< "${MAIN_DIR:?}/zip-content/origin/file-list.dat" || ui_error 'Failed to open the list of files to verify'
   printf '\n'
 fi
 
 # Download files if they are missing
 {
-  mkdir -p "${SCRIPT_DIR:?}/cache" || ui_error 'Failed to create "cache" dir'
+  mkdir -p "${MAIN_DIR:?}/cache" || ui_error 'Failed to create "cache" dir'
 
   current_dl_list="$(oss_files_to_download)" || ui_error 'Missing download list'
   dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files'
@@ -144,12 +144,12 @@ fi
 }
 
 # Copy data
-cp -rf "${SCRIPT_DIR}/zip-content" "${TEMP_DIR}/" || ui_error 'Failed to copy data to the temp dir'
-cp -rf "${SCRIPT_DIR}/"LICENSES* "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the licenses folder to the temp dir'
-cp -f "${SCRIPT_DIR}/LICENSE.rst" "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
-cp -f "${SCRIPT_DIR}/LIC-ADDITION.rst" "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
+cp -rf "${MAIN_DIR}/zip-content" "${TEMP_DIR}/" || ui_error 'Failed to copy data to the temp dir'
+cp -rf "${MAIN_DIR}/"LICENSES* "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the licenses folder to the temp dir'
+cp -f "${MAIN_DIR}/LICENSE.rst" "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
+cp -f "${MAIN_DIR}/LIC-ADDITION.rst" "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
 mkdir -p "${TEMP_DIR}/zip-content/docs"
-cp -f "${SCRIPT_DIR}/CHANGELOG.rst" "${TEMP_DIR}/zip-content/docs/" || ui_error 'Failed to copy the changelog to the temp dir'
+cp -f "${MAIN_DIR}/CHANGELOG.rst" "${TEMP_DIR}/zip-content/docs/" || ui_error 'Failed to copy the changelog to the temp dir'
 
 if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
   mv -f "${TEMP_DIR}/zip-content/settings-oss.conf" "${TEMP_DIR}/zip-content/settings.conf" || ui_error 'Failed to choose the settings file'
@@ -169,7 +169,7 @@ if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
 else
   files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH MIN_API MAX_API FINAL_FILENAME INTERNAL_NAME FILE_HASH _; do
     mkdir -p -- "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}"
-    cp -f -- "${SCRIPT_DIR:?}/cache/${LOCAL_PATH:?}/${LOCAL_FILENAME:?}.apk" "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}.apk'"
+    cp -f -- "${MAIN_DIR:?}/cache/${LOCAL_PATH:?}/${LOCAL_FILENAME:?}.apk" "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}.apk'"
 
     _extract_libs=''
     if test "${LOCAL_FILENAME:?}" = 'PlayStore'; then _extract_libs='libs'; fi
@@ -180,7 +180,7 @@ else
   if test "${STATUS:?}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
   mkdir -p "${TEMP_DIR}/zip-content/misc/keycheck"
-  cp -f "${SCRIPT_DIR}/cache/misc/keycheck/keycheck-arm.bin" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
+  cp -f "${MAIN_DIR}/cache/misc/keycheck/keycheck-arm.bin" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
 fi
 
 printf '%s\n' 'Setting name;Visibility;Type' 1> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (1)'
@@ -194,7 +194,7 @@ done 0< "${TEMP_DIR:?}/zip-content/settings.conf" 1>> "${TEMP_DIR:?}/zip-content
 printf '\n'
 
 # Remove the cache folder only if it is empty
-rmdir --ignore-fail-on-non-empty "${SCRIPT_DIR}/cache" || ui_error 'Failed to remove the empty cache folder'
+rmdir --ignore-fail-on-non-empty "${MAIN_DIR}/cache" || ui_error 'Failed to remove the empty cache folder'
 
 # Prepare the data before compression (also uniform attributes - useful for reproducible builds)
 BASE_TMP_SCRIPT_DIR="${TEMP_DIR}/zip-content/META-INF/com/google/android"
@@ -221,7 +221,7 @@ FILENAME="${FILENAME}-signed"
 echo ''
 echo 'Signing and zipaligning...'
 mkdir -p "${TEMP_DIR:?}/zipsign"
-java -Duser.timezone=UTC -Dzip.encoding=Cp437 -Djava.io.tmpdir="${TEMP_DIR}/zipsign" -jar "${SCRIPT_DIR}/tools/zipsigner.jar" "${TEMP_DIR}/flashable.zip" "${TEMP_DIR}/${FILENAME}.zip" || ui_error 'Failed signing and zipaligning'
+java -Duser.timezone=UTC -Dzip.encoding=Cp437 -Djava.io.tmpdir="${TEMP_DIR}/zipsign" -jar "${MAIN_DIR}/tools/zipsigner.jar" "${TEMP_DIR}/flashable.zip" "${TEMP_DIR}/${FILENAME}.zip" || ui_error 'Failed signing and zipaligning'
 
 if test "${FAST_BUILD:-false}" = 'false'; then
   echo ''

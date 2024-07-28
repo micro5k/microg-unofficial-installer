@@ -18,20 +18,20 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   unset IS_PATH_INITIALIZED
   if test "${TERM_PROGRAM-}" = 'mintty'; then unset TERM_PROGRAM; fi
 
-  if test -z "${SCRIPT_DIR-}"; then
+  if test -z "${MAIN_DIR-}"; then
     # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
-    if test -n "${BASH_SOURCE-}" && SCRIPT_DIR="$(dirname "${BASH_SOURCE:?}")" && SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")"; then
-      export SCRIPT_DIR
+    if test -n "${BASH_SOURCE-}" && MAIN_DIR="$(dirname "${BASH_SOURCE:?}")" && MAIN_DIR="$(realpath "${MAIN_DIR:?}")"; then
+      export MAIN_DIR
     else
-      unset SCRIPT_DIR
+      unset MAIN_DIR
     fi
   fi
 
   test -n "${HOME-}" && test -z "${USER_HOME-}" && export USER_HOME="${HOME:?}"
 
-  if test -n "${SCRIPT_DIR-}"; then
-    export HOME="${SCRIPT_DIR:?}"
-    DO_INIT_CMDLINE=1 bash --init-file "${SCRIPT_DIR:?}/includes/common.sh"
+  if test -n "${MAIN_DIR-}"; then
+    export HOME="${MAIN_DIR:?}"
+    DO_INIT_CMDLINE=1 bash --init-file "${MAIN_DIR:?}/includes/common.sh"
   else
     DO_INIT_CMDLINE=1 bash --init-file './includes/common.sh'
   fi

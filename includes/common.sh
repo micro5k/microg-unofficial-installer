@@ -196,25 +196,25 @@ get_base_url()
 
 clear_dl_temp_dir()
 {
-  rm -f -r "${SCRIPT_DIR:?}/cache/temp"
+  rm -f -r "${MAIN_DIR:?}/cache/temp"
 }
 
 _clear_cookies()
 {
-  rm -f -r "${SCRIPT_DIR:?}/cache/temp/cookies"
+  rm -f -r "${MAIN_DIR:?}/cache/temp/cookies"
 }
 
 _parse_and_store_cookie()
 {
   local IFS _line_no _cookie_file _elem
 
-  if test ! -e "${SCRIPT_DIR:?}/cache/temp/cookies"; then mkdir -p "${SCRIPT_DIR:?}/cache/temp/cookies" || return "${?}"; fi
+  if test ! -e "${MAIN_DIR:?}/cache/temp/cookies"; then mkdir -p "${MAIN_DIR:?}/cache/temp/cookies" || return "${?}"; fi
 
   if test "${DL_DEBUG:?}" = 'true'; then
-    printf '%s\n' "Set-Cookie: ${2:?}" >> "${SCRIPT_DIR:?}/cache/temp/cookies/${1:?}.dat.debug"
+    printf '%s\n' "Set-Cookie: ${2:?}" >> "${MAIN_DIR:?}/cache/temp/cookies/${1:?}.dat.debug"
   fi
 
-  _cookie_file="${SCRIPT_DIR:?}/cache/temp/cookies/${1:?}.dat"
+  _cookie_file="${MAIN_DIR:?}/cache/temp/cookies/${1:?}.dat"
 
   IFS=';'
   for _elem in ${2:?}; do
@@ -238,7 +238,7 @@ _parse_and_store_all_cookies()
   done
 
   if test "${DL_DEBUG:?}" = 'true'; then
-    if test -e "${SCRIPT_DIR:?}/cache/temp/cookies"; then printf '\n' >> "${SCRIPT_DIR:?}/cache/temp/cookies/${1:?}.dat.debug"; fi
+    if test -e "${MAIN_DIR:?}/cache/temp/cookies"; then printf '\n' >> "${MAIN_DIR:?}/cache/temp/cookies/${1:?}.dat.debug"; fi
   fi
 }
 
@@ -247,11 +247,11 @@ _load_cookies()
   local _domain _cookie_file
 
   _domain="$(get_domain_from_url "${1:?}")" || return "${?}"
-  _cookie_file="${SCRIPT_DIR:?}/cache/temp/cookies/${_domain:?}.dat"
+  _cookie_file="${MAIN_DIR:?}/cache/temp/cookies/${_domain:?}.dat"
 
   if test ! -e "${_cookie_file:?}"; then
     _domain="$(get_second_level_domain_from_url "${1:?}")" || return "${?}"
-    _cookie_file="${SCRIPT_DIR:?}/cache/temp/cookies/${_domain:?}.dat"
+    _cookie_file="${MAIN_DIR:?}/cache/temp/cookies/${_domain:?}.dat"
     if test ! -e "${_cookie_file:?}"; then return 0; fi
   fi
 
@@ -765,7 +765,7 @@ dl_type_two()
 
 dl_file()
 {
-  if test -e "${SCRIPT_DIR:?}/cache/$1/$2"; then verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || rm -f "${SCRIPT_DIR:?}/cache/$1/$2"; fi # Preventive check to silently remove corrupted/invalid files
+  if test -e "${MAIN_DIR:?}/cache/$1/$2"; then verify_sha1 "${MAIN_DIR:?}/cache/$1/$2" "$3" || rm -f "${MAIN_DIR:?}/cache/$1/$2"; fi # Preventive check to silently remove corrupted/invalid files
 
   printf '%s ' "Checking ${2?}..."
   local _status _url _domain
@@ -775,22 +775,22 @@ dl_file()
 
   _clear_cookies || return "${?}"
 
-  if ! test -e "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}"; then
-    mkdir -p "${SCRIPT_DIR:?}/cache/${1:?}"
+  if ! test -e "${MAIN_DIR:?}/cache/${1:?}/${2:?}"; then
+    mkdir -p "${MAIN_DIR:?}/cache/${1:?}"
 
     if test "${CI:-false}" = 'false'; then sleep 0.5; else sleep 3; fi
     case "${_domain:?}" in
       *\.'go''file''.io')
         printf '\n %s: ' 'DL type 2'
-        dl_type_two "${_url:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+        dl_type_two "${_url:?}" "${MAIN_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
         ;;
       *\.'apk''mirror''.com')
         printf '\n %s: ' 'DL type 1'
-        dl_type_one "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+        dl_type_one "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${MAIN_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
         ;;
       ????*)
         printf '\n %s: ' 'DL type 0'
-        dl_type_zero "${_url:?}" "${SCRIPT_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+        dl_type_zero "${_url:?}" "${MAIN_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
         ;;
       *)
         ui_error "Invalid download URL => '${_url?}'"
@@ -815,7 +815,7 @@ dl_file()
     fi
   fi
 
-  verify_sha1 "${SCRIPT_DIR:?}/cache/$1/$2" "$3" || corrupted_file "${SCRIPT_DIR:?}/cache/$1/$2"
+  verify_sha1 "${MAIN_DIR:?}/cache/$1/$2" "$3" || corrupted_file "${MAIN_DIR:?}/cache/$1/$2"
   printf '%s\n' 'OK'
 }
 
@@ -919,22 +919,22 @@ init_vars()
   local _main_dir
 
   # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
-  if test -z "${SCRIPT_DIR-}" && test -n "${BASH_SOURCE-}" && _main_dir="$(dirname "${BASH_SOURCE:?}")" && _main_dir="$(realpath "${_main_dir:?}/..")"; then
-    SCRIPT_DIR="${_main_dir:?}"
-  elif test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${SCRIPT_DIR-}"; then
-    SCRIPT_DIR="$(realpath "${SCRIPT_DIR:?}")" || ui_error 'Unable to resolve the main script dir'
+  if test -z "${MAIN_DIR-}" && test -n "${BASH_SOURCE-}" && _main_dir="$(dirname "${BASH_SOURCE:?}")" && _main_dir="$(realpath "${_main_dir:?}/..")"; then
+    MAIN_DIR="${_main_dir:?}"
+  elif test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${MAIN_DIR-}"; then
+    MAIN_DIR="$(realpath "${MAIN_DIR:?}")" || ui_error 'Unable to resolve the main script dir'
   fi
 
-  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath' && test -n "${SCRIPT_DIR-}"; then
+  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath' && test -n "${MAIN_DIR-}"; then
     # Only on Bash under Windows
-    SCRIPT_DIR="$(cygpath -m -l -- "${SCRIPT_DIR:?}")" || ui_error 'Unable to convert the main script dir'
+    MAIN_DIR="$(cygpath -m -l -- "${MAIN_DIR:?}")" || ui_error 'Unable to convert the main script dir'
   fi
 
-  test -n "${SCRIPT_DIR-}" || ui_error 'SCRIPT_DIR env var is empty'
-  TOOLS_DIR="${SCRIPT_DIR:?}/tools/${PLATFORM:?}"
-  MODULE_NAME="$(simple_get_prop 'name' "${SCRIPT_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
-  readonly SCRIPT_DIR TOOLS_DIR MODULE_NAME
-  export SCRIPT_DIR TOOLS_DIR MODULE_NAME
+  test -n "${MAIN_DIR-}" || ui_error 'MAIN_DIR env var is empty'
+  TOOLS_DIR="${MAIN_DIR:?}/tools/${PLATFORM:?}"
+  MODULE_NAME="$(simple_get_prop 'name' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
+  readonly MAIN_DIR TOOLS_DIR MODULE_NAME
+  export MAIN_DIR TOOLS_DIR MODULE_NAME
 
   # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && command 1> /dev/null -v 'cygpath'; then
@@ -989,7 +989,7 @@ init_cmdline()
   fi
 
   # Set environment variables
-  UTILS_DIR="${SCRIPT_DIR:?}/utils"
+  UTILS_DIR="${MAIN_DIR:?}/utils"
   UTILS_DATA_DIR="${UTILS_DIR:?}/data"
   readonly UTILS_DIR UTILS_DATA_DIR
   export UTILS_DIR UTILS_DATA_DIR
@@ -1028,16 +1028,16 @@ init_cmdline()
   fi
 
   add_to_path_env "${UTILS_DIR:?}"
-  add_to_path_env "${SCRIPT_DIR:?}"
+  add_to_path_env "${MAIN_DIR:?}"
 
   alias 'dir'='ls'
   alias 'cd..'='cd ..'
   alias 'cd.'='cd .'
   alias 'cls'='reset'
 
-  if test -f "${SCRIPT_DIR:?}/includes/custom-aliases.sh"; then
+  if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
     # shellcheck source=/dev/null
-    . "${SCRIPT_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
+    . "${MAIN_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
   fi
 
   alias build='build.sh'
