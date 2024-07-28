@@ -174,6 +174,11 @@ restore_saved_title_if_exist()
   fi
 }
 
+set_default_title()
+{
+  if test "${1-}" = '0'; then change_title "Command-line: ${0-}"; else change_title "Command-line: ${0-} (${SHLVL-})"; fi
+}
+
 simple_get_prop()
 {
   grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f 2
@@ -973,7 +978,7 @@ init_vars()
 
 init_cmdline()
 {
-  change_title 'Command-line'
+  set_default_title 0
 
   unset PROMPT_COMMAND
   unset PS1
@@ -1059,6 +1064,7 @@ init_cmdline()
   export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
 
   PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
+  #PROMPT_COMMAND='set_default_title'
 }
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
