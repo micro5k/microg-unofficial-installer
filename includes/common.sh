@@ -852,10 +852,10 @@ is_in_path_env()
 
 add_to_path_env()
 {
-  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && command 1> /dev/null -v 'cygpath'; then
+  if test -n "${CYGPATH?}"; then
     # Only on Bash under Windows
     local _path
-    _path="$(cygpath -u -a -- "${1:?}")" || ui_error 'Unable to convert a path in add_to_path_env()'
+    _path="$("${CYGPATH:?}" -u -a -- "${1:?}")" || ui_error 'Unable to convert a path in add_to_path_env()'
     set -- "${_path:?}"
   fi
 
@@ -927,31 +927,15 @@ init_base()
 
   test -n "${MAIN_DIR-}" || ui_error 'MAIN_DIR env var is empty'
 
-  readonly MAIN_DIR
-}
+  TOOLS_DIR="${MAIN_DIR:?}/tools/${PLATFORM:?}"
 
-init_vars()
-{
-  MODULE_NAME="$(simple_get_prop 'name' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
-  readonly MODULE_NAME
-  export MODULE_NAME
-
-  if test -n "${CYGPATH?}" && test "${TMPDIR:-${TMP:-${TEMP-}}}" = '/tmp'; then
-    # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
-    TMPDIR="$(cygpath -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || ui_error 'Failed to retrieve the temp directory'
-    export TMPDIR
-
-    TMP="${TMPDIR:?}"
-    TEMP="${TMPDIR:?}"
-  fi
+  readonly MAIN_DIR TOOLS_DIR
 }
 
 init_path()
 {
   test "${IS_PATH_INITIALIZED:-false}" = 'false' || return
   readonly IS_PATH_INITIALIZED='true'
-
-  TOOLS_DIR="${MAIN_DIR:?}/tools/${PLATFORM:?}"
   if is_in_path_env "${TOOLS_DIR:?}"; then return; fi
 
   if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
@@ -962,6 +946,22 @@ init_path()
 
   remove_duplicates_from_path_env
   add_to_path_env "${TOOLS_DIR:?}"
+}
+
+init_vars()
+{
+  MODULE_NAME="$(simple_get_prop 'name' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
+  readonly MODULE_NAME
+  export MODULE_NAME
+
+  if test -n "${CYGPATH?}" && test "${TMPDIR:-${TMP:-${TEMP-}}}" = '/tmp'; then
+    # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
+    TMPDIR="$("${CYGPATH:?}" -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || ui_error 'Unable to convert the temp directory'
+    export TMPDIR
+
+    TMP="${TMPDIR:?}"
+    TEMP="${TMPDIR:?}"
+  fi
 }
 
 init_cmdline()
@@ -1066,10 +1066,9 @@ fi
 detect_os
 export PLATFORM IS_BUSYBOX PATHSEP CYGPATH
 init_base
-export MAIN_DIR
-init_vars
+export MAIN_DIR TOOLS_DIR
 init_path
-export TOOLS_DIR
+init_vars
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
   unset DO_INIT_CMDLINE
