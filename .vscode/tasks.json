@@ -5,6 +5,7 @@
 
     "version": "2.0.0",
     "presentation": {
+        "reveal": "always",
         "revealProblems": "onProblem"
     },
     "tasks": [
@@ -83,7 +84,9 @@
             ],
             "isFullBuild": true,
             "presentation": {
-                "panel": "dedicated"
+                "reveal": "never",
+                "panel": "dedicated",
+                "close": true
             }
         }
     ]
