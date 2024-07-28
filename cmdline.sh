@@ -14,7 +14,6 @@ set -u
 }
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
-
   if test -z "${MAIN_DIR-}"; then
     # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
     if test -n "${BASH_SOURCE-}" && MAIN_DIR="$(dirname "${BASH_SOURCE:?}")" && MAIN_DIR="$(realpath "${MAIN_DIR:?}")"; then
@@ -35,8 +34,8 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   export DO_INIT_CMDLINE=1
 
   if test -n "${MAIN_DIR-}"; then
-    bash --init-file "${MAIN_DIR:?}/includes/common.sh"
+    exec bash --init-file "${MAIN_DIR:?}/includes/common.sh"
   else
-    bash --init-file './includes/common.sh'
+    exec bash --init-file './includes/common.sh'
   fi
 fi

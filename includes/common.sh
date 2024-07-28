@@ -975,6 +975,10 @@ init_cmdline()
 {
   change_title 'Command-line'
 
+  unset PROMPT_COMMAND
+  unset PS1
+  if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
+
   if test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${HOME-}"; then
     HOME="$(realpath "${HOME:?}")" || ui_error 'Unable to resolve the home dir'
   fi
@@ -982,12 +986,6 @@ init_cmdline()
     # Only on Bash under Windows
     HOME="$(cygpath -u -- "${HOME:?}")" || ui_error 'Unable to convert the home dir'
   fi
-
-  # Set some shell variables
-  unset PROMPT_COMMAND
-  unset PS1
-  PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
-  if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
 
   # Clean useless directories from the $PATH env
   if test "${PLATFORM?}" = 'win'; then
@@ -1041,6 +1039,7 @@ init_cmdline()
   alias 'cd..'='cd ..'
   alias 'cd.'='cd .'
   alias 'cls'='reset'
+  alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
 
   if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
     # shellcheck source=/dev/null
@@ -1048,6 +1047,7 @@ init_cmdline()
   fi
 
   alias build='build.sh'
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then alias cmdline='cmdline.bat'; else alias cmdline='cmdline.sh'; fi
 
   if test "${PLATFORM:?}" = 'win'; then
     export BB_FIX_BACKSLASH=1
@@ -1057,6 +1057,8 @@ init_cmdline()
   export PATH_SEPARATOR="${PATHSEP:?}"
   export DIRECTORY_SEPARATOR='/'
   export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
+
+  PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
 }
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
