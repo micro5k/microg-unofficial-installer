@@ -156,27 +156,36 @@ detect_os()
 
 change_title()
 {
-  if test "${CI:-false}" = 'false'; then printf '\033]0;%s - %s\007\r' "${1:?}" "${MODULE_NAME:?}" && printf '       %*s   %*s    \r' "${#1}" '' "${#MODULE_NAME}" ''; fi
+  test "${CI:-false}" = 'false' || return
+  A5K_TITLE_IS_DEFAULT='false'
   A5K_LAST_TITLE="${1:?}"
-  export A5K_LAST_TITLE
-}
-
-save_last_title()
-{
-  A5K_SAVED_TITLE="${A5K_LAST_TITLE:-}"
-  export A5K_SAVED_TITLE
-}
-
-restore_saved_title_if_exist()
-{
-  if test -n "${A5K_SAVED_TITLE:-}"; then
-    change_title "${A5K_SAVED_TITLE:?}"
-  fi
+  printf '\033]0;%s - %s\007\r' "${1:?}" "${MODULE_NAME:?}" && printf '       %*s   %*s    \r' "${#1}" '' "${#MODULE_NAME}" ''
 }
 
 set_default_title()
 {
-  if test "${1-}" = '0'; then change_title "Command-line: ${0-}"; else change_title "Command-line: ${0-} (${SHLVL-})"; fi
+  change_title "Command-line: ${0-}"
+  A5K_TITLE_IS_DEFAULT='true'
+}
+
+save_last_title()
+{
+  A5K_SAVED_TITLE="${A5K_LAST_TITLE-}"
+}
+
+restore_saved_title_if_exist()
+{
+  if test -n "${A5K_SAVED_TITLE-}"; then
+    change_title "${A5K_SAVED_TITLE:?}"
+    A5K_SAVED_TITLE=''
+  fi
+}
+
+_update_title()
+{
+  test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return
+  test -t 2 || return
+  printf 1>&2 '\033]0;%s\007\r' "Command-line: ${1?} - ${MODULE_NAME?}" && printf 1>&2 '    %*s                 %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
 }
 
 simple_get_prop()
@@ -978,7 +987,10 @@ init_vars()
 
 init_cmdline()
 {
-  set_default_title 0
+  if test "${A5K_TITLE_IS_DEFAULT-}" != 'false' ; then set_default_title; fi
+
+  export A5K_TITLE_IS_DEFAULT
+  export A5K_LAST_TITLE
 
   unset PROMPT_COMMAND
   unset PS1
@@ -1063,8 +1075,10 @@ init_cmdline()
   export DIRECTORY_SEPARATOR='/'
   export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
 
-  PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
-  #PROMPT_COMMAND='set_default_title'
+  if test "${CI:-false}" = 'false'; then
+    PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
+    PROMPT_COMMAND='_update_title "${0-} (${SHLVL-})"'
+  fi
 }
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
