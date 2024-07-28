@@ -96,7 +96,7 @@ compare_start_uname()
   return 1 # NOT found
 }
 
-detect_os()
+detect_os_and_other_things()
 {
   if test -n "${PLATFORM-}"; then return; fi
 
@@ -948,6 +948,15 @@ init_base()
 
   test -n "${MAIN_DIR-}" || ui_error 'MAIN_DIR env var is empty'
 
+  if test -n "${CYGPATH?}" && test "${TMPDIR:-${TMP:-${TEMP-}}}" = '/tmp'; then
+    # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
+    TMPDIR="$("${CYGPATH:?}" -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || ui_error 'Unable to convert the temp directory'
+    export TMPDIR
+
+    TMP="${TMPDIR:?}"
+    TEMP="${TMPDIR:?}"
+  fi
+
   TOOLS_DIR="${MAIN_DIR:?}/tools/${PLATFORM:?}"
 
   readonly MAIN_DIR TOOLS_DIR
@@ -960,7 +969,6 @@ init_path()
   if is_in_path_env "${TOOLS_DIR:?}"; then return; fi
 
   if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
-
   # On Bash under Windows (for example the one included inside Git for Windows) we need to move '/usr/bin'
   # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then move_to_begin_of_path_env '/usr/bin'; fi
@@ -974,15 +982,6 @@ init_vars()
   MODULE_NAME="$(simple_get_prop 'name' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
   readonly MODULE_NAME
   export MODULE_NAME
-
-  if test -n "${CYGPATH?}" && test "${TMPDIR:-${TMP:-${TEMP-}}}" = '/tmp'; then
-    # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
-    TMPDIR="$("${CYGPATH:?}" -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || ui_error 'Unable to convert the temp directory'
-    export TMPDIR
-
-    TMP="${TMPDIR:?}"
-    TEMP="${TMPDIR:?}"
-  fi
 }
 
 init_cmdline()
@@ -1093,7 +1092,7 @@ if test "${DO_INIT_CMDLINE:-0}" != '0'; then
 fi
 
 # Set environment variables
-detect_os
+detect_os_and_other_things
 export PLATFORM IS_BUSYBOX PATHSEP CYGPATH
 init_base
 export MAIN_DIR TOOLS_DIR

@@ -40,12 +40,14 @@ show_cmdline()
   printf '\n'
 }
 
-detect_os()
+detect_os_and_other_things()
 {
   if test -n "${PLATFORM-}"; then return; fi
 
   PLATFORM="$(uname | tr -- '[:upper:]' '[:lower:]')"
   IS_BUSYBOX='false'
+  PATHSEP=':'
+  CYGPATH=''
 
   case "${PLATFORM?}" in
     'linux') ;;   # Returned by both Linux and Android, Android will be identified later in the function
@@ -85,17 +87,15 @@ detect_os()
     esac
   fi
 
-  readonly PLATFORM IS_BUSYBOX
-  export PLATFORM IS_BUSYBOX
-}
-
-detect_path_sep()
-{
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then
-    printf ';\n'
-  else
-    printf ':\n'
+    PATHSEP=';'
   fi
+
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && PATH="/usr/bin${PATHSEP:?}${PATH-}" command 1> /dev/null -v 'cygpath'; then
+    CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)" || fail_with_msg 'Unable to find the path of cygpath'
+  fi
+
+  readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH
 }
 
 is_in_path_env()
@@ -109,10 +109,10 @@ is_in_path_env()
 
 add_to_path_env()
 {
-  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && command 1> /dev/null -v 'cygpath'; then
+  if test -n "${CYGPATH?}"; then
     # Only on Bash under Windows
     local _path
-    _path="$(cygpath -u -a -- "${1:?}")" || fail_with_msg 'Unable to convert a path in add_to_path_env()'
+    _path="$("${CYGPATH:?}" -u -a -- "${1:?}")" || fail_with_msg 'Unable to convert a path in add_to_path_env()'
     set -- "${_path:?}"
   fi
 
@@ -143,7 +143,6 @@ init_path()
   readonly IS_PATH_INITIALIZED='true'
 
   if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
-
   # On Bash under Windows (for example the one included inside Git for Windows) we need to move '/usr/bin'
   # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then move_to_begin_of_path_env '/usr/bin'; fi
@@ -252,9 +251,16 @@ _backup_path="${PATH:?}"
 uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
 # Set variables that we need
-detect_os
-if test -z "${PATHSEP-}"; then PATHSEP="$(detect_path_sep)"; fi
-readonly PATHSEP
+detect_os_and_other_things
+
+if test -n "${CYGPATH?}" && test "${TMPDIR:-${TMP:-${TEMP-}}}" = '/tmp'; then
+  # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
+  TMPDIR="$("${CYGPATH:?}" -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || fail_with_msg 'Unable to convert the temp directory'
+  export TMPDIR
+
+  TMP="${TMPDIR:?}"
+  TEMP="${TMPDIR:?}"
+fi
 
 # Get dir of this script
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
