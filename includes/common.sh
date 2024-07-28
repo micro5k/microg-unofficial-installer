@@ -887,10 +887,10 @@ remove_from_path_env()
 {
   local _path
 
-  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath'; then
+  if test -n "${CYGPATH?}"; then
     # Only on Bash under Windows
     local _single_path
-    _single_path="$(cygpath -u -- "${1:?}")" || ui_error 'Unable to convert a path in remove_from_path_env()'
+    _single_path="$("${CYGPATH:?}" -u -- "${1:?}")" || ui_error 'Unable to convert a path in remove_from_path_env()'
     set -- "${_single_path:?}"
   fi
 
@@ -987,22 +987,20 @@ init_vars()
 
 init_cmdline()
 {
-  if test "${A5K_TITLE_IS_DEFAULT-}" != 'false' ; then set_default_title; fi
-
-  export A5K_TITLE_IS_DEFAULT
-  export A5K_LAST_TITLE
-
   unset PROMPT_COMMAND
   unset PS1
-  if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
+
+  if test "${A5K_TITLE_IS_DEFAULT-}" != 'false' ; then set_default_title; fi
 
   if test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${HOME-}"; then
     HOME="$(realpath "${HOME:?}")" || ui_error 'Unable to resolve the home dir'
   fi
-  if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath' && test -n "${HOME-}"; then
+  if test -n "${CYGPATH?}" && test -n "${HOME-}"; then
     # Only on Bash under Windows
-    HOME="$(cygpath -u -- "${HOME:?}")" || ui_error 'Unable to convert the home dir'
+    HOME="$("${CYGPATH:?}" -u -- "${HOME:?}")" || ui_error 'Unable to convert the home dir'
   fi
+
+  if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
 
   # Clean useless directories from the $PATH env
   if test "${PLATFORM?}" = 'win'; then
@@ -1031,9 +1029,9 @@ init_cmdline()
   fi
 
   if test -n "${ANDROID_SDK_ROOT-}"; then
-    if test "${PLATFORM:?}" = 'win' && test "${PATHSEP:?}" = ':' && command 1> /dev/null -v 'cygpath'; then
+    if test -n "${CYGPATH?}"; then
       # Only on Bash under Windows
-      ANDROID_SDK_ROOT="$(cygpath -m -l -a -- "${ANDROID_SDK_ROOT:?}")" || ui_error 'Unable to convert the Android SDK dir'
+      ANDROID_SDK_ROOT="$("${CYGPATH:?}" -m -l -a -- "${ANDROID_SDK_ROOT:?}")" || ui_error 'Unable to convert the Android SDK dir'
     fi
 
     add_to_path_env "${ANDROID_SDK_ROOT:?}/platform-tools"
@@ -1070,6 +1068,9 @@ init_cmdline()
     export BB_FIX_BACKSLASH=1
     export PATHEXT="${PATHEXT:-.BAT};.SH"
   fi
+
+  export A5K_TITLE_IS_DEFAULT
+  export A5K_LAST_TITLE
 
   export PATH_SEPARATOR="${PATHSEP:?}"
   export DIRECTORY_SEPARATOR='/'
