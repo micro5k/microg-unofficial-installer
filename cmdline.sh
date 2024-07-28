@@ -16,7 +16,6 @@ set -u
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   unset STARTED_FROM_BATCH_FILE
   unset IS_PATH_INITIALIZED
-  if test "${TERM_PROGRAM-}" = 'mintty'; then unset TERM_PROGRAM; fi
 
   if test -z "${MAIN_DIR-}"; then
     # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
@@ -27,10 +26,13 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     fi
   fi
 
-  test -n "${HOME-}" && test -z "${USER_HOME-}" && export USER_HOME="${HOME:?}"
+  if test -n "${MAIN_DIR-}" && test -z "${USER_HOME-}"; then
+    if test "${TERM_PROGRAM-}" = 'mintty'; then unset TERM_PROGRAM; fi
+    export USER_HOME="${HOME-}"
+    export HOME="${MAIN_DIR:?}"
+  fi
 
   if test -n "${MAIN_DIR-}"; then
-    export HOME="${MAIN_DIR:?}"
     DO_INIT_CMDLINE=1 bash --init-file "${MAIN_DIR:?}/includes/common.sh"
   else
     DO_INIT_CMDLINE=1 bash --init-file './includes/common.sh'
