@@ -916,8 +916,15 @@ remove_duplicates_from_path_env()
 
 init_base()
 {
+  local _main_dir
+
   if test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${MAIN_DIR-}"; then
     MAIN_DIR="$(realpath "${MAIN_DIR:?}")" || ui_error 'Unable to resolve the main dir'
+  fi
+
+  # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
+  if test -z "${MAIN_DIR-}" && test -n "${BASH_SOURCE-}" && _main_dir="$(dirname "${BASH_SOURCE:?}")" && _main_dir="$(realpath "${_main_dir:?}/..")"; then
+    MAIN_DIR="${_main_dir:?}"
   fi
 
   if test -n "${CYGPATH?}" && test -n "${MAIN_DIR-}"; then
