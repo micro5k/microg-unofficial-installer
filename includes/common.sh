@@ -156,7 +156,7 @@ detect_os_and_other_things()
 
 change_title()
 {
-  test "${CI:-false}" = 'false' || return
+  test "${CI:-false}" = 'false' || return 0
   A5K_TITLE_IS_DEFAULT='false'
   A5K_LAST_TITLE="${1:?}"
   printf '\033]0;%s - %s\007\r' "${1:?}" "${MODULE_NAME:?}" && printf '       %*s   %*s    \r' "${#1}" '' "${#MODULE_NAME}" ''
@@ -183,8 +183,8 @@ restore_saved_title_if_exist()
 
 _update_title()
 {
-  test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return
-  test -t 2 || return
+  test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return 0
+  test -t 2 || return 0
   printf 1>&2 '\033]0;%s\007\r' "Command-line: ${1?} - ${MODULE_NAME?}" && printf 1>&2 '    %*s                 %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
 }
 
