@@ -227,9 +227,9 @@ if test "${ENV_RESETTED:-false}" = 'false'; then
   THIS_SCRIPT="$(realpath "${0:?}" 2> /dev/null)" || fail_with_msg 'Failed to get script filename'
 
   if test "${COVERAGE:-false}" = 'false'; then
-    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${TMP:-${TEMP:?}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   else
-    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${TMP:-${TEMP:?}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   fi
   exit 127
 fi
