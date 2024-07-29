@@ -152,7 +152,7 @@ init_path()
 
 create_junction()
 {
-  if test "${uname_o_saved}" != 'MS/Windows'; then return 1; fi
+  if test "${PLATFORM:?}" != 'win' || test "${IS_BUSYBOX:?}" = 'false'; then return 1; fi 
   jn -- "${1:?}" "${2:?}"
 }
 
@@ -225,13 +225,11 @@ if test "${ENV_RESETTED:-false}" = 'false'; then
   if test "${#}" -eq 0; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
 
   THIS_SCRIPT="$(realpath "${0:?}" 2> /dev/null)" || fail_with_msg 'Failed to get script filename'
-  # Create the temp dir (must be done before resetting environment)
-  OUR_TEMP_DIR="$(mktemp -d -t ANDR-RECOV-XXXXXX)" || fail_with_msg 'Failed to create our temp dir'
 
   if test "${COVERAGE:-false}" = 'false'; then
-    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${TMP:-${TEMP:?}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   else
-    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${TMP:-${TEMP:?}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   fi
   exit 127
 fi
@@ -243,19 +241,20 @@ if test -z "${FORCE_HW_BUTTONS-}"; then unset FORCE_HW_BUTTONS; fi
 if test -z "${CI-}"; then unset CI; fi
 if test -z "${SHELLOPTS-}"; then unset SHELLOPTS; fi
 _backup_path="${PATH:?}"
-uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
 
 # Set variables that we need
 detect_os_and_other_things
 
-if test -n "${CYGPATH?}" && test "${TMPDIR:-${TMP:-${TEMP-}}}" = '/tmp'; then
+if test -n "${CYGPATH?}" && test "${TMPDIR?}" = '/tmp'; then
   # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
-  TMPDIR="$("${CYGPATH:?}" -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || fail_with_msg 'Unable to convert the temp directory'
+  TMPDIR="$("${CYGPATH:?}" -m -a -l -- '/tmp')" || fail_with_msg 'Unable to convert the temp directory'
   export TMPDIR
-
-  TMP="${TMPDIR:?}"
-  TEMP="${TMPDIR:?}"
 fi
+
+# Create our temp dir (must be done with a valid TMPDIR env var)
+OUR_TEMP_DIR="$(mktemp -d -t ANDR-RECOV-XXXXXX)" || fail_with_msg 'Failed to create our temp dir'
+readonly OUR_TEMP_DIR
+unset TMPDIR
 
 # Get dir of this script
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
@@ -299,7 +298,7 @@ _android_sys="${BASE_SIMULATION_PATH}/system"
 _android_data="${BASE_SIMULATION_PATH}/data"
 _android_ext_stor="${BASE_SIMULATION_PATH}/sdcard0"
 _android_sec_stor="${BASE_SIMULATION_PATH}/sdcard1"
-_android_path="${_our_overrider_dir}:${BASE_SIMULATION_PATH}/sbin:${_android_sys}/bin"
+_android_path="${_our_overrider_dir}:${_android_sys:?}/bin"
 _android_lib_path=".:${BASE_SIMULATION_PATH}/sbin"
 
 # Simulate the Android recovery environment inside the temp folder
@@ -395,7 +394,7 @@ simulate_env()
   export RS_OVERRIDE_SCRIPT="${_our_overrider_script:?}"
   export TEST_INSTALL=true
 
-  if test "${uname_o_saved:?}" != 'MS/Windows' && test "${uname_o_saved:?}" != 'Msys'; then
+  if test "${PLATFORM:?}" != 'win'; then
     "${CUSTOM_BUSYBOX:?}" --install -s "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
   else
     "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
@@ -413,6 +412,7 @@ restore_env()
   local _backup_ifs
 
   export PATH="${_backup_path}"
+  unset TMPDIR
   unset BB_OVERRIDE_APPLETS
   unset -f -- mount umount chown su sudo
 
@@ -436,7 +436,7 @@ if test -e "/proc/self/fd/${recovery_fd:?}"; then fail_with_msg 'Recovery FD alr
 mkdir -p "${recovery_logs_dir:?}"
 touch "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-output-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" "${recovery_logs_dir:?}/recovery-stderr.log"
 
-if test "${uname_o_saved:?}" != 'MS/Windows' && test "${uname_o_saved:?}" != 'Msys'; then # ToDO: Rewrite this code
+if test "${PLATFORM:?}" != 'win'; then
   sudo chattr +aAd "${recovery_logs_dir:?}/recovery-raw.log" || fail_with_msg "chattr failed on 'recovery-raw.log'"
   sudo chattr +aAd "${recovery_logs_dir:?}/recovery-output-raw.log" || fail_with_msg "chattr failed on 'recovery-output-raw.log'"
   sudo chattr +aAd "${recovery_logs_dir:?}/recovery-stdout.log" || fail_with_msg "chattr failed on 'recovery-stdout.log'"
@@ -481,7 +481,7 @@ flash_zips "${@}" || STATUS="${?}"
 # shellcheck disable=SC3023
 exec 99>&-
 
-if test "${uname_o_saved:?}" != 'MS/Windows' && test "${uname_o_saved:?}" != 'Msys'; then # ToDO: Rewrite this code
+if test "${PLATFORM:?}" != 'win'; then
   sudo chattr -a "${recovery_logs_dir:?}/recovery-raw.log" || fail_with_msg "chattr failed on 'recovery-raw.log'"
   sudo chattr -a "${recovery_logs_dir:?}/recovery-output-raw.log" || fail_with_msg "chattr failed on 'recovery-output-raw.log'"
   sudo chattr -a "${recovery_logs_dir:?}/recovery-stdout.log" || fail_with_msg "chattr failed on 'recovery-stdout.log'"
@@ -525,7 +525,6 @@ TZ=UTC ls -A -R -F -l -n --color='never' -- 'root' 1> "${recovery_logs_dir:?}/in
 
 # Final cleanup
 cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
-unset TMPDIR
 rm -rf -- "${OUR_TEMP_DIR:?}" &
 set +e
 if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
