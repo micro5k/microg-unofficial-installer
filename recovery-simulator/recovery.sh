@@ -152,7 +152,7 @@ init_path()
 
 create_junction()
 {
-  if test "${PLATFORM:?}" != 'win' || test "${IS_BUSYBOX:?}" = 'false'; then return 1; fi 
+  if test "${PLATFORM:?}" != 'win' || test "${IS_BUSYBOX:?}" = 'false'; then return 1; fi
   jn -- "${1:?}" "${2:?}"
 }
 
@@ -287,23 +287,23 @@ mkdir -p -- "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to create our temp dir'
 rm -rf -- "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
 # Setup the needed variables
-BASE_SIMULATION_PATH="${OUR_TEMP_DIR:?}/root"                           # Internal var
+_base_simulation_path="${OUR_TEMP_DIR:?}/root-dir"                      # Internal var
 _our_overrider_dir="${THIS_SCRIPT_DIR:?}/override"                      # Internal var
 _our_overrider_script="${THIS_SCRIPT_DIR:?}/inc/configure-overrides.sh" # Internal var
 _init_dir="$(pwd)" || fail_with_msg 'Failed to read the current dir'
 
 # Configure the Android recovery environment variables (they will be used later)
-_android_tmp="${BASE_SIMULATION_PATH:?}/tmp"
-_android_sys="${BASE_SIMULATION_PATH:?}/system"
-_android_data="${BASE_SIMULATION_PATH:?}/data"
-_android_ext_stor="${BASE_SIMULATION_PATH:?}/sdcard0"
-_android_sec_stor="${BASE_SIMULATION_PATH:?}/sdcard1"
+_android_tmp="${_base_simulation_path:?}/tmp"
+_android_sys="${_base_simulation_path:?}/system"
+_android_data="${_base_simulation_path:?}/data"
+_android_ext_stor="${_base_simulation_path:?}/sdcard0"
+_android_sec_stor="${_base_simulation_path:?}/sdcard1"
 _android_path="${_our_overrider_dir:?}:${_android_sys:?}/bin"
-_android_lib_path=".:${BASE_SIMULATION_PATH:?}/sbin"
+_android_lib_path=".:${_base_simulation_path:?}/sbin"
 
 # Simulate the Android recovery environment inside the temp folder
-mkdir -p "${BASE_SIMULATION_PATH:?}"
-cd "${BASE_SIMULATION_PATH:?}" || fail_with_msg 'Failed to change dir to the base simulation path'
+mkdir -p "${_base_simulation_path:?}"
+cd "${_base_simulation_path:?}" || fail_with_msg 'Failed to change dir to the base simulation path'
 mkdir -p "${_android_tmp:?}"
 mkdir -p "${_android_sys:?}"
 mkdir -p "${_android_sys:?}/addon.d"
@@ -315,8 +315,8 @@ mkdir -p "${_android_data:?}"
 mkdir -p "${_android_ext_stor:?}"
 mkdir -p "${_android_sec_stor:?}"
 touch "${_android_tmp:?}/recovery.log"
-link_folder "${BASE_SIMULATION_PATH:?}/sbin" "${_android_sys:?}/bin"
-link_folder "${BASE_SIMULATION_PATH:?}/sdcard" "${_android_ext_stor:?}"
+link_folder "${_base_simulation_path:?}/sbin" "${_android_sys:?}/bin"
+link_folder "${_base_simulation_path:?}/sdcard" "${_android_ext_stor:?}"
 
 {
   echo 'ro.build.characteristics=phone,emulator'
@@ -331,11 +331,11 @@ link_folder "${BASE_SIMULATION_PATH:?}/sdcard" "${_android_ext_stor:?}"
   echo 'ro.product.manufacturer=ale5000'
 } 1> "${_android_sys:?}/build.prop"
 
-touch "${BASE_SIMULATION_PATH:?}/AndroidManifest.xml"
-printf 'a\0n\0d\0r\0o\0i\0d\0.\0p\0e\0r\0m\0i\0s\0s\0i\0o\0n\0.\0F\0A\0K\0E\0_\0P\0A\0C\0K\0A\0G\0E\0_\0S\0I\0G\0N\0A\0T\0U\0R\0E\0' 1> "${BASE_SIMULATION_PATH:?}/AndroidManifest.xml"
+touch "${_base_simulation_path:?}/AndroidManifest.xml"
+printf 'a\0n\0d\0r\0o\0i\0d\0.\0p\0e\0r\0m\0i\0s\0s\0i\0o\0n\0.\0F\0A\0K\0E\0_\0P\0A\0C\0K\0A\0G\0E\0_\0S\0I\0G\0N\0A\0T\0U\0R\0E\0' 1> "${_base_simulation_path:?}/AndroidManifest.xml"
 mkdir -p "${_android_sys:?}/framework"
 zip -D -9 -X -UN=n -nw -q "${_android_sys:?}/framework/framework-res.apk" 'AndroidManifest.xml' || fail_with_msg 'Failed compressing framework-res.apk'
-rm -f -- "${BASE_SIMULATION_PATH:?}/AndroidManifest.xml"
+rm -f -- "${_base_simulation_path:?}/AndroidManifest.xml"
 
 cp -pf -- "${THIS_SCRIPT_DIR:?}/updater.sh" "${_android_tmp:?}/updater" || fail_with_msg 'Failed to copy the updater script'
 chmod +x "${_android_tmp:?}/updater" || fail_with_msg "chmod failed on '${_android_tmp?}/updater'"
@@ -515,13 +515,13 @@ parse_recovery_output true "${recovery_logs_dir:?}/recovery-output-raw.log" "${r
 parse_recovery_output false "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery.log"
 
 # List installed files
-rm -f -- "${BASE_SIMULATION_PATH:?}/sbin" || true
-rm -f -- "${BASE_SIMULATION_PATH:?}/sdcard" || true
+rm -f -- "${_base_simulation_path:?}/sbin" || true
+rm -f -- "${_base_simulation_path:?}/sdcard" || true
 rm -f -- "${_android_sys:?}/build.prop" || true
 rm -f -- "${_android_sys:?}/framework/framework-res.apk" || true
 cd "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to change dir to our temp dir'
-TZ=UTC find "${BASE_SIMULATION_PATH:?}" -exec touch -c -h -t '202001010000' -- '{}' '+' || true
-TZ=UTC ls -A -R -F -l -n --color='never' -- 'root' 1> "${recovery_logs_dir:?}/installed-files.log" || true
+TZ=UTC find "${_base_simulation_path:?}" -exec touch -c -h -t '202001010000' -- '{}' '+' || true
+TZ=UTC ls -A -R -F -l -n --color='never' -- 'root-dir' 1> "${recovery_logs_dir:?}/installed-files.log" || true
 
 # Final cleanup
 cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
