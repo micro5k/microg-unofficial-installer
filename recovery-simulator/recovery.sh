@@ -287,34 +287,34 @@ mkdir -p -- "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to create our temp dir'
 rm -rf -- "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
 # Setup the needed variables
-BASE_SIMULATION_PATH="${OUR_TEMP_DIR}/root"                           # Internal var
-_our_overrider_dir="${THIS_SCRIPT_DIR}/override"                      # Internal var
-_our_overrider_script="${THIS_SCRIPT_DIR}/inc/configure-overrides.sh" # Internal var
+BASE_SIMULATION_PATH="${OUR_TEMP_DIR:?}/root"                           # Internal var
+_our_overrider_dir="${THIS_SCRIPT_DIR:?}/override"                      # Internal var
+_our_overrider_script="${THIS_SCRIPT_DIR:?}/inc/configure-overrides.sh" # Internal var
 _init_dir="$(pwd)" || fail_with_msg 'Failed to read the current dir'
 
 # Configure the Android recovery environment variables (they will be used later)
-_android_tmp="${BASE_SIMULATION_PATH}/tmp"
-_android_sys="${BASE_SIMULATION_PATH}/system"
-_android_data="${BASE_SIMULATION_PATH}/data"
-_android_ext_stor="${BASE_SIMULATION_PATH}/sdcard0"
-_android_sec_stor="${BASE_SIMULATION_PATH}/sdcard1"
-_android_path="${_our_overrider_dir}:${_android_sys:?}/bin"
-_android_lib_path=".:${BASE_SIMULATION_PATH}/sbin"
+_android_tmp="${BASE_SIMULATION_PATH:?}/tmp"
+_android_sys="${BASE_SIMULATION_PATH:?}/system"
+_android_data="${BASE_SIMULATION_PATH:?}/data"
+_android_ext_stor="${BASE_SIMULATION_PATH:?}/sdcard0"
+_android_sec_stor="${BASE_SIMULATION_PATH:?}/sdcard1"
+_android_path="${_our_overrider_dir:?}:${_android_sys:?}/bin"
+_android_lib_path=".:${BASE_SIMULATION_PATH:?}/sbin"
 
 # Simulate the Android recovery environment inside the temp folder
-mkdir -p "${BASE_SIMULATION_PATH}"
-cd "${BASE_SIMULATION_PATH}" || fail_with_msg 'Failed to change dir to the base simulation path'
-mkdir -p "${_android_tmp}"
-mkdir -p "${_android_sys}"
-mkdir -p "${_android_sys}/addon.d"
-mkdir -p "${_android_sys}/etc"
-mkdir -p "${_android_sys}/priv-app"
-mkdir -p "${_android_sys}/app"
-mkdir -p "${_android_sys}/bin"
-mkdir -p "${_android_data}"
-mkdir -p "${_android_ext_stor}"
-mkdir -p "${_android_sec_stor}"
-touch "${_android_tmp}/recovery.log"
+mkdir -p "${BASE_SIMULATION_PATH:?}"
+cd "${BASE_SIMULATION_PATH:?}" || fail_with_msg 'Failed to change dir to the base simulation path'
+mkdir -p "${_android_tmp:?}"
+mkdir -p "${_android_sys:?}"
+mkdir -p "${_android_sys:?}/addon.d"
+mkdir -p "${_android_sys:?}/etc"
+mkdir -p "${_android_sys:?}/priv-app"
+mkdir -p "${_android_sys:?}/app"
+mkdir -p "${_android_sys:?}/bin"
+mkdir -p "${_android_data:?}"
+mkdir -p "${_android_ext_stor:?}"
+mkdir -p "${_android_sec_stor:?}"
+touch "${_android_tmp:?}/recovery.log"
 link_folder "${BASE_SIMULATION_PATH:?}/sbin" "${_android_sys:?}/bin"
 link_folder "${BASE_SIMULATION_PATH:?}/sdcard" "${_android_ext_stor:?}"
 
@@ -338,7 +338,7 @@ zip -D -9 -X -UN=n -nw -q "${_android_sys:?}/framework/framework-res.apk" 'Andro
 rm -f -- "${BASE_SIMULATION_PATH:?}/AndroidManifest.xml"
 
 cp -pf -- "${THIS_SCRIPT_DIR:?}/updater.sh" "${_android_tmp:?}/updater" || fail_with_msg 'Failed to copy the updater script'
-chmod +x "${_android_tmp:?}/updater" || fail_with_msg "chmod failed on '${_android_tmp}/updater'"
+chmod +x "${_android_tmp:?}/updater" || fail_with_msg "chmod failed on '${_android_tmp?}/updater'"
 
 if test "${COVERAGE:-false}" != 'false'; then
   cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
@@ -411,7 +411,7 @@ restore_env()
 {
   local _backup_ifs
 
-  export PATH="${_backup_path}"
+  export PATH="${_backup_path?}"
   unset TMPDIR
   unset BB_OVERRIDE_APPLETS
   unset -f -- mount umount chown su sudo
@@ -520,11 +520,11 @@ rm -f -- "${BASE_SIMULATION_PATH:?}/sdcard" || true
 rm -f -- "${_android_sys:?}/build.prop" || true
 rm -f -- "${_android_sys:?}/framework/framework-res.apk" || true
 cd "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to change dir to our temp dir'
-TZ=UTC find "${BASE_SIMULATION_PATH}" -exec touch -c -h -t '202001010000' -- '{}' '+' || true
+TZ=UTC find "${BASE_SIMULATION_PATH:?}" -exec touch -c -h -t '202001010000' -- '{}' '+' || true
 TZ=UTC ls -A -R -F -l -n --color='never' -- 'root' 1> "${recovery_logs_dir:?}/installed-files.log" || true
 
 # Final cleanup
 cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
 rm -rf -- "${OUR_TEMP_DIR:?}" &
 set +e
-if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
+if test "${STATUS:?}" -ne 0; then exit "${STATUS:?}"; fi

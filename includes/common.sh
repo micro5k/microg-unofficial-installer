@@ -948,11 +948,12 @@ init_base()
 
   test -n "${MAIN_DIR-}" || ui_error 'MAIN_DIR env var is empty'
 
-  if test -n "${CYGPATH?}" && test "${TMPDIR:-${TMP:-${TEMP-}}}" = '/tmp'; then
-    # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
-    TMPDIR="$("${CYGPATH:?}" -m -a -l -- "${TMPDIR:-${TMP:-${TEMP:?}}}")" || ui_error 'Unable to convert the temp directory'
-    export TMPDIR
+  TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}"
+  export TMPDIR
 
+  if test -n "${CYGPATH?}" && test "${TMPDIR?}" = '/tmp'; then
+    # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
+    TMPDIR="$("${CYGPATH:?}" -m -a -l -- '/tmp')" || ui_error 'Unable to convert the temp directory'
     TMP="${TMPDIR:?}"
     TEMP="${TMPDIR:?}"
   fi
