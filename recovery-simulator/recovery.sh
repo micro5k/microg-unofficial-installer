@@ -360,7 +360,7 @@ _is_export_f_supported=0
 override_command()
 {
   if ! test -e "${_our_overrider_dir:?}/${1:?}"; then return 1; fi
-  rm -f -- "${_android_sys:?}/bin/${1:?}"
+  rm -f -- "${_android_sys:?}/bin/${1:?}" || return "${?}"
 
   unset -f -- "${1:?}"
   eval " ${1:?}() { '${_our_overrider_dir:?}/${1:?}' \"\${@}\"; }" || return "${?}" # The folder expands when defined, not when used
@@ -378,6 +378,18 @@ simulate_env()
     cp -pf -- "${COVERAGE:?}" "${_android_sys:?}/bin/bashcov" || fail_with_msg 'Failed to copy Bashcov'
   fi
 
+  if test "${PLATFORM:?}" != 'win'; then
+    "${_android_sys:?}/bin/busybox" --install -s "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
+  else
+    "${_android_sys:?}/bin/busybox" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
+  fi
+
+  override_command mount || return 123
+  override_command umount || return 123
+  override_command chown || return 123
+  override_command su || return 123
+  override_command sudo || return 123
+
   export EXTERNAL_STORAGE="${_android_ext_stor:?}"
   export SECONDARY_STORAGE="${_android_sec_stor:?}"
   export LD_LIBRARY_PATH="${_android_lib_path:?}"
@@ -393,18 +405,6 @@ simulate_env()
   export OVERRIDE_DIR="${_our_overrider_dir:?}"
   export RS_OVERRIDE_SCRIPT="${_our_overrider_script:?}"
   export TEST_INSTALL=true
-
-  if test "${PLATFORM:?}" != 'win'; then
-    "${CUSTOM_BUSYBOX:?}" --install -s "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
-  else
-    "${CUSTOM_BUSYBOX:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
-  fi
-
-  override_command mount || return 123
-  override_command umount || return 123
-  override_command chown || return 123
-  override_command su || return 123
-  override_command sudo || return 123
 }
 
 restore_env()
