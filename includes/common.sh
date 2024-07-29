@@ -990,7 +990,7 @@ init_cmdline()
   unset PROMPT_COMMAND
   unset PS1
 
-  if test "${A5K_TITLE_IS_DEFAULT-}" != 'false' ; then set_default_title; fi
+  if test "${A5K_TITLE_IS_DEFAULT-}" != 'false'; then set_default_title; fi
 
   if test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${HOME-}"; then
     HOME="$(realpath "${HOME:?}")" || ui_error 'Unable to resolve the home dir'

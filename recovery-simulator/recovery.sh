@@ -240,7 +240,6 @@ if test -z "${FORCE_HW_BUTTONS-}"; then unset FORCE_HW_BUTTONS; fi
 
 if test -z "${CI-}"; then unset CI; fi
 if test -z "${SHELLOPTS-}"; then unset SHELLOPTS; fi
-_backup_path="${PATH:?}"
 
 # Set variables that we need
 detect_os_and_other_things
@@ -248,19 +247,23 @@ detect_os_and_other_things
 if test -n "${CYGPATH?}" && test "${TMPDIR?}" = '/tmp'; then
   # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
   TMPDIR="$("${CYGPATH:?}" -m -a -l -- '/tmp')" || fail_with_msg 'Unable to convert the temp directory'
-  export TMPDIR
 fi
 
 # Create our temp dir (must be done with a valid TMPDIR env var)
+export TMPDIR
 OUR_TEMP_DIR="$(mktemp -d -t ANDR-RECOV-XXXXXX)" || fail_with_msg 'Failed to create our temp dir'
 readonly OUR_TEMP_DIR
-unset TMPDIR
 
 # Get dir of this script
 THIS_SCRIPT_DIR="$(dirname "${THIS_SCRIPT:?}")" || fail_with_msg 'Failed to get script dir'
 unset THIS_SCRIPT
 
 init_path
+
+# Backup original variables
+_backup_path="${PATH?}"
+_backup_tmpdir="${TMPDIR?}"
+readonly _backup_path _backup_tmpdir
 
 # Check dependencies
 _our_busybox="$(env -- which -- busybox)" || fail_with_msg 'BusyBox is missing'
@@ -287,19 +290,25 @@ mkdir -p -- "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to create our temp dir'
 rm -rf -- "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
 # Setup the needed variables
-_base_simulation_path="${OUR_TEMP_DIR:?}/root-dir"                      # Internal var
-_our_overrider_dir="${THIS_SCRIPT_DIR:?}/override"                      # Internal var
-_our_overrider_script="${THIS_SCRIPT_DIR:?}/inc/configure-overrides.sh" # Internal var
+_base_simulation_path="${OUR_TEMP_DIR:?}/root-dir"
+_our_overrider_dir="${THIS_SCRIPT_DIR:?}/override"
+_our_overrider_script="${THIS_SCRIPT_DIR:?}/inc/configure-overrides.sh"
 _init_dir="$(pwd)" || fail_with_msg 'Failed to read the current dir'
 
+readonly _base_simulation_path _our_overrider_dir _our_overrider_script _init_dir
+
 # Configure the Android recovery environment variables (they will be used later)
-_android_tmp="${_base_simulation_path:?}/tmp"
-_android_sys="${_base_simulation_path:?}/system"
-_android_data="${_base_simulation_path:?}/data"
 _android_ext_stor="${_base_simulation_path:?}/sdcard0"
 _android_sec_stor="${_base_simulation_path:?}/sdcard1"
-_android_path="${_our_overrider_dir:?}:${_android_sys:?}/bin"
 _android_lib_path=".:${_base_simulation_path:?}/sbin"
+_android_data="${_base_simulation_path:?}/data"
+_android_sys="${_base_simulation_path:?}/system"
+_android_path="${_our_overrider_dir:?}:${_android_sys:?}/bin"
+_android_tmp="${_base_simulation_path:?}/tmp"
+
+_android_busybox="${_android_sys:?}/bin/busybox"
+
+readonly _android_ext_stor _android_sec_stor _android_lib_path _android_data _android_sys _android_path _android_tmp _android_busybox
 
 # Simulate the Android recovery environment inside the temp folder
 mkdir -p "${_base_simulation_path:?}"
@@ -359,10 +368,11 @@ _is_export_f_supported=0
 
 override_command()
 {
-  if ! test -e "${_our_overrider_dir:?}/${1:?}"; then return 1; fi
-  rm -f -- "${_android_sys:?}/bin/${1:?}" || return "${?}"
+  if test ! -e "${_our_overrider_dir:?}/${1:?}"; then return 1; fi
 
-  unset -f -- "${1:?}"
+  rm -f -- "${_android_sys:?}/bin/${1:?}" || return "${?}"
+  unset -f -- "${1:?}" || return "${?}"
+
   eval " ${1:?}() { '${_our_overrider_dir:?}/${1:?}' \"\${@}\"; }" || return "${?}" # The folder expands when defined, not when used
 
   if test "${_is_export_f_supported:?}" -eq 0; then
@@ -373,15 +383,15 @@ override_command()
 
 simulate_env()
 {
-  cp -pf -- "${_our_busybox:?}" "${_android_sys:?}/bin/busybox" || fail_with_msg 'Failed to copy BusyBox'
+  cp -pf -- "${_our_busybox:?}" "${_android_busybox:?}" || fail_with_msg 'Failed to copy BusyBox'
   if test "${COVERAGE:-false}" != 'false'; then
     cp -pf -- "${COVERAGE:?}" "${_android_sys:?}/bin/bashcov" || fail_with_msg 'Failed to copy Bashcov'
   fi
 
   if test "${PLATFORM:?}" != 'win'; then
-    "${_android_sys:?}/bin/busybox" --install -s "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
+    "${_android_busybox:?}" --install -s "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
   else
-    "${_android_sys:?}/bin/busybox" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
+    "${_android_busybox:?}" --install "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
   fi
 
   override_command mount || return 123
@@ -401,7 +411,7 @@ simulate_env()
   export TMPDIR="${_android_tmp:?}"
 
   # Our custom variables
-  export CUSTOM_BUSYBOX="${_android_sys:?}/bin/busybox"
+  export CUSTOM_BUSYBOX="${_android_busybox:?}"
   export OVERRIDE_DIR="${_our_overrider_dir:?}"
   export RS_OVERRIDE_SCRIPT="${_our_overrider_script:?}"
   export TEST_INSTALL=true
@@ -412,7 +422,7 @@ restore_env()
   local _backup_ifs
 
   export PATH="${_backup_path?}"
-  unset TMPDIR
+  export TMPDIR="${_backup_tmpdir?}"
   unset BB_OVERRIDE_APPLETS
   unset -f -- mount umount chown su sudo
 
