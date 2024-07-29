@@ -401,10 +401,7 @@ else
 fi
 
 # Live setup under continuous integration systems doesn't make sense
-# Live setup doesn't work when executed through Gradle
-if test "${CI:-false}" != 'false' || test "${APP_NAME:-false}" = 'Gradle'; then
-  LIVE_SETUP_ALLOWED='false'
-fi
+if test "${CI:-false}" != 'false'; then LIVE_SETUP_ALLOWED='false'; fi
 
 readonly LIVE_SETUP_ALLOWED KEYCHECK_PATH
 export LIVE_SETUP_ALLOWED KEYCHECK_PATH

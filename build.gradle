@@ -150,6 +150,7 @@ tasks.register('installTest', Exec) {
     mustRunAfter build, buildOta, buildOtaOSS
 
     doFirst {
+        environment LIVE_SETUP_ALLOWED: 'false' /* Live setup doesn't work when executed through Gradle */
         environment BB_GLOBBING: '1'
         executable "${projectDir}/recovery-simulator/recovery" + getScriptExt()
         args "${projectDir}/output/*.zip"

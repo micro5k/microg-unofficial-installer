@@ -228,14 +228,10 @@ if test "${ENV_RESETTED:-false}" = 'false'; then
   # Create the temp dir (must be done before resetting environment)
   OUR_TEMP_DIR="$(mktemp -d -t ANDR-RECOV-XXXXXX)" || fail_with_msg 'Failed to create our temp dir'
 
-  if test "${APP_BASE_NAME:-false}" = 'gradlew' || test "${APP_BASE_NAME:-false}" = 'gradlew.'; then
-    APP_NAME='Gradle'
-  fi
-
   if test "${COVERAGE:-false}" = 'false'; then
-    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" APP_NAME="${APP_NAME-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   else
-    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" APP_NAME="${APP_NAME-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   fi
   exit 127
 fi
@@ -245,7 +241,6 @@ if test -z "${LIVE_SETUP_ALLOWED-}"; then unset LIVE_SETUP_ALLOWED; fi
 if test -z "${FORCE_HW_BUTTONS-}"; then unset FORCE_HW_BUTTONS; fi
 
 if test -z "${CI-}"; then unset CI; fi
-if test -z "${APP_NAME-}"; then unset APP_NAME; fi
 if test -z "${SHELLOPTS-}"; then unset SHELLOPTS; fi
 _backup_path="${PATH:?}"
 uname_o_saved="$(uname -o)" || fail_with_msg 'Failed to get uname -o'
