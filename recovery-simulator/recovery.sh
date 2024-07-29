@@ -19,7 +19,7 @@ set -e
 }
 
 # shellcheck disable=SC3028
-case ":${SHELLOPTS:-}:" in
+case ":${SHELLOPTS-}:" in
   *':xtrace:'*) # Auto-enable `set -x` for shells that do NOT support SHELLOPTS
     set -x
     COVERAGE='true'
@@ -233,9 +233,9 @@ if test "${ENV_RESETTED:-false}" = 'false'; then
   fi
 
   if test "${COVERAGE:-false}" = 'false'; then
-    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG:-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED:-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS:-}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" SHELLOPTS="${SHELLOPTS:-}" SHELL="${SHELL:-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" APP_NAME="${APP_NAME-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" bash -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   else
-    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG:-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED:-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS:-}" CI="${CI:-}" APP_NAME="${APP_NAME:-}" SHELLOPTS="${SHELLOPTS:-}" SHELL="${SHELL:-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
+    exec env -i -- ENV_RESETTED=true BB_GLOBBING='0' THIS_SCRIPT="${THIS_SCRIPT:?}" OUR_TEMP_DIR="${OUR_TEMP_DIR:?}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" APP_NAME="${APP_NAME-}" SHELLOPTS="${SHELLOPTS-}" SHELL="${SHELL-}" PATH="${PATH:?}" COVERAGE="true" bashcov -- "${THIS_SCRIPT:?}" "${@}" || fail_with_msg 'failed: exec'
   fi
   exit 127
 fi
@@ -288,7 +288,7 @@ done
 unset param
 
 # Ensure we have a path for the temp dir and empty it (should be already empty, but we must be sure)
-test -n "${OUR_TEMP_DIR:-}" || fail_with_msg 'Failed to get a temp dir'
+test -n "${OUR_TEMP_DIR-}" || fail_with_msg 'Failed to get a temp dir'
 mkdir -p -- "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to create our temp dir'
 rm -rf -- "${OUR_TEMP_DIR:?}"/* || fail_with_msg 'Failed to empty our temp dir'
 
@@ -425,10 +425,10 @@ restore_env()
 
   # Fallback if --uninstall is NOT supported
   {
-    _backup_ifs="${IFS:-}"
+    _backup_ifs="${IFS-}"
     IFS=' '
     find "${_android_sys:?}/bin" -type l -exec sh -c 'bb_path="${1:?}"; shift; if test "$(realpath "${*}")" = "${bb_path:?}"; then rm -f -- "${*}"; fi' _ "${CUSTOM_BUSYBOX:?}" '{}' ';' || true
-    IFS="${_backup_ifs:-}"
+    IFS="${_backup_ifs-}"
 
     rm -f "${CUSTOM_BUSYBOX:?}" || true
   }
