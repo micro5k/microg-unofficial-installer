@@ -426,16 +426,16 @@ restore_env()
   unset BB_OVERRIDE_APPLETS
   unset -f -- mount umount chown su sudo
 
-  "${_our_busybox:?}" 2> /dev/null --uninstall "${CUSTOM_BUSYBOX:?}" || true
+  "${_our_busybox:?}" 2> /dev/null --uninstall "${_android_busybox:?}" || true
 
   # Fallback if --uninstall is NOT supported
   {
     _backup_ifs="${IFS-}"
     IFS=' '
-    find "${_android_sys:?}/bin" -type l -exec sh -c 'bb_path="${1:?}"; shift; if test "$(realpath "${*}")" = "${bb_path:?}"; then rm -f -- "${*}"; fi' _ "${CUSTOM_BUSYBOX:?}" '{}' ';' || true
+    find "${_android_sys:?}/bin" -type l -exec sh -c 'bb_path="${1:?}"; shift; if test "$(realpath "${*}")" = "${bb_path:?}"; then rm -f -- "${*}"; fi' _ "${_android_busybox:?}" '{}' ';' || true
     IFS="${_backup_ifs-}"
 
-    rm -f "${CUSTOM_BUSYBOX:?}" || true
+    rm -f -- "${_android_busybox:?}" || true
   }
 }
 
@@ -465,13 +465,13 @@ flash_zips()
     # Simulate the environment variables of a real recovery
     simulate_env || return "${?}"
 
-    "${CUSTOM_BUSYBOX:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_tmp:?}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
+    "${_android_busybox:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_tmp:?}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
 
     echo "custom_flash_start ${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1>&"${recovery_fd:?}"
     set +e
     # Execute the script that will run the flashable zip
     if test "${COVERAGE:-false}" = 'false'; then
-      "${CUSTOM_BUSYBOX:?}" sh -- "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
+      "${_android_busybox:?}" sh -- "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
     else
       bashcov -- "${THIS_SCRIPT_DIR:?}/updater.sh" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
     fi
