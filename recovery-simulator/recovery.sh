@@ -280,12 +280,13 @@ readonly _backup_path _backup_tmpdir
 
 # Check dependencies
 _our_busybox="$(env -- which -- busybox)" || fail_with_msg 'BusyBox is missing'
-if test "${COVERAGE:-false}" != 'false'; then
-  COVERAGE="$(command -v bashcov)" || fail_with_msg 'Bashcov is missing'
-fi
 _tee_cmd="$(command -v tee)" || fail_with_msg 'tee is missing'
-
 readonly _our_busybox _tee_cmd
+
+if test "${COVERAGE:-false}" != 'false'; then
+  _bash_cmd="$(command -v bash)" || fail_with_msg 'bash is missing'
+  readonly _bash_cmd
+fi
 
 case "${*}" in
   *'*.zip') fail_with_msg 'The flashable ZIP is missing, you have to build it before being able to test it' ;;
@@ -400,9 +401,6 @@ override_command()
 simulate_env()
 {
   cp -pf -- "${_our_busybox:?}" "${_android_busybox:?}" || fail_with_msg 'Failed to copy BusyBox'
-  if test "${COVERAGE:-false}" != 'false'; then
-    cp -pf -- "${COVERAGE:?}" "${_android_sys:?}/bin/bashcov" || fail_with_msg 'Failed to copy Bashcov'
-  fi
 
   if test "${PLATFORM:?}" != 'win'; then
     "${_android_busybox:?}" --install -s "${_android_sys:?}/bin" || fail_with_msg 'Failed to install BusyBox'
@@ -492,7 +490,7 @@ flash_zips()
     if test "${COVERAGE:-false}" = 'false'; then
       "${_android_busybox:?}" sh -- "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >("${_tee_cmd:?}" -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >("${_tee_cmd:?}" -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
     else
-      bashcov -- "${THIS_SCRIPT_DIR:?}/updater.sh" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >("${_tee_cmd:?}" -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >("${_tee_cmd:?}" -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
+      "${_bash_cmd:?}" -x -- "${THIS_SCRIPT_DIR:?}/updater.sh" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >("${_tee_cmd:?}" -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >("${_tee_cmd:?}" -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
     fi
     STATUS="${?}"
     set -e
