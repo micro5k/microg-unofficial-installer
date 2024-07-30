@@ -3,7 +3,6 @@
 # SPDX-FileType: OTHER
 
 # Custom project folders
-local/
 cache/
 utils/data/
 output/
@@ -16,6 +15,10 @@ user.gradle
 
 # VS Code files
 .vscode/launch.json
+
+# Local files
+.local/
+local/
 
 # Local configuration files
 local.properties
