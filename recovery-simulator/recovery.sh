@@ -161,6 +161,15 @@ link_folder()
   ln -sf "${2:?}" "${1:?}" 2> /dev/null || create_junction "${2:?}" "${1:?}" || mkdir -p "${1:?}" || fail_with_msg "Failed to link dir '${1}' to '${2}'"
 }
 
+remove_folder_link()
+{
+  if test -h "${1:?}"; then
+    rm -f -- "${1:?}"
+  else
+    rmdir -- "${1:?}"
+  fi
+}
+
 recovery_flash_start()
 {
   if test "${1:?}" = 'false'; then
@@ -241,7 +250,6 @@ if test -z "${FORCE_HW_BUTTONS-}"; then unset FORCE_HW_BUTTONS; fi
 if test -z "${CI-}"; then unset CI; fi
 if test -z "${SHELLOPTS-}"; then unset SHELLOPTS; fi
 
-# Set variables that we need
 detect_os_and_other_things
 
 if test -n "${CYGPATH?}" && test "${TMPDIR?}" = '/tmp'; then
@@ -262,7 +270,7 @@ init_path
 
 # Backup original variables
 _backup_path="${PATH?}"
-_backup_tmpdir="${TMPDIR?}"
+_backup_tmpdir="${TMPDIR:?}"
 readonly _backup_path _backup_tmpdir
 
 # Check dependencies
@@ -270,6 +278,9 @@ _our_busybox="$(env -- which -- busybox)" || fail_with_msg 'BusyBox is missing'
 if test "${COVERAGE:-false}" != 'false'; then
   COVERAGE="$(command -v bashcov)" || fail_with_msg 'Bashcov is missing'
 fi
+_tee_cmd="$(command -v tee)" || fail_with_msg 'tee is missing'
+
+readonly _our_busybox _tee_cmd
 
 case "${*}" in
   *'*.zip') fail_with_msg 'The flashable ZIP is missing, you have to build it before being able to test it' ;;
@@ -422,8 +433,11 @@ restore_env()
   local _backup_ifs
 
   export PATH="${_backup_path?}"
-  export TMPDIR="${_backup_tmpdir?}"
+  export TMPDIR="${_backup_tmpdir:?}"
+
   unset BB_OVERRIDE_APPLETS
+  unset CUSTOM_BUSYBOX
+
   unset -f -- mount umount chown su sudo
 
   "${_our_busybox:?}" 2> /dev/null --uninstall "${_android_busybox:?}" || true
@@ -454,7 +468,7 @@ if test "${PLATFORM:?}" != 'win'; then
 fi
 
 # shellcheck disable=SC3023
-exec 99> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-output-raw.log" || true)
+exec 99> >("${_tee_cmd:?}" -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-output-raw.log" || true)
 
 flash_zips()
 {
@@ -471,9 +485,9 @@ flash_zips()
     set +e
     # Execute the script that will run the flashable zip
     if test "${COVERAGE:-false}" = 'false'; then
-      "${_android_busybox:?}" sh -- "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
+      "${_android_busybox:?}" sh -- "${_android_tmp:?}/updater" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >("${_tee_cmd:?}" -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >("${_tee_cmd:?}" -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
     else
-      bashcov -- "${THIS_SCRIPT_DIR:?}/updater.sh" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >(tee -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
+      bashcov -- "${THIS_SCRIPT_DIR:?}/updater.sh" 3 "${recovery_fd:?}" "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1> >("${_tee_cmd:?}" -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stdout.log" || true) 2> >("${_tee_cmd:?}" -a "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery-stderr.log" 1>&2 || true)
     fi
     STATUS="${?}"
     set -e
@@ -525,8 +539,8 @@ parse_recovery_output true "${recovery_logs_dir:?}/recovery-output-raw.log" "${r
 parse_recovery_output false "${recovery_logs_dir:?}/recovery-raw.log" "${recovery_logs_dir:?}/recovery.log"
 
 # List installed files
-rm -f -- "${_base_simulation_path:?}/sbin" || true
-rm -f -- "${_base_simulation_path:?}/sdcard" || true
+remove_folder_link "${_base_simulation_path:?}/sbin" || true
+remove_folder_link "${_base_simulation_path:?}/sdcard" || true
 rm -f -- "${_android_sys:?}/build.prop" || true
 rm -f -- "${_android_sys:?}/framework/framework-res.apk" || true
 cd "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to change dir to our temp dir'
