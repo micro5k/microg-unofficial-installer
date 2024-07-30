@@ -42,8 +42,11 @@ jobs:
           #sudo apt-get -qq -y install moreutils 1>/dev/null
           bashcov "${workspace_path:?}/build.sh"  # To timestamp the output pipe it to: TZ=UTC ts '[%H:%M:%S]'
           printf '\n'
-          ### Testing zip installation...
-          bash "${workspace_path:?}/recovery-simulator/recovery.sh" "${workspace_path:?}"/output/*.zip
+          ### Testing of zip installation...
+          echo '==========================='
+          echo 'TESTING OF ZIP INSTALLATION'
+          echo '==========================='
+          bashcov "${workspace_path:?}/recovery-simulator/recovery.sh" "${workspace_path:?}"/output/*.zip
           printf '\n'
           echo '==============='
           echo 'RECOVERY OUTPUT'
@@ -71,10 +74,11 @@ jobs:
           name: "microG unofficial installer OSS build (extract it)"
           path: "output/*.zip*"
           retention-days: 7
-      - name: "Upload reports to Codecov"
+      - name: "Upload coverage reports to Codecov"
         if: "${{ github.repository_owner == 'micro5k' }}"
         uses: codecov/codecov-action@v3
         with:
-          #fail_ci_if_error: true
+          token: "${{ secrets.CODECOV_TOKEN }}"
+          slug: micro5k/microg-unofficial-installer
+          fail_ci_if_error: true
           files: "${{ github.workspace }}/coverage/codecov-result.json"
-          #token: "${{ secrets.CODECOV_TOKEN }}"
