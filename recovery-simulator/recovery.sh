@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
 # NOTE: This script simulate a real recovery but it relies on the flashable zip to use the suggested paths.
 # REALLY IMPORTANT: A misbehaving flashable zip can damage your real system.
@@ -22,7 +21,7 @@ set -e
 case ":${SHELLOPTS-}:" in
   *':xtrace:'*) # Auto-enable `set -x` for shells that do NOT support SHELLOPTS
     set -x
-    COVERAGE='true'
+    export COVERAGE='true'
     ;;
   *) ;;
 esac
