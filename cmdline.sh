@@ -14,6 +14,8 @@ set -u
 }
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
+  if test -e '/usr/bin'; then PATH="/usr/bin:${PATH-}"; fi
+
   if test -z "${MAIN_DIR-}"; then
     # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
     if test -n "${BASH_SOURCE-}" && MAIN_DIR="$(dirname "${BASH_SOURCE:?}")" && MAIN_DIR="$(realpath "${MAIN_DIR:?}")"; then
