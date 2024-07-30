@@ -232,7 +232,7 @@ if test "${ENV_RESETTED:-false}" = 'false'; then
 
   if test "${#}" -eq 0; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
 
-  THIS_SCRIPT="$(realpath "${0:?}" 2> /dev/null)" || fail_with_msg 'Failed to get script filename'
+  THIS_SCRIPT="$(realpath 2> /dev/null "${0:?}")" || fail_with_msg 'Failed to get script filename'
 
   reset_env_and_rerun_myself()
   {
@@ -256,9 +256,10 @@ if test -z "${SHELLOPTS-}"; then unset SHELLOPTS; fi
 
 detect_os_and_other_things
 
-if test -n "${CYGPATH?}" && test "${TMPDIR?}" = '/tmp'; then
-  # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
-  TMPDIR="$("${CYGPATH:?}" -m -a -l -- '/tmp')" || fail_with_msg 'Unable to convert the temp directory'
+if test -n "${CYGPATH?}"; then
+  # Only on Bash under Windows
+  THIS_SCRIPT="$("${CYGPATH:?}" -m -l -- "${THIS_SCRIPT:?}")" || ui_error 'Unable to convert our script path'
+  if test "${TMPDIR?}" = '/tmp'; then TMPDIR="$("${CYGPATH:?}" -m -l -- '/tmp')" || fail_with_msg 'Unable to convert the temp directory'; fi
 fi
 
 # Create our temp dir (must be done with a valid TMPDIR env var)
@@ -280,6 +281,10 @@ readonly _backup_path _backup_tmpdir
 # Check dependencies
 _our_busybox="$(env -- which -- busybox)" || fail_with_msg 'BusyBox is missing'
 _tee_cmd="$(command -v tee)" || fail_with_msg 'tee is missing'
+if test -n "${CYGPATH?}"; then
+  # Only on Bash under Windows
+  _our_busybox="$("${CYGPATH:?}" -m -a -l -- "${_our_busybox:?}")" || ui_error 'Unable to convert our busybox path'
+fi
 readonly _our_busybox _tee_cmd
 
 if test "${COVERAGE:-false}" != 'false'; then
@@ -295,7 +300,12 @@ esac
 for param in "${@}"; do
   shift
   if ! test -f "${param:?Empty value passed}"; then fail_with_msg "Missing file: ${param}"; fi
-  param="$(realpath "${param:?}")" || fail_with_msg "Invalid filename: ${param}"
+  if test -n "${CYGPATH?}"; then
+    # Only on Bash under Windows
+    param="$("${CYGPATH:?}" -m -a -l "${param:?}")" || fail_with_msg "Invalid filename: ${param}"
+  else
+    param="$(realpath "${param:?}")" || fail_with_msg "Invalid filename: ${param}"
+  fi
   set -- "${@}" "${param:?}"
 done
 unset param
@@ -316,10 +326,20 @@ readonly _base_simulation_path _our_overrider_dir _our_overrider_script _init_di
 # Configure the Android recovery environment variables (they will be used later)
 _android_ext_stor="${_base_simulation_path:?}/sdcard0"
 _android_sec_stor="${_base_simulation_path:?}/sdcard1"
-_android_lib_path=".:${_base_simulation_path:?}/sbin"
+if test -n "${CYGPATH?}"; then
+  # Only on Bash under Windows
+  _android_lib_path="$("${CYGPATH:?}" -p -u ".;${_base_simulation_path:?}/sbin")" || fail_with_msg 'Unable to convert the Android lib path env'
+else
+  _android_lib_path=".${PATHSEP:?}${_base_simulation_path:?}/sbin"
+fi
 _android_data="${_base_simulation_path:?}/data"
 _android_sys="${_base_simulation_path:?}/system"
-_android_path="${_our_overrider_dir:?}:${_android_sys:?}/bin"
+if test -n "${CYGPATH?}"; then
+  # Only on Bash under Windows
+  _android_path="$("${CYGPATH:?}" -p -u "${_our_overrider_dir:?};${_android_sys:?}/bin")" || fail_with_msg 'Unable to convert the Android path env'
+else
+  _android_path="${_our_overrider_dir:?}${PATHSEP:?}${_android_sys:?}/bin"
+fi
 _android_tmp="${_base_simulation_path:?}/tmp"
 
 _android_busybox="${_android_sys:?}/bin/busybox"
