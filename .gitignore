@@ -4,9 +4,9 @@
 
 # Custom project folders
 cache/
-utils/data/
 output/
 recovery-simulator/output/
+utils/data/
 
 # Gradle files
 .gradle/
@@ -34,6 +34,7 @@ coverage
 
 # Caches and other files
 __pycache__/
-Thumbs.db
+.cache/
 .DS_Store
 desktop.ini
+Thumbs.db
