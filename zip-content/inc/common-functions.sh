@@ -2094,7 +2094,6 @@ _timeout_check()
   _timeout_ver="$({
     timeout 2>&1 --help || true
   } | parse_busybox_version)" || _timeout_ver=''
-  shift
 
   if test -n "${_timeout_ver?}" && test "$(numerically_comparable_version "${_timeout_ver:?}" || true)" -lt "$(numerically_comparable_version '1.30.0' || true)"; then
     TIMEOUT_CMD_IS_LEGACY_BUSYBOX='true'
