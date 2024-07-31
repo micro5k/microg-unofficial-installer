@@ -33,8 +33,8 @@ user.gradle
 /.wget-hsts
 
 # Caches and other files
+/.cache/
 __pycache__/
-.cache/
 .DS_Store
 desktop.ini
 Thumbs.db
