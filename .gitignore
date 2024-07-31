@@ -34,6 +34,7 @@ user.gradle
 
 # Caches and other files
 /.cache/
+/.git/
 __pycache__/
 .DS_Store
 desktop.ini
