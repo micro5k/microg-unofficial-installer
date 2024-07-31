@@ -974,7 +974,7 @@ init_path()
   # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then move_to_begin_of_path_env '/usr/bin'; fi
 
-  remove_duplicates_from_path_env
+  if test "${DO_INIT_CMDLINE:-0}" != '0'; then remove_duplicates_from_path_env; fi
   add_to_path_env "${TOOLS_DIR:?}"
 }
 
