@@ -4,10 +4,12 @@
 # SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
 
-require 'codecov'
 require 'simplecov'
+require 'simplecov-lcov'
+#require 'codecov' # Deprecated
 
 SimpleCov.configure do
-  formatter Codecov::SimpleCov::Formatter
+  formatter SimpleCov::Formatter::LcovFormatter
+  #formatter Codecov::SimpleCov::Formatter # Deprecated
   add_filter 'gradlew'
 end

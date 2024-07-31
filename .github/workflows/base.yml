@@ -29,10 +29,10 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
-      - name: "Install Bashcov and Codecov"
+      - name: "Install Bashcov and simplecov-lcov"
         run: |
-          # Installing Bashcov and Codecov...
-          gem install bashcov:3.1.1 codecov
+          # Installing Bashcov and simplecov-lcov...
+          gem install bashcov:3.1.2 simplecov-lcov
       - name: "Execute code coverage"
         id: "coverage"
         run: |
@@ -76,8 +76,7 @@ jobs:
           retention-days: 7
       - name: "Upload coverage reports to Codecov"
         if: "${{ github.repository_owner == 'micro5k' }}"
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
           token: "${{ secrets.CODECOV_TOKEN }}"
-          files: "${{ github.workspace }}/coverage/codecov-result.json"

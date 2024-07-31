@@ -9,8 +9,6 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 3
-    ignore:
-      - dependency-name: "codecov/codecov-action"
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
