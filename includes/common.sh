@@ -987,13 +987,13 @@ init_vars()
 
 init_cmdline()
 {
-  unset PROMPT_COMMAND
-  unset PS1
+  unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE CURRENT_SHELL
 
   CURRENT_SHELL="${0-}"
   test "${IS_BUSYBOX:?}" = 'false' || CURRENT_SHELL="busybox ${CURRENT_SHELL-}"
   readonly CURRENT_SHELL
 
+  A5K_LAST_TITLE="${A5K_LAST_TITLE-}"
   if test "${A5K_TITLE_IS_DEFAULT-}" != 'false'; then set_default_title; fi
 
   if test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${HOME-}"; then
