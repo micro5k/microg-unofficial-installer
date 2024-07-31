@@ -991,7 +991,7 @@ init_cmdline()
 
   CURRENT_SHELL="${0-}"
   test "${IS_BUSYBOX:?}" = 'false' || CURRENT_SHELL="busybox ${CURRENT_SHELL-}"
-  test "${#}" -eq 0 || CURRENT_SHELL="${CURRENT_SHELL-}$(printf " '%s'" "${@}")"
+  test "${#}" -eq 0 || CURRENT_SHELL="${CURRENT_SHELL-}$(printf " \"%s\"" "${@}")"
   readonly CURRENT_SHELL
 
   A5K_LAST_TITLE="${A5K_LAST_TITLE-}"
