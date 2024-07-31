@@ -34,6 +34,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   unset STARTED_FROM_BATCH_FILE
   unset IS_PATH_INITIALIZED
   unset QUOTED_PARAMS
+  if test "${#}" -gt 0; then export QUOTED_PARAMS="$(printf " '%s'" "${@}")"; fi
 
   export DO_INIT_CMDLINE=1
   if test -n "${MAIN_DIR-}"; then
