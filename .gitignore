@@ -3,34 +3,34 @@
 # SPDX-FileType: OTHER
 
 # Custom project folders
-cache/
-output/
-recovery-simulator/output/
-utils/data/
-
-# Gradle files
-.gradle/
-build/
-user.gradle
+/cache/
+/output/
+/recovery-simulator/output/
+/utils/data/
 
 # VS Code files
-.vscode/launch.json
+/.vscode/launch.json
 
 # Local files
-.local/
-local/
+/.local/
+/local/
+
+# Gradle files
+/.gradle/
+/build/
 
 # Local configuration files
 local.properties
+user.gradle
 
 # Code scanning, log and other files
 *.log
 *.sarif
 *.dex
-.ash_history
-.bash_history
-coverage
-.wget-hsts
+/coverage/
+/.ash_history
+/.bash_history
+/.wget-hsts
 
 # Caches and other files
 __pycache__/
