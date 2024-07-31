@@ -28,11 +28,11 @@ jobs:
       - name: "Set up Ruby"
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.2"
+          ruby-version: "3.3"
       - name: "Install Bashcov and Codecov"
         run: |
           # Installing Bashcov and Codecov...
-          gem install bashcov:3.0.2 codecov
+          gem install bashcov:3.1.1 codecov
       - name: "Execute code coverage"
         id: "coverage"
         run: |
