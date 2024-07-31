@@ -991,6 +991,7 @@ init_cmdline()
 
   CURRENT_SHELL="${0-}"
   test "${IS_BUSYBOX:?}" = 'false' || CURRENT_SHELL="busybox ${CURRENT_SHELL-}"
+  test "${#}" -eq 0 || CURRENT_SHELL="${CURRENT_SHELL-}$(printf " '%s'" "${@}")"
   readonly CURRENT_SHELL
 
   A5K_LAST_TITLE="${A5K_LAST_TITLE-}"
@@ -1106,7 +1107,7 @@ init_vars
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
   unset DO_INIT_CMDLINE
-  init_cmdline
+  if test "${#}" -eq 0; then init_cmdline; else init_cmdline "${@}"; fi
 fi
 
 export PATH
