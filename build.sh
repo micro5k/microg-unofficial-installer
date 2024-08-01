@@ -61,6 +61,7 @@ detect_script_dir()
 }
 detect_script_dir || return 1 2>&- || exit 1
 
+unset DO_INIT_CMDLINE
 # shellcheck source=SCRIPTDIR/includes/common.sh
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR}/includes/common.sh"; fi
 
