@@ -130,7 +130,7 @@ detect_os_and_other_things()
           IS_BUSYBOX='true'
           ;;
         'msys' | 'cygwin') PLATFORM='win' ;;
-        *) PLATFORM="$(printf '%s\n' "${PLATFORM:?}" | tr -d ':\\/')" || ui_error 'Failed to get uname' ;;
+        *) PLATFORM="$(printf '%s\n' "${PLATFORM:?}" | tr -d ':;\\/')" || ui_error 'Failed to get uname' ;;
       esac
       ;;
   esac
@@ -992,6 +992,26 @@ init_vars()
   export MODULE_NAME
 }
 
+detect_root()
+{
+  local _user_id
+  unset IS_ROOT
+
+  IS_ROOT='false'
+
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && command 1> /dev/null -v 'busybox'; then
+    _user_id="$(busybox id -u)" || ui_error 'Unable to get user ID'
+  else
+    _user_id="$(id -u)" || ui_error 'Unable to get user ID'
+  fi
+
+  if test "${_user_id?}" = '0'; then
+    IS_ROOT='true'
+  fi
+
+  readonly IS_ROOT
+}
+
 init_cmdline()
 {
   unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE CURRENT_SHELL
@@ -1089,7 +1109,12 @@ init_cmdline()
   export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
 
   if test "${CI:-false}" = 'false'; then
-    PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
+    if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && test "${IS_ROOT:?}" = 'true'; then
+      # Only needed on Bash under Windows
+      PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]#'
+    else
+      PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
+    fi
     PROMPT_COMMAND='_update_title "${CURRENT_SHELL-} (${SHLVL-})"'
   fi
 }
@@ -1111,6 +1136,7 @@ init_base
 export MAIN_DIR TOOLS_DIR
 init_path
 init_vars
+detect_root
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
   if test -n "${QUOTED_PARAMS-}" && test "${#}" -eq 0; then eval ' \set' '--' "${QUOTED_PARAMS:?} " || exit 100; fi
