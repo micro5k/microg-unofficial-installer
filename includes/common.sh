@@ -1106,7 +1106,7 @@ init_path
 init_vars
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
-  if test -n "${QUOTED_PARAMS-}" && test "${#}" -eq 0; then eval ' \set' '--' "${QUOTED_PARAMS:?}"; fi
+  if test -n "${QUOTED_PARAMS-}" && test "${#}" -eq 0; then eval ' \set' '--' "${QUOTED_PARAMS:?} " || exit 100; fi
   unset DO_INIT_CMDLINE
   unset QUOTED_PARAMS
   if test "${#}" -eq 0; then init_cmdline; else init_cmdline "${@}"; fi
