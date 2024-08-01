@@ -195,6 +195,15 @@ _update_title()
   printf 1>&2 '\033]0;%s\007\r' "Command-line: ${1?} - ${MODULE_NAME?}" && printf 1>&2 '    %*s                 %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
 }
 
+_update_title_and_ps1()
+{
+  if test "${IS_ROOT-}" = 'true'; then PS1="${__base_ps1-}"'#'; else PS1="${__base_ps1-}"'\$'; fi
+
+  test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return 0
+  test -t 2 || return 0
+  printf 1>&2 '\033]0;%s\007\r' "Command-line: ${1?} - ${MODULE_NAME?}" && printf 1>&2 '    %*s                 %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
+}
+
 simple_get_prop()
 {
   grep -m 1 -F -e "${1:?}=" "${2:?}" | cut -d '=' -f 2
@@ -1000,6 +1009,7 @@ detect_root()
   IS_ROOT='false'
 
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && command 1> /dev/null -v 'busybox'; then
+    # Bash under Windows is unable to detect root so we need to use BusyBox
     _user_id="$(busybox id -u)" || ui_error 'Unable to get user ID'
   else
     _user_id="$(id -u)" || ui_error 'Unable to get user ID'
@@ -1014,7 +1024,7 @@ detect_root()
 
 init_cmdline()
 {
-  unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE CURRENT_SHELL
+  unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE CURRENT_SHELL __base_ps1
 
   CURRENT_SHELL="${0-}"
   test "${IS_BUSYBOX:?}" = 'false' || CURRENT_SHELL="busybox ${CURRENT_SHELL-}"
@@ -1108,14 +1118,18 @@ init_cmdline()
   export DIRECTORY_SEPARATOR='/'
   export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
 
+  # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
+  readonly __base_ps1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]'
+
   if test "${CI:-false}" = 'false'; then
-    if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && test "${IS_ROOT:?}" = 'true'; then
+    PS1="${__base_ps1?}"'\$'
+
+    if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then
       # Only needed on Bash under Windows
-      PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]#'
+      PROMPT_COMMAND='_update_title_and_ps1 "${CURRENT_SHELL-} (${SHLVL-})"'
     else
-      PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$' # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
+      PROMPT_COMMAND='_update_title "${CURRENT_SHELL-} (${SHLVL-})"'
     fi
-    PROMPT_COMMAND='_update_title "${CURRENT_SHELL-} (${SHLVL-})"'
   fi
 }
 
