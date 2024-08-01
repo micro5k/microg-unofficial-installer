@@ -197,7 +197,7 @@ _update_title()
 
 _update_title_and_ps1()
 {
-  if test "${IS_ROOT-}" = 'true'; then PS1="${__base_ps1-}"'#'; else PS1="${__base_ps1-}"'\$'; fi
+  if test "${IS_ROOT-}" = 'true'; then PS1="${__base_ps1_root-}"; else PS1="${__base_ps1-}"; fi
 
   test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return 0
   test -t 2 || return 0
@@ -944,6 +944,26 @@ remove_duplicates_from_path_env()
   PATH="${_path?}"
 }
 
+sume()
+{
+  if test "${PLATFORM:?}" != 'win' || test "${IS_BUSYBOX:?}" = 'false'; then
+    ui_warning 'sume not supported!!!'
+    return 1
+  fi
+  # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
+  test "$(id -u || true)" = '0' || su -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- root "${0}" "${@}"
+}
+
+dropme()
+{
+  if test "${PLATFORM:?}" != 'win' || test "${IS_BUSYBOX:?}" = 'false'; then
+    ui_warning 'dropme not supported!!!'
+    return 1
+  fi
+  # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
+  test "$(id -u || true)" != '0' || drop -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- "${0}" "${@}"
+}
+
 init_base()
 {
   local _main_dir
@@ -1024,7 +1044,7 @@ detect_root()
 
 init_cmdline()
 {
-  unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE CURRENT_SHELL __base_ps1
+  unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE CURRENT_SHELL __base_ps1 __base_ps1_root
 
   CURRENT_SHELL="${0-}"
   test "${IS_BUSYBOX:?}" = 'false' || CURRENT_SHELL="busybox ${CURRENT_SHELL-}"
@@ -1119,10 +1139,11 @@ init_cmdline()
   export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
 
   # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
-  readonly __base_ps1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]'
+  readonly __base_ps1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$'
+  readonly __base_ps1_root='\[\033[1;32m\]root\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]#'
 
   if test "${CI:-false}" = 'false'; then
-    PS1="${__base_ps1?}"'\$'
+    PS1="${__base_ps1:?}"
 
     if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then
       # Only needed on Bash under Windows
