@@ -170,12 +170,19 @@ set_default_title()
 
 save_last_title()
 {
-  A5K_SAVED_TITLE="${A5K_LAST_TITLE-}"
+  if test "${A5K_TITLE_IS_DEFAULT-}" = 'true'; then
+    A5K_SAVED_TITLE='default'
+  else
+    A5K_SAVED_TITLE="${A5K_LAST_TITLE-}"
+  fi
 }
 
 restore_saved_title_if_exist()
 {
-  if test -n "${A5K_SAVED_TITLE-}"; then
+  if test "${A5K_SAVED_TITLE-}" = 'default'; then
+    set_default_title
+    A5K_SAVED_TITLE=''
+  elif test -n "${A5K_SAVED_TITLE-}"; then
     change_title "${A5K_SAVED_TITLE:?}"
     A5K_SAVED_TITLE=''
   fi
