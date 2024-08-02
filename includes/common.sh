@@ -1021,6 +1021,39 @@ init_vars()
   export MODULE_NAME
 }
 
+detect_bb_and_id()
+{
+  BB_CMD=''
+  ID_CMD=''
+
+  if command 1> /dev/null -v 'busybox'; then
+    BB_CMD="$(command -v busybox)" || ui_error 'Unable to get the path of BusyBox'
+  fi
+
+  if test "${PLATFORM:?}" = 'win' && test -n "${BB_CMD?}"; then
+    ID_CMD='id'
+  else
+    ID_CMD="$(command -v id)" || ui_error 'Unable to get the path of id'
+  fi
+
+  readonly BB_CMD ID_CMD
+}
+
+is_root()
+{
+  local _user_id
+
+  if test "${PLATFORM:?}" = 'win' && test -n "${BB_CMD?}"; then
+    # Bash under Windows is unable to detect root so we need to use BusyBox
+    _user_id="$("${BB_CMD:?}" id -u)" || ui_error 'Unable to get user ID'
+  else
+    _user_id="$("${ID_CMD:?}" -u)" || ui_error 'Unable to get user ID'
+  fi
+
+  if test "${_user_id:?}" -ne 0; then return 1; fi # Return false
+  return 0                                         # Return true
+}
+
 detect_root()
 {
   local _user_id
@@ -1171,6 +1204,7 @@ init_base
 export MAIN_DIR TOOLS_DIR
 init_path
 init_vars
+detect_bb_and_id
 detect_root
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
