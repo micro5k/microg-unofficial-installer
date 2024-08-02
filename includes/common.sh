@@ -166,7 +166,11 @@ change_title()
 
 set_default_title()
 {
-  change_title "Command-line: ${CURRENT_SHELL:-${0-}}"
+  if is_root; then
+    change_title "[root] Command-line: ${__TITLE_CMD_PREFIX-}${0-}${__TITLE_CMD_PARAMS-}"
+  else
+    change_title "Command-line: ${__TITLE_CMD_PREFIX-}${0-}${__TITLE_CMD_PARAMS-}"
+  fi
   A5K_TITLE_IS_DEFAULT='true'
 }
 
@@ -192,7 +196,7 @@ restore_saved_title_if_exist()
 
 __update_title_and_ps1()
 {
-  local _title="Command-line: ${1?} - ${MODULE_NAME-}"
+  local _title="Command-line: ${__TITLE_CMD_PREFIX-}${0-}${__TITLE_CMD_PARAMS-} (${SHLVL-}) - ${MODULE_NAME-}"
   PS1="${__base_ps1-}"
 
   if is_root; then
@@ -1057,12 +1061,14 @@ is_root()
 
 init_cmdline()
 {
-  unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE CURRENT_SHELL __base_ps1 __base_ps1_root
+  unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE __base_ps1 __base_ps1_root
+  unset __TITLE_CMD_PREFIX __TITLE_CMD_PARAMS
 
-  CURRENT_SHELL="${0-}"
-  test "${IS_BUSYBOX:?}" = 'false' || CURRENT_SHELL="busybox ${CURRENT_SHELL-}"
-  test "${#}" -eq 0 || CURRENT_SHELL="${CURRENT_SHELL-}$(printf " \"%s\"" "${@}")"
-  readonly CURRENT_SHELL
+  __TITLE_CMD_PREFIX=''
+  __TITLE_CMD_PARAMS=''
+  test "${IS_BUSYBOX:?}" = 'false' || __TITLE_CMD_PREFIX='busybox '
+  test "${#}" -eq 0 || __TITLE_CMD_PARAMS="$(printf ' "%s"' "${@}")"
+  readonly __TITLE_CMD_PREFIX __TITLE_CMD_PARAMS
 
   A5K_LAST_TITLE="${A5K_LAST_TITLE-}"
   if test "${A5K_TITLE_IS_DEFAULT-}" != 'false'; then set_default_title; fi
@@ -1162,7 +1168,7 @@ init_cmdline()
 
   if test "${CI:-false}" = 'false'; then
     PS1="${__base_ps1:?}"
-    PROMPT_COMMAND='__update_title_and_ps1 "${CURRENT_SHELL-} (${SHLVL-})"'
+    PROMPT_COMMAND='__update_title_and_ps1'
   fi
 }
 
