@@ -190,20 +190,20 @@ restore_saved_title_if_exist()
   fi
 }
 
-_update_title()
+__update_title_and_ps1()
 {
+  local _title="Command-line: ${1?} - ${MODULE_NAME-}"
+
+  if is_root; then
+    _title="[root] ${_title}"
+    PS1="${__base_ps1_root-}"
+  else
+    PS1="${__base_ps1-}"
+  fi
+
   test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return 0
   test -t 2 || return 0
-  printf 1>&2 '\033]0;%s\007\r' "Command-line: ${1?} - ${MODULE_NAME-}" && printf 1>&2 '    %*s                 %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
-}
-
-_update_title_and_ps1()
-{
-  if is_root; then PS1="${__base_ps1_root-}"; else PS1="${__base_ps1-}"; fi
-
-  test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return 0
-  test -t 2 || return 0
-  printf 1>&2 '\033]0;%s\007\r' "Command-line: ${1?} - ${MODULE_NAME-}" && printf 1>&2 '    %*s                 %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
+  printf 1>&2 '\033]0;%s\007\r' "${_title}" && printf 1>&2 '    %*s \r' "${#_title}" ''
 }
 
 simple_get_prop()
@@ -1154,17 +1154,16 @@ init_cmdline()
 
   # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
   readonly __base_ps1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$'
-  readonly __base_ps1_root='\[\033[1;32m\]root\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]#'
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then
+    # Only needed on Bash under Windows
+    readonly __base_ps1_root='\[\033[1;32m\]root\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]#'
+  else
+    readonly __base_ps1_root="${__base_ps1:?}"
+  fi
 
   if test "${CI:-false}" = 'false'; then
     PS1="${__base_ps1:?}"
-
-    if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then
-      # Only needed on Bash under Windows
-      PROMPT_COMMAND='_update_title_and_ps1 "${CURRENT_SHELL-} (${SHLVL-})"'
-    else
-      PROMPT_COMMAND='_update_title "${CURRENT_SHELL-} (${SHLVL-})"'
-    fi
+    PROMPT_COMMAND='__update_title_and_ps1 "${CURRENT_SHELL-} (${SHLVL-})"'
   fi
 }
 
