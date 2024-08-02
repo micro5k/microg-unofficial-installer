@@ -199,7 +199,7 @@ _update_title()
 
 _update_title_and_ps1()
 {
-  if test "${IS_ROOT-}" = 'true'; then PS1="${__base_ps1_root-}"; else PS1="${__base_ps1-}"; fi
+  if is_root; then PS1="${__base_ps1_root-}"; else PS1="${__base_ps1-}"; fi
 
   test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return 0
   test -t 2 || return 0
@@ -1056,27 +1056,6 @@ is_root()
   return 0                                         # Return true
 }
 
-detect_root()
-{
-  local _user_id
-  unset IS_ROOT
-
-  IS_ROOT='false'
-
-  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && command 1> /dev/null -v 'busybox'; then
-    # Bash under Windows is unable to detect root so we need to use BusyBox
-    _user_id="$(busybox id -u)" || ui_error 'Unable to get user ID'
-  else
-    _user_id="$(id -u)" || ui_error 'Unable to get user ID'
-  fi
-
-  if test "${_user_id?}" = '0'; then
-    IS_ROOT='true'
-  fi
-
-  readonly IS_ROOT
-}
-
 init_cmdline()
 {
   unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE CURRENT_SHELL __base_ps1 __base_ps1_root
@@ -1207,7 +1186,6 @@ export MAIN_DIR TOOLS_DIR
 init_path
 init_vars
 detect_bb_and_id
-detect_root
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
   if test -n "${QUOTED_PARAMS-}" && test "${#}" -eq 0; then eval ' \set' '--' "${QUOTED_PARAMS:?} " || exit 100; fi
