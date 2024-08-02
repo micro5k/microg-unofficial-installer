@@ -104,6 +104,7 @@ detect_os_and_other_things()
   IS_BUSYBOX='false'
   PATHSEP=':'
   CYGPATH=''
+  SHELL_CMD="${SHELL-}"
 
   case "${PLATFORM?}" in
     'linux') ;;   # Returned by both Linux and Android, Android will be identified later in the function
@@ -149,9 +150,10 @@ detect_os_and_other_things()
 
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && PATH="/usr/bin${PATHSEP:?}${PATH-}" command 1> /dev/null -v 'cygpath'; then
     CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)" || ui_error 'Unable to find the path of cygpath'
+    SHELL_CMD="$("${CYGPATH:?}" -m -a -l -- "${SHELL_CMD?}")" || ui_error 'Unable to convert the path of the shell'
   fi
 
-  readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH
+  readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD
 }
 
 change_title()
@@ -192,7 +194,7 @@ _update_title()
 {
   test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return 0
   test -t 2 || return 0
-  printf 1>&2 '\033]0;%s\007\r' "Command-line: ${1?} - ${MODULE_NAME?}" && printf 1>&2 '    %*s                 %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
+  printf 1>&2 '\033]0;%s\007\r' "Command-line: ${1?} - ${MODULE_NAME-}" && printf 1>&2 '    %*s                 %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
 }
 
 _update_title_and_ps1()
@@ -201,7 +203,7 @@ _update_title_and_ps1()
 
   test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return 0
   test -t 2 || return 0
-  printf 1>&2 '\033]0;%s\007\r' "Command-line: ${1?} - ${MODULE_NAME?}" && printf 1>&2 '    %*s                 %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
+  printf 1>&2 '\033]0;%s\007\r' "Command-line: ${1?} - ${MODULE_NAME-}" && printf 1>&2 '    %*s                 %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
 }
 
 simple_get_prop()
@@ -1199,7 +1201,7 @@ fi
 
 # Set environment variables
 detect_os_and_other_things
-export PLATFORM IS_BUSYBOX PATHSEP CYGPATH
+export PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD
 init_base
 export MAIN_DIR TOOLS_DIR
 init_path
