@@ -187,11 +187,11 @@ restore_saved_title_if_exist()
 __update_title_and_ps1()
 {
   local _title="Command-line: ${__TITLE_CMD_PREFIX-}${0-}${__TITLE_CMD_PARAMS-} (${SHLVL-}) - ${MODULE_NAME-}"
-  PS1="${__base_ps1-}"
+  PS1="${__DEFAULT_PS1-}"
 
   if is_root; then
     _title="[root] ${_title}"
-    test -z "${__base_ps1_root-}" || PS1="${__base_ps1_root-}"
+    test -z "${__DEFAULT_PS1_AS_ROOT-}" || PS1="${__DEFAULT_PS1_AS_ROOT-}"
   fi
 
   test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return 0
@@ -1055,8 +1055,8 @@ is_root()
 
 init_cmdline()
 {
-  unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE __base_ps1 __base_ps1_root
-  unset __TITLE_CMD_PREFIX __TITLE_CMD_PARAMS
+  unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE
+  unset __TITLE_CMD_PREFIX __TITLE_CMD_PARAMS __DEFAULT_PS1 __DEFAULT_PS1_AS_ROOT
 
   __TITLE_CMD_PREFIX=''
   __TITLE_CMD_PARAMS=''
@@ -1152,16 +1152,16 @@ init_cmdline()
   export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
 
   # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
-  readonly __base_ps1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$ '
+  readonly __DEFAULT_PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$ '
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then
     # Only needed on Bash under Windows
-    readonly __base_ps1_root='\[\033[1;32m\]root\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]# '
+    readonly __DEFAULT_PS1_AS_ROOT='\[\033[1;32m\]root\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]# '
   else
-    readonly __base_ps1_root=''
+    readonly __DEFAULT_PS1_AS_ROOT=''
   fi
 
   if test "${CI:-false}" = 'false'; then
-    PS1="${__base_ps1:?}"
+    PS1="${__DEFAULT_PS1:?}"
     PROMPT_COMMAND='__update_title_and_ps1'
   fi
 }
