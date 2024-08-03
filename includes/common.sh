@@ -86,16 +86,6 @@ export ftp_proxy="${ftp_proxy-}"
   readonly DL_PROT='https://'
 }
 
-_uname_saved="$(uname)"
-compare_start_uname()
-{
-  case "${_uname_saved}" in
-    "$1"*) return 0 ;; # Found
-    *) ;;              # NOT found
-  esac
-  return 1 # NOT found
-}
-
 detect_os_and_other_things()
 {
   if test -n "${PLATFORM-}"; then return; fi
@@ -955,8 +945,10 @@ sume()
     ui_warning 'sume not supported!!!'
     return 1
   fi
+  ! is_root || return 0
+
   # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-  test "$(id -u || true)" = '0' || su -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- root "${0}" "${@}"
+  su -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- root "${0}" "${@}"
 }
 
 dropme()
@@ -965,8 +957,10 @@ dropme()
     ui_warning 'dropme not supported!!!'
     return 1
   fi
+  is_root || return 0
+
   # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-  test "$(id -u || true)" != '0' || drop -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- "${0}" "${@}"
+  drop -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- "${0}" "${@}"
 }
 
 init_base()
