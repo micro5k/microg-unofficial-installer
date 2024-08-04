@@ -94,7 +94,7 @@ detect_os_and_other_things()
   IS_BUSYBOX='false'
   PATHSEP=':'
   CYGPATH=''
-  SHELL_CMD="${SHELL-}"
+  SHELL_CMD="${BASH:-${SHELL-}}"
 
   case "${PLATFORM?}" in
     'linux') ;;   # Returned by both Linux and Android, Android will be identified later in the function
