@@ -157,9 +157,9 @@ change_title()
 set_default_title()
 {
   if is_root; then
-    change_title "[root] Command-line: ${__TITLE_CMD_PREFIX-}${0-}${__TITLE_CMD_PARAMS-}"
+    change_title "[root] Command-line: ${__TITLE_CMD_PREFIX-}$(basename "${0-}" || true)${__TITLE_CMD_PARAMS-}"
   else
-    change_title "Command-line: ${__TITLE_CMD_PREFIX-}${0-}${__TITLE_CMD_PARAMS-}"
+    change_title "Command-line: ${__TITLE_CMD_PREFIX-}$(basename "${0-}" || true)${__TITLE_CMD_PARAMS-}"
   fi
   A5K_TITLE_IS_DEFAULT='true'
 }
@@ -187,7 +187,7 @@ restore_saved_title_if_exist()
 __update_title_and_ps1()
 {
   local _title
-  _title="Command-line: ${__TITLE_CMD_PREFIX-}$(basename "${0-}")${__TITLE_CMD_PARAMS-} (${SHLVL-}) - ${MODULE_NAME-}"
+  _title="Command-line: ${__TITLE_CMD_PREFIX-}$(basename "${0-}" || true)${__TITLE_CMD_PARAMS-} (${SHLVL-}) - ${MODULE_NAME-}"
   PS1="${__DEFAULT_PS1-}"
 
   if is_root; then
