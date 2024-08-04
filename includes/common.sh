@@ -140,7 +140,7 @@ detect_os_and_other_things()
 
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && PATH="/usr/bin${PATHSEP:?}${PATH-}" command 1> /dev/null -v 'cygpath'; then
     CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)" || ui_error 'Unable to find the path of cygpath'
-    SHELL_CMD="$("${CYGPATH:?}" -m -a -l -- "${SHELL_CMD?}")" || ui_error 'Unable to convert the path of the shell'
+    SHELL_CMD="$("${CYGPATH:?}" -m -a -l -- "${SHELL_CMD:?}")" || ui_error 'Unable to convert the path of the shell'
   fi
 
   readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD
@@ -941,14 +941,22 @@ remove_duplicates_from_path_env()
 
 sume()
 {
-  if test "${PLATFORM:?}" != 'win' || test "${IS_BUSYBOX:?}" = 'false'; then
+  if test "${PLATFORM:?}" != 'win'; then
     ui_warning 'sume not supported!!!'
     return 1
   fi
   ! is_root || return 0
 
-  # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-  su -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- root "${0}" "${@}"
+  if test "${IS_BUSYBOX:?}" = 'true'; then
+    # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
+    su -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- root "${0-}" "${@}"
+  elif test -n "${BB_CMD?}" && test -n "${SHELL_CMD?}"; then
+    # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
+    "${BB_CMD:?}" su -s "${SHELL_CMD:?}" -c "${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- root "${0-}" "${@}"
+  else
+    ui_warning 'sume failed!!!'
+    return 125
+  fi
 }
 
 dropme()
