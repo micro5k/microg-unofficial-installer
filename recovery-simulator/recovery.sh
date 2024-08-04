@@ -235,14 +235,15 @@ if test "${ENV_RESETTED:-false}" = 'false'; then
 
   if test "${#}" -eq 0; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
 
+  SHELL="${BASH:-${SHELL:-bash}}"
   THIS_SCRIPT="$(realpath 2> /dev/null "${0:?}")" || fail_with_msg 'Failed to get script filename'
 
   reset_env_and_rerun_myself()
   {
     if test "${COVERAGE:-false}" = 'false'; then
-      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${BASH:-${SHELL-}}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" bash -- "${THIS_SCRIPT:?}" "${@}"
+      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${SHELL:?}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" "${SHELL:?}" -- "${THIS_SCRIPT:?}" "${@}"
     else
-      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${BASH:-${SHELL-}}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" BASH_XTRACEFD="${BASH_XTRACEFD-}" BASH_ENV="${BASH_ENV-}" OLDPWD="${OLDPWD-}" SHELLOPTS="${SHELLOPTS-}" PS4="${PS4-}" bash -x -- "${THIS_SCRIPT:?}" "${@}"
+      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${SHELL:?}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_BUTTONS="${FORCE_HW_BUTTONS-}" CI="${CI-}" BASH_XTRACEFD="${BASH_XTRACEFD-}" BASH_ENV="${BASH_ENV-}" OLDPWD="${OLDPWD-}" SHELLOPTS="${SHELLOPTS-}" PS4="${PS4-}" "${SHELL:?}" -x -- "${THIS_SCRIPT:?}" "${@}"
     fi
   }
 
