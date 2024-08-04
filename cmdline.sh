@@ -48,8 +48,8 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
   export DO_INIT_CMDLINE=1
   if test -n "${MAIN_DIR-}"; then
-    exec bash --init-file "${MAIN_DIR:?}/includes/common.sh"
+    exec "${BASH:-${SHELL:-bash}}" --init-file "${MAIN_DIR:?}/includes/common.sh"
   else
-    exec bash --init-file './includes/common.sh'
+    exec "${BASH:-${SHELL:-bash}}" --init-file './includes/common.sh'
   fi
 fi
