@@ -945,6 +945,8 @@ remove_duplicates_from_path_env()
 
 sume()
 {
+  local _fix_pwd
+
   if test "${PLATFORM:?}" != 'win'; then
     ui_warning 'sume not supported!!!'
     return 1
@@ -955,8 +957,9 @@ sume()
     # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
     su -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- root "${0-}" "${@}"
   elif test -n "${BB_CMD?}" && test -n "${SHELL_CMD?}"; then
+    _fix_pwd="cd '${PWD:?}'"
     # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-    "${BB_CMD:?}" su -s "${SHELL_CMD:?}" -c "${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- root "${0-}" "${@}"
+    "${BB_CMD:?}" su -s "${SHELL_CMD:?}" -c "${_fix_pwd:?}; ${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- root "${0-}" "${@}"
   else
     ui_warning 'sume failed!!!'
     return 125
