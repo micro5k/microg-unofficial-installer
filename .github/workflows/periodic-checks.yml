@@ -30,7 +30,7 @@ jobs:
         with:
           fetch-depth: "0"
       - name: "Gradle Wrapper validation"
-        uses: gradle/actions/wrapper-validation@v3
+        uses: gradle/actions/wrapper-validation@v4
       - name: "Validate Codecov configuration"
         shell: bash
         run: |
