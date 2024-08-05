@@ -8,6 +8,12 @@ SETLOCAL 2> nul
 REM Fix the working directory when using "Run as administrator"
 IF "%CD%" == "%windir%\system32" CD /D "%~dp0"
 
+IF NOT EXIST "%~dp0tools\win\busybox.exe" (
+  ENDLOCAL 2> nul
+  ECHO BusyBox is missing
+  EXIT /B 127
+)
+
 SET "LANG=en_US.UTF-8"
 SET "MAIN_DIR=%~dp0"
 
