@@ -68,14 +68,14 @@ jobs:
           sha256_hash='${{ steps.coverage.outputs.sha256_hash }}'; readonly sha256_hash
           echo "::notice::${sha256_hash:-Missing hash}"
       - name: "Upload artifacts"
-        if: "${{ github.ref == 'refs/heads/main' }}"
+        if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}"
         uses: actions/upload-artifact@v4
         with:
           name: "microG unofficial installer OSS build (extract it)"
           path: "output/*.zip*"
           retention-days: 7
       - name: "Upload coverage reports to Codecov"
-        if: "${{ github.repository_owner == 'micro5k' }}"
+        if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
