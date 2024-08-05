@@ -235,8 +235,9 @@ if test "${ENV_RESETTED:-false}" = 'false'; then
 
   if test "${#}" -eq 0; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
 
-  SHELL="${BASH:-${SHELL:-bash}}"
-  THIS_SCRIPT="$(realpath 2> /dev/null "${0:?}")" || fail_with_msg 'Failed to get script filename'
+  SHELL="${BASH:-${SHELL-}}"
+  if test -z "${SHELL?}"; then SHELL="$(command -v 'bash')" || fail_with_msg 'Unable to find current shell path'; fi
+  THIS_SCRIPT="$(realpath 2> /dev/null "${0:?}")" || fail_with_msg 'Unable to resolve current script name'
 
   reset_env_and_rerun_myself()
   {
@@ -260,7 +261,7 @@ if test -z "${SHELLOPTS-}"; then unset SHELLOPTS; fi
 
 detect_os_and_other_things
 unset SHELL
-test -n "${SHELL_CMD?}" || fail_with_msg 'Unable to find the current shell'
+test -n "${SHELL_CMD?}" || fail_with_msg 'Unable to find current shell path'
 
 if test -n "${CYGPATH?}"; then
   # Only on Bash under Windows
