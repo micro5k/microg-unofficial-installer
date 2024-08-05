@@ -33,6 +33,11 @@ fail_with_msg()
   exit 1
 }
 
+ui_error()
+{
+  fail_with_msg "${@}"
+}
+
 show_cmdline()
 {
   printf "'%s'" "${0-}"
@@ -42,7 +47,7 @@ show_cmdline()
 
 detect_os_and_other_things()
 {
-  if test -n "${PLATFORM-}"; then return; fi
+  if test -n "${PLATFORM-}" && test -n "${IS_BUSYBOX-}" && test -n "${PATHSEP-}"; then return 0; fi
 
   PLATFORM="$(uname | tr -- '[:upper:]' '[:lower:]')"
   IS_BUSYBOX='false'
@@ -75,7 +80,7 @@ detect_os_and_other_things()
           IS_BUSYBOX='true'
           ;;
         'msys' | 'cygwin') PLATFORM='win' ;;
-        *) PLATFORM="$(printf '%s\n' "${PLATFORM:?}" | tr -d ':;\\/')" || fail_with_msg 'Failed to get uname' ;;
+        *) PLATFORM="$(printf '%s\n' "${PLATFORM:?}" | tr -d ':;\\/')" || ui_error 'Failed to find platform' ;;
       esac
       ;;
   esac
@@ -88,13 +93,16 @@ detect_os_and_other_things()
     esac
   fi
 
-  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then
-    PATHSEP=';'
-  fi
+  if test "${PLATFORM:?}" = 'win'; then
+    if test "${IS_BUSYBOX:?}" = 'true'; then
+      PATHSEP=';'
+      SHELL_CMD=''
+    fi
 
-  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false' && PATH="/usr/bin${PATHSEP:?}${PATH-}" command 1> /dev/null -v 'cygpath'; then
-    CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)" || fail_with_msg 'Unable to find the path of cygpath'
-    SHELL_CMD="$("${CYGPATH:?}" -m -a -l -- "${SHELL_CMD:?}")" || fail_with_msg 'Unable to convert the path of the shell'
+    if test "${IS_BUSYBOX:?}" = 'false' && PATH="/usr/bin${PATHSEP:?}${PATH-}" command 1> /dev/null -v 'cygpath'; then
+      CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)" || ui_error 'Unable to find the path of cygpath'
+      SHELL_CMD="$("${CYGPATH:?}" -m -a -l -- "${SHELL_CMD:?}")" || ui_error 'Unable to convert the path of the shell'
+    fi
   fi
 
   readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD
@@ -261,7 +269,10 @@ if test -z "${SHELLOPTS-}"; then unset SHELLOPTS; fi
 
 detect_os_and_other_things
 unset SHELL
-test -n "${SHELL_CMD?}" || fail_with_msg 'Unable to find current shell path'
+
+if test "${COVERAGE:-false}" != 'false'; then
+  test -n "${SHELL_CMD?}" || fail_with_msg 'Unable to find current shell path'
+fi
 
 if test -n "${CYGPATH?}"; then
   # Only on Bash under Windows

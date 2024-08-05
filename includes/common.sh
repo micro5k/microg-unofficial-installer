@@ -88,7 +88,7 @@ export ftp_proxy="${ftp_proxy-}"
 
 detect_os_and_other_things()
 {
-  if test -n "${PLATFORM-}"; then return; fi
+  if test -n "${PLATFORM-}" && test -n "${IS_BUSYBOX-}" && test -n "${PATHSEP-}"; then return 0; fi
 
   PLATFORM="$(uname | tr -- '[:upper:]' '[:lower:]')"
   IS_BUSYBOX='false'
@@ -121,7 +121,7 @@ detect_os_and_other_things()
           IS_BUSYBOX='true'
           ;;
         'msys' | 'cygwin') PLATFORM='win' ;;
-        *) PLATFORM="$(printf '%s\n' "${PLATFORM:?}" | tr -d ':;\\/')" || ui_error 'Failed to get uname' ;;
+        *) PLATFORM="$(printf '%s\n' "${PLATFORM:?}" | tr -d ':;\\/')" || ui_error 'Failed to find platform' ;;
       esac
       ;;
   esac
@@ -137,7 +137,7 @@ detect_os_and_other_things()
   if test "${PLATFORM:?}" = 'win'; then
     if test "${IS_BUSYBOX:?}" = 'true'; then
       PATHSEP=';'
-      SHELL_CMD='ash'
+      SHELL_CMD=''
     fi
 
     if test "${IS_BUSYBOX:?}" = 'false' && PATH="/usr/bin${PATHSEP:?}${PATH-}" command 1> /dev/null -v 'cygpath'; then
