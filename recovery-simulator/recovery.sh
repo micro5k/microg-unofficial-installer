@@ -108,7 +108,7 @@ detect_os_and_other_things()
   readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD
 }
 
-is_in_path_env()
+_is_in_path_env_internal()
 {
   case "${PATHSEP:?}${PATH-}${PATHSEP:?}" in
     *"${PATHSEP:?}${1:?}${PATHSEP:?}"*) return 0 ;; # Found
@@ -117,16 +117,28 @@ is_in_path_env()
   return 1 # NOT found
 }
 
+is_in_path_env()
+{
+  if test -n "${CYGPATH?}"; then
+    # Only on Bash under Windows
+    local _path
+    _path="$("${CYGPATH:?}" -u -- "${1:?}")" || ui_error 'Unable to convert a path in is_in_path_env()'
+    set -- "${_path:?}"
+  fi
+
+  _is_in_path_env_internal "${1:?}"
+}
+
 add_to_path_env()
 {
   if test -n "${CYGPATH?}"; then
     # Only on Bash under Windows
     local _path
-    _path="$("${CYGPATH:?}" -u -a -- "${1:?}")" || fail_with_msg 'Unable to convert a path in add_to_path_env()'
+    _path="$("${CYGPATH:?}" -u -- "${1:?}")" || ui_error 'Unable to convert a path in add_to_path_env()'
     set -- "${_path:?}"
   fi
 
-  if is_in_path_env "${1:?}" || test ! -e "${1:?}"; then return; fi
+  if _is_in_path_env_internal "${1:?}" || test ! -e "${1:?}"; then return 0; fi
 
   if test -z "${PATH-}"; then
     PATH="${1:?}"
@@ -137,13 +149,13 @@ add_to_path_env()
 
 move_to_begin_of_path_env()
 {
-  local _path
-  if test ! -e "${1:?}"; then return; fi
+  local _new_path
+  if test ! -e "${1:?}"; then return 0; fi
 
   if test -z "${PATH-}"; then
     PATH="${1:?}"
-  elif _path="$(printf '%s\n' "${PATH:?}" | tr -- "${PATHSEP:?}" '\n' | grep -v -x -F -e "${1:?}" | tr -- '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}" && test -n "${_path?}"; then
-    PATH="${1:?}${PATHSEP:?}${_path:?}"
+  elif _new_path="$(printf '%s\n' "${PATH:?}" | tr -- "${PATHSEP:?}" '\n' | grep -v -x -F -e "${1:?}" | tr -- '\n' "${PATHSEP:?}")" && _new_path="${_new_path%"${PATHSEP:?}"}" && test -n "${_new_path?}"; then
+    PATH="${1:?}${PATHSEP:?}${_new_path:?}"
   fi
 }
 
