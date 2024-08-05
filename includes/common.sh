@@ -968,14 +968,22 @@ sume()
 
 dropme()
 {
-  if test "${PLATFORM:?}" != 'win' || test "${IS_BUSYBOX:?}" = 'false'; then
+  if test "${PLATFORM:?}" != 'win'; then
     ui_warning 'dropme not supported!!!'
     return 1
   fi
   is_root || return 0
 
-  # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-  drop -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- "${0}" "${@}"
+  if test "${IS_BUSYBOX:?}" = 'true'; then
+    # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
+    drop -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- "${0-}" "${@}"
+  elif test -n "${BB_CMD?}" && test -n "${SHELL_CMD?}"; then
+    # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
+    "${BB_CMD:?}" drop -s "${SHELL_CMD:?}" -c "${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- "${0-}" "${@}"
+  else
+    ui_warning 'dropme failed!!!'
+    return 125
+  fi
 }
 
 init_base()
