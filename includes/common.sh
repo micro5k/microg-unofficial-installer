@@ -870,7 +870,7 @@ dl_list()
   IFS="${_backup_ifs:-}"
 }
 
-is_in_path_env()
+_is_in_path_env_internal()
 {
   case "${PATHSEP:?}${PATH-}${PATHSEP:?}" in
     *"${PATHSEP:?}${1:?}${PATHSEP:?}"*) return 0 ;; # Found
@@ -879,16 +879,28 @@ is_in_path_env()
   return 1 # NOT found
 }
 
+is_in_path_env()
+{
+  if test -n "${CYGPATH?}"; then
+    # Only on Bash under Windows
+    local _path
+    _path="$("${CYGPATH:?}" -u -- "${1:?}")" || ui_error 'Unable to convert a path in is_in_path_env()'
+    set -- "${_path:?}"
+  fi
+
+  _is_in_path_env_internal "${1:?}"
+}
+
 add_to_path_env()
 {
   if test -n "${CYGPATH?}"; then
     # Only on Bash under Windows
     local _path
-    _path="$("${CYGPATH:?}" -u -a -- "${1:?}")" || ui_error 'Unable to convert a path in add_to_path_env()'
+    _path="$("${CYGPATH:?}" -u -- "${1:?}")" || ui_error 'Unable to convert a path in add_to_path_env()'
     set -- "${_path:?}"
   fi
 
-  if is_in_path_env "${1:?}" || test ! -e "${1:?}"; then return; fi
+  if _is_in_path_env_internal "${1:?}" || test ! -e "${1:?}"; then return 0; fi
 
   if test -z "${PATH-}"; then
     ui_warning 'PATH env is empty'
@@ -900,7 +912,7 @@ add_to_path_env()
 
 remove_from_path_env()
 {
-  local _path
+  local _new_path
 
   if test -n "${CYGPATH?}"; then
     # Only on Bash under Windows
@@ -909,21 +921,21 @@ remove_from_path_env()
     set -- "${_single_path:?}"
   fi
 
-  if _path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | grep -v -x -F -e "${1:?}" | tr -- '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}"; then
-    PATH="${_path?}"
+  if _new_path="$(printf '%s\n' "${PATH-}" | tr -- "${PATHSEP:?}" '\n' | grep -v -x -F -e "${1:?}" | tr -- '\n' "${PATHSEP:?}")" && _new_path="${_new_path%"${PATHSEP:?}"}"; then
+    PATH="${_new_path?}"
   fi
 }
 
 move_to_begin_of_path_env()
 {
-  local _path
-  if test ! -e "${1:?}"; then return; fi
+  local _new_path
+  if test ! -e "${1:?}"; then return 0; fi
 
   if test -z "${PATH-}"; then
     ui_warning 'PATH env is empty'
     PATH="${1:?}"
-  elif _path="$(printf '%s\n' "${PATH:?}" | tr -- "${PATHSEP:?}" '\n' | grep -v -x -F -e "${1:?}" | tr -- '\n' "${PATHSEP:?}")" && _path="${_path%"${PATHSEP:?}"}" && test -n "${_path?}"; then
-    PATH="${1:?}${PATHSEP:?}${_path:?}"
+  elif _new_path="$(printf '%s\n' "${PATH:?}" | tr -- "${PATHSEP:?}" '\n' | grep -v -x -F -e "${1:?}" | tr -- '\n' "${PATHSEP:?}")" && _new_path="${_new_path%"${PATHSEP:?}"}" && test -n "${_new_path?}"; then
+    PATH="${1:?}${PATHSEP:?}${_new_path:?}"
   fi
 }
 
@@ -1162,16 +1174,18 @@ init_cmdline()
   alias build='build.sh'
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then alias cmdline='cmdline.bat'; else alias cmdline='cmdline.sh'; fi
 
-  if test "${PLATFORM:?}" = 'win'; then
-    export BB_FIX_BACKSLASH=1
-    export PATHEXT="${PATHEXT:-.BAT};.SH"
-  fi
-
   export A5K_TITLE_IS_DEFAULT
   export A5K_LAST_TITLE
 
+  if test "${PLATFORM:?}" = 'win'; then
+    export PATHEXT="${PATHEXT:-.BAT};.SH"
+    export BB_FIX_BACKSLASH=1
+    export ac_executable_extensions='.exe'
+  fi
+
   export PATH_SEPARATOR="${PATHSEP:?}"
   export DIRECTORY_SEPARATOR='/'
+
   export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
 
   # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053

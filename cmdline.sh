@@ -16,7 +16,8 @@ set -u
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   if test "${PATH_FIX-}" != '1' && test -e '/usr/bin'; then
     PATH="/usr/bin:${PATH:-/usr/bin}"
-    export PATH_FIX='1'
+    readonly PATH_FIX='1'
+    export PATH_FIX
   fi
 
   if test -z "${MAIN_DIR-}"; then
