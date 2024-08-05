@@ -8,7 +8,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.gradle.enterprise' version "${gradleBuildScanVersion}"  /* New name of com.gradle.build-scan */
+    id 'com.gradle.develocity' version "${gradleDevelocityVersion}"  /* New name of com.gradle.build-scan */
 }
 
 rootProject.name = 'microG unofficial installer'

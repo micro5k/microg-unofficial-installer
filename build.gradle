@@ -86,10 +86,10 @@ initialize()
 
 /* ===BLOCKS=== */
 
-gradleEnterprise.buildScan {
-    termsOfServiceUrl 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree 'yes'
-    publishAlwaysIf System.getenv('UPLOAD_BUILD_SCAN') != null
+develocity.buildScan {
+    termsOfUseUrl.set 'https://gradle.com/help/legal-terms-of-use'
+    termsOfUseAgree.set 'yes'
+    publishing.onlyIf { System.getenv('UPLOAD_BUILD_SCAN') != null }
 }
 
 base {
