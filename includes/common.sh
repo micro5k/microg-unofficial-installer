@@ -1167,7 +1167,6 @@ init_cmdline()
   alias 'cd..'='cd ..'
   alias 'cd.'='cd .'
   alias 'cls'='reset'
-  alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
 
   if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
     # shellcheck source=/dev/null
@@ -1176,6 +1175,12 @@ init_cmdline()
 
   alias build='build.sh'
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then alias cmdline='cmdline.bat'; else alias cmdline='cmdline.sh'; fi
+  alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
+
+  if test -n "${BB_CMD?}"; then
+    if ! command 1> /dev/null -v 'ts'; then alias 'ts'='busybox ts'; fi
+    if ! command 1> /dev/null -v 'su'; then alias 'su'='busybox su'; fi
+  fi
 
   export A5K_TITLE_IS_DEFAULT
   export A5K_LAST_TITLE
