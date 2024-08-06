@@ -1224,9 +1224,20 @@ init_vars
 detect_bb_and_id
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
-  if test -n "${QUOTED_PARAMS-}" && test "${#}" -eq 0; then eval ' \set' '--' "${QUOTED_PARAMS:?} " || exit 100; fi
+  if test -n "${__QUOTED_PARAMS-}" && test "${#}" -eq 0; then
+    _newline='
+'
+    _backup_ifs="${IFS-}"
+    IFS="${_newline:?}"
+    for _param in ${__QUOTED_PARAMS:?}; do
+      set -- "${@}" "${_param?}"
+    done
+    IFS="${_backup_ifs?}"
+    unset _newline _backup_ifs _param
+  fi
+
   unset DO_INIT_CMDLINE
-  unset QUOTED_PARAMS
+  unset __QUOTED_PARAMS
   if test "${#}" -eq 0; then init_cmdline; else init_cmdline "${@}"; fi
 fi
 

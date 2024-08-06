@@ -7,6 +7,8 @@
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
+    local _newline
+
     # Execute only if the first initialization has not already been done
     if test -z "${PLATFORM-}" || test -z "${MODULE_NAME-}"; then
 
@@ -31,15 +33,17 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
     unset STARTED_FROM_BATCH_FILE
     unset IS_PATH_INITIALIZED
-    unset QUOTED_PARAMS
+    unset __QUOTED_PARAMS
     if test "${#}" -gt 0; then
+      _newline='
+'
       case "${*}" in
-        *"'"*)
-          printf 'WARNING: Single quote found, parameters dropped\n'
+        *"${_newline:?}"*)
+          printf 'WARNING: Newline character found, parameters dropped\n'
           ;;
         *)
-          QUOTED_PARAMS="$(printf " '%s'" "${@}")"
-          export QUOTED_PARAMS
+          __QUOTED_PARAMS="$(printf '%s\n' "${@}")"
+          export __QUOTED_PARAMS
           ;;
       esac
     fi
@@ -52,9 +56,9 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     fi
   }
 
-  if test "${#}" -eq 0; then
-    main
-  else
+  if test "${#}" -gt 0; then
     main "${@}"
+  else
+    main
   fi
 fi
