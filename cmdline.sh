@@ -14,25 +14,27 @@ set -u
 }
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
-  if test "${PATH_FIX-}" != '1' && test -e '/usr/bin'; then
-    PATH="/usr/bin:${PATH:-/usr/bin}"
-    readonly PATH_FIX='1'
-    export PATH_FIX
-  fi
 
-  if test -z "${MAIN_DIR-}"; then
-    # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
-    if test -n "${BASH_SOURCE-}" && MAIN_DIR="$(dirname "${BASH_SOURCE:?}")" && MAIN_DIR="$(realpath "${MAIN_DIR:?}")"; then
-      export MAIN_DIR
-    else
-      unset MAIN_DIR
+  # Execute only if the first initialization has not already been done
+  if test -z "${MODULE_NAME-}"; then
+
+    if test -e '/usr/bin'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi
+
+    if test -z "${MAIN_DIR-}"; then
+      # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
+      if test -n "${BASH_SOURCE-}" && MAIN_DIR="$(dirname "${BASH_SOURCE:?}")" && MAIN_DIR="$(realpath "${MAIN_DIR:?}")"; then
+        export MAIN_DIR
+      else
+        unset MAIN_DIR
+      fi
     fi
-  fi
 
-  if test -n "${MAIN_DIR-}" && test -z "${USER_HOME-}"; then
-    if test "${TERM_PROGRAM-}" = 'mintty'; then unset TERM_PROGRAM; fi
-    export USER_HOME="${HOME-}"
-    export HOME="${MAIN_DIR:?}"
+    if test -n "${MAIN_DIR-}" && test -z "${USER_HOME-}"; then
+      if test "${TERM_PROGRAM-}" = 'mintty'; then unset TERM_PROGRAM; fi
+      export USER_HOME="${HOME-}"
+      export HOME="${MAIN_DIR:?}"
+    fi
+
   fi
 
   unset STARTED_FROM_BATCH_FILE
@@ -56,4 +58,5 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   else
     exec "${BASH:-${SHELL:-bash}}" --init-file './includes/common.sh'
   fi
+
 fi
