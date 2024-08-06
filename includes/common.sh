@@ -1199,11 +1199,12 @@ init_cmdline()
 
   if test "${CI:-false}" = 'false'; then
     PS1="${__DEFAULT_PS1:?}"
-    PROMPT_COMMAND='__update_title_and_ps1'
+    PROMPT_COMMAND='__update_title_and_ps1 || true'
   fi
 }
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
+  set -u
   # shellcheck disable=SC3040,SC3041,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / In POSIX sh, set flag -X is undefined. / C may run when A is true.
   {
     # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
