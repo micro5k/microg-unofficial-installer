@@ -18,7 +18,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   # Execute only if the first initialization has not already been done
   if test -z "${MODULE_NAME-}"; then
 
-    if test -e '/usr/bin'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi
+    if test -d '/usr/bin'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi
 
     if test -z "${MAIN_DIR-}"; then
       # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
