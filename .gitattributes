@@ -8,24 +8,32 @@ docs/CODEOWNERS   text eol=lf
 .gitattributes    text eol=lf
 .gitignore        text eol=lf
 .gitmodules       text eol=lf
+
+.editorconfig     text eol=lf
 .semgrepignore    text eol=lf
+.shellcheckrc     text eol=lf
+.simplecov        text eol=lf
 
 *.yml             text eol=lf
 *.xml             text eol=lf
 *.json            text eol=lf
 *.dis             text eol=lf
-.simplecov        text eol=lf
-.shellcheckrc     text eol=lf
-.editorconfig     text eol=lf
 
 .reuse/dep5       text eol=lf
 *.license         text eol=lf
 *.spdx            text eol=lf
 
+etc/profile       text eol=lf
+
 # Batch scripts
 *.bat             text eol=crlf
 
-# Text
+# Gradle files
+gradlew           text eol=lf
+*.gradle          text eol=lf
+
+# Textual formats
+*.properties      text eol=lf
 *.rst             text eol=lf
 *.md              text eol=lf
 *.txt             text eol=lf
@@ -43,17 +51,7 @@ docs/CODEOWNERS   text eol=lf
 *.py              text eol=lf
 
 # Our custom files
-build                         text eol=lf
 recovery-simulator/override/* text eol=lf
-
-# Gradle files
-gradlew           text eol=lf
-*.gradle          text eol=lf
-*.properties      text eol=lf
-
-# Other files
-fastlane/Appfile  text eol=lf
-fastlane/Fastfile text eol=lf
 
 # Uncompressed text manuals
 *.1               text eol=lf
@@ -62,6 +60,7 @@ fastlane/Fastfile text eol=lf
 *.exe             binary
 *.bin             binary
 *.apk             binary
+*.zip             binary
 *.jar             binary
 *.gz              binary
 *.png             binary
