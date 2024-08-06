@@ -88,7 +88,10 @@ export ftp_proxy="${ftp_proxy-}"
 
 detect_os_and_other_things()
 {
-  if test -n "${PLATFORM-}" && test -n "${IS_BUSYBOX-}" && test -n "${PATHSEP-}"; then return 0; fi
+  if test -n "${PLATFORM-}" && test -n "${IS_BUSYBOX-}" && test -n "${PATHSEP-}"; then
+    readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD
+    return 0
+  fi
 
   PLATFORM="$(uname | tr -- '[:upper:]' '[:lower:]')"
   IS_BUSYBOX='false'
