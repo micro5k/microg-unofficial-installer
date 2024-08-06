@@ -7,7 +7,7 @@
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
-    local _newline
+    local _newline _main_dir
 
     # Execute only if the first initialization has not already been done
     if test -z "${MAIN_DIR-}" || test -z "${PLATFORM-}" || test -z "${MODULE_NAME-}"; then
@@ -49,11 +49,8 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     fi
 
     export DO_INIT_CMDLINE=1
-    if test -n "${MAIN_DIR-}"; then
-      exec "${BASH:-${SHELL:-bash}}" --init-file "${MAIN_DIR:?}/includes/common.sh"
-    else
-      exec "${BASH:-${SHELL:-bash}}" --init-file './includes/common.sh'
-    fi
+    if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR:?}"; else _main_dir='.'; fi
+    exec "${BASH:-${SHELL:-bash}}" --init-file "${_main_dir:?}/includes/common.sh"
   }
 
   if test "${#}" -gt 0; then

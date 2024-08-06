@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
+
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-# NOTE: This script simulate a real recovery but it relies on the flashable zip to use the suggested paths.
-# REALLY IMPORTANT: A misbehaving flashable zip can damage your real system.
-
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 # shellcheck disable=SC2310 # This function is invoked in an XXX condition so set -e will be disabled. Invoke separately if failures should cause the script to exit
 
+# NOTE: This script simulate a real recovery but it relies on the flashable zip to use the suggested paths.
+# REALLY IMPORTANT: A misbehaving flashable zip can damage your real system.
+
 set -e
-# shellcheck disable=SC3040,SC3041,SC2015
+# shellcheck disable=SC3040,SC3041,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / In POSIX sh, set flag -X is undefined. / C may run when A is true.
 {
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-  (set -o posix 2> /dev/null) && set -o posix || true
-  (set +H 2> /dev/null) && set +H || true
-  (set -o pipefail) && set -o pipefail || true
+  (set 2> /dev/null -o posix) && set -o posix || true
+  (set 2> /dev/null +H) && set +H || true
+  (set 2> /dev/null -o pipefail) && set -o pipefail || true
 }
 
 # shellcheck disable=SC3028

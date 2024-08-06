@@ -1,7 +1,8 @@
 #!/sbin/sh
+
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
+# shellcheck enable=all
 
 # Ensure that the overridden commands are preferred over BusyBox applets (and that unsafe commands aren't accessible)
 export BB_OVERRIDE_APPLETS='mount umount chown su sudo' || exit 125
