@@ -8,28 +8,28 @@ on:
   push:
     paths:
       - "gradle/wrapper/gradle-wrapper.jar"
-      - ".reuse/dep5"
       - "**codecov.yml"
+      - "Makefile"
+      - ".reuse/dep5"
   pull_request:
     paths:
       - "gradle/wrapper/gradle-wrapper.jar"
-      - ".reuse/dep5"
       - "**codecov.yml"
+      - "Makefile"
+      - ".reuse/dep5"
   schedule:
     - cron: "0 0 * * 1"
   workflow_dispatch:
 
 jobs:
-  base-job:
+  base:
     name: "Base job"
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Check out code"
+      - name: "Checkout sources"
         uses: actions/checkout@v4
-        with:
-          fetch-depth: "0"
-      - name: "Gradle Wrapper validation"
+      - name: "Validate Gradle Wrapper"
         uses: gradle/actions/wrapper-validation@v4
       - name: "Validate Codecov configuration"
         shell: bash
@@ -48,14 +48,26 @@ jobs:
             if test "${status:?}" -eq 0; then echo 'Result: pass'; else echo 'Result: fail'; exit "${status:?}"; fi
           fi
 
-  dep5-validator:
+  makefile-validation:
+    name: "Validate makefile"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout sources"
+        uses: actions/checkout@v4
+      - name: "Validation"
+        uses: Uno-Takashi/checkmake-action@v2
+        with:
+          makefile: "Makefile"
+
+  dep5-validation:
     name: "Validate dep5"
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Check out code"
+      - name: "Checkout sources"
         uses: actions/checkout@v4
-      - name: "Validate dep5"
+      - name: "Validation"
         shell: bash
         run: |
           # Validating dep5
