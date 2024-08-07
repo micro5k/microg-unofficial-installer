@@ -155,9 +155,10 @@ detect_os_and_other_things()
 change_title()
 {
   test "${CI:-false}" = 'false' || return 0
+  test -t 2 || return 0
   A5K_TITLE_IS_DEFAULT='false'
   A5K_LAST_TITLE="${1:?}"
-  printf '\033]0;%s - %s\007\r' "${1:?}" "${MODULE_NAME:?}" && printf '       %*s   %*s    \r' "${#1}" '' "${#MODULE_NAME}" ''
+  printf 1>&2 '\033]0;%s - %s\007\r' "${1:?}" "${MODULE_NAME:?}" && printf 1>&2 '    %*s   %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
 }
 
 set_default_title()
