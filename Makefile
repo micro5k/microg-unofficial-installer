@@ -7,10 +7,10 @@
 all: buildota buildotaoss
 
 buildota:
-	OPENSOURCE_ONLY='false' "$(CURDIR)/build.sh" $(ARGS)
+	OPENSOURCE_ONLY=false NO_PAUSE=1 "$(CURDIR)/build.sh" $(ARGS)
 
 build: buildotaoss ;
 buildotaoss:
-	OPENSOURCE_ONLY='true' "$(CURDIR)/build.sh" $(ARGS)
+	OPENSOURCE_ONLY=true NO_PAUSE=1 "$(CURDIR)/build.sh" $(ARGS)
 
 cmdline: ;
