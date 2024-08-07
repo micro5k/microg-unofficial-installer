@@ -6,10 +6,6 @@ name: "Base"
 permissions: {}
 on:
   push:
-    branches:
-      - main
-    tags:
-      - "v*"
   pull_request:
   workflow_dispatch:
 jobs:
@@ -68,7 +64,7 @@ jobs:
           sha256_hash='${{ steps.coverage.outputs.sha256_hash }}'; readonly sha256_hash
           echo "::notice::${sha256_hash:-Missing hash}"
       - name: "Upload artifacts"
-        if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}"
+        if: "${{ github.event_name != 'pull_request' }}"
         uses: actions/upload-artifact@v4
         with:
           name: "microG unofficial installer OSS build (extract it)"
