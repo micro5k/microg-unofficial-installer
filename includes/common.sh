@@ -154,6 +154,7 @@ detect_os_and_other_things()
 
 change_title()
 {
+  test "${NO_TITLE:-0}" = '0' || return 0
   test "${CI:-false}" = 'false' || return 0
   test -t 2 || return 0
   A5K_TITLE_IS_DEFAULT='false'
@@ -201,6 +202,7 @@ __update_title_and_ps1()
     test -z "${__DEFAULT_PS1_AS_ROOT-}" || PS1="${__DEFAULT_PS1_AS_ROOT-}"
   fi
 
+  test "${NO_TITLE:-0}" = '0' || return 0
   test "${A5K_TITLE_IS_DEFAULT-}" = 'true' || return 0
   test -t 2 || return 0
   printf 1>&2 '\033]0;%s\007\r' "${_title}" && printf 1>&2 '    %*s \r' "${#_title}" ''
