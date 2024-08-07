@@ -1180,6 +1180,8 @@ init_cmdline()
   if test -n "${BB_CMD?}"; then
     if ! command 1> /dev/null -v 'ts'; then alias 'ts'='busybox ts'; fi
     if ! command 1> /dev/null -v 'su'; then alias 'su'='busybox su'; fi
+    if ! command 1> /dev/null -v 'drop'; then alias 'drop'='busybox drop'; fi
+    if ! command 1> /dev/null -v 'make'; then alias 'make'='busybox make'; fi
   fi
 
   export A5K_TITLE_IS_DEFAULT
