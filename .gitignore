@@ -11,10 +11,6 @@
 # VS Code files
 /.vscode/launch.json
 
-# Local files
-/.local/
-/local/
-
 # Gradle files
 /.gradle/
 /build/
@@ -22,6 +18,12 @@
 # Local configuration files
 local.properties
 user.gradle
+
+# Files to ignore
+/local/
+/.local/
+/build
+/cmdline
 
 # Code scanning, log and other files
 *.log
