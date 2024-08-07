@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 .POSIX:
-.PHONY: all test build cmdline
+.PHONY: all clean test build cmdline
 
 all: buildota buildotaoss
 
