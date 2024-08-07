@@ -23,6 +23,7 @@ docs/CODEOWNERS   text eol=lf
 *.license         text eol=lf
 *.spdx            text eol=lf
 
+Makefile          text eol=lf
 etc/profile       text eol=lf
 
 # Batch scripts
