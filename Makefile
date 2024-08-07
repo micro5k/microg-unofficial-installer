@@ -8,7 +8,7 @@ all: buildota buildotaoss
 buildota:
 	OPENSOURCE_ONLY='false' "$(CURDIR)/build.sh" $(ARGS)
 
-build: buildotaoss
+build: buildotaoss ;
 buildotaoss:
 	OPENSOURCE_ONLY='true' "$(CURDIR)/build.sh" $(ARGS)
 
