@@ -157,6 +157,7 @@ change_title()
   test "${NO_TITLE:-0}" = '0' || return 0
   test "${CI:-false}" = 'false' || return 0
   test -t 2 || return 0
+
   A5K_TITLE_IS_DEFAULT='false'
   A5K_LAST_TITLE="${1:?}"
   printf 1>&2 '\033]0;%s - %s\007\r' "${1:?}" "${MODULE_NAME:?}" && printf 1>&2 '    %*s   %*s \r' "${#1}" '' "${#MODULE_NAME}" ''
@@ -993,7 +994,7 @@ dropme()
 
   if test "${IS_BUSYBOX:?}" = 'true'; then
     # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-    drop -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- "${0-}" "${@}"
+    drop -c "${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- "${0-}" "${@}"
   elif test -n "${BB_CMD?}" && test -n "${SHELL_CMD?}"; then
     # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
     "${BB_CMD:?}" drop -s "${SHELL_CMD:?}" -c "${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- "${0-}" "${@}"
@@ -1175,8 +1176,8 @@ init_cmdline()
     . "${MAIN_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
   fi
 
-  alias build='build.sh'
-  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then alias cmdline='cmdline.bat'; else alias cmdline='cmdline.sh'; fi
+  alias 'build'='build.sh'
+  alias 'cmdline'='cmdline.sh'
   alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
 
   if test -n "${BB_CMD?}"; then

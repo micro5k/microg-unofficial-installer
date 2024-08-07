@@ -34,23 +34,29 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     unset STARTED_FROM_BATCH_FILE
     unset IS_PATH_INITIALIZED
     unset __QUOTED_PARAMS
-    if test "${#}" -gt 0; then
-      _newline='
-'
-      case "${*}" in
-        *"${_newline:?}"*)
-          printf 'WARNING: Newline character found, parameters dropped\n'
-          ;;
-        *)
-          __QUOTED_PARAMS="$(printf '%s\n' "${@}")"
-          export __QUOTED_PARAMS
-          ;;
-      esac
-    fi
 
     export DO_INIT_CMDLINE=1
     if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR:?}"; else _main_dir='.'; fi
-    exec "${BASH:-${SHELL:-bash}}" --init-file "${_main_dir:?}/includes/common.sh"
+
+    if test "${PLATFORM-}" = 'win' && test "${IS_BUSYBOX-}" = 'true'; then
+      exec ash -s -c ". '${_main_dir:?}/includes/common.sh' || exit ${?}" 'ash' "${@}"
+    else
+      if test "${#}" -gt 0; then
+        _newline='
+'
+        case "${*}" in
+          *"${_newline:?}"*)
+            printf 'WARNING: Newline character found, parameters dropped\n'
+            ;;
+          *)
+            __QUOTED_PARAMS="$(printf '%s\n' "${@}")"
+            export __QUOTED_PARAMS
+            ;;
+        esac
+      fi
+
+      exec "${BASH:-${SHELL:-bash}}" --init-file "${_main_dir:?}/includes/common.sh"
+    fi
   }
 
   if test "${#}" -gt 0; then
