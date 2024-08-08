@@ -88,8 +88,8 @@ done
 
 test "${default_build_type:?}" = 'false' || BUILD_TYPE="${BUILD_TYPE:-full}"
 case "${BUILD_TYPE-}" in
-  'full') OPENSOURCE_ONLY='false' ;;
-  'oss') OPENSOURCE_ONLY='true' ;;
+  'full') export OPENSOURCE_ONLY='false' ;;
+  'oss') export OPENSOURCE_ONLY='true' ;;
   *) ui_error "Invalid build type => '${BUILD_TYPE-}'" ;;
 esac
 
