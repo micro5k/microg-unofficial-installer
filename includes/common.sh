@@ -1079,7 +1079,8 @@ init_path()
     fi
 
     # Make some GNU tools available
-    local _program_dir_32="$(get_32bit_programfiles)"
+    local _program_dir_32
+    _program_dir_32="$(get_32bit_programfiles)"
     if test -n "${_program_dir_32?}"; then
       add_to_path_env "${_program_dir_32:?}/GnuWin32/bin"
     fi
