@@ -19,12 +19,11 @@
             },
             "options": {
                 "env": {
-                    "OPENSOURCE_ONLY": "false"
+                    "BUILD_TYPE": "full"
                 }
             },
             "group": {
-                "kind": "build",
-                "isDefault": true
+                "kind": "build"
             },
             "problemMatcher": []
         },
@@ -38,11 +37,12 @@
             },
             "options": {
                 "env": {
-                    "OPENSOURCE_ONLY": "true"
+                    "BUILD_TYPE": "oss"
                 }
             },
             "group": {
-                "kind": "build"
+                "kind": "build",
+                "isDefault": true
             },
             "problemMatcher": []
         },

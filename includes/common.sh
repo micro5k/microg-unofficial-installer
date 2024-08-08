@@ -195,7 +195,7 @@ restore_saved_title_if_exist()
 __update_title_and_ps1()
 {
   local _title
-  _title="Command-line: ${__TITLE_CMD_PREFIX-}$(basename "${0:--}" || printf "${0:--}" || true)$(test "${#}" -eq 0 || printf ' "%s"' "${@}" || true) (${SHLVL-}) - ${MODULE_NAME-}"
+  _title="Command-line: ${__TITLE_CMD_PREFIX-}$(basename "${0:--}" || printf '%s' "${0:--}" || true)$(test "${#}" -eq 0 || printf ' "%s"' "${@}" || true) (${SHLVL-}) - ${MODULE_NAME-}"
   PS1="${__DEFAULT_PS1-}"
 
   if is_root; then

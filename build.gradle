@@ -125,7 +125,7 @@ tasks.register('buildOta', Exec) {
 
     doFirst {
         println 'Building the flashable OTA zip with Gradle...'
-        environment OPENSOURCE_ONLY: 'false'
+        environment BUILD_TYPE: 'full'
         environment NO_PAUSE: '1'
         executable "${projectDir}/build" + getScriptExt()
     }
@@ -137,7 +137,7 @@ tasks.register('buildOtaOSS', Exec) {
 
     doFirst {
         println 'Building the flashable OTA zip (open-source components only) with Gradle...'
-        environment OPENSOURCE_ONLY: 'true'
+        environment BUILD_TYPE: 'oss'
         environment NO_PAUSE: '1'
         executable "${projectDir}/build" + getScriptExt()
     }

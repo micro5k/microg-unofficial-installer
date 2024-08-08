@@ -65,6 +65,18 @@ unset DO_INIT_CMDLINE
 # shellcheck source=SCRIPTDIR/includes/common.sh
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR}/includes/common.sh"; fi
 
+if test -n "${OPENSOURCE_ONLY-}"; then
+  ui_error 'You must set BUILD_TYPE instead of OPENSOURCE_ONLY'
+fi
+
+BUILD_TYPE="${BUILD_TYPE:-full}"
+
+case "${BUILD_TYPE-}" in
+  'full') OPENSOURCE_ONLY='false' ;;
+  'oss') OPENSOURCE_ONLY='true' ;;
+  *) ui_error "Invalid build type => '${BUILD_TYPE-}'" ;;
+esac
+
 save_last_title
 change_title 'Building the flashable OTA zip...'
 

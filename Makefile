@@ -4,13 +4,13 @@
 .POSIX:
 .PHONY: all clean test build cmdline
 
-all: buildota buildotaoss
+all: buildota buildotaoss ;
 
 buildota:
-	OPENSOURCE_ONLY=false NO_PAUSE=1 "$(CURDIR)/build.sh" $(ARGS)
+	BUILD_TYPE=full NO_PAUSE=1 "$(CURDIR)/build.sh" $(ARGS)
 
 build: buildotaoss ;
 buildotaoss:
-	OPENSOURCE_ONLY=true NO_PAUSE=1 "$(CURDIR)/build.sh" $(ARGS)
+	BUILD_TYPE=oss NO_PAUSE=1 "$(CURDIR)/build.sh" $(ARGS)
 
 cmdline: ;
