@@ -39,7 +39,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR:?}"; else _main_dir='.'; fi
 
     if test "${PLATFORM-}" = 'win' && test "${IS_BUSYBOX-}" = 'true'; then
-      exec ash -s -c ". '${_main_dir:?}/includes/common.sh' || exit ${?}" 'ash' "${@}"
+      exec ash -s -c ". '${_main_dir:?}/includes/common.sh' || exit \${?}" 'ash' "${@}"
     else
       if test "${#}" -gt 0; then
         _newline='
