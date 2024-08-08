@@ -53,7 +53,7 @@ ui_error()
   echo 1>&2 "ERROR: $1"
   pause_if_needed
   restore_saved_title_if_exist
-  test -n "$2" && exit "$2"
+  test -n "${2-}" && exit "$2"
   exit 1
 }
 
@@ -963,7 +963,8 @@ remove_duplicates_from_path_env()
 
 sume()
 {
-  local _fix_pwd
+  local _set_env_vars=''
+  local _fix_pwd=''
 
   if test "${PLATFORM:?}" != 'win'; then
     ui_warning 'sume not supported!!!'
@@ -971,13 +972,17 @@ sume()
   fi
   ! is_root || return 0
 
+  if test "${PLATFORM:?}" = 'win'; then
+    _set_env_vars="export MAIN_DIR='${MAIN_DIR:?}'; export PLATFORM='${PLATFORM:?}'; export IS_BUSYBOX='${IS_BUSYBOX:?}';"
+  fi
+
   if test "${IS_BUSYBOX:?}" = 'true'; then
     # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-    su -c "${MAIN_DIR:?}"'/cmdline.bat "${@}"' -- root "${0-}" "${@}"
+    su -c "${_set_env_vars?} ${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- root "${0-}" "${@}"
   elif test -n "${BB_CMD?}" && test -n "${SHELL_CMD?}"; then
-    _fix_pwd="cd '${PWD:?}'"
+    _fix_pwd="cd '${PWD:?}';"
     # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-    "${BB_CMD:?}" su -s "${SHELL_CMD:?}" -c "${_fix_pwd:?}; ${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- root "${0-}" "${@}"
+    "${BB_CMD:?}" su -s "${SHELL_CMD:?}" -c "${_set_env_vars?} ${_fix_pwd?} ${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- root "${0-}" "${@}"
   else
     ui_warning 'sume failed!!!'
     return 125
