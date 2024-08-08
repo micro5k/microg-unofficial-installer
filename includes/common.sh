@@ -166,9 +166,9 @@ change_title()
 set_default_title()
 {
   if is_root; then
-    change_title "[root] Command-line: ${__TITLE_CMD_PREFIX-}$(basename "${0-}" || true)${__TITLE_CMD_PARAMS-}"
+    change_title "[root] Command-line: ${__TITLE_CMD_PREFIX-}${__TITLE_CMD_0-}${__TITLE_CMD_PARAMS-}"
   else
-    change_title "Command-line: ${__TITLE_CMD_PREFIX-}$(basename "${0-}" || true)${__TITLE_CMD_PARAMS-}"
+    change_title "Command-line: ${__TITLE_CMD_PREFIX-}${__TITLE_CMD_0-}${__TITLE_CMD_PARAMS-}"
   fi
   A5K_TITLE_IS_DEFAULT='true'
 }
@@ -1132,13 +1132,16 @@ is_root()
 init_cmdline()
 {
   unset PROMPT_COMMAND PS1 A5K_SAVED_TITLE
-  unset __TITLE_CMD_PREFIX __TITLE_CMD_PARAMS __DEFAULT_PS1 __DEFAULT_PS1_AS_ROOT
+  unset __DEFAULT_PS1 __DEFAULT_PS1_AS_ROOT
 
-  __TITLE_CMD_PREFIX=''
-  __TITLE_CMD_PARAMS=''
+  export __TITLE_CMD_PREFIX=''
+  export __TITLE_CMD_0=''
+  export __TITLE_CMD_PARAMS=''
+
   test "${IS_BUSYBOX:?}" = 'false' || __TITLE_CMD_PREFIX='busybox '
+  __TITLE_CMD_0="$(basename "${0:--}" || printf '%s' "${0:--}")"
   test "${#}" -eq 0 || __TITLE_CMD_PARAMS="$(printf ' "%s"' "${@}")"
-  readonly __TITLE_CMD_PREFIX __TITLE_CMD_PARAMS
+  readonly __TITLE_CMD_PREFIX __TITLE_CMD_0 __TITLE_CMD_PARAMS
 
   A5K_LAST_TITLE="${A5K_LAST_TITLE-}"
   if test "${A5K_TITLE_IS_DEFAULT-}" != 'false'; then set_default_title; fi
