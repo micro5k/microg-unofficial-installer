@@ -7,10 +7,10 @@
 all: buildota buildotaoss ;
 
 buildota:
-	BUILD_TYPE=full NO_PAUSE=1 "$(CURDIR)/build.sh" $(ARGS)
+	BUILD_TYPE=full "$(CURDIR)/build.sh" --no-default-build-type --no-pause $(ARGS)
 
 build: buildotaoss ;
 buildotaoss:
-	BUILD_TYPE=oss NO_PAUSE=1 "$(CURDIR)/build.sh" $(ARGS)
+	BUILD_TYPE=oss "$(CURDIR)/build.sh" --no-default-build-type --no-pause $(ARGS)
 
 cmdline: ;

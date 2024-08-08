@@ -69,8 +69,24 @@ if test -n "${OPENSOURCE_ONLY-}"; then
   ui_error 'You must set BUILD_TYPE instead of OPENSOURCE_ONLY'
 fi
 
-BUILD_TYPE="${BUILD_TYPE:-full}"
+# Parse parameters
+default_build_type='true'
+while test "${#}" -gt 0; do
+  case "${1?}" in
+    --no-default-build-type) default_build_type='false' ;;
+    --no-pause) export NO_PAUSE=1 ;;
+    --)
+      shift
+      break
+      ;;
+    --* | -*) ;; # Ignore unsupported options
+    *) break ;;
+  esac
 
+  shift
+done
+
+test "${default_build_type:?}" = 'false' || BUILD_TYPE="${BUILD_TYPE:-full}"
 case "${BUILD_TYPE-}" in
   'full') OPENSOURCE_ONLY='false' ;;
   'oss') OPENSOURCE_ONLY='true' ;;
