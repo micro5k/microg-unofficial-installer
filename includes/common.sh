@@ -882,7 +882,7 @@ get_32bit_programfiles()
 
   _dir="${PROGRAMFILES_X86_-}" # On 64-bit Windows (only on BusyBox)
   if test -z "${_dir?}"; then
-    _dir="$(env | grep -w -m 1 -F -e 'ProgramFiles(x86)' | cut -d '=' -f '2-' -s || true)" # On 64-bit Windows
+    _dir="$(env | grep -w -m 1 -e '^ProgramFiles(x86)' | cut -d '=' -f '2-' -s || true)" # On 64-bit Windows
     if test -z "${_dir?}"; then
       _dir="${PROGRAMFILES-}" # On 32-bit Windows
     fi
@@ -1066,11 +1066,19 @@ init_path()
   if is_in_path_env "${TOOLS_DIR:?}"; then return; fi
 
   if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
-  # On Bash under Windows (for example the one included inside Git for Windows) we need to move '/usr/bin'
-  # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
-  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then move_to_begin_of_path_env '/usr/bin'; fi
 
   if test "${PLATFORM:?}" = 'win'; then
+    # On Bash under Windows (for example the one included inside Git for Windows) we need to have '/usr/bin'
+    # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
+    # ADDITIONAL NOTE: We have to do this even under BusyBox otherwise every external bash/make executed as subshell of BusyBox will be broken.
+    if test -z "${PATH-}"; then
+      ui_warning 'PATH env is empty'
+      PATH='/usr/bin'
+    else
+      PATH="/usr/bin${PATHSEP:?}${PATH:?}"
+    fi
+
+    # Make some GNU tools available
     local _program_dir_32="$(get_32bit_programfiles)"
     if test -n "${_program_dir_32?}"; then
       add_to_path_env "${_program_dir_32:?}/GnuWin32/bin"
