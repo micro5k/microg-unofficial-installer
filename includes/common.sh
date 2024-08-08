@@ -876,6 +876,21 @@ dl_list()
   IFS="${_backup_ifs:-}"
 }
 
+get_32bit_programfiles()
+{
+  local _dir
+
+  _dir="${PROGRAMFILES_X86_-}" # On 64-bit Windows (only on BusyBox)
+  if test -z "${_dir?}"; then
+    _dir="$(env | grep -w -m 1 -F -e 'ProgramFiles(x86)' | cut -d '=' -f '2-' -s || true)" # On 64-bit Windows
+    if test -z "${_dir?}"; then
+      _dir="${PROGRAMFILES-}" # On 32-bit Windows
+    fi
+  fi
+
+  printf '%s\n' "${_dir?}"
+}
+
 _is_in_path_env_internal()
 {
   case "${PATHSEP:?}${PATH-}${PATHSEP:?}" in
@@ -1054,6 +1069,13 @@ init_path()
   # On Bash under Windows (for example the one included inside Git for Windows) we need to move '/usr/bin'
   # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then move_to_begin_of_path_env '/usr/bin'; fi
+
+  if test "${PLATFORM:?}" = 'win'; then
+    local _program_dir_32="$(get_32bit_programfiles)"
+    if test -n "${_program_dir_32?}"; then
+      add_to_path_env "${_program_dir_32:?}/GnuWin32/bin"
+    fi
+  fi
 
   if test "${DO_INIT_CMDLINE:-0}" != '0'; then remove_duplicates_from_path_env; fi
   add_to_path_env "${TOOLS_DIR:?}"
