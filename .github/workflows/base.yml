@@ -34,7 +34,7 @@ jobs:
         run: |
           ### Executing code coverage...
           workspace_path='${{ github.workspace }}'; readonly workspace_path
-          export OPENSOURCE_ONLY='true'
+          export BUILD_TYPE=oss
           #sudo apt-get -qq -y install moreutils 1>/dev/null
           bashcov "${workspace_path:?}/build.sh"  # To timestamp the output pipe it to: TZ=UTC ts '[%H:%M:%S]'
           printf '\n'
