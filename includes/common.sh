@@ -1238,6 +1238,7 @@ init_cmdline()
   export PATH_SEPARATOR="${PATHSEP:?}"
   export DIRECTORY_SEPARATOR='/'
 
+  export NO_PAUSE=1
   export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
 
   # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
