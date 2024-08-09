@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 .POSIX:
-.PHONY: all clean test build cmdline
+.PHONY: all build clean test cmdline
 
 all: buildota buildotaoss ;
 
@@ -12,5 +12,10 @@ buildota:
 build: buildotaoss ;
 buildotaoss:
 	BUILD_TYPE=oss "$(CURDIR)/build.sh" --no-default-build-type --no-pause $(ARGS)
+
+clean:
+	rm -f "$(CURDIR)/output/"*.zip
+	rm -f "$(CURDIR)/output/"*.zip.md5
+	rm -f "$(CURDIR)/output/"*.zip.sha256
 
 cmdline: ;
