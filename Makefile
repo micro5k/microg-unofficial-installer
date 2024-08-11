@@ -1,3 +1,5 @@
+#!/usr/bin/env -S make -f
+
 # SPDX-FileCopyrightText: (c) 2024 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
