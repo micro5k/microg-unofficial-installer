@@ -1024,6 +1024,12 @@ dropme()
   fi
 }
 
+alias_cmd_if_missing()
+{
+  # shellcheck disable=SC2139 # Ignore: This expands when defined, not when used
+  if ! command 1> /dev/null -v "${1:?}"; then alias "${1:?}"="busybox '${1:?}'"; fi
+}
+
 init_base()
 {
   local _main_dir
@@ -1220,10 +1226,11 @@ init_cmdline()
   alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
 
   if test -n "${BB_CMD?}"; then
-    if ! command 1> /dev/null -v 'ts'; then alias 'ts'='busybox ts'; fi
-    if ! command 1> /dev/null -v 'su'; then alias 'su'='busybox su'; fi
-    if ! command 1> /dev/null -v 'drop'; then alias 'drop'='busybox drop'; fi
-    if ! command 1> /dev/null -v 'make'; then alias 'make'='busybox make'; fi
+    alias_cmd_if_missing 'su'
+    alias_cmd_if_missing 'drop'
+    alias_cmd_if_missing 'ts'
+    alias_cmd_if_missing 'make'
+    alias_cmd_if_missing 'pdpmake'
   fi
 
   export A5K_TITLE_IS_DEFAULT
