@@ -1227,10 +1227,12 @@ init_cmdline()
 
   if test -n "${BB_CMD?}"; then
     alias_cmd_if_missing 'su'
-    alias_cmd_if_missing 'drop'
     alias_cmd_if_missing 'ts'
-    alias_cmd_if_missing 'make'
-    alias_cmd_if_missing 'pdpmake'
+    if test "${PLATFORM:?}" = 'win'; then
+      alias_cmd_if_missing 'drop'
+      alias_cmd_if_missing 'make'
+      alias_cmd_if_missing 'pdpmake'
+    fi
   fi
 
   export A5K_TITLE_IS_DEFAULT
