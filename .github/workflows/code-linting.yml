@@ -33,7 +33,7 @@ jobs:
 
   codacy:
     name: "Codacy"
-    if: "${{ github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
+    if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -64,7 +64,7 @@ jobs:
 
   sonarcloud:
     name: "SonarCloud"
-    if: "${{ github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
+    if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
     runs-on: ubuntu-latest
 
     steps:
