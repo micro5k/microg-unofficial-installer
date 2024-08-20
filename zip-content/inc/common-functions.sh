@@ -1147,8 +1147,16 @@ perform_secure_copy_to_device()
 
 perform_installation()
 {
+  local _free_space_bytes _free_space_mb
+
   ui_msg_empty_line
+
+  _free_space_bytes="$(($(stat -f -c '%f * %S' -- "${SYS_PATH:?}")))" || _free_space_bytes='0'
+  _free_space_mb="$(awk -v n="${_free_space_bytes:?}" -- 'BEGIN{printf "%.2f\n", n/1048576.0}')"
+
   ui_msg "Disk space required: $(du -s -h -- "${TMP_PATH:?}/files" | cut -f 1 -s || true)"
+  ui_msg "Free disk space: ${_free_space_mb?}M"
+
   ui_msg_empty_line
 
   ui_msg 'Installing...'
