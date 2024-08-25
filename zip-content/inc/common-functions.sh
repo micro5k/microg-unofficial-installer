@@ -1111,8 +1111,8 @@ get_disk_space_usage_of_file_or_folder()
 {
   local _result
 
-  if du 2> /dev/null -s -B 1 -- "${1:?}" | cut -f 1 -s; then
-    :
+  if _result="$(du 2> /dev/null -s -B 1 -- "${1:?}" | cut -f 1 -s)" && test -n "${_result?}"; then
+    printf '%s\n' "${_result:?}"
   elif _result="$(du -s -k -- "${1:?}" | cut -f 1 -s)" && test -n "${_result?}"; then
     printf '%s\n' "$((_result * 1024))"
   else
@@ -1173,8 +1173,8 @@ perform_installation()
   _needed_space_bytes="$(get_disk_space_usage_of_file_or_folder "${TMP_PATH:?}/files")" || _needed_space_bytes='0'
   _free_space_bytes="$(($(stat -f -c '%f * %S' -- "${SYS_PATH:?}")))" || _free_space_bytes='0'
 
-  ui_msg "Disk space required: $(convert_bytes_to_mb "${_needed_space_bytes:?}") MB"
-  ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}") MB"
+  ui_msg "Disk space required: $(convert_bytes_to_mb "${_needed_space_bytes:?}" || true) MB"
+  ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || true) MB"
 
   ui_msg_empty_line
 
