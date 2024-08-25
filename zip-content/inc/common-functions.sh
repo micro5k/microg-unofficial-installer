@@ -1107,6 +1107,20 @@ _is_free_space_error()
   return 1 # NOT found
 }
 
+get_disk_space_usage_of_file_or_folder()
+{
+  local _result
+
+  if du 2> /dev/null -s -B 1 -- "${1:?}" | cut -f 1 -s; then
+    :
+  elif _result="$(du -s -k -- "${1:?}" | cut -f 1 -s)" && test -n "${_result?}"; then
+    printf '%s\n' "$((_result * 1024))"
+  else
+    printf '0'
+    return 1
+  fi
+}
+
 convert_bytes_to_mb()
 {
   awk -v n="${1:?}" -- 'BEGIN{printf "%.2f\n", n/1048576.0}'
@@ -1152,18 +1166,15 @@ perform_secure_copy_to_device()
 
 perform_installation()
 {
-  local _needed_space_bytes _needed_space_mb _free_space_bytes _free_space_mb
+  local _needed_space_bytes _free_space_bytes
 
   ui_msg_empty_line
 
-  _needed_space_bytes="$(($(du -s -k -- "${TMP_PATH:?}/files" | cut -f 1 -s || printf '0') * 1024))" || _needed_space_bytes='0'
-  _needed_space_mb="$(convert_bytes_to_mb "${_needed_space_bytes:?}")"
-
+  _needed_space_bytes="$(get_disk_space_usage_of_file_or_folder "${TMP_PATH:?}/files")" || _needed_space_bytes='0'
   _free_space_bytes="$(($(stat -f -c '%f * %S' -- "${SYS_PATH:?}")))" || _free_space_bytes='0'
-  _free_space_mb="$(convert_bytes_to_mb "${_free_space_bytes:?}")"
 
-  ui_msg "Disk space required: ${_needed_space_mb?} MB"
-  ui_msg "Free disk space: ${_free_space_mb?} MB"
+  ui_msg "Disk space required: $(convert_bytes_to_mb "${_needed_space_bytes:?}") MB"
+  ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}") MB"
 
   ui_msg_empty_line
 
