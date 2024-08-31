@@ -10,7 +10,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     local _newline _main_dir
 
     # Execute only if the first initialization has not already been done
-    if test -z "${MAIN_DIR-}" || test -z "${PLATFORM-}" || test -z "${MODULE_NAME-}"; then
+    if test -z "${MAIN_DIR-}" || test -z "${USER_HOME-}"; then
 
       if test -d '/usr/bin'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi
 

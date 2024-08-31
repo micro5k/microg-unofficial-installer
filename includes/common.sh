@@ -988,7 +988,7 @@ sume()
   ! is_root || return 0
 
   if test "${PLATFORM:?}" = 'win'; then
-    _set_env_vars="export MAIN_DIR='${MAIN_DIR:?}'; export PLATFORM='${PLATFORM:?}'; export IS_BUSYBOX='${IS_BUSYBOX:?}';"
+    _set_env_vars="export HOME='${HOME-}'; export USER_HOME='${USER_HOME-}'; export MAIN_DIR='${MAIN_DIR:?}'; export PLATFORM='${PLATFORM:?}'; export IS_BUSYBOX='${IS_BUSYBOX:?}';"
   fi
 
   if test "${IS_BUSYBOX:?}" = 'true'; then
@@ -1224,6 +1224,9 @@ init_cmdline()
   alias 'build'='build.sh'
   alias 'cmdline'='cmdline.sh'
   alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
+  if test "${PLATFORM:?}" = 'win'; then
+    alias 'gradlew'='gradlew.bat'
+  fi
 
   if test -n "${BB_CMD?}"; then
     alias_cmd_if_missing 'su'
