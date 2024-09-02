@@ -1175,6 +1175,7 @@ perform_installation()
 
   ui_msg "Disk space required: $(convert_bytes_to_mb "${_needed_space_bytes:?}" || true) MB"
   ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || true) MB"
+  if test "${_needed_space_bytes:?}" -ge "${_free_space_bytes:?}"; then ui_warning "There is NOT enough free space available, but let's try anyway"; fi
 
   ui_msg_empty_line
 
