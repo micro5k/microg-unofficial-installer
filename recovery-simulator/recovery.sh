@@ -390,15 +390,18 @@ link_folder "${_base_simulation_path:?}/sdcard" "${_android_ext_stor:?}"
 
 {
   echo 'ro.build.characteristics=phone,emulator'
+  echo 'ro.build.product=emu64x'
   echo 'ro.build.version.sdk=26'
   echo 'ro.product.brand=Android'
-  echo 'ro.product.cpu.abi2=x86'
   echo 'ro.product.cpu.abi=x86_64'
+  echo 'ro.product.cpu.abi2=x86'
+  echo 'ro.product.cpu.abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi'
   echo 'ro.product.cpu.abilist32=x86,armeabi-v7a,armeabi'
   echo 'ro.product.cpu.abilist64=x86_64,arm64-v8a'
-  echo 'ro.product.cpu.abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi'
   echo 'ro.product.device=emu64x'
   echo 'ro.product.manufacturer=ale5000'
+  echo 'ro.product.model=sdk_gphone64_x86_64'
+  echo 'ro.product.name=sdk_gphone64_x86_64'
 } 1> "${_android_sys:?}/build.prop"
 
 touch "${_base_simulation_path:?}/AndroidManifest.xml"
