@@ -880,9 +880,12 @@ get_32bit_programfiles()
 {
   local _dir
 
-  _dir="${PROGRAMFILES_X86_-}" # On 64-bit Windows (only on BusyBox)
+  _dir="${PROGRAMFILES_X86_-}" # On 64-bit Windows (on BusyBox)
+
   if test -z "${_dir?}"; then
-    _dir="$(env | grep -w -m 1 -e '^ProgramFiles(x86)' | cut -d '=' -f '2-' -s || true)" # On 64-bit Windows
+    if test "${IS_BUSYBOX:?}" = 'false'; then
+      _dir="$(env | grep -w -m 1 -e '^ProgramFiles(x86)' | cut -d '=' -f '2-' -s || true)" # On 64-bit Windows (on Bash)
+    fi
     if test -z "${_dir?}"; then
       _dir="${PROGRAMFILES-}" # On 32-bit Windows
     fi
