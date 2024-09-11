@@ -1027,6 +1027,12 @@ dropme()
   fi
 }
 
+alias_cmd()
+{
+  # shellcheck disable=SC2139 # Ignore: This expands when defined, not when used
+  alias "${1:?}"="busybox '${1:?}'"
+}
+
 alias_cmd_if_missing()
 {
   # shellcheck disable=SC2139 # Ignore: This expands when defined, not when used
@@ -1237,7 +1243,7 @@ init_cmdline()
     if test "${PLATFORM:?}" = 'win'; then
       alias_cmd_if_missing 'drop'
       alias_cmd_if_missing 'make'
-      alias_cmd_if_missing 'pdpmake'
+      alias_cmd 'pdpmake'
     fi
   fi
 
