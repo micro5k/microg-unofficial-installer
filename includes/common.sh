@@ -1220,10 +1220,15 @@ init_cmdline()
   add_to_path_env "${UTILS_DIR:?}"
   add_to_path_env "${MAIN_DIR:?}"
 
+  if test "${PLATFORM:?}" = 'win'; then
+    export BB_OVERRIDE_APPLETS=';make'
+  fi
+
   alias 'dir'='ls'
   alias 'cd..'='cd ..'
   alias 'cd.'='cd .'
   alias 'cls'='reset'
+  alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
 
   if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
     # shellcheck source=/dev/null
@@ -1232,7 +1237,6 @@ init_cmdline()
 
   alias 'build'='build.sh'
   alias 'cmdline'='cmdline.sh'
-  alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
   if test "${PLATFORM:?}" = 'win'; then
     alias 'gradlew'='gradlew.bat'
   fi
