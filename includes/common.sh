@@ -1027,13 +1027,13 @@ dropme()
   fi
 }
 
-alias_cmd()
+create_bb_alias_if_not_applet()
 {
   # shellcheck disable=SC2139 # Ignore: This expands when defined, not when used
-  alias "${1:?}"="busybox '${1:?}'"
+  if test "$(command -v "${1:?}")" != "${1:?}"; then alias "${1:?}"="busybox '${1:?}'"; fi
 }
 
-alias_cmd_if_missing()
+create_bb_alias_if_missing()
 {
   # shellcheck disable=SC2139 # Ignore: This expands when defined, not when used
   if ! command 1> /dev/null -v "${1:?}"; then alias "${1:?}"="busybox '${1:?}'"; fi
@@ -1238,12 +1238,12 @@ init_cmdline()
   fi
 
   if test -n "${BB_CMD?}"; then
-    alias_cmd_if_missing 'su'
-    alias_cmd_if_missing 'ts'
+    create_bb_alias_if_missing 'su'
+    create_bb_alias_if_missing 'ts'
     if test "${PLATFORM:?}" = 'win'; then
-      alias_cmd_if_missing 'drop'
-      alias_cmd_if_missing 'make'
-      alias_cmd 'pdpmake'
+      create_bb_alias_if_missing 'drop'
+      create_bb_alias_if_missing 'make'
+      create_bb_alias_if_not_applet 'pdpmake'
     fi
   fi
 
