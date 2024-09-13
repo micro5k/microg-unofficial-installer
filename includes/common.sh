@@ -1147,7 +1147,7 @@ is_root()
 
 shellhelp()
 {
-  PATH='%builtin' \help "${@}"
+  PATH='' \help "${@}"
 }
 
 init_cmdline()
