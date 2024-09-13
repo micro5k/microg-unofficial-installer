@@ -1030,7 +1030,7 @@ dropme()
 create_bb_alias_if_not_applet()
 {
   # shellcheck disable=SC2139 # Ignore: This expands when defined, not when used
-  if test "$(command -v "${1:?}")" != "${1:?}"; then alias "${1:?}"="busybox '${1:?}'"; fi
+  if test "$(command -v "${1:?}" || true)" != "${1:?}"; then alias "${1:?}"="busybox '${1:?}'"; fi
 }
 
 create_bb_alias_if_missing()
