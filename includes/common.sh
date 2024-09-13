@@ -1145,6 +1145,11 @@ is_root()
   return 0                                         # Return true
 }
 
+shellhelp()
+{
+  PATH='%builtin' \help "${@}"
+}
+
 init_cmdline()
 {
   unset PROMPT_COMMAND PS1 PROMPT A5K_SAVED_TITLE
@@ -1238,7 +1243,10 @@ init_cmdline()
     alias 'gradlew'='gradlew.bat'
   fi
 
+  alias 'help'='help.sh'
+
   add_to_path_env "${UTILS_DIR:?}"
+  PATH="%builtin${PATHSEP:?}${PATH-}"
   add_to_path_env "${MAIN_DIR:?}"
 
   if test -n "${BB_CMD?}"; then
