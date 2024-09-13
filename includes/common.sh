@@ -1217,11 +1217,8 @@ init_cmdline()
     fi
   fi
 
-  add_to_path_env "${UTILS_DIR:?}"
-  add_to_path_env "${MAIN_DIR:?}"
-
   if test "${PLATFORM:?}" = 'win'; then
-    export BB_OVERRIDE_APPLETS=';make'
+    export BB_OVERRIDE_APPLETS='; make'
   fi
 
   alias 'dir'='ls'
@@ -1240,6 +1237,9 @@ init_cmdline()
   if test "${PLATFORM:?}" = 'win'; then
     alias 'gradlew'='gradlew.bat'
   fi
+
+  add_to_path_env "${UTILS_DIR:?}"
+  add_to_path_env "${MAIN_DIR:?}"
 
   if test -n "${BB_CMD?}"; then
     create_bb_alias_if_missing 'su'
