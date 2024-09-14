@@ -4,10 +4,10 @@
    SPDX-FileType: DOCUMENTATION
 
 ===============
-Security Policy
+Security policy
 ===============
 
-Supported Versions
+Supported versions
 ------------------
 
 ================= =========
