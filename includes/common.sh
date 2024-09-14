@@ -1147,7 +1147,11 @@ is_root()
 
 shellhelp()
 {
-  PATH='' \help "${@}"
+  if test "${#}" -gt 0; then
+    PATH="%builtin${PATHSEP:?}${PATH-}" \help "${@}"
+  else
+    PATH="%builtin${PATHSEP:?}${PATH-}" \help | sed -e 's/Type `help/Type `shellhelp/g'
+  fi
 }
 
 init_cmdline()
