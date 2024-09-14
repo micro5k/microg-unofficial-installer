@@ -59,6 +59,6 @@ Code analysis
    :alt: CodeFactor Badge
    :target: https://www.codefactor.io/repository/github/micro5k/microg-unofficial-installer
 
-.. image:: https://app.codacy.com/project/badge/Grade/892e0ecec7b744ad8f26b97b30d552f1
+.. image:: https://app.codacy.com/project/badge/Grade/e372a72b55f54bcf80966c8266e3e7fb
    :alt: Codacy Badge
    :target: https://app.codacy.com/gh/micro5k/microg-unofficial-installer/dashboard
