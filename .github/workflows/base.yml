@@ -70,6 +70,11 @@ jobs:
           name: "microG unofficial installer OSS build (extract it)"
           path: "output/*.zip*"
           retention-days: 7
+      - name: "Upload coverage reports to Codacy"
+        if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
       - name: "Upload coverage reports to Codecov"
         if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
         uses: codecov/codecov-action@v4
