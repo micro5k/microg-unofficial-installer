@@ -1150,6 +1150,7 @@ shellhelp()
   if test "${#}" -gt 0; then
     PATH="%builtin${PATHSEP:?}${PATH-}" \help "${@}"
   else
+    # shellcheck disable=SC2016 # It is intended: Expressions don't expand in single quotes
     PATH="%builtin${PATHSEP:?}${PATH-}" \help | sed -e 's/Type `help/Type `shellhelp/g'
   fi
 }
