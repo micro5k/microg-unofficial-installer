@@ -1134,6 +1134,8 @@ convert_bytes_to_human_readable_format()
     awk -v n="${1:?}" -- 'BEGIN{printf "%.2f MB\n", n/1048576.0}'
   elif test "${1:?}" -ge 1024; then
     awk -v n="${1:?}" -- 'BEGIN{printf "%.2f KB\n", n/1024.0}'
+  elif test "${1:?}" -eq 1; then
+    printf '%d byte\n' "${1:?}"
   else
     printf '%d bytes\n' "${1:?}"
   fi
