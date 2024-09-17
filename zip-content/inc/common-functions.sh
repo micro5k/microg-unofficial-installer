@@ -1112,11 +1112,11 @@ get_disk_space_usage_of_file_or_folder()
   local _result
 
   if _result="$(du 2> /dev/null -s -B 1 -- "${1:?}" | cut -f 1 -s)" && test -n "${_result?}"; then
-    printf '%s\n' "${_result:?}"
+    printf '%d\n' "${_result:?}"
   elif _result="$(du -s -k -- "${1:?}" | cut -f 1 -s)" && test -n "${_result?}"; then
-    printf '%s\n' "$((_result * 1024))"
+    printf '%d\n' "$((_result * 1024))"
   else
-    printf '-1'
+    printf '%d\n' '-1'
     return 1
   fi
 }
