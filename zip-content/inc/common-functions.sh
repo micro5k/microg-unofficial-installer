@@ -1126,6 +1126,19 @@ convert_bytes_to_mb()
   awk -v n="${1:?}" -- 'BEGIN{printf "%.2f\n", n/1048576.0}'
 }
 
+convert_bytes_to_human_readable_format()
+{
+  if test "${1:?}" -ge 1073741824; then
+    awk -v n="${1:?}" -- 'BEGIN{printf "%.2f GB\n", n/1073741824.0}'
+  elif test "${1:?}" -ge 1048576; then
+    awk -v n="${1:?}" -- 'BEGIN{printf "%.2f MB\n", n/1048576.0}'
+  elif test "${1:?}" -ge 1024; then
+    awk -v n="${1:?}" -- 'BEGIN{printf "%.2f KB\n", n/1024.0}'
+  else
+    printf '%d bytes\n' "${1:?}"
+  fi
+}
+
 verify_disk_space()
 {
   local _needed_space_bytes _free_space_bytes
@@ -1134,7 +1147,7 @@ verify_disk_space()
   _free_space_bytes="$(($(stat -f -c '%f * %S' -- "${1:?}")))" || _free_space_bytes='-1'
 
   ui_msg "Disk space required: $(convert_bytes_to_mb "${_needed_space_bytes:?}" || true) MB"
-  ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || true) MB"
+  ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || true) MB ($(convert_bytes_to_human_readable_format "${_free_space_bytes:?}" || true))"
 
   if test "${_needed_space_bytes:?}" -lt 0 || test "${_free_space_bytes:?}" -lt 0; then
     ui_msg_empty_line
