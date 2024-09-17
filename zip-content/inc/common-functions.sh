@@ -1116,7 +1116,7 @@ get_disk_space_usage_of_file_or_folder()
   elif _result="$(du -s -k -- "${1:?}" | cut -f 1 -s)" && test -n "${_result?}"; then
     printf '%s\n' "$((_result * 1024))"
   else
-    printf '0'
+    printf '-1'
     return 1
   fi
 }
@@ -1124,6 +1124,27 @@ get_disk_space_usage_of_file_or_folder()
 convert_bytes_to_mb()
 {
   awk -v n="${1:?}" -- 'BEGIN{printf "%.2f\n", n/1048576.0}'
+}
+
+verify_disk_space()
+{
+  local _needed_space_bytes _free_space_bytes
+
+  _needed_space_bytes="$(get_disk_space_usage_of_file_or_folder "${TMP_PATH:?}/files")" || _needed_space_bytes='-1'
+  _free_space_bytes="$(($(stat -f -c '%f * %S' -- "${1:?}")))" || _free_space_bytes='-1'
+
+  ui_msg "Disk space required: $(convert_bytes_to_mb "${_needed_space_bytes:?}" || true) MB"
+  ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || true) MB"
+
+  if test "${_needed_space_bytes:?}" -lt 0 || test "${_free_space_bytes:?}" -lt 0; then
+    ui_msg_empty_line
+    ui_warning "Unable to verify needed space, continuing anyway"
+    return 0
+  fi
+
+  if test "${_needed_space_bytes:?}" -ge "${_free_space_bytes:?}"; then return 1; fi
+
+  return 0
 }
 
 perform_secure_copy_to_device()
@@ -1166,16 +1187,12 @@ perform_secure_copy_to_device()
 
 perform_installation()
 {
-  local _needed_space_bytes _free_space_bytes
-
   ui_msg_empty_line
 
-  _needed_space_bytes="$(get_disk_space_usage_of_file_or_folder "${TMP_PATH:?}/files")" || _needed_space_bytes='0'
-  _free_space_bytes="$(($(stat -f -c '%f * %S' -- "${SYS_PATH:?}")))" || _free_space_bytes='0'
-
-  ui_msg "Disk space required: $(convert_bytes_to_mb "${_needed_space_bytes:?}" || true) MB"
-  ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || true) MB"
-  if test "${_needed_space_bytes:?}" -ge "${_free_space_bytes:?}"; then ui_warning "There is NOT enough free space available, but let's try anyway"; fi
+  if ! verify_disk_space "${SYS_PATH:?}"; then
+    ui_msg_empty_line
+    ui_warning "There is NOT enough free space available, but let's try anyway"
+  fi
 
   ui_msg_empty_line
 
