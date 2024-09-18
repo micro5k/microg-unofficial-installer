@@ -1128,7 +1128,26 @@ convert_bytes_to_mb()
 
 convert_bytes_to_human_readable_format()
 {
-  if test "${1:?}" -ge 1073741824; then
+  local _skip_tb='false'
+  local _fallback_to_gb='false'
+
+  case "${1:?}" in
+    *[!0-9]*)
+      printf '%s\n' 'invalid number'
+      return 1
+      ;;
+    *) ;;
+  esac
+
+  # In old shells the number 1099511627776 will overflow, so we check if it has overflowed before doing the real check
+  if ! test 2> /dev/null 1099511627776 -gt 0; then
+    _skip_tb='true'
+    if awk -v n="${1:?}" -- 'BEGIN { if ( n < 1073741824 ) exit 1 }'; then _fallback_to_gb='true'; fi
+  fi
+
+  if test "${_skip_tb:?}" = 'false' && test "${1:?}" -ge 1099511627776; then
+    awk -v n="${1:?}" -- 'BEGIN{printf "%.2f TB\n", n/1099511627776.0}'
+  elif test "${_fallback_to_gb:?}" = 'true' || test "${1:?}" -ge 1073741824; then
     awk -v n="${1:?}" -- 'BEGIN{printf "%.2f GB\n", n/1073741824.0}'
   elif test "${1:?}" -ge 1048576; then
     awk -v n="${1:?}" -- 'BEGIN{printf "%.2f MB\n", n/1048576.0}'
@@ -1136,8 +1155,11 @@ convert_bytes_to_human_readable_format()
     awk -v n="${1:?}" -- 'BEGIN{printf "%.2f KB\n", n/1024.0}'
   elif test "${1:?}" -eq 1; then
     printf '%d byte\n' "${1:?}"
-  else
+  elif test "${1:?}" -ge 0; then
     printf '%d bytes\n' "${1:?}"
+  else
+    printf '%s\n' 'invalid number'
+    return 1
   fi
 }
 
