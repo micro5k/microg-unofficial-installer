@@ -15,12 +15,12 @@ convert_max_signed_int_to_bit()
 {
   case "${1?}" in
     '32767') printf '16-bit' ;;
-    '2147480047') printf '32-bit (limited to 2147480047)' ;; # Bugged 'date' (likely on old 32-bit BusyBox under Windows)
-    '2147483647') printf '32-bit' ;;
-    '32535215999') printf '64-bit (limited to 32535215999)' ;;             # 64-bit 'date' range can be limited by the OS (likely under Windows)
-    '32535244799') printf '64-bit (limited to 32535244799)' ;;             # 64-bit 'date' range can be limited by the OS (likely on BusyBox under Windows)
-    '67768036191676799') printf '64-bit (limited to 67768036191676799)' ;; # 64-bit 'date' range can be limited by the OS (likely under Linux)
-    '9223372036854775807') printf '64-bit' ;;
+    '2147480047') printf "32-bit (limited to max ${1:?})" ;; # Bugged 'date' (likely on old 32-bit BusyBox under Windows)
+    '2147483647') printf "32-bit" ;;
+    '32535215999') printf "64-bit (limited to max ${1:?})" ;;       # 64-bit 'date' range can be limited by the OS (likely under Windows)
+    '32535244799') printf "64-bit (limited to max ${1:?})" ;;       # 64-bit 'date' range can be limited by the OS (likely on BusyBox under Windows)
+    '67768036191676799') printf "64-bit (limited to max ${1:?})" ;; # 64-bit 'date' range can be limited by the OS (likely under Linux)
+    '9223372036854775807') printf "64-bit" ;;
     *)
       printf '%s\n' 'unknown'
       return 1
@@ -32,7 +32,7 @@ convert_max_unsigned_int_to_bit()
 {
   case "${1?}" in
     '65535') printf '16-bit' ;;
-    '2147483648') printf '32-bit (limited to 2147483648)' ;; # Bugged unsigned 'printf' of awk (likely on BusyBox under Windows)
+    '2147483648') printf "32-bit (limited to max ${1:?})" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox under Windows)
     '4294967295') printf '32-bit' ;;
     '18446744073709551615') printf '64-bit' ;;
     *)
