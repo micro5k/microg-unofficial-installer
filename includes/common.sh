@@ -141,11 +141,12 @@ detect_os_and_other_things()
     if test "${IS_BUSYBOX:?}" = 'true'; then
       PATHSEP=';'
       SHELL_CMD=''
-    fi
-
-    if test "${IS_BUSYBOX:?}" = 'false' && PATH="/usr/bin${PATHSEP:?}${PATH-}" command 1> /dev/null -v 'cygpath'; then
-      CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)" || ui_error 'Unable to find the path of cygpath'
-      SHELL_CMD="$("${CYGPATH:?}" -m -a -l -- "${SHELL_CMD:?}")" || ui_error 'Unable to convert the path of the shell'
+    else
+      if CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)"; then
+        SHELL_CMD="$("${CYGPATH:?}" -m -a -l -- "${SHELL_CMD:?}")" || ui_error 'Unable to convert the path of the shell'
+      else
+        CYGPATH=''
+      fi
     fi
   fi
 
