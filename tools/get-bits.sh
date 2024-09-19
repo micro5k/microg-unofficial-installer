@@ -15,11 +15,11 @@ convert_max_signed_int_to_bit()
 {
   case "${1?}" in
     '32767') printf '16-bit' ;;
-    '2147480047') printf '32-bit (limited to 2147480047)' ;; # Bugged 'date'
+    '2147480047') printf '32-bit (limited to 2147480047)' ;; # Bugged 'date' (likely on old 32-bit BusyBox under Windows)
     '2147483647') printf '32-bit' ;;
-    '32535215999') printf '64-bit (limited to 32535215999)' ;;             # 64-bit 'date' range can be limited by the OS
-    '32535244799') printf '64-bit (limited to 32535244799)' ;;             # 64-bit 'date' range can be limited by the OS (likely on BusyBox for Windows)
-    '67768036191676799') printf '64-bit (limited to 67768036191676799)' ;; # 64-bit 'date' range can be limited by the OS (likely on Linux)
+    '32535215999') printf '64-bit (limited to 32535215999)' ;;             # 64-bit 'date' range can be limited by the OS (likely under Windows)
+    '32535244799') printf '64-bit (limited to 32535244799)' ;;             # 64-bit 'date' range can be limited by the OS (likely on BusyBox under Windows)
+    '67768036191676799') printf '64-bit (limited to 67768036191676799)' ;; # 64-bit 'date' range can be limited by the OS (likely under Linux)
     '9223372036854775807') printf '64-bit' ;;
     *)
       printf '%s\n' 'unknown'
@@ -32,7 +32,7 @@ convert_max_unsigned_int_to_bit()
 {
   case "${1?}" in
     '65535') printf '16-bit' ;;
-    '2147483648') printf '32-bit (limited to 2147483648)' ;; # Bugged unsigned 'printf' of awk
+    '2147483648') printf '32-bit (limited to 2147483648)' ;; # Bugged unsigned 'printf' of awk (likely on BusyBox under Windows)
     '4294967295') printf '32-bit' ;;
     '18446744073709551615') printf '64-bit' ;;
     *)
@@ -107,14 +107,14 @@ main()
 
   _max='-1'
   for _n in ${_limits_date:?}; do
-    if test "$(date 2> /dev/null -d "@${_n:?}" -- '+%s' || true)" != "${_n:?}"; then break; fi
+    if test "$(TZ='CET-1' date 2> /dev/null -d "@${_n:?}" -- '+%s' || true)" != "${_n:?}"; then break; fi
     _max="${_n:?}"
   done
   _date_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _date_bit='unknown'
 
   _max='-1'
   for _n in ${_limits_date:?}; do
-    if test "$(date 2> /dev/null -u -d "@${_n:?}" -- '+%s' || true)" != "${_n:?}"; then break; fi
+    if test "$(TZ='CET-1' date 2> /dev/null -u -d "@${_n:?}" -- '+%s' || true)" != "${_n:?}"; then break; fi
     _max="${_n:?}"
   done
   _date_u_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _date_u_bit='unknown'
@@ -128,7 +128,7 @@ main()
   printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit:?}"
   printf '%s\n' "Bits of awk 'printf' - signed: ${_awk_printf_signed_bit:?}"
   printf '%s\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
-  printf '%s\n' "Bits of 'date' timestamp: ${_date_bit:?}"
+  printf '%s\n' "Bits of 'date' (CET-1) timestamp: ${_date_bit:?}"
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit:?}"
 }
 
