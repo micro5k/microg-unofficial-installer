@@ -97,7 +97,7 @@ detect_os_and_other_things()
   IS_BUSYBOX='false'
   PATHSEP=':'
   CYGPATH=''
-  SHELL_CMD="${BASH:-${SHELL-}}"
+  SHELL_CMD=''
   SHELL_APPLET=''
 
   case "${PLATFORM?}" in
@@ -130,18 +130,25 @@ detect_os_and_other_things()
       ;;
   esac
 
-  # Android identify itself as Linux
   if test "${PLATFORM?}" = 'linux'; then
+    # Android identify itself as Linux
     case "$(uname 2> /dev/null -a | tr -- '[:upper:]' '[:lower:]')" in
       *' android'* | *'-lineage-'* | *'-leapdroid-'*) PLATFORM='android' ;;
       *) ;;
     esac
   fi
 
+  if test -e "/proc/${$}/exe" && SHELL_CMD="$(readlink "/proc/${$}/exe")" && test -n "${SHELL_CMD?}"; then
+    :
+  elif test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then
+    SHELL_CMD="$(PATH='"' command -v busybox)" || ui_error 'Unable to find the path of BusyBox'
+  else
+    SHELL_CMD="${BASH:-${SHELL-}}"
+  fi
+
   if test "${PLATFORM:?}" = 'win'; then
     if test "${IS_BUSYBOX:?}" = 'true'; then
       PATHSEP=';'
-      SHELL_CMD=''
       SHELL_APPLET="${0:-ash}"
     else
       if CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)"; then
@@ -1120,8 +1127,10 @@ detect_bb_and_id()
   BB_CMD=''
   ID_CMD=''
 
-  if command 1> /dev/null -v 'busybox'; then
-    BB_CMD="$(command -v busybox)" || ui_error 'Unable to get the path of BusyBox'
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true' && test -n "${SHELL_CMD?}"; then
+    BB_CMD="${SHELL_CMD:?}"
+  elif BB_CMD="$(command -v busybox)"; then
+    :
   fi
 
   if test "${PLATFORM:?}" = 'win' && test -n "${BB_CMD?}"; then
@@ -1312,7 +1321,7 @@ fi
 
 # Set environment variables
 detect_os_and_other_things
-export PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD
+export PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD SHELL_APPLET
 init_base
 export MAIN_DIR TOOLS_DIR
 init_path
