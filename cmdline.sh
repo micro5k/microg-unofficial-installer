@@ -7,7 +7,7 @@
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
-    local _newline _main_dir
+    local _newline _main_dir _current_shell_cmd
 
     # Execute only if the first initialization has not already been done
     if test -z "${MAIN_DIR-}" || test -z "${USER_HOME-}"; then
@@ -55,7 +55,13 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
         esac
       fi
 
-      exec "${BASH:-${SHELL:-bash}}" --init-file "${_main_dir:?}/includes/common.sh"
+      if test -e "/proc/${$}/exe" && _current_shell_cmd="$(readlink "/proc/${$}/exe")" && test -n "${_current_shell_cmd?}"; then
+        :
+      else
+        _current_shell_cmd="${BASH:-${SHELL:-bash}}"
+      fi
+
+      exec "${_current_shell_cmd:?}" --init-file "${_main_dir:?}/includes/common.sh"
     fi
   }
 
