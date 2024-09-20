@@ -35,7 +35,8 @@ convert_max_unsigned_int_to_bit()
 {
   case "${1?}" in
     '65535') printf '%s\n' "16-bit" ;;
-    '2147483648') printf '%s\n' "32-bit (with BusyBox limit bug)" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox under Windows / Android)
+    '2147483647') printf '%s\n' "32-bit (with unsigned limit bug)" ;;         # Bugged unsigned 'printf' of awk (seen on some versions fo Bash)
+    '2147483648') printf '%s\n' "32-bit (with BusyBox unsigned limit bug)" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox under Windows / Android)
     '4294967295') printf '%s\n' "32-bit" ;;
     '18446744073709551615') printf '%s\n' "64-bit" ;;
     *)
@@ -71,10 +72,12 @@ main()
 {
   local _limits _limits_date _limits_u _max _tmp _n
   local _cpu_bit _os_bit _shell_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
+  local _date_timezone_bug
 
+  _date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
   _limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
-  _limits_u='65535 2147483648 4294967295 18446744073709551615'
+  _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
   if test -e '/proc/cpuinfo' && grep -m 1 -q -e '^flags' -- '/proc/cpuinfo'; then
     if grep -m 1 -q -e '^flags.*[[:space:]][[:lower:]]*_lm' -- '/proc/cpuinfo'; then
@@ -134,7 +137,14 @@ main()
 
   _max='-1'
   for _n in ${_limits_date:?}; do
-    if test "$(TZ='CET-1' date 2> /dev/null -d "@${_n:?}" -- '+%s' || true)" != "${_n:?}"; then break; fi
+    if ! _tmp="$(TZ='CET-1' date 2> /dev/null -d "@${_n:?}" -- '+%s')"; then break; fi
+    if test "${_tmp?}" != "${_n:?}"; then
+      if test "${_tmp?}" = "$((${_n:?} - 14400))"; then
+        _date_timezone_bug='true'
+      else
+        break
+      fi
+    fi
     _max="${_n:?}"
   done
   _date_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _date_bit='unknown'
@@ -161,7 +171,7 @@ main()
   printf '%s\n' "Bits of awk 'printf' - signed: ${_awk_printf_signed_bit:?}"
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
 
-  printf '%s\n' "Bits of 'date' (CET-1) timestamp: ${_date_bit:?}"
+  printf '%s%s\n' "Bits of 'date' (CET-1) timestamp: ${_date_bit:?}" "$(test "${_date_timezone_bug:?}" = 'false' || printf '%s\n' ' - TIMEZONE BUG' || true)"
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit:?}"
 }
 
