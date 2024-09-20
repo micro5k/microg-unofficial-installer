@@ -89,7 +89,7 @@ export ftp_proxy="${ftp_proxy-}"
 detect_os_and_other_things()
 {
   if test -n "${PLATFORM-}" && test -n "${IS_BUSYBOX-}" && test -n "${PATHSEP-}"; then
-    readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD
+    readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD SHELL_APPLET
     return 0
   fi
 
@@ -98,6 +98,7 @@ detect_os_and_other_things()
   PATHSEP=':'
   CYGPATH=''
   SHELL_CMD="${BASH:-${SHELL-}}"
+  SHELL_APPLET=''
 
   case "${PLATFORM?}" in
     'linux') ;;   # Returned by both Linux and Android, Android will be identified later in the function
@@ -141,6 +142,7 @@ detect_os_and_other_things()
     if test "${IS_BUSYBOX:?}" = 'true'; then
       PATHSEP=';'
       SHELL_CMD=''
+      SHELL_APPLET="${0:-ash}"
     else
       if CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)"; then
         SHELL_CMD="$("${CYGPATH:?}" -m -a -l -- "${SHELL_CMD:?}")" || ui_error 'Unable to convert the path of the shell'
@@ -150,7 +152,7 @@ detect_os_and_other_things()
     fi
   fi
 
-  readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD
+  readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD SHELL_APPLET
 }
 
 change_title()
