@@ -156,7 +156,7 @@ main()
 
   printf '%s %s\n' "awk version:" "$({
     awk 2> /dev/null -Wversion || awk 2> /dev/null --version || awk 2>&1 --help || true
-  } | head -n 1)"
+  } | head -n 1 || true)"
   printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit:?}"
   printf '%s\n' "Bits of awk 'printf' - signed: ${_awk_printf_signed_bit:?}"
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
