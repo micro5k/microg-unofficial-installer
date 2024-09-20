@@ -68,6 +68,34 @@ permissively_comparison()
   return 1
 }
 
+get_shell_version()
+{
+  local _shell_exe _shell_version
+  _shell_version=''
+
+  if test -n "${KSH_VERSION-}" && _shell_version="${KSH_VERSION:?}"; then
+    :
+  elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version-}"; then
+    :
+  else
+
+    if test -e "/proc/${$}/exe" && _shell_exe="$(readlink "/proc/${$}/exe")" && test -n "${_shell_exe?}"; then
+      :
+    elif _shell_exe="${BASH:-${SHELL-}}" && test -n "${_shell_exe?}"; then
+      :
+    else
+      return 1
+    fi
+
+    # NOTE: "sh --help" of BusyBox return success but the output is still printed to STDERR
+    _shell_version="$("${_shell_exe:?}" 2>&1 --help)" || return 1
+    _shell_version="$(printf '%s\n' "${_shell_version?}" | head -n 1)" || return 1
+  fi
+
+  test -n "${_shell_version?}" || return 1
+  printf '%s\n' "${_shell_version:?}"
+}
+
 main()
 {
   local _limits _limits_date _limits_u _max _tmp _n
@@ -156,9 +184,10 @@ main()
   done
   _date_u_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _date_u_bit='unknown'
 
-  printf '%s\n' "Bits of CPU: ${_cpu_bit:?}"
+  printf '%s %s\n' "Shell version:" "$(get_shell_version || true)"
+  printf '%s\n' "Bits of shell: ${_shell_bit:?}"
   printf '%s\n' "Bits of OS: ${_os_bit:?}"
-  printf '%s\n\n' "Bits of shell: ${_shell_bit:?}"
+  printf '%s\n\n' "Bits of CPU: ${_cpu_bit:?}"
 
   printf '%s\n' "Bits of shell 'test' integer comparison: ${_shell_test_bit:?}"
   printf '%s\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit:?}"
