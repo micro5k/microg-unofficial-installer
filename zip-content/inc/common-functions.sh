@@ -1112,9 +1112,9 @@ get_disk_space_usage_of_file_or_folder()
   local _result
 
   if _result="$(du 2> /dev/null -s -B 1 -- "${1:?}" | cut -f 1 -s)" && test -n "${_result?}"; then
-    printf '%d\n' "${_result:?}"
+    printf '%u\n' "${_result:?}"
   elif _result="$(du -s -k -- "${1:?}" | cut -f 1 -s)" && test -n "${_result?}"; then
-    printf '%d\n' "$((_result * 1024))"
+    printf '%u\n' "$((_result * 1024))"
   else
     printf '%d\n' '-1'
     return 1
@@ -1154,9 +1154,9 @@ convert_bytes_to_human_readable_format()
   elif test "${1:?}" -ge 1024; then
     awk -v n="${1:?}" -- 'BEGIN{printf "%.2f KB\n", n/1024.0}'
   elif test "${1:?}" -eq 1; then
-    printf '%d byte\n' "${1:?}"
+    printf '%u byte\n' "${1:?}"
   elif test "${1:?}" -ge 0; then
-    printf '%d bytes\n' "${1:?}"
+    printf '%u bytes\n' "${1:?}"
   else
     printf '%s\n' 'invalid number'
     return 1
@@ -2630,7 +2630,7 @@ parse_busybox_version()
 
 numerically_comparable_version()
 {
-  echo "${@}" | awk -F. '{ printf("%d%03d%03d%03d\n", $1, $2, $3, $4); }'
+  echo "${@}" | awk -F. '{ printf("%u%03u%03u%03u\n", $1, $2, $3, $4); }'
 }
 
 remove_ext()
