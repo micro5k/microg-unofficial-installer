@@ -81,7 +81,7 @@ get_shell_version()
 
     if test -e "/proc/${$}/exe" && _shell_exe="$(readlink "/proc/${$}/exe")" && test -n "${_shell_exe?}"; then
       :
-    elif _shell_exe="${BASH:-${SHELL-}}" && test -n "${_shell_exe?}"; then
+    elif _shell_exe="${SHELL-}" && test -n "${_shell_exe?}"; then
       :
     else
       return 1
