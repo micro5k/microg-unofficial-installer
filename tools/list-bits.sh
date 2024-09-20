@@ -45,9 +45,31 @@ convert_max_unsigned_int_to_bit()
   esac
 }
 
+permissively_comparison()
+{
+  local _compare_list _n
+
+  case "${2?}" in
+    '9223372036854775807') _compare_list="${2:?} 9223372036854775808" ;;
+    '18446744073709551615') _compare_list="${2:?} 1.84467e+19" ;;
+
+    '') return 1 ;;
+
+    *) _compare_list="${2:?}" ;;
+  esac
+
+  for _n in ${_compare_list:?}; do
+    if test "${1?}" = "${_n:?}"; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 main()
 {
-  local _limits _limits_date _limits_u _max _n
+  local _limits _limits_date _limits_u _max _tmp _n
   local _cpu_bit _os_bit _shell_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
 
   _limits='32767 2147483647 9223372036854775807'
@@ -96,14 +118,16 @@ main()
 
   _max='-1'
   for _n in ${_limits:?}; do
-    if test "$(awk -v n="${_n:?}" -- 'BEGIN { printf "%d\n", n }' || true)" != "${_n:?}"; then break; fi
+    # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
+    if ! _tmp="$(awk -v n="${_n:?}" -- 'BEGIN { printf "%d\n", n }')" || ! permissively_comparison "${_tmp?}" "${_n:?}"; then break; fi
     _max="${_n:?}"
   done
   _awk_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _awk_printf_signed_bit='unknown'
 
   _max='-1'
   for _n in ${_limits_u:?}; do
-    if test "$(awk -v n="${_n:?}" -- 'BEGIN { printf "%u\n", n }' || true)" != "${_n:?}"; then break; fi
+    # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
+    if ! _tmp="$(awk -v n="${_n:?}" -- 'BEGIN { printf "%u\n", n }')" || ! permissively_comparison "${_tmp?}" "${_n:?}"; then break; fi
     _max="${_n:?}"
   done
   _awk_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max:?}")" || _awk_printf_unsigned_bit='unknown'
@@ -128,10 +152,15 @@ main()
 
   printf '%s\n' "Bits of shell 'test' integer comparison: ${_shell_test_bit:?}"
   printf '%s\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit:?}"
-  printf '%s\n' "Bits of shell 'printf': ${_shell_printf_bit:?}"
+  printf '%s\n\n' "Bits of shell 'printf': ${_shell_printf_bit:?}"
+
+  printf '%s %s\n' "awk version:" "$({
+    awk 2> /dev/null -Wversion || awk 2> /dev/null --version || awk 2>&1 --help || true
+  } | head -n 1)"
   printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit:?}"
   printf '%s\n' "Bits of awk 'printf' - signed: ${_awk_printf_signed_bit:?}"
-  printf '%s\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
+  printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
+
   printf '%s\n' "Bits of 'date' (CET-1) timestamp: ${_date_bit:?}"
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit:?}"
 }
