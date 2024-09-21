@@ -71,7 +71,6 @@ permissively_comparison()
 get_shell_version()
 {
   local _shell_exe _shell_version
-  _shell_version=''
 
   if test -n "${KSH_VERSION-}" && _shell_version="${KSH_VERSION:?}"; then
     :
@@ -84,15 +83,24 @@ get_shell_version()
     elif _shell_exe="${SHELL-}" && test -n "${_shell_exe?}"; then
       :
     else
+      printf '%s\n' 'not-found'
       return 1
     fi
 
-    # NOTE: "sh --help" of BusyBox return success but the output is still printed to STDERR
-    _shell_version="$("${_shell_exe:?}" 2>&1 --help)" || return 1
-    _shell_version="$(printf '%s\n' "${_shell_version?}" | head -n 1)" || return 1
+    # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
+    _shell_version="$("${_shell_exe:?}" 2>&1 --help || true)"
+
+    case "${_shell_version?}" in
+      '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'*)
+        printf '%s\n' 'unknown'
+        return 2
+        ;;
+      *) ;;
+    esac
+
+    _shell_version="$(printf '%s\n' "${_shell_version:?}" | head -n 1)" || return "${?}"
   fi
 
-  test -n "${_shell_version?}" || return 1
   printf '%s\n' "${_shell_version:?}"
 }
 
@@ -109,7 +117,7 @@ get_date_version()
   _date_version="$(date 2> /dev/null --version || date 2>&1 --help || true)"
 
   case "${_date_version?}" in
-    '' | *'invalid option'*)
+    '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'*)
       printf '%s\n' 'unknown'
       return 2
       ;;
@@ -117,7 +125,6 @@ get_date_version()
   esac
 
   printf '%s\n' "${_date_version:?}" | head -n 1
-  return 0
 }
 
 main()
@@ -208,7 +215,7 @@ main()
   done
   _date_u_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _date_u_bit='unknown'
 
-  printf '%s %s\n' "Shell version:" "$(get_shell_version || true)"
+  printf '%s %s\n' "Version of shell:" "$(get_shell_version || true)"
   printf '%s\n' "Bits of shell: ${_shell_bit:?}"
   printf '%s\n' "Bits of OS: ${_os_bit:?}"
   printf '%s\n\n' "Bits of CPU: ${_cpu_bit:?}"
