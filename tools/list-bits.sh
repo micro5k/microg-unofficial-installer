@@ -100,13 +100,18 @@ get_date_version()
 {
   local _date_version
 
+  if ! command 1> /dev/null -v date; then
+    printf '%s\n' 'missing'
+    return 1
+  fi
+
   # NOTE: "date --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
   _date_version="$(date 2> /dev/null --version || date 2>&1 --help || true)"
 
   case "${_date_version?}" in
     '' | *'invalid option'*)
       printf '%s\n' 'unknown'
-      return 1
+      return 2
       ;;
     *) ;;
   esac
