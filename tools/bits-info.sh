@@ -83,36 +83,38 @@ get_shell_version()
     return 1
   fi
 
-  # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
-  _shell_version="$("${_shell_exe:?}" 2>&1 --help || true)"
+  if test -n "${KSH_VERSION-}" && _shell_version="${KSH_VERSION:?}"; then # For new ksh (ksh93 does NOT show the version in the help)
+    :
+  else
+    # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
+    _shell_version="$("${_shell_exe:?}" 2>&1 --help || true)"
 
-  case "${_shell_version?}" in
-    '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'*)
-      if test -n "${KSH_VERSION-}" && _shell_version="${KSH_VERSION:?}"; then
-        :
-      elif test -n "${ZSH_VERSION-}" && _shell_version="${ZSH_VERSION:?}"; then
-        :
-      elif test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
-        :
-      elif test -n "${YASH_VERSION-}" && _shell_version="${YASH_VERSION:?}"; then
-        :
-      elif test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
-        :
-      elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then # For old ksh
-        :
-      elif test -n "${version-}" && _shell_version="${version:?}"; then # For tcsh and fish
-        :
-      elif test "$(basename "${_shell_exe:?}")" = 'dash' && command 1> /dev/null -v dpkg; then # For dash
-        _shell_version="dash $(dpkg -l | grep -m 1 -F -e ' dash ' | awk '{ print $3 }')"
-      else
-        printf '%s\n' 'unknown'
-        return 2
-      fi
-      ;;
-    *)
-      _shell_version="$(printf '%s\n' "${_shell_version:?}" | head -n 1)" || return "${?}"
-      ;;
-  esac
+    case "${_shell_version?}" in
+      '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'*)
+        if test -n "${ZSH_VERSION-}" && _shell_version="${ZSH_VERSION:?}"; then
+          :
+        elif test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
+          :
+        elif test -n "${YASH_VERSION-}" && _shell_version="${YASH_VERSION:?}"; then
+          :
+        elif test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
+          :
+        elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then # For old ksh
+          :
+        elif test -n "${version-}" && _shell_version="${version:?}"; then # For tcsh and fish
+          :
+        elif test "$(basename "${_shell_exe:?}")" = 'dash' && command 1> /dev/null -v dpkg; then # For dash
+          _shell_version="dash $(dpkg -l | grep -m 1 -F -e ' dash ' | awk '{ print $3 }')"
+        else
+          printf '%s\n' 'unknown'
+          return 2
+        fi
+        ;;
+      *)
+        _shell_version="$(printf '%s\n' "${_shell_version:?}" | head -n 1)" || return "${?}"
+        ;;
+    esac
+  fi
 
   printf '%s\n' "${_shell_version:?}"
 }
