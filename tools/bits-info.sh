@@ -131,9 +131,7 @@ get_date_version()
 
 main()
 {
-  local _limits _limits_date _limits_u _max _tmp _n
-  local _cpu_bit _os_bit _shell_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
-  local _date_timezone_bug
+  local _date_timezone_bug _limits _limits_date _limits_u _max _n _tmp _cpu_bit _os_bit _shell_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
 
   _date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
@@ -163,7 +161,7 @@ main()
     _os_bit='unknown'
   fi
 
-  case "$(uname -m)" in
+  case "$(uname -m || true)" in
     x64 | x86_64 | aarch64 | ia64) _shell_bit='64-bit' ;;
     x86 | i686 | i586 | i486 | i386) _shell_bit='32-bit' ;;
     *) _shell_bit='unknown' ;;
