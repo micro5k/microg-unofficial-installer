@@ -102,6 +102,8 @@ get_shell_version()
         :
       elif test -n "${version-}" && _shell_version="${version:?}"; then # For tcsh and fish
         :
+      elif test "$(basename "${_shell_exe:?}")" = 'dash' && command 1> /dev/null -v dpkg; then # For dash
+        _shell_version="dash $(dpkg -l | grep -m 1 -F -e ' dash ' | awk '{ print $3 }')"
       else
         printf '%s\n' 'unknown'
         return 2
