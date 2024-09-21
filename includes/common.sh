@@ -894,7 +894,7 @@ get_32bit_programfiles()
 
   if test -z "${_dir?}"; then
     if test "${IS_BUSYBOX:?}" = 'false'; then
-      _dir="$(env | grep -w -m 1 -e '^ProgramFiles(x86)' | cut -d '=' -f '2-' -s || true)" # On 64-bit Windows (on Bash)
+      _dir="$(env | grep -m 1 -w -i -e '^ProgramFiles(x86)' | cut -d '=' -f '2-' -s || true)" # On 64-bit Windows (on Bash)
     fi
     if test -z "${_dir?}"; then
       _dir="${PROGRAMFILES-}" # On 32-bit Windows
