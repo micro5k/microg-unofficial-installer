@@ -1261,7 +1261,11 @@ init_cmdline()
   fi
 
   # shellcheck disable=SC2139 # It is intended: This expands when defined, not when used
-  alias 'list-bits'="'${MAIN_DIR:?}/tools/list-bits.sh'"
+  {
+    alias 'bits-info'="'${MAIN_DIR:?}/tools/bits-info.sh'"
+    alias 'bits-info.sh'="'${MAIN_DIR:?}/tools/bits-info.sh'"
+  }
+
   alias 'help'='help.sh'
 
   add_to_path_env "${UTILS_DIR:?}"
