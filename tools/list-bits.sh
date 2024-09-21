@@ -96,6 +96,25 @@ get_shell_version()
   printf '%s\n' "${_shell_version:?}"
 }
 
+get_date_version()
+{
+  local _date_version
+
+  # NOTE: "date --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
+  _date_version="$(date 2> /dev/null --version || date 2>&1 --help || true)"
+
+  case "${_date_version?}" in
+    '' | *'invalid option'*)
+      printf '%s\n' 'unknown'
+      return 1
+      ;;
+    *) ;;
+  esac
+
+  printf '%s\n' "${_date_version:?}" | head -n 1
+  return 0
+}
+
 main()
 {
   local _limits _limits_date _limits_u _max _tmp _n
@@ -193,13 +212,14 @@ main()
   printf '%s\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit:?}"
   printf '%s\n\n' "Bits of shell 'printf': ${_shell_printf_bit:?}"
 
-  printf '%s %s\n' "awk version:" "$({
+  printf '%s %s\n' "Version of awk:" "$({
     awk 2> /dev/null -Wversion || awk 2> /dev/null --version || awk 2>&1 --help || true
   } | head -n 1 || true)"
   printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit:?}"
   printf '%s\n' "Bits of awk 'printf' - signed: ${_awk_printf_signed_bit:?}"
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
 
+  printf '%s %s\n' "Version of date:" "$(get_date_version || true)"
   printf '%s%s\n' "Bits of 'date' (CET-1) timestamp: ${_date_bit:?}" "$(test "${_date_timezone_bug:?}" = 'false' || printf '%s\n' ' - TIMEZONE BUG' || true)"
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit:?}"
 }
