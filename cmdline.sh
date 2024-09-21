@@ -7,7 +7,7 @@
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
-    local _newline _main_dir _current_shell_cmd
+    local _newline _main_dir
 
     # Execute only if the first initialization has not already been done
     if test -z "${MAIN_DIR-}" || test -z "${USER_HOME-}"; then
@@ -31,11 +31,11 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
     fi
 
+    export DO_INIT_CMDLINE=1
     unset STARTED_FROM_BATCH_FILE
     unset IS_PATH_INITIALIZED
     unset __QUOTED_PARAMS
 
-    export DO_INIT_CMDLINE=1
     if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR:?}"; else _main_dir='.'; fi
 
     if test "${PLATFORM-}" = 'win' && test "${IS_BUSYBOX-}" = 'true'; then
@@ -44,6 +44,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       if test "${#}" -gt 0; then
         _newline='
 '
+
         case "${*}" in
           *"${_newline:?}"*)
             printf 'WARNING: Newline character found, parameters dropped\n'
@@ -55,13 +56,14 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
         esac
       fi
 
-      if test -e "/proc/${$}/exe" && _current_shell_cmd="$(readlink "/proc/${$}/exe")" && test -n "${_current_shell_cmd?}"; then
+      if __SHELL_EXE="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${__SHELL_EXE?}"; then
         :
       else
-        _current_shell_cmd="${BASH:-${SHELL:-bash}}"
+        __SHELL_EXE="${SHELL:-bash}"
       fi
+      export __SHELL_EXE
 
-      exec "${_current_shell_cmd:?}" --init-file "${_main_dir:?}/includes/common.sh"
+      exec "${__SHELL_EXE:?}" --init-file "${_main_dir:?}/includes/common.sh"
     fi
   }
 

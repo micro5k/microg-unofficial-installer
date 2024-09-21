@@ -23,12 +23,13 @@ IF "%USER_HOME%" == "" (
   SET "HOME=%MAIN_DIR%"
 )
 
+SET "DO_INIT_CMDLINE=1"
 SET "STARTED_FROM_BATCH_FILE=1"
 SET "IS_PATH_INITIALIZED="
 SET "__QUOTED_PARAMS="
+SET "__SHELL_EXE=%~dp0tools\win\busybox.exe"
 
-SET "DO_INIT_CMDLINE=1"
-"%~dp0tools\win\busybox.exe" ash -s -c ". '%~dp0includes\common.sh' || exit ${?}" "ash" %*
+"%__SHELL_EXE%" ash -s -c ". '%~dp0includes\common.sh' || exit ${?}" "ash" %*
 
 ENDLOCAL 2> nul
 IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
