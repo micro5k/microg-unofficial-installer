@@ -138,13 +138,14 @@ detect_os_and_other_things()
     esac
   fi
 
-  if test -e "/proc/${$}/exe" && SHELL_CMD="$(readlink "/proc/${$}/exe")" && test -n "${SHELL_CMD?}"; then
+  if test -n "${__SHELL_EXE-}" && test "${__SHELL_EXE:?}" != 'bash' && SHELL_CMD="${__SHELL_EXE:?}"; then
     :
-  elif test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then
-    SHELL_CMD="$(PATH='"' command -v busybox)" || ui_error 'Unable to find the path of BusyBox'
+  elif SHELL_CMD="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${SHELL_CMD?}"; then
+    :
   else
-    SHELL_CMD="${BASH:-${SHELL-}}"
+    SHELL_CMD="${SHELL:?}"
   fi
+  unset __SHELL_EXE
 
   if test "${PLATFORM:?}" = 'win'; then
     if test "${IS_BUSYBOX:?}" = 'true'; then
@@ -1127,7 +1128,7 @@ detect_bb_and_id()
   BB_CMD=''
   ID_CMD=''
 
-  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true' && test -n "${SHELL_CMD?}"; then
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true' && test -n "${SHELL_CMD?}" && test "${SHELL_CMD:?}" != '/bin/sh'; then
     BB_CMD="${SHELL_CMD:?}"
   elif BB_CMD="$(command -v busybox)"; then
     :
