@@ -80,7 +80,7 @@ get_shell_version()
     :
   else
 
-    if test -e "/proc/${$}/exe" && _shell_exe="$(readlink "/proc/${$}/exe")" && test -n "${_shell_exe?}"; then
+    if _shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${_shell_exe?}"; then
       :
     elif _shell_exe="${SHELL-}" && test -n "${_shell_exe?}"; then
       :
