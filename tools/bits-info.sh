@@ -153,8 +153,8 @@ main()
   if _os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${_os_bit?}"; then
     # On Windows
     case "${_os_bit:?}" in
-      x86) _os_bit='32-bit' ;;
       AMD64 | ARM64 | IA64) _os_bit='64-bit' ;;
+      x86) _os_bit='32-bit' ;;
       *) _os_bit='unknown' ;;
     esac
   elif command 1> /dev/null -v 'getconf' && _os_bit="$(getconf 'LONG_BIT')" && test -n "${_os_bit?}"; then
@@ -164,7 +164,7 @@ main()
   fi
 
   case "$(uname -m)" in
-    x86_64 | x64) _shell_bit='64-bit' ;;
+    x64 | x86_64 | aarch64 | ia64) _shell_bit='64-bit' ;;
     x86 | i686 | i586 | i486 | i386) _shell_bit='32-bit' ;;
     *) _shell_bit='unknown' ;;
   esac
