@@ -93,7 +93,7 @@ get_shell_version()
     _shell_version="$("${_shell_exe:?}" 2>&1 --help || true)"
 
     case "${_shell_version?}" in
-      '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'*)
+      '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *'illegal option'*)
         printf '%s\n' 'unknown'
         return 2
         ;;
@@ -119,7 +119,7 @@ get_date_version()
   _date_version="$(date 2> /dev/null --version || date 2>&1 --help || true)"
 
   case "${_date_version?}" in
-    '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'*)
+    '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *'illegal option'*)
       printf '%s\n' 'unknown'
       return 2
       ;;
