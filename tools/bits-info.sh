@@ -54,7 +54,7 @@ convert_max_unsigned_int_to_bit()
 
 permissively_comparison()
 {
-  local _compare_list _n 2> /dev/null
+  local _compare_list _comp_num 2> /dev/null
 
   case "${2?}" in
     '9223372036854775807') _compare_list="${2:?} 9223372036854775808" ;;
@@ -65,8 +65,8 @@ permissively_comparison()
     *) _compare_list="${2:?}" ;;
   esac
 
-  for _n in ${_compare_list:?}; do
-    if test "${1?}" = "${_n:?}"; then
+  for _comp_num in ${_compare_list:?}; do
+    if test "${1?}" = "${_comp_num:?}"; then
       return 0
     fi
   done
