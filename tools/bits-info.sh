@@ -201,27 +201,11 @@ main()
 
   _shell_info="$(get_shell_info)" || _shell_info='unknown unknown'
 
-  if test -e '/proc/cpuinfo' && _tmp="$(grep -e '^flags[[:space:]]*:' -- '/proc/cpuinfo' | cut -d ':' -f '2-' -s)" && test -n "${_tmp?}"; then
-    if printf '%s\n' "${_tmp:?}" | grep -m 1 -q -w -e '[[:lower:]]\{1,\}_lm'; then
-      _cpu_bit='64-bit'
-    else
-      _cpu_bit='32-bit'
-    fi
-  elif command 1> /dev/null -v 'wmic.exe' && _cpu_bit="$(MSYS_NO_PATHCONV=1 wmic.exe cpu get DataWidth /VALUE | cut -d '=' -f '2-' -s | tr -d '\r')"; then
-    # On Windows 2000+ / ReactOS
-    case "${_cpu_bit?}" in
-      '64' | '32') _cpu_bit="${_cpu_bit:?}-bit" ;;
-      *) _cpu_bit='unknown' ;;
-    esac
-  elif command 1> /dev/null -v 'powershell.exe' && _cpu_bit="$(powershell.exe -c 'gwmi Win32_Processor | select -ExpandProperty DataWidth')"; then
-    # On Windows (if PowerShell is installed)
-    case "${_cpu_bit?}" in
-      '64' | '32') _cpu_bit="${_cpu_bit:?}-bit" ;;
-      *) _cpu_bit='unknown' ;;
-    esac
-  else
-    _cpu_bit='unknown'
-  fi
+  case "$(uname -m || true)" in
+    x64 | x86_64 | aarch64 | ia64) _shell_bit='64-bit' ;;
+    x86 | i686 | i586 | i486 | i386) _shell_bit='32-bit' ;;
+    *) _shell_bit='unknown' ;;
+  esac
 
   if test "${OS-}" = 'Windows_NT' && _os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${_os_bit?}"; then
     # On Windows 2000+ / ReactOS
@@ -243,11 +227,27 @@ main()
     _os_bit='unknown'
   fi
 
-  case "$(uname -m || true)" in
-    x64 | x86_64 | aarch64 | ia64) _shell_bit='64-bit' ;;
-    x86 | i686 | i586 | i486 | i386) _shell_bit='32-bit' ;;
-    *) _shell_bit='unknown' ;;
-  esac
+  if test -e '/proc/cpuinfo' && _tmp="$(grep -e '^flags[[:space:]]*:' -- '/proc/cpuinfo' | cut -d ':' -f '2-' -s)" && test -n "${_tmp?}"; then
+    if printf '%s\n' "${_tmp:?}" | grep -m 1 -q -w -e '[[:lower:]]\{1,\}_lm'; then
+      _cpu_bit='64-bit'
+    else
+      _cpu_bit='32-bit'
+    fi
+  elif command 1> /dev/null -v 'wmic.exe' && _cpu_bit="$(MSYS_NO_PATHCONV=1 wmic.exe cpu get DataWidth /VALUE | cut -d '=' -f '2-' -s | tr -d '\r')"; then
+    # On Windows / ReactOS (if WMIC is present)
+    case "${_cpu_bit?}" in
+      '64' | '32') _cpu_bit="${_cpu_bit:?}-bit" ;;
+      *) _cpu_bit='unknown' ;;
+    esac
+  elif command 1> /dev/null -v 'powershell.exe' && _cpu_bit="$(powershell.exe -c 'gwmi Win32_Processor | select -ExpandProperty DataWidth')"; then
+    # On Windows (if PowerShell is installed)
+    case "${_cpu_bit?}" in
+      '64' | '32') _cpu_bit="${_cpu_bit:?}-bit" ;;
+      *) _cpu_bit='unknown' ;;
+    esac
+  else
+    _cpu_bit='unknown'
+  fi
 
   _max='-1'
   for _n in ${_limits:?}; do
