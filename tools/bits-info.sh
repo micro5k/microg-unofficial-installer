@@ -156,8 +156,8 @@ main()
   _limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
-  if test -e '/proc/cpuinfo' && grep -m 1 -q -e '^flags' -- '/proc/cpuinfo'; then
-    if grep -m 1 -q -e '^flags.*[[:space:]][[:lower:]]*_lm' -- '/proc/cpuinfo'; then
+  if test -e '/proc/cpuinfo' && _tmp="$(grep -e '^flags[[:space:]]*:' -- '/proc/cpuinfo')" && test -n "${_tmp?}"; then
+    if printf '%s\n' "${_tmp:?}" | grep -m 1 -q -w -e '[[:lower:]]\{1,\}_lm'; then
       _cpu_bit='64-bit'
     else
       _cpu_bit='32-bit'
