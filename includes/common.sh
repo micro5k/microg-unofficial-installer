@@ -1197,7 +1197,6 @@ init_cmdline()
 
   # Clean useless directories from the $PATH env
   if test "${PLATFORM?}" = 'win'; then
-    remove_from_path_env "${SYSTEMDRIVE-}/Windows/System32/Wbem"
     remove_from_path_env "${LOCALAPPDATA-}/Microsoft/WindowsApps"
   fi
 
