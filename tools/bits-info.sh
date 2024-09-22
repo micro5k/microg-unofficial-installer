@@ -213,6 +213,12 @@ main()
       '64' | '32') _cpu_bit="${_cpu_bit:?}-bit" ;;
       *) _cpu_bit='unknown' ;;
     esac
+  elif command 1> /dev/null -v 'powershell.exe' && _cpu_bit="$(powershell.exe -c 'gwmi Win32_Processor | select -ExpandProperty DataWidth')"; then
+    # On Windows (if PowerShell is installed)
+    case "${_cpu_bit?}" in
+      '64' | '32') _cpu_bit="${_cpu_bit:?}-bit" ;;
+      *) _cpu_bit='unknown' ;;
+    esac
   else
     _cpu_bit='unknown'
   fi
