@@ -72,7 +72,7 @@ permissively_comparison()
 
 get_shell_version()
 {
-  local _shell_exe _shell_version
+  local _shell_exe _shell_basename _shell_version 2> /dev/null
 
   if _shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${_shell_exe?}"; then
     :
@@ -83,7 +83,15 @@ get_shell_version()
     return 1
   fi
 
-  if test -n "${KSH_VERSION-}" && _shell_version="${KSH_VERSION:?}"; then # For new ksh (ksh93 does NOT show the version in the help)
+  _shell_basename="$(basename "${_shell_exe:?}")" || _shell_basename=''
+  _shell_version=''
+
+  case "${_shell_basename?}" in
+    *'ksh'*) _shell_version="${KSH_VERSION-}" ;; # For new ksh (ksh93 does NOT show the version in the help)
+    *) ;;
+  esac
+
+  if test -n "${_shell_version?}"; then # Already set, do nothing
     :
   else
     # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
@@ -103,7 +111,7 @@ get_shell_version()
           :
         elif test -n "${version-}" && _shell_version="${version:?}"; then # For tcsh and fish
           :
-        elif test "$(basename "${_shell_exe:?}")" = 'dash' && command 1> /dev/null -v dpkg; then # For dash
+        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v dpkg; then # For dash
           _shell_version="dash $(dpkg -l | grep -m 1 -F -e ' dash ' | awk '{ print $3 }')"
         else
           printf '%s\n' 'unknown'
@@ -121,7 +129,7 @@ get_shell_version()
 
 get_date_version()
 {
-  local _date_version
+  local _date_version 2> /dev/null
 
   if ! command 1> /dev/null -v date; then
     printf '%s\n' 'missing'
@@ -149,7 +157,8 @@ file_getprop()
 
 main()
 {
-  local _date_timezone_bug _limits _limits_date _limits_u _max _n _tmp _cpu_bit _os_bit _shell_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
+  local _date_timezone_bug _limits _limits_date _limits_u _max _n _tmp  2> /dev/null
+  local _cpu_bit _os_bit _shell_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit  2> /dev/null
 
   _date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
@@ -173,7 +182,7 @@ main()
       x86) _os_bit='32-bit' ;;
       *) _os_bit='unknown' ;;
     esac
-  elif test '/system/build.prop'; then
+  elif test -e '/system/build.prop'; then
     # On Android
     case "$(file_getprop 'ro.product.cpu.abi' '/system/build.prop' || true)" in
       'x86_64' | 'arm64-v8a' | 'mips64' | 'riscv64') _os_bit='64-bit' ;;
