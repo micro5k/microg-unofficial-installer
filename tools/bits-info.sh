@@ -142,6 +142,11 @@ get_date_version()
   printf '%s\n' "${_date_version:?}" | head -n 1
 }
 
+file_getprop()
+{
+  grep -m 1 -F -e "${1:?}=" -- "${2:?}" | cut -d '=' -f '2-' -s
+}
+
 main()
 {
   local _date_timezone_bug _limits _limits_date _limits_u _max _n _tmp _cpu_bit _os_bit _shell_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
@@ -161,11 +166,18 @@ main()
     _cpu_bit='unknown'
   fi
 
-  if _os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${_os_bit?}"; then
+  if test "${OS-}" = 'Windows_NT' && _os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${_os_bit?}"; then
     # On Windows
     case "${_os_bit:?}" in
       AMD64 | ARM64 | IA64) _os_bit='64-bit' ;;
       x86) _os_bit='32-bit' ;;
+      *) _os_bit='unknown' ;;
+    esac
+  elif test '/system/build.prop'; then
+    # On Android
+    case "$(file_getprop 'ro.product.cpu.abi' '/system/build.prop' || true)" in
+      'x86_64' | 'arm64-v8a' | 'mips64' | 'riscv64') _os_bit='64-bit' ;;
+      'x86' | 'armeabi-v7a' | 'armeabi' | 'mips') _os_bit='32-bit' ;;
       *) _os_bit='unknown' ;;
     esac
   elif command 1> /dev/null -v 'getconf' && _os_bit="$(getconf 'LONG_BIT')" && test -n "${_os_bit?}"; then
