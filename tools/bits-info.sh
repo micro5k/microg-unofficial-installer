@@ -157,8 +157,8 @@ file_getprop()
 
 main()
 {
-  local _date_timezone_bug _limits _limits_date _limits_u _max _n _tmp  2> /dev/null
-  local _cpu_bit _os_bit _shell_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit  2> /dev/null
+  local _date_timezone_bug _limits _limits_date _limits_u _max _n _tmp 2> /dev/null
+  local _cpu_bit _os_bit _shell_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit 2> /dev/null
 
   _date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
