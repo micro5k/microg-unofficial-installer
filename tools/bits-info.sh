@@ -102,7 +102,7 @@ get_shell_version()
     _shell_version="$("${_shell_exe:?}" 2>&1 --help || true)"
 
     case "${_shell_version?}" in
-      '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'*)
+      '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
         if test -n "${ZSH_VERSION-}" && _shell_version="${ZSH_VERSION:?}"; then
           :
         elif test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
@@ -131,6 +131,29 @@ get_shell_version()
   printf '%s\n' "${_shell_version:?}"
 }
 
+get_awk_version()
+{
+  local _awk_version 2> /dev/null
+
+  if ! command 1> /dev/null -v awk; then
+    printf '%s\n' 'missing'
+    return 1
+  fi
+
+  # NOTE: "awk --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
+  _awk_version="$(awk 2> /dev/null -Wversion || awk 2> /dev/null --version || awk 2>&1 --help || true)"
+
+  case "${_awk_version?}" in
+    '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
+      printf '%s\n' 'unknown'
+      return 2
+      ;;
+    *) ;;
+  esac
+
+  printf '%s\n' "${_awk_version:?}" | head -n 1
+}
+
 get_date_version()
 {
   local _date_version 2> /dev/null
@@ -144,7 +167,7 @@ get_date_version()
   _date_version="$(date 2> /dev/null --version || date 2>&1 --help || true)"
 
   case "${_date_version?}" in
-    '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *'illegal option'*)
+    '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
       printf '%s\n' 'unknown'
       return 2
       ;;
@@ -265,13 +288,11 @@ main()
   printf '%s\n' "Bits of OS: ${_os_bit:?}"
   printf '%s\n\n' "Bits of CPU: ${_cpu_bit:?}"
 
-  printf '%s\n' "Bits of shell 'test' integer comparison: ${_shell_test_bit:?}"
+  printf '%s\n' "Bits of shell 'test' int comparison: ${_shell_test_bit:?}"
   printf '%s\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit:?}"
   printf '%s\n\n' "Bits of shell 'printf': ${_shell_printf_bit:?}"
 
-  printf '%s %s\n' "Version of awk:" "$({
-    awk 2> /dev/null -Wversion || awk 2> /dev/null --version || awk 2>&1 --help || true
-  } | head -n 1 || true)"
+  printf '%s %s\n' "Version of awk:"  "$(get_awk_version || true)"
   printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit:?}"
   printf '%s\n' "Bits of awk 'printf' - signed: ${_awk_printf_signed_bit:?}"
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
