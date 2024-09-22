@@ -74,7 +74,7 @@ permissively_comparison()
   return 1
 }
 
-get_shell_version()
+get_shell_info()
 {
   local _shell_exe _shell_basename _shell_version 2> /dev/null
 
@@ -91,7 +91,10 @@ get_shell_version()
   _shell_version=''
 
   case "${_shell_basename?}" in
-    *'ksh'*) _shell_version="${KSH_VERSION-}" ;; # For new ksh (ksh93 does NOT show the version in the help)
+    *'ksh'*) # For new ksh (ksh93 does NOT show the version in the help)
+      _shell_version="${KSH_VERSION-}"
+      _shell_version="${_shell_version#Version }"
+      ;;
     *) ;;
   esac
 
@@ -106,7 +109,7 @@ get_shell_version()
         if test "${_shell_basename?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then # For dash
           :
         elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v dpkg; then # For dash
-          _shell_version="dash $(dpkg -l | grep -m 1 -F -e ' dash ' | awk '{ print $3 }')"
+          _shell_version="$(dpkg -l | grep -m 1 -F -e ' dash ' | awk '{ print $3 }')"
         elif test -n "${ZSH_VERSION-}" && _shell_version="${ZSH_VERSION:?}"; then
           :
         elif test -n "${YASH_VERSION-}" && _shell_version="${YASH_VERSION:?}"; then
@@ -128,7 +131,7 @@ get_shell_version()
     esac
   fi
 
-  printf '%s\n' "${_shell_version:?}"
+  printf '%s %s\n' "${_shell_basename:-unknown}" "${_shell_version:?}"
 }
 
 get_awk_version()
@@ -185,12 +188,14 @@ file_getprop()
 main()
 {
   local _date_timezone_bug _limits _limits_date _limits_u _max _n _tmp 2> /dev/null
-  local _cpu_bit _os_bit _shell_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit 2> /dev/null
+  local _shell_info _shell_bit _os_bit _cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit 2> /dev/null
 
   _date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
   _limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
+
+  _shell_info="$(get_shell_info)" || _shell_info='unknown unknown'
 
   if test -e '/proc/cpuinfo' && _tmp="$(grep -e '^flags[[:space:]]*:' -- '/proc/cpuinfo' | cut -d ':' -f '2-' -s)" && test -n "${_tmp?}"; then
     if printf '%s\n' "${_tmp:?}" | grep -m 1 -q -w -e '[[:lower:]]\{1,\}_lm'; then
@@ -283,7 +288,8 @@ main()
   done
   _date_u_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _date_u_bit='unknown'
 
-  printf '%s %s\n' "Version of shell:" "$(get_shell_version || true)"
+  printf '%s %s\n' "Shell:" "$(printf '%s\n' "${_shell_info:?}" | cut -d ' ' -f '1' || true)"
+  printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${_shell_info:?}" | cut -d ' ' -f '2-' -s || true)"
   printf '%s\n' "Bits of shell: ${_shell_bit:?}"
   printf '%s\n' "Bits of OS: ${_os_bit:?}"
   printf '%s\n\n' "Bits of CPU: ${_cpu_bit:?}"
