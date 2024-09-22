@@ -212,7 +212,7 @@ main()
   fi
 
   if test "${OS-}" = 'Windows_NT' && _os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${_os_bit?}"; then
-    # On Windows
+    # On Windows 2000+ / ReactOS
     case "${_os_bit:?}" in
       AMD64 | ARM64 | IA64) _os_bit='64-bit' ;;
       x86) _os_bit='32-bit' ;;
@@ -308,7 +308,7 @@ main()
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
 
   printf '%s %s\n' "Version of date:" "$(get_date_version || true)"
-  printf '%s%s\n' "Bits of 'date' (CET-1) timestamp: ${_date_bit:?}" "$(test "${_date_timezone_bug:?}" = 'false' || printf '%s\n' ' - TIMEZONE BUG' || true)"
+  printf '%s%s\n' "Bits of 'date' (CET-1) timestamp: ${_date_bit:?}" "$(test "${_date_timezone_bug:?}" = 'false' || printf ' %s\n' '(with time zone bug)' || true)"
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit:?}"
 }
 
