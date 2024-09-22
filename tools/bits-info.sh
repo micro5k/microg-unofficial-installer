@@ -13,6 +13,8 @@
 
 convert_max_signed_int_to_bit()
 {
+  # More info: https://www.netmeister.org/blog/epoch.html
+
   case "${1?}" in
     '32767') printf '%s\n' "16-bit" ;;                                                             # Standard 16-bit limit
     '2147480047') printf '%s\n' "32-bit - 3600" ;;                                                 # Standard 32-bit limit - 3600 for timezone diff. on 'date'
@@ -30,7 +32,7 @@ convert_max_signed_int_to_bit()
       ;;
   esac
 
-  # More info: https://www.netmeister.org/blog/epoch.html
+  return 0
 }
 
 convert_max_unsigned_int_to_bit()
@@ -46,6 +48,8 @@ convert_max_unsigned_int_to_bit()
       return 1
       ;;
   esac
+
+  return 0
 }
 
 permissively_comparison()
@@ -219,17 +223,17 @@ main()
 
   _awk_printf_bit="$(convert_max_unsigned_int_to_bit "$(awk -- 'BEGIN { printf "%u\n", "-1" }' || true)")" || _awk_printf_bit='unknown'
 
+  # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
   for _n in ${_limits:?}; do
-    # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
     if ! _tmp="$(awk -v n="${_n:?}" -- 'BEGIN { printf "%d\n", n }')" || ! permissively_comparison "${_tmp?}" "${_n:?}"; then break; fi
     _max="${_n:?}"
   done
   _awk_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _awk_printf_signed_bit='unknown'
 
+  # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
   for _n in ${_limits_u:?}; do
-    # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
     if ! _tmp="$(awk -v n="${_n:?}" -- 'BEGIN { printf "%u\n", n }')" || ! permissively_comparison "${_tmp?}" "${_n:?}"; then break; fi
     _max="${_n:?}"
   done
