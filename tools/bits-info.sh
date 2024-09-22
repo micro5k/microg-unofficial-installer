@@ -92,9 +92,7 @@ get_shell_info()
 
   case "${_shell_basename?}" in
     *'ksh'*) # For new ksh (ksh93 does NOT show the version in the help)
-      _shell_version="${KSH_VERSION-}"
-      _shell_version="${_shell_version#Version }"
-      ;;
+      _shell_version="${KSH_VERSION-}" ;;
     *) ;;
   esac
 
@@ -130,6 +128,12 @@ get_shell_info()
         ;;
     esac
   fi
+
+  _shell_version="${_shell_version#Version }"
+  case "${_shell_version?}" in
+    'BusyBox'*) test "${_shell_basename?}" != 'sh' || _shell_basename='busybox' ;;
+    *) ;;
+  esac
 
   printf '%s %s\n' "${_shell_basename:-unknown}" "${_shell_version:?}"
 }
