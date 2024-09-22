@@ -103,9 +103,11 @@ get_shell_version()
 
     case "${_shell_version?}" in
       '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
-        if test -n "${ZSH_VERSION-}" && _shell_version="${ZSH_VERSION:?}"; then
+        if test "${_shell_basename?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then # For dash
           :
-        elif test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
+        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v dpkg; then # For dash
+          _shell_version="dash $(dpkg -l | grep -m 1 -F -e ' dash ' | awk '{ print $3 }')"
+        elif test -n "${ZSH_VERSION-}" && _shell_version="${ZSH_VERSION:?}"; then
           :
         elif test -n "${YASH_VERSION-}" && _shell_version="${YASH_VERSION:?}"; then
           :
@@ -115,8 +117,6 @@ get_shell_version()
           :
         elif test -n "${version-}" && _shell_version="${version:?}"; then # For tcsh and fish
           :
-        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v dpkg; then # For dash
-          _shell_version="dash $(dpkg -l | grep -m 1 -F -e ' dash ' | awk '{ print $3 }')"
         else
           printf '%s\n' 'unknown'
           return 2
@@ -292,7 +292,7 @@ main()
   printf '%s\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit:?}"
   printf '%s\n\n' "Bits of shell 'printf': ${_shell_printf_bit:?}"
 
-  printf '%s %s\n' "Version of awk:"  "$(get_awk_version || true)"
+  printf '%s %s\n' "Version of awk:" "$(get_awk_version || true)"
   printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit:?}"
   printf '%s\n' "Bits of awk 'printf' - signed: ${_awk_printf_signed_bit:?}"
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
