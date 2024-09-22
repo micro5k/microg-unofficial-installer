@@ -207,6 +207,12 @@ main()
     else
       _cpu_bit='32-bit'
     fi
+  elif command 1> /dev/null -v 'wmic.exe' && _cpu_bit="$(MSYS_NO_PATHCONV=1 wmic.exe cpu get DataWidth /VALUE | cut -d '=' -f '2-' -s | tr -d '\r')"; then
+    # On Windows 2000+ / ReactOS
+    case "${_cpu_bit?}" in
+      '64' | '32') _cpu_bit="${_cpu_bit:?}-bit" ;;
+      *) _cpu_bit='unknown' ;;
+    esac
   else
     _cpu_bit='unknown'
   fi
