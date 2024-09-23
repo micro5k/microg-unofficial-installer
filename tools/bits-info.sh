@@ -101,7 +101,7 @@ get_shell_info()
     *) ;;
   esac
 
-  # NOTE: These shells do NOT show the version in the help
+  # These shells do NOT show the version in the help
   case "${_shell_basename?}" in
     *'ksh'*) _shell_version="${KSH_VERSION-}" ;; # For new ksh
     *'zsh'* | *'yash'*) _shell_use_ver_opt='true' ;;
@@ -111,6 +111,8 @@ get_shell_info()
   if test -n "${_shell_version?}"; then
     : # Already set, do nothing
   else
+    # Many shells doesn't support '--version' and in addition some bugged versions of BusyBox open an interactive shell when the --version option is used,
+    # so use it only when really needed
     if test "${_shell_use_ver_opt:?}" = 'true' && _shell_version="$("${_shell_exe:?}" 2>&1 --version)" && test -n "${_shell_version?}"; then
       :
     else
