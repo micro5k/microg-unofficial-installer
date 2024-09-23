@@ -101,12 +101,10 @@ get_shell_info()
     *) ;;
   esac
 
+  # NOTE: These shells do NOT show the version in the help
   case "${_shell_basename?}" in
-    *'ksh'*) # For new ksh / NOTE: ksh93 does NOT show the version in the help
-      _shell_version="${KSH_VERSION-}" ;;
-    *'zsh'*)
-      _shell_use_ver_opt='true'
-      ;;
+    *'ksh'*) _shell_version="${KSH_VERSION-}" ;; # For new ksh
+    *'zsh'* | *'yash'*) _shell_use_ver_opt='true' ;;
     *) ;;
   esac
 
@@ -126,8 +124,6 @@ get_shell_info()
           :
         elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v dpkg; then # For dash
           _shell_version="$(dpkg -l | grep -m 1 -F -e ' dash ' | awk '{ print $3 }')"
-        elif test -n "${YASH_VERSION-}" && _shell_version="${YASH_VERSION:?}"; then
-          :
         elif test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
           :
         elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then # For ksh and bosh
