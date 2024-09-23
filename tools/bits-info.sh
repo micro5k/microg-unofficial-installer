@@ -148,7 +148,7 @@ get_shell_info()
       'BusyBox'*) test "${_shell_basename:?}" != 'sh' || _shell_basename='busybox' ;;
       *) ;;
     esac
-    _shell_version="${_shell_version#${_shell_basename:?} }"
+    _shell_version="${_shell_version#"${_shell_basename:?}" }"
   fi
 
   printf '%s %s\n' "${_shell_basename:-unknown}" "${_shell_version:?}"
