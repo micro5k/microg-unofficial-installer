@@ -16,16 +16,16 @@ convert_max_signed_int_to_bit()
   # More info: https://www.netmeister.org/blog/epoch.html
 
   case "${1?}" in
-    '32767') printf '%s\n' "16-bit" ;;                                                             # Standard 16-bit limit
-    '2147480047') printf '%s\n' "32-bit - 3600" ;;                                                 # Standard 32-bit limit - 3600 for timezone diff. on 'date'
-    '2147483647') printf '%s\n' "32-bit" ;;                                                        # Standard 32-bit limit
-    '32535215999') printf '%s\n' "64-bit (with limit: ${1:?})" ;;                                  # 64-bit 'date' limited by the OS (likely under Windows)
-    '32535244799') printf '%s\n' "64-bit (limited by Windows localtime function)" ;;               # 64-bit 'date' limited by the OS (likely on BusyBox under Windows)
-    '67767976233529199') printf '%s\n' "64-bit (limited by tzcode bug - 3600)" ;;                  # 64-bit 'date' limited by the OS - 3600 for timezone diff. (likely on Bash under Windows)
-    '67767976233532799') printf '%s\n' "64-bit (limited by tzcode bug)" ;;                         # 64-bit 'date' limited by the OS (likely on Bash under Windows)
-    '67768036191673199') printf '%s\n' "64-bit (limited by 32-bit tm_year of struct tm - 3600)" ;; # 64-bit 'date' limited by the OS - 3600 for timezone diff. (likely under Linux)
-    '67768036191676799') printf '%s\n' "64-bit (limited by 32-bit tm_year of struct tm)" ;;        # 64-bit 'date' limited by the OS (likely under Linux)
-    '9223372036854775807') printf '%s\n' "64-bit" ;;                                               # Standard 64-bit limit
+    '32767') printf '%s\n' "16-bit" ;;                                                      # Standard 16-bit limit
+    '2147480047') printf '%s\n' "32-bit - 3600" ;;                                          # Standard 32-bit limit - 3600 for timezone diff. on 'date'
+    '2147483647') printf '%s\n' "32-bit" ;;                                                 # Standard 32-bit limit
+    '32535215999') printf '%s\n' "64-bit (with limit: ${1:?})" ;;                           # 64-bit 'date' limited by the OS (likely under Windows)
+    '32535244799') printf '%s\n' "64-bit (limited by Windows localtime function)" ;;        # 64-bit 'date' limited by the OS (likely on BusyBox under Windows)
+    '67767976233529199') printf '%s\n' "64-bit (limited by tzcode bug - 3600)" ;;           # 64-bit 'date' limited by the OS - 3600 for timezone diff. (likely on Bash under Windows)
+    '67767976233532799') printf '%s\n' "64-bit (limited by tzcode bug)" ;;                  # 64-bit 'date' limited by the OS (likely on Bash under Windows)
+    '67768036191673199') printf '%s\n' "64-bit (limited by 32-bit tm_year of tm - 3600)" ;; # 64-bit 'date' limited by the OS - 3600 for timezone diff. (likely under Linux)
+    '67768036191676799') printf '%s\n' "64-bit (limited by 32-bit tm_year of tm)" ;;        # 64-bit 'date' limited by the OS (likely under Linux)
+    '9223372036854775807') printf '%s\n' "64-bit" ;;                                        # Standard 64-bit limit
     *)
       printf '%s\n' 'unknown'
       return 1
@@ -76,7 +76,10 @@ permissively_comparison()
 
 get_shell_info()
 {
-  local _shell_exe _shell_basename _shell_version 2> /dev/null
+  local _shell_use_ver_opt _shell_exe _shell_basename _shell_version 2> /dev/null
+
+  _shell_use_ver_opt='false'
+  _shell_version=''
 
   if _shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${_shell_exe?}"; then
     :
@@ -88,19 +91,25 @@ get_shell_info()
   fi
 
   _shell_basename="$(basename "${_shell_exe:?}")" || _shell_basename=''
-  _shell_version=''
 
   case "${_shell_basename?}" in
     *'ksh'*) # For new ksh (ksh93 does NOT show the version in the help)
       _shell_version="${KSH_VERSION-}" ;;
+    *'zsh'*)
+      _shell_use_ver_opt='true'
+      ;;
     *) ;;
   esac
 
   if test -n "${_shell_version?}"; then # Already set, do nothing
     :
   else
-    # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
-    _shell_version="$("${_shell_exe:?}" 2>&1 --help || true)"
+    if test "${_shell_use_ver_opt:?}" = 'true' && _shell_version="$("${_shell_exe:?}" 2> /dev/null --version)" && test -n "${_shell_version?}"; then
+      :
+    else
+      # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
+      _shell_version="$("${_shell_exe:?}" 2>&1 --help || true)"
+    fi
 
     case "${_shell_version?}" in
       '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
@@ -108,8 +117,6 @@ get_shell_info()
           :
         elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v dpkg; then # For dash
           _shell_version="$(dpkg -l | grep -m 1 -F -e ' dash ' | awk '{ print $3 }')"
-        elif test -n "${ZSH_VERSION-}" && _shell_version="${ZSH_VERSION:?}"; then
-          :
         elif test -n "${YASH_VERSION-}" && _shell_version="${YASH_VERSION:?}"; then
           :
         elif test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
@@ -129,11 +136,16 @@ get_shell_info()
     esac
   fi
 
+  if test -n "${_shell_basename?}"; then
+    case "${_shell_version?}" in
+      'BusyBox'*) test "${_shell_basename:?}" != 'sh' || _shell_basename='busybox' ;;
+      *) ;;
+    esac
+
+    _shell_version="${_shell_version#"${_shell_basename:?} "}"
+  fi
+
   _shell_version="${_shell_version#Version }"
-  case "${_shell_version?}" in
-    'BusyBox'*) test "${_shell_basename?}" != 'sh' || _shell_basename='busybox' ;;
-    *) ;;
-  esac
 
   printf '%s %s\n' "${_shell_basename:-unknown}" "${_shell_version:?}"
 }
@@ -320,7 +332,7 @@ main()
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
 
   printf '%s %s\n' "Version of date:" "$(get_date_version || true)"
-  printf '%s%s\n' "Bits of 'date' (CET-1) timestamp: ${_date_bit:?}" "$(test "${_date_timezone_bug:?}" = 'false' || printf ' %s\n' '(with time zone bug)' || true)"
+  printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${_date_bit:?}" "$(test "${_date_timezone_bug:?}" = 'false' || printf ' %s\n' '(with time zone bug)' || true)"
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit:?}"
 }
 
