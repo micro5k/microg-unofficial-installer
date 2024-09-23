@@ -122,8 +122,10 @@ get_shell_info()
       '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
         if test "${_shell_basename?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then # For dash
           :
-        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v dpkg; then # For dash
-          _shell_version="$(dpkg -l | grep -m 1 -F -e ' dash ' | awk '{ print $3 }')"
+        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)"; then # For dash
+          :
+        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)"; then # For dash
+          :
         elif test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
           :
         elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then # For ksh and bosh
@@ -131,8 +133,7 @@ get_shell_info()
         elif test -n "${version-}" && _shell_version="${version:?}"; then # For tcsh and fish
           :
         else
-          printf '%s\n' 'unknown'
-          return 2
+          _shell_version=''
         fi
         ;;
       *)
@@ -142,16 +143,21 @@ get_shell_info()
   fi
 
   _shell_version="${_shell_version#[Vv]ersion }"
-
   if test -n "${_shell_basename?}"; then
     case "${_shell_version?}" in
       'BusyBox'*) test "${_shell_basename:?}" != 'sh' || _shell_basename='busybox' ;;
       *) ;;
     esac
-    _shell_version="${_shell_version#"${_shell_basename:?}" }"
+    _shell_version="${_shell_version#"${_shell_basename:?}"}"
+  fi
+  _shell_version="${_shell_version# }"
+
+  if test -z "${_shell_basename?}" && test -z "${_shell_version?}"; then
+    printf '%s\n' 'unknown'
+    return 2
   fi
 
-  printf '%s %s\n' "${_shell_basename:-unknown}" "${_shell_version:?}"
+  printf '%s %s\n' "${_shell_basename:-unknown}" "${_shell_version:-unknown}"
 }
 
 get_awk_version()
@@ -230,6 +236,8 @@ main()
       x86) _os_bit='32-bit' ;;
       *) _os_bit='unknown' ;;
     esac
+  elif command 1> /dev/null -v 'getconf' && _os_bit="$(getconf 'LONG_BIT')" && test -n "${_os_bit?}"; then
+    _os_bit="${_os_bit:?}-bit"
   elif test -e '/system/build.prop'; then
     # On Android
     case "$(file_getprop 'ro.product.cpu.abi' '/system/build.prop' || true)" in
@@ -237,8 +245,6 @@ main()
       'x86' | 'armeabi-v7a' | 'armeabi' | 'mips') _os_bit='32-bit' ;;
       *) _os_bit='unknown' ;;
     esac
-  elif command 1> /dev/null -v 'getconf' && _os_bit="$(getconf 'LONG_BIT')" && test -n "${_os_bit?}"; then
-    _os_bit="${_os_bit:?}-bit"
   else
     _os_bit='unknown'
   fi
