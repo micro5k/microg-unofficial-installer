@@ -80,6 +80,8 @@ get_shell_info()
 {
   local _shell_use_ver_opt _shell_exe _shell_basename _shell_version 2> /dev/null
 
+  # NOTE: Fish is intentionally not POSIX-compatible so this function may not work on it
+
   _shell_use_ver_opt='false'
   _shell_version=''
 
@@ -100,7 +102,7 @@ get_shell_info()
   esac
 
   case "${_shell_basename?}" in
-    *'ksh'*) # For new ksh (ksh93 does NOT show the version in the help)
+    *'ksh'*) # For new ksh / NOTE: ksh93 does NOT show the version in the help
       _shell_version="${KSH_VERSION-}" ;;
     *'zsh'*)
       _shell_use_ver_opt='true'
@@ -111,7 +113,7 @@ get_shell_info()
   if test -n "${_shell_version?}"; then # Already set, do nothing
     :
   else
-    if test "${_shell_use_ver_opt:?}" = 'true' && _shell_version="$("${_shell_exe:?}" 2> /dev/null --version)" && test -n "${_shell_version?}"; then
+    if test "${_shell_use_ver_opt:?}" = 'true' && _shell_version="$("${_shell_exe:?}" 2>&1 --version)" && test -n "${_shell_version?}"; then
       :
     else
       # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
