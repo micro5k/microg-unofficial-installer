@@ -131,7 +131,7 @@ get_shell_info()
         elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then
           : # For ksh and bosh
         elif test -n "${version-}" && _shell_version="${version:?}"; then
-          : # For tcsh and fish
+          : # For tcsh and fish (need test)
         else
           _shell_version=''
         fi
