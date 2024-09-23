@@ -11,6 +11,7 @@ set -u
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
   (set 2> /dev/null -o pipefail) && set -o pipefail || true
 }
+setopt 2> /dev/null SH_WORD_SPLIT || true
 
 convert_max_signed_int_to_bit()
 {
