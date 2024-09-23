@@ -135,7 +135,7 @@ _minutil_check_getopt()
 {
   unset GETOPT_COMPATIBLE
   getopt_test='0'
-  \getopt -T -- 2> /dev/null || getopt_test="${?}"
+  getopt -T -- 2> /dev/null || getopt_test="${?}"
   if test "${getopt_test:?}" != '4'; then
     _minutil_warn 'Limited or missing getopt'
     return 1
@@ -152,8 +152,7 @@ _minutil_display_help='false'
 
 if _minutil_check_getopt; then
   if minutil_args="$(
-    unset POSIXLY_CORRECT
-    \getopt -o 'vVhsri:' -l 'version,help,rescan-storage,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n 'MinUtil' -- "${@}"
+    getopt -o '+vVhsri:' -l 'version,help,rescan-storage,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n 'MinUtil' -- "${@}"
   )"; then
     \eval ' \set' '--' "${minutil_args?}" || exit 1
   else
