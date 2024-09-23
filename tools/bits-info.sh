@@ -108,8 +108,8 @@ get_shell_info()
     *) ;;
   esac
 
-  if test -n "${_shell_version?}"; then # Already set, do nothing
-    :
+  if test -n "${_shell_version?}"; then
+    : # Already set, do nothing
   else
     if test "${_shell_use_ver_opt:?}" = 'true' && _shell_version="$("${_shell_exe:?}" 2>&1 --version)" && test -n "${_shell_version?}"; then
       :
@@ -120,14 +120,14 @@ get_shell_info()
 
     case "${_shell_version?}" in
       '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
-        if test "${_shell_basename?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
+        if test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)"; then
           : # For dash
-        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)"; then
-          : # For dash
+        elif test "${_shell_basename?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
+          : # For dash (possibly supported in the future)
         elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)"; then
-          : # For dash
-        elif test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
-          :
+          : # For dash (it is slow)
+        elif test "${_shell_basename?}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
+          : # For posh (need test)
         elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then
           : # For ksh and bosh
         elif test -n "${version-}" && _shell_version="${version:?}"; then
