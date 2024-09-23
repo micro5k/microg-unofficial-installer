@@ -94,6 +94,11 @@ get_shell_info()
 
   _shell_basename="$(basename "${_shell_exe:?}")" || _shell_basename=''
 
+  case "${_shell_exe:?}" in
+    *'/bosh/'*) _shell_basename='bosh' ;;
+    *) ;;
+  esac
+
   case "${_shell_basename?}" in
     *'ksh'*) # For new ksh (ksh93 does NOT show the version in the help)
       _shell_version="${KSH_VERSION-}" ;;
@@ -123,7 +128,7 @@ get_shell_info()
           :
         elif test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
           :
-        elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then # For old ksh
+        elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then # For ksh and bosh
           :
         elif test -n "${version-}" && _shell_version="${version:?}"; then # For tcsh and fish
           :
@@ -138,16 +143,15 @@ get_shell_info()
     esac
   fi
 
+  _shell_version="${_shell_version#[Vv]ersion }"
+
   if test -n "${_shell_basename?}"; then
     case "${_shell_version?}" in
       'BusyBox'*) test "${_shell_basename:?}" != 'sh' || _shell_basename='busybox' ;;
       *) ;;
     esac
-
-    _shell_version="${_shell_version#"${_shell_basename:?} "}"
+    _shell_version="${_shell_version#${_shell_basename:?} }"
   fi
-
-  _shell_version="${_shell_version#Version }"
 
   printf '%s %s\n' "${_shell_basename:-unknown}" "${_shell_version:?}"
 }
