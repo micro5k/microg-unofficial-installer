@@ -120,18 +120,18 @@ get_shell_info()
 
     case "${_shell_version?}" in
       '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
-        if test "${_shell_basename?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then # For dash
-          :
-        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)"; then # For dash
-          :
-        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)"; then # For dash
-          :
+        if test "${_shell_basename?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
+          : # For dash
+        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)"; then
+          : # For dash
+        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)"; then
+          : # For dash
         elif test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
           :
-        elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then # For ksh and bosh
-          :
-        elif test -n "${version-}" && _shell_version="${version:?}"; then # For tcsh and fish
-          :
+        elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then
+          : # For ksh and bosh
+        elif test -n "${version-}" && _shell_version="${version:?}"; then
+          : # For tcsh and fish
         else
           _shell_version=''
         fi
