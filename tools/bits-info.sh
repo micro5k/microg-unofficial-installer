@@ -56,18 +56,18 @@ convert_max_unsigned_int_to_bit()
 
 permissively_comparison()
 {
-  local _compare_list _comp_num 2> /dev/null
+  local _comp_list _comp_num 2> /dev/null
 
   case "${2?}" in
-    '9223372036854775807') _compare_list="${2:?} 9223372036854775808" ;;
-    '18446744073709551615') _compare_list="${2:?} 1.84467e+19" ;;
+    '9223372036854775807') _comp_list="${2:?} 9223372036854775808" ;;
+    '18446744073709551615') _comp_list="${2:?} 1.84467e+19" ;;
 
     '') return 1 ;;
 
-    *) _compare_list="${2:?}" ;;
+    *) _comp_list="${2:?}" ;;
   esac
 
-  for _comp_num in ${_compare_list:?}; do
+  for _comp_num in ${_comp_list:?}; do
     if test "${1?}" = "${_comp_num:?}"; then
       return 0
     fi
@@ -78,7 +78,7 @@ permissively_comparison()
 
 get_shell_info()
 {
-  local _shell_use_ver_opt _shell_exe _shell_basename _shell_version 2> /dev/null
+  local _shell_use_ver_opt _shell_exe _shell_name _shell_version 2> /dev/null
 
   # NOTE: Fish is intentionally not POSIX-compatible so this function may not work on it
 
@@ -94,15 +94,15 @@ get_shell_info()
     return 1
   fi
 
-  _shell_basename="$(basename "${_shell_exe:?}")" || _shell_basename=''
+  _shell_name="$(basename "${_shell_exe:?}")" || _shell_name=''
 
   case "${_shell_exe:?}" in
-    *'/bosh/'*) _shell_basename='bosh' ;;
+    *'/bosh/'*) _shell_name='bosh' ;;
     *) ;;
   esac
 
   # These shells do NOT show the version in the help
-  case "${_shell_basename?}" in
+  case "${_shell_name?}" in
     *'ksh'*) _shell_version="${KSH_VERSION-}" ;; # For new ksh
     *'zsh'* | *'yash'*) _shell_use_ver_opt='true' ;;
     *) ;;
@@ -122,13 +122,13 @@ get_shell_info()
 
     case "${_shell_version?}" in
       '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
-        if test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)"; then
+        if test "${_shell_name?}" = 'dash' && command 1> /dev/null -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)"; then
           : # For dash
-        elif test "${_shell_basename?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
+        elif test "${_shell_name?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
           : # For dash (possibly supported in the future)
-        elif test "${_shell_basename?}" = 'dash' && command 1> /dev/null -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)"; then
+        elif test "${_shell_name?}" = 'dash' && command 1> /dev/null -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)"; then
           : # For dash (it is slow)
-        elif test "${_shell_basename?}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
+        elif test "${_shell_name?}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
           : # For posh (need test)
         elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then
           : # For ksh and bosh
@@ -145,21 +145,21 @@ get_shell_info()
   fi
 
   _shell_version="${_shell_version#[Vv]ersion }"
-  if test -n "${_shell_basename?}"; then
+  if test -n "${_shell_name?}"; then
     case "${_shell_version?}" in
-      'BusyBox'*) test "${_shell_basename:?}" != 'sh' || _shell_basename='busybox' ;;
+      'BusyBox'*) test "${_shell_name:?}" != 'sh' || _shell_name='busybox' ;;
       *) ;;
     esac
-    _shell_version="${_shell_version#"${_shell_basename:?}"}"
+    _shell_version="${_shell_version#"${_shell_name:?}"}"
   fi
   _shell_version="${_shell_version# }"
 
-  if test -z "${_shell_basename?}" && test -z "${_shell_version?}"; then
+  if test -z "${_shell_name?}" && test -z "${_shell_version?}"; then
     printf '%s\n' 'unknown'
     return 2
   fi
 
-  printf '%s %s\n' "${_shell_basename:-unknown}" "${_shell_version:-unknown}"
+  printf '%s %s\n' "${_shell_name:-unknown}" "${_shell_version:-unknown}"
 }
 
 get_awk_version()
@@ -215,62 +215,62 @@ file_getprop()
 
 main()
 {
-  local _date_timezone_bug _limits _limits_date _limits_u _max _n _tmp 2> /dev/null
-  local _shell_info _shell_bit _os_bit _cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit 2> /dev/null
+  local date_timezone_bug _limits _limits_date _limits_u _max _n tmp_var 2> /dev/null
+  local shell_info shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit 2> /dev/null
 
-  _date_timezone_bug='false'
+  date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
   _limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
-  _shell_info="$(get_shell_info)" || _shell_info='unknown unknown'
+  shell_info="$(get_shell_info)" || shell_info='unknown unknown'
 
   case "$(uname -m || true)" in
-    x64 | x86_64 | aarch64 | ia64) _shell_bit='64-bit' ;;
-    x86 | i686 | i586 | i486 | i386) _shell_bit='32-bit' ;;
-    *) _shell_bit='unknown' ;;
+    x64 | x86_64 | aarch64 | ia64) shell_bit='64-bit' ;;
+    x86 | i686 | i586 | i486 | i386) shell_bit='32-bit' ;;
+    *) shell_bit='unknown' ;;
   esac
 
-  if test "${OS-}" = 'Windows_NT' && _os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${_os_bit?}"; then
+  if test "${OS-}" = 'Windows_NT' && os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${os_bit?}"; then
     # On Windows 2000+ / ReactOS
-    case "${_os_bit:?}" in
-      AMD64 | ARM64 | IA64) _os_bit='64-bit' ;;
-      x86) _os_bit='32-bit' ;;
-      *) _os_bit='unknown' ;;
+    case "${os_bit:?}" in
+      AMD64 | ARM64 | IA64) os_bit='64-bit' ;;
+      x86) os_bit='32-bit' ;;
+      *) os_bit='unknown' ;;
     esac
-  elif command 1> /dev/null -v 'getconf' && _os_bit="$(getconf 'LONG_BIT')" && test -n "${_os_bit?}"; then
-    _os_bit="${_os_bit:?}-bit"
+  elif command 1> /dev/null -v 'getconf' && os_bit="$(getconf 'LONG_BIT')" && test -n "${os_bit?}"; then
+    os_bit="${os_bit:?}-bit"
   elif test -e '/system/build.prop'; then
     # On Android
     case "$(file_getprop 'ro.product.cpu.abi' '/system/build.prop' || true)" in
-      'x86_64' | 'arm64-v8a' | 'mips64' | 'riscv64') _os_bit='64-bit' ;;
-      'x86' | 'armeabi-v7a' | 'armeabi' | 'mips') _os_bit='32-bit' ;;
-      *) _os_bit='unknown' ;;
+      'x86_64' | 'arm64-v8a' | 'mips64' | 'riscv64') os_bit='64-bit' ;;
+      'x86' | 'armeabi-v7a' | 'armeabi' | 'mips') os_bit='32-bit' ;;
+      *) os_bit='unknown' ;;
     esac
   else
-    _os_bit='unknown'
+    os_bit='unknown'
   fi
 
-  if test -e '/proc/cpuinfo' && _tmp="$(grep -e '^flags[[:space:]]*:' -- '/proc/cpuinfo' | cut -d ':' -f '2-' -s)" && test -n "${_tmp?}"; then
-    if printf '%s\n' "${_tmp:?}" | grep -m 1 -q -w -e '[[:lower:]]\{1,\}_lm'; then
-      _cpu_bit='64-bit'
+  if test -e '/proc/cpuinfo' && tmp_var="$(grep -e '^flags[[:space:]]*:' -- '/proc/cpuinfo' | cut -d ':' -f '2-' -s)" && test -n "${tmp_var?}"; then
+    if printf '%s\n' "${tmp_var:?}" | grep -m 1 -q -w -e '[[:lower:]]\{1,\}_lm'; then
+      cpu_bit='64-bit'
     else
-      _cpu_bit='32-bit'
+      cpu_bit='32-bit'
     fi
-  elif command 1> /dev/null -v 'wmic.exe' && _cpu_bit="$(MSYS_NO_PATHCONV=1 wmic.exe cpu get DataWidth /VALUE | cut -d '=' -f '2-' -s | tr -d '\r')"; then
+  elif command 1> /dev/null -v 'wmic.exe' && cpu_bit="$(MSYS_NO_PATHCONV=1 wmic.exe cpu get DataWidth /VALUE | cut -d '=' -f '2-' -s | tr -d '\r')"; then
     # On Windows / ReactOS (if WMIC is present)
-    case "${_cpu_bit?}" in
-      '64' | '32') _cpu_bit="${_cpu_bit:?}-bit" ;;
-      *) _cpu_bit='unknown' ;;
+    case "${cpu_bit?}" in
+      '64' | '32') cpu_bit="${cpu_bit:?}-bit" ;;
+      *) cpu_bit='unknown' ;;
     esac
-  elif command 1> /dev/null -v 'powershell.exe' && _cpu_bit="$(powershell.exe -c 'gwmi Win32_Processor | select -ExpandProperty DataWidth')"; then
-    # On Windows (if PowerShell is installed)
-    case "${_cpu_bit?}" in
-      '64' | '32') _cpu_bit="${_cpu_bit:?}-bit" ;;
-      *) _cpu_bit='unknown' ;;
+  elif command 1> /dev/null -v 'powershell.exe' && cpu_bit="$(powershell.exe -c 'gwmi Win32_Processor | select -ExpandProperty DataWidth')"; then
+    # On Windows (if PowerShell is installed - it is slow)
+    case "${cpu_bit?}" in
+      '64' | '32') cpu_bit="${cpu_bit:?}-bit" ;;
+      *) cpu_bit='unknown' ;;
     esac
   else
-    _cpu_bit='unknown'
+    cpu_bit='unknown'
   fi
 
   _max='-1'
@@ -294,7 +294,7 @@ main()
   # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
   for _n in ${_limits:?}; do
-    if ! _tmp="$(awk -v n="${_n:?}" -- 'BEGIN { printf "%d\n", n }')" || ! permissively_comparison "${_tmp?}" "${_n:?}"; then break; fi
+    if ! tmp_var="$(awk -v n="${_n:?}" -- 'BEGIN { printf "%d\n", n }')" || ! permissively_comparison "${tmp_var?}" "${_n:?}"; then break; fi
     _max="${_n:?}"
   done
   _awk_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _awk_printf_signed_bit='unknown'
@@ -302,17 +302,17 @@ main()
   # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
   for _n in ${_limits_u:?}; do
-    if ! _tmp="$(awk -v n="${_n:?}" -- 'BEGIN { printf "%u\n", n }')" || ! permissively_comparison "${_tmp?}" "${_n:?}"; then break; fi
+    if ! tmp_var="$(awk -v n="${_n:?}" -- 'BEGIN { printf "%u\n", n }')" || ! permissively_comparison "${tmp_var?}" "${_n:?}"; then break; fi
     _max="${_n:?}"
   done
   _awk_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max:?}")" || _awk_printf_unsigned_bit='unknown'
 
   _max='-1'
   for _n in ${_limits_date:?}; do
-    if ! _tmp="$(TZ='CET-1' date 2> /dev/null -d "@${_n:?}" -- '+%s')"; then break; fi
-    if test "${_tmp?}" != "${_n:?}"; then
-      if test "${_tmp?}" = "$((${_n:?} - 14400))"; then
-        _date_timezone_bug='true'
+    if ! tmp_var="$(TZ='CET-1' date 2> /dev/null -d "@${_n:?}" -- '+%s')"; then break; fi
+    if test "${tmp_var?}" != "${_n:?}"; then
+      if test "${tmp_var?}" = "$((${_n:?} - 14400))"; then
+        date_timezone_bug='true'
       else
         break
       fi
@@ -328,11 +328,11 @@ main()
   done
   _date_u_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _date_u_bit='unknown'
 
-  printf '%s %s\n' "Shell:" "$(printf '%s\n' "${_shell_info:?}" | cut -d ' ' -f '1' || true)"
-  printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${_shell_info:?}" | cut -d ' ' -f '2-' -s || true)"
-  printf '%s\n' "Bits of shell: ${_shell_bit:?}"
-  printf '%s\n' "Bits of OS: ${_os_bit:?}"
-  printf '%s\n\n' "Bits of CPU: ${_cpu_bit:?}"
+  printf '%s %s\n' "Shell:" "$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '1' || true)"
+  printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '2-' -s || true)"
+  printf '%s\n' "Bits of shell: ${shell_bit:?}"
+  printf '%s\n' "Bits of OS: ${os_bit:?}"
+  printf '%s\n\n' "Bits of CPU: ${cpu_bit:?}"
 
   printf '%s\n' "Bits of shell 'test' int comparison: ${_shell_test_bit:?}"
   printf '%s\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit:?}"
@@ -344,7 +344,7 @@ main()
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
 
   printf '%s %s\n' "Version of date:" "$(get_date_version || true)"
-  printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${_date_bit:?}" "$(test "${_date_timezone_bug:?}" = 'false' || printf ' %s\n' '(with time zone bug)' || true)"
+  printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${_date_bit:?}" "$(test "${date_timezone_bug:?}" = 'false' || printf ' %s\n' '(with time zone bug)' || true)"
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit:?}"
 }
 
