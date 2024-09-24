@@ -187,6 +187,36 @@ get_applet_name()
   return 2
 }
 
+get_os_info()
+{
+  local _os_name _os_version 2> /dev/null
+
+  _os_name="$(uname 2> /dev/null -o || uname 2> /dev/null || true)"
+  _os_version=''
+
+  case "${_os_name?}" in
+    'MS/Windows')
+      _os_version="$(uname -r -v | tr -- ' ' '.' || true)"
+      ;;
+    'Msys')
+      _os_name='MS/Windows'
+      _os_version="$(uname | grep -m 1 -o -e 'NT-.*$' | cut -d '-' -f '2-' -s | tr -- '-' '.' || true)"
+      ;;
+    'GNU/Linux')
+      if test -e '/system/system/build.prop' || test -e '/system/build.prop'; then
+        _os_name='Android'
+      else
+        _os_version="$(uname 2> /dev/null -r || true)"
+      fi
+      ;;
+    *)
+      _os_version="$(uname 2> /dev/null -r || true)"
+      ;;
+  esac
+
+  printf '%s %s\n' "${_os_name:-unknown}" "${_os_version:-unknown}"
+}
+
 get_awk_version()
 {
   local _awk_version 2> /dev/null
@@ -359,6 +389,8 @@ main()
     printf '%s %s\n' "Shell applet:" "${shell_applet:?}"
   fi
   printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '2-' -s || true)"
+  printf '%s %s\n\n' "OS:" "$(get_os_info || true)"
+
   printf '%s\n' "Bits of shell: ${shell_bit:?}"
   printf '%s\n' "Bits of OS: ${os_bit:?}"
   printf '%s\n\n' "Bits of CPU: ${cpu_bit:?}"
