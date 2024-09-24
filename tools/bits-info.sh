@@ -203,7 +203,7 @@ get_os_info()
       _os_version="$(uname | grep -m 1 -o -e 'NT-.*$' | cut -d '-' -f '2-' -s | tr -- '-' '.' || true)"
       ;;
     'GNU/Linux')
-      if test -e '/system/system/build.prop' || test -e '/system/build.prop'; then
+      if _os_version="$(getprop 2> /dev/null 'ro.build.version.release')" && test -n "${_os_version?}"; then
         _os_name='Android'
       else
         _os_version="$(uname 2> /dev/null -r || true)"
