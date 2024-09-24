@@ -162,6 +162,31 @@ get_shell_info()
   printf '%s %s\n' "${_shell_name:-unknown}" "${_shell_version:-unknown}"
 }
 
+get_applet_name()
+{
+  local _shell_cmdline _current_applet 2> /dev/null
+
+  case "${1?}" in
+    *'busybox'*)
+      if _shell_cmdline="$(cat 2> /dev/null "/proc/${$}/cmdline" | tr -- '\0' ' ')" && test -n "${_shell_cmdline?}"; then
+        for _current_applet in ash hush msh lash bash sh; do
+          if printf '%s\n' "${_shell_cmdline:?}" | grep -m 1 -q -w -e "${_current_applet:?}"; then
+            printf '%s\n' "${_current_applet:?}"
+            return 0
+          fi
+        done
+      fi
+      ;;
+    *)
+      printf '%s\n' 'not-busybox'
+      return 1
+      ;;
+  esac
+
+  printf '%s\n' 'unknown'
+  return 2
+}
+
 get_awk_version()
 {
   local _awk_version 2> /dev/null
@@ -216,7 +241,7 @@ file_getprop()
 main()
 {
   local date_timezone_bug _limits _limits_date _limits_u _max _n tmp_var 2> /dev/null
-  local shell_info shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit 2> /dev/null
+  local shell_info shell_name shell_applet shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit 2> /dev/null
 
   date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
@@ -224,6 +249,7 @@ main()
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
   shell_info="$(get_shell_info)" || shell_info='unknown unknown'
+  shell_name="$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '1')" || shell_name='unknown'
 
   case "$(uname -m || true)" in
     x64 | x86_64 | aarch64 | ia64) shell_bit='64-bit' ;;
@@ -328,7 +354,10 @@ main()
   done
   _date_u_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _date_u_bit='unknown'
 
-  printf '%s %s\n' "Shell:" "$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '1' || true)"
+  printf '%s %s\n' "Shell:" "${shell_name:?}"
+  if shell_applet="$(get_applet_name "${shell_name:?}")"; then
+    printf '%s %s\n' "Shell applet:" "${shell_applet:?}"
+  fi
   printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '2-' -s || true)"
   printf '%s\n' "Bits of shell: ${shell_bit:?}"
   printf '%s\n' "Bits of OS: ${os_bit:?}"
