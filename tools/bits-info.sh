@@ -200,7 +200,7 @@ get_os_info()
       ;;
     'Msys')
       _os_name='MS/Windows'
-      _os_version="$(uname | grep -m 1 -o -e 'NT-.*$' | cut -d '-' -f '2-' -s | tr -- '-' '.' || true)"
+      _os_version="$(uname | cut -d '-' -f '2-' -s | tr -- '-' '.' || true)"
       ;;
     'GNU/Linux')
       if _os_version="$(getprop 2> /dev/null 'ro.build.version.release')" && test -n "${_os_version?}"; then
