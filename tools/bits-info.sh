@@ -323,7 +323,7 @@ main()
 
   _max='-1'
   for _n in ${_limits_date:?}; do
-    if test "$(TZ='CET-1' date 2> /dev/null -u -d "@${_n:?}" -- '+%s' || true)" != "${_n:?}"; then break; fi
+    if ! tmp_var="$(TZ='CET-1' date 2> /dev/null -u -d "@${_n:?}" -- '+%s')" || test "${tmp_var?}" != "${_n:?}"; then break; fi
     _max="${_n:?}"
   done
   _date_u_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _date_u_bit='unknown'
