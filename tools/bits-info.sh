@@ -168,7 +168,7 @@ get_applet_name()
 
   case "${1?}" in
     *'busybox'*)
-      if _shell_cmdline="$(cat 2> /dev/null "/proc/${$}/cmdline" | tr -- '\0' ' ')" && test -n "${_shell_cmdline?}"; then
+      if _shell_cmdline="$(tr 2> /dev/null -- '\0' ' ' 0< "/proc/${$}/cmdline")" && test -n "${_shell_cmdline?}"; then
         for _current_applet in ash hush msh lash bash sh; do
           if printf '%s\n' "${_shell_cmdline:?}" | grep -m 1 -q -w -e "${_current_applet:?}"; then
             printf '%s\n' "${_current_applet:?}"
