@@ -5,8 +5,8 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
-set -u || true
-setopt 2> /dev/null SH_WORD_SPLIT || true
+set -u
+setopt 2> /dev/null SH_WORD_SPLIT || :
 
 convert_max_signed_int_to_bit()
 {
@@ -101,16 +101,17 @@ get_shell_info()
     *) ;;
   esac
 
+  # Many shells doesn't support '--version' and in addition some bugged versions of BusyBox open
+  # an interactive shell when the '--version' option is used, so use it only when really needed
+
   if test -n "${_shell_version?}"; then
-    : # Already set, do nothing
+    : # Already found, do nothing
   else
-    # Many shells doesn't support '--version' and in addition some bugged versions of BusyBox open an interactive shell when the --version option is used,
-    # so use it only when really needed
     if test "${_shell_use_ver_opt:?}" = 'true' && _shell_version="$("${_shell_exe:?}" 2>&1 --version)" && test -n "${_shell_version?}"; then
       :
     else
       # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
-      _shell_version="$("${_shell_exe:?}" 2>&1 --help || true)"
+      _shell_version="$("${_shell_exe:?}" 2> /dev/null -Wversion || "${_shell_exe:?}" 2>&1 --help || :)"
     fi
 
     case "${_shell_version?}" in
@@ -123,7 +124,7 @@ get_shell_info()
           : # For dash (it is slow)
         elif test "${_shell_name?}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
           : # For posh (need test)
-        elif _shell_version="$(eval 2> /dev/null ' echo "${.sh.version}" ')" && test -n "${_shell_version?}"; then
+        elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ')" && test -n "${_shell_version?}"; then
           : # For ksh and bosh
         elif test -n "${version-}" && _shell_version="${version:?}"; then
           : # For tcsh and fish (need test)
