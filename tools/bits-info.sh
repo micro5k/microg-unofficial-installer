@@ -278,7 +278,7 @@ main()
 
   case "$(uname 2> /dev/null -m || true)" in
     x86_64 | ia64 | arm64 | aarch64 | mips64) shell_bit='64-bit' ;;
-    x86 | i686 | i586 | i486 | i386 | mips) shell_bit='32-bit' ;;
+    x86 | i686 | i586 | i486 | i386 | armv7* | mips) shell_bit='32-bit' ;;
     *) shell_bit='unknown' ;;
   esac
 
@@ -308,6 +308,13 @@ main()
     else
       cpu_bit='32-bit'
     fi
+  elif command 1> /dev/null 2>&1 -v 'sysctl' && tmp_var="$(sysctl hw.cpu64bit_capable | cut -d ':' -f '2-' -s)" && tmp_var="${tmp_var# }" && test -n "${tmp_var?}"; then
+    # On macOS
+    case "${tmp_var:?}" in
+      '1') cpu_bit='64-bit' ;;
+      '0') cpu_bit='32-bit' ;;
+      *) cpu_bit='unknown' ;;
+    esac
   elif command 1> /dev/null 2>&1 -v 'wmic.exe' && cpu_bit="$(MSYS_NO_PATHCONV=1 wmic.exe 2> /dev/null cpu get DataWidth /VALUE | cut -d '=' -f '2-' -s | tr -d '\r')" && test -n "${cpu_bit?}"; then
     # On Windows / ReactOS (if WMIC is present)
     case "${cpu_bit?}" in
