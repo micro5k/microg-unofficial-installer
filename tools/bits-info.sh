@@ -59,11 +59,9 @@ permissively_comparison()
   local _comp_list _comp_num 2> /dev/null
 
   case "${2?}" in
+    '') return 1 ;;
     '9223372036854775807') _comp_list="${2:?} 9223372036854775808" ;;
     '18446744073709551615') _comp_list="${2:?} 1.84467e+19" ;;
-
-    '') return 1 ;;
-
     *) _comp_list="${2:?}" ;;
   esac
 
@@ -80,8 +78,6 @@ get_shell_info()
 {
   local _shell_use_ver_opt _shell_exe _shell_name _shell_version 2> /dev/null
 
-  # NOTE: Fish is intentionally not POSIX-compatible so this function may not work on it
-
   _shell_use_ver_opt='false'
   _shell_version=''
 
@@ -95,6 +91,8 @@ get_shell_info()
   fi
 
   _shell_name="$(basename "${_shell_exe:?}")" || _shell_name=''
+
+  # NOTE: Fish is intentionally not POSIX-compatible so this function may not work on it
 
   case "${_shell_exe:?}" in
     *'/bosh/'*) _shell_name='bosh' ;;
@@ -145,19 +143,16 @@ get_shell_info()
   fi
 
   _shell_version="${_shell_version#[Vv]ersion }"
-  if test -n "${_shell_name?}"; then
-    case "${_shell_version?}" in
-      'BusyBox'*) test "${_shell_name:?}" != 'sh' || _shell_name='busybox' ;;
-      *) ;;
-    esac
-    _shell_version="${_shell_version#"${_shell_name:?}"}"
-  fi
+  case "${_shell_version?}" in
+    'BusyBox'*)
+      if test -z "${_shell_name?}" || test "${_shell_name:?}" = 'sh'; then _shell_name='busybox'; fi
+      _shell_version="${_shell_version#BusyBox}"
+      ;;
+    *)
+      test -z "${_shell_name?}" || _shell_version="${_shell_version#"${_shell_name:?}"}"
+      ;;
+  esac
   _shell_version="${_shell_version# }"
-
-  if test -z "${_shell_name?}" && test -z "${_shell_version?}"; then
-    printf '%s\n' 'unknown'
-    return 2
-  fi
 
   printf '%s %s\n' "${_shell_name:-unknown}" "${_shell_version:-unknown}"
 }
