@@ -94,10 +94,10 @@ get_shell_info()
     *) ;;
   esac
 
-  # These shells do NOT show the version in the help
   case "${_shell_name?}" in
-    *'ksh'*) _shell_version="${KSH_VERSION-}" ;; # For new ksh
-    *'zsh'* | *'yash'*) _shell_use_ver_opt='true' ;;
+    *'ksh'*) _shell_version="${KSH_VERSION-}" ;;     # For new ksh (do NOT show the version in the help)
+    *'zsh'* | *'yash'*) _shell_use_ver_opt='true' ;; # For zsh and yash (do NOT show the version in the help)
+    *'\bash.exe') _shell_name='bash' ;;              # Fix for a basename bug on old Bash under Windows
     *) ;;
   esac
 
@@ -115,11 +115,11 @@ get_shell_info()
 
     case "${_shell_version?}" in
       '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
-        if test "${_shell_name?}" = 'dash' && command 1> /dev/null -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)"; then
+        if test "${_shell_name?}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)"; then
           : # For dash
         elif test "${_shell_name?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
           : # For dash (possibly supported in the future)
-        elif test "${_shell_name?}" = 'dash' && command 1> /dev/null -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)"; then
+        elif test "${_shell_name?}" = 'dash' && command 1> /dev/null 2>&1 -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)"; then
           : # For dash (it is slow)
         elif test "${_shell_name?}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
           : # For posh (need test)
