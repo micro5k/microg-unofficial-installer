@@ -115,11 +115,11 @@ get_shell_info()
 
     case "${_shell_version?}" in
       '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
-        if test "${_shell_name?}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)"; then
+        if test "${_shell_name?}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version?}"; then
           : # For dash
         elif test "${_shell_name?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
           : # For dash (possibly supported in the future)
-        elif test "${_shell_name?}" = 'dash' && command 1> /dev/null 2>&1 -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)"; then
+        elif test "${_shell_name?}" = 'dash' && command 1> /dev/null 2>&1 -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version?}"; then
           : # For dash (it is slow)
         elif test "${_shell_name?}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
           : # For posh (need test)
@@ -193,14 +193,14 @@ get_os_info()
       _os_name='MS/Windows'
       _os_version="$(uname | cut -d '-' -f '2-' -s | tr -- '-' '.' || true)"
       ;;
-    'Windows_NT') # Bugged versions of uname: it doesn't support uname -o and it is unable to retrieve the version of Windows
+    'Windows_NT') # Bugged versions of uname: it doesn't support uname -o and it is unable to retrieve the correct version of Windows
       _os_name='MS/Windows'
       ;;
     'GNU/Linux')
       if _os_version="$(getprop 2> /dev/null 'ro.build.version.release')" && test -n "${_os_version?}"; then
         _os_name='Android'
       else
-        _os_version="$(uname 2> /dev/null -r || true)"
+        _os_version="$(uname 2> /dev/null -r)" || _os_version=''
       fi
       ;;
     *)
@@ -273,9 +273,9 @@ main()
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
   shell_info="$(get_shell_info || true)"
-  shell_name="$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '1')" || shell_name='unknown'
+  shell_name="$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '1' || true)"
 
-  case "$(uname -m || true)" in
+  case "$(uname 2> /dev/null -m || true)" in
     x64 | x86_64 | aarch64 | ia64) shell_bit='64-bit' ;;
     x86 | i686 | i586 | i486 | i386) shell_bit='32-bit' ;;
     *) shell_bit='unknown' ;;
