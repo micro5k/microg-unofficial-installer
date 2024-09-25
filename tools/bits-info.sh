@@ -277,8 +277,8 @@ main()
   shell_name="$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '1' || true)"
 
   case "$(uname 2> /dev/null -m || true)" in
-    x64 | x86_64 | aarch64 | ia64) shell_bit='64-bit' ;;
-    x86 | i686 | i586 | i486 | i386) shell_bit='32-bit' ;;
+    x86_64 | ia64 | arm64 | aarch64 | mips64) shell_bit='64-bit' ;;
+    x86 | i686 | i586 | i486 | i386 | mips) shell_bit='32-bit' ;;
     *) shell_bit='unknown' ;;
   esac
 
