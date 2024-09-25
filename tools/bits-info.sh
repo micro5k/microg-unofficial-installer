@@ -85,7 +85,7 @@ get_shell_info()
     return 1
   fi
 
-  _shell_name="$(basename "${_shell_exe:?}")" || _shell_name=''
+  _shell_name="$(basename "${_shell_exe:?}")" || _shell_name="${_shell_exe:?}"
 
   # NOTE: Fish is intentionally not POSIX-compatible so this function may not work on it
 
