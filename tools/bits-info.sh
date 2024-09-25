@@ -114,7 +114,7 @@ get_shell_info()
     fi
 
     case "${_shell_version?}" in
-      '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'*)
+      '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
         if test "${_shell_name?}" = 'dash' && command 1> /dev/null -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)"; then
           : # For dash
         elif test "${_shell_name?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
@@ -215,7 +215,7 @@ get_awk_version()
 {
   local _awk_version 2> /dev/null
 
-  if ! command 1> /dev/null -v awk; then
+  if ! command 1> /dev/null 2>&1 -v awk; then
     printf '%s\n' 'missing'
     return 1
   fi
@@ -238,7 +238,7 @@ get_date_version()
 {
   local _date_version 2> /dev/null
 
-  if ! command 1> /dev/null -v date; then
+  if ! command 1> /dev/null 2>&1 -v date; then
     printf '%s\n' 'missing'
     return 1
   fi
@@ -307,7 +307,7 @@ main()
     else
       cpu_bit='32-bit'
     fi
-  elif command 1> /dev/null 2>&1 -v 'wmic.exe' && cpu_bit="$(MSYS_NO_PATHCONV=1 wmic.exe cpu get DataWidth /VALUE | cut -d '=' -f '2-' -s | tr -d '\r')"; then
+  elif command 1> /dev/null 2>&1 -v 'wmic.exe' && cpu_bit="$(MSYS_NO_PATHCONV=1 wmic.exe 2> /dev/null cpu get DataWidth /VALUE | cut -d '=' -f '2-' -s | tr -d '\r')" && test -n "${cpu_bit?}"; then
     # On Windows / ReactOS (if WMIC is present)
     case "${cpu_bit?}" in
       '64' | '32') cpu_bit="${cpu_bit:?}-bit" ;;
