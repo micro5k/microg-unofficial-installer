@@ -35,5 +35,4 @@ jobs:
         run: |
           # Testing script...
           printf '%s\n\n' 'bits-info.sh:'
-          printf '\n'
           '${{ github.workspace }}/tools/bits-info.sh'
