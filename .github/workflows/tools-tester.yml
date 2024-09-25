@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: (c) 2024 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-name: "Utils tester"
+name: "Tools tester"
 permissions: {}
 on:
   push:
@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deviceinfo:
+  base:
     strategy:
       matrix:
         os:
