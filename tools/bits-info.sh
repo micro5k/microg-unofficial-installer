@@ -71,7 +71,7 @@ permissively_comparison()
 
 get_shell_info()
 {
-  local _shell_use_ver_opt _shell_exe _shell_name _shell_version 2> /dev/null
+  local _shell_use_ver_opt _shell_exe _shell_name _shell_version _tmp_var 2> /dev/null
 
   _shell_use_ver_opt='false'
   _shell_version=''
@@ -94,12 +94,15 @@ get_shell_info()
     *) ;;
   esac
 
-  case "${_shell_name?}" in
-    *'ksh'*) _shell_version="${KSH_VERSION-}" ;;     # For new ksh (do NOT show the version in the help)
-    *'zsh'* | *'yash'*) _shell_use_ver_opt='true' ;; # For zsh and yash (do NOT show the version in the help)
-    *'\bash.exe') _shell_name='bash' ;;              # Fix for a basename bug on old Bash under Windows
-    *) ;;
-  esac
+  if _tmp_var="$(printf '%s\n' "${_shell_name?}" | grep -m 1 -o -e 'ksh\|zsh\|yash\|\\bash\.exe$')"; then
+    if test "${_tmp_var?}" = 'ksh'; then # For new ksh (it does NOT show the version in the help)
+      _shell_version="${KSH_VERSION-}"
+    elif test "${_tmp_var?}" = 'zsh' || test "${_tmp_var?}" = 'yash'; then # For zsh and yash (they do NOT show the version in the help)
+      _shell_use_ver_opt='true'
+    elif test "${_tmp_var?}" = '\bash.exe'; then # Fix for a basename bug on old Bash under Windows
+      _shell_name='bash'
+    fi
+  fi
 
   # Many shells doesn't support '--version' and in addition some bugged versions of BusyBox open
   # an interactive shell when the '--version' option is used, so use it only when really needed
