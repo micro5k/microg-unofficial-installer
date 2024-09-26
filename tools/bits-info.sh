@@ -167,7 +167,7 @@ get_applet_name()
   case "${1?}" in
     *'busybox'*)
       if _shell_cmdline="$(tr 2> /dev/null -- '\0' ' ' 0< "/proc/${$}/cmdline")" && test -n "${_shell_cmdline?}"; then
-        for _current_applet in ash hush msh lash bash sh; do
+        for _current_applet in bash ash hush msh lash sh; do
           if printf '%s\n' "${_shell_cmdline:?}" | grep -m 1 -q -w -e "${_current_applet:?}"; then
             printf '%s\n' "${_current_applet:?}"
             return 0
@@ -248,6 +248,37 @@ file_getprop()
   grep -m 1 -F -e "${1:?}=" -- "${2:?}" | cut -d '=' -f '2-' -s
 }
 
+check_bitness_of_pe_file()
+{
+  local _pe_header_pos _pe_header 2> /dev/null
+
+  if test ! -e "${1:?}" || ! command 1> /dev/null 2>&1 -v hexdump; then
+    printf '%s\n' 'unknown'
+    return 1
+  fi
+
+  # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
+
+  if _pe_header_pos="$(hexdump -v -s 0x3C -n 4 -e '/1 "%02x\n"' -- "${1:?}" | tac | tr -d '\n')" && test -n "${_pe_header_pos?}" && _pe_header_pos="0x${_pe_header_pos:?}"; then
+    if _pe_header="$(hexdump 2> /dev/null -v -s "${_pe_header_pos:?}" -n 6 -e '/1 "%02x"' -- "${1:?}")" && printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
+      # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
+      case "${_pe_header?}" in
+        *'6486') printf '%s\n' '64-bit PE' ;; # AMD64 (0x64 0x86)
+        *'0002') printf '%s\n' '64-bit PE' ;; # IA64  (0x00 0x02)
+        *'4c01') printf '%s\n' '32-bit PE' ;; # x86   (0x4C 0x01)
+        *)
+          printf '%s\n' 'unknown-pe-file'
+          return 2
+          ;;
+      esac
+      return 0
+    fi
+  fi
+
+  printf '%s\n' 'not-pe-file'
+  return 3
+}
+
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
@@ -264,24 +295,28 @@ pause_if_needed()
 main()
 {
   local date_timezone_bug _limits _limits_date _limits_u _max _n tmp_var 2> /dev/null
-  local shell_info shell_name shell_applet shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit 2> /dev/null
+  local shell_exe shell_info shell_name shell_applet shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit 2> /dev/null
 
   date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
   _limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
+  shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" || shell_exe=''
+
   shell_info="$(get_shell_info || true)"
   shell_name="$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '1' || true)"
 
   if tmp_var="$(hexdump 2> /dev/null -v -n 5 -e '/1 "%02x"' 0< "/proc/${$}/exe")" && test -n "${tmp_var?}" && printf '%s\n' "${tmp_var:?}" | grep -m 1 -q -e '^7f454c46'; then
     # On Linux / Android
-    # ELF header => 0x7F + ELF(0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
+    # ELF header => 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
     case "${tmp_var?}" in
       *'02') shell_bit='64-bit ELF' ;;
       *'01') shell_bit='32-bit ELF' ;;
       *) shell_bit='unknown' ;;
     esac
+  elif test -n "${shell_exe?}" && shell_bit="$(check_bitness_of_pe_file "${shell_exe:?}")"; then
+    :
   elif tmp_var="$(uname 2> /dev/null -m)"; then
     case "${tmp_var?}" in
       x86_64 | ia64 | arm64 | aarch64 | mips64) shell_bit='64-bit' ;;
@@ -295,6 +330,8 @@ main()
       x86) shell_bit='32-bit' ;;
       *) shell_bit='unknown' ;;
     esac
+  else
+    shell_bit='unknown'
   fi
 
   if test "${OS-}" = 'Windows_NT' && os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${os_bit?}"; then
