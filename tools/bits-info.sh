@@ -274,7 +274,15 @@ main()
   shell_info="$(get_shell_info || true)"
   shell_name="$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '1' || true)"
 
-  if tmp_var="$(uname 2> /dev/null -m)"; then
+  if tmp_var="$(hexdump 2> /dev/null -v -n 5 -e '/1 "%02x"' 0< "/proc/${$}/exe")" && test -n "${tmp_var?}" && printf '%s\n' "${tmp_var:?}" | grep -m 1 -q -e '^7f454c46'; then
+    # On Linux / Android
+    # ELF header => 0x7F + ELF(0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
+    case "${tmp_var?}" in
+      *'02') shell_bit='64-bit ELF' ;;
+      *'01') shell_bit='32-bit ELF' ;;
+      *) shell_bit='unknown' ;;
+    esac
+  elif tmp_var="$(uname 2> /dev/null -m)"; then
     case "${tmp_var?}" in
       x86_64 | ia64 | arm64 | aarch64 | mips64) shell_bit='64-bit' ;;
       x86 | i686 | i586 | i486 | i386 | armv7* | mips) shell_bit='32-bit' ;;
