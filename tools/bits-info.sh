@@ -5,9 +5,12 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
-set -u
-setopt 2> /dev/null SH_WORD_SPLIT || :
+set -u 2> /dev/null || :
+setopt SH_WORD_SPLIT 2> /dev/null || :
 export POSIXLY_CORRECT='y'
+
+# shellcheck disable=all
+$(set 1> /dev/null 2>&1 -o pipefail) && set -o pipefail || :
 
 convert_max_signed_int_to_bit()
 {
@@ -254,6 +257,8 @@ pause_if_needed()
     IFS='' read 1> /dev/null 2>&1 -r -s -n 1 _ || IFS='' read 1>&2 -r _ || true
     printf 1>&2 '\n' || true
   fi
+
+  return 0
 }
 
 main()
