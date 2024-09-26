@@ -216,29 +216,6 @@ get_os_info()
   printf '%s %s\n' "${_os_name:-unknown}" "${_os_version:-unknown}"
 }
 
-get_awk_version()
-{
-  local _awk_version 2> /dev/null
-
-  if ! command 1> /dev/null 2>&1 -v awk; then
-    printf '%s\n' 'missing'
-    return 1
-  fi
-
-  # NOTE: "awk --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
-  _awk_version="$(awk 2> /dev/null -Wversion || awk 2> /dev/null --version || awk 2>&1 --help || true)"
-
-  case "${_awk_version?}" in
-    '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
-      printf '%s\n' 'unknown'
-      return 2
-      ;;
-    *) ;;
-  esac
-
-  printf '%s\n' "${_awk_version:?}" | head -n 1
-}
-
 get_version()
 {
   local _version 2> /dev/null
@@ -248,8 +225,9 @@ get_version()
     return 1
   fi
 
-  # NOTE: "date --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
+  # NOTE: "date --help" and "awk --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
   _version="$("${1:?}" 2> /dev/null -Wversion || "${1:?}" 2> /dev/null --version || "${1:?}" 2>&1 --help || true)"
+  _version="$(printf '%s\n' "${_version?}" | head -n 1)" || _version=''
 
   case "${_version?}" in
     '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
@@ -259,12 +237,23 @@ get_version()
     *) ;;
   esac
 
-  printf '%s\n' "${_version:?}" | head -n 1
+  printf '%s\n' "${_version:?}"
 }
 
 file_getprop()
 {
   grep -m 1 -F -e "${1:?}=" -- "${2:?}" | cut -d '=' -f '2-' -s
+}
+
+pause_if_needed()
+{
+  # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
+  if test "${NO_PAUSE:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM-}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
+    printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit...' || true
+    # shellcheck disable=SC3045
+    IFS='' read 1> /dev/null 2>&1 -r -s -n 1 _ || IFS='' read 1>&2 -r _ || true
+    printf 1>&2 '\n' || true
+  fi
 }
 
 main()
@@ -395,7 +384,8 @@ main()
     printf '%s %s\n' "Shell applet:" "${shell_applet:?}"
   fi
   printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '2-' -s || true)"
-  printf '%s %s\n\n' "OS:" "$(get_os_info || true)"
+  printf '%s %s\n' "OS:" "$(get_os_info || true)"
+  printf '%s %s\n\n' "Version of uname:" "$(get_version 'uname' || true)"
 
   printf '%s\n' "Bits of shell: ${shell_bit:?}"
   printf '%s\n' "Bits of OS: ${os_bit:?}"
@@ -405,7 +395,7 @@ main()
   printf '%s\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit:?}"
   printf '%s\n\n' "Bits of shell 'printf': ${_shell_printf_bit:?}"
 
-  printf '%s %s\n' "Version of awk:" "$(get_awk_version || true)"
+  printf '%s %s\n' "Version of awk:" "$(get_version 'awk' || true)"
   printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit:?}"
   printf '%s\n' "Bits of awk 'printf' - signed: ${_awk_printf_signed_bit:?}"
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
@@ -416,3 +406,4 @@ main()
 }
 
 main
+pause_if_needed
