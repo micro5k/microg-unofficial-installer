@@ -235,19 +235,19 @@ get_awk_version()
   printf '%s\n' "${_awk_version:?}" | head -n 1
 }
 
-get_date_version()
+get_version()
 {
-  local _date_version 2> /dev/null
+  local _version 2> /dev/null
 
-  if ! command 1> /dev/null 2>&1 -v date; then
+  if ! command 1> /dev/null 2>&1 -v "${1:?}"; then
     printf '%s\n' 'missing'
     return 1
   fi
 
   # NOTE: "date --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
-  _date_version="$(date 2> /dev/null --version || date 2>&1 --help || true)"
+  _version="$("${1:?}" 2> /dev/null -Wversion || "${1:?}" 2> /dev/null --version || "${1:?}" 2>&1 --help || true)"
 
-  case "${_date_version?}" in
+  case "${_version?}" in
     '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
       printf '%s\n' 'unknown'
       return 2
@@ -255,7 +255,7 @@ get_date_version()
     *) ;;
   esac
 
-  printf '%s\n' "${_date_version:?}" | head -n 1
+  printf '%s\n' "${_version:?}" | head -n 1
 }
 
 file_getprop()
@@ -406,7 +406,7 @@ main()
   printf '%s\n' "Bits of awk 'printf' - signed: ${_awk_printf_signed_bit:?}"
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
 
-  printf '%s %s\n' "Version of date:" "$(get_date_version || true)"
+  printf '%s %s\n' "Version of date:" "$(get_version 'date' || true)"
   printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${_date_bit:?}" "$(test "${date_timezone_bug:?}" = 'false' || printf ' %s\n' '(with time zone bug)' || true)"
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit:?}"
 }
