@@ -7,6 +7,7 @@
 
 set -u
 setopt 2> /dev/null SH_WORD_SPLIT || :
+export POSIXLY_CORRECT='y'
 
 convert_max_signed_int_to_bit()
 {
@@ -73,6 +74,8 @@ get_shell_info()
 {
   local _shell_use_ver_opt _shell_exe _shell_name _shell_version _tmp_var 2> /dev/null
 
+  # NOTE: Fish is intentionally not POSIX-compatible so this function may not work on it
+
   _shell_use_ver_opt='false'
   _shell_version=''
 
@@ -86,8 +89,6 @@ get_shell_info()
   fi
 
   _shell_name="$(basename "${_shell_exe:?}")" || _shell_name="${_shell_exe:?}"
-
-  # NOTE: Fish is intentionally not POSIX-compatible so this function may not work on it
 
   case "${_shell_exe:?}" in
     *'/bosh/'*) _shell_name='bosh' ;;
@@ -130,7 +131,7 @@ get_shell_info()
         elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ' || true)" && test -n "${_shell_version?}"; then
           : # For ksh and bosh
         elif test -n "${version-}" && _shell_version="${version:?}"; then
-          : # For tcsh and fish (need test)
+          : # For tcsh and fish
         else
           _shell_version=''
         fi
