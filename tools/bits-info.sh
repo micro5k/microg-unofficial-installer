@@ -171,6 +171,7 @@ get_shell_exe()
     # On Linux / macOS
     _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var:?}" || realpath 2> /dev/null "${_gse_tmp_var:?}")" || _gse_shell_exe="${_gse_tmp_var:?}"
   elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var?}"; then
+    if test ! -e "${_gse_tmp_var:?}" && test -e "${_gse_tmp_var:?}.exe"; then _gse_tmp_var="${_gse_tmp_var:?}.exe"; fi # Special fix for broken versions of Bash under Windows
     _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var:?}" || realpath 2> /dev/null "${_gse_tmp_var:?}")" || _gse_shell_exe="${_gse_tmp_var:?}"
   else
     return 1
@@ -372,8 +373,7 @@ main()
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
   shell_exe="$(get_shell_exe || :)"
-
-  shell_info="$(get_shell_info || true)"
+  shell_info="$(get_shell_info || :)"
   shell_name="$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '1' || true)"
 
   if test -n "${shell_exe?}" && shell_bit="$(check_bitness_of_file "${shell_exe:?}")"; then
