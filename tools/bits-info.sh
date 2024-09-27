@@ -326,10 +326,12 @@ main()
   _limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
-  if shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")"; then
-    : # On Linux / Android
-  elif tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${tmp_var?}" && shell_exe="$(command 2> /dev/null -v "${tmp_var:?}")"; then
-    : # On macOS
+  if shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${shell_exe?}"; then # On Linux / Android
+    :
+  elif tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${tmp_var?}" && tmp_var="$(command 2> /dev/null -v "${tmp_var:?}")"; then # On Linux / macOS
+    shell_exe="$(readlink 2> /dev/null -f "${tmp_var:?}" || realpath 2> /dev/null "${tmp_var:?}")" || shell_exe="${tmp_var:?}"
+  elif tmp_var="${BASH:-${SHELL-}}" && test -n "${tmp_var?}" && tmp_var="$(command 2> /dev/null -v "${tmp_var:?}")"; then
+    shell_exe="$(readlink 2> /dev/null -f "${tmp_var:?}" || realpath 2> /dev/null "${tmp_var:?}")" || shell_exe="${tmp_var:?}"
   else
     shell_exe=''
   fi
