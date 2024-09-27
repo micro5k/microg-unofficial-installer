@@ -118,7 +118,7 @@ hex_bytes_to_int()
 
 check_bitness_of_file()
 {
-  local _dump_hex_cmd _header _header_pos _pe_header _cbf_tmp_var 2> /dev/null
+  local _dump_hex_cmd _cbf_pos _header _cbf_tmp_var 2> /dev/null
 
   if command 1> /dev/null 2>&1 -v 'hexdump'; then
     _dump_hex_cmd='hexdump'
@@ -148,14 +148,14 @@ check_bitness_of_file()
     esac
     return 0
 
-  elif _header_pos="$(dump_hex "${1:?}" '4' '0x3C')" && _header_pos="$(switch_endianness "${_header_pos?}")" &&
-    test -n "${_header_pos?}" && _pe_header="$(dump_hex "${1:?}" '6' "0x${_header_pos:?}")" &&
-    printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
+  elif _cbf_pos="$(dump_hex "${1:?}" '4' '0x3C')" && _cbf_pos="$(switch_endianness "${_cbf_pos?}")" &&
+    test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" '6' "0x${_cbf_pos:?}")" &&
+    printf '%s\n' "${_header?}" | grep -m 1 -q -e '^50450000'; then
 
     # Binaries for Windows
     # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
     # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
-    case "${_pe_header?}" in
+    case "${_header?}" in
       *'6486') printf '%s\n' '64-bit PE (AMD64)' ;; # AMD64 (0x64 0x86)
       *'0002') printf '%s\n' '64-bit PE (IA-64)' ;; # IA-64 (0x00 0x02)
       *'4c01') printf '%s\n' '32-bit PE (x86)' ;;   # x86   (0x4C 0x01)
@@ -177,7 +177,7 @@ check_bitness_of_file()
 
   fi
 
-  local _cbf_is_mach_o _cbf_is_fat_bin _cbf_needs_bytes_swap _cbf_arch_count _cbf_pos _cbf_has64 _cbf_has32 2> /dev/null
+  local _cbf_is_mach_o _cbf_is_fat_bin _cbf_needs_bytes_swap _cbf_arch_count _cbf_has64 _cbf_has32 2> /dev/null
 
   if _header="$(dump_hex "${1:?}" '4' '0')"; then
     _cbf_is_mach_o='true'
@@ -201,8 +201,11 @@ check_bitness_of_file()
         _cbf_needs_bytes_swap='true'
         ;;
       'cafebabf') # FAT_MAGIC_64
+        #_cbf_is_fat_bin='true'
         ;;
       'bfbafeca') # FAT_CIGAM_64
+        #_cbf_is_fat_bin='true'
+        _cbf_needs_bytes_swap='true'
         ;;
       *)
         _cbf_is_mach_o='false'
@@ -222,7 +225,7 @@ check_bitness_of_file()
           if test "${_cbf_needs_bytes_swap:?}" = 'true'; then
             _cbf_tmp_var="$(switch_endianness "${_cbf_tmp_var?}")" || _cbf_tmp_var=''
           fi
-          _cbf_pos="$((${_cbf_pos:?} + 20))" || _cbf_tmp_var=''
+          _cbf_pos="$((${_cbf_pos:?} + 20))" || _cbf_tmp_var='' # Should be pos + 32 on FAT_MAGIC_64 (need test)
 
           case "${_cbf_tmp_var?}" in
             '01'*) _cbf_has64='true' ;;
