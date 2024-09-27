@@ -103,7 +103,7 @@ switch_endianness()
 
 check_bitness_of_file()
 {
-  local _header _pe_header_pos _pe_header 2> /dev/null
+  local _header _pe_header_pos _pe_header _cbf_tmp_var 2> /dev/null
 
   if test ! -e "${1:?}" || {
     ! command 1> /dev/null 2>&1 -v hexdump && ! command 1> /dev/null 2>&1 -v xxd
@@ -124,22 +124,29 @@ check_bitness_of_file()
         ;;
     esac
     return 0
-  elif _pe_header_pos="$(dump_hex "${1:?}" '4' '0x3C')" && _pe_header_pos="$(switch_endianness "${_pe_header_pos?}")" && test -n "${_pe_header_pos?}"; then
-    if _pe_header="$(dump_hex "${1:?}" '6' "0x${_pe_header_pos:?}")" && printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
-      # Binaries for Windows
-      # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
-      case "${_pe_header?}" in
-        *'6486') printf '%s\n' '64-bit PE (AMD64)' ;; # AMD64 (0x64 0x86)
-        *'0002') printf '%s\n' '64-bit PE (IA-64)' ;; # IA-64 (0x00 0x02)
-        *'4c01') printf '%s\n' '32-bit PE (x86)' ;;   # x86   (0x4C 0x01)
-        *)
-          printf '%s\n' 'unknown-pe-file'
-          return 4
-          ;;
-      esac
-      return 0
-      # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
-    fi
+  elif _pe_header_pos="$(dump_hex "${1:?}" '4' '0x3C')" && _pe_header_pos="$(switch_endianness "${_pe_header_pos?}")" &&
+    test -n "${_pe_header_pos?}" && _pe_header="$(dump_hex "${1:?}" '6' "0x${_pe_header_pos:?}")" &&
+    printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
+    # Binaries for Windows
+    # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
+    case "${_pe_header?}" in
+      *'6486') printf '%s\n' '64-bit PE (AMD64)' ;; # AMD64 (0x64 0x86)
+      *'0002') printf '%s\n' '64-bit PE (IA-64)' ;; # IA-64 (0x00 0x02)
+      *'4c01') printf '%s\n' '32-bit PE (x86)' ;;   # x86   (0x4C 0x01)
+      *)
+        printf '%s\n' 'unknown-pe-file'
+        return 4
+        ;;
+    esac
+    return 0
+    # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
+  elif _header="$(dump_hex "${1:?}" '2' '0')" && test "${_header?}" = '4d5a'; then
+    # Binaries for DOS
+    # MZ (0x4D 0x5A)
+    printf '%s\n' '16-bit MZ'
+    return 0
+
+    # ToO: Check special variants / hexdump -v -C -s "0x3C" -n "4" -- "${1:?}"
   fi
 
   printf '%s\n' 'unknown-file-type'
