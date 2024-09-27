@@ -80,11 +80,13 @@ file_getprop()
 
 dump_hex()
 {
-  if command 1> /dev/null 2>&1 -v hexdump; then
+  if test "${4:?}" = 'hexdump'; then
     hexdump -v -e '/1 "%02x"' -s "${3:?}" -n "${2:?}" -- "${1:?}" || return "${?}"
     printf '\n'
-  else
+  elif test "${4:?}" = 'xxd'; then
     xxd -p -s "${3:?}" -l "${2:?}" -- "${1:?}"
+  else
+    return 1
   fi
 }
 
@@ -118,12 +120,12 @@ hex_bytes_to_int()
 
 check_bitness_of_file()
 {
-  local _dump_hex_cmd _cbf_pos _header _cbf_tmp_var 2> /dev/null
+  local _hex_cmd _cbf_pos _header _cbf_tmp_var 2> /dev/null
 
   if command 1> /dev/null 2>&1 -v 'hexdump'; then
-    _dump_hex_cmd='hexdump'
+    _hex_cmd='hexdump'
   elif command 1> /dev/null 2>&1 -v 'xxd'; then
-    _dump_hex_cmd='xxd'
+    _hex_cmd='xxd'
   else
     printf '%s\n' 'unknown'
     return 1
@@ -134,7 +136,7 @@ check_bitness_of_file()
     return 1
   fi
 
-  if _header="$(dump_hex "${1:?}" '5' '0')" && printf '%s\n' "${_header?}" | grep -m 1 -q -e '^7f454c46'; then
+  if _header="$(dump_hex "${1:?}" '5' '0' "${_hex_cmd:?}")" && printf '%s\n' "${_header?}" | grep -m 1 -q -e '^7f454c46'; then
 
     # Binaries for Linux / Android
     # ELF header => 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
@@ -148,8 +150,8 @@ check_bitness_of_file()
     esac
     return 0
 
-  elif _cbf_pos="$(dump_hex "${1:?}" '4' '0x3C')" && _cbf_pos="$(switch_endianness "${_cbf_pos?}")" &&
-    test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" '6' "0x${_cbf_pos:?}")" &&
+  elif _cbf_pos="$(dump_hex "${1:?}" '4' '0x3C' "${_hex_cmd:?}")" && _cbf_pos="$(switch_endianness "${_cbf_pos?}")" &&
+    test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" '6' "0x${_cbf_pos:?}" "${_hex_cmd:?}")" &&
     printf '%s\n' "${_header?}" | grep -m 1 -q -e '^50450000'; then
 
     # Binaries for Windows
@@ -166,7 +168,7 @@ check_bitness_of_file()
     esac
     return 0
 
-  elif _header="$(dump_hex "${1:?}" '2' '0')" && test "${_header?}" = '4d5a'; then
+  elif _header="$(dump_hex "${1:?}" '2' '0' "${_hex_cmd:?}")" && test "${_header?}" = '4d5a'; then
 
     # Binaries for DOS
     # MZ (0x4D 0x5A)
@@ -179,7 +181,7 @@ check_bitness_of_file()
 
   local _cbf_is_mach_o _cbf_is_fat_bin _cbf_needs_bytes_swap _cbf_arch_count _cbf_has64 _cbf_has32 2> /dev/null
 
-  if _header="$(dump_hex "${1:?}" '4' '0')"; then
+  if _header="$(dump_hex "${1:?}" '4' '0' "${_hex_cmd:?}")"; then
     _cbf_is_mach_o='true'
     _cbf_is_fat_bin='false'
     _cbf_needs_bytes_swap='false'
@@ -213,7 +215,7 @@ check_bitness_of_file()
     esac
 
     if test "${_cbf_is_mach_o:?}" = 'true'; then
-      if test "${_cbf_is_fat_bin:?}" = 'true' && _cbf_arch_count="$(dump_hex "${1:?}" '4' '4')" &&
+      if test "${_cbf_is_fat_bin:?}" = 'true' && _cbf_arch_count="$(dump_hex "${1:?}" '4' '4' "${_hex_cmd:?}")" &&
         _cbf_arch_count="$(hex_bytes_to_int "${_cbf_needs_bytes_swap:?}" "${_cbf_arch_count?}")" &&
         test "${_cbf_arch_count:?}" -gt 0 && test "${_cbf_arch_count:?}" -lt 256; then
 
@@ -221,7 +223,7 @@ check_bitness_of_file()
         _cbf_has32='false'
         _cbf_pos='8'
         for _ in $(seq "${_cbf_arch_count:?}"); do
-          _cbf_tmp_var="$(dump_hex "${1:?}" '4' "${_cbf_pos:?}")" || _cbf_tmp_var=''
+          _cbf_tmp_var="$(dump_hex "${1:?}" '4' "${_cbf_pos:?}" "${_hex_cmd:?}")" || _cbf_tmp_var=''
           if test "${_cbf_needs_bytes_swap:?}" = 'true'; then
             _cbf_tmp_var="$(switch_endianness "${_cbf_tmp_var?}")" || _cbf_tmp_var=''
           fi
