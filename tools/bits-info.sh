@@ -73,6 +73,66 @@ permissively_comparison()
   return 1
 }
 
+file_getprop()
+{
+  grep -m 1 -F -e "${1:?}=" -- "${2:?}" | cut -d '=' -f '2-' -s
+}
+
+switch_endianness()
+{
+  local _hex_bytes _se_cur_line 2> /dev/null
+
+  _hex_bytes="$(cat | grep -o -e '..')" || return "${?}"
+
+  for _se_cur_line in 4 3 2 1; do
+    printf '%s\n' "${_hex_bytes:?}" | head -n "${_se_cur_line:?}" | tail -n "+${_se_cur_line:?}" | tr -d '\n' || return "${?}"
+  done
+  printf '\n'
+}
+
+dump_hex()
+{
+  if command 1> /dev/null 2>&1 -v hexdump; then
+    hexdump -v -e '/1 "%02x"' -s "${3:?}" -n "${2:?}" -- "${1:?}"
+    printf '\n'
+  else
+    xxd -p -s "${3:?}" -l "${2:?}" -- "${1:?}"
+  fi
+}
+
+check_bitness_of_pe_file()
+{
+  local _pe_header_pos _pe_header 2> /dev/null
+
+  if test ! -e "${1:?}" || {
+    ! command 1> /dev/null 2>&1 -v hexdump && ! command 1> /dev/null 2>&1 -v xxd
+  }; then
+    printf '%s\n' 'unknown'
+    return 1
+  fi
+
+  # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
+
+  if _pe_header_pos="$(dump_hex "${1:?}" '4' '0x3C' | switch_endianness)" && test -n "${_pe_header_pos?}" && _pe_header_pos="0x${_pe_header_pos:?}"; then
+    if _pe_header="$(dump_hex "${1:?}" '6' "${_pe_header_pos:?}")" && printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
+      # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
+      case "${_pe_header?}" in
+        *'6486') printf '%s\n' '64-bit PE' ;; # AMD64 (0x64 0x86)
+        *'0002') printf '%s\n' '64-bit PE' ;; # IA64  (0x00 0x02)
+        *'4c01') printf '%s\n' '32-bit PE' ;; # x86   (0x4C 0x01)
+        *)
+          printf '%s\n' 'unknown-pe-file'
+          return 2
+          ;;
+      esac
+      return 0
+    fi
+  fi
+
+  printf '%s\n' 'not-pe-file'
+  return 3
+}
+
 get_shell_info()
 {
   local _shell_use_ver_opt _shell_exe _shell_name _shell_version _tmp_var 2> /dev/null
@@ -243,66 +303,6 @@ get_version()
   printf '%s\n' "${_version:?}"
 }
 
-file_getprop()
-{
-  grep -m 1 -F -e "${1:?}=" -- "${2:?}" | cut -d '=' -f '2-' -s
-}
-
-switch_endianness()
-{
-  local _hex_bytes _se_cur_line 2> /dev/null
-
-  _hex_bytes="$(cat | grep -o -e '..')" || return "${?}"
-
-  for _se_cur_line in 4 3 2 1; do
-    printf '%s\n' "${_hex_bytes:?}" | head -n "${_se_cur_line:?}" | tail -n "+${_se_cur_line:?}" | tr -d '\n' || return "${?}"
-  done
-  printf '\n'
-}
-
-dump_hex()
-{
-  if command 1> /dev/null 2>&1 -v hexdump; then
-    hexdump -v -e '/1 "%02x"' -s "${3:?}" -n "${2:?}" -- "${1:?}"
-    printf '\n'
-  else
-    xxd -p -s "${3:?}" -l "${2:?}" -- "${1:?}"
-  fi
-}
-
-check_bitness_of_pe_file()
-{
-  local _pe_header_pos _pe_header 2> /dev/null
-
-  if test ! -e "${1:?}" || {
-    ! command 1> /dev/null 2>&1 -v hexdump && ! command 1> /dev/null 2>&1 -v xxd
-  }; then
-    printf '%s\n' 'unknown'
-    return 1
-  fi
-
-  # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
-
-  if _pe_header_pos="$(dump_hex "${1:?}" '4' '0x3C' | switch_endianness)" && test -n "${_pe_header_pos?}" && _pe_header_pos="0x${_pe_header_pos:?}"; then
-    if _pe_header="$(dump_hex "${1:?}" '6' "${_pe_header_pos:?}")" && printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
-      # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
-      case "${_pe_header?}" in
-        *'6486') printf '%s\n' '64-bit PE' ;; # AMD64 (0x64 0x86)
-        *'0002') printf '%s\n' '64-bit PE' ;; # IA64  (0x00 0x02)
-        *'4c01') printf '%s\n' '32-bit PE' ;; # x86   (0x4C 0x01)
-        *)
-          printf '%s\n' 'unknown-pe-file'
-          return 2
-          ;;
-      esac
-      return 0
-    fi
-  fi
-
-  printf '%s\n' 'not-pe-file'
-  return 3
-}
-
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
@@ -312,7 +312,6 @@ pause_if_needed()
     IFS='' read 1> /dev/null 2>&1 -r -s -n 1 _ || IFS='' read 1>&2 -r _ || true
     printf 1>&2 '\n' || true
   fi
-
   return 0
 }
 
@@ -326,7 +325,7 @@ main()
   _limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
-  if shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${shell_exe?}"; then # On Linux / Android
+  if shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${shell_exe?}"; then # On Linux / Android / Windows
     :
   elif tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${tmp_var?}" && tmp_var="$(command 2> /dev/null -v "${tmp_var:?}")"; then # On Linux / macOS
     shell_exe="$(readlink 2> /dev/null -f "${tmp_var:?}" || realpath 2> /dev/null "${tmp_var:?}")" || shell_exe="${tmp_var:?}"
