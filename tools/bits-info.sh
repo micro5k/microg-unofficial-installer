@@ -78,6 +78,16 @@ file_getprop()
   grep -m 1 -F -e "${1:?}=" -- "${2:?}" | cut -d '=' -f '2-' -s
 }
 
+dump_hex()
+{
+  if command 1> /dev/null 2>&1 -v hexdump; then
+    hexdump -v -e '/1 "%02x"' -s "${3:?}" -n "${2:?}" -- "${1:?}"
+    printf '\n'
+  else
+    xxd -p -s "${3:?}" -l "${2:?}" -- "${1:?}"
+  fi
+}
+
 switch_endianness()
 {
   local _hex_bytes _se_cur_line 2> /dev/null
@@ -88,16 +98,6 @@ switch_endianness()
     printf '%s\n' "${_hex_bytes:?}" | head -n "${_se_cur_line:?}" | tail -n "+${_se_cur_line:?}" | tr -d '\n' || return "${?}"
   done
   printf '\n'
-}
-
-dump_hex()
-{
-  if command 1> /dev/null 2>&1 -v hexdump; then
-    hexdump -v -e '/1 "%02x"' -s "${3:?}" -n "${2:?}" -- "${1:?}"
-    printf '\n'
-  else
-    xxd -p -s "${3:?}" -l "${2:?}" -- "${1:?}"
-  fi
 }
 
 check_bitness_of_pe_file()
