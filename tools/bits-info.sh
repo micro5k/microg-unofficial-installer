@@ -101,9 +101,24 @@ switch_endianness()
   printf '\n'
 }
 
+hex_bytes_to_int()
+{
+  local _hbti_num 2> /dev/null
+
+  test -n "${2?}" || return 1
+
+  if test "${1:?}" = 'true'; then
+    _hbti_num="$(switch_endianness "${2:?}")" || return "${?}"
+  else
+    _hbti_num="${2:?}" || return "${?}"
+  fi
+
+  printf '%u\n' "$((0x${_hbti_num:?}))"
+}
+
 check_bitness_of_file()
 {
-  local _header _header_pos _pe_header _dump_hex_cmd _cbf_tmp_var 2> /dev/null
+  local _dump_hex_cmd _header _header_pos _pe_header _cbf_tmp_var 2> /dev/null
 
   if command 1> /dev/null 2>&1 -v 'hexdump'; then
     _dump_hex_cmd='hexdump'
@@ -120,6 +135,7 @@ check_bitness_of_file()
   fi
 
   if _header="$(dump_hex "${1:?}" '5' '0')" && printf '%s\n' "${_header?}" | grep -m 1 -q -e '^7f454c46'; then
+
     # Binaries for Linux / Android
     # ELF header => 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
     case "${_header?}" in
@@ -131,11 +147,14 @@ check_bitness_of_file()
         ;;
     esac
     return 0
+
   elif _header_pos="$(dump_hex "${1:?}" '4' '0x3C')" && _header_pos="$(switch_endianness "${_header_pos?}")" &&
     test -n "${_header_pos?}" && _pe_header="$(dump_hex "${1:?}" '6' "0x${_header_pos:?}")" &&
     printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
+
     # Binaries for Windows
     # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
+    # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
     case "${_pe_header?}" in
       *'6486') printf '%s\n' '64-bit PE (AMD64)' ;; # AMD64 (0x64 0x86)
       *'0002') printf '%s\n' '64-bit PE (IA-64)' ;; # IA-64 (0x00 0x02)
@@ -146,14 +165,93 @@ check_bitness_of_file()
         ;;
     esac
     return 0
-    # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
+
   elif _header="$(dump_hex "${1:?}" '2' '0')" && test "${_header?}" = '4d5a'; then
+
     # Binaries for DOS
     # MZ (0x4D 0x5A)
     printf '%s\n' '16-bit MZ'
     return 0
 
     # ToO: Check special variants / hexdump -v -C -s "0x3C" -n "4" -- "${1:?}"
+
+  fi
+
+  local _cbf_is_mach_o _cbf_is_fat_bin _cbf_needs_bytes_swap _cbf_arch_count _cbf_pos _cbf_has64 _cbf_has32 2> /dev/null
+
+  if _header="$(dump_hex "${1:?}" '4' '0')"; then
+    _cbf_is_mach_o='true'
+    _cbf_is_fat_bin='false'
+    _cbf_needs_bytes_swap='false'
+
+    case "${_header?}" in
+      'feedface') # MH_MAGIC
+        ;;
+      'cefaedfe') # MH_CIGAM
+        _cbf_needs_bytes_swap='true'
+        ;;
+      'feedfacf') # MH_MAGIC_64
+        ;;
+      'cffaedfe') # MH_CIGAM_64
+        _cbf_needs_bytes_swap='true' ;;
+      'cafebabe') # FAT_MAGIC
+        _cbf_is_fat_bin='true' ;;
+      'bebafeca') # FAT_CIGAM
+        _cbf_is_fat_bin='true'
+        _cbf_needs_bytes_swap='true'
+        ;;
+      'cafebabf') # FAT_MAGIC_64
+        ;;
+      'bfbafeca') # FAT_CIGAM_64
+        ;;
+      *)
+        _cbf_is_mach_o='false'
+        ;;
+    esac
+
+    if test "${_cbf_is_mach_o:?}" = 'true'; then
+      if test "${_cbf_is_fat_bin:?}" = 'true' && _cbf_arch_count="$(dump_hex "${1:?}" '4' '4')" &&
+        _cbf_arch_count="$(hex_bytes_to_int "${_cbf_needs_bytes_swap:?}" "${_cbf_arch_count?}")" &&
+        test "${_cbf_arch_count:?}" -gt 0 && test "${_cbf_arch_count:?}" -lt 256; then
+
+        _cbf_has64='false'
+        _cbf_has32='false'
+        _cbf_pos='8'
+        for _ in $(seq "${_cbf_arch_count:?}"); do
+          _cbf_tmp_var="$(dump_hex "${1:?}" '4' "${_cbf_pos:?}")" || _cbf_tmp_var=''
+          if test "${_cbf_needs_bytes_swap:?}" = 'true'; then
+            _cbf_tmp_var="$(switch_endianness "${_cbf_tmp_var?}")" || _cbf_tmp_var=''
+          fi
+          _cbf_pos="$((${_cbf_pos:?} + 20))" || _cbf_tmp_var=''
+
+          case "${_cbf_tmp_var?}" in
+            '01'*) _cbf_has64='true' ;;
+            '00'*) _cbf_has32='true' ;;
+            *)
+              _cbf_has64='false'
+              _cbf_has32='false'
+              break
+              ;;
+          esac
+        done
+
+        if test "${_cbf_has64:?}" = 'true' && test "${_cbf_has32:?}" = 'true'; then
+          printf '%s\n' '32/64-bit FAT Mach-O'
+        elif test "${_cbf_has64:?}" = 'true' && test "${_cbf_has32:?}" != 'true'; then
+          printf '%s\n' '64-bit FAT Mach-O'
+        elif test "${_cbf_has64:?}" != 'true' && test "${_cbf_has32:?}" = 'true'; then
+          printf '%s\n' '32-bit FAT Mach-O'
+        else
+          printf '%s\n' 'unknown-fat-mach-file'
+          return 5
+        fi
+
+        return 0
+      else
+        printf '%s\n' 'unknown-mach-file'
+        return 6
+      fi
+    fi
   fi
 
   printf '%s\n' 'unknown-file-type'
