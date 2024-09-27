@@ -81,7 +81,7 @@ file_getprop()
 dump_hex()
 {
   if command 1> /dev/null 2>&1 -v hexdump; then
-    hexdump -v -e '/1 "%02x"' -s "${3:?}" -n "${2:?}" -- "${1:?}"
+    hexdump -v -e '/1 "%02x"' -s "${3:?}" -n "${2:?}" -- "${1:?}" || return "${?}"
     printf '\n'
   else
     xxd -p -s "${3:?}" -l "${2:?}" -- "${1:?}"
@@ -101,9 +101,9 @@ switch_endianness()
   printf '\n'
 }
 
-check_bitness_of_pe_file()
+check_bitness_of_file()
 {
-  local _pe_header_pos _pe_header 2> /dev/null
+  local _header _pe_header_pos _pe_header 2> /dev/null
 
   if test ! -e "${1:?}" || {
     ! command 1> /dev/null 2>&1 -v hexdump && ! command 1> /dev/null 2>&1 -v xxd
@@ -112,8 +112,21 @@ check_bitness_of_pe_file()
     return 1
   fi
 
-  if _pe_header_pos="$(dump_hex "${1:?}" '4' '0x3C')" && _pe_header_pos="$(switch_endianness "${_pe_header_pos?}")" && test -n "${_pe_header_pos?}"; then
+  if _header="$(dump_hex "${1:?}" '5' '0')" && test -n "${_header?}" && printf '%s\n' "${_header:?}" | grep -m 1 -q -e '^7f454c46'; then
+    # Binaries for Linux / Android
+    # ELF header => 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
+    case "${_header?}" in
+      *'02') printf '%s\n' '64-bit ELF' ;;
+      *'01') printf '%s\n' '32-bit ELF' ;;
+      *)
+        printf '%s\n' 'unknown-elf-file'
+        return 3
+        ;;
+    esac
+    return 0
+  elif _pe_header_pos="$(dump_hex "${1:?}" '4' '0x3C')" && _pe_header_pos="$(switch_endianness "${_pe_header_pos?}")" && test -n "${_pe_header_pos?}"; then
     if _pe_header="$(dump_hex "${1:?}" '6' "0x${_pe_header_pos:?}")" && printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
+      # Binaries for Windows
       # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
       case "${_pe_header?}" in
         *'6486') printf '%s\n' '64-bit PE (AMD64)' ;; # AMD64 (0x64 0x86)
@@ -121,16 +134,16 @@ check_bitness_of_pe_file()
         *'4c01') printf '%s\n' '32-bit PE (x86)' ;;   # x86   (0x4C 0x01)
         *)
           printf '%s\n' 'unknown-pe-file'
-          return 2
+          return 4
           ;;
       esac
-      # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
       return 0
+      # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
     fi
   fi
 
   printf '%s\n' 'unknown-file-type'
-  return 3
+  return 2
 }
 
 get_shell_exe()
@@ -349,15 +362,7 @@ main()
   shell_info="$(get_shell_info || true)"
   shell_name="$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '1' || true)"
 
-  if test -n "${shell_exe?}" && tmp_var="$(hexdump 2> /dev/null -v -n 5 -e '/1 "%02x"' -- "${shell_exe:?}")" && test -n "${tmp_var?}" && printf '%s\n' "${tmp_var:?}" | grep -m 1 -q -e '^7f454c46'; then
-    # On Linux / Android
-    # ELF header => 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
-    case "${tmp_var?}" in
-      *'02') shell_bit='64-bit ELF' ;;
-      *'01') shell_bit='32-bit ELF' ;;
-      *) shell_bit='unknown' ;;
-    esac
-  elif test -n "${shell_exe?}" && shell_bit="$(check_bitness_of_pe_file "${shell_exe:?}")"; then
+  if test -n "${shell_exe?}" && shell_bit="$(check_bitness_of_file "${shell_exe:?}")"; then
     :
   elif tmp_var="$(uname 2> /dev/null -m)"; then
     case "${tmp_var?}" in
