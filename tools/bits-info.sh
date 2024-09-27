@@ -103,16 +103,23 @@ switch_endianness()
 
 check_bitness_of_file()
 {
-  local _header _pe_header_pos _pe_header _cbf_tmp_var 2> /dev/null
+  local _header _header_pos _pe_header _dump_hex_cmd _cbf_tmp_var 2> /dev/null
 
-  if test ! -e "${1:?}" || {
-    ! command 1> /dev/null 2>&1 -v hexdump && ! command 1> /dev/null 2>&1 -v xxd
-  }; then
+  if command 1> /dev/null 2>&1 -v 'hexdump'; then
+    _dump_hex_cmd='hexdump'
+  elif command 1> /dev/null 2>&1 -v 'xxd'; then
+    _dump_hex_cmd='xxd'
+  else
     printf '%s\n' 'unknown'
     return 1
   fi
 
-  if _header="$(dump_hex "${1:?}" '5' '0')" && test -n "${_header?}" && printf '%s\n' "${_header:?}" | grep -m 1 -q -e '^7f454c46'; then
+  if test ! -e "${1:?}"; then
+    printf '%s\n' 'missing'
+    return 1
+  fi
+
+  if _header="$(dump_hex "${1:?}" '5' '0')" && printf '%s\n' "${_header?}" | grep -m 1 -q -e '^7f454c46'; then
     # Binaries for Linux / Android
     # ELF header => 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
     case "${_header?}" in
@@ -124,8 +131,8 @@ check_bitness_of_file()
         ;;
     esac
     return 0
-  elif _pe_header_pos="$(dump_hex "${1:?}" '4' '0x3C')" && _pe_header_pos="$(switch_endianness "${_pe_header_pos?}")" &&
-    test -n "${_pe_header_pos?}" && _pe_header="$(dump_hex "${1:?}" '6' "0x${_pe_header_pos:?}")" &&
+  elif _header_pos="$(dump_hex "${1:?}" '4' '0x3C')" && _header_pos="$(switch_endianness "${_header_pos?}")" &&
+    test -n "${_header_pos?}" && _pe_header="$(dump_hex "${1:?}" '6' "0x${_header_pos:?}")" &&
     printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
     # Binaries for Windows
     # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
