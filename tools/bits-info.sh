@@ -248,19 +248,43 @@ file_getprop()
   grep -m 1 -F -e "${1:?}=" -- "${2:?}" | cut -d '=' -f '2-' -s
 }
 
+switch_endianness()
+{
+  local _hex_bytes _se_cur_line 2> /dev/null
+
+  _hex_bytes="$(cat | grep -o -e '..')" || return "${?}"
+
+  for _se_cur_line in 4 3 2 1; do
+    printf '%s\n' "${_hex_bytes:?}" | head -n "${_se_cur_line:?}" | tail -n "+${_se_cur_line:?}" | tr -d '\n' || return "${?}"
+  done
+  printf '\n'
+}
+
+dump_hex()
+{
+  if command 1> /dev/null 2>&1 -v hexdump; then
+    hexdump -v -e '/1 "%02x"' -s "${3:?}" -n "${2:?}" -- "${1:?}"
+    printf '\n'
+  else
+    xxd -p -s "${3:?}" -l "${2:?}" -- "${1:?}"
+  fi
+}
+
 check_bitness_of_pe_file()
 {
   local _pe_header_pos _pe_header 2> /dev/null
 
-  if test ! -e "${1:?}" || ! command 1> /dev/null 2>&1 -v hexdump; then
+  if test ! -e "${1:?}" || {
+    ! command 1> /dev/null 2>&1 -v hexdump && ! command 1> /dev/null 2>&1 -v xxd
+  }; then
     printf '%s\n' 'unknown'
     return 1
   fi
 
   # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
 
-  if _pe_header_pos="$(hexdump -v -s 0x3C -n 4 -e '/1 "%02x\n"' -- "${1:?}" | tac | tr -d '\n')" && test -n "${_pe_header_pos?}" && _pe_header_pos="0x${_pe_header_pos:?}"; then
-    if _pe_header="$(hexdump 2> /dev/null -v -s "${_pe_header_pos:?}" -n 6 -e '/1 "%02x"' -- "${1:?}")" && printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
+  if _pe_header_pos="$(dump_hex "${1:?}" '4' '0x3C' | switch_endianness)" && test -n "${_pe_header_pos?}" && _pe_header_pos="0x${_pe_header_pos:?}"; then
+    if _pe_header="$(dump_hex "${1:?}" '6' "${_pe_header_pos:?}")" && printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
       # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
       case "${_pe_header?}" in
         *'6486') printf '%s\n' '64-bit PE' ;; # AMD64 (0x64 0x86)
