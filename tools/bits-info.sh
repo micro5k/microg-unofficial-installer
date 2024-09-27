@@ -92,11 +92,12 @@ switch_endianness()
 {
   local _hex_bytes _se_cur_line 2> /dev/null
 
-  _hex_bytes="$(cat | grep -o -e '..')" || return "${?}"
+  test "${#1}" -eq 8 || return 1
+  _hex_bytes="$(printf '%s\n' "${1:?}" | grep -o -e '..')" || return 2
 
   for _se_cur_line in 4 3 2 1; do
     printf '%s\n' "${_hex_bytes:?}" | head -n "${_se_cur_line:?}" | tail -n "+${_se_cur_line:?}" | tr -d '\n' || return "${?}"
-  done
+  done || return "${?}"
   printf '\n'
 }
 
@@ -111,25 +112,24 @@ check_bitness_of_pe_file()
     return 1
   fi
 
-  # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
-
-  if _pe_header_pos="$(dump_hex "${1:?}" '4' '0x3C' | switch_endianness)" && test -n "${_pe_header_pos?}" && _pe_header_pos="0x${_pe_header_pos:?}"; then
-    if _pe_header="$(dump_hex "${1:?}" '6' "${_pe_header_pos:?}")" && printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
+  if _pe_header_pos="$(dump_hex "${1:?}" '4' '0x3C')" && _pe_header_pos="$(switch_endianness "${_pe_header_pos?}")" && test -n "${_pe_header_pos?}"; then
+    if _pe_header="$(dump_hex "${1:?}" '6' "0x${_pe_header_pos:?}")" && printf '%s\n' "${_pe_header?}" | grep -m 1 -q -e '^50450000'; then
       # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
       case "${_pe_header?}" in
-        *'6486') printf '%s\n' '64-bit PE' ;; # AMD64 (0x64 0x86)
-        *'0002') printf '%s\n' '64-bit PE' ;; # IA64  (0x00 0x02)
-        *'4c01') printf '%s\n' '32-bit PE' ;; # x86   (0x4C 0x01)
+        *'6486') printf '%s\n' '64-bit PE (AMD64)' ;; # AMD64 (0x64 0x86)
+        *'0002') printf '%s\n' '64-bit PE (IA-64)' ;; # IA-64 (0x00 0x02)
+        *'4c01') printf '%s\n' '32-bit PE (x86)' ;;   # x86   (0x4C 0x01)
         *)
           printf '%s\n' 'unknown-pe-file'
           return 2
           ;;
       esac
+      # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
       return 0
     fi
   fi
 
-  printf '%s\n' 'not-pe-file'
+  printf '%s\n' 'unknown-file-type'
   return 3
 }
 
@@ -329,7 +329,7 @@ main()
     :
   elif tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${tmp_var?}" && tmp_var="$(command 2> /dev/null -v "${tmp_var:?}")"; then # On Linux / macOS
     shell_exe="$(readlink 2> /dev/null -f "${tmp_var:?}" || realpath 2> /dev/null "${tmp_var:?}")" || shell_exe="${tmp_var:?}"
-  elif tmp_var="${BASH:-${SHELL-}}" && test -n "${tmp_var?}" && tmp_var="$(command 2> /dev/null -v "${tmp_var:?}")"; then
+  elif tmp_var="${BASH:-${SHELL-}}" && test -n "${tmp_var?}"; then
     shell_exe="$(readlink 2> /dev/null -f "${tmp_var:?}" || realpath 2> /dev/null "${tmp_var:?}")" || shell_exe="${tmp_var:?}"
   else
     shell_exe=''
