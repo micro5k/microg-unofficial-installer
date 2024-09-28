@@ -103,36 +103,43 @@ switch_endianness()
   printf '\n'
 }
 
+# Params:
+#  $1 Input bytes (hex)
+#  $2
+#  $3 Need bytes swap (bool)
 hex_bytes_to_int()
 {
   local _hbti_num 2> /dev/null
 
-  test -n "${2?}" || return 1
+  test -n "${1?}" || return 1
 
-  if test "${1:?}" = 'true'; then
-    _hbti_num="$(switch_endianness "${2:?}")" || return "${?}"
+  if test "${3:?}" = 'true'; then
+    _hbti_num="$(switch_endianness "${1:?}")" || return "${?}"
   else
-    _hbti_num="${2:?}" || return "${?}"
+    _hbti_num="${1:?}" || return "${?}"
   fi
 
   printf '%u\n' "$((0x${_hbti_num:?}))"
 }
 
+# Params:
+#  $1 Input bytes (hex)
+#  $2 Bytes to skip (int)
+#  $3 Length (int)
 extract_bytes()
 {
-  _eb_skip="$((${2:?} * 2 + 1))" || return 1
-  test "${3:?}" -gt 0 || return 2
-  printf '%s\n' "${1?}" | cut -c "${_eb_skip:?}-$(((${2:?} + ${3:?}) * 2))"
+  test "${3:?}" -gt 0 || return 1
+  printf '%s\n' "${1?}" | cut -b "$((${2:?} * 2 + 1))-$(((${2:?} + ${3:?}) * 2))"
 }
 
 check_bitness_of_file()
 {
   local _hex_cmd _cbf_first_8_bytes _cbf_pos _header _cbf_tmp_var 2> /dev/null
 
-  if command 1> /dev/null 2>&1 -v 'hexdump'; then
-    _hex_cmd='hexdump'
-  elif command 1> /dev/null 2>&1 -v 'xxd'; then
+  if command 1> /dev/null 2>&1 -v 'xxd'; then
     _hex_cmd='xxd'
+  elif command 1> /dev/null 2>&1 -v 'hexdump'; then
+    _hex_cmd='hexdump'
   else
     printf '%s\n' 'unknown'
     return 1
@@ -235,7 +242,7 @@ check_bitness_of_file()
 
     if test "${_cbf_is_mach_o:?}" = 'true'; then
       if test "${_cbf_is_fat_bin:?}" = 'true' && _cbf_arch_count="$(extract_bytes "${_cbf_first_8_bytes?}" '4' '4')" &&
-        _cbf_arch_count="$(hex_bytes_to_int "${_cbf_needs_bytes_swap:?}" "${_cbf_arch_count?}")" &&
+        _cbf_arch_count="$(hex_bytes_to_int "${_cbf_arch_count?}" '4' "${_cbf_needs_bytes_swap:?}")" &&
         test "${_cbf_arch_count:?}" -gt 0 && test "${_cbf_arch_count:?}" -lt 256; then
 
         _cbf_has64='false'
