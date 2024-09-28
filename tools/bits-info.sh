@@ -90,6 +90,19 @@ dump_hex()
   fi
 }
 
+switch_endianness_2()
+{
+  local _hex_bytes _se_cur_line 2> /dev/null
+
+  test "${#1}" -eq 4 || return 1
+  _hex_bytes="$(printf '%s\n' "${1:?}" | grep -o -e '..')" || return 2
+
+  for _se_cur_line in 2 1; do
+    printf '%s\n' "${_hex_bytes:?}" | head -n "${_se_cur_line:?}" | tail -n "+${_se_cur_line:?}" | tr -d '\n' || return "${?}"
+  done || return "${?}"
+  printf '\n'
+}
+
 switch_endianness()
 {
   local _hex_bytes _se_cur_line 2> /dev/null
@@ -105,7 +118,7 @@ switch_endianness()
 
 # Params:
 #  $1 Input bytes (hex)
-#  $2
+#  $2 (int)
 #  $3 Need bytes swap (bool)
 hex_bytes_to_int()
 {
@@ -114,7 +127,13 @@ hex_bytes_to_int()
   test -n "${1?}" || return 1
 
   if test "${3:?}" = 'true'; then
-    _hbti_num="$(switch_endianness "${1:?}")" || return "${?}"
+    if test "${2:?}" -eq 2; then
+      _hbti_num="$(switch_endianness_2 "${1:?}")" || return "${?}"
+    elif test "${2:?}" -eq 4; then
+      _hbti_num="$(switch_endianness "${1:?}")" || return "${?}"
+    else
+      return 2
+    fi
   else
     _hbti_num="${1:?}" || return "${?}"
   fi
@@ -192,9 +211,17 @@ check_bitness_of_file()
     # Binaries executables for DOS (*.exe)
     # MZ (0x4D 0x5A)
 
-    printf '%s\n' '16-bit MZ'
-    return 0
+    _cbf_needs_bytes_swap='true'
+    if _cbf_tmp_var="$(dump_hex "${1:?}" '2' '0x18' "${_hex_cmd:?}")" &&
+      _cbf_tmp_var="$(hex_bytes_to_int "${_cbf_tmp_var?}" '2' "${_cbf_needs_bytes_swap:?}")" && test "${_cbf_tmp_var:?}" -lt 64; then
+
+      printf '%s\n' '16-bit MZ'
+      return 0
+    fi
     # ToO: Check special variants / hexdump -v -C -s "0x3C" -n "4" -- "${1:?}"
+
+    printf '%s\n' 'unknown-mz-file'
+    return 5
   fi
 
   if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '2321'; then
@@ -274,13 +301,13 @@ check_bitness_of_file()
           printf '%s\n' '32-bit FAT Mach-O'
         else
           printf '%s\n' 'unknown-fat-mach-file'
-          return 5
+          return 6
         fi
 
         return 0
       else
         printf '%s\n' 'unknown-mach-file'
-        return 6
+        return 7
       fi
     fi
   fi
