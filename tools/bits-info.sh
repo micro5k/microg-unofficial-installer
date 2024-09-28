@@ -192,24 +192,30 @@ check_bitness_of_file()
     # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
     # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
 
-    case "${_header?}" in
-      *'6486') printf '%s\n' '64-bit PE (x86-64)' ;; # x86-64 (0x64 0x86) - also called AMD64
-      *'64aa') printf '%s\n' '64-bit PE (ARM64)' ;;  # ARM64  (0x64 0xAA)
-      *'0002') printf '%s\n' '64-bit PE (IA-64)' ;;  # IA-64  (0x00 0x02)
-      *'4c01') printf '%s\n' '32-bit PE (x86)' ;;    # x86    (0x4C 0x01)
-      *'c001') printf '%s\n' '64-bit PE (ARM)' ;;    # ARM    (0xC0 0x01)
-      *'0000') printf '%s\n' '16-bit PE' ;;          # Any    (0x00 0x00)
-      *)
-        printf '%s\n' 'unknown-pe-file'
-        return 4
-        ;;
-    esac
-    return 0
+    if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
+      # Start with: MZ (0x4D 0x5A)
+      case "${_header?}" in
+        *'6486') printf '%s\n' '64-bit PE (x86-64)' ;; # x86-64 (0x64 0x86) - also called AMD64
+        *'64aa') printf '%s\n' '64-bit PE (ARM64)' ;;  # ARM64  (0x64 0xAA)
+        *'0002') printf '%s\n' '64-bit PE (IA-64)' ;;  # IA-64  (0x00 0x02)
+        *'4c01') printf '%s\n' '32-bit PE (x86)' ;;    # x86    (0x4C 0x01)
+        *'c001') printf '%s\n' '64-bit PE (ARM)' ;;    # ARM    (0xC0 0x01)
+        *'0000') printf '%s\n' '16-bit PE' ;;          # Any    (0x00 0x00)
+        *)
+          printf '%s\n' 'unknown-pe-file'
+          return 4
+          ;;
+      esac
+      return 0
+    fi
+
+    printf '%s\n' 'invalid-pe-file'
+    return 4
   fi
 
   if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
     # Binaries executables for DOS (*.exe)
-    # MZ (0x4D 0x5A)
+    # Start with: MZ (0x4D 0x5A)
 
     _cbf_needs_bytes_swap='true'
     if _cbf_tmp_var="$(dump_hex "${1:?}" '2' '0x18' "${_hex_cmd:?}")" &&
