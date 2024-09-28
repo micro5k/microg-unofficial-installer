@@ -138,20 +138,19 @@ check_bitness_of_file()
     return 1
   fi
 
-  if test ! -e "${1:?}"; then
-    printf '%s\n' 'missing'
+  if test ! -e "${1:?}" || ! _cbf_first_8_bytes="$(dump_hex "${1:?}" '8' '0' "${_hex_cmd:?}")"; then
+    printf '%s\n' 'failed'
     return 1
   fi
 
-  _cbf_first_8_bytes="$(dump_hex "${1:?}" '8' '0' "${_hex_cmd:?}")" || _cbf_first_8_bytes=''
-
-  if _header="$(dump_hex "${1:?}" '5' '0' "${_hex_cmd:?}")" && printf '%s\n' "${_header?}" | grep -m 1 -q -e '^7f454c46'; then
-
+  if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '4' || :)" = '7f454c46'; then
     # Binaries for Linux / Android
     # ELF header => 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
+
+    _header="$(extract_bytes "${_cbf_first_8_bytes?}" '4' '1')" || _header=''
     case "${_header?}" in
-      *'02') printf '%s\n' '64-bit ELF' ;;
-      *'01') printf '%s\n' '32-bit ELF' ;;
+      '02') printf '%s\n' '64-bit ELF' ;;
+      '01') printf '%s\n' '32-bit ELF' ;;
       *)
         printf '%s\n' 'unknown-elf-file'
         return 3
@@ -162,10 +161,10 @@ check_bitness_of_file()
   elif _cbf_pos="$(dump_hex "${1:?}" '4' '0x3C' "${_hex_cmd:?}")" && _cbf_pos="$(switch_endianness "${_cbf_pos?}")" &&
     test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" '6' "0x${_cbf_pos:?}" "${_hex_cmd:?}")" &&
     printf '%s\n' "${_header?}" | grep -m 1 -q -e '^50450000'; then
-
     # Binaries for Windows
     # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
     # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
+
     case "${_header?}" in
       *'6486') printf '%s\n' '64-bit PE (x86-64)' ;; # x86-64 (0x64 0x86) - also called AMD64
       *'64aa') printf '%s\n' '64-bit PE (ARM64)' ;;  # ARM64  (0x64 0xAA)
@@ -180,20 +179,19 @@ check_bitness_of_file()
     esac
     return 0
 
-  elif _header="$(dump_hex "${1:?}" '2' '0' "${_hex_cmd:?}")" && test "${_header?}" = '4d5a'; then
-
+  elif test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
     # Binaries for DOS (*.exe)
     # MZ (0x4D 0x5A)
+
     printf '%s\n' '16-bit MZ'
     return 0
 
     # ToO: Check special variants / hexdump -v -C -s "0x3C" -n "4" -- "${1:?}"
-
   fi
 
   local _cbf_is_mach_o _cbf_is_fat_bin _cbf_needs_bytes_swap _cbf_arch_count _cbf_has64 _cbf_has32 2> /dev/null
 
-  if _header="$(dump_hex "${1:?}" '4' '0' "${_hex_cmd:?}")"; then
+  if _header="$(extract_bytes "${_cbf_first_8_bytes?}" '0' '4')"; then
     _cbf_is_mach_o='true'
     _cbf_is_fat_bin='false'
     _cbf_needs_bytes_swap='false'
@@ -227,7 +225,7 @@ check_bitness_of_file()
     esac
 
     if test "${_cbf_is_mach_o:?}" = 'true'; then
-      if test "${_cbf_is_fat_bin:?}" = 'true' && _cbf_arch_count="$(dump_hex "${1:?}" '4' '4' "${_hex_cmd:?}")" &&
+      if test "${_cbf_is_fat_bin:?}" = 'true' && _cbf_arch_count="$(extract_bytes "${_cbf_first_8_bytes?}" '4' '4')" &&
         _cbf_arch_count="$(hex_bytes_to_int "${_cbf_needs_bytes_swap:?}" "${_cbf_arch_count?}")" &&
         test "${_cbf_arch_count:?}" -gt 0 && test "${_cbf_arch_count:?}" -lt 256; then
 
@@ -271,12 +269,12 @@ check_bitness_of_file()
     fi
   fi
 
-  # Binaries for DOS (*.com)
   if _cbf_tmp_var="$(extract_bytes "${_cbf_first_8_bytes?}" '0' '1')" &&
     {
       test "${_cbf_tmp_var?}" = 'e9' || test "${_cbf_tmp_var?}" = 'eb' || test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '81fc'
     } &&
     test "$(stat -c '%s' -- "${1:?}" || printf '99999\n' || :)" -le 65280; then
+    # Binaries for DOS (*.com)
 
     # To detect COM programs we can check if the first byte of the file could be a valid jump or call opcode (most common: 0xE9 or 0xEB).
     # This is also common: 0x81 + 0xFC.
