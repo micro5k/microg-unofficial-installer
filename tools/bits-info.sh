@@ -161,7 +161,7 @@ check_bitness_of_file()
   elif _cbf_pos="$(dump_hex "${1:?}" '4' '0x3C' "${_hex_cmd:?}")" && _cbf_pos="$(switch_endianness "${_cbf_pos?}")" &&
     test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" '6' "0x${_cbf_pos:?}" "${_hex_cmd:?}")" &&
     printf '%s\n' "${_header?}" | grep -m 1 -q -e '^50450000'; then
-    # Binaries for Windows
+    # Binaries executables for Windows (*.exe)
     # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
     # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
 
@@ -180,7 +180,7 @@ check_bitness_of_file()
     return 0
 
   elif test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
-    # Binaries for DOS (*.exe)
+    # Binaries executables for DOS (*.exe)
     # MZ (0x4D 0x5A)
 
     printf '%s\n' '16-bit MZ'
@@ -271,10 +271,11 @@ check_bitness_of_file()
 
   if _cbf_tmp_var="$(extract_bytes "${_cbf_first_8_bytes?}" '0' '1')" &&
     {
-      test "${_cbf_tmp_var?}" = 'e9' || test "${_cbf_tmp_var?}" = 'eb' || test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '81fc'
+      test "${_cbf_tmp_var?}" = 'e9' || test "${_cbf_tmp_var?}" = 'eb' ||
+        test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '81fc'
     } &&
     test "$(stat -c '%s' -- "${1:?}" || printf '99999\n' || :)" -le 65280; then
-    # Binaries for DOS (*.com)
+    # Binaries executables for DOS (*.com)
 
     # To detect COM programs we can check if the first byte of the file could be a valid jump or call opcode (most common: 0xE9 or 0xEB).
     # This is also common: 0x81 + 0xFC.
