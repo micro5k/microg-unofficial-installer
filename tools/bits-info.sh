@@ -81,10 +81,10 @@ file_getprop()
 dump_hex()
 {
   if test "${4:?}" = 'hexdump'; then
-    hexdump -v -e '/1 "%02x"' -s "${3:?}" -n "${2:?}" -- "${1:?}" || return "${?}"
+    hexdump -v -e '/1 "%02x"' -s "${2:?}" -n "${3:?}" -- "${1:?}" || return "${?}"
     printf '\n'
   elif test "${4:?}" = 'xxd'; then
-    xxd -p -s "${3:?}" -l "${2:?}" -- "${1:?}"
+    xxd -p -s "${2:?}" -l "${3:?}" -- "${1:?}"
   else
     return 1
   fi
@@ -103,7 +103,7 @@ switch_endianness_2()
   printf '\n'
 }
 
-switch_endianness()
+switch_endianness_4()
 {
   local _hex_bytes _se_cur_line 2> /dev/null
 
@@ -118,7 +118,7 @@ switch_endianness()
 
 # Params:
 #  $1 Input bytes (hex)
-#  $2 (int)
+#  $2 Number of bytes (int)
 #  $3 Need bytes swap (bool)
 hex_bytes_to_int()
 {
@@ -130,12 +130,12 @@ hex_bytes_to_int()
     if test "${2:?}" -eq 2; then
       _hbti_num="$(switch_endianness_2 "${1:?}")" || return "${?}"
     elif test "${2:?}" -eq 4; then
-      _hbti_num="$(switch_endianness "${1:?}")" || return "${?}"
+      _hbti_num="$(switch_endianness_4 "${1:?}")" || return "${?}"
     else
       return 2
     fi
   else
-    _hbti_num="${1:?}" || return "${?}"
+    _hbti_num="${1:?}" || return 2
   fi
 
   printf '%u\n' "$((0x${_hbti_num:?}))"
@@ -144,7 +144,7 @@ hex_bytes_to_int()
 # Params:
 #  $1 Input bytes (hex)
 #  $2 Bytes to skip (int)
-#  $3 Length (int)
+#  $3 Length in bytes (int)
 extract_bytes()
 {
   test "${3:?}" -gt 0 || return 1
@@ -164,7 +164,7 @@ check_bitness_of_file()
     return 1
   fi
 
-  if test ! -e "${1:?}" || ! _cbf_first_8_bytes="$(dump_hex "${1:?}" '8' '0' "${_hex_cmd:?}")"; then
+  if test ! -e "${1:?}" || ! _cbf_first_8_bytes="$(dump_hex "${1:?}" '0' '8' "${_hex_cmd:?}")"; then
     printf '%s\n' 'failed'
     return 1
   fi
@@ -185,8 +185,8 @@ check_bitness_of_file()
     return 0
   fi
 
-  if _cbf_pos="$(dump_hex "${1:?}" '4' '0x3C' "${_hex_cmd:?}")" && _cbf_pos="$(switch_endianness "${_cbf_pos?}")" &&
-    test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" '6' "0x${_cbf_pos:?}" "${_hex_cmd:?}")" &&
+  if _cbf_pos="$(dump_hex "${1:?}" '0x3C' '4' "${_hex_cmd:?}")" && _cbf_pos="$(switch_endianness_4 "${_cbf_pos?}")" &&
+    test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" "0x${_cbf_pos:?}" '6' "${_hex_cmd:?}")" &&
     printf '%s\n' "${_header?}" | grep -m 1 -q -e '^50450000'; then
     # Binaries executables for Windows (*.exe)
     # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
@@ -218,7 +218,7 @@ check_bitness_of_file()
     # Start with: MZ (0x4D 0x5A)
 
     _cbf_needs_bytes_swap='true'
-    if _cbf_tmp_var="$(dump_hex "${1:?}" '2' '0x18' "${_hex_cmd:?}")" &&
+    if _cbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2' "${_hex_cmd:?}")" &&
       _cbf_tmp_var="$(hex_bytes_to_int "${_cbf_tmp_var?}" '2' "${_cbf_needs_bytes_swap:?}")" && test "${_cbf_tmp_var:?}" -lt 64; then
 
       printf '%s\n' '16-bit MZ'
@@ -282,9 +282,9 @@ check_bitness_of_file()
         _cbf_has32='false'
         _cbf_pos='8'
         for _ in $(seq "${_cbf_arch_count:?}"); do
-          _cbf_tmp_var="$(dump_hex "${1:?}" '4' "${_cbf_pos:?}" "${_hex_cmd:?}")" || _cbf_tmp_var=''
+          _cbf_tmp_var="$(dump_hex "${1:?}" "${_cbf_pos:?}" '4' "${_hex_cmd:?}")" || _cbf_tmp_var=''
           if test "${_cbf_needs_bytes_swap:?}" = 'true'; then
-            _cbf_tmp_var="$(switch_endianness "${_cbf_tmp_var?}")" || _cbf_tmp_var=''
+            _cbf_tmp_var="$(switch_endianness_4 "${_cbf_tmp_var?}")" || _cbf_tmp_var=''
           fi
           _cbf_pos="$((${_cbf_pos:?} + 20))" || _cbf_tmp_var='' # Should be pos + 32 on FAT_MAGIC_64 (need test)
 
