@@ -157,8 +157,9 @@ check_bitness_of_file()
         ;;
     esac
     return 0
+  fi
 
-  elif _cbf_pos="$(dump_hex "${1:?}" '4' '0x3C' "${_hex_cmd:?}")" && _cbf_pos="$(switch_endianness "${_cbf_pos?}")" &&
+  if _cbf_pos="$(dump_hex "${1:?}" '4' '0x3C' "${_hex_cmd:?}")" && _cbf_pos="$(switch_endianness "${_cbf_pos?}")" &&
     test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" '6' "0x${_cbf_pos:?}" "${_hex_cmd:?}")" &&
     printf '%s\n' "${_header?}" | grep -m 1 -q -e '^50450000'; then
     # Binaries executables for Windows (*.exe)
@@ -178,15 +179,23 @@ check_bitness_of_file()
         ;;
     esac
     return 0
+  fi
 
-  elif test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
+  if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
     # Binaries executables for DOS (*.exe)
     # MZ (0x4D 0x5A)
 
     printf '%s\n' '16-bit MZ'
     return 0
-
     # ToO: Check special variants / hexdump -v -C -s "0x3C" -n "4" -- "${1:?}"
+  fi
+
+  if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '2321'; then
+    # Scripts
+    # Start with: #! (0x23 0x21)
+
+    printf '%s\n' 'Universal script'
+    return 0
   fi
 
   local _cbf_is_mach_o _cbf_is_fat_bin _cbf_needs_bytes_swap _cbf_arch_count _cbf_has64 _cbf_has32 2> /dev/null
