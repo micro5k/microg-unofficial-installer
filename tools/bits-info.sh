@@ -118,9 +118,16 @@ hex_bytes_to_int()
   printf '%u\n' "$((0x${_hbti_num:?}))"
 }
 
+extract_bytes()
+{
+  _eb_skip="$((${2:?} * 2 + 1))" || return 1
+  test "${3:?}" -gt 0 || return 2
+  printf '%s\n' "${1?}" | cut -c "${_eb_skip:?}-$(((${2:?} + ${3:?}) * 2))"
+}
+
 check_bitness_of_file()
 {
-  local _hex_cmd _cbf_pos _header _cbf_tmp_var 2> /dev/null
+  local _hex_cmd _cbf_first_8_bytes _cbf_pos _header _cbf_tmp_var 2> /dev/null
 
   if command 1> /dev/null 2>&1 -v 'hexdump'; then
     _hex_cmd='hexdump'
@@ -135,6 +142,8 @@ check_bitness_of_file()
     printf '%s\n' 'missing'
     return 1
   fi
+
+  _cbf_first_8_bytes="$(dump_hex "${1:?}" '8' '0' "${_hex_cmd:?}")" || _cbf_first_8_bytes=''
 
   if _header="$(dump_hex "${1:?}" '5' '0' "${_hex_cmd:?}")" && printf '%s\n' "${_header?}" | grep -m 1 -q -e '^7f454c46'; then
 
@@ -173,7 +182,7 @@ check_bitness_of_file()
 
   elif _header="$(dump_hex "${1:?}" '2' '0' "${_hex_cmd:?}")" && test "${_header?}" = '4d5a'; then
 
-    # Binaries for DOS
+    # Binaries for DOS (*.exe)
     # MZ (0x4D 0x5A)
     printf '%s\n' '16-bit MZ'
     return 0
@@ -260,6 +269,23 @@ check_bitness_of_file()
         return 6
       fi
     fi
+  fi
+
+  # Binaries for DOS (*.com)
+  if _cbf_tmp_var="$(extract_bytes "${_cbf_first_8_bytes?}" '0' '1')" &&
+    {
+      test "${_cbf_tmp_var?}" = 'e9' || test "${_cbf_tmp_var?}" = 'eb' || test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '81fc'
+    } &&
+    test "$(stat -c '%s' -- "${1:?}" || printf '99999\n' || :)" -le 65280; then
+
+    # To detect COM programs we can check if the first byte of the file could be a valid jump or call opcode (most common: 0xE9 or 0xEB).
+    # This is also common: 0x81 + 0xFC.
+    # This isn't a safe way to determine wether a file is a COM file or not, but most COM files start with a jump.
+    # A COM program can only have a size of less than one segment (64K).
+    # The maximum size of the file is 65280 bytes.
+
+    printf '%s\n' '8/16-bit COM'
+    return 0
   fi
 
   printf '%s\n' 'unknown-file-type'
