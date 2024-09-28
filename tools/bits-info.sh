@@ -158,10 +158,12 @@ check_bitness_of_file()
     # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
     # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
     case "${_header?}" in
-      *'6486') printf '%s\n' '64-bit PE (AMD64)' ;; # AMD64 (0x64 0x86)
-      *'0002') printf '%s\n' '64-bit PE (IA-64)' ;; # IA-64 (0x00 0x02)
-      *'4c01') printf '%s\n' '32-bit PE (x86)' ;;   # x86   (0x4C 0x01)
-      *'0000') printf '%s\n' '16-bit PE' ;;         # Any   (0x00 0x00)
+      *'6486') printf '%s\n' '64-bit PE (x86-64)' ;; # x86-64 (0x64 0x86) - also called AMD64
+      *'64aa') printf '%s\n' '64-bit PE (ARM64)' ;;  # ARM64  (0x64 0xAA)
+      *'0002') printf '%s\n' '64-bit PE (IA-64)' ;;  # IA-64  (0x00 0x02)
+      *'4c01') printf '%s\n' '32-bit PE (x86)' ;;    # x86    (0x4C 0x01)
+      *'c001') printf '%s\n' '64-bit PE (ARM)' ;;    # ARM    (0xC0 0x01)
+      *'0000') printf '%s\n' '16-bit PE' ;;          # Any    (0x00 0x00)
       *)
         printf '%s\n' 'unknown-pe-file'
         return 4
