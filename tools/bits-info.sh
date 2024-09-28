@@ -161,6 +161,7 @@ check_bitness_of_file()
       *'6486') printf '%s\n' '64-bit PE (AMD64)' ;; # AMD64 (0x64 0x86)
       *'0002') printf '%s\n' '64-bit PE (IA-64)' ;; # IA-64 (0x00 0x02)
       *'4c01') printf '%s\n' '32-bit PE (x86)' ;;   # x86   (0x4C 0x01)
+      *'0000') printf '%s\n' '16-bit PE' ;;         # Any   (0x00 0x00)
       *)
         printf '%s\n' 'unknown-pe-file'
         return 4
@@ -443,7 +444,7 @@ get_version()
   _version="$(printf '%s\n' "${_version?}" | head -n 1)" || _version=''
 
   case "${_version?}" in
-    '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'*)
+    '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'*)
       printf '%s\n' 'unknown'
       return 2
       ;;
