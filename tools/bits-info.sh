@@ -161,21 +161,6 @@ check_bitness_of_file()
     return 1
   fi
 
-  if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '4' || :)" = '7f454c46'; then
-    # ELF - Executable binaries for Linux / Android - Start with: 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
-
-    _header="$(extract_bytes "${_cbf_first_8_bytes?}" '4' '1')" || _header=''
-    case "${_header?}" in
-      '02') printf '%s\n' '64-bit ELF' ;;
-      '01') printf '%s\n' '32-bit ELF' ;;
-      *)
-        printf '%s\n' 'unknown-elf-file'
-        return 3
-        ;;
-    esac
-    return 0
-  fi
-
   if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
     # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
 
@@ -231,8 +216,23 @@ check_bitness_of_file()
     return 5
   fi
 
+  if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '4' || :)" = '7f454c46'; then
+    # ELF - Executable binaries for Linux / Android - Start with: 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
+
+    _header="$(extract_bytes "${_cbf_first_8_bytes?}" '4' '1')" || _header=''
+    case "${_header?}" in
+      '02') printf '%s\n' '64-bit ELF' ;;
+      '01') printf '%s\n' '32-bit ELF' ;;
+      *)
+        printf '%s\n' 'unknown-elf-file'
+        return 3
+        ;;
+    esac
+    return 0
+  fi
+
   if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '2321'; then
-    # Scripts - Start with: #! (0x23 0x21)
+    # Scripts (often shell scripts) - Start with: #! (0x23 0x21)
 
     printf '%s\n' 'Universal script'
     return 0
