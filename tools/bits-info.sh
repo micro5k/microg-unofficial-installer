@@ -78,13 +78,25 @@ file_getprop()
   grep -m 1 -F -e "${1:?}=" -- "${2:?}" | cut -d '=' -f '2-' -s
 }
 
+detect_hex_dump_cmd()
+{
+  if command 1> /dev/null 2>&1 -v 'xxd'; then
+    printf '%s\n' 'xxd'
+  elif command 1> /dev/null 2>&1 -v 'hexdump'; then
+    printf '%s\n' 'hexdump'
+  else
+    return 1
+  fi
+  return 0
+}
+
 dump_hex()
 {
-  if test "${4:?}" = 'hexdump'; then
+  if test "${HEXDUMP_CMD:=$(detect_hex_dump_cmd || :)}" = 'xxd'; then
+    xxd -p -s "${2:?}" -l "${3:?}" -- "${1:?}"
+  elif test "${HEXDUMP_CMD?}" = 'hexdump'; then
     hexdump -v -e '/1 "%02x"' -s "${2:?}" -n "${3:?}" -- "${1:?}" || return "${?}"
     printf '\n'
-  elif test "${4:?}" = 'xxd'; then
-    xxd -p -s "${2:?}" -l "${3:?}" -- "${1:?}"
   else
     return 1
   fi
@@ -147,18 +159,9 @@ extract_bytes()
 
 check_bitness_of_file()
 {
-  local _hex_cmd _cbf_first_8_bytes _cbf_pos _header _cbf_tmp_var 2> /dev/null
+  local _cbf_first_8_bytes _cbf_pos _header _cbf_tmp_var 2> /dev/null
 
-  if command 1> /dev/null 2>&1 -v 'xxd'; then
-    _hex_cmd='xxd'
-  elif command 1> /dev/null 2>&1 -v 'hexdump'; then
-    _hex_cmd='hexdump'
-  else
-    printf '%s\n' 'unknown'
-    return 1
-  fi
-
-  if test ! -e "${1:?}" || ! _cbf_first_8_bytes="$(dump_hex "${1:?}" '0' '8' "${_hex_cmd:?}")"; then
+  if test ! -e "${1:?}" || ! _cbf_first_8_bytes="$(dump_hex "${1:?}" '0' '8')"; then
     printf '%s\n' 'failed'
     return 1
   fi
@@ -179,8 +182,8 @@ check_bitness_of_file()
     return 0
   fi
 
-  if _cbf_pos="$(dump_hex "${1:?}" '0x3C' '4' "${_hex_cmd:?}")" && _cbf_pos="$(switch_endianness_4 "${_cbf_pos?}")" &&
-    test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" "0x${_cbf_pos:?}" '6' "${_hex_cmd:?}")" &&
+  if _cbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && _cbf_pos="$(switch_endianness_4 "${_cbf_pos?}")" &&
+    test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" "0x${_cbf_pos:?}" '6')" &&
     printf '%s\n' "${_header?}" | grep -m 1 -q -e '^50450000'; then
     # Binaries executables for Windows (*.exe)
     # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
@@ -212,7 +215,7 @@ check_bitness_of_file()
     # Start with: MZ (0x4D 0x5A)
 
     _cbf_needs_bytes_swap='true'
-    if _cbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2' "${_hex_cmd:?}")" &&
+    if _cbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" &&
       _cbf_tmp_var="$(hex_bytes_to_int "${_cbf_tmp_var?}" '2' "${_cbf_needs_bytes_swap:?}")" && test "${_cbf_tmp_var:?}" -lt 64; then
 
       printf '%s\n' '16-bit MZ'
@@ -276,7 +279,7 @@ check_bitness_of_file()
         _cbf_has32='false'
         _cbf_pos='8'
         for _ in $(seq "${_cbf_arch_count:?}"); do
-          _cbf_tmp_var="$(dump_hex "${1:?}" "${_cbf_pos:?}" '4' "${_hex_cmd:?}")" || _cbf_tmp_var=''
+          _cbf_tmp_var="$(dump_hex "${1:?}" "${_cbf_pos:?}" '4')" || _cbf_tmp_var=''
           if test "${_cbf_needs_bytes_swap:?}" = 'true'; then
             _cbf_tmp_var="$(switch_endianness_4 "${_cbf_tmp_var?}")" || _cbf_tmp_var=''
           fi
