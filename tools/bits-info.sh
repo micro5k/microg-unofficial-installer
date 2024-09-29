@@ -163,6 +163,7 @@ check_bitness_of_file()
 
   if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
     # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
+    # More info: https://wiki.osdev.org/MZ
 
     _cbf_needs_bytes_swap='true'
     if _cbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && test "${_cbf_pos?}" != '00000000' && _cbf_pos="$(switch_endianness_4 "${_cbf_pos?}")" && _header="$(dump_hex "${1:?}" "0x${_cbf_pos:?}" '6')"; then
@@ -190,13 +191,18 @@ check_bitness_of_file()
       else
         _header="$(extract_bytes "${_header:?}" '0' '2' || :)"
         case "${_header?}" in
+          '4e45')
+            # NE (New Executable) header => NE (0x4E 0x45)
+            printf '%s\n' '16-bit NE'
+            return 0
+            ;;
           '4c45')
             # LE (Linear Executable) header => LE (0x4C 0x45)
             printf '%s\n' '16/32-bit LE'
             return 0
             ;;
           '4c58')
-            # LX (Linear Executable) header => LE (0x4C 0x58)
+            # LX (Linear Executable) header => LX (0x4C 0x58)
             printf '%s\n' '32-bit LX'
             return 0
             ;;
@@ -386,9 +392,7 @@ get_shell_info()
   _shell_use_ver_opt='false'
   _shell_version=''
 
-  if _shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${_shell_exe?}"; then
-    :
-  elif _shell_exe="${BASH:-${SHELL-}}" && test -n "${_shell_exe?}"; then
+  if test -n "${1?}" && _shell_exe="${1?}"; then
     :
   else
     printf '%s\n' 'not-found unknown'
@@ -402,12 +406,12 @@ get_shell_info()
     *) ;;
   esac
 
-  if _tmp_var="$(printf '%s\n' "${_shell_name?}" | grep -m 1 -o -e 'ksh\|zsh\|yash\|\\bash\.exe$')"; then
+  if _tmp_var="$(printf '%s\n' "${_shell_name?}" | grep -m 1 -o -e 'ksh\|zsh\|yash\|^bash\.exe$')"; then
     if test "${_tmp_var?}" = 'ksh'; then # For new ksh (it does NOT show the version in the help)
       _shell_version="${KSH_VERSION-}"
     elif test "${_tmp_var?}" = 'zsh' || test "${_tmp_var?}" = 'yash'; then # For zsh and yash (they do NOT show the version in the help)
       _shell_use_ver_opt='true'
-    elif test "${_tmp_var?}" = '\bash.exe'; then # Fix for a basename bug on old Bash under Windows
+    elif test "${_tmp_var?}" = 'bash.exe'; then # For old Bash under Windows
       _shell_name='bash'
     fi
   fi
@@ -570,8 +574,8 @@ main()
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
   shell_exe="$(get_shell_exe || :)"
-  shell_info="$(get_shell_info || :)"
-  shell_name="$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '1' || true)"
+  shell_info="$(get_shell_info "${shell_exe?}" || :)"
+  shell_name="$(printf '%s\n' "${shell_info?}" | cut -d ' ' -f '1' || :)"
 
   if test -n "${shell_exe?}" && shell_bit="$(check_bitness_of_file "${shell_exe:?}")"; then
     :
@@ -696,13 +700,14 @@ main()
   done
   _date_u_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _date_u_bit='unknown'
 
-  printf '%s %s\n' "Shell:" "${shell_name:?}"
-  if shell_applet="$(get_applet_name "${shell_name:?}")"; then
+  printf '%s %s\n' "Shell:" "${shell_name?}"
+  if shell_applet="$(get_applet_name "${shell_name?}")"; then
     printf '%s %s\n' "Shell applet:" "${shell_applet:?}"
   fi
-  printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${shell_info:?}" | cut -d ' ' -f '2-' -s || true)"
-  printf '%s %s\n' "OS:" "$(get_os_info || true)"
-  printf '%s %s\n\n' "Version of uname:" "$(get_version 'uname' || true)"
+  printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${shell_info?}" | cut -d ' ' -f '2-' -s || :)"
+  printf '%s %s\n' "Shell path:" "${shell_exe?}"
+  printf '%s %s\n' "OS:" "$(get_os_info || :)"
+  printf '%s %s\n\n' "Version of uname:" "$(get_version 'uname' || :)"
 
   printf '%s\n' "Bits of shell: ${shell_bit:?}"
   printf '%s\n' "Bits of OS: ${os_bit:?}"
@@ -712,12 +717,12 @@ main()
   printf '%s\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit:?}"
   printf '%s\n\n' "Bits of shell 'printf': ${_shell_printf_bit:?}"
 
-  printf '%s %s\n' "Version of awk:" "$(get_version 'awk' || true)"
+  printf '%s %s\n' "Version of awk:" "$(get_version 'awk' || :)"
   printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit:?}"
   printf '%s\n' "Bits of awk 'printf' - signed: ${_awk_printf_signed_bit:?}"
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
 
-  printf '%s %s\n' "Version of date:" "$(get_version 'date' || true)"
+  printf '%s %s\n' "Version of date:" "$(get_version 'date' || :)"
   printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${_date_bit:?}" "$(test "${date_timezone_bug:?}" = 'false' || printf ' %s\n' '(with time zone bug)' || true)"
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit:?}"
 }
