@@ -154,7 +154,7 @@ extract_bytes()
 
 check_bitness_of_file()
 {
-  local _cbf_first_8_bytes _cbf_pos _header _cbf_tmp_var 2> /dev/null
+  local _cbf_size _cbf_first_8_bytes _cbf_pos _header _cbf_tmp_var 2> /dev/null
 
   if test ! -e "${1:?}" || ! _cbf_first_8_bytes="$(dump_hex "${1:?}" '0' '8')"; then
     printf '%s\n' 'failed'
@@ -162,8 +162,7 @@ check_bitness_of_file()
   fi
 
   if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '4' || :)" = '7f454c46'; then
-    # Binaries for Linux / Android
-    # ELF header => 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
+    # ELF - Executable binaries for Linux / Android - Start with: 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
 
     _header="$(extract_bytes "${_cbf_first_8_bytes?}" '4' '1')" || _header=''
     case "${_header?}" in
@@ -180,7 +179,7 @@ check_bitness_of_file()
   if _cbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && _cbf_pos="$(switch_endianness_4 "${_cbf_pos?}")" &&
     test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" "0x${_cbf_pos:?}" '6')" &&
     printf '%s\n' "${_header?}" | grep -m 1 -q -e '^50450000'; then
-    # Binaries executables for Windows (*.exe)
+    # PE - Executable binaries for Windows (.exe)
     # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
     # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
 
@@ -206,8 +205,7 @@ check_bitness_of_file()
   fi
 
   if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
-    # Binaries executables for DOS (*.exe)
-    # Start with: MZ (0x4D 0x5A)
+    # MZ - Executable binaries for DOS (.exe) - Start with: MZ (0x4D 0x5A)
 
     _cbf_needs_bytes_swap='true'
     if _cbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" &&
@@ -223,8 +221,7 @@ check_bitness_of_file()
   fi
 
   if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '2321'; then
-    # Scripts
-    # Start with: #! (0x23 0x21)
+    # Scripts - Start with: #! (0x23 0x21)
 
     printf '%s\n' 'Universal script'
     return 0
@@ -310,13 +307,15 @@ check_bitness_of_file()
     fi
   fi
 
+  _cbf_size="$(stat -c '%s' -- "${1:?}")"
+
   if _cbf_tmp_var="$(extract_bytes "${_cbf_first_8_bytes?}" '0' '1')" &&
     {
       test "${_cbf_tmp_var?}" = 'e9' || test "${_cbf_tmp_var?}" = 'eb' ||
         test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '81fc'
     } &&
-    test "$(stat -c '%s' -- "${1:?}" || printf '99999\n' || :)" -le 65280; then
-    # Binaries executables for DOS (*.com)
+    test "${_cbf_size:?}" -le 65280; then
+    # COM - Executable binaries for DOS (.com)
 
     # To detect COM programs we can check if the first byte of the file could be a valid jump or call opcode (most common: 0xE9 or 0xEB).
     # This is also common: 0x81 + 0xFC.
@@ -327,6 +326,19 @@ check_bitness_of_file()
     printf '%s\n' '8/16-bit COM'
     return 0
   fi
+
+  if test "${_cbf_size:?}" = 0; then
+    printf '%s\n' 'Empty file'
+    return 0
+  fi
+
+  case "${1:?}" in
+    *'.bat')
+      printf '%s\n' 'Universal batch'
+      return 0
+      ;;
+    *) ;;
+  esac
 
   printf '%s\n' 'unknown-file-type'
   return 2
