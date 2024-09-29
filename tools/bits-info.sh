@@ -92,23 +92,17 @@ dump_hex()
 
 switch_endianness_2()
 {
-  local _hex_bytes _se_cur_line 2> /dev/null
-
-  test "${#1}" -eq 4 || return 1
-  _hex_bytes="$(printf '%s\n' "${1:?}" | grep -o -e '..')" || return 2
-
-  for _se_cur_line in 2 1; do
-    printf '%s\n' "${_hex_bytes:?}" | head -n "${_se_cur_line:?}" | tail -n "+${_se_cur_line:?}" | tr -d '\n' || return "${?}"
-  done || return "${?}"
-  printf '\n'
+  test "${#1}" = 4 || return 1
+  printf '%s' "$1" | cut -b '3-4' | tr -d '\n'
+  printf '%s' "$1" | cut -b '1-2'
 }
 
 switch_endianness_4()
 {
   local _hex_bytes _se_cur_line 2> /dev/null
 
-  test "${#1}" -eq 8 || return 1
-  _hex_bytes="$(printf '%s\n' "${1:?}" | grep -o -e '..')" || return 2
+  test "${#1}" = 8 || return 1
+  _hex_bytes="$(printf '%s\n' "${1:?}" | fold -b -w 2)" || return 2
 
   for _se_cur_line in 4 3 2 1; do
     printf '%s\n' "${_hex_bytes:?}" | head -n "${_se_cur_line:?}" | tail -n "+${_se_cur_line:?}" | tr -d '\n' || return "${?}"
@@ -608,7 +602,7 @@ main()
       '0') cpu_bit='32-bit' ;;
       *) cpu_bit='unknown' ;;
     esac
-  elif command 1> /dev/null 2>&1 -v 'wmic.exe' && cpu_bit="$(MSYS_NO_PATHCONV=1 wmic.exe 2> /dev/null cpu get DataWidth /VALUE | cut -d '=' -f '2-' -s | tr -d '\r')" && test -n "${cpu_bit?}"; then
+  elif command 1> /dev/null 2>&1 -v 'wmic.exe' && cpu_bit="$(MSYS_NO_PATHCONV=1 wmic.exe 2> /dev/null cpu get DataWidth /VALUE | cut -d '=' -f '2-' -s | tr -d '\r\n')" && test -n "${cpu_bit?}"; then
     # On Windows / ReactOS (if WMIC is present)
     case "${cpu_bit?}" in
       '64' | '32') cpu_bit="${cpu_bit:?}-bit" ;;
