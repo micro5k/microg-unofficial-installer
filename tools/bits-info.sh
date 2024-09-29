@@ -156,7 +156,7 @@ check_bitness_of_file()
 {
   local _cbf_size _cbf_first_8_bytes _cbf_pos _header _cbf_tmp_var 2> /dev/null
 
-  if test ! -e "${1:?}" || ! _cbf_first_8_bytes="$(dump_hex "${1:?}" '0' '8')"; then
+  if test ! -f "${1:?}" || ! _cbf_first_8_bytes="$(dump_hex "${1:?}" '0' '8')"; then
     printf '%s\n' 'failed'
     return 1
   fi
@@ -176,15 +176,16 @@ check_bitness_of_file()
     return 0
   fi
 
-  if _cbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && _cbf_pos="$(switch_endianness_4 "${_cbf_pos?}")" &&
-    test -n "${_cbf_pos?}" && _header="$(dump_hex "${1:?}" "0x${_cbf_pos:?}" '6')" &&
-    printf '%s\n' "${_header?}" | grep -m 1 -q -e '^50450000'; then
-    # PE - Executable binaries for Windows (.exe)
-    # PE header => PE (0x50 0x45) + 0x00 0x00 + Machine field
-    # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
+  if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
+    # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
 
-    if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
-      # Start with: MZ (0x4D 0x5A)
+    _cbf_needs_bytes_swap='true'
+
+    if _cbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && _cbf_pos="$(switch_endianness_4 "${_cbf_pos?}")" && _header="$(dump_hex "${1:?}" "0x${_cbf_pos:?}" '6')" &&
+      printf '%s\n' "${_header?}" | grep -m 1 -q -e '^50450000'; then
+      # PE header => PE (0x50 0x45) + 0x00 + 0x00 + Machine field
+      # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
+
       case "${_header?}" in
         *'6486') printf '%s\n' '64-bit PE (x86-64)' ;; # x86-64 (0x64 0x86) - also called AMD64
         *'64aa') printf '%s\n' '64-bit PE (ARM64)' ;;  # ARM64  (0x64 0xAA)
@@ -200,21 +201,10 @@ check_bitness_of_file()
       return 0
     fi
 
-    printf '%s\n' 'invalid-pe-file'
-    return 4
-  fi
-
-  if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
-    # MZ - Executable binaries for DOS (.exe) - Start with: MZ (0x4D 0x5A)
-
-    _cbf_needs_bytes_swap='true'
-    if _cbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" &&
-      _cbf_tmp_var="$(hex_bytes_to_int "${_cbf_tmp_var?}" '2' "${_cbf_needs_bytes_swap:?}")" && test "${_cbf_tmp_var:?}" -lt 64; then
-
+    if _cbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" && _cbf_tmp_var="$(hex_bytes_to_int "${_cbf_tmp_var?}" '2' "${_cbf_needs_bytes_swap:?}")" && test "${_cbf_tmp_var:?}" -lt 64; then
       printf '%s\n' '16-bit MZ'
       return 0
     fi
-    # ToO: Check special variants / hexdump -v -C -s "0x3C" -n "4" -- "${1:?}"
 
     printf '%s\n' 'unknown-mz-file'
     return 5
@@ -323,7 +313,7 @@ check_bitness_of_file()
     # A COM program can only have a size of less than one segment (64K).
     # The maximum size of the file is 65280 bytes.
 
-    printf '%s\n' '8/16-bit COM'
+    printf '%s\n' '16-bit COM'
     return 0
   fi
 
