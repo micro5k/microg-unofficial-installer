@@ -152,21 +152,21 @@ extract_bytes()
   printf '%s\n' "${1?}" | cut -b "$((${2:?} * 2 + 1))-$(((${2:?} + ${3:?}) * 2))"
 }
 
-check_bitness_of_file()
+detect_bitness_of_file()
 {
-  local _cbf_size _cbf_first_8_bytes _cbf_pos _header _cbf_tmp_var 2> /dev/null
+  local _dbf_size _dbf_first_8_bytes _dbf_pos _header _dbf_tmp_var 2> /dev/null
 
-  if test ! -f "${1:?}" || ! _cbf_first_8_bytes="$(dump_hex "${1:?}" '0' '8')"; then
+  if test ! -f "${1:?}" || ! _dbf_first_8_bytes="$(dump_hex "${1:?}" '0' '8')"; then
     printf '%s\n' 'failed'
     return 1
   fi
 
-  if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
+  if test "$(extract_bytes "${_dbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
     # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
     # More info: https://wiki.osdev.org/MZ
 
-    _cbf_needs_bytes_swap='true'
-    if _cbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && test "${_cbf_pos?}" != '00000000' && _cbf_pos="$(switch_endianness_4 "${_cbf_pos?}")" && _header="$(dump_hex "${1:?}" "0x${_cbf_pos:?}" '6')"; then
+    _dbf_needs_bytes_swap='true'
+    if _dbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && test "${_dbf_pos?}" != '00000000' && _dbf_pos="$(switch_endianness_4 "${_dbf_pos?}")" && _header="$(dump_hex "${1:?}" "0x${_dbf_pos:?}" '6')"; then
       :
     else _header=''; fi
 
@@ -210,10 +210,10 @@ check_bitness_of_file()
         esac
       fi
 
-      #printf '\n' && hexdump -v -C -s "0x${_cbf_pos:?}" -n '6' -- "${1:?}" # Debug
+      #printf '\n' && hexdump -v -C -s "0x${_dbf_pos:?}" -n '6' -- "${1:?}" # Debug
     fi
 
-    if _cbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" && _cbf_tmp_var="$(hex_bytes_to_int "${_cbf_tmp_var?}" '2' "${_cbf_needs_bytes_swap:?}")" && test "${_cbf_tmp_var:?}" -lt 64; then
+    if _dbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_needs_bytes_swap:?}")" && test "${_dbf_tmp_var:?}" -lt 64; then
       printf '%s\n' '16-bit MZ'
       return 0
     fi
@@ -222,10 +222,10 @@ check_bitness_of_file()
     return 5
   fi
 
-  if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '4' || :)" = '7f454c46'; then
+  if test "$(extract_bytes "${_dbf_first_8_bytes?}" '0' '4' || :)" = '7f454c46'; then
     # ELF - Executable binaries for Linux / Android - Start with: 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
 
-    _header="$(extract_bytes "${_cbf_first_8_bytes?}" '4' '1')" || _header=''
+    _header="$(extract_bytes "${_dbf_first_8_bytes?}" '4' '1')" || _header=''
     case "${_header?}" in
       '02') printf '%s\n' '64-bit ELF' ;;
       '01') printf '%s\n' '32-bit ELF' ;;
@@ -237,79 +237,79 @@ check_bitness_of_file()
     return 0
   fi
 
-  if test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '2321'; then
+  if test "$(extract_bytes "${_dbf_first_8_bytes?}" '0' '2' || :)" = '2321'; then
     # Scripts (often shell scripts) - Start with: #! (0x23 0x21)
 
     printf '%s\n' 'Universal script'
     return 0
   fi
 
-  local _cbf_is_mach_o _cbf_is_fat_bin _cbf_needs_bytes_swap _cbf_arch_count _cbf_has64 _cbf_has32 2> /dev/null
+  local _dbf_is_mach_o _dbf_is_fat_bin _dbf_needs_bytes_swap _dbf_arch_count _dbf_has64 _dbf_has32 2> /dev/null
 
-  if _header="$(extract_bytes "${_cbf_first_8_bytes?}" '0' '4')"; then
-    _cbf_is_mach_o='true'
-    _cbf_is_fat_bin='false'
-    _cbf_needs_bytes_swap='false'
+  if _header="$(extract_bytes "${_dbf_first_8_bytes?}" '0' '4')"; then
+    _dbf_is_mach_o='true'
+    _dbf_is_fat_bin='false'
+    _dbf_needs_bytes_swap='false'
 
     case "${_header?}" in
       'feedface') # MH_MAGIC
         ;;
       'cefaedfe') # MH_CIGAM
-        _cbf_needs_bytes_swap='true'
+        _dbf_needs_bytes_swap='true'
         ;;
       'feedfacf') # MH_MAGIC_64
         ;;
       'cffaedfe') # MH_CIGAM_64
-        _cbf_needs_bytes_swap='true' ;;
+        _dbf_needs_bytes_swap='true' ;;
       'cafebabe') # FAT_MAGIC
-        _cbf_is_fat_bin='true' ;;
+        _dbf_is_fat_bin='true' ;;
       'bebafeca') # FAT_CIGAM
-        _cbf_is_fat_bin='true'
-        _cbf_needs_bytes_swap='true'
+        _dbf_is_fat_bin='true'
+        _dbf_needs_bytes_swap='true'
         ;;
       'cafebabf') # FAT_MAGIC_64
-        #_cbf_is_fat_bin='true'
+        #_dbf_is_fat_bin='true'
         ;;
       'bfbafeca') # FAT_CIGAM_64
-        #_cbf_is_fat_bin='true'
-        _cbf_needs_bytes_swap='true'
+        #_dbf_is_fat_bin='true'
+        _dbf_needs_bytes_swap='true'
         ;;
       *)
-        _cbf_is_mach_o='false'
+        _dbf_is_mach_o='false'
         ;;
     esac
 
-    if test "${_cbf_is_mach_o:?}" = 'true'; then
-      if test "${_cbf_is_fat_bin:?}" = 'true' && _cbf_arch_count="$(extract_bytes "${_cbf_first_8_bytes?}" '4' '4')" &&
-        _cbf_arch_count="$(hex_bytes_to_int "${_cbf_arch_count?}" '4' "${_cbf_needs_bytes_swap:?}")" &&
-        test "${_cbf_arch_count:?}" -gt 0 && test "${_cbf_arch_count:?}" -lt 256; then
+    if test "${_dbf_is_mach_o:?}" = 'true'; then
+      if test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_8_bytes?}" '4' '4')" &&
+        _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_needs_bytes_swap:?}")" &&
+        test "${_dbf_arch_count:?}" -gt 0 && test "${_dbf_arch_count:?}" -lt 256; then
 
-        _cbf_has64='false'
-        _cbf_has32='false'
-        _cbf_pos='8'
-        for _ in $(seq "${_cbf_arch_count:?}"); do
-          _cbf_tmp_var="$(dump_hex "${1:?}" "${_cbf_pos:?}" '4')" || _cbf_tmp_var=''
-          if test "${_cbf_needs_bytes_swap:?}" = 'true'; then
-            _cbf_tmp_var="$(switch_endianness_4 "${_cbf_tmp_var?}")" || _cbf_tmp_var=''
+        _dbf_has64='false'
+        _dbf_has32='false'
+        _dbf_pos='8'
+        for _ in $(seq "${_dbf_arch_count:?}"); do
+          _dbf_tmp_var="$(dump_hex "${1:?}" "${_dbf_pos:?}" '4')" || _dbf_tmp_var=''
+          if test "${_dbf_needs_bytes_swap:?}" = 'true'; then
+            _dbf_tmp_var="$(switch_endianness_4 "${_dbf_tmp_var?}")" || _dbf_tmp_var=''
           fi
-          _cbf_pos="$((${_cbf_pos:?} + 20))" || _cbf_tmp_var='' # Should be pos + 32 on FAT_MAGIC_64 (need test)
+          _dbf_pos="$((${_dbf_pos:?} + 20))" || _dbf_tmp_var='' # Should be pos + 32 on FAT_MAGIC_64 (need test)
 
-          case "${_cbf_tmp_var?}" in
-            '01'*) _cbf_has64='true' ;;
-            '00'*) _cbf_has32='true' ;;
+          case "${_dbf_tmp_var?}" in
+            '01'*) _dbf_has64='true' ;;
+            '00'*) _dbf_has32='true' ;;
             *)
-              _cbf_has64='false'
-              _cbf_has32='false'
+              _dbf_has64='false'
+              _dbf_has32='false'
               break
               ;;
           esac
         done
 
-        if test "${_cbf_has64:?}" = 'true' && test "${_cbf_has32:?}" = 'true'; then
+        if test "${_dbf_has64:?}" = 'true' && test "${_dbf_has32:?}" = 'true'; then
           printf '%s\n' '32/64-bit FAT Mach-O'
-        elif test "${_cbf_has64:?}" = 'true' && test "${_cbf_has32:?}" != 'true'; then
+        elif test "${_dbf_has64:?}" = 'true' && test "${_dbf_has32:?}" != 'true'; then
           printf '%s\n' '64-bit FAT Mach-O'
-        elif test "${_cbf_has64:?}" != 'true' && test "${_cbf_has32:?}" = 'true'; then
+        elif test "${_dbf_has64:?}" != 'true' && test "${_dbf_has32:?}" = 'true'; then
           printf '%s\n' '32-bit FAT Mach-O'
         else
           printf '%s\n' 'unknown-fat-mach-file'
@@ -324,15 +324,15 @@ check_bitness_of_file()
     fi
   fi
 
-  _cbf_size="$(stat -c '%s' -- "${1:?}")" || {
+  _dbf_size="$(stat -c '%s' -- "${1:?}")" || {
     printf '%s\n' 'failed'
     return 1
   }
 
-  if test "${_cbf_size:?}" -le 65280 && test "${_cbf_size:?}" -ge 2 && _cbf_tmp_var="$(extract_bytes "${_cbf_first_8_bytes?}" '0' '1')" &&
+  if test "${_dbf_size:?}" -le 65280 && test "${_dbf_size:?}" -ge 2 && _dbf_tmp_var="$(extract_bytes "${_dbf_first_8_bytes?}" '0' '1')" &&
     {
-      test "${_cbf_tmp_var?}" = 'e9' || test "${_cbf_tmp_var?}" = 'eb' ||
-        test "$(extract_bytes "${_cbf_first_8_bytes?}" '0' '2' || :)" = '81fc'
+      test "${_dbf_tmp_var?}" = 'e9' || test "${_dbf_tmp_var?}" = 'eb' ||
+        test "$(extract_bytes "${_dbf_first_8_bytes?}" '0' '2' || :)" = '81fc'
     }; then
     # COM - Executable binaries for DOS (.com)
 
@@ -346,7 +346,7 @@ check_bitness_of_file()
     return 0
   fi
 
-  if test "${_cbf_size:?}" = 0; then
+  if test "${_dbf_size:?}" = 0; then
     printf '%s\n' 'Empty file'
     return 0
   fi
@@ -577,7 +577,7 @@ main()
   shell_info="$(get_shell_info "${shell_exe?}" || :)"
   shell_name="$(printf '%s\n' "${shell_info?}" | cut -d ' ' -f '1' || :)"
 
-  if test -n "${shell_exe?}" && shell_bit="$(check_bitness_of_file "${shell_exe:?}")"; then
+  if test -n "${shell_exe?}" && shell_bit="$(detect_bitness_of_file "${shell_exe:?}")"; then
     :
   elif tmp_var="$(uname 2> /dev/null -m)"; then
     case "${tmp_var?}" in
