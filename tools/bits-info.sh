@@ -95,8 +95,7 @@ dump_hex()
   if test "${HEXDUMP_CMD:=$(detect_hex_dump_cmd || :)}" = 'xxd'; then
     xxd -p -s "${2:?}" -l "${3:?}" -- "${1:?}"
   elif test "${HEXDUMP_CMD?}" = 'hexdump'; then
-    hexdump -v -e '/1 "%02x"' -s "${2:?}" -n "${3:?}" -- "${1:?}" || return "${?}"
-    printf '\n'
+    hexdump -v -e '/1 "%02x"' -s "${2:?}" -n "${3:?}" -- "${1:?}" && printf '\n'
   else
     return 1
   fi
@@ -111,15 +110,13 @@ switch_endianness_2()
 
 switch_endianness_4()
 {
-  local _hex_bytes _se_cur_line 2> /dev/null
-
   test "${#1}" = 8 || return 1
-  _hex_bytes="$(printf '%s\n' "${1:?}" | fold -b -w 2)" || return 2
+  _se4_hex_b="$(printf '%s' "$1" | fold -b -w 2)" || return 2
 
-  for _se_cur_line in 4 3 2 1; do
-    printf '%s\n' "${_hex_bytes:?}" | head -n "${_se_cur_line:?}" | tail -n "+${_se_cur_line:?}" | tr -d '\n' || return "${?}"
-  done || return "${?}"
-  printf '\n'
+  for _se4_i in 4 3 2 1; do
+    printf '%s' "${_se4_hex_b}" | head -n "${_se4_i:?}" | tail -n "+${_se4_i:?}" | tr -d '\n' || return "${?}"
+  done &&
+    printf '\n'
 }
 
 # Params:
@@ -128,23 +125,21 @@ switch_endianness_4()
 #  $3 Need bytes swap (bool)
 hex_bytes_to_int()
 {
-  local _hbti_num 2> /dev/null
-
   test -n "${1?}" || return 1
 
-  if test "${3:?}" = 'true'; then
+  if test "${3-}" = 'true'; then
     if test "${2:?}" -eq 2; then
-      _hbti_num="$(switch_endianness_2 "${1:?}")" || return "${?}"
+      _hbti_num="$(switch_endianness_2 "$1")" || return "${?}"
     elif test "${2:?}" -eq 4; then
-      _hbti_num="$(switch_endianness_4 "${1:?}")" || return "${?}"
+      _hbti_num="$(switch_endianness_4 "$1")" || return "${?}"
     else
-      return 2
+      return 9
     fi
   else
-    _hbti_num="${1:?}" || return 2
+    _hbti_num="$1"
   fi
 
-  printf '%u\n' "$((0x${_hbti_num:?}))"
+  printf '%u' "$((0x${_hbti_num:?}))"
 }
 
 # Params:
