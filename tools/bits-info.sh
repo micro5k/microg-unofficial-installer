@@ -154,7 +154,7 @@ extract_bytes()
 
 detect_bitness_of_file()
 {
-  local _dbf_size _dbf_do_bytes_swap _dbf_first_bytes _dbf_pos _header _dbf_cpu_type _dbf_tmp_var 2> /dev/null
+  local _dbf_first_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_tmp_var 2> /dev/null
 
   if test ! -f "${1:?}" || ! _dbf_first_bytes="$(dump_hex "${1:?}" '0' '64')"; then # (0x00 - 0x40)
     printf '%s\n' 'failed'
@@ -165,9 +165,16 @@ detect_bitness_of_file()
     # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
     # More info: https://wiki.osdev.org/MZ
 
+    _dbf_do_bytes_swap='true'
+    _dbf_exe_type='PE'
+
+    # APE - Actually Portable Executables - Start with: MZ (0x4D 0x5A) + qFpD (0x71 0x46 0x70 0x44)
+    if test "$(extract_bytes "${_dbf_first_bytes?}" '2' '4' || :)" = '71467044'; then
+      _dbf_exe_type='APE PE'
+    fi
+
     # PE files, to be able to be executed on Windows (it is different under DOS), only need two fields in the MZ header: e_magic (0x00 => 0) and e_lfanew (0x3C => 60)
     # The smallest possible PE file is 97 bytes: http://www.phreedom.org/research/tinype/
-    _dbf_do_bytes_swap='true'
     if _dbf_pos="$(extract_bytes "${_dbf_first_bytes?}" '60' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" &&
       test "${_dbf_pos:?}" -ge 4 && test "${_dbf_pos:?}" -le 536870912 &&
       _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '6')"; then
@@ -185,13 +192,13 @@ detect_bitness_of_file()
         fi
 
         case "${_dbf_cpu_type?}" in
-          '8664') printf '%s\n' '64-bit PE (x86-64)' ;; # x86-64 (0x86 0x64) - also known as AMD64
-          'aa64') printf '%s\n' '64-bit PE (ARM64)' ;;  # ARM64  (0xAA 0x64)
-          '0200') printf '%s\n' '64-bit PE (IA-64)' ;;  # IA-64  (0x02 0x00)
-          '014c') printf '%s\n' '32-bit PE (x86)' ;;    # x86    (0x01 0x4C)
-          '01c0') printf '%s\n' '32-bit PE (ARM)' ;;    # ARM    (0x01 0xC0)
-          '0ebc') printf '%s\n' 'PE (EFI)' ;;           # EFI    (0x0E 0xBC)
-          '0000') printf '%s\n' '16-bit PE' ;;          # Any    (0x00 0x00)
+          '8664') printf '%s\n' "64-bit ${_dbf_exe_type:?} (x86-64)" ;; # x86-64 (0x86 0x64) - also known as AMD64
+          'aa64') printf '%s\n' "64-bit ${_dbf_exe_type:?} (ARM64)" ;;  # ARM64  (0xAA 0x64)
+          '0200') printf '%s\n' "64-bit ${_dbf_exe_type:?} (IA-64)" ;;  # IA-64  (0x02 0x00)
+          '014c') printf '%s\n' "32-bit ${_dbf_exe_type:?} (x86)" ;;    # x86    (0x01 0x4C)
+          '01c0') printf '%s\n' "32-bit ${_dbf_exe_type:?} (ARM)" ;;    # ARM    (0x01 0xC0)
+          '0ebc') printf '%s\n' "${_dbf_exe_type:?} (EFI)" ;;           # EFI    (0x0E 0xBC)
+          '0000') printf '%s\n' "16-bit ${_dbf_exe_type:?}" ;;          # Any    (0x00 0x00)
           *)
             printf '%s\n' 'unknown-pe-file'
             return 4
