@@ -154,7 +154,7 @@ extract_bytes()
 
 detect_bitness_of_file()
 {
-  local _dbf_size _dbf_first_8_bytes _dbf_pos _header _dbf_cpu_type _dbf_tmp_var 2> /dev/null
+  local _dbf_size _dbf_do_bytes_swap _dbf_first_8_bytes _dbf_pos _header _dbf_cpu_type _dbf_tmp_var 2> /dev/null
 
   if test ! -f "${1:?}" || ! _dbf_first_8_bytes="$(dump_hex "${1:?}" '0' '8')"; then
     printf '%s\n' 'failed'
@@ -165,7 +165,7 @@ detect_bitness_of_file()
     # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
     # More info: https://wiki.osdev.org/MZ
 
-    _dbf_needs_bytes_swap='true'
+    _dbf_do_bytes_swap='true'
     if _dbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && test "${_dbf_pos?}" != '00000000' && _dbf_pos="$(switch_endianness_4 "${_dbf_pos?}")" && _header="$(dump_hex "${1:?}" "0x${_dbf_pos:?}" '6')"; then
       :
     else _header=''; fi
@@ -176,12 +176,12 @@ detect_bitness_of_file()
         # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
 
         _dbf_cpu_type="$(extract_bytes "${_header:?}" '4' '2')" || _dbf_cpu_type=''
-        if test "${_dbf_needs_bytes_swap:?}" = 'true'; then
+        if test "${_dbf_do_bytes_swap:?}" = 'true'; then
           _dbf_cpu_type="$(switch_endianness_2 "${_dbf_cpu_type}")" || _dbf_cpu_type=''
         fi
 
         case "${_dbf_cpu_type?}" in
-          '8664') printf '%s\n' '64-bit PE (x86-64)' ;; # x86-64 (0x86 0x64) - also called AMD64
+          '8664') printf '%s\n' '64-bit PE (x86-64)' ;; # x86-64 (0x86 0x64) - also known as AMD64
           'aa64') printf '%s\n' '64-bit PE (ARM64)' ;;  # ARM64  (0xAA 0x64)
           '0200') printf '%s\n' '64-bit PE (IA-64)' ;;  # IA-64  (0x02 0x00)
           '014c') printf '%s\n' '32-bit PE (x86)' ;;    # x86    (0x01 0x4C)
@@ -219,7 +219,7 @@ detect_bitness_of_file()
       #printf '\n' && hexdump -v -C -s "0x${_dbf_pos:?}" -n '6' -- "${1:?}" # Debug
     fi
 
-    if _dbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_needs_bytes_swap:?}")" && test "${_dbf_tmp_var:?}" -lt 64; then
+    if _dbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")" && test "${_dbf_tmp_var:?}" -lt 64; then
       printf '%s\n' '16-bit MZ'
       return 0
     fi
@@ -250,35 +250,35 @@ detect_bitness_of_file()
     return 0
   fi
 
-  local _dbf_is_mach_o _dbf_is_fat_bin _dbf_needs_bytes_swap _dbf_arch_count _dbf_has64 _dbf_has32 2> /dev/null
+  local _dbf_is_mach_o _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32 2> /dev/null
 
   if _header="$(extract_bytes "${_dbf_first_8_bytes?}" '0' '4')"; then
     _dbf_is_mach_o='true'
     _dbf_is_fat_bin='false'
-    _dbf_needs_bytes_swap='false'
+    _dbf_do_bytes_swap='false'
 
     case "${_header?}" in
       'feedface') # MH_MAGIC
         ;;
       'cefaedfe') # MH_CIGAM
-        _dbf_needs_bytes_swap='true'
+        _dbf_do_bytes_swap='true'
         ;;
       'feedfacf') # MH_MAGIC_64
         ;;
       'cffaedfe') # MH_CIGAM_64
-        _dbf_needs_bytes_swap='true' ;;
+        _dbf_do_bytes_swap='true' ;;
       'cafebabe') # FAT_MAGIC
         _dbf_is_fat_bin='true' ;;
       'bebafeca') # FAT_CIGAM
         _dbf_is_fat_bin='true'
-        _dbf_needs_bytes_swap='true'
+        _dbf_do_bytes_swap='true'
         ;;
       'cafebabf') # FAT_MAGIC_64
         #_dbf_is_fat_bin='true'
         ;;
       'bfbafeca') # FAT_CIGAM_64
         #_dbf_is_fat_bin='true'
-        _dbf_needs_bytes_swap='true'
+        _dbf_do_bytes_swap='true'
         ;;
       *)
         _dbf_is_mach_o='false'
@@ -287,7 +287,7 @@ detect_bitness_of_file()
 
     if test "${_dbf_is_mach_o:?}" = 'true'; then
       if test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_8_bytes?}" '4' '4')" &&
-        _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_needs_bytes_swap:?}")" &&
+        _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_do_bytes_swap:?}")" &&
         test "${_dbf_arch_count:?}" -gt 0 && test "${_dbf_arch_count:?}" -lt 256; then
 
         _dbf_has64='false'
@@ -295,7 +295,7 @@ detect_bitness_of_file()
         _dbf_pos='8'
         for _ in $(seq "${_dbf_arch_count:?}"); do
           _dbf_tmp_var="$(dump_hex "${1:?}" "${_dbf_pos:?}" '4')" || _dbf_tmp_var=''
-          if test "${_dbf_needs_bytes_swap:?}" = 'true'; then
+          if test "${_dbf_do_bytes_swap:?}" = 'true'; then
             _dbf_tmp_var="$(switch_endianness_4 "${_dbf_tmp_var?}")" || _dbf_tmp_var=''
           fi
           _dbf_pos="$((${_dbf_pos:?} + 20))" || _dbf_tmp_var='' # Should be pos + 32 on FAT_MAGIC_64 (need test)
