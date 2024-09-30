@@ -165,10 +165,12 @@ detect_bitness_of_file()
     # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
     # More info: https://wiki.osdev.org/MZ
 
-    # PE files, to be able to be executed on Windows (it is different under DOS), only need two fields in the MZ header: e_magic (0x00) and e_lfanew (0x3C)
+    # PE files, to be able to be executed on Windows (it is different under DOS), only need two fields in the MZ header: e_magic (0x00 => 0) and e_lfanew (0x3C => 60)
     # The smallest possible PE file is 97 bytes: http://www.phreedom.org/research/tinype/
     _dbf_do_bytes_swap='true'
-    if _dbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" && test "${_dbf_pos:?}" -ge 4 && test "${_dbf_pos:?}" -le 536870912 && _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '6')"; then
+    if _dbf_pos="$(extract_bytes "${_dbf_first_bytes?}" '60' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" &&
+      test "${_dbf_pos:?}" -ge 4 && test "${_dbf_pos:?}" -le 536870912 &&
+      _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '6')"; then
       :
     else _header=''; fi
 
