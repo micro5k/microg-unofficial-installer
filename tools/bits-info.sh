@@ -156,7 +156,7 @@ detect_bitness_of_file()
 {
   local _dbf_size _dbf_do_bytes_swap _dbf_first_bytes _dbf_pos _header _dbf_cpu_type _dbf_tmp_var 2> /dev/null
 
-  if test ! -f "${1:?}" || ! _dbf_first_bytes="$(dump_hex "${1:?}" '0' '8')"; then
+  if test ! -f "${1:?}" || ! _dbf_first_bytes="$(dump_hex "${1:?}" '0' '64')"; then # (0x00 - 0x40)
     printf '%s\n' 'failed'
     return 1
   fi
@@ -165,8 +165,10 @@ detect_bitness_of_file()
     # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
     # More info: https://wiki.osdev.org/MZ
 
+    # PE files, to be able to be executed on Windows (it is different under DOS), only need two fields in the MZ header: e_magic (0x00) and e_lfanew (0x3C)
+    # The smallest possible PE file is 97 bytes: http://www.phreedom.org/research/tinype/
     _dbf_do_bytes_swap='true'
-    if _dbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && test "${_dbf_pos?}" != '00000000' && _dbf_pos="$(switch_endianness_4 "${_dbf_pos?}")" && _header="$(dump_hex "${1:?}" "0x${_dbf_pos:?}" '6')"; then
+    if _dbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && test "${_dbf_pos?}" != '00000000' && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" && _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '6')"; then
       :
     else _header=''; fi
 
