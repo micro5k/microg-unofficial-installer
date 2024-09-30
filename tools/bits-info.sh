@@ -186,6 +186,7 @@ detect_bitness_of_file()
           '0200') printf '%s\n' '64-bit PE (IA-64)' ;;  # IA-64  (0x02 0x00)
           '014c') printf '%s\n' '32-bit PE (x86)' ;;    # x86    (0x01 0x4C)
           '01c0') printf '%s\n' '32-bit PE (ARM)' ;;    # ARM    (0x01 0xC0)
+          '0ebc') printf '%s\n' 'PE (EFI)' ;;           # EFI    (0x0E 0xBC)
           '0000') printf '%s\n' '16-bit PE' ;;          # Any    (0x00 0x00)
           *)
             printf '%s\n' 'unknown-pe-file'
