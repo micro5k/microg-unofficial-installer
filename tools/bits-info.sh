@@ -139,7 +139,7 @@ hex_bytes_to_int()
     _hbti_num="$1"
   fi
 
-  printf '%u' "$((0x${_hbti_num:?}))"
+  printf '%u' "0x${_hbti_num:?}"
 }
 
 # Params:
@@ -154,7 +154,7 @@ extract_bytes()
 
 detect_bitness_of_file()
 {
-  local _dbf_size _dbf_first_8_bytes _dbf_pos _header _dbf_tmp_var 2> /dev/null
+  local _dbf_size _dbf_first_8_bytes _dbf_pos _header _dbf_cpu_type _dbf_tmp_var 2> /dev/null
 
   if test ! -f "${1:?}" || ! _dbf_first_8_bytes="$(dump_hex "${1:?}" '0' '8')"; then
     printf '%s\n' 'failed'
@@ -175,13 +175,18 @@ detect_bitness_of_file()
         # PE header => PE (0x50 0x45) + 0x00 + 0x00 + Machine field
         # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
 
-        case "${_header:?}" in
-          *'6486') printf '%s\n' '64-bit PE (x86-64)' ;; # x86-64 (0x64 0x86) - also called AMD64
-          *'64aa') printf '%s\n' '64-bit PE (ARM64)' ;;  # ARM64  (0x64 0xAA)
-          *'0002') printf '%s\n' '64-bit PE (IA-64)' ;;  # IA-64  (0x00 0x02)
-          *'4c01') printf '%s\n' '32-bit PE (x86)' ;;    # x86    (0x4C 0x01)
-          *'c001') printf '%s\n' '32-bit PE (ARM)' ;;    # ARM    (0xC0 0x01)
-          *'0000') printf '%s\n' '16-bit PE' ;;          # Any    (0x00 0x00)
+        _dbf_cpu_type="$(extract_bytes "${_header:?}" '4' '2')" || _dbf_cpu_type=''
+        if test "${_dbf_needs_bytes_swap:?}" = 'true'; then
+          _dbf_cpu_type="$(switch_endianness_2 "${_dbf_cpu_type}")" || _dbf_cpu_type=''
+        fi
+
+        case "${_dbf_cpu_type?}" in
+          '8664') printf '%s\n' '64-bit PE (x86-64)' ;; # x86-64 (0x86 0x64) - also called AMD64
+          'aa64') printf '%s\n' '64-bit PE (ARM64)' ;;  # ARM64  (0xAA 0x64)
+          '0200') printf '%s\n' '64-bit PE (IA-64)' ;;  # IA-64  (0x02 0x00)
+          '014c') printf '%s\n' '32-bit PE (x86)' ;;    # x86    (0x01 0x4C)
+          '01c0') printf '%s\n' '32-bit PE (ARM)' ;;    # ARM    (0x01 0xC0)
+          '0000') printf '%s\n' '16-bit PE' ;;          # Any    (0x00 0x00)
           *)
             printf '%s\n' 'unknown-pe-file'
             return 4
