@@ -154,14 +154,14 @@ extract_bytes()
 
 detect_bitness_of_file()
 {
-  local _dbf_size _dbf_do_bytes_swap _dbf_first_8_bytes _dbf_pos _header _dbf_cpu_type _dbf_tmp_var 2> /dev/null
+  local _dbf_size _dbf_do_bytes_swap _dbf_first_bytes _dbf_pos _header _dbf_cpu_type _dbf_tmp_var 2> /dev/null
 
-  if test ! -f "${1:?}" || ! _dbf_first_8_bytes="$(dump_hex "${1:?}" '0' '8')"; then
+  if test ! -f "${1:?}" || ! _dbf_first_bytes="$(dump_hex "${1:?}" '0' '8')"; then
     printf '%s\n' 'failed'
     return 1
   fi
 
-  if test "$(extract_bytes "${_dbf_first_8_bytes?}" '0' '2' || :)" = '4d5a'; then
+  if test "$(extract_bytes "${_dbf_first_bytes?}" '0' '2' || :)" = '4d5a'; then
     # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
     # More info: https://wiki.osdev.org/MZ
 
@@ -228,10 +228,10 @@ detect_bitness_of_file()
     return 5
   fi
 
-  if test "$(extract_bytes "${_dbf_first_8_bytes?}" '0' '4' || :)" = '7f454c46'; then
+  if test "$(extract_bytes "${_dbf_first_bytes?}" '0' '4' || :)" = '7f454c46'; then
     # ELF - Executable binaries for Linux / Android - Start with: 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
 
-    _header="$(extract_bytes "${_dbf_first_8_bytes?}" '4' '1')" || _header=''
+    _header="$(extract_bytes "${_dbf_first_bytes?}" '4' '1')" || _header=''
     case "${_header?}" in
       '02') printf '%s\n' '64-bit ELF' ;;
       '01') printf '%s\n' '32-bit ELF' ;;
@@ -243,7 +243,7 @@ detect_bitness_of_file()
     return 0
   fi
 
-  if test "$(extract_bytes "${_dbf_first_8_bytes?}" '0' '2' || :)" = '2321'; then
+  if test "$(extract_bytes "${_dbf_first_bytes?}" '0' '2' || :)" = '2321'; then
     # Scripts (often shell scripts) - Start with: #! (0x23 0x21)
 
     printf '%s\n' 'Universal script'
@@ -252,7 +252,7 @@ detect_bitness_of_file()
 
   local _dbf_is_mach_o _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32 2> /dev/null
 
-  if _header="$(extract_bytes "${_dbf_first_8_bytes?}" '0' '4')"; then
+  if _header="$(extract_bytes "${_dbf_first_bytes?}" '0' '4')"; then
     _dbf_is_mach_o='true'
     _dbf_is_fat_bin='false'
     _dbf_do_bytes_swap='false'
@@ -286,7 +286,7 @@ detect_bitness_of_file()
     esac
 
     if test "${_dbf_is_mach_o:?}" = 'true'; then
-      if test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_8_bytes?}" '4' '4')" &&
+      if test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes?}" '4' '4')" &&
         _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_do_bytes_swap:?}")" &&
         test "${_dbf_arch_count:?}" -gt 0 && test "${_dbf_arch_count:?}" -lt 256; then
 
@@ -335,10 +335,10 @@ detect_bitness_of_file()
     return 1
   }
 
-  if test "${_dbf_size:?}" -le 65280 && test "${_dbf_size:?}" -ge 2 && _dbf_tmp_var="$(extract_bytes "${_dbf_first_8_bytes?}" '0' '1')" &&
+  if test "${_dbf_size:?}" -le 65280 && test "${_dbf_size:?}" -ge 2 && _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes?}" '0' '1')" &&
     {
       test "${_dbf_tmp_var?}" = 'e9' || test "${_dbf_tmp_var?}" = 'eb' ||
-        test "$(extract_bytes "${_dbf_first_8_bytes?}" '0' '2' || :)" = '81fc'
+        test "$(extract_bytes "${_dbf_first_bytes?}" '0' '2' || :)" = '81fc'
     }; then
     # COM - Executable binaries for DOS (.com)
 
