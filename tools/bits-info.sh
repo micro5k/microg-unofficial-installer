@@ -93,7 +93,7 @@ detect_hex_dump_cmd()
 dump_hex()
 {
   if test "${HEXDUMP_CMD:=$(detect_hex_dump_cmd || :)}" = 'xxd'; then
-    xxd -p -s "${2:?}" -l "${3:?}" -- "${1:?}"
+    xxd -p -c "${3:?}" -s "${2:?}" -l "${3:?}" -- "${1:?}"
   elif test "${HEXDUMP_CMD?}" = 'hexdump'; then
     hexdump -v -e '/1 "%02x"' -s "${2:?}" -n "${3:?}" -- "${1:?}" && printf '\n'
   else
@@ -168,7 +168,7 @@ detect_bitness_of_file()
     # PE files, to be able to be executed on Windows (it is different under DOS), only need two fields in the MZ header: e_magic (0x00) and e_lfanew (0x3C)
     # The smallest possible PE file is 97 bytes: http://www.phreedom.org/research/tinype/
     _dbf_do_bytes_swap='true'
-    if _dbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && test "${_dbf_pos?}" != '00000000' && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" && _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '6')"; then
+    if _dbf_pos="$(dump_hex "${1:?}" '0x3C' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" && test "${_dbf_pos:?}" -ge 4 && test "${_dbf_pos:?}" -le 536870912 && _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '6')"; then
       :
     else _header=''; fi
 
@@ -218,7 +218,7 @@ detect_bitness_of_file()
         esac
       fi
 
-      #printf '\n' && hexdump -v -C -s "0x${_dbf_pos:?}" -n '6' -- "${1:?}" # Debug
+      #printf '\n' && hexdump -v -C -s "${_dbf_pos:?}" -n '6' -- "${1:?}" # Debug
     fi
 
     if _dbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")" && test "${_dbf_tmp_var:?}" -lt 64; then
