@@ -394,24 +394,19 @@ detect_bitness_of_file()
     return 0
   fi
 
-  if
-    test "${_dbf_size:?}" -le 65280 && test "${_dbf_size:?}" -ge 2 &&
-      _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes?}" '0' '1')" &&
-      {
-        test "${_dbf_tmp_var?}" = 'e9' || test "${_dbf_tmp_var?}" = 'eb' ||
-          test "${_dbf_first_2_bytes?}" = '81fc'
-      }
-  then
-    # COM - Executable binaries for DOS (.com)
+  if test "${_dbf_size:?}" -le 65280 && test "${_dbf_size:?}" -ge 2; then
+    _dbf_tmp_var="$(extract_bytes "${_dbf_first_2_bytes?}" '0' '1')" || _dbf_tmp_var=''
+    if test "${_dbf_tmp_var?}" = 'e9' || test "${_dbf_tmp_var?}" = 'eb' || test "${_dbf_first_2_bytes?}" = '81fc' || test "${_dbf_first_2_bytes?}" = 'b409'; then
+      # COM - Executable binaries for DOS (.com)
 
-    # To detect COM programs we can check if the first byte of the file could be a valid jump or call opcode (most common: 0xE9 or 0xEB).
-    # This is also common: 0x81 + 0xFC.
-    # This isn't a safe way to determine wether a file is a COM file or not, but most COM files start with a jump.
-    # A COM program can only have a size of less than one segment (64K).
-    # The maximum size of the file is 65280 bytes.
+      # To detect COM programs we can check if the first byte of the file could be a valid jump or call opcode (most common: 0xE9 or 0xEB).
+      # This isn't a safe way to determine wether a file is a COM file or not, but most COM files start with a jump.
+      # A COM program can only have a size of less than one segment (64K).
+      # The maximum size of the file is 65280 bytes.
 
-    printf '%s\n' '16-bit COM'
-    return 0
+      printf '%s\n' '16-bit COM'
+      return 0
+    fi
   fi
 
   case "${1:?}" in
