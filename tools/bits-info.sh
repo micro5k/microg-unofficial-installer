@@ -176,9 +176,11 @@ detect_bitness_of_file()
 
     # The smallest possible PE file is 97 bytes: http://www.phreedom.org/research/tinype/
     # PE files, to be able to be executed on Windows (it is different under DOS), only need two fields in the MZ header: e_magic (0x00 => 0) and e_lfanew (0x3C => 60)
-    if _dbf_pos="$(extract_bytes "${_dbf_first_bytes?}" '60' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" &&
-      test "${_dbf_pos:?}" -ge 4 && test "${_dbf_pos:?}" -le 536870912 &&
-      _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '26')"; then
+    if
+      _dbf_pos="$(extract_bytes "${_dbf_first_bytes?}" '60' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" &&
+        test "${_dbf_pos:?}" -ge 4 && test "${_dbf_pos:?}" -le 536870912 &&
+        _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '26')"
+    then
       :
     else _header=''; fi
 
@@ -190,8 +192,10 @@ detect_bitness_of_file()
         _dbf_exe_type="${_dbf_exe_type?}PE"
 
         # PE header pos + 0x14 (decimal: 20) = SizeOfOptionalHeader
-        if _dbf_tmp_var="$(extract_bytes "${_header?}" '20' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")" &&
-          test "${_dbf_tmp_var:?}" -ge 2; then
+        if
+          _dbf_tmp_var="$(extract_bytes "${_header?}" '20' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")" &&
+            test "${_dbf_tmp_var:?}" -ge 2
+        then
           # PE header pos + 0x18 (decimal: 24) = PE type magic
           if _dbf_tmp_var="$(extract_bytes "${_header?}" '24' '2')" && _dbf_tmp_var="$(switch_endianness_2 "${_dbf_tmp_var?}")"; then
             case "${_dbf_tmp_var?}" in
@@ -247,7 +251,12 @@ detect_bitness_of_file()
       #printf '\n' && hexdump -v -C -s "${_dbf_pos:?}" -n '6' -- "${1:?}" # Debug
     fi
 
-    if _dbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")" && test "${_dbf_tmp_var:?}" -lt 64; then
+    # Relocation table of plain MZ files (so not extended ones) must be: > 0x1B (decimal: 27) and < 0x40 (decimal: 64)
+    # NOTE: This does NOT apply to PE files as this field is not used on them
+    if
+      _dbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")" &&
+        test "${_dbf_tmp_var:?}" -gt 27 && test "${_dbf_tmp_var:?}" -lt 64
+    then
       printf '%s\n' '16-bit MZ'
       return 0
     fi
@@ -314,10 +323,11 @@ detect_bitness_of_file()
     esac
 
     if test "${_dbf_is_mach_o:?}" = 'true'; then
-      if test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes?}" '4' '4')" &&
-        _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_do_bytes_swap:?}")" &&
-        test "${_dbf_arch_count:?}" -gt 0 && test "${_dbf_arch_count:?}" -lt 256; then
-
+      if
+        test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes?}" '4' '4')" &&
+          _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_do_bytes_swap:?}")" &&
+          test "${_dbf_arch_count:?}" -gt 0 && test "${_dbf_arch_count:?}" -lt 256
+      then
         _dbf_has64='false'
         _dbf_has32='false'
         _dbf_pos='8'
@@ -363,11 +373,14 @@ detect_bitness_of_file()
     return 1
   }
 
-  if test "${_dbf_size:?}" -le 65280 && test "${_dbf_size:?}" -ge 2 && _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes?}" '0' '1')" &&
-    {
-      test "${_dbf_tmp_var?}" = 'e9' || test "${_dbf_tmp_var?}" = 'eb' ||
-        test "$(extract_bytes "${_dbf_first_bytes?}" '0' '2' || :)" = '81fc'
-    }; then
+  if
+    test "${_dbf_size:?}" -le 65280 && test "${_dbf_size:?}" -ge 2 &&
+      _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes?}" '0' '1')" &&
+      {
+        test "${_dbf_tmp_var?}" = 'e9' || test "${_dbf_tmp_var?}" = 'eb' ||
+          test "$(extract_bytes "${_dbf_first_bytes?}" '0' '2' || :)" = '81fc'
+      }
+  then
     # COM - Executable binaries for DOS (.com)
 
     # To detect COM programs we can check if the first byte of the file could be a valid jump or call opcode (most common: 0xE9 or 0xEB).
