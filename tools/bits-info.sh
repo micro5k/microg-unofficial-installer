@@ -154,14 +154,15 @@ extract_bytes()
 
 detect_bitness_of_file()
 {
-  local _dbf_first_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_tmp_var 2> /dev/null
+  local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_tmp_var 2> /dev/null
 
   if test ! -f "${1:?}" || ! _dbf_first_bytes="$(dump_hex "${1:?}" '0' '64')"; then # (0x00 - 0x40)
     printf '%s\n' 'failed'
     return 1
   fi
+  _dbf_first_2_bytes="$(extract_bytes "${_dbf_first_bytes?}" '0' '2')" || _dbf_first_2_bytes=''
 
-  if test "$(extract_bytes "${_dbf_first_bytes?}" '0' '2' || :)" = '4d5a'; then
+  if test "${_dbf_first_2_bytes?}" = '4d5a'; then
     # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
     # More info: https://wiki.osdev.org/MZ
 
@@ -377,7 +378,7 @@ detect_bitness_of_file()
     fi
   fi
 
-  if test "$(extract_bytes "${_dbf_first_bytes?}" '0' '2' || :)" = '2321'; then
+  if test "${_dbf_first_2_bytes?}" = '2321'; then
     # Scripts (often shell scripts) - Start with: #! (0x23 0x21)
     printf '%s\n' 'Bit-independent script'
     return 0
@@ -388,12 +389,17 @@ detect_bitness_of_file()
     return 1
   }
 
+  if test "${_dbf_size:?}" = 0; then
+    printf '%s\n' 'Empty file'
+    return 0
+  fi
+
   if
     test "${_dbf_size:?}" -le 65280 && test "${_dbf_size:?}" -ge 2 &&
       _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes?}" '0' '1')" &&
       {
         test "${_dbf_tmp_var?}" = 'e9' || test "${_dbf_tmp_var?}" = 'eb' ||
-          test "$(extract_bytes "${_dbf_first_bytes?}" '0' '2' || :)" = '81fc'
+          test "${_dbf_first_2_bytes?}" = '81fc'
       }
   then
     # COM - Executable binaries for DOS (.com)
@@ -405,11 +411,6 @@ detect_bitness_of_file()
     # The maximum size of the file is 65280 bytes.
 
     printf '%s\n' '16-bit COM'
-    return 0
-  fi
-
-  if test "${_dbf_size:?}" = 0; then
-    printf '%s\n' 'Empty file'
     return 0
   fi
 
@@ -502,7 +503,7 @@ get_shell_info()
           : # For dash (it is slow)
         elif test "${_shell_name?}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
           : # For posh (need test)
-        elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ' || true)" && test -n "${_shell_version?}"; then
+        elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ' || :)" && test -n "${_shell_version?}"; then
           : # For ksh and bosh
         elif test -n "${version-}" && _shell_version="${version:?}"; then
           : # For tcsh and fish
@@ -566,11 +567,11 @@ get_os_info()
 
   case "${_os_name?}" in
     'MS/Windows')
-      _os_version="$(uname -r -v | tr -- ' ' '.' || true)"
+      _os_version="$(uname -r -v | tr -- ' ' '.' || :)"
       ;;
     'Msys')
       _os_name='MS/Windows'
-      _os_version="$(uname | cut -d '-' -f '2-' -s | tr -- '-' '.' || true)"
+      _os_version="$(uname | cut -d '-' -f '2-' -s | tr -- '-' '.' || :)"
       ;;
     'Windows_NT') # Bugged versions of uname: it doesn't support uname -o and it is unable to retrieve the correct version of Windows
       _os_name='MS/Windows'
@@ -600,7 +601,7 @@ get_version()
   fi
 
   # NOTE: "date --help" and "awk --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
-  _version="$("${1:?}" 2> /dev/null -Wversion || "${1:?}" 2> /dev/null --version || "${1:?}" 2>&1 --help || true)"
+  _version="$("${1:?}" 2> /dev/null -Wversion || "${1:?}" 2> /dev/null --version || "${1:?}" 2>&1 --help || :)"
   _version="$(printf '%s\n' "${_version?}" | head -n 1)" || _version=''
 
   case "${_version?}" in
@@ -618,10 +619,10 @@ pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
   if test "${NO_PAUSE:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM-}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
-    printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit...' || true
+    printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit...' || :
     # shellcheck disable=SC3045
-    IFS='' read 1> /dev/null 2>&1 -r -s -n 1 _ || IFS='' read 1>&2 -r _ || true
-    printf 1>&2 '\n' || true
+    IFS='' read 1> /dev/null 2>&1 -r -s -n 1 _ || IFS='' read 1>&2 -r _ || :
+    printf 1>&2 '\n' || :
   fi
   return 0
 }
@@ -670,7 +671,7 @@ main()
     os_bit="${os_bit:?}-bit"
   elif test -e '/system/build.prop'; then
     # On Android
-    case "$(file_getprop 'ro.product.cpu.abi' '/system/build.prop' || true)" in
+    case "$(file_getprop 'ro.product.cpu.abi' '/system/build.prop' || :)" in
       'x86_64' | 'arm64-v8a' | 'mips64' | 'riscv64') os_bit='64-bit' ;;
       'x86' | 'armeabi-v7a' | 'armeabi' | 'mips') os_bit='32-bit' ;;
       *) os_bit='unknown' ;;
@@ -722,9 +723,9 @@ main()
   done
   _shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _shell_arithmetic_bit='unknown'
 
-  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "$(printf '%u\n' '-1' || true)")" || _shell_printf_bit='unknown'
+  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "$(printf '%u\n' '-1' || :)")" || _shell_printf_bit='unknown'
 
-  _awk_printf_bit="$(convert_max_unsigned_int_to_bit "$(awk -- 'BEGIN { printf "%u\n", "-1" }' || true)")" || _awk_printf_bit='unknown'
+  _awk_printf_bit="$(convert_max_unsigned_int_to_bit "$(awk -- 'BEGIN { printf "%u\n", "-1" }' || :)")" || _awk_printf_bit='unknown'
 
   # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
@@ -786,7 +787,7 @@ main()
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit:?}"
 
   printf '%s %s\n' "Version of date:" "$(get_version 'date' || :)"
-  printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${_date_bit:?}" "$(test "${date_timezone_bug:?}" = 'false' || printf ' %s\n' '(with time zone bug)' || true)"
+  printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${_date_bit:?}" "$(test "${date_timezone_bug:?}" = 'false' || printf ' %s\n' '(with time zone bug)' || :)"
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit:?}"
 }
 
