@@ -13,7 +13,7 @@ export POSIXLY_CORRECT='y'
 $(set 1> /dev/null 2>&1 -o pipefail) && set -o pipefail || :
 
 readonly SCRIPT_NAME='Bits info'
-readonly SCRIPT_VERSION='0.3'
+readonly SCRIPT_VERSION='0.4'
 
 convert_max_signed_int_to_bit()
 {
@@ -430,7 +430,7 @@ detect_bitness_of_single_file()
 
 detect_bitness_of_files()
 {
-  local _dbof_ret_code _dbof_lcall 2> /dev/null
+  local _dbof_ret_code _dbof_file_list _dbof_filename _dbof_lcall _dbof_ifs 2> /dev/null
 
   # With a single file it returns the specific error code otherwise if there are multiple files it returns the number of files that were not recognized.
   # If the number is greater than 255 then it returns 255.
@@ -439,7 +439,19 @@ detect_bitness_of_files()
   _dbof_lcall="${LC_ALL-}"
   export LC_ALL='C' # Since we only use bytes and not characters, setting LC_ALL=C will make the code faster
 
-  if test "${#}" -eq 1; then
+  if test "${1-}" = '-'; then
+    _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
+    _dbof_ifs="${IFS-}"
+    export IFS='
+'
+
+    for _dbof_filename in ${_dbof_file_list?}; do
+      printf '%s: ' "${_dbof_filename?}" || :
+      detect_bitness_of_single_file "${_dbof_filename:?}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
+    done
+
+    IFS="${_dbof_ifs?}"
+  elif test "${#}" -eq 1; then
     detect_bitness_of_single_file "${1:?}" || _dbof_ret_code="${?}"
   else
     while test "${#}" -gt 0; do
@@ -838,10 +850,15 @@ while test "${#}" -gt 0; do
       NO_PAUSE='1'
       export NO_PAUSE
       ;;
+
     --)
       shift
       break
       ;;
+    -) # Get file list from STDIN
+      break
+      ;;
+
     --* | -*) ;; # Ignore unsupported options
 
     *) break ;;
