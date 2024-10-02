@@ -159,7 +159,7 @@ detect_bitness_of_single_file()
 {
   local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_tmp_var 2> /dev/null
 
-  if test ! -f "${1:?}" || ! _dbf_first_bytes="$(dump_hex "${1:?}" '0' '64')"; then # (0x00 - 0x40)
+  if test ! -f "${1?}" || ! _dbf_first_bytes="$(dump_hex "${1:?}" '0' '64')"; then # (0x00 - 0x40)
     printf '%s\n' 'failed'
     return 1
   fi
@@ -413,12 +413,12 @@ detect_bitness_of_single_file()
   fi
 
   case "${1:?}" in
-    *'.bat')
-      printf '%s\n' 'Bit-independent batch'
-      return 0
-      ;;
     *'.sh')
       'Bit-independent script'
+      return 0
+      ;;
+    *'.bat')
+      printf '%s\n' 'Bit-independent batch'
       return 0
       ;;
     *) ;;
@@ -447,25 +447,23 @@ detect_bitness_of_files()
 
     for _dbof_filename in ${_dbof_file_list?}; do
       printf '%s: ' "${_dbof_filename?}" || :
-      detect_bitness_of_single_file "${_dbof_filename:?}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
+      detect_bitness_of_single_file "${_dbof_filename?}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
     done
 
     IFS="${_dbof_ifs?}"
   elif test "${#}" -eq 1; then
-    detect_bitness_of_single_file "${1:?}" || _dbof_ret_code="${?}"
+    detect_bitness_of_single_file "${1?}" || _dbof_ret_code="${?}"
   else
     while test "${#}" -gt 0; do
-      printf '%s: ' "${1?}" || :
-      detect_bitness_of_single_file "${1:?}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
+      if test -n "${1?}"; then
+        printf '%s: ' "$1" || :
+        detect_bitness_of_single_file "$1" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
+      fi
       shift
     done
   fi
 
-  if test -n "${_dbof_lcall?}"; then
-    LC_ALL="${_dbof_lcall:?}"
-  else
-    unset LC_ALL
-  fi
+  if test -n "${_dbof_lcall?}"; then LC_ALL="${_dbof_lcall:?}"; else unset LC_ALL; fi
 
   test "${_dbof_ret_code:?}" -lt 256 || return 255
   return "${_dbof_ret_code:?}"
