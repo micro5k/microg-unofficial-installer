@@ -166,25 +166,42 @@ detect_bitness_of_file()
     # More info: https://wiki.osdev.org/MZ
 
     _dbf_do_bytes_swap='true'
-    _dbf_exe_type='PE'
+    _dbf_pos=''
+    _dbf_exe_type=''
 
     # APE - Actually Portable Executables - Start with: MZ (0x4D 0x5A) + qFpD (0x71 0x46 0x70 0x44)
     if test "$(extract_bytes "${_dbf_first_bytes?}" '2' '4' || :)" = '71467044'; then
-      _dbf_exe_type='APE PE'
+      _dbf_exe_type='APE '
     fi
 
-    # PE files, to be able to be executed on Windows (it is different under DOS), only need two fields in the MZ header: e_magic (0x00 => 0) and e_lfanew (0x3C => 60)
     # The smallest possible PE file is 97 bytes: http://www.phreedom.org/research/tinype/
+    # PE files, to be able to be executed on Windows (it is different under DOS), only need two fields in the MZ header: e_magic (0x00 => 0) and e_lfanew (0x3C => 60)
     if _dbf_pos="$(extract_bytes "${_dbf_first_bytes?}" '60' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" &&
       test "${_dbf_pos:?}" -ge 4 && test "${_dbf_pos:?}" -le 536870912 &&
-      _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '6')"; then
+      _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '26')"; then
       :
     else _header=''; fi
 
     if test -n "${_header?}"; then
       if printf '%s\n' "${_header:?}" | grep -m 1 -q -e '^50450000'; then
         # PE header => PE (0x50 0x45) + 0x00 + 0x00 + Machine field
+        # More info: https://www.aldeid.com/wiki/PE-Portable-executable
         # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
+        _dbf_exe_type="${_dbf_exe_type?}PE"
+
+        # PE header pos + 0x14 (decimal: 20) = SizeOfOptionalHeader
+        if _dbf_tmp_var="$(extract_bytes "${_header?}" '20' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")" &&
+          test "${_dbf_tmp_var:?}" -ge 2; then
+          # PE header pos + 0x18 (decimal: 24) = PE type magic
+          if _dbf_tmp_var="$(extract_bytes "${_header?}" '24' '2')" && _dbf_tmp_var="$(switch_endianness_2 "${_dbf_tmp_var?}")"; then
+            case "${_dbf_tmp_var?}" in
+              '010b') _dbf_exe_type="${_dbf_exe_type:?}32" ;;
+              '020b') _dbf_exe_type="${_dbf_exe_type:?}32+" ;;
+              '0107') _dbf_exe_type="${_dbf_exe_type:?} ROM image" ;;
+              *) ;;
+            esac
+          fi
+        fi
 
         _dbf_cpu_type="$(extract_bytes "${_header:?}" '4' '2')" || _dbf_cpu_type=''
         if test "${_dbf_do_bytes_swap:?}" = 'true'; then
