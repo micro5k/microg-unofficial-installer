@@ -12,6 +12,9 @@ export POSIXLY_CORRECT='y'
 # shellcheck disable=all
 $(set 1> /dev/null 2>&1 -o pipefail) && set -o pipefail || :
 
+readonly SCRIPT_NAME='Bits info'
+readonly SCRIPT_VERSION='0.2'
+
 convert_max_signed_int_to_bit()
 {
   # More info: https://www.netmeister.org/blog/epoch.html
@@ -786,5 +789,36 @@ main()
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit:?}"
 }
 
-main
+execute_script='true'
+while test "${#}" -gt 0; do
+  case "${1?}" in
+    -V | --version)
+      printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
+      printf '%s\n' 'Copyright (c) 2024 ale5000'
+      printf '%s\n' 'License GPLv3+'
+      execute_script='false'
+      ;;
+    --no-pause)
+      NO_PAUSE='1'
+      export NO_PAUSE
+      ;;
+    --)
+      shift
+      break
+      ;;
+    --* | -*) ;; # Ignore unsupported options
+
+    *) break ;;
+  esac
+
+  shift
+done
+
+if test "${execute_script:?}" = 'true'; then
+  if test "${#}" -eq 0; then
+    main
+  else
+    detect_bitness_of_file "${1:?}"
+  fi
+fi
 pause_if_needed
