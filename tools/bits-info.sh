@@ -823,6 +823,7 @@ if test "${execute_script:?}" = 'true'; then
   if test "${#}" -eq 0; then
     main
   else
+    export LC_ALL=C # Since we only use bytes and not characters, setting LC_ALL=C will make the code faster
     detect_bitness_of_file "${1:?}"
   fi
 fi
