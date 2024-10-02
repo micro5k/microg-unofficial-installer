@@ -287,13 +287,6 @@ detect_bitness_of_file()
     return 0
   fi
 
-  if test "$(extract_bytes "${_dbf_first_bytes?}" '0' '2' || :)" = '2321'; then
-    # Scripts (often shell scripts) - Start with: #! (0x23 0x21)
-
-    printf '%s\n' 'Bit-independent script'
-    return 0
-  fi
-
   local _dbf_is_mach_o _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32 2> /dev/null
 
   if _header="$(extract_bytes "${_dbf_first_bytes?}" '0' '4')"; then
@@ -384,6 +377,12 @@ detect_bitness_of_file()
     fi
   fi
 
+  if test "$(extract_bytes "${_dbf_first_bytes?}" '0' '2' || :)" = '2321'; then
+    # Scripts (often shell scripts) - Start with: #! (0x23 0x21)
+    printf '%s\n' 'Bit-independent script'
+    return 0
+  fi
+
   _dbf_size="$(stat -c '%s' -- "${1:?}")" || {
     printf '%s\n' 'failed'
     return 1
@@ -417,6 +416,10 @@ detect_bitness_of_file()
   case "${1:?}" in
     *'.bat')
       printf '%s\n' 'Bit-independent batch'
+      return 0
+      ;;
+    *'.sh')
+      'Bit-independent script'
       return 0
       ;;
     *) ;;
