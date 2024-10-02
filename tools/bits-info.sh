@@ -251,14 +251,21 @@ detect_bitness_of_file()
       #printf '\n' && hexdump -v -C -s "${_dbf_pos:?}" -n '6' -- "${1:?}" # Debug
     fi
 
-    # Relocation table of plain MZ files (so not extended ones) must be: > 0x1B (decimal: 27) and < 0x40 (decimal: 64)
+    # The absolute offset to the relocation table is stored at: 0x18 (decimal: 24)
+    # The absolute offset to the relocation table of plain MZ files (so not extended ones) must be: > 0x1B (decimal: 27) and < 0x40 (decimal: 64)
     # NOTE: This does NOT apply to PE files as this field is not used on them
-    if
-      _dbf_tmp_var="$(dump_hex "${1:?}" '0x18' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")" &&
-        test "${_dbf_tmp_var:?}" -gt 27 && test "${_dbf_tmp_var:?}" -lt 64
-    then
-      printf '%s\n' '16-bit MZ'
-      return 0
+    if _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes?}" '24' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")"; then
+      if
+        {
+          test "${_dbf_tmp_var:?}" -gt 27 && test "${_dbf_tmp_var:?}" -lt 64
+        } ||
+          {
+            test "${_dbf_tmp_var:?}" = 0 && test "$(extract_bytes "${_dbf_first_bytes?}" '6' '2' || :)" = '0000' # Empty relocation table
+          }
+      then
+        printf '%s\n' '16-bit MZ'
+        return 0
+      fi
     fi
 
     printf '%s\n' 'unknown-mz-file'
