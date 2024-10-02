@@ -439,7 +439,7 @@ detect_bitness_of_files()
   _dbof_lcall="${LC_ALL-}"
   export LC_ALL='C' # Since we only use bytes and not characters, setting LC_ALL=C will make the code faster
 
-  if test "${1-}" = '-'; then
+  if test "${1-}" = '-' && test "${#}" -eq 1; then
     _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
     _dbof_ifs="${IFS-}"
     export IFS='
@@ -450,7 +450,7 @@ detect_bitness_of_files()
       detect_bitness_of_single_file "${_dbof_filename?}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
     done
 
-    IFS="${_dbof_ifs?}"
+    if test -n "${_dbof_ifs?}"; then IFS="${_dbof_ifs:?}"; else unset IFS; fi
   elif test "${#}" -eq 1; then
     detect_bitness_of_single_file "${1?}" || _dbof_ret_code="${?}"
   else
