@@ -13,7 +13,7 @@ export POSIXLY_CORRECT='y'
 $(set 1> /dev/null 2>&1 -o pipefail) && set -o pipefail || :
 
 readonly SCRIPT_NAME='Bits info'
-readonly SCRIPT_VERSION='0.2'
+readonly SCRIPT_VERSION='0.3'
 
 convert_max_signed_int_to_bit()
 {
@@ -155,7 +155,7 @@ extract_bytes()
   printf '%s\n' "${1?}" | cut -b "$((${2:?} * 2 + 1))-$(((${2:?} + ${3:?}) * 2))"
 }
 
-detect_bitness_of_file()
+detect_bitness_of_single_file()
 {
   local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_tmp_var 2> /dev/null
 
@@ -428,6 +428,37 @@ detect_bitness_of_file()
   return 2
 }
 
+detect_bitness_of_files()
+{
+  local _dbof_ret_code _dbof_lcall 2> /dev/null
+
+  # With a single file it returns the specific error code otherwise if there are multiple files it returns the number of files that were not recognized.
+  # If the number is greater than 255 then it returns 255.
+  _dbof_ret_code=0
+
+  _dbof_lcall="${LC_ALL-}"
+  export LC_ALL='C' # Since we only use bytes and not characters, setting LC_ALL=C will make the code faster
+
+  if test "${#}" -eq 1; then
+    detect_bitness_of_single_file "${1:?}" || _dbof_ret_code="${?}"
+  else
+    while test "${#}" -gt 0; do
+      printf '%s: ' "${1?}" || :
+      detect_bitness_of_single_file "${1:?}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
+      shift
+    done
+  fi
+
+  if test -n "${_dbof_lcall?}"; then
+    LC_ALL="${_dbof_lcall:?}"
+  else
+    unset LC_ALL
+  fi
+
+  test "${_dbof_ret_code:?}" -lt 256 || return 255
+  return "${_dbof_ret_code:?}"
+}
+
 get_shell_exe()
 {
   local _gse_shell_exe _gse_tmp_var 2> /dev/null
@@ -622,7 +653,7 @@ pause_if_needed()
     IFS='' read 1> /dev/null 2>&1 -r -s -n 1 _ || IFS='' read 1>&2 -r _ || :
     printf 1>&2 '\n' || :
   fi
-  return 0
+  exit "${1:?}"
 }
 
 main()
@@ -639,7 +670,7 @@ main()
   shell_info="$(get_shell_info "${shell_exe?}" || :)"
   shell_name="$(printf '%s\n' "${shell_info?}" | cut -d ' ' -f '1' || :)"
 
-  if test -n "${shell_exe?}" && shell_bit="$(detect_bitness_of_file "${shell_exe:?}")"; then
+  if test -n "${shell_exe?}" && shell_bit="$(detect_bitness_of_files "${shell_exe:?}")"; then
     :
   elif tmp_var="$(uname 2> /dev/null -m)"; then
     case "${tmp_var?}" in
@@ -823,8 +854,7 @@ if test "${execute_script:?}" = 'true'; then
   if test "${#}" -eq 0; then
     main
   else
-    export LC_ALL=C # Since we only use bytes and not characters, setting LC_ALL=C will make the code faster
-    detect_bitness_of_file "${1:?}"
+    detect_bitness_of_files "${@}"
   fi
 fi
-pause_if_needed
+pause_if_needed "${?}"
