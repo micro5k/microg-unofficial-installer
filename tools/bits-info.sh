@@ -290,7 +290,7 @@ detect_bitness_of_file()
   if test "$(extract_bytes "${_dbf_first_bytes?}" '0' '2' || :)" = '2321'; then
     # Scripts (often shell scripts) - Start with: #! (0x23 0x21)
 
-    printf '%s\n' 'Universal script'
+    printf '%s\n' 'Bit-independent script'
     return 0
   fi
 
@@ -312,7 +312,16 @@ detect_bitness_of_file()
       'cffaedfe') # MH_CIGAM_64
         _dbf_do_bytes_swap='true' ;;
       'cafebabe') # FAT_MAGIC
-        _dbf_is_fat_bin='true' ;;
+        if
+          _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes?}" '4' '4')" && _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' 'false')" &&
+            test "${_dbf_arch_count:?}" -gt 30
+        then
+          # Both this and Java bytecode have the same magic number (more info: https://opensource.apple.com/source/file/file-80.40.2/file/magic/Magdir/cafebabe.auto.html)
+          _dbf_is_mach_o='false'
+        else
+          _dbf_is_fat_bin='true'
+        fi
+        ;;
       'bebafeca') # FAT_CIGAM
         _dbf_is_fat_bin='true'
         _dbf_do_bytes_swap='true'
@@ -407,7 +416,7 @@ detect_bitness_of_file()
 
   case "${1:?}" in
     *'.bat')
-      printf '%s\n' 'Universal batch'
+      printf '%s\n' 'Bit-independent batch'
       return 0
       ;;
     *) ;;
