@@ -798,6 +798,11 @@ while test "${#}" -gt 0; do
       printf '%s\n' 'License GPLv3+'
       execute_script='false'
       ;;
+    -h | --help | '-?')
+      printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
+      printf '\n%s\n' 'Coming soon...'
+      execute_script='false'
+      ;;
     --no-pause)
       NO_PAUSE='1'
       export NO_PAUSE
