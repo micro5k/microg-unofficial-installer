@@ -558,9 +558,12 @@ get_shell_info()
 
   _shell_version="${_shell_version#[Vv]ersion }"
   case "${_shell_version?}" in
-    'BusyBox'*)
-      if test -z "${_shell_name?}" || test "${_shell_name:?}" = 'sh'; then _shell_name='busybox'; fi
+    'BusyBox '*)
+      _shell_name='busybox'
       _shell_version="${_shell_version#BusyBox}"
+      ;;
+    *' bash,'*)
+      _shell_name='bash' # Sometimes it isn't just a symlink but it is really called "sh" so we have to correct this
       ;;
     *)
       test -z "${_shell_name?}" || _shell_version="${_shell_version#"${_shell_name:?}"}"
