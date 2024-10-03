@@ -484,6 +484,7 @@ get_shell_exe()
   elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var?}"; then
     if test ! -e "${_gse_tmp_var:?}" && test -e "${_gse_tmp_var:?}.exe"; then _gse_tmp_var="${_gse_tmp_var:?}.exe"; fi # Special fix for broken versions of Bash under Windows
     _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var:?}" || realpath 2> /dev/null "${_gse_tmp_var:?}")" || _gse_shell_exe="${_gse_tmp_var:?}"
+    _gse_shell_exe="$(command 2> /dev/null -v "${_gse_shell_exe:?}")" || return 1
   else
     return 1
   fi
@@ -813,7 +814,7 @@ main()
     printf '%s %s\n' "Shell applet:" "${shell_applet:?}"
   fi
   printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${shell_info?}" | cut -d ' ' -f '2-' -s || :)"
-  printf '%s %s\n' "Shell path:" "${shell_exe?}"
+  printf '%s %s\n' "Shell path:" "${shell_exe:-unknown}"
   printf '%s %s\n' "OS:" "$(get_os_info || :)"
   printf '%s %s\n\n' "Version of uname:" "$(get_version 'uname' || :)"
 
