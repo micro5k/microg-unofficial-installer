@@ -171,11 +171,12 @@ detect_bitness_of_single_file()
 
     _dbf_do_bytes_swap='true'
     _dbf_pos=''
-    _dbf_exe_type=''
 
     # APE - Actually Portable Executables - Start with: MZ (0x4D 0x5A) + qFpD (0x71 0x46 0x70 0x44)
     if test "$(extract_bytes "${_dbf_first_bytes?}" '2' '4' || :)" = '71467044'; then
       _dbf_exe_type='APE '
+    else
+      _dbf_exe_type=''
     fi
 
     # The smallest possible PE file is 97 bytes: http://www.phreedom.org/research/tinype/
@@ -500,8 +501,6 @@ get_shell_info()
 {
   local _shell_use_ver_opt _shell_exe _shell_name _shell_version _tmp_var 2> /dev/null
 
-  # NOTE: Fish is intentionally not POSIX-compatible so this function may not work on it
-
   _shell_use_ver_opt='false'
   _shell_version=''
 
@@ -541,10 +540,10 @@ get_shell_info()
 
     case "${_shell_version?}" in
       '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
-        if test "${_shell_name?}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version?}"; then
-          : # For dash
-        elif test "${_shell_name?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
+        if test "${_shell_name?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
           : # For dash (possibly supported in the future)
+        elif test "${_shell_name?}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version?}"; then
+          : # For dash
         elif test "${_shell_name?}" = 'dash' && command 1> /dev/null 2>&1 -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version?}"; then
           : # For dash (it is slow)
         elif test "${_shell_name?}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
@@ -552,7 +551,7 @@ get_shell_info()
         elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ' || :)" && test -n "${_shell_version?}"; then
           : # For ksh and bosh
         elif test -n "${version-}" && _shell_version="${version:?}"; then
-          : # For tcsh and fish
+          : # For tcsh and fish (NOTE: although this variable would show the version unfortunately the code cannot be run on tcsh and fish due to syntax difference)
         else
           _shell_version=''
         fi
