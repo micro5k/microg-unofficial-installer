@@ -446,8 +446,10 @@ detect_bitness_of_files()
 '
 
     for _dbof_filename in ${_dbof_file_list?}; do
-      printf '%s: ' "${_dbof_filename?}" || :
-      detect_bitness_of_single_file "${_dbof_filename?}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
+      if test -n "${_dbof_filename?}"; then
+        printf '%s: ' "${_dbof_filename}" || :
+        detect_bitness_of_single_file "${_dbof_filename}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
+      fi
     done
 
     if test -n "${_dbof_ifs?}"; then IFS="${_dbof_ifs:?}"; else unset IFS; fi
@@ -837,15 +839,23 @@ execute_script='true'
 while test "${#}" -gt 0; do
   case "${1?}" in
     -V | --version)
+      execute_script='false'
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
       printf '%s\n' 'Copyright (c) 2024 ale5000'
       printf '%s\n' 'License GPLv3+'
-      execute_script='false'
       ;;
     -h | --help | '-?')
-      printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '\n%s\n' 'Coming soon...'
       execute_script='false'
+      script_name="$(basename "${0:?}")" || exit 1
+      printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
+
+      printf '\n%s\n\n' 'Coming soon...'
+
+      printf '%s\n' 'Examples:'
+      printf '%s\n' "${script_name:?}"
+      printf '%s\n' "${script_name:?} -- './dir_to_test/file_to_test.ext'"
+      printf '%s\n' "find './dir_to_test' -type f -print0 | xargs -0 -- '${script_name:?}' -- ''"
+      printf '%s\n' "find './dir_to_test' -type f | ${script_name:?} -"
       ;;
     --no-pause)
       NO_PAUSE='1'
