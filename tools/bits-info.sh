@@ -445,12 +445,16 @@ detect_bitness_of_files()
     export IFS='
 '
 
-    for _dbof_filename in ${_dbof_file_list?}; do
-      if test -n "${_dbof_filename?}"; then
-        printf '%s: ' "${_dbof_filename}" || :
-        detect_bitness_of_single_file "${_dbof_filename}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
-      fi
-    done
+    if test -n "${_dbof_file_list?}"; then
+      for _dbof_filename in ${_dbof_file_list:?}; do
+        if test -n "${_dbof_filename?}"; then
+          printf '%s: ' "${_dbof_filename}" || :
+          detect_bitness_of_single_file "${_dbof_filename}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
+        fi
+      done
+    else
+      _dbof_ret_code=1
+    fi
 
     if test -n "${_dbof_ifs?}"; then IFS="${_dbof_ifs:?}"; else unset IFS; fi
   elif test "${#}" -eq 1; then
