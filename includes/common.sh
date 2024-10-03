@@ -1260,17 +1260,13 @@ init_cmdline()
     alias 'gradlew'='gradlew.bat'
   fi
 
-  # shellcheck disable=SC2139 # It is intended: This expands when defined, not when used
-  {
-    alias 'bits-info'="'${MAIN_DIR:?}/tools/bits-info.sh'"
-    alias 'bits-info.sh'="'${MAIN_DIR:?}/tools/bits-info.sh'"
-  }
-
+  alias 'bits-info'="bits-info.sh"
   alias 'help'='help.sh'
 
   add_to_path_env "${UTILS_DIR:?}"
-  PATH="%builtin${PATHSEP:?}${PATH-}"
   add_to_path_env "${MAIN_DIR:?}"
+  PATH="%builtin${PATHSEP:?}${PATH-}"
+  add_to_path_env "${MAIN_DIR:?}/tools"
 
   if test -n "${BB_CMD?}"; then
     create_bb_alias_if_missing 'su'
