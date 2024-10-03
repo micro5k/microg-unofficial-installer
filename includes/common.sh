@@ -1246,7 +1246,7 @@ init_cmdline()
   alias 'dir'='ls'
   alias 'cd..'='cd ..'
   alias 'cd.'='cd .'
-  alias 'cls'='reset'
+  alias 'cls'='clear'
   alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
 
   if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
@@ -1258,6 +1258,7 @@ init_cmdline()
   alias 'cmdline'='cmdline.sh'
   if test "${PLATFORM:?}" = 'win'; then
     alias 'gradlew'='gradlew.bat'
+    alias 'start'='start.sh'
   fi
 
   alias 'bits-info'="bits-info.sh"
