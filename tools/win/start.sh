@@ -4,4 +4,4 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-MSYS_NO_PATHCONV=1 "${COMSPEC:?}" /c start "${@}"
+MSYS_NO_PATHCONV=1 "${COMSPEC:-${ComSpec:?}}" /c start "${@}"
