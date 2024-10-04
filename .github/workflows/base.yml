@@ -28,7 +28,7 @@ jobs:
       - name: "Install Bashcov and simplecov-lcov"
         run: |
           # Installing Bashcov and simplecov-lcov...
-          gem install bashcov:3.1.2 simplecov-lcov
+          gem install bashcov:3.1.3 simplecov-lcov
       - name: "Execute code coverage"
         id: "coverage"
         run: |
