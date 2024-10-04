@@ -11,8 +11,6 @@ echo 'PRELOADER'
 
 umask 022 || :
 set -u 2> /dev/null || :
-
-export ASH_STANDALONE='1'
 export POSIXLY_CORRECT='y'
 
 # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
@@ -23,6 +21,7 @@ export POSIXLY_CORRECT='y'
 
 ### GLOBAL VARIABLES ###
 
+export ASH_STANDALONE='1'
 export OUTFD="${2:?}"
 export ZIPFILE="${3:?}"
 unset RANDOM_IS_SEEDED

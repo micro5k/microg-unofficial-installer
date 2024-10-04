@@ -2,17 +2,19 @@
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined #
 
 ### INIT OPTIONS ###
 
-umask 022 || true
-set -u || true
-# shellcheck disable=SC3040,SC2015
+umask 022 || :
+set -u 2> /dev/null || :
+export POSIXLY_CORRECT='y'
+
+# Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
 {
-  # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-  (set -o posix 2> /dev/null) && set -o posix || true
-  (set -o pipefail 2> /dev/null) && set -o pipefail || true
+  # shellcheck disable=all
+  (set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 }
 
 ### PREVENTIVE CHECKS ###
