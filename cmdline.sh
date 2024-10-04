@@ -12,7 +12,8 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     # Execute only if the first initialization has not already been done
     if test -z "${MAIN_DIR-}" || test -z "${USER_HOME-}"; then
 
-      if test -d '/usr/bin'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi
+      # Prevent picturesque bugs on Bash under Windows
+      if test -e '/usr/bin' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi
 
       if test -z "${MAIN_DIR-}"; then
         # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
