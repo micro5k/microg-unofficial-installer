@@ -9,13 +9,16 @@ echo 'PRELOADER'
 
 ### INIT OPTIONS ###
 
-umask 022 || true
-set -u || true
-# shellcheck disable=SC3040,SC2015
+umask 022 || :
+set -u 2> /dev/null || :
+
+export ASH_STANDALONE='1'
+export POSIXLY_CORRECT='y'
+
+# Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
 {
-  # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-  (set -o posix 2> /dev/null) && set -o posix || true
-  (set -o pipefail 2> /dev/null) && set -o pipefail || true
+  # shellcheck disable=all
+  (set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 }
 
 ### GLOBAL VARIABLES ###
