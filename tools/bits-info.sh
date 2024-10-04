@@ -10,7 +10,7 @@ setopt SH_WORD_SPLIT 2> /dev/null || :
 export POSIXLY_CORRECT='y'
 
 # shellcheck disable=all
-$(set 1> /dev/null 2>&1 -o pipefail) && set -o pipefail || :
+$(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 
 readonly SCRIPT_NAME='Bits info'
 readonly SCRIPT_VERSION='0.4'
