@@ -1246,7 +1246,11 @@ init_cmdline()
   alias 'dir'='ls'
   alias 'cd..'='cd ..'
   alias 'cd.'='cd .'
-  alias 'cls'='clear'
+  if test "${IS_BUSYBOX:?}" = 'true'; then
+    alias 'cls'='reset'
+  else
+    alias 'cls'='clear'
+  fi
   alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
 
   if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
