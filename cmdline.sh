@@ -9,11 +9,14 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   {
     local _newline _main_dir
 
+    _newline='
+'
+
     # Execute only if the first initialization has not already been done
     if test -z "${MAIN_DIR-}" || test -z "${USER_HOME-}"; then
 
       # Avoid picturesque bugs on Bash under Windows
-      if test -e '/usr/bin' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi
+      if test -e '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi
 
       if test -z "${MAIN_DIR-}"; then
         # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
@@ -64,9 +67,6 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       }
 
       if test "${#}" -gt 0; then
-        _newline='
-'
-
         case "${*}" in
           *"${_newline:?}"*)
             printf 'WARNING: Newline character found, parameters dropped\n'
