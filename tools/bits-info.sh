@@ -13,7 +13,7 @@ export POSIXLY_CORRECT='y'
 $(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 
 readonly SCRIPT_NAME='Bits info'
-readonly SCRIPT_VERSION='0.5'
+readonly SCRIPT_VERSION='0.6'
 
 convert_max_signed_int_to_bit()
 {
@@ -431,11 +431,12 @@ detect_bitness_of_single_file()
 
 detect_bitness_of_files()
 {
-  local _dbof_ret_code _dbof_file_list _dbof_filename _dbof_lcall _dbof_ifs 2> /dev/null
+  local _dbof_ret_code _dbof_show_unidentified_files _dbof_file_list _dbof_filename _dbof_lcall _dbof_ifs 2> /dev/null
 
   # With a single file it returns the specific error code otherwise if there are multiple files it returns the number of files that were not recognized.
-  # If the number is greater than 254 then it returns 254.
+  # If the number is greater than 125 then it returns 125.
   _dbof_ret_code=0
+  _dbof_show_unidentified_files='true'
 
   _dbof_lcall="${LC_ALL-}"
   export LC_ALL='C' # Since we only use bytes and not characters, setting LC_ALL=C will make the code faster
@@ -448,31 +449,30 @@ detect_bitness_of_files()
 
     if test -n "${_dbof_file_list?}"; then
       for _dbof_filename in ${_dbof_file_list:?}; do
-        if test -n "${_dbof_filename?}"; then
-          printf '%s: ' "${_dbof_filename}" || :
-          detect_bitness_of_single_file "${_dbof_filename}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
-        fi
+        printf '%s: ' "${_dbof_filename}"
+        detect_bitness_of_single_file "${_dbof_filename}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
       done
     else
       _dbof_ret_code=1
     fi
 
     if test -n "${_dbof_ifs?}"; then IFS="${_dbof_ifs:?}"; else unset IFS; fi
-  elif test "${#}" -eq 1; then
-    detect_bitness_of_single_file "${1?}" || _dbof_ret_code="${?}"
+  elif test "${#}" -le 1; then
+    _dbof_show_unidentified_files='false'
+    detect_bitness_of_single_file "${1-}" || _dbof_ret_code="${?}"
   else
+    test -n "${1?}" || shift
     while test "${#}" -gt 0; do
-      if test -n "${1?}"; then
-        printf '%s: ' "$1" || :
-        detect_bitness_of_single_file "$1" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
-      fi
+      printf '%s: ' "$1"
+      detect_bitness_of_single_file "$1" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
       shift
     done
   fi
 
   if test -n "${_dbof_lcall?}"; then LC_ALL="${_dbof_lcall:?}"; else unset LC_ALL; fi
 
-  test "${_dbof_ret_code:?}" -le 254 || return 254
+  test "${_dbof_show_unidentified_files:?}" = 'false' || printf '\nUnidentified files: %s\n' "${_dbof_ret_code:?}"
+  test "${_dbof_ret_code:?}" -le 125 || return 125
   return "${_dbof_ret_code:?}"
 }
 
@@ -857,7 +857,7 @@ while test "${#}" -gt 0; do
 
       printf '%s\n' 'Notes:'
       printf '%s\n' 'If a single parameter is given, then it returns the specific error code, otherwise if there are multiple files, it returns the number of files that were not recognized.'
-      printf '%s\n\n' 'If the number is greater than 254 then it returns 254.'
+      printf '%s\n\n' 'If the number is greater than 125 then it returns 125.'
 
       printf '%s\n' 'Examples:'
       printf '%s\n' "${script_name:?}"
