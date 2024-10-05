@@ -86,6 +86,27 @@ export ftp_proxy="${ftp_proxy-}"
   readonly DL_PROT='https://'
 }
 
+get_shell_exe()
+{
+  local _gse_shell_exe _gse_tmp_var
+
+  if _gse_shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${_gse_shell_exe?}"; then
+    # On Linux / Android / Windows (on Windows only some shells support it)
+    :
+  elif _gse_tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${_gse_tmp_var?}" && _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var:?}")"; then
+    # On Linux / macOS
+    _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var:?}" || realpath 2> /dev/null "${_gse_tmp_var:?}")" || _gse_shell_exe="${_gse_tmp_var:?}"
+  elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var?}"; then
+    if test ! -e "${_gse_tmp_var:?}" && test -e "${_gse_tmp_var:?}.exe"; then _gse_tmp_var="${_gse_tmp_var:?}.exe"; fi # Special fix for broken versions of Bash under Windows
+    _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var:?}" || realpath 2> /dev/null "${_gse_tmp_var:?}")" || _gse_shell_exe="${_gse_tmp_var:?}"
+    _gse_shell_exe="$(command 2> /dev/null -v "${_gse_shell_exe:?}")" || return 1
+  else
+    return 1
+  fi
+
+  printf '%s\n' "${_gse_shell_exe:?}"
+}
+
 detect_os_and_other_things()
 {
   if test -n "${PLATFORM-}" && test -n "${IS_BUSYBOX-}" && test -n "${PATHSEP-}"; then
@@ -140,10 +161,10 @@ detect_os_and_other_things()
 
   if test -n "${__SHELL_EXE-}" && test "${__SHELL_EXE:?}" != 'bash' && SHELL_EXE="${__SHELL_EXE:?}"; then
     :
-  elif SHELL_EXE="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${SHELL_EXE?}"; then
+  elif SHELL_EXE="$(get_shell_exe)" && test -n "${SHELL_EXE?}"; then
     :
   else
-    SHELL_EXE="${SHELL:?}"
+    ui_error 'Shell not found'
   fi
   unset __SHELL_EXE
 
@@ -160,6 +181,8 @@ detect_os_and_other_things()
       fi
     fi
   fi
+
+  if test "${SHELL_EXE:?}" = 'sh' || test "${SHELL_EXE:?}" = 'bash'; then ui_error 'Shell executable must have the full path'; fi
 
   readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_EXE SHELL_APPLET
 }
