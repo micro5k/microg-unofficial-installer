@@ -895,7 +895,7 @@ while test "${#}" -gt 0; do
 done
 
 if test "${execute_script:?}" = 'true'; then
-  if test -e '/usr/bin' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi # Avoid bugs on Bash under Windows
+  if test -e '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi # Avoid bugs on Bash under Windows
 
   if test "${#}" -eq 0; then
     main
