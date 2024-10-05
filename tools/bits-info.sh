@@ -13,7 +13,7 @@ export POSIXLY_CORRECT='y'
 $(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 
 readonly SCRIPT_NAME='Bits info'
-readonly SCRIPT_VERSION='0.4'
+readonly SCRIPT_VERSION='0.5'
 
 convert_max_signed_int_to_bit()
 {
@@ -434,7 +434,7 @@ detect_bitness_of_files()
   local _dbof_ret_code _dbof_file_list _dbof_filename _dbof_lcall _dbof_ifs 2> /dev/null
 
   # With a single file it returns the specific error code otherwise if there are multiple files it returns the number of files that were not recognized.
-  # If the number is greater than 255 then it returns 255.
+  # If the number is greater than 254 then it returns 254.
   _dbof_ret_code=0
 
   _dbof_lcall="${LC_ALL-}"
@@ -472,7 +472,7 @@ detect_bitness_of_files()
 
   if test -n "${_dbof_lcall?}"; then LC_ALL="${_dbof_lcall:?}"; else unset LC_ALL; fi
 
-  test "${_dbof_ret_code:?}" -lt 256 || return 255
+  test "${_dbof_ret_code:?}" -le 254 || return 254
   return "${_dbof_ret_code:?}"
 }
 
@@ -747,7 +747,7 @@ main()
       '64' | '32') cpu_bit="${cpu_bit:?}-bit" ;;
       *) cpu_bit='unknown' ;;
     esac
-  elif command 1> /dev/null 2>&1 -v 'powershell.exe' && cpu_bit="$(powershell.exe -c 'gwmi Win32_Processor | select -ExpandProperty DataWidth')"; then
+  elif command 1> /dev/null 2>&1 -v 'powershell.exe' && cpu_bit="$(powershell.exe -c 'gwmi Win32_Processor | select -ExpandProperty DataWidth')" && test -n "${cpu_bit?}"; then
     # On Windows (if PowerShell is installed - it is slow)
     case "${cpu_bit?}" in
       '64' | '32') cpu_bit="${cpu_bit:?}-bit" ;;
@@ -855,11 +855,20 @@ while test "${#}" -gt 0; do
 
       printf '\n%s\n\n' 'Coming soon...'
 
+      printf '%s\n' 'Notes:'
+      printf '%s\n' 'If a single parameter is given, then it returns the specific error code, otherwise if there are multiple files, it returns the number of files that were not recognized.'
+      printf '%s\n\n' 'If the number is greater than 254 then it returns 254.'
+
       printf '%s\n' 'Examples:'
       printf '%s\n' "${script_name:?}"
       printf '%s\n' "${script_name:?} -- './dir_to_test/file_to_test.ext'"
       printf '%s\n' "find './dir_to_test' -type f -print0 | xargs -0 -- '${script_name:?}' -- ''"
       printf '%s\n' "find './dir_to_test' -type f | ${script_name:?} -"
+      ;;
+    -i | --prefer-internal-applets)
+      ASH_STANDALONE='1' # This only works on some versions of BusyBox under Android
+      export ASH_STANDALONE
+      unset BB_OVERRIDE_APPLETS # This only works on BusyBox under Windows
       ;;
     --no-pause)
       NO_PAUSE='1'
