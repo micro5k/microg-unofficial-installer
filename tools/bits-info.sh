@@ -13,7 +13,10 @@ export POSIXLY_CORRECT='y'
 $(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 
 readonly SCRIPT_NAME='Bits info'
-readonly SCRIPT_VERSION='0.6'
+readonly SCRIPT_VERSION='0.7'
+
+readonly NL='
+'
 
 convert_max_signed_int_to_bit()
 {
@@ -157,7 +160,7 @@ extract_bytes()
 
 detect_bitness_of_single_file()
 {
-  local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_tmp_var 2> /dev/null
+  local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_i _dbf_tmp_var 2> /dev/null
 
   if test ! -f "${1?}" || ! _dbf_first_bytes="$(dump_hex "${1:?}" '0' '64')"; then # (0x00 - 0x40)
     printf '%s\n' 'failed'
@@ -345,7 +348,8 @@ detect_bitness_of_single_file()
         _dbf_has64='false'
         _dbf_has32='false'
         _dbf_pos='8'
-        for _ in $(seq "${_dbf_arch_count:?}"); do
+        _dbf_i="${_dbf_arch_count:?}"
+        while test "$((_dbf_i = _dbf_i - 1))" -ge 0; do
           _dbf_tmp_var="$(dump_hex "${1:?}" "${_dbf_pos:?}" '4')" || _dbf_tmp_var=''
           if test "${_dbf_do_bytes_swap:?}" = 'true'; then
             _dbf_tmp_var="$(switch_endianness_4 "${_dbf_tmp_var?}")" || _dbf_tmp_var=''
@@ -444,8 +448,7 @@ detect_bitness_of_files()
   if test "${1-}" = '-' && test "${#}" -eq 1; then
     _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
     _dbof_ifs="${IFS-}"
-    export IFS='
-'
+    IFS="${NL:?}"
 
     if test -n "${_dbof_file_list?}"; then
       for _dbof_filename in ${_dbof_file_list:?}; do
