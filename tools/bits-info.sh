@@ -899,5 +899,6 @@ if test "${execute_script:?}" = 'true'; then
   else
     detect_bitness_of_files "${@}"
   fi
+
+  pause_if_needed "${?}"
 fi
-pause_if_needed "${?}"
