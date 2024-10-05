@@ -46,7 +46,7 @@ convert_max_unsigned_int_to_bit()
 {
   case "${1?}" in
     '65535') printf '%s\n' "16-bit" ;;
-    '2147483647') printf '%s\n' "32-bit (with unsigned limit bug)" ;;         # Bugged unsigned 'printf' of awk (seen on some versions fo Bash)
+    '2147483647') printf '%s\n' "32-bit (with unsigned limit bug)" ;;         # Bugged unsigned 'printf' of awk (seen on some versions of Bash)
     '2147483648') printf '%s\n' "32-bit (with BusyBox unsigned limit bug)" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox under Windows / Android)
     '4294967295') printf '%s\n' "32-bit" ;;
     '18446744073709551615') printf '%s\n' "64-bit" ;;
