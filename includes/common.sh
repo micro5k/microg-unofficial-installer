@@ -151,6 +151,7 @@ detect_os_and_other_things()
     if test "${IS_BUSYBOX:?}" = 'true'; then
       PATHSEP=';'
       SHELL_APPLET="${0:-ash}"
+      test "${SHELL_CMD:?}" != 'sh' || SHELL_CMD="$(command -v busybox)"
     else
       if CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)"; then
         SHELL_CMD="$("${CYGPATH:?}" -m -a -l -- "${SHELL_CMD:?}")" || ui_error 'Unable to convert the path of the shell'
@@ -992,8 +993,9 @@ remove_duplicates_from_path_env()
 
 sume()
 {
-  local _set_env_vars=''
-  local _fix_pwd=''
+  local _set_env_vars _fix_pwd
+  _set_env_vars=''
+  _fix_pwd=''
 
   if test "${PLATFORM:?}" != 'win'; then
     ui_warning 'sume not supported!!!'
@@ -1002,7 +1004,7 @@ sume()
   ! is_root || return 0
 
   if test "${PLATFORM:?}" = 'win'; then
-    _set_env_vars="export HOME='${HOME-}'; export USER_HOME='${USER_HOME-}'; export MAIN_DIR='${MAIN_DIR:?}'; export PLATFORM='${PLATFORM:?}'; export IS_BUSYBOX='${IS_BUSYBOX:?}';"
+    _set_env_vars="export HOME='${HOME-}'; export USER_HOME='${USER_HOME-}'; export MAIN_DIR='${MAIN_DIR:?}';"
   fi
 
   if test "${IS_BUSYBOX:?}" = 'true'; then
@@ -1128,7 +1130,7 @@ detect_bb_and_id()
   BB_CMD=''
   ID_CMD=''
 
-  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true' && test -n "${SHELL_CMD?}" && test "${SHELL_CMD:?}" != '/bin/sh'; then
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true' && test -n "${SHELL_CMD?}"; then
     BB_CMD="${SHELL_CMD:?}"
   elif BB_CMD="$(command -v busybox)"; then
     :
