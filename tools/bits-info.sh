@@ -686,6 +686,14 @@ get_version()
   printf '%s\n' "${_version:?}"
 }
 
+get_max_unsigned_int_of_shell_printf()
+{
+  # Some shells do NOT allow this, so we run it in a subshell and hide the errors
+  (
+    printf '%u\n' '-1' || return "${?}"
+  ) 2> /dev/null
+}
+
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
@@ -794,7 +802,7 @@ main()
   done
   _shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max:?}")" || _shell_arithmetic_bit='unknown'
 
-  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "$(printf '%u\n' '-1' || :)")" || _shell_printf_bit='unknown'
+  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "$(get_max_unsigned_int_of_shell_printf || :)")" || _shell_printf_bit='unknown'
 
   _awk_printf_bit="$(convert_max_unsigned_int_to_bit "$(awk -- 'BEGIN { printf "%u\n", "-1" }' || :)")" || _awk_printf_bit='unknown'
 
