@@ -502,21 +502,21 @@ get_shell_exe()
 {
   local _gse_shell_exe _gse_tmp_var
 
-  if _gse_shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${_gse_shell_exe?}"; then
+  if _gse_shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${_gse_shell_exe}"; then
     # On Linux / Android / Windows (on Windows only some shells support it)
     :
-  elif _gse_tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${_gse_tmp_var?}" && _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var:?}")"; then
+  elif _gse_tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${_gse_tmp_var}" && _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var}")"; then
     # On Linux / macOS
-    _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var:?}" || realpath 2> /dev/null "${_gse_tmp_var:?}")" || _gse_shell_exe="${_gse_tmp_var:?}"
-  elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var?}"; then
-    if test ! -e "${_gse_tmp_var:?}" && test -e "${_gse_tmp_var:?}.exe"; then _gse_tmp_var="${_gse_tmp_var:?}.exe"; fi # Special fix for broken versions of Bash under Windows
-    _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var:?}" || realpath 2> /dev/null "${_gse_tmp_var:?}")" || _gse_shell_exe="${_gse_tmp_var:?}"
-    _gse_shell_exe="$(command 2> /dev/null -v "${_gse_shell_exe:?}")" || return 1
+    _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var}" || realpath 2> /dev/null "${_gse_tmp_var}")" || _gse_shell_exe="${_gse_tmp_var}"
+  elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var}"; then
+    if test ! -e "${_gse_tmp_var}" && test -e "${_gse_tmp_var}.exe"; then _gse_tmp_var="${_gse_tmp_var}.exe"; fi # Special fix for broken versions of Bash under Windows
+    _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var}" || realpath 2> /dev/null "${_gse_tmp_var}")" || _gse_shell_exe="${_gse_tmp_var}"
+    _gse_shell_exe="$(command 2> /dev/null -v "${_gse_shell_exe}")" || return 1
   else
     return 1
   fi
 
-  printf '%s\n' "${_gse_shell_exe:?}"
+  printf '%s\n' "${_gse_shell_exe}"
 }
 
 get_shell_info()
@@ -526,23 +526,23 @@ get_shell_info()
   _shell_use_ver_opt='false'
   _shell_version=''
 
-  if test -n "${1?}" && _shell_exe="${1?}"; then
+  if test -n "${1-}" && _shell_exe="${1}"; then
     :
   else
     printf '%s\n' 'not-found unknown'
     return 1
   fi
 
-  _shell_name="$(basename "${_shell_exe:?}")" || _shell_name="${_shell_exe:?}"
+  _shell_name="$(basename "${_shell_exe}")" || _shell_name="${_shell_exe}"
   _shell_name="${_shell_name%'.exe'}" # For shells under Windows
 
-  case "${_shell_exe:?}" in
+  case "${_shell_exe}" in
     *'/bosh/'*'/sh') _shell_name='bosh' ;;
     *'/oil.ovm') _shell_name='osh' ;;
     *) ;;
   esac
 
-  case "${_shell_name?}" in
+  case "${_shell_name}" in
     *'ksh'*) _shell_version="${KSH_VERSION-}" ;;           # For new ksh (it does NOT show the version in the help)
     *'zsh'* | 'yash' | 'osh') _shell_use_ver_opt='true' ;; # For zsh, yash and osh (they do NOT show the version in the help)
     *) ;;
@@ -551,42 +551,42 @@ get_shell_info()
   # Various shells doesn't support '--version' and in addition some bugged versions of BusyBox open
   # an interactive shell when the '--version' option is used, so use it only when really needed.
 
-  if test -n "${_shell_version?}"; then
+  if test -n "${_shell_version}"; then
     : # Already found, do nothing
   else
-    if test "${_shell_use_ver_opt:?}" = 'true' && _shell_version="$("${_shell_exe:?}" 2>&1 --version)" && test -n "${_shell_version?}"; then
+    if test "${_shell_use_ver_opt}" = 'true' && _shell_version="$("${_shell_exe}" 2>&1 --version)" && test -n "${_shell_version}"; then
       :
     else
       # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
-      _shell_version="$("${_shell_exe:?}" 2> /dev/null -Wversion || "${_shell_exe:?}" 2>&1 --help || :)"
+      _shell_version="$("${_shell_exe}" 2> /dev/null -Wversion || "${_shell_exe}" 2>&1 --help || :)"
     fi
 
-    case "${_shell_version?}" in
+    case "${_shell_version}" in
       '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
-        if test "${_shell_name?}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION:?}"; then
+        if test "${_shell_name}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION}"; then
           : # For dash (possibly supported in the future)
-        elif test "${_shell_name?}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version?}"; then
+        elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
           : # For dash
-        elif test "${_shell_name?}" = 'dash' && command 1> /dev/null 2>&1 -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version?}"; then
+        elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
           : # For dash (it is slow)
-        elif test "${_shell_name?}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION:?}"; then
+        elif test "${_shell_name}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION}"; then
           : # For posh (need test)
-        elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ' || :)" && test -n "${_shell_version?}"; then
+        elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ' || :)" && test -n "${_shell_version}"; then
           : # For ksh and bosh
-        elif test -n "${version-}" && _shell_version="${version:?}"; then
+        elif test -n "${version-}" && _shell_version="${version}"; then
           : # For tcsh and fish (NOTE: although this variable would show the version unfortunately the code cannot be run on tcsh and fish due to syntax difference)
         else
           _shell_version=''
         fi
         ;;
       *)
-        _shell_version="$(printf '%s\n' "${_shell_version:?}" | head -n 1)" || return "${?}"
+        _shell_version="$(printf '%s\n' "${_shell_version}" | head -n 1)" || return "${?}"
         ;;
     esac
   fi
 
   _shell_version="${_shell_version#[Vv]ersion }"
-  case "${_shell_version?}" in
+  case "${_shell_version}" in
     'BusyBox '*)
       _shell_name='busybox'
       _shell_version="${_shell_version#BusyBox}"
@@ -595,7 +595,7 @@ get_shell_info()
       _shell_name='bash' # Sometimes it isn't just a symlink but it is really called "sh" so we have to correct this
       ;;
     *)
-      test -z "${_shell_name?}" || _shell_version="${_shell_version#"${_shell_name:?}"}"
+      test -z "${_shell_name}" || _shell_version="${_shell_version#"${_shell_name}"}"
       ;;
   esac
   _shell_version="${_shell_version# }"
