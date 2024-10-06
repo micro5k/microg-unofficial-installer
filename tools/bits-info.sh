@@ -507,11 +507,12 @@ get_shell_exe()
     :
   elif _gse_tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${_gse_tmp_var}" && _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var}")"; then
     # On Linux / macOS
+    test "${_gse_tmp_var}" != 'osh' || _gse_tmp_var="$(which 2> /dev/null "${_gse_tmp_var}")" || return 3 # We may not get the full path with "command -v" on osh
     _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var}" || realpath 2> /dev/null "${_gse_tmp_var}")" || _gse_shell_exe="${_gse_tmp_var}"
   elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var}"; then
     if test ! -e "${_gse_tmp_var}" && test -e "${_gse_tmp_var}.exe"; then _gse_tmp_var="${_gse_tmp_var}.exe"; fi # Special fix for broken versions of Bash under Windows
     _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var}" || realpath 2> /dev/null "${_gse_tmp_var}")" || _gse_shell_exe="${_gse_tmp_var}"
-    _gse_shell_exe="$(command 2> /dev/null -v "${_gse_shell_exe}")" || return 1
+    _gse_shell_exe="$(command 2> /dev/null -v "${_gse_shell_exe}")" || return 2
   else
     return 1
   fi
@@ -539,7 +540,7 @@ get_shell_info()
 
   case "${_shell_exe}" in
     *'/bosh/'*'/sh') _shell_name='bosh' ;;
-    *'/oil.ovm') _shell_name='osh' ;;
+    *'/oils-for-unix' | *'/oil.ovm') _shell_name='osh' ;;
     *) ;;
   esac
 
