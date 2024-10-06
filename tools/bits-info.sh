@@ -554,15 +554,16 @@ get_shell_info()
   if test -n "${_shell_version}"; then
     : # Already found, do nothing
   else
-    if test "${_shell_use_ver_opt}" = 'true' && _shell_version="$("${_shell_exe}" 2>&1 --version)" && test -n "${_shell_version}"; then
+    if test "${_shell_use_ver_opt}" = 'true' && _shell_version="$("${_shell_exe}" 2> /dev/null --version)" && test -n "${_shell_version}"; then
       :
     else
       # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
       _shell_version="$("${_shell_exe}" 2> /dev/null -Wversion || "${_shell_exe}" 2>&1 --help || :)"
     fi
+    _shell_version="$(printf '%s\n' "${_shell_version}" | head -n 1)" || return "${?}"
 
     case "${_shell_version}" in
-      '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
+      '' | *'Usage'* | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
         if test "${_shell_name}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION}"; then
           : # For dash (possibly supported in the future)
         elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
@@ -579,9 +580,7 @@ get_shell_info()
           _shell_version=''
         fi
         ;;
-      *)
-        _shell_version="$(printf '%s\n' "${_shell_version}" | head -n 1)" || return "${?}"
-        ;;
+      *) ;;
     esac
   fi
 
