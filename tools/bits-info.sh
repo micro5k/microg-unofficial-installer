@@ -545,47 +545,43 @@ get_shell_info()
 
   case "${_shell_name}" in
     *'ksh'*) _shell_is_ksh='true' ;;
-    'zsh' | 'yash' | 'osh' | 'tcsh' | 'fish') _shell_use_ver_opt='true' ;;
+    'zsh' | 'bosh' | 'osh' | 'yash' | 'tcsh' | 'fish') _shell_use_ver_opt='true' ;;
     *) ;;
   esac
 
   # Various shells doesn't support '--version' and in addition some bugged versions of BusyBox open
   # an interactive shell when the '--version' option is used, so use it only when really needed.
 
-  if test -n "${_shell_version}"; then
-    : # Already found, do nothing
+  if test "${_shell_use_ver_opt}" = 'true' && _shell_version="$("${_shell_exe}" 2>&1 --version)" && test -n "${_shell_version}"; then
+    :
   else
-    if test "${_shell_use_ver_opt}" = 'true' && _shell_version="$("${_shell_exe}" 2>&1 --version)" && test -n "${_shell_version}"; then
-      :
-    else
-      # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
-      _shell_version="$("${_shell_exe}" 2> /dev/null -Wversion || "${_shell_exe}" 2>&1 --help || :)"
-    fi
-    _shell_version="$(printf '%s\n' "${_shell_version}" | head -n 1)" || return "${?}"
-
-    case "${_shell_version}" in
-      '' | *'Usage'* | *'invalid option'* | *'unrecognized option'* | *[Uu]'nknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
-        if test "${_shell_is_ksh}" = 'true' && test -n "${KSH_VERSION-}" && _shell_version="${KSH_VERSION}"; then
-          : # Fallback for ksh
-        elif test "${_shell_name}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION}"; then
-          : # For dash (possibly supported in the future)
-        elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
-          : # For dash
-        elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
-          : # For dash (it is slow)
-        elif test "${_shell_name}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION}"; then
-          : # For posh (need test)
-        elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ' || :)" && test -n "${_shell_version}"; then
-          : # Fallback for old ksh and bosh
-        elif test -n "${version-}" && _shell_version="${version}"; then
-          : # Fallback for tcsh and fish (NOTE: although this variable would show the version unfortunately the code cannot be run on tcsh and fish due to syntax difference)
-        else
-          _shell_version=''
-        fi
-        ;;
-      *) ;;
-    esac
+    # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
+    _shell_version="$("${_shell_exe}" 2> /dev/null -Wversion || "${_shell_exe}" 2>&1 --help || :)"
   fi
+  _shell_version="$(printf '%s\n' "${_shell_version}" | head -n 1)" || return "${?}"
+
+  case "${_shell_version}" in
+    '' | *'Usage'* | *'invalid option'* | *'unrecognized option'* | *[Uu]'nknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
+      if test "${_shell_is_ksh}" = 'true' && test -n "${KSH_VERSION-}" && _shell_version="${KSH_VERSION}"; then
+        : # Fallback for ksh
+      elif test "${_shell_name}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION}"; then
+        : # For dash (possibly supported in the future)
+      elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
+        : # For dash
+      elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
+        : # For dash (it is slow)
+      elif test "${_shell_name}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION}"; then
+        : # For posh (need test)
+      elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ' || :)" && test -n "${_shell_version}"; then
+        : # Fallback for old ksh and bosh
+      elif test -n "${version-}" && _shell_version="${version}"; then
+        : # Fallback for tcsh and fish (NOTE: although this variable would show the version unfortunately the code cannot be run on tcsh and fish due to syntax difference)
+      else
+        _shell_version=''
+      fi
+      ;;
+    *) ;;
+  esac
 
   _shell_version="${_shell_version#[Vv]ersion }"
   case "${_shell_version}" in
