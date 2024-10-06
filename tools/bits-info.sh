@@ -13,7 +13,7 @@ export POSIXLY_CORRECT='y'
 $(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 
 readonly SCRIPT_NAME='Bits info'
-readonly SCRIPT_VERSION='0.7'
+readonly SCRIPT_VERSION='0.8'
 
 readonly NL='
 '
@@ -435,46 +435,56 @@ detect_bitness_of_single_file()
 
 detect_bitness_of_files()
 {
-  local _dbof_ret_code _dbof_show_unidentified_files _dbof_file_list _dbof_filename _dbof_lcall _dbof_ifs 2> /dev/null
+  local _dbof_ret_code _dbof_file_list _dbof_filename _dbof_lcall 2> /dev/null
 
   # With a single file it returns the specific error code otherwise if there are multiple files it returns the number of files that were not recognized.
   # If the number is greater than 125 then it returns 125.
   _dbof_ret_code=0
-  _dbof_show_unidentified_files='true'
-
-  _dbof_lcall="${LC_ALL-}"
-  export LC_ALL='C' # Since we only use bytes and not characters, setting LC_ALL=C will make the code faster
 
   if test "${1-}" = '-' && test "${#}" -eq 1; then
-    _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
-    _dbof_ifs="${IFS-}"
-    IFS="${NL:?}"
 
-    if test -n "${_dbof_file_list?}"; then
-      for _dbof_filename in ${_dbof_file_list:?}; do
-        printf '%s: ' "${_dbof_filename}"
-        detect_bitness_of_single_file "${_dbof_filename}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
-      done
+    (
+      _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
+
+      export LC_ALL='C' # Since we only use bytes and not characters, setting LC_ALL=C will make the code faster
+      IFS="${NL:?}"
+
+      if test -n "${_dbof_file_list?}"; then
+        for _dbof_filename in ${_dbof_file_list:?}; do
+          printf '%s: ' "${_dbof_filename}"
+          detect_bitness_of_single_file "${_dbof_filename}" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
+        done
+      else
+        _dbof_ret_code=1
+      fi
+      printf '\nUnidentified files: %s\n' "${_dbof_ret_code:?}"
+
+      test "${_dbof_ret_code:?}" -le 125 || return 125
+      return "${_dbof_ret_code:?}"
+    ) ||
+      _dbof_ret_code="${?}"
+
+  else
+
+    _dbof_lcall="${LC_ALL-}"
+    export LC_ALL='C' # Since we only use bytes and not characters, setting LC_ALL=C will make the code faster
+
+    if test "${#}" -le 1; then
+      detect_bitness_of_single_file "${1-}" || _dbof_ret_code="${?}"
     else
-      _dbof_ret_code=1
+      test -n "${1?}" || shift
+      while test "${#}" -gt 0; do
+        printf '%s: ' "$1"
+        detect_bitness_of_single_file "$1" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
+        shift
+      done
+      printf '\nUnidentified files: %s\n' "${_dbof_ret_code:?}"
     fi
 
-    if test -n "${_dbof_ifs?}"; then IFS="${_dbof_ifs:?}"; else unset IFS; fi
-  elif test "${#}" -le 1; then
-    _dbof_show_unidentified_files='false'
-    detect_bitness_of_single_file "${1-}" || _dbof_ret_code="${?}"
-  else
-    test -n "${1?}" || shift
-    while test "${#}" -gt 0; do
-      printf '%s: ' "$1"
-      detect_bitness_of_single_file "$1" || _dbof_ret_code="$((${_dbof_ret_code:?} + 1))"
-      shift
-    done
+    if test -n "${_dbof_lcall?}"; then LC_ALL="${_dbof_lcall:?}"; else unset LC_ALL; fi
+
   fi
 
-  if test -n "${_dbof_lcall?}"; then LC_ALL="${_dbof_lcall:?}"; else unset LC_ALL; fi
-
-  test "${_dbof_show_unidentified_files:?}" = 'false' || printf '\nUnidentified files: %s\n' "${_dbof_ret_code:?}"
   test "${_dbof_ret_code:?}" -le 125 || return 125
   return "${_dbof_ret_code:?}"
 }
@@ -515,6 +525,7 @@ get_shell_info()
   fi
 
   _shell_name="$(basename "${_shell_exe:?}")" || _shell_name="${_shell_exe:?}"
+  _shell_name="${_shell_name%'.exe'}" # For shells under Windows
 
   case "${_shell_exe:?}" in
     *'/bosh/'*) _shell_name='bosh' ;;
@@ -524,12 +535,11 @@ get_shell_info()
   case "${_shell_name?}" in
     *'ksh'*) _shell_version="${KSH_VERSION-}" ;;     # For new ksh (it does NOT show the version in the help)
     *'zsh'* | *'yash'*) _shell_use_ver_opt='true' ;; # For zsh and yash (they do NOT show the version in the help)
-    'bash.exe') _shell_name='bash' ;;                # For old Bash under Windows
     *) ;;
   esac
 
-  # Many shells doesn't support '--version' and in addition some bugged versions of BusyBox open
-  # an interactive shell when the '--version' option is used, so use it only when really needed
+  # Various shells doesn't support '--version' and in addition some bugged versions of BusyBox open
+  # an interactive shell when the '--version' option is used, so use it only when really needed.
 
   if test -n "${_shell_version?}"; then
     : # Already found, do nothing
