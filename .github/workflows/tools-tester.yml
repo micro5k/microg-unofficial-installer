@@ -23,7 +23,7 @@ jobs:
           - ubuntu-latest
           - windows-latest
           - macos-latest
-          - macos-12
+          - macos-13
     name: "Tools test (${{ matrix.os }})"
     runs-on: "${{ matrix.os }}"
 
@@ -36,7 +36,7 @@ jobs:
           # Testing script...
           printf '%s\n\n' 'bits-info.sh:'
           '${{ github.workspace }}/tools/bits-info.sh'
-      - name: "Test script on Oils (only under macOS)"
+      - name: "Test script on Oils (only under macOS-latest)"
         if: "${{ matrix.os == 'macos-latest' }}"
         shell: bash
         run: |
