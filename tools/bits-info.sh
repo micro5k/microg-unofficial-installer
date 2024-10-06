@@ -537,13 +537,14 @@ get_shell_info()
   _shell_name="${_shell_name%'.exe'}" # For shells under Windows
 
   case "${_shell_exe:?}" in
-    *'/bosh/'*) _shell_name='bosh' ;;
+    *'/bosh/'*'/sh') _shell_name='bosh' ;;
+    *'/oil.ovm') _shell_name='osh' ;;
     *) ;;
   esac
 
   case "${_shell_name?}" in
-    *'ksh'*) _shell_version="${KSH_VERSION-}" ;;     # For new ksh (it does NOT show the version in the help)
-    *'zsh'* | *'yash'*) _shell_use_ver_opt='true' ;; # For zsh and yash (they do NOT show the version in the help)
+    *'ksh'*) _shell_version="${KSH_VERSION-}" ;;           # For new ksh (it does NOT show the version in the help)
+    *'zsh'* | 'yash' | 'osh') _shell_use_ver_opt='true' ;; # For zsh, yash and osh (they do NOT show the version in the help)
     *) ;;
   esac
 
