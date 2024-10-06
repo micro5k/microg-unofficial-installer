@@ -675,7 +675,7 @@ pause_if_needed()
     IFS='' read 1> /dev/null 2>&1 -r -s -n 1 _ || IFS='' read 1>&2 -r _ || :
     printf 1>&2 '\n' || :
   fi
-  exit "${1:?}"
+  return "${1:?}"
 }
 
 main()
