@@ -451,8 +451,10 @@ detect_bitness_of_files()
     (
       _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
 
-      export LC_ALL='C' # Since we only use bytes and not characters, setting LC_ALL=C will make the code faster
       IFS="${NL:?}"
+      # shellcheck disable=SC2030 # Intended: Modification of LC_ALL is local (to subshell)
+      LC_ALL='C' # We only use bytes and not characters
+      export LC_ALL
 
       if test -n "${_dbof_file_list?}"; then
         for _dbof_filename in ${_dbof_file_list:?}; do
@@ -471,8 +473,10 @@ detect_bitness_of_files()
 
   else
 
+    # shellcheck disable=SC2031
     _dbof_lcall="${LC_ALL-}"
-    export LC_ALL='C' # Since we only use bytes and not characters, setting LC_ALL=C will make the code faster
+    LC_ALL='C' # We only use bytes and not characters
+    export LC_ALL
 
     if test "${#}" -le 1; then
       detect_bitness_of_single_file "${1-}" || _dbof_ret_code="${?}"
