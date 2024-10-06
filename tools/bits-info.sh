@@ -521,10 +521,11 @@ get_shell_exe()
 
 get_shell_info()
 {
-  local _shell_use_ver_opt _shell_exe _shell_name _shell_version _tmp_var
+  local _shell_use_ver_opt _shell_exe _shell_name _shell_version _shell_is_ksh _tmp_var
 
   _shell_use_ver_opt='false'
   _shell_version=''
+  _shell_is_ksh='false'
 
   if test -n "${1-}" && _shell_exe="${1}"; then
     :
@@ -543,8 +544,8 @@ get_shell_info()
   esac
 
   case "${_shell_name}" in
-    *'ksh'*) _shell_version="${KSH_VERSION-}" ;;           # For new ksh (it does NOT show the version in the help)
-    *'zsh'* | 'yash' | 'osh') _shell_use_ver_opt='true' ;; # For zsh, yash and osh (they do NOT show the version in the help)
+    *'ksh'*) _shell_is_ksh='true' ;;
+    'zsh' | 'yash' | 'osh' | 'tcsh' | 'fish') _shell_use_ver_opt='true' ;;
     *) ;;
   esac
 
@@ -554,7 +555,7 @@ get_shell_info()
   if test -n "${_shell_version}"; then
     : # Already found, do nothing
   else
-    if test "${_shell_use_ver_opt}" = 'true' && _shell_version="$("${_shell_exe}" 2> /dev/null --version)" && test -n "${_shell_version}"; then
+    if test "${_shell_use_ver_opt}" = 'true' && _shell_version="$("${_shell_exe}" 2>&1 --version)" && test -n "${_shell_version}"; then
       :
     else
       # NOTE: "sh --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
@@ -563,8 +564,10 @@ get_shell_info()
     _shell_version="$(printf '%s\n' "${_shell_version}" | head -n 1)" || return "${?}"
 
     case "${_shell_version}" in
-      '' | *'Usage'* | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
-        if test "${_shell_name}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION}"; then
+      '' | *'Usage'* | *'invalid option'* | *'unrecognized option'* | *[Uu]'nknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
+        if test "${_shell_is_ksh}" = 'true' && test -n "${KSH_VERSION-}" && _shell_version="${KSH_VERSION}"; then
+          : # Fallback for ksh
+        elif test "${_shell_name}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION}"; then
           : # For dash (possibly supported in the future)
         elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
           : # For dash
@@ -573,9 +576,9 @@ get_shell_info()
         elif test "${_shell_name}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION}"; then
           : # For posh (need test)
         elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ' || :)" && test -n "${_shell_version}"; then
-          : # For ksh and bosh
+          : # Fallback for old ksh and bosh
         elif test -n "${version-}" && _shell_version="${version}"; then
-          : # For tcsh and fish (NOTE: although this variable would show the version unfortunately the code cannot be run on tcsh and fish due to syntax difference)
+          : # Fallback for tcsh and fish (NOTE: although this variable would show the version unfortunately the code cannot be run on tcsh and fish due to syntax difference)
         else
           _shell_version=''
         fi
