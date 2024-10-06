@@ -30,9 +30,20 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v4
-      - name: "Test script"
+      - name: "Test script on Bash"
         shell: bash
         run: |
           # Testing script...
           printf '%s\n\n' 'bits-info.sh:'
           '${{ github.workspace }}/tools/bits-info.sh'
+      - name: "Test script on Oils (only under macOS)"
+        if: "${{ matrix.os == 'macos-latest' }}"
+        shell: bash
+        run: |
+          # Testing script...
+          brew install --quiet oils-for-unix
+          printf '\n'
+          osh --version | head -n 1
+          printf '\n'
+          printf '%s\n\n' 'bits-info.sh:'
+          osh '${{ github.workspace }}/tools/bits-info.sh'
