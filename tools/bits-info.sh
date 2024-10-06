@@ -459,7 +459,7 @@ detect_bitness_of_files()
       if test -n "${_dbof_file_list}"; then
         for _dbof_filename in ${_dbof_file_list}; do
           printf '%s: ' "${_dbof_filename}"
-          detect_bitness_of_single_file "${_dbof_filename}" || _dbof_ret_code="$((${_dbof_ret_code} + 1))"
+          detect_bitness_of_single_file "${_dbof_filename}" || _dbof_ret_code="$((_dbof_ret_code + 1))"
         done
       else
         _dbof_ret_code=1
@@ -484,7 +484,7 @@ detect_bitness_of_files()
       test -n "${1}" || shift
       while test "${#}" -gt 0; do
         printf '%s: ' "$1"
-        detect_bitness_of_single_file "$1" || _dbof_ret_code="$((${_dbof_ret_code} + 1))"
+        detect_bitness_of_single_file "$1" || _dbof_ret_code="$((_dbof_ret_code + 1))"
         shift
       done
       printf '\nUnidentified files: %s\n' "${_dbof_ret_code}"
@@ -825,7 +825,7 @@ main()
   for _n in ${_limits_date}; do
     if ! tmp_var="$(TZ='CET-1' date 2> /dev/null -d "@${_n}" -- '+%s')"; then break; fi
     if test "${tmp_var}" != "${_n}"; then
-      if test "${tmp_var}" = "$((${_n} - 14400))"; then
+      if test "${tmp_var}" = "$((_n - 14400))"; then
         date_timezone_bug='true'
       else
         break
@@ -884,9 +884,8 @@ while test "${#}" -gt 0; do
 
       printf '\n%s\n\n' 'Coming soon...'
 
-      test -n "${0}" && script_filename="$(basename "${0}")" || {
-        exit 1
-      }
+      if test -z "${0}" || ! script_filename="$(basename "${0}")"; then exit 1; fi
+
       printf '%s\n' 'Notes:'
       printf '%s\n' 'If a single parameter is given, then it returns the specific error code, otherwise if there are multiple files, it returns the number of files that were not recognized.'
       printf '%s\n\n' 'If the number is greater than 125 then it returns 125.'
