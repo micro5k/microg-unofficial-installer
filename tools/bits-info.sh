@@ -13,10 +13,15 @@ export POSIXLY_CORRECT='y'
 $(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 
 readonly SCRIPT_NAME='Bits info'
-readonly SCRIPT_VERSION='0.8'
+readonly SCRIPT_VERSION='0.9'
 
 readonly NL='
 '
+
+command 1> /dev/null 2>&1 -v 'local' || {
+  \eval ' \local() { :; } ' || : # Create a dummy "local" function for ksh shell
+  alias 'local'='typeset'        # On some versions of ksh this really works, but leave the function as dummy fallback
+}
 
 convert_max_signed_int_to_bit()
 {
@@ -61,7 +66,7 @@ convert_max_unsigned_int_to_bit()
 
 permissively_comparison()
 {
-  local _comp_list _comp_num 2> /dev/null
+  local _comp_list _comp_num
 
   case "${2?}" in
     '') return 1 ;;
@@ -160,7 +165,7 @@ extract_bytes()
 
 detect_bitness_of_single_file()
 {
-  local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_i _dbf_tmp_var 2> /dev/null
+  local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_i _dbf_tmp_var
 
   if test ! -f "${1?}" || ! _dbf_first_bytes="$(dump_hex "${1:?}" '0' '64')"; then # (0x00 - 0x40)
     printf '%s\n' 'failed'
@@ -295,7 +300,7 @@ detect_bitness_of_single_file()
     return 0
   fi
 
-  local _dbf_is_mach_o _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32 2> /dev/null
+  local _dbf_is_mach_o _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32
 
   if _header="$(extract_bytes "${_dbf_first_bytes?}" '0' '4')"; then
     _dbf_is_mach_o='true'
@@ -435,7 +440,7 @@ detect_bitness_of_single_file()
 
 detect_bitness_of_files()
 {
-  local _dbof_ret_code _dbof_file_list _dbof_filename _dbof_lcall 2> /dev/null
+  local _dbof_ret_code _dbof_file_list _dbof_filename _dbof_lcall
 
   # With a single file it returns the specific error code otherwise if there are multiple files it returns the number of files that were not recognized.
   # If the number is greater than 125 then it returns 125.
@@ -491,7 +496,7 @@ detect_bitness_of_files()
 
 get_shell_exe()
 {
-  local _gse_shell_exe _gse_tmp_var 2> /dev/null
+  local _gse_shell_exe _gse_tmp_var
 
   if _gse_shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${_gse_shell_exe?}"; then
     # On Linux / Android / Windows (on Windows only some shells support it)
@@ -512,7 +517,7 @@ get_shell_exe()
 
 get_shell_info()
 {
-  local _shell_use_ver_opt _shell_exe _shell_name _shell_version _tmp_var 2> /dev/null
+  local _shell_use_ver_opt _shell_exe _shell_name _shell_version _tmp_var
 
   _shell_use_ver_opt='false'
   _shell_version=''
@@ -595,7 +600,7 @@ get_shell_info()
 
 get_applet_name()
 {
-  local _shell_cmdline _current_applet 2> /dev/null
+  local _shell_cmdline _current_applet
 
   case "${1?}" in
     *'busybox'*)
@@ -620,7 +625,7 @@ get_applet_name()
 
 get_os_info()
 {
-  local _os_name _os_version 2> /dev/null
+  local _os_name _os_version
 
   # Bugged versions of uname may return errors on STDOUT when used with unsupported options
   _os_name="$(uname 2> /dev/null -o)" || _os_name="$(uname 2> /dev/null)" || _os_name=''
@@ -654,7 +659,7 @@ get_os_info()
 
 get_version()
 {
-  local _version 2> /dev/null
+  local _version
 
   if ! command 1> /dev/null 2>&1 -v "${1:?}"; then
     printf '%s\n' 'missing'
@@ -690,8 +695,8 @@ pause_if_needed()
 
 main()
 {
-  local date_timezone_bug _limits _limits_date _limits_u _max _n tmp_var 2> /dev/null
-  local shell_exe shell_info shell_name shell_applet shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit 2> /dev/null
+  local date_timezone_bug _limits _limits_date _limits_u _max _n tmp_var
+  local shell_exe shell_info shell_name shell_applet shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
 
   date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
