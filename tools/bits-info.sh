@@ -140,17 +140,27 @@ hex_bytes_to_int()
 
   if test "${3-}" = 'true'; then
     if test "${2:?}" -eq 2; then
-      _hbti_num="$(switch_endianness_2 "$1")" || return "${?}"
+      _hbti_num="$(switch_endianness_2 "${1}")" || return "${?}"
     elif test "${2:?}" -eq 4; then
-      _hbti_num="$(switch_endianness_4 "$1")" || return "${?}"
+      _hbti_num="$(switch_endianness_4 "${1}")" || return "${?}"
     else
       return 9
     fi
   else
-    _hbti_num="$1"
+    _hbti_num="${1}"
   fi
 
   printf '%u' "0x${_hbti_num:?}"
+}
+# Params:
+#  $1 Input bytes (hex)
+#  $2 Bytes to skip (int)
+#  $3 Length in bytes (int)
+#  $4 Bytes to compare (hex)
+compare_hex_bytes()
+{
+  test "${3}" -gt 0 || return 1
+  test "$(printf '%s' "${1}" | cut -b "$((${2} * 2 + 1))-$(((${2} + ${3}) * 2))" || :)" = "${4}"
 }
 
 # Params:
@@ -160,7 +170,7 @@ hex_bytes_to_int()
 extract_bytes()
 {
   test "${3}" -gt 0 || return 1
-  printf '%s\n' "${1}" | cut -b "$((${2} * 2 + 1))-$(((${2} + ${3}) * 2))"
+  printf '%s' "${1}" | cut -b "$((${2} * 2 + 1))-$(((${2} + ${3}) * 2))"
 }
 
 detect_bitness_of_single_file()
@@ -181,7 +191,7 @@ detect_bitness_of_single_file()
     _dbf_pos=''
 
     # APE - Actually Portable Executables - Start with: MZ (0x4D 0x5A) + qFpD (0x71 0x46 0x70 0x44)
-    if test "$(extract_bytes "${_dbf_first_bytes}" '2' '4' || :)" = '71467044'; then
+    if compare_hex_bytes "${_dbf_first_bytes}" '2' '4' '71467044'; then
       _dbf_exe_type='APE '
     else
       _dbf_exe_type=''
@@ -197,8 +207,8 @@ detect_bitness_of_single_file()
       :
     else _header=''; fi
 
-    if test -n "${_header?}"; then
-      if printf '%s\n' "${_header:?}" | grep -m 1 -q -e '^50450000'; then
+    if test -n "${_header}"; then
+      if compare_hex_bytes "${_header}" '0' '4' '50450000'; then
         # PE header => PE (0x50 0x45) + 0x00 + 0x00 + Machine field
         # More info: https://www.aldeid.com/wiki/PE-Portable-executable
         # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
@@ -240,19 +250,18 @@ detect_bitness_of_single_file()
         esac
         return 0
       else
-        _header="$(extract_bytes "${_header:?}" '0' '2' || :)"
-        case "${_header?}" in
-          '4e45')
+        case "${_header}" in
+          '4e45'*)
             # NE (New Executable) header => NE (0x4E 0x45)
             printf '%s\n' '16-bit NE'
             return 0
             ;;
-          '4c45')
+          '4c45'*)
             # LE (Linear Executable) header => LE (0x4C 0x45)
             printf '%s\n' '16/32-bit LE'
             return 0
             ;;
-          '4c58')
+          '4c58'*)
             # LX (Linear Executable) header => LX (0x4C 0x58)
             printf '%s\n' '32-bit LX'
             return 0
@@ -261,19 +270,19 @@ detect_bitness_of_single_file()
         esac
       fi
 
-      #printf '\n' && hexdump -v -C -s "${_dbf_pos:?}" -n '6' -- "${1:?}" # Debug
+      #printf '\n' && hexdump -v -C -s "${_dbf_pos}" -n '6' -- "${1}" # Debug
     fi
 
     # The absolute offset to the relocation table is stored at: 0x18 (decimal: 24)
     # The absolute offset to the relocation table of plain MZ files (so not extended ones) must be: > 0x1B (decimal: 27) and < 0x40 (decimal: 64)
     # NOTE: This does NOT apply to PE files as this field is not used on them
-    if _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes}" '24' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")"; then
+    if _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes}" '24' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap}")"; then
       if
         {
           test "${_dbf_tmp_var:?}" -gt 27 && test "${_dbf_tmp_var:?}" -lt 64
         } ||
           {
-            test "${_dbf_tmp_var:?}" = 0 && test "$(extract_bytes "${_dbf_first_bytes}" '6' '2' || :)" = '0000' # Empty relocation table
+            test "${_dbf_tmp_var:?}" = 0 && compare_hex_bytes "${_dbf_first_bytes}" '6' '2' '0000' # Empty relocation table
           }
       then
         printf '%s\n' '16-bit MZ'
@@ -285,7 +294,7 @@ detect_bitness_of_single_file()
     return 5
   fi
 
-  if test "$(extract_bytes "${_dbf_first_bytes}" '0' '4' || :)" = '7f454c46'; then
+  if compare_hex_bytes "${_dbf_first_bytes}" '0' '4' '7f454c46'; then
     # ELF - Executable binaries for Linux / Android - Start with: 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
 
     _header="$(extract_bytes "${_dbf_first_bytes}" '4' '1')" || _header=''
