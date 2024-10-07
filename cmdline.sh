@@ -19,7 +19,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       if test -e '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi
 
       if test -z "${MAIN_DIR-}"; then
-        # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
+        # shellcheck disable=SC3028,SC2128 # Intended: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
         if test -n "${BASH_SOURCE-}" && MAIN_DIR="$(dirname "${BASH_SOURCE}")" && MAIN_DIR="$(realpath "${MAIN_DIR}")"; then
           export MAIN_DIR
         else
