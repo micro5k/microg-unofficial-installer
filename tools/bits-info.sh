@@ -308,8 +308,9 @@ detect_bitness_of_single_file()
 
   local _dbf_is_mach_o _dbf_mach_type _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32
 
+  _dbf_is_mach_o='true'
+
   if _header="$(extract_bytes "${_dbf_first_bytes}" '0' '4')"; then
-    _dbf_is_mach_o='true'
     _dbf_mach_type=''
     _dbf_is_fat_bin='false'
     _dbf_bytes_swap='false'
@@ -349,73 +350,74 @@ detect_bitness_of_single_file()
         #_dbf_is_fat_bin='true'
         _dbf_bytes_swap='true'
         ;;
-      *)
-        _dbf_is_mach_o='false'
-        ;;
+
+      *) _dbf_is_mach_o='false' ;;
     esac
+  fi
 
-    if test "${_dbf_is_mach_o:?}" = 'true'; then
+  if test "${_dbf_is_mach_o}" = 'true'; then
+    # Mach-O
 
-      if test "${_dbf_mach_type}" = 'base'; then
-        # Base Mach-O file
+    if test "${_dbf_mach_type}" = 'base'; then
+      # Base Mach-O
 
-        if _dbf_tmp="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_tmp="$(switch_endianness_4 "${_dbf_tmp}")"; then
-          case "${_dbf_tmp}" in
-            '01'*) printf '%s\n' '64-bit Mach-O' ;;
-            '00'*) printf '%s\n' '32-bit Mach-O' ;;
-            *)
-              printf '%s\n' 'unknown-base-mach-file'
-              return 6
-              ;;
-          esac
-
-          return 0
-        fi
-      elif
-        test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" &&
-          _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_bytes_swap:?}")" &&
-          test "${_dbf_arch_count:?}" -gt 0 && test "${_dbf_arch_count:?}" -lt 256
-      then
-        _dbf_has64='false'
-        _dbf_has32='false'
-        _dbf_pos='8'
-        _dbf_i="${_dbf_arch_count:?}"
-        while test "$((_dbf_i = _dbf_i - 1))" -ge 0; do
-          _dbf_tmp="$(dump_hex "${1:?}" "${_dbf_pos:?}" '4')" || _dbf_tmp=''
-          if test "${_dbf_bytes_swap:?}" = 'true'; then
-            _dbf_tmp="$(switch_endianness_4 "${_dbf_tmp?}")" || _dbf_tmp=''
-          fi
-          _dbf_pos="$((_dbf_pos + 20))" || _dbf_tmp='' # Should be pos + 32 on FAT_MAGIC_64 (need test)
-
-          case "${_dbf_tmp?}" in
-            '01'*) _dbf_has64='true' ;;
-            '00'*) _dbf_has32='true' ;;
-            *)
-              _dbf_has64='false'
-              _dbf_has32='false'
-              break
-              ;;
-          esac
-        done
-
-        if test "${_dbf_has64:?}" = 'true' && test "${_dbf_has32:?}" = 'true'; then
-          printf '%s\n' '32/64-bit FAT Mach-O'
-        elif test "${_dbf_has64:?}" = 'true' && test "${_dbf_has32:?}" != 'true'; then
-          printf '%s\n' '64-bit FAT Mach-O'
-        elif test "${_dbf_has64:?}" != 'true' && test "${_dbf_has32:?}" = 'true'; then
-          printf '%s\n' '32-bit FAT Mach-O'
-        else
-          printf '%s\n' 'unknown-fat-mach-file'
-          return 6
-        fi
+      if _dbf_tmp="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_tmp="$(switch_endianness_4 "${_dbf_tmp}")"; then
+        case "${_dbf_tmp}" in
+          '01'*) printf '%s\n' '64-bit Mach-O' ;;
+          '00'*) printf '%s\n' '32-bit Mach-O' ;;
+          *)
+            printf '%s\n' 'unknown-base-mach-file'
+            return 6
+            ;;
+        esac
 
         return 0
       fi
+    elif
+      test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" &&
+        _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_bytes_swap:?}")" &&
+        test "${_dbf_arch_count:?}" -gt 0 && test "${_dbf_arch_count:?}" -lt 256
+    then
+      # FAT Mach-O
 
-      printf '%s\n' 'unknown-mach-file'
-      return 7
+      _dbf_has64='false'
+      _dbf_has32='false'
+      _dbf_pos='8'
+      _dbf_i="${_dbf_arch_count:?}"
+      while test "$((_dbf_i = _dbf_i - 1))" -ge 0; do
+        _dbf_tmp="$(dump_hex "${1:?}" "${_dbf_pos:?}" '4')" || _dbf_tmp=''
+        if test "${_dbf_bytes_swap:?}" = 'true'; then
+          _dbf_tmp="$(switch_endianness_4 "${_dbf_tmp?}")" || _dbf_tmp=''
+        fi
+        _dbf_pos="$((_dbf_pos + 20))" || _dbf_tmp='' # Should be pos + 32 on FAT_MAGIC_64 (need test)
 
+        case "${_dbf_tmp?}" in
+          '01'*) _dbf_has64='true' ;;
+          '00'*) _dbf_has32='true' ;;
+          *)
+            _dbf_has64='false'
+            _dbf_has32='false'
+            break
+            ;;
+        esac
+      done
+
+      if test "${_dbf_has64:?}" = 'true' && test "${_dbf_has32:?}" = 'true'; then
+        printf '%s\n' '32/64-bit FAT Mach-O'
+      elif test "${_dbf_has64:?}" = 'true' && test "${_dbf_has32:?}" != 'true'; then
+        printf '%s\n' '64-bit FAT Mach-O'
+      elif test "${_dbf_has64:?}" != 'true' && test "${_dbf_has32:?}" = 'true'; then
+        printf '%s\n' '32-bit FAT Mach-O'
+      else
+        printf '%s\n' 'unknown-fat-mach-file'
+        return 6
+      fi
+
+      return 0
     fi
+
+    printf '%s\n' 'unknown-mach-file'
+    return 7
   fi
 
   if test "${_dbf_first_2_bytes?}" = '2321'; then
@@ -424,19 +426,19 @@ detect_bitness_of_single_file()
     return 0
   fi
 
-  _dbf_size="$(stat -c '%s' -- "${1:?}")" || {
+  _dbf_size="$(stat -c '%s' -- "${1}")" || {
     printf '%s\n' 'failed'
     return 1
   }
 
-  if test "${_dbf_size:?}" = 0; then
+  if test "${_dbf_size}" = 0; then
     printf '%s\n' 'Empty file'
     return 0
   fi
 
-  if test "${_dbf_size:?}" -le 65280 && test "${_dbf_size:?}" -ge 2; then
+  if test "${_dbf_size}" -le 65280 && test "${_dbf_size}" -ge 2; then
     _dbf_tmp="$(extract_bytes "${_dbf_first_2_bytes}" '0' '1')" || _dbf_tmp=''
-    if test "${_dbf_tmp?}" = 'e9' || test "${_dbf_tmp?}" = 'eb' || test "${_dbf_first_2_bytes?}" = '81fc' || test "${_dbf_first_2_bytes?}" = 'b409'; then
+    if test "${_dbf_tmp}" = 'e9' || test "${_dbf_tmp}" = 'eb' || test "${_dbf_first_2_bytes}" = '81fc' || test "${_dbf_first_2_bytes}" = 'b409'; then
       # COM - Executable binaries for DOS (.com)
 
       # To detect COM programs we can check if the first byte of the file could be a valid jump or call opcode (most common: 0xE9 or 0xEB).
