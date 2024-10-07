@@ -327,13 +327,12 @@ detect_bitness_of_single_file()
     return 0
   fi
 
-  local _dbf_is_mach _dbf_mach_type _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32
+  local _dbf_is_mach _dbf_mach_type _dbf_arch_count _dbf_has64 _dbf_has32
   _dbf_is_mach='false'
 
   if _header="$(extract_bytes "${_dbf_first_bytes}" '0' '4')"; then
     _dbf_is_mach='true'
     _dbf_mach_type=''
-    _dbf_is_fat_bin='false'
     _dbf_bytes_swap='false'
 
     case "${_header}" in
@@ -353,24 +352,24 @@ detect_bitness_of_single_file()
         ;;
       'cafebabe') # FAT_MAGIC
         if
-          _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' 'false')" &&
-            test "${_dbf_arch_count:?}" -gt 30
+          _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count}" '4' 'false')" &&
+            test "${_dbf_arch_count}" -gt 30
         then
           # Both this and Java bytecode have the same magic number (more info: https://opensource.apple.com/source/file/file-80.40.2/file/magic/Magdir/cafebabe.auto.html)
           _dbf_is_mach='false'
         else
-          _dbf_is_fat_bin='true'
+          _dbf_mach_type='fat'
         fi
         ;;
       'bebafeca') # FAT_CIGAM
-        _dbf_is_fat_bin='true'
+        _dbf_mach_type='fat'
         _dbf_bytes_swap='true'
         ;;
       'cafebabf') # FAT_MAGIC_64
-        #_dbf_is_fat_bin='true'
+        #_dbf_mach_type='fat'
         ;;
       'bfbafeca') # FAT_CIGAM_64
-        #_dbf_is_fat_bin='true'
+        #_dbf_mach_type='fat'
         _dbf_bytes_swap='true'
         ;;
 
@@ -397,9 +396,9 @@ detect_bitness_of_single_file()
         return 0
       fi
     elif
-      test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" &&
-        _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_bytes_swap:?}")" &&
-        test "${_dbf_arch_count:?}" -gt 0 && test "${_dbf_arch_count:?}" -lt 256
+      test "${_dbf_mach_type}" = 'fat' && _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" &&
+        _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count}" '4' "${_dbf_bytes_swap}")" &&
+        test "${_dbf_arch_count}" -gt 0 && test "${_dbf_arch_count}" -lt 256
     then
       # FAT Mach-O
 
