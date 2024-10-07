@@ -177,7 +177,7 @@ detect_bitness_of_single_file()
 {
   local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_i _dbf_tmp_var
 
-  if test ! -f "${1}" || ! _dbf_first_bytes="$(dump_hex "${1}" '0' '64')"; then # (0x00 - 0x40)
+  if test ! -f "${1}" || ! _dbf_first_bytes="$(dump_hex "${1}" '0' '64')"; then # Cache bytes at pos 0x00 - 0x40
     printf '%s\n' 'failed'
     return 1
   fi
@@ -188,14 +188,11 @@ detect_bitness_of_single_file()
     # More info: https://wiki.osdev.org/MZ
 
     _dbf_do_bytes_swap='true'
+    _dbf_exe_type=''
     _dbf_pos=''
 
     # APE - Actually Portable Executables - Start with: MZ (0x4D 0x5A) + qFpD (0x71 0x46 0x70 0x44)
-    if compare_hex_bytes "${_dbf_first_bytes}" '2' '4' '71467044'; then
-      _dbf_exe_type='APE '
-    else
-      _dbf_exe_type=''
-    fi
+    if compare_hex_bytes "${_dbf_first_bytes}" '2' '4' '71467044'; then _dbf_exe_type='APE '; fi
 
     # The smallest possible PE file is 97 bytes: http://www.phreedom.org/research/tinype/
     # PE files, to be able to be executed on Windows (it is different under DOS), only need two fields in the MZ header: e_magic (0x00 => 0) and e_lfanew (0x3C => 60)
@@ -309,17 +306,19 @@ detect_bitness_of_single_file()
     return 0
   fi
 
-  local _dbf_is_mach_o _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32
+  local _dbf_is_mach_o _dbf_mach_type _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32
 
   if _header="$(extract_bytes "${_dbf_first_bytes}" '0' '4')"; then
     _dbf_is_mach_o='true'
+    _dbf_mach_type=''
     _dbf_is_fat_bin='false'
     _dbf_do_bytes_swap='false'
 
-    case "${_header?}" in
+    case "${_header}" in
       'feedface') # MH_MAGIC
         ;;
       'cefaedfe') # MH_CIGAM
+        _dbf_mach_type='base'
         _dbf_do_bytes_swap='true'
         ;;
       'feedfacf') # MH_MAGIC_64
@@ -354,7 +353,23 @@ detect_bitness_of_single_file()
     esac
 
     if test "${_dbf_is_mach_o:?}" = 'true'; then
-      if
+
+      if test "${_dbf_mach_type}" = 'base'; then
+        # Base Mach-O file
+
+        if _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_tmp_var="$(switch_endianness_4 "${_dbf_tmp_var}")"; then
+          case "${_dbf_tmp_var}" in
+            '01'*) printf '%s\n' '64-bit Mach-O' ;;
+            '00'*) printf '%s\n' '32-bit Mach-O' ;;
+            *)
+              printf '%s\n' 'unknown-base-mach-file'
+              return 6
+              ;;
+          esac
+
+          return 0
+        fi
+      elif
         test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" &&
           _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_do_bytes_swap:?}")" &&
           test "${_dbf_arch_count:?}" -gt 0 && test "${_dbf_arch_count:?}" -lt 256
@@ -393,10 +408,11 @@ detect_bitness_of_single_file()
         fi
 
         return 0
-      else
-        printf '%s\n' 'unknown-mach-file'
-        return 7
       fi
+
+      printf '%s\n' 'unknown-mach-file'
+      return 7
+
     fi
   fi
 
