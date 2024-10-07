@@ -351,14 +351,14 @@ detect_bitness_of_single_file()
         _dbf_bytes_swap='true'
         ;;
       'cafebabe') # FAT_MAGIC
-        if
-          _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count}" '4' 'false')" &&
-            test "${_dbf_arch_count}" -gt 30
-        then
+        if _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count}" '4' 'false')" &&
+          test "${_dbf_arch_count}" -le 30; then
           # Both this and Java bytecode have the same magic number (more info: https://opensource.apple.com/source/file/file-80.40.2/file/magic/Magdir/cafebabe.auto.html)
-          _dbf_is_mach='false'
-        else
           _dbf_mach_type='fat'
+        else
+          _dbf_is_mach='false'
+          printf '%s\n' 'Bit-independent Java bytecode'
+          return 0
         fi
         ;;
       'bebafeca') # FAT_CIGAM
