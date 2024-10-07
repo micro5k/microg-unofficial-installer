@@ -1026,17 +1026,13 @@ sume()
   fi
   ! is_root || return 0
 
-  if test "${PLATFORM:?}" = 'win'; then
-    _set_env_vars="export HOME='${HOME-}'; export USER_HOME='${USER_HOME-}'; export MAIN_DIR='${MAIN_DIR:?}';"
-  fi
+  _set_env_vars="export HOME='${HOME-}'; export USER_HOME='${USER_HOME-}'; export MAIN_DIR='${MAIN_DIR:?}';"
 
   if test "${IS_BUSYBOX:?}" = 'true'; then
-    # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-    su -c "${_set_env_vars?} ${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- root "${0-}" "${@}"
+    su -c "${_set_env_vars} . '${MAIN_DIR:?}/cmdline.sh' \"\${@}\"" -- root "${0-}" "${@}"
   elif test -n "${BB_CMD?}" && test -n "${SHELL_EXE?}"; then
     _fix_pwd="cd '${PWD:?}';"
-    # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-    "${BB_CMD:?}" su -s "${SHELL_EXE:?}" -c "${_set_env_vars?} ${_fix_pwd?} ${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- root "${0-}" "${@}"
+    "${BB_CMD:?}" su -s "${SHELL_EXE:?}" -c "${_set_env_vars} ${_fix_pwd} . '${MAIN_DIR:?}/cmdline.sh' \"\${@}\"" -- root "${0-}" "${@}"
   else
     ui_warning 'sume failed!!!'
     return 125

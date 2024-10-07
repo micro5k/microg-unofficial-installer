@@ -20,7 +20,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
       if test -z "${MAIN_DIR-}"; then
         # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined.
-        if test -n "${BASH_SOURCE-}" && MAIN_DIR="$(dirname "${BASH_SOURCE:?}")" && MAIN_DIR="$(realpath "${MAIN_DIR:?}")"; then
+        if test -n "${BASH_SOURCE-}" && MAIN_DIR="$(dirname "${BASH_SOURCE}")" && MAIN_DIR="$(realpath "${MAIN_DIR}")"; then
           export MAIN_DIR
         else
           unset MAIN_DIR
@@ -30,7 +30,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       if test -n "${MAIN_DIR-}" && test -z "${USER_HOME-}"; then
         if test "${TERM_PROGRAM-}" = 'mintty'; then unset TERM_PROGRAM; fi
         export USER_HOME="${HOME-}"
-        export HOME="${MAIN_DIR:?}"
+        export HOME="${MAIN_DIR}"
       fi
 
     fi
@@ -59,9 +59,9 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     __SHELL_EXE="$(get_shell_exe)" || __SHELL_EXE='bash'
     export __SHELL_EXE
 
-    _shell_info_line="$("${__SHELL_EXE:?}" 2>&1 --help | head -n 1 || :)"
+    _shell_info_line="$("${__SHELL_EXE}" 2>&1 --help | head -n 1 || :)"
     _is_busybox='false'
-    case "${_shell_info_line?}" in
+    case "${_shell_info_line}" in
       *'BusyBox'*) _is_busybox='true' ;;
       *) ;;
     esac
@@ -71,14 +71,14 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     unset IS_PATH_INITIALIZED
     unset __QUOTED_PARAMS
 
-    if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR:?}"; else _main_dir='.'; fi
+    if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR}"; else _main_dir='.'; fi
 
-    if test "${_is_busybox:?}" = 'true'; then
-      ash -s -c ". '${_main_dir:?}/includes/common.sh' || exit \${?}" 'ash' "${@}"
+    if test "${_is_busybox}" = 'true'; then
+      exec ash -s -c ". '${_main_dir}/includes/common.sh' || exit \${?}" 'ash' "${@}"
     else
       if test "${#}" -gt 0; then
         case "${*}" in
-          *"${_newline:?}"*)
+          *"${_newline}"*)
             printf 'WARNING: Newline character found, parameters dropped\n'
             ;;
           *)
@@ -88,7 +88,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
         esac
       fi
 
-      exec "${__SHELL_EXE:?}" --init-file "${_main_dir:?}/includes/common.sh"
+      exec "${__SHELL_EXE}" --init-file "${_main_dir}/includes/common.sh"
     fi
   }
 
