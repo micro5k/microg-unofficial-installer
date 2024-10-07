@@ -173,6 +173,27 @@ extract_bytes()
   printf '%s' "${1}" | cut -b "$((${2} * 2 + 1))-$(((${2} + ${3}) * 2))"
 }
 
+# Params:
+#  $1 Input bytes (hex)
+#  $2 Bytes to skip (int)
+#  $3 Length in bytes (int)
+#  $4 Need bytes swap (bool)
+extract_bytes_and_swap()
+{
+  test "${3}" -gt 0 || return 1
+  _ebas_bytes="$(printf '%s' "${1}" | cut -b "$((${2} * 2 + 1))-$(((${2} + ${3}) * 2))")" || return 2
+
+  if test "${4-}" = 'true'; then
+    if test "${3}" = 4; then
+      switch_endianness_4 "${_ebas_bytes}" || return "${?}"
+    else
+      return 3
+    fi
+  else
+    printf '%s' "${_ebas_bytes}"
+  fi
+}
+
 detect_bitness_of_single_file()
 {
   local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_i _dbf_tmp
@@ -317,12 +338,14 @@ detect_bitness_of_single_file()
 
     case "${_header}" in
       'feedface') # MH_MAGIC
+        _dbf_mach_type='base'
         ;;
       'cefaedfe') # MH_CIGAM
         _dbf_mach_type='base'
         _dbf_bytes_swap='true'
         ;;
       'feedfacf') # MH_MAGIC_64
+        _dbf_mach_type='base'
         ;;
       'cffaedfe') # MH_CIGAM_64
         _dbf_mach_type='base'
@@ -361,7 +384,7 @@ detect_bitness_of_single_file()
     if test "${_dbf_mach_type}" = 'base'; then
       # Base Mach-O
 
-      if _dbf_tmp="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_tmp="$(switch_endianness_4 "${_dbf_tmp}")"; then
+      if _dbf_tmp="$(extract_bytes_and_swap "${_dbf_first_bytes}" '4' '4' "${_dbf_bytes_swap}")"; then
         case "${_dbf_tmp}" in
           '01'*) printf '%s\n' '64-bit Mach-O' ;;
           '00'*) printf '%s\n' '32-bit Mach-O' ;;
