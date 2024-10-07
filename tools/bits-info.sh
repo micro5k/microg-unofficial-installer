@@ -306,11 +306,11 @@ detect_bitness_of_single_file()
     return 0
   fi
 
-  local _dbf_is_mach_o _dbf_mach_type _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32
-
-  _dbf_is_mach_o='true'
+  local _dbf_is_mach _dbf_mach_type _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32
+  _dbf_is_mach='false'
 
   if _header="$(extract_bytes "${_dbf_first_bytes}" '0' '4')"; then
+    _dbf_is_mach='true'
     _dbf_mach_type=''
     _dbf_is_fat_bin='false'
     _dbf_bytes_swap='false'
@@ -334,7 +334,7 @@ detect_bitness_of_single_file()
             test "${_dbf_arch_count:?}" -gt 30
         then
           # Both this and Java bytecode have the same magic number (more info: https://opensource.apple.com/source/file/file-80.40.2/file/magic/Magdir/cafebabe.auto.html)
-          _dbf_is_mach_o='false'
+          _dbf_is_mach='false'
         else
           _dbf_is_fat_bin='true'
         fi
@@ -351,11 +351,11 @@ detect_bitness_of_single_file()
         _dbf_bytes_swap='true'
         ;;
 
-      *) _dbf_is_mach_o='false' ;;
+      *) _dbf_is_mach='false' ;;
     esac
   fi
 
-  if test "${_dbf_is_mach_o}" = 'true'; then
+  if test "${_dbf_is_mach}" = 'true'; then
     # Mach-O
 
     if test "${_dbf_mach_type}" = 'base'; then
