@@ -175,7 +175,7 @@ extract_bytes()
 
 detect_bitness_of_single_file()
 {
-  local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_i _dbf_tmp_var
+  local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_i _dbf_tmp
 
   if test ! -f "${1}" || ! _dbf_first_bytes="$(dump_hex "${1}" '0' '64')"; then # Cache bytes at pos 0x00 - 0x40
     printf '%s\n' 'failed'
@@ -187,7 +187,7 @@ detect_bitness_of_single_file()
     # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
     # More info: https://wiki.osdev.org/MZ
 
-    _dbf_do_bytes_swap='true'
+    _dbf_bytes_swap='true'
     _dbf_exe_type=''
     _dbf_pos=''
 
@@ -197,7 +197,7 @@ detect_bitness_of_single_file()
     # The smallest possible PE file is 97 bytes: http://www.phreedom.org/research/tinype/
     # PE files, to be able to be executed on Windows (it is different under DOS), only need two fields in the MZ header: e_magic (0x00 => 0) and e_lfanew (0x3C => 60)
     if
-      _dbf_pos="$(extract_bytes "${_dbf_first_bytes}" '60' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" &&
+      _dbf_pos="$(extract_bytes "${_dbf_first_bytes}" '60' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_bytes_swap:?}")" &&
         test "${_dbf_pos:?}" -ge 4 && test "${_dbf_pos:?}" -le 536870912 &&
         _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '26')"
     then
@@ -213,12 +213,12 @@ detect_bitness_of_single_file()
 
         # PE header pos + 0x14 (decimal: 20) = SizeOfOptionalHeader
         if
-          _dbf_tmp_var="$(extract_bytes "${_header?}" '20' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")" &&
-            test "${_dbf_tmp_var:?}" -ge 2
+          _dbf_tmp="$(extract_bytes "${_header?}" '20' '2')" && _dbf_tmp="$(hex_bytes_to_int "${_dbf_tmp?}" '2' "${_dbf_bytes_swap:?}")" &&
+            test "${_dbf_tmp:?}" -ge 2
         then
           # PE header pos + 0x18 (decimal: 24) = PE type magic
-          if _dbf_tmp_var="$(extract_bytes "${_header?}" '24' '2')" && _dbf_tmp_var="$(switch_endianness_2 "${_dbf_tmp_var?}")"; then
-            case "${_dbf_tmp_var?}" in
+          if _dbf_tmp="$(extract_bytes "${_header?}" '24' '2')" && _dbf_tmp="$(switch_endianness_2 "${_dbf_tmp?}")"; then
+            case "${_dbf_tmp?}" in
               '010b') _dbf_exe_type="${_dbf_exe_type:?}32" ;;
               '020b') _dbf_exe_type="${_dbf_exe_type:?}32+" ;;
               '0107') _dbf_exe_type="${_dbf_exe_type:?} ROM image" ;;
@@ -228,7 +228,7 @@ detect_bitness_of_single_file()
         fi
 
         _dbf_cpu_type="$(extract_bytes "${_header:?}" '4' '2')" || _dbf_cpu_type=''
-        if test "${_dbf_do_bytes_swap:?}" = 'true'; then
+        if test "${_dbf_bytes_swap:?}" = 'true'; then
           _dbf_cpu_type="$(switch_endianness_2 "${_dbf_cpu_type}")" || _dbf_cpu_type=''
         fi
 
@@ -273,13 +273,13 @@ detect_bitness_of_single_file()
     # The absolute offset to the relocation table is stored at: 0x18 (decimal: 24)
     # The absolute offset to the relocation table of plain MZ files (so not extended ones) must be: > 0x1B (decimal: 27) and < 0x40 (decimal: 64)
     # NOTE: This does NOT apply to PE files as this field is not used on them
-    if _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes}" '24' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap}")"; then
+    if _dbf_tmp="$(extract_bytes "${_dbf_first_bytes}" '24' '2')" && _dbf_tmp="$(hex_bytes_to_int "${_dbf_tmp?}" '2' "${_dbf_bytes_swap}")"; then
       if
         {
-          test "${_dbf_tmp_var:?}" -gt 27 && test "${_dbf_tmp_var:?}" -lt 64
+          test "${_dbf_tmp:?}" -gt 27 && test "${_dbf_tmp:?}" -lt 64
         } ||
           {
-            test "${_dbf_tmp_var:?}" = 0 && compare_hex_bytes "${_dbf_first_bytes}" '6' '2' '0000' # Empty relocation table
+            test "${_dbf_tmp:?}" = 0 && compare_hex_bytes "${_dbf_first_bytes}" '6' '2' '0000' # Empty relocation table
           }
       then
         printf '%s\n' '16-bit MZ'
@@ -312,20 +312,21 @@ detect_bitness_of_single_file()
     _dbf_is_mach_o='true'
     _dbf_mach_type=''
     _dbf_is_fat_bin='false'
-    _dbf_do_bytes_swap='false'
+    _dbf_bytes_swap='false'
 
     case "${_header}" in
       'feedface') # MH_MAGIC
         ;;
       'cefaedfe') # MH_CIGAM
         _dbf_mach_type='base'
-        _dbf_do_bytes_swap='true'
+        _dbf_bytes_swap='true'
         ;;
       'feedfacf') # MH_MAGIC_64
         ;;
       'cffaedfe') # MH_CIGAM_64
         _dbf_mach_type='base'
-        _dbf_do_bytes_swap='true' ;;
+        _dbf_bytes_swap='true'
+        ;;
       'cafebabe') # FAT_MAGIC
         if
           _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' 'false')" &&
@@ -339,14 +340,14 @@ detect_bitness_of_single_file()
         ;;
       'bebafeca') # FAT_CIGAM
         _dbf_is_fat_bin='true'
-        _dbf_do_bytes_swap='true'
+        _dbf_bytes_swap='true'
         ;;
       'cafebabf') # FAT_MAGIC_64
         #_dbf_is_fat_bin='true'
         ;;
       'bfbafeca') # FAT_CIGAM_64
         #_dbf_is_fat_bin='true'
-        _dbf_do_bytes_swap='true'
+        _dbf_bytes_swap='true'
         ;;
       *)
         _dbf_is_mach_o='false'
@@ -358,8 +359,8 @@ detect_bitness_of_single_file()
       if test "${_dbf_mach_type}" = 'base'; then
         # Base Mach-O file
 
-        if _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_tmp_var="$(switch_endianness_4 "${_dbf_tmp_var}")"; then
-          case "${_dbf_tmp_var}" in
+        if _dbf_tmp="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_tmp="$(switch_endianness_4 "${_dbf_tmp}")"; then
+          case "${_dbf_tmp}" in
             '01'*) printf '%s\n' '64-bit Mach-O' ;;
             '00'*) printf '%s\n' '32-bit Mach-O' ;;
             *)
@@ -372,7 +373,7 @@ detect_bitness_of_single_file()
         fi
       elif
         test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" &&
-          _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_do_bytes_swap:?}")" &&
+          _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_bytes_swap:?}")" &&
           test "${_dbf_arch_count:?}" -gt 0 && test "${_dbf_arch_count:?}" -lt 256
       then
         _dbf_has64='false'
@@ -380,13 +381,13 @@ detect_bitness_of_single_file()
         _dbf_pos='8'
         _dbf_i="${_dbf_arch_count:?}"
         while test "$((_dbf_i = _dbf_i - 1))" -ge 0; do
-          _dbf_tmp_var="$(dump_hex "${1:?}" "${_dbf_pos:?}" '4')" || _dbf_tmp_var=''
-          if test "${_dbf_do_bytes_swap:?}" = 'true'; then
-            _dbf_tmp_var="$(switch_endianness_4 "${_dbf_tmp_var?}")" || _dbf_tmp_var=''
+          _dbf_tmp="$(dump_hex "${1:?}" "${_dbf_pos:?}" '4')" || _dbf_tmp=''
+          if test "${_dbf_bytes_swap:?}" = 'true'; then
+            _dbf_tmp="$(switch_endianness_4 "${_dbf_tmp?}")" || _dbf_tmp=''
           fi
-          _dbf_pos="$((_dbf_pos + 20))" || _dbf_tmp_var='' # Should be pos + 32 on FAT_MAGIC_64 (need test)
+          _dbf_pos="$((_dbf_pos + 20))" || _dbf_tmp='' # Should be pos + 32 on FAT_MAGIC_64 (need test)
 
-          case "${_dbf_tmp_var?}" in
+          case "${_dbf_tmp?}" in
             '01'*) _dbf_has64='true' ;;
             '00'*) _dbf_has32='true' ;;
             *)
@@ -434,8 +435,8 @@ detect_bitness_of_single_file()
   fi
 
   if test "${_dbf_size:?}" -le 65280 && test "${_dbf_size:?}" -ge 2; then
-    _dbf_tmp_var="$(extract_bytes "${_dbf_first_2_bytes}" '0' '1')" || _dbf_tmp_var=''
-    if test "${_dbf_tmp_var?}" = 'e9' || test "${_dbf_tmp_var?}" = 'eb' || test "${_dbf_first_2_bytes?}" = '81fc' || test "${_dbf_first_2_bytes?}" = 'b409'; then
+    _dbf_tmp="$(extract_bytes "${_dbf_first_2_bytes}" '0' '1')" || _dbf_tmp=''
+    if test "${_dbf_tmp?}" = 'e9' || test "${_dbf_tmp?}" = 'eb' || test "${_dbf_first_2_bytes?}" = '81fc' || test "${_dbf_first_2_bytes?}" = 'b409'; then
       # COM - Executable binaries for DOS (.com)
 
       # To detect COM programs we can check if the first byte of the file could be a valid jump or call opcode (most common: 0xE9 or 0xEB).
