@@ -324,6 +324,7 @@ detect_bitness_of_single_file()
       'feedfacf') # MH_MAGIC_64
         ;;
       'cffaedfe') # MH_CIGAM_64
+        _dbf_mach_type='base'
         _dbf_do_bytes_swap='true' ;;
       'cafebabe') # FAT_MAGIC
         if
