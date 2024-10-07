@@ -104,9 +104,9 @@ detect_hex_dump_cmd()
 dump_hex()
 {
   if test "${HEXDUMP_CMD:=$(detect_hex_dump_cmd || :)}" = 'xxd'; then
-    xxd -p -c "${3:?}" -s "${2:?}" -l "${3:?}" -- "${1:?}"
+    xxd -p -c "${3}" -s "${2}" -l "${3}" -- "${1}"
   elif test "${HEXDUMP_CMD?}" = 'hexdump'; then
-    hexdump -v -e '/1 "%02x"' -s "${2:?}" -n "${3:?}" -- "${1:?}" && printf '\n'
+    hexdump -v -e '/1 "%02x"' -s "${2}" -n "${3}" -- "${1}" && printf '\n'
   else
     return 1
   fi
@@ -159,21 +159,21 @@ hex_bytes_to_int()
 #  $3 Length in bytes (int)
 extract_bytes()
 {
-  test "${3:?}" -gt 0 || return 1
-  printf '%s\n' "${1?}" | cut -b "$((${2:?} * 2 + 1))-$(((${2:?} + ${3:?}) * 2))"
+  test "${3}" -gt 0 || return 1
+  printf '%s\n' "${1}" | cut -b "$((${2} * 2 + 1))-$(((${2} + ${3}) * 2))"
 }
 
 detect_bitness_of_single_file()
 {
   local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_do_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_i _dbf_tmp_var
 
-  if test ! -f "${1?}" || ! _dbf_first_bytes="$(dump_hex "${1:?}" '0' '64')"; then # (0x00 - 0x40)
+  if test ! -f "${1}" || ! _dbf_first_bytes="$(dump_hex "${1}" '0' '64')"; then # (0x00 - 0x40)
     printf '%s\n' 'failed'
     return 1
   fi
-  _dbf_first_2_bytes="$(extract_bytes "${_dbf_first_bytes?}" '0' '2')" || _dbf_first_2_bytes=''
+  _dbf_first_2_bytes="$(extract_bytes "${_dbf_first_bytes}" '0' '2')" || _dbf_first_2_bytes=''
 
-  if test "${_dbf_first_2_bytes?}" = '4d5a'; then
+  if test "${_dbf_first_2_bytes}" = '4d5a'; then
     # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
     # More info: https://wiki.osdev.org/MZ
 
@@ -181,7 +181,7 @@ detect_bitness_of_single_file()
     _dbf_pos=''
 
     # APE - Actually Portable Executables - Start with: MZ (0x4D 0x5A) + qFpD (0x71 0x46 0x70 0x44)
-    if test "$(extract_bytes "${_dbf_first_bytes?}" '2' '4' || :)" = '71467044'; then
+    if test "$(extract_bytes "${_dbf_first_bytes}" '2' '4' || :)" = '71467044'; then
       _dbf_exe_type='APE '
     else
       _dbf_exe_type=''
@@ -190,7 +190,7 @@ detect_bitness_of_single_file()
     # The smallest possible PE file is 97 bytes: http://www.phreedom.org/research/tinype/
     # PE files, to be able to be executed on Windows (it is different under DOS), only need two fields in the MZ header: e_magic (0x00 => 0) and e_lfanew (0x3C => 60)
     if
-      _dbf_pos="$(extract_bytes "${_dbf_first_bytes?}" '60' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" &&
+      _dbf_pos="$(extract_bytes "${_dbf_first_bytes}" '60' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_do_bytes_swap:?}")" &&
         test "${_dbf_pos:?}" -ge 4 && test "${_dbf_pos:?}" -le 536870912 &&
         _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '26')"
     then
@@ -267,13 +267,13 @@ detect_bitness_of_single_file()
     # The absolute offset to the relocation table is stored at: 0x18 (decimal: 24)
     # The absolute offset to the relocation table of plain MZ files (so not extended ones) must be: > 0x1B (decimal: 27) and < 0x40 (decimal: 64)
     # NOTE: This does NOT apply to PE files as this field is not used on them
-    if _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes?}" '24' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")"; then
+    if _dbf_tmp_var="$(extract_bytes "${_dbf_first_bytes}" '24' '2')" && _dbf_tmp_var="$(hex_bytes_to_int "${_dbf_tmp_var?}" '2' "${_dbf_do_bytes_swap:?}")"; then
       if
         {
           test "${_dbf_tmp_var:?}" -gt 27 && test "${_dbf_tmp_var:?}" -lt 64
         } ||
           {
-            test "${_dbf_tmp_var:?}" = 0 && test "$(extract_bytes "${_dbf_first_bytes?}" '6' '2' || :)" = '0000' # Empty relocation table
+            test "${_dbf_tmp_var:?}" = 0 && test "$(extract_bytes "${_dbf_first_bytes}" '6' '2' || :)" = '0000' # Empty relocation table
           }
       then
         printf '%s\n' '16-bit MZ'
@@ -285,11 +285,11 @@ detect_bitness_of_single_file()
     return 5
   fi
 
-  if test "$(extract_bytes "${_dbf_first_bytes?}" '0' '4' || :)" = '7f454c46'; then
+  if test "$(extract_bytes "${_dbf_first_bytes}" '0' '4' || :)" = '7f454c46'; then
     # ELF - Executable binaries for Linux / Android - Start with: 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
 
-    _header="$(extract_bytes "${_dbf_first_bytes?}" '4' '1')" || _header=''
-    case "${_header?}" in
+    _header="$(extract_bytes "${_dbf_first_bytes}" '4' '1')" || _header=''
+    case "${_header}" in
       '02') printf '%s\n' '64-bit ELF' ;;
       '01') printf '%s\n' '32-bit ELF' ;;
       *)
@@ -302,7 +302,7 @@ detect_bitness_of_single_file()
 
   local _dbf_is_mach_o _dbf_is_fat_bin _dbf_arch_count _dbf_has64 _dbf_has32
 
-  if _header="$(extract_bytes "${_dbf_first_bytes?}" '0' '4')"; then
+  if _header="$(extract_bytes "${_dbf_first_bytes}" '0' '4')"; then
     _dbf_is_mach_o='true'
     _dbf_is_fat_bin='false'
     _dbf_do_bytes_swap='false'
@@ -319,7 +319,7 @@ detect_bitness_of_single_file()
         _dbf_do_bytes_swap='true' ;;
       'cafebabe') # FAT_MAGIC
         if
-          _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes?}" '4' '4')" && _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' 'false')" &&
+          _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" && _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' 'false')" &&
             test "${_dbf_arch_count:?}" -gt 30
         then
           # Both this and Java bytecode have the same magic number (more info: https://opensource.apple.com/source/file/file-80.40.2/file/magic/Magdir/cafebabe.auto.html)
@@ -346,7 +346,7 @@ detect_bitness_of_single_file()
 
     if test "${_dbf_is_mach_o:?}" = 'true'; then
       if
-        test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes?}" '4' '4')" &&
+        test "${_dbf_is_fat_bin:?}" = 'true' && _dbf_arch_count="$(extract_bytes "${_dbf_first_bytes}" '4' '4')" &&
           _dbf_arch_count="$(hex_bytes_to_int "${_dbf_arch_count?}" '4' "${_dbf_do_bytes_swap:?}")" &&
           test "${_dbf_arch_count:?}" -gt 0 && test "${_dbf_arch_count:?}" -lt 256
       then
@@ -359,7 +359,7 @@ detect_bitness_of_single_file()
           if test "${_dbf_do_bytes_swap:?}" = 'true'; then
             _dbf_tmp_var="$(switch_endianness_4 "${_dbf_tmp_var?}")" || _dbf_tmp_var=''
           fi
-          _dbf_pos="$((${_dbf_pos:?} + 20))" || _dbf_tmp_var='' # Should be pos + 32 on FAT_MAGIC_64 (need test)
+          _dbf_pos="$((_dbf_pos + 20))" || _dbf_tmp_var='' # Should be pos + 32 on FAT_MAGIC_64 (need test)
 
           case "${_dbf_tmp_var?}" in
             '01'*) _dbf_has64='true' ;;
@@ -408,7 +408,7 @@ detect_bitness_of_single_file()
   fi
 
   if test "${_dbf_size:?}" -le 65280 && test "${_dbf_size:?}" -ge 2; then
-    _dbf_tmp_var="$(extract_bytes "${_dbf_first_2_bytes?}" '0' '1')" || _dbf_tmp_var=''
+    _dbf_tmp_var="$(extract_bytes "${_dbf_first_2_bytes}" '0' '1')" || _dbf_tmp_var=''
     if test "${_dbf_tmp_var?}" = 'e9' || test "${_dbf_tmp_var?}" = 'eb' || test "${_dbf_first_2_bytes?}" = '81fc' || test "${_dbf_first_2_bytes?}" = 'b409'; then
       # COM - Executable binaries for DOS (.com)
 
