@@ -640,18 +640,19 @@ get_shell_info()
 
   _shell_version="${_shell_version#[Vv]ersion }"
   case "${_shell_version}" in
-    'BusyBox '*)
-      _shell_name='busybox'
-      _shell_version="${_shell_version#BusyBox}"
-      ;;
-    *' bash,'*)
-      _shell_name='bash' # Sometimes it isn't just a symlink but it is really called "sh" so we have to correct this
-      ;;
+    'BusyBox '*) _shell_name='busybox' ;;
+    *' bash,'*) _shell_name='bash' ;; # Sometimes it isn't just a symlink but it is really called "sh" so we have to correct this
     *)
       test -z "${_shell_name}" || _shell_version="${_shell_version#"${_shell_name}"}"
       ;;
   esac
   _shell_version="${_shell_version# }"
+
+  case "${_shell_name}" in
+    'busybox') _shell_version="${_shell_version#BusyBox}" ;;
+    'osh') _shell_version="$(printf '%s\n' "${_shell_version}" | cut -f '1')" ;;
+    *) ;;
+  esac
 
   printf '%s %s\n' "${_shell_name:-unknown}" "${_shell_version:-unknown}"
 }
