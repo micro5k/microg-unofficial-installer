@@ -577,18 +577,20 @@ get_shell_info()
   local _shell_use_ver_opt _shell_exe _shell_name _shell_version _shell_is_ksh _tmp_var
 
   _shell_use_ver_opt='false'
+  _shell_exe="${1-}"
+  _shell_name=''
   _shell_version=''
   _shell_is_ksh='false'
 
-  if test -n "${1-}" && _shell_exe="${1}"; then
-    :
-  else
+  if test -n "${_shell_exe}"; then
+    _shell_name="$(basename "${_shell_exe}" | tr -d ' ')" || _shell_name=''
+    _shell_name="${_shell_name%'.exe'}" # For shells under Windows
+  fi
+
+  if test -z "${_shell_name}"; then
     printf '%s\n' 'not-found unknown'
     return 1
   fi
-
-  _shell_name="$(basename "${_shell_exe}")" || _shell_name="${_shell_exe}"
-  _shell_name="${_shell_name%'.exe'}" # For shells under Windows
 
   case "${_shell_exe}" in
     *'/bosh/'*'/sh') _shell_name='bosh' ;;
