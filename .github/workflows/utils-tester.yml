@@ -30,10 +30,12 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v4
-      - name: "Test script"
+      - name: "Test script on Bash"
         shell: bash
         run: |
           # Testing script...
-          '${{ github.workspace }}/utils/device-info.sh' --version
+          bash --version | head -n 1
           printf '\n'
-          '${{ github.workspace }}/utils/device-info.sh' -- '${{ github.workspace }}/utils/test-files/Getprop-EMU-Pixel 4 API 33.txt'
+          bash '${{ github.workspace }}/utils/device-info.sh' --version
+          printf '\n'
+          bash '${{ github.workspace }}/utils/device-info.sh' -- '${{ github.workspace }}/utils/test-files/Getprop-EMU-Pixel 4 API 33.txt'
