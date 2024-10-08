@@ -34,7 +34,8 @@ jobs:
         shell: bash
         run: |
           # Testing script...
-          printf '%s\n\n' 'bits-info.sh:'
+          bash --version | head -n 1
+          printf '\n%s\n\n' 'bits-info.sh:'
           '${{ github.workspace }}/tools/bits-info.sh'
       - name: "Test script on Oils (only under macOS-latest)"
         if: "${{ matrix.os == 'macos-latest' }}"
@@ -44,6 +45,5 @@ jobs:
           brew install --quiet oils-for-unix
           printf '\n'
           osh --version | head -n 1
-          printf '\n'
-          printf '%s\n\n' 'bits-info.sh:'
+          printf '\n%s\n\n' 'bits-info.sh:'
           osh '${{ github.workspace }}/tools/bits-info.sh'
