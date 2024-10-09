@@ -76,7 +76,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR}"; else _main_dir='.'; fi
 
     if test "${ONLY_FOR_TESTING-}" = 'true'; then
-      exec "${__SHELL_EXE}" -c ". '${_main_dir}/includes/common.sh' || exit \${?}" 'sh' "${@}"
+      exec "${__SHELL_EXE}" -c ". '${_main_dir}/includes/common.sh' || exit \${?}" "${__SHELL_EXE}" "${@}"
     elif test "${_is_busybox}" = 'true'; then
       exec ash -s -c ". '${_main_dir}/includes/common.sh' || exit \${?}" 'ash' "${@}"
     else
