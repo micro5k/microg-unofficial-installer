@@ -20,7 +20,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
       if test -z "${MAIN_DIR-}"; then
         # shellcheck disable=SC3028,SC2128 # Intended: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
-        if test -n "${BASH_SOURCE-}" && MAIN_DIR="$(dirname "${BASH_SOURCE}")" && MAIN_DIR="$(realpath "${MAIN_DIR}")"; then
+        if MAIN_DIR="${BASH_SOURCE-}" && test -n "${MAIN_DIR}" && MAIN_DIR="$(dirname "${MAIN_DIR}")" && MAIN_DIR="$(realpath "${MAIN_DIR}")"; then
           export MAIN_DIR
         else
           unset MAIN_DIR
@@ -75,7 +75,9 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
     if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR}"; else _main_dir='.'; fi
 
-    if test "${_is_busybox}" = 'true'; then
+    if test "${ONLY_FOR_TESTING-}" = 'true'; then
+      exec "${__SHELL_EXE}" -c ". '${_main_dir}/includes/common.sh' || exit \${?}" 'sh' "${@}"
+    elif test "${_is_busybox}" = 'true'; then
       exec ash -s -c ". '${_main_dir}/includes/common.sh' || exit \${?}" 'ash' "${@}"
     else
       if test "${#}" -gt 0; then
