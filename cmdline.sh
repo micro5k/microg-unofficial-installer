@@ -20,11 +20,15 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
       if test -z "${MAIN_DIR-}"; then
         # shellcheck disable=SC3028,SC2128 # Intended: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
-        if MAIN_DIR="${BASH_SOURCE-}" && test -n "${MAIN_DIR}" && MAIN_DIR="$(dirname "${MAIN_DIR}")" && MAIN_DIR="$(realpath "${MAIN_DIR}")"; then
+        if MAIN_DIR="${BASH_SOURCE-}" && test -n "${MAIN_DIR}"; then
+          :
+        elif printf '%s\n' "${0-}" | grep -q -m 1 -- 'cmdline.sh$' && MAIN_DIR="${0}"; then
+          :
+        else MAIN_DIR=''; fi
+
+        if test -n "${MAIN_DIR}" && MAIN_DIR="$(dirname "${MAIN_DIR}")" && MAIN_DIR="$(realpath "${MAIN_DIR}")"; then
           export MAIN_DIR
-        else
-          unset MAIN_DIR
-        fi
+        else unset MAIN_DIR; fi
       fi
 
       if test -n "${MAIN_DIR-}" && test -z "${USER_HOME-}"; then
