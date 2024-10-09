@@ -1051,10 +1051,10 @@ dropme()
 
   if test "${IS_BUSYBOX:?}" = 'true'; then
     # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-    drop -c "${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- "${0-}" "${@}"
+    drop -c ". '${MAIN_DIR:?}/cmdline.sh' \"\${@}\"" -- "${0-}" "${@}"
   elif test -n "${BB_CMD?}" && test -n "${SHELL_EXE?}"; then
     # shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes
-    "${BB_CMD:?}" drop -s "${SHELL_EXE:?}" -c "${MAIN_DIR:?}"'/cmdline.sh "${@}"' -- "${0-}" "${@}"
+    "${BB_CMD:?}" drop -s "${SHELL_EXE:?}" -c ". '${MAIN_DIR:?}/cmdline.sh' \"\${@}\"" -- "${0-}" "${@}"
   else
     ui_warning 'dropme failed!!!'
     return 125
