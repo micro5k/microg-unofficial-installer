@@ -23,11 +23,8 @@ jobs:
   base:
     strategy:
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
-          - macos-13
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-13]
+      fail-fast: false
     name: "${{ matrix.os }}"
     runs-on: "${{ matrix.os }}"
 
@@ -39,7 +36,9 @@ jobs:
         run: |
           # Testing scripts...
           # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
-          readonly workspace_dir='${{ github.workspace }}'
+          readonly current_os='${{ matrix.os }}'; readonly workspace_dir='${{ github.workspace }}'
+          if test "${current_os?}" = 'macos-latest'; then brew 1> /dev/null install --quiet oils-for-unix; fi
+          #
           not_already_excuted()
           {
             local _shell
@@ -65,7 +64,7 @@ jobs:
           {
             local _shell
             EXECUTED_LIST=''
-            for _shell in sh dash bash ksh zsh osh; do
+            for _shell in sh bash dash ksh zsh osh; do
               if skip "${1:?}" "${_shell:?}" || ! _shell="$(command -v "${_shell:?}")" || ! not_already_excuted "${_shell:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell:?}" "${1:?}"
               "${_shell:?}" "${workspace_dir:?}/${1:?}"
@@ -77,12 +76,3 @@ jobs:
             test_on_all_shells "${_script:?}"
             printf '%s\n' "---"
           done
-      - name: "Test script on Oils (only under macOS-latest)"
-        if: "${{ matrix.os == 'macos-latest' }}"
-        shell: bash
-        run: |
-          # Testing script...
-          brew 1> /dev/null install --quiet oils-for-unix
-          osh --version | head -n 1
-          printf '\n%s\n\n' 'bits-info.sh:'
-          osh '${{ github.workspace }}/tools/bits-info.sh'
