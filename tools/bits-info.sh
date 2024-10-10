@@ -623,6 +623,8 @@ get_shell_info()
         : # For dash (possibly supported in the future)
       elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
         : # For dash
+      elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'brew' && _shell_version="$(brew 2> /dev/null info 'dash' | grep -m 1 -F -e 'dash:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
+        : # For dash
       elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
         : # For dash (it is slow)
       elif test "${_shell_name}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION}"; then
