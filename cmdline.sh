@@ -7,7 +7,7 @@
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
-    local _main_dir _shell_info_line _is_busybox _newline
+    local _main_dir _is_busybox _newline
 
     _newline='
 '
@@ -66,10 +66,9 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     __SHELL_EXE="$(get_shell_exe)" || __SHELL_EXE='bash'
     export __SHELL_EXE
 
-    _shell_info_line="$("${__SHELL_EXE}" 2>&1 --help | head -n 1 || :)"
     _is_busybox='false'
-    case "${_shell_info_line}" in
-      *'BusyBox'*) _is_busybox='true' ;;
+    case "${__SHELL_EXE}" in
+      *'/busybox'* | *'/osh' | *'/oil.ovm' | *'/oils-for-unix') _is_busybox='true' ;; # ToDO: Rename '_is_busybox'
       *) ;;
     esac
 
@@ -84,7 +83,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       printf '%s\n' "${__SHELL_EXE}"
       printf '%s\n' "${_main_dir}"
       if test "${_is_busybox}" = 'true'; then
-        "${__SHELL_EXE}" 'ash' "${_main_dir}/includes/common.sh"
+        "${__SHELL_EXE}" 'sh' "${_main_dir}/includes/common.sh"
       else
         "${__SHELL_EXE}" "${_main_dir}/includes/common.sh"
       fi
