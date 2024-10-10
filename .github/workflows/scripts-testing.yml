@@ -55,7 +55,7 @@ jobs:
           {
             if test "${1:?}" = 'cmdline.sh'; then
               case "${2:?}" in
-                'sh' | 'dash' | 'zsh' | 'yash' | 'posh') return 0 ;;
+                'sh' | 'busybox' | 'dash' | 'zsh' | 'yash' | 'posh') return 0 ;;
                 *) ;;
               esac
             fi
