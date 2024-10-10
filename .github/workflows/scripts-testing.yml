@@ -2,17 +2,21 @@
 # SPDX-FileCopyrightText: (c) 2024 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-name: "Tools tester"
+name: "Scripts testing"
 permissions: {}
 on:
   push:
     paths:
-      - ".github/workflows/tools-tester.yml"
-      - "tools/**"
+      - ".github/workflows/scripts-testing.yml"
+      - "tools/*.sh"
+      - "includes/*.sh"
+      - "cmdline.sh"
   pull_request:
     paths:
-      - ".github/workflows/tools-tester.yml"
-      - "tools/**"
+      - ".github/workflows/scripts-testing.yml"
+      - "tools/*.sh"
+      - "includes/*.sh"
+      - "cmdline.sh"
   workflow_dispatch:
 
 jobs:
@@ -30,20 +34,25 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v4
-      - name: "Test script on Bash"
+      - name: "Test scripts on Bash"
         shell: bash
         run: |
-          # Testing script...
+          # Testing scripts on Bash...
           bash --version | head -n 1
-          printf '\n%s\n\n' 'bits-info.sh:'
-          bash '${{ github.workspace }}/tools/bits-info.sh'
+          # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
+          readonly workspace_dir='${{ github.workspace }}'
+          export ONLY_FOR_TESTING='true'
+          for _script in 'tools/bits-info.sh' 'cmdline.sh'; do
+            printf '\n%s:\n\n' "${_script}"
+            bash "${workspace_dir}/${_script}"
+            printf 'RETURN CODE:%s\n' "${?}"
+          done
       - name: "Test script on Oils (only under macOS-latest)"
         if: "${{ matrix.os == 'macos-latest' }}"
         shell: bash
         run: |
           # Testing script...
-          brew install --quiet oils-for-unix
-          printf '\n'
+          brew 1> /dev/null install --quiet oils-for-unix
           osh --version | head -n 1
           printf '\n%s\n\n' 'bits-info.sh:'
           osh '${{ github.workspace }}/tools/bits-info.sh'
