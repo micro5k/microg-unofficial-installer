@@ -37,7 +37,8 @@ jobs:
           # Testing scripts...
           # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
           readonly current_os='${{ matrix.os }}'; readonly workspace_dir='${{ github.workspace }}'
-          if test "${current_os?}" = 'macos-latest'; then brew 1> /dev/null install --quiet oils-for-unix; fi
+          if command 1> /dev/null -v 'apt-get'; then sudo apt-get -y -qq install 'yash' 'posh' 1> /dev/null; fi
+          if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'yash'; fi
           #
           not_already_excuted()
           {
@@ -54,7 +55,7 @@ jobs:
           {
             if test "${1:?}" = 'cmdline.sh'; then
               case "${2:?}" in
-                'sh' | 'dash' | 'zsh') return 0 ;;
+                'sh' | 'busybox' | 'dash' | 'zsh' | 'yash' | 'posh') return 0 ;;
                 *) ;;
               esac
             fi
@@ -62,17 +63,25 @@ jobs:
           }
           test_on_all_shells()
           {
-            local _shell
+            local _shell _shell_cmd _status
             EXECUTED_LIST=''
-            for _shell in sh bash dash ksh zsh osh; do
-              if skip "${1:?}" "${_shell:?}" || ! _shell="$(command -v "${_shell:?}")" || ! not_already_excuted "${_shell:?}"; then continue; fi
-              printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell:?}" "${1:?}"
-              "${_shell:?}" "${workspace_dir:?}/${1:?}"
-              printf '\nRETURN CODE:%s\n\n' "${?}"
+            for _shell in sh bash busybox dash ksh zsh osh bosh yash posh; do
+              if skip "${1:?}" "${_shell:?}" || ! _shell_cmd="$(command -v "${_shell:?}")" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
+              printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
+              _status='0'
+              if test "${_shell:?}" = 'busybox'; then
+                "${_shell_cmd:?}" ash "${workspace_dir:?}/${1:?}" || _status="${?}"
+              else
+                "${_shell_cmd:?}" "${workspace_dir:?}/${1:?}" || _status="${?}"
+              fi
+              test "${_status:?}" = 0 || EXIT_CODE="${_status:?}"
+              printf '\nRETURN CODE:%s\n\n' "${_status:?}"
             done
           }
+          EXIT_CODE='0'
           export ONLY_FOR_TESTING='true'
           for _script in 'tools/bits-info.sh' 'cmdline.sh'; do
             test_on_all_shells "${_script:?}"
             printf '%s\n' "---"
           done
+          exit "${EXIT_CODE:?}"
