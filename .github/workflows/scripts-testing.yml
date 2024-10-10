@@ -37,8 +37,8 @@ jobs:
           # Testing scripts...
           # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
           readonly current_os='${{ matrix.os }}'; readonly workspace_dir='${{ github.workspace }}'
-          if command 1> /dev/null -v 'apt-get'; then sudo apt-get -y -qq install 'yash' 'posh' 1> /dev/null; fi
-          if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'yash'; fi
+          if command 1> /dev/null -v 'apt-get'; then sudo apt-get -y -qq install 'mksh' 'yash' 'posh' 1> /dev/null; fi
+          if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'yash'; fi
           #
           not_already_excuted()
           {
@@ -55,7 +55,7 @@ jobs:
           {
             if test "${1:?}" = 'cmdline.sh'; then
               case "${2:?}" in
-                'sh' | 'busybox' | 'dash' | 'zsh' | 'yash' | 'posh') return 0 ;;
+                sh | busybox | dash | mksh | zsh | yash | posh) return 0 ;;
                 *) ;;
               esac
             fi
@@ -65,7 +65,7 @@ jobs:
           {
             local _shell _shell_cmd _status
             EXECUTED_LIST=''
-            for _shell in sh bash busybox dash ksh zsh osh bosh yash posh; do
+            for _shell in sh bash busybox dash ksh mksh zsh osh bosh yash posh hush; do
               if skip "${1:?}" "${_shell:?}" || ! _shell_cmd="$(command -v "${_shell:?}")" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
               _status='0'
