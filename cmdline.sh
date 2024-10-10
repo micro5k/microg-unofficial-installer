@@ -82,7 +82,11 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     if test "${ONLY_FOR_TESTING-}" = 'true'; then
       printf '%s\n' "${__SHELL_EXE}"
       printf '%s\n' "${_main_dir}"
-      "${__SHELL_EXE}" "${_main_dir}/includes/common.sh"
+      if test "${_is_busybox}" = 'true'; then
+        "${__SHELL_EXE}" 'ash' "${_main_dir}/includes/common.sh"
+      else
+        "${__SHELL_EXE}" "${_main_dir}/includes/common.sh"
+      fi
     elif test "${_is_busybox}" = 'true'; then
       exec ash -s -c ". '${_main_dir}/includes/common.sh' || exit \${?}" 'ash' "${@}"
     else
