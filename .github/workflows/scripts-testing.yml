@@ -28,7 +28,7 @@ jobs:
           - windows-latest
           - macos-latest
           - macos-13
-    name: "Tools test (${{ matrix.os }})"
+    name: "Scripts test (${{ matrix.os }})"
     runs-on: "${{ matrix.os }}"
 
     steps:
