@@ -43,9 +43,9 @@ jobs:
           readonly workspace_dir='${{ github.workspace }}'
           export ONLY_FOR_TESTING='true'
           for _script in 'tools/bits-info.sh' 'cmdline.sh'; do
-            printf '\n%s:\n\n' "${_script}"
+            printf '\nSCRIPT "%s":\n\n' "${_script}"
             bash "${workspace_dir}/${_script}"
-            printf 'RETURN CODE:%s\n' "${?}"
+            printf '\nRETURN CODE:%s\n' "${?}"
           done
       - name: "Test script on Oils (only under macOS-latest)"
         if: "${{ matrix.os == 'macos-latest' }}"
