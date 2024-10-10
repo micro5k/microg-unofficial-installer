@@ -732,7 +732,7 @@ get_version()
   _version="$(printf '%s\n' "${_version}" | head -n 1)" || _version=''
 
   case "${_version}" in
-    '' | *'invalid option'* | *'unrecognized option'* | *'unknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'*)
+    '' | *'Usage'* | *'invalid option'* | *'unrecognized option'* | *[Uu]'nknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'*)
       printf '%s\n' 'unknown'
       return 2
       ;;
