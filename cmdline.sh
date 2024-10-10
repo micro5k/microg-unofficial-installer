@@ -7,7 +7,7 @@
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
-    local _main_dir _is_busybox _newline
+    local _main_dir _is_busybox _applet _newline
 
     _newline='
 '
@@ -67,8 +67,16 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     export __SHELL_EXE
 
     _is_busybox='false'
+    _applet=''
     case "${__SHELL_EXE}" in
-      *'/busybox'* | *'/osh' | *'/oil.ovm' | *'/oils-for-unix') _is_busybox='true' ;; # ToDO: Rename '_is_busybox'
+      *'/busybox'*)
+        _is_busybox='true'
+        _applet="${CUSTOM_APPLET:-ash}"
+        ;;
+      *'/osh' | *'/oil.ovm' | *'/oils-for-unix')
+        _is_busybox='true' # ToDO: Rename '${_is_busybox}'
+        _applet="${CUSTOM_APPLET:-sh}"
+        ;;
       *) ;;
     esac
 
@@ -83,12 +91,12 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       printf '%s\n' "${__SHELL_EXE}"
       printf '%s\n' "${_main_dir}"
       if test "${_is_busybox}" = 'true'; then
-        "${__SHELL_EXE}" 'sh' "${_main_dir}/includes/common.sh"
+        "${__SHELL_EXE}" "${_applet}" "${_main_dir}/includes/common.sh"
       else
         "${__SHELL_EXE}" "${_main_dir}/includes/common.sh"
       fi
     elif test "${_is_busybox}" = 'true'; then
-      exec ash -s -c ". '${_main_dir}/includes/common.sh' || exit \${?}" 'ash' "${@}"
+      exec "${_applet}" -s -c ". '${_main_dir}/includes/common.sh' || exit \${?}" "${_applet}" "${@}"
     else
       if test "${#}" -gt 0; then
         case "${*}" in
