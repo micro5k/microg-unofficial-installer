@@ -51,20 +51,30 @@ jobs:
             EXECUTED_LIST="${EXECUTED_LIST?}|${_shell:?}"
             return 0 # NOT already executed
           }
+          skip()
+          {
+            if test "${1:?}" = 'cmdline.sh'; then
+              case "${2:?}" in
+                'sh' | 'dash' | 'zsh') return 0 ;;
+                *) ;;
+              esac
+            fi
+            return 1
+          }
           test_on_all_shells()
           {
             local _shell
             EXECUTED_LIST=''
             for _shell in sh dash bash ksh zsh osh; do
-              if ! _shell="$(command -v "${_shell:?}")" || ! not_already_excuted "${_shell:?}"; then continue; fi
+              if skip "${1:?}" "${_shell:?}" || ! _shell="$(command -v "${_shell:?}")" || ! not_already_excuted "${_shell:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell:?}" "${1:?}"
-              "${_shell:?}" "${1:?}"
+              "${_shell:?}" "${workspace_dir:?}/${1:?}"
               printf '\nRETURN CODE:%s\n\n' "${?}"
             done
           }
           export ONLY_FOR_TESTING='true'
-          for _script in 'tools/bits-info.sh'; do
-            test_on_all_shells "${workspace_dir}/${_script}"
+          for _script in 'tools/bits-info.sh' 'cmdline.sh'; do
+            test_on_all_shells "${_script:?}"
             printf '%s\n' "---"
           done
       - name: "Test script on Oils (only under macOS-latest)"
