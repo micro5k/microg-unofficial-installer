@@ -34,18 +34,38 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v4
-      - name: "Test scripts on Bash"
+      - name: "Test scripts"
         shell: bash
         run: |
-          # Testing scripts on Bash...
-          bash --version | head -n 1
+          # Testing scripts...
           # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
           readonly workspace_dir='${{ github.workspace }}'
+          not_already_excuted()
+          {
+            local _shell
+            _shell="$(realpath "${1:?}")" || return 2
+            case "${EXECUTED_LIST?}|" in
+              *"|${_shell:?}|"*) return 1 ;; # Already executed
+              *) ;;
+            esac
+            EXECUTED_LIST="${EXECUTED_LIST?}|${_shell:?}"
+            return 0 # NOT already executed
+          }
+          test_on_all_shells()
+          {
+            local _shell
+            EXECUTED_LIST=''
+            for _shell in sh dash bash ksh zsh osh; do
+              if ! _shell="$(command -v "${_shell:?}")" || ! not_already_excuted "${_shell:?}"; then continue; fi
+              printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell:?}" "${1:?}"
+              "${_shell:?}" "${1:?}"
+              printf '\nRETURN CODE:%s\n\n' "${?}"
+            done
+          }
           export ONLY_FOR_TESTING='true'
-          for _script in 'tools/bits-info.sh' 'cmdline.sh'; do
-            printf '\nSCRIPT "%s":\n\n' "${_script}"
-            bash "${workspace_dir}/${_script}"
-            printf '\nRETURN CODE:%s\n' "${?}"
+          for _script in 'tools/bits-info.sh'; do
+            test_on_all_shells "${workspace_dir}/${_script}"
+            printf '%s\n' "---"
           done
       - name: "Test script on Oils (only under macOS-latest)"
         if: "${{ matrix.os == 'macos-latest' }}"
