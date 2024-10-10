@@ -618,17 +618,17 @@ get_shell_info()
   case "${_shell_version}" in
     '' | *'Usage'* | *'invalid option'* | *'unrecognized option'* | *[Uu]'nknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'* | *'command not found'* | *'No such file or directory'*)
       if test "${_shell_is_ksh}" = 'true' && test -n "${KSH_VERSION-}" && _shell_version="${KSH_VERSION}"; then
-        : # Fallback for ksh
+        : # For ksh (include also variants like mksh)
       elif test "${_shell_name}" = 'dash' && test -n "${DASH_VERSION-}" && _shell_version="${DASH_VERSION}"; then
         : # For dash (possibly supported in the future)
       elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'dpkg' && _shell_version="$(dpkg -s 'dash' | grep -m 1 -F -e 'Version:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
-        : # For dash
+        : # For dash under Linux
       elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'brew' && _shell_version="$(brew 2> /dev/null info 'dash' | head -n 1 | grep -m 1 -F -e 'dash' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
-        : # For dash
+        : # For dash under macOS
       elif test "${_shell_name}" = 'dash' && command 1> /dev/null 2>&1 -v 'apt-cache' && _shell_version="$(apt-cache policy 'dash' | grep -m 1 -F -e 'Installed:' | cut -d ':' -f '2-' -s)" && test -n "${_shell_version}"; then
-        : # For dash (it is slow)
+        : # For dash under Linux (it is slow)
       elif test "${_shell_name}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION}"; then
-        : # For posh (need test)
+        : # For posh
       elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ' || :)" && test -n "${_shell_version}"; then
         : # Fallback for old ksh and bosh
       elif test -n "${version-}" && _shell_version="${version}"; then
