@@ -35,8 +35,14 @@ jobs:
         shell: bash
         run: |
           # Testing scripts...
+          EXIT_CODE='0'
+          SKIP_BASH='false'
+          if diff 1> /dev/null 2>&1 -- "$(command -v 'sh' || :)" "$(command -v 'bash' || :)"; then SKIP_BASH='true'; fi
           # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
-          readonly current_os='${{ matrix.os }}'; readonly workspace_dir='${{ github.workspace }}'
+          {
+            readonly current_os='${{ matrix.os }}'
+            readonly workspace_dir='${{ github.workspace }}'
+          }
           if command 1> /dev/null -v 'apt-get'; then sudo apt-get -y -qq install 'mksh' 'yash' 'posh' 1> /dev/null; fi
           if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'yash'; fi
           #
@@ -53,6 +59,7 @@ jobs:
           }
           skip()
           {
+            if test "${SKIP_BASH:?}" = 'true' && test "${2:?}" = 'bash'; then return 0; fi
             if test "${1:?}" = 'cmdline.sh'; then
               case "${2:?}" in
                 sh | busybox | dash | ksh | mksh | zsh | yash | posh) return 0 ;;
@@ -78,7 +85,6 @@ jobs:
               printf '\nRETURN CODE:%s\n\n' "${_status:?}"
             done
           }
-          EXIT_CODE='0'
           export ONLY_FOR_TESTING='true'
           for _script in 'tools/bits-info.sh' 'cmdline.sh'; do
             test_on_all_shells "${_script:?}"

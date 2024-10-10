@@ -1154,7 +1154,7 @@ detect_bb_and_id()
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true' && test -n "${SHELL_EXE?}"; then
     BB_CMD="${SHELL_EXE:?}"
   else
-    BB_CMD="$(command -v busybox)" || BB_CMD=''
+    BB_CMD="$(command 2> /dev/null -v busybox)" || BB_CMD=''
   fi
 
   if test "${PLATFORM:?}" = 'win' && test -n "${BB_CMD?}"; then
