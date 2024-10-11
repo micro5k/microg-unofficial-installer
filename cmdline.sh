@@ -7,7 +7,13 @@
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
-    local _main_dir _use_applets _applet _newline
+    if command 1> /dev/null 2>&1 -v local; then
+      local _main_dir _run_strategy _applet _newline
+    else
+      typeset _main_dir _run_strategy _applet _newline
+      typeset _gse_shell_exe _gse_tmp_var
+      \eval ' \local() { :; } ' || :
+    fi
 
     _newline='
 '
@@ -66,37 +72,41 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     __SHELL_EXE="$(get_shell_exe)" || __SHELL_EXE='bash'
     export __SHELL_EXE
 
-    _use_applets='false'
+    _run_strategy='init-file'
     _applet=''
     case "${__SHELL_EXE}" in
-      *'/busybox'*)
-        _use_applets='true'
+      *'/busybox'*) # BusyBox
+        _run_strategy='s-opt'
         _applet="${CUSTOM_APPLET:-ash}"
         ;;
-      *'/osh' | *'/oil.ovm' | *'/oils-for-unix')
-        _use_applets='true'
+      *'/oil.ovm' | *'/oils-for-unix') # Oils
+        _run_strategy='source'
         _applet="${CUSTOM_APPLET:-osh}"
+        ;;
+      *'/osh') # Oils
+        _run_strategy='source'
         ;;
       *) ;;
     esac
-
-    export DO_INIT_CMDLINE=1
-    unset STARTED_FROM_BATCH_FILE
-    unset IS_PATH_INITIALIZED
-    unset __QUOTED_PARAMS
 
     if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR}"; else _main_dir='.'; fi
 
     if test "${ONLY_FOR_TESTING-}" = 'true'; then
       printf '%s\n' "${__SHELL_EXE}"
       printf '%s\n' "${_main_dir}"
-      if test "${_use_applets}" = 'true'; then
-        "${__SHELL_EXE}" "${_applet}" "${_main_dir}/includes/common.sh"
-      else
-        "${__SHELL_EXE}" "${_main_dir}/includes/common.sh"
-      fi
-    elif test "${_use_applets}" = 'true'; then
-      exec "${__SHELL_EXE}" "${_applet}" -s -c ". '${_main_dir}/includes/common.sh' || exit \${?}" "${_applet}" "${@}"
+      _run_strategy='source'
+    fi
+
+    export DO_INIT_CMDLINE=1
+    unset STARTED_FROM_BATCH_FILE
+    unset IS_PATH_INITIALIZED
+    unset __QUOTED_PARAMS
+
+    if test "${_run_strategy}" = 'source'; then
+      . "${_main_dir}/includes/common.sh" "${@}" || return "${?}"
+    elif test "${_run_strategy}" = 's-opt'; then
+      # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
+      exec "${__SHELL_EXE}" ${_applet} -s -c ". '${_main_dir}/includes/common.sh' || exit \${?}" "${_applet:-${0-}}" "${@}"
     else
       if test "${#}" -gt 0; then
         case "${*}" in
