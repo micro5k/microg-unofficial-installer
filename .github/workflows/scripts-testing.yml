@@ -37,14 +37,15 @@ jobs:
           # Testing scripts...
           EXIT_CODE='0'
           SH_IS_BASH='false'
-          if diff 1> /dev/null 2>&1 -- "$(command -v 'sh' || :)" "$(command -v 'bash' || :)"; then SH_IS_BASH='true'; fi
           # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
           {
             readonly current_os='${{ matrix.os }}'
             readonly workspace_dir='${{ github.workspace }}'
           }
+          if test "${current_os?}" = 'macos-latest' || diff 1> /dev/null 2>&1 -- "$(command -v 'sh' || :)" "$(command -v 'bash' || :)"; then SH_IS_BASH='true'; fi
           if command 1> /dev/null -v 'apt-get'; then sudo apt-get -y -qq install 'mksh' 'yash' 'posh' 1> /dev/null; fi
           if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'yash'; fi
+          if command 1> /dev/null -v 'choco'; then choco 1> /dev/null install 'busybox' -y --no-progress; fi
           #
           not_already_excuted()
           {
@@ -68,7 +69,7 @@ jobs:
             fi
             if test "${1:?}" = 'cmdline.sh'; then
               case "${2:?}" in
-                sh | busybox | dash | ksh | mksh | zsh | yash | posh) return 0 ;;
+                sh | dash | busybox | ksh | mksh | zsh | yash | posh) return 0 ;;
                 *) ;;
               esac
             fi
@@ -78,7 +79,7 @@ jobs:
           {
             local _shell _shell_cmd _status
             EXECUTED_LIST=''
-            for _shell in sh bash busybox dash ksh mksh zsh osh bosh yash posh hush; do
+            for _shell in sh dash bash busybox ksh mksh zsh osh bosh yash posh hush; do
               if skip "${1:?}" "${_shell:?}" || ! _shell_cmd="$(command -v "${_shell:?}")" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
               _status='0'
