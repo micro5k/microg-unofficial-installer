@@ -36,8 +36,8 @@ jobs:
         run: |
           # Testing scripts...
           EXIT_CODE='0'
-          SKIP_BASH='false'
-          if diff 1> /dev/null 2>&1 -- "$(command -v 'sh' || :)" "$(command -v 'bash' || :)"; then SKIP_BASH='true'; fi
+          SH_IS_BASH='false'
+          if diff 1> /dev/null 2>&1 -- "$(command -v 'sh' || :)" "$(command -v 'bash' || :)"; then SH_IS_BASH='true'; fi
           # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
           {
             readonly current_os='${{ matrix.os }}'
@@ -59,7 +59,13 @@ jobs:
           }
           skip()
           {
-            if test "${SKIP_BASH:?}" = 'true' && test "${2:?}" = 'bash'; then return 0; fi
+            if test "${SH_IS_BASH:?}" = 'true'; then 
+              case "${2:?}" in
+                bash) return 0 ;;
+                sh) return 1 ;;
+                *) ;;
+              esac
+            fi
             if test "${1:?}" = 'cmdline.sh'; then
               case "${2:?}" in
                 sh | busybox | dash | ksh | mksh | zsh | yash | posh) return 0 ;;
