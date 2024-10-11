@@ -110,9 +110,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     else
       if test "${#}" -gt 0; then
         case "${*}" in
-          *"${_newline}"*)
-            printf 'WARNING: Newline character found, parameters dropped\n'
-            ;;
+          *"${_newline}"*) printf 1>&2 '%s\n' 'WARNING: Newline character found, parameters dropped' ;;
           *)
             __QUOTED_PARAMS="$(printf '%s\n' "${@}")"
             export __QUOTED_PARAMS
@@ -120,7 +118,8 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
         esac
       fi
 
-      exec "${__SHELL_EXE}" --init-file "${_main_dir}/includes/common.sh"
+      # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
+      exec "${__SHELL_EXE}" ${_applet} --init-file "${_main_dir}/includes/common.sh"
     fi
   }
 
