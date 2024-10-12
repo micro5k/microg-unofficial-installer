@@ -93,27 +93,33 @@ jobs:
           }
           skip()
           {
+            local _s_shell
             if test "${SH_IS_BASH:?}" = 'true'; then 
               case "${2:?}" in
-                bash) return 0 ;;
-                sh) return 1 ;;
+                bash) return 0 ;; # Skip
+                sh) return 1 ;; # Execute
                 *) ;;
               esac
+            fi
+            if test "${2?}" = 'osh' || test "${2?}" = 'bosh'; then
+              _s_shell="${2?}"
+            else
+              _s_shell="$(basename "${3:?}")" || _s_shell="${3?}"
             fi
             if test "${1:?}" = 'cmdline.sh'; then
-              case "${2:?}" in
-                sh | dash | busybox | ksh | mksh | zsh | bosh | pbosh | yash | posh) return 0 ;;
+              case "${_s_shell?}" in
+                sh | dash | busybox | mksh | zsh | bosh | pbosh | yash | posh) return 0 ;; # Skip
                 *) ;;
               esac
             fi
-            return 1
+            return 1 # Execute
           }
           test_on_all_shells()
           {
             local _shell _shell_cmd _status
             EXECUTED_LIST=''
-            for _shell in sh dash bash busybox ksh mksh zsh osh bosh yash posh hush; do
-              if skip "${1:?}" "${_shell:?}" || ! _shell_cmd="$(command -v "${_shell:?}")" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
+            for _shell in sh dash bash busybox mksh ksh zsh yash posh osh bosh hush; do
+              if ! _shell_cmd="$(command -v "${_shell:?}")" || skip "${1:?}" "${_shell:?}" "$(realpath ${_shell_cmd:?} || :)" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
               _status='0'
               if test "${_shell:?}" = 'busybox'; then
