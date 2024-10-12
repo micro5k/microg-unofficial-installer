@@ -135,6 +135,6 @@ jobs:
         if: "always()"
         shell: bash
         run: |
-          # Cleaning extracted files
+          # Cleaning extracted files...
           readonly shells_dir='${{ github.workspace }}/cache/shells'
           rm -f -r -- "${shells_dir:?}/extracted" || exit $?
