@@ -654,6 +654,7 @@ get_shell_info()
     *) _shell_version="${_shell_version#"${_shell_name}"}" ;;
   esac
   _shell_version="${_shell_version# }"
+  _shell_version="${_shell_version#stable }"
   _shell_version="${_shell_version#v}"
 
   printf '%s %s\n' "${_shell_name:-unknown}" "${_shell_version:-unknown}"
