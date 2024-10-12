@@ -31,6 +31,38 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v4
+      - name: "Cache shells"
+        uses: actions/cache@v4
+        with:
+          path: "cache/shells"
+          key: "${{ runner.os }}-shells"
+      - name: "Prepare shells"
+        shell: bash
+        run: |
+          # Preparing shells...
+          # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
+          {
+            readonly current_os='${{ runner.os }}'
+            readonly shells_dir='${{ github.workspace }}/cache/shells'
+          }
+          prepare_shell()
+          {
+            if test ! -s "${shells_dir:?}/${1:?}.${2:?}"; then
+              printf '%s\n' "Downloading '${1?}'..."
+              mkdir -p -- "${shells_dir:?}" || return "${?}"
+              if wget -q -O "${shells_dir:?}/${1:?}.${2:?}" -- "${3:?}" && test -s "${shells_dir:?}/${1:?}.${2:?}"; then
+                : # OK
+              else
+                rm -f -- "${shells_dir:?}/${1:?}.${2:?}" || :
+                return 1
+              fi
+            fi
+            mkdir -p -- "${shells_dir:?}/extracted/${1?}" || return "${?}"
+            tar -x -f "${shells_dir:?}/${1:?}.${2:?}" -C "${shells_dir:?}/extracted/${1:?}" || return "${?}"
+          }
+          if test "${current_os:?}" = 'Linux'; then
+            prepare_shell 'bosh' 'tar.xz' 'http://fuz.su/pub/schilytools/bin/schily-2024-03-21-x86_64-linux-gcc.tar.xz' || exit "${?}"
+          fi
       - name: "Test scripts"
         shell: bash
         run: |
@@ -39,9 +71,10 @@ jobs:
           SH_IS_BASH='false'
           # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
           {
-            readonly current_os='${{ matrix.os }}'
+            readonly current_os='${{ runner.os }}'
             readonly workspace_dir='${{ github.workspace }}'
           }
+          if test "${current_os:?}" = 'Linux'; then PATH="${PATH:-/usr/bin}:${workspace_dir:?}/cache/shells/extracted/bosh/opt/schily/bin" || exit "${?}"; fi
           if diff 1> /dev/null 2>&1 -- "$(command -v 'sh' || :)" "$(command -v 'bash' || :)"; then SH_IS_BASH='true'; fi
           if command 1> /dev/null -v 'apt-get'; then sudo apt-get -y -qq install 'mksh' 'yash' 'posh' 1> /dev/null; fi
           if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'yash'; fi
@@ -69,7 +102,7 @@ jobs:
             fi
             if test "${1:?}" = 'cmdline.sh'; then
               case "${2:?}" in
-                sh | dash | busybox | ksh | mksh | zsh | yash | posh) return 0 ;;
+                sh | dash | busybox | ksh | mksh | zsh | bosh | pbosh | yash | posh) return 0 ;;
                 *) ;;
               esac
             fi
@@ -98,3 +131,10 @@ jobs:
             printf '%s\n' "---"
           done
           exit "${EXIT_CODE:?}"
+      - name: "Clean extracted files"
+        if: "always()"
+        shell: bash
+        run: |
+          # Cleaning extracted files
+          readonly shells_dir='${{ github.workspace }}/cache/shells'
+          rm -f -r -- "${shells_dir:?}/extracted" || exit $?
