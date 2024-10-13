@@ -666,9 +666,17 @@ get_applet_name()
   local _shell_cmdline _current_applet
 
   case "${1}" in
-    'busybox')
-      if _shell_cmdline="$(tr 2> /dev/null -- '\0' ' ' 0< "/proc/${$}/cmdline")" && test -n "${_shell_cmdline}"; then
-        for _current_applet in bash lash msh hush ash sh; do
+    'busybox' | 'osh')
+      if test -e "/proc/${$}/cmdline" && _shell_cmdline="$(tr 2> /dev/null -- '\0' ' ' 0< "/proc/${$}/cmdline")" && test -n "${_shell_cmdline}"; then
+        :
+      elif _shell_cmdline="$(ps 2> /dev/null -p "${$}" -o 'args=')"; then
+        :
+      else
+        _shell_cmdline=''
+      fi
+
+      if test -n "${_shell_cmdline}"; then
+        for _current_applet in bash lash msh hush ash osh sh; do
           if printf '%s\n' "${_shell_cmdline}" | grep -m 1 -q -w -e "${_current_applet}"; then
             printf '%s\n' "${_current_applet}"
             return 0
