@@ -650,6 +650,7 @@ get_shell_info()
   case "${_shell_name}" in
     'busybox') _shell_version="${_shell_version#BusyBox}" ;;
     'osh') _shell_version="$(printf '%s\n' "${_shell_version#Oils}" | cut -f '1')" ;;
+    'mksh') _shell_version="${_shell_version#*MIRBSD KSH}" ;;
     '') ;;
     *) _shell_version="${_shell_version#"${_shell_name}"}" ;;
   esac
