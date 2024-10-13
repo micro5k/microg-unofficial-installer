@@ -82,6 +82,13 @@ jobs:
           if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'ksh93' 'yash'; fi
           if command 1> /dev/null -v 'choco'; then choco 1> /dev/null install 'busybox' -y --no-progress; fi
           #
+          resolve_base()
+          {
+            local _rb_shell
+            _rb_shell="$(command -v "${1:?}")" || return "${?}"
+            _rb_shell="$(realpath "${_rb_shell:?}")" || return "${?}"
+            basename "${_rb_shell:?}" || return "${?}"
+          }
           not_already_excuted()
           {
             local _shell
@@ -96,21 +103,26 @@ jobs:
           skip()
           {
             local _s_shell
+            _s_shell=''
             if test "${SH_IS_BASH:?}" = 'true'; then 
               case "${2:?}" in
-                bash) return 0 ;; # Skip
-                sh) return 1 ;; # Execute
+                bash) return 0 ;;      # Skip
+                sh) _s_shell='bash' ;; # Evaluate as bash
                 *) ;;
               esac
             fi
-            if test "${2?}" = 'ksh93' || test "${2?}" = 'osh' || test "${2?}" = 'bosh'; then
-              _s_shell="${2?}"
+            if test -n "${_s_shell?}"; then
+              :
+            elif test "${2:?}" = 'ksh93' || test "${2:?}" = 'osh' || test "${2:?}" = 'bosh'; then
+              _s_shell="${2:?}"
             else
-              _s_shell="$(basename "${3:?}")" || _s_shell="${3?}"
+              _s_shell="$(resolve_base "${2:?}")" || _s_shell="${2:?}"
             fi
             if test "${1:?}" = 'cmdline.sh'; then
               case "${_s_shell?}" in
-                sh | dash | busybox | mksh | zsh | bosh | pbosh | yash | posh) return 0 ;; # Skip
+                dash | mksh | zsh | yash | posh | pbosh | bosh) return 0 ;; # Skip
+                busybox) if test "${current_os:?}" = 'Linux'; then return 0; fi ;; # Skip on Linux
+                sh) if test "${current_os:?}" = 'macOS'; then return 0; fi ;; # Skip on macOS
                 *) ;;
               esac
             fi
@@ -122,7 +134,7 @@ jobs:
             EXECUTED_LIST=''
             for _shell in sh dash bash busybox mksh ksh93 ksh zsh yash posh osh bosh hush; do
               if test "${_shell:?}" = 'ksh' && test -n "${ORIGINAL_KSH?}"; then _shell="${ORIGINAL_KSH:?}"; fi
-              if ! _shell_cmd="$(command -v "${_shell:?}")" || skip "${1:?}" "${_shell:?}" "$(realpath ${_shell_cmd:?} || :)" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
+              if ! _shell_cmd="$(command -v "${_shell:?}")" || skip "${1:?}" "${_shell:?}" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
               _status='0'
               if test "${_shell:?}" = 'busybox'; then
