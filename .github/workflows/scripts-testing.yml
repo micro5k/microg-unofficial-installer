@@ -70,6 +70,7 @@ jobs:
           # Testing scripts...
           EXIT_CODE='0'
           SH_IS_BASH='false'
+          ORIGINAL_KSH="$(command -v 'ksh' || :)"
           # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
           {
             readonly current_os='${{ runner.os }}'
@@ -78,7 +79,7 @@ jobs:
           if test "${current_os:?}" = 'Linux'; then PATH="${PATH:-/usr/bin}:${workspace_dir:?}/cache/shells/extracted/bosh/opt/schily/bin" || exit "${?}"; fi
           if diff 1> /dev/null 2>&1 -- "$(command -v 'sh' || :)" "$(command -v 'bash' || :)"; then SH_IS_BASH='true'; fi
           if command 1> /dev/null -v 'apt-get'; then sudo apt-get -y -qq install 'mksh' 'yash' 'posh' 1> /dev/null; fi
-          if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'yash'; fi
+          if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'ksh93' 'yash'; fi
           if command 1> /dev/null -v 'choco'; then choco 1> /dev/null install 'busybox' -y --no-progress; fi
           #
           not_already_excuted()
@@ -102,7 +103,7 @@ jobs:
                 *) ;;
               esac
             fi
-            if test "${2?}" = 'osh' || test "${2?}" = 'bosh'; then
+            if test "${2?}" = 'ksh93' || test "${2?}" = 'osh' || test "${2?}" = 'bosh'; then
               _s_shell="${2?}"
             else
               _s_shell="$(basename "${3:?}")" || _s_shell="${3?}"
@@ -119,7 +120,8 @@ jobs:
           {
             local _shell _shell_cmd _status
             EXECUTED_LIST=''
-            for _shell in sh dash bash busybox mksh ksh zsh yash posh osh bosh hush; do
+            for _shell in sh dash bash busybox mksh ksh93 ksh zsh yash posh osh bosh hush; do
+              if test "${_shell:?}" = 'ksh' && test -n "${ORIGINAL_KSH?}"; then _shell="${ORIGINAL_KSH:?}"; fi
               if ! _shell_cmd="$(command -v "${_shell:?}")" || skip "${1:?}" "${_shell:?}" "$(realpath ${_shell_cmd:?} || :)" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
               _status='0'
