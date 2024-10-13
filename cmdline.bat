@@ -18,7 +18,7 @@ SET "LANG=en_US.UTF-8"
 SET "MAIN_DIR=%~dp0"
 
 IF "%USER_HOME%" == "" (
-  IF "%TERM_PROGRAM%" == "mintty" SET "TERM_PROGRAM="
+  IF "%TERM_PROGRAM%" == "mintty" SET "TERM_PROGRAM=mintty-"
   SET "USER_HOME=%USERPROFILE%"
   SET "HOME=%MAIN_DIR%"
 )

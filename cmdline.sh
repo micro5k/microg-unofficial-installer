@@ -38,7 +38,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       fi
 
       if test -n "${MAIN_DIR-}" && test -z "${USER_HOME-}"; then
-        if test "${TERM_PROGRAM-}" = 'mintty'; then unset TERM_PROGRAM; fi
+        if test "${TERM_PROGRAM-}" = 'mintty'; then TERM_PROGRAM='mintty-'; fi
         export USER_HOME="${HOME-}"
         export HOME="${MAIN_DIR}"
       fi
