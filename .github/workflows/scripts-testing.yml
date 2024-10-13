@@ -32,6 +32,7 @@ jobs:
       - name: "Checkout sources"
         uses: actions/checkout@v4
       - name: "Cache shells"
+        if: "${{ runner.os == 'Linux' }}"
         uses: actions/cache@v4
         with:
           path: "cache/shells"
