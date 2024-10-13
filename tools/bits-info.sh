@@ -775,6 +775,7 @@ main()
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
   shell_exe="$(get_shell_exe || :)"
+  if test "$(uname 2> /dev/null -o || :)" = 'Msys' && command 1> /dev/null 2>&1 -v 'cygpath'; then shell_exe="$(cygpath -m -a -l -- "${shell_exe}" || :)"; fi
   shell_info="$(get_shell_info "${shell_exe}" || :)"
   shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1' || :)"
 
