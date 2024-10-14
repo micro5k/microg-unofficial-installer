@@ -847,7 +847,7 @@ main()
       '64' | '32') cpu_bit="${cpu_bit}-bit" ;;
       *) cpu_bit='unknown' ;;
     esac
-  elif command 1> /dev/null 2>&1 -v 'powershell.exe' && cpu_bit="$(powershell.exe -c 'gwmi Win32_Processor | select -ExpandProperty DataWidth')" && test -n "${cpu_bit}"; then
+  elif command 1> /dev/null 2>&1 -v 'powershell.exe' && cpu_bit="$(powershell.exe 2> /dev/null -c 'gwmi Win32_Processor | select -ExpandProperty DataWidth')" && test -n "${cpu_bit}"; then
     # On Windows (if PowerShell is installed - it is slow)
     case "${cpu_bit}" in
       '64' | '32') cpu_bit="${cpu_bit}-bit" ;;
