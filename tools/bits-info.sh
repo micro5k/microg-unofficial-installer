@@ -15,13 +15,13 @@ $(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 readonly SCRIPT_NAME='Bits info'
 readonly SCRIPT_VERSION='1.1'
 
-readonly NL='
-'
-
 command 1> /dev/null 2>&1 -v 'local' || {
   \eval ' \local() { :; } ' || : # Create a dummy "local" function for ksh shell
   alias 'local'='typeset'        # On some versions of ksh this really works, but leave the function as dummy fallback
 }
+
+NL='
+'
 
 convert_max_signed_int_to_bit()
 {
@@ -834,7 +834,7 @@ main()
     else
       cpu_bit='32-bit'
     fi
-  elif command 1> /dev/null 2>&1 -v 'sysctl' && tmp_var="$(sysctl hw.cpu64bit_capable | cut -d ':' -f '2-' -s)" && tmp_var="${tmp_var# }" && test -n "${tmp_var}"; then
+  elif command 1> /dev/null 2>&1 -v 'sysctl' && tmp_var="$(sysctl 2> /dev/null hw.cpu64bit_capable | cut -d ':' -f '2-' -s)" && tmp_var="${tmp_var# }" && test -n "${tmp_var}"; then
     # On macOS
     case "${tmp_var}" in
       '1') cpu_bit='64-bit' ;;
