@@ -34,10 +34,10 @@ pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
   if test "${NO_PAUSE:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM-}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
-    printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit...' || true
+    printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit...' || :
     # shellcheck disable=SC3045
-    IFS='' read 1>&2 -r -s -n 1 _ || true
-    printf 1>&2 '\n' || true
+    IFS='' read 1> /dev/null 2>&1 -r -s -n 1 _ || IFS='' read 1>&2 -r _ || :
+    printf 1>&2 '\n' || :
   fi
 }
 
@@ -97,7 +97,7 @@ get_shell_exe()
   elif _gse_tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${_gse_tmp_var}" && _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var}")"; then
     # On Linux / macOS
     # shellcheck disable=SC2230 # Ignore: 'which' is non-standard
-    test "${_gse_tmp_var}" != 'osh' || _gse_tmp_var="$(which 2> /dev/null "${_gse_tmp_var}")" || return 3 # We may not get the full path with "command -v" on osh
+    case "${_gse_tmp_var}" in *'/'* | *"\\"*) ;; *) _gse_tmp_var="$(which 2> /dev/null "${_gse_tmp_var}")" || return 3 ;; esac # We may not get the full path with "command -v" on osh
   elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var}"; then
     if test "${_gse_tmp_var}" = '/bin/sh' && test "$(uname 2> /dev/null || :)" = 'Windows_NT'; then _gse_tmp_var="$(command 2> /dev/null -v 'busybox')" || return 2; fi
     if test ! -e "${_gse_tmp_var}" && test -e "${_gse_tmp_var}.exe"; then _gse_tmp_var="${_gse_tmp_var}.exe"; fi # Special fix for broken versions of Bash under Windows
