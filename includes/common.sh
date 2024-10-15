@@ -278,7 +278,7 @@ _clear_cookies()
 
 _parse_and_store_cookie()
 {
-  local IFS _line_no _cookie_file _elem
+  local IFS _line_no _cookie_file _elem _psc_cookie_name _psc_cookie_val
 
   if test ! -e "${MAIN_DIR:?}/cache/temp/cookies"; then mkdir -p "${MAIN_DIR:?}/cache/temp/cookies" || return "${?}"; fi
 
@@ -291,12 +291,17 @@ _parse_and_store_cookie()
   IFS=';'
   for _elem in ${2:?}; do
     _elem="${_elem# }"
-    IFS='=' read -r name val 0< <(printf '%s\n' "${_elem?}") || return "${?}"
-    if test -n "${name?}"; then
-      if test -e "${_cookie_file:?}" && _line_no="$(grep -n -F -m 1 -e "${name:?}=" -- "${_cookie_file:?}")" && _line_no="$(printf '%s\n' "${_line_no?}" | cut -d ':' -f '1' -s)" && test -n "${_line_no?}"; then
+    _psc_cookie_name="${_elem%%=*}"
+    case "${_elem}" in
+      *'='*) _psc_cookie_val="${_elem#*=}" ;;
+      *) _psc_cookie_val='' ;;
+    esac
+
+    if test -n "${_psc_cookie_name?}"; then
+      if test -e "${_cookie_file:?}" && _line_no="$(grep -n -F -m 1 -e "${_psc_cookie_name:?}=" -- "${_cookie_file:?}")" && _line_no="$(printf '%s\n' "${_line_no?}" | cut -d ':' -f '1' -s)" && test -n "${_line_no?}"; then
         sed -i -e "${_line_no:?}d" -- "${_cookie_file:?}" || return "${?}"
       fi
-      printf '%s\n' "${name:?}=${val?}" >> "${_cookie_file:?}" || return "${?}"
+      printf '%s\n' "${_psc_cookie_name:?}=${_psc_cookie_val?}" 1>> "${_cookie_file:?}" || return "${?}"
     fi
     break
   done || return "${?}"
