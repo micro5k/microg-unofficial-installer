@@ -791,17 +791,17 @@ main()
 
   if test -n "${shell_exe}" && shell_bit="$(detect_bitness_of_files "${shell_exe}")"; then
     :
+  elif test "${OS-}" = 'Windows_NT' && shell_bit="${PROCESSOR_ARCHITECTURE-}" && test -n "${shell_bit}"; then
+    # On Windows 2000+ / ReactOS
+    case "${shell_bit}" in
+      AMD64 | ARM64 | IA64) shell_bit='64-bit' ;;
+      x86) shell_bit='32-bit' ;;
+      *) shell_bit='unknown' ;;
+    esac
   elif tmp_var="$(uname 2> /dev/null -m)"; then
     case "${tmp_var}" in
       x86_64 | ia64 | arm64 | aarch64 | mips64) shell_bit='64-bit' ;;
       x86 | i686 | i586 | i486 | i386 | armv7* | mips) shell_bit='32-bit' ;;
-      *) shell_bit='unknown' ;;
-    esac
-  elif test "${OS-}" = 'Windows_NT'; then
-    # On Windows 2000+ / ReactOS
-    case "${PROCESSOR_ARCHITECTURE-}" in
-      AMD64 | ARM64 | IA64) shell_bit='64-bit' ;;
-      x86) shell_bit='32-bit' ;;
       *) shell_bit='unknown' ;;
     esac
   else
