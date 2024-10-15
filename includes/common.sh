@@ -901,21 +901,33 @@ dl_list()
   local local_filename local_path dl_hash dl_url dl_mirror
   local _backup_ifs _current_line
 
-  _backup_ifs="${IFS:-}"
-  IFS="${NL:?}"
+  _backup_ifs="${IFS-}"
+  IFS="${NL}"
+  # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
+  set -- ${1} || ui_error "Failed expanding DL info list inside dl_list()"
+  if test -n "${_backup_ifs}"; then IFS="${_backup_ifs}"; else unset IFS; fi
 
   # shellcheck disable=SC3040,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / C may run when A is true.
   (set 2> /dev/null +o posix) && set +o posix || true
 
-  for _current_line in ${1?}; do
-    IFS='|' read -r local_filename local_path _ _ _ _ dl_hash dl_url dl_mirror _ 0< <(printf '%s\n' "${_current_line:?}") || return "${?}"
+  for _current_line in "${@}"; do
+    _backup_ifs="${IFS-}"
+    IFS='|'
+    # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
+    set -- ${_current_line} || ui_error "Failed expanding DL info inside dl_list()"
+    if test -n "${_backup_ifs}"; then IFS="${_backup_ifs}"; else unset IFS; fi
+
+    local_filename="${1}"
+    local_path="${2}"
+    dl_hash="${7}"
+    dl_url="${8}"
+    dl_mirror="${9}"
+
     dl_file "${local_path:?}" "${local_filename:?}.apk" "${dl_hash:?}" "${dl_url:?}" "${dl_mirror?}" || return "${?}"
-  done || return "${?}"
+  done
 
   # shellcheck disable=SC3040,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / C may run when A is true.
   (set 2> /dev/null -o posix) && set -o posix || true
-
-  IFS="${_backup_ifs:-}"
 }
 
 get_32bit_programfiles()
