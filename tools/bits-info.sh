@@ -696,6 +696,21 @@ get_applet_name()
   return 2
 }
 
+retrieve_bitness_from_uname()
+{
+  # IMPORTANT: Typically it should return the bitness of the OS, but in some cases it just returns the bitness of the shell (use it only as last resort)
+
+  case "$(uname 2> /dev/null -m || :)" in
+    x86_64 | ia64 | arm64 | aarch64 | mips64) printf '%s\n' '64-bit' ;;
+    x86 | i686 | i586 | i486 | i386 | armv7* | mips) printf '%s\n' '32-bit' ;;
+    *)
+      printf '%s\n' 'unknown'
+      return 1
+      ;;
+  esac
+  return 0
+}
+
 get_os_info()
 {
   local _os_name _os_version
@@ -798,14 +813,8 @@ main()
       x86) shell_bit='32-bit' ;;
       *) shell_bit='unknown' ;;
     esac
-  elif tmp_var="$(uname 2> /dev/null -m)"; then
-    case "${tmp_var}" in
-      x86_64 | ia64 | arm64 | aarch64 | mips64) shell_bit='64-bit' ;;
-      x86 | i686 | i586 | i486 | i386 | armv7* | mips) shell_bit='32-bit' ;;
-      *) shell_bit='unknown' ;;
-    esac
   else
-    shell_bit='unknown'
+    shell_bit="$(retrieve_bitness_from_uname || :)" # Use it only as last resort (almost never happens)
   fi
 
   if test "${OS-}" = 'Windows_NT' && os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${os_bit}"; then
@@ -825,7 +834,7 @@ main()
       *) os_bit='unknown' ;;
     esac
   else
-    os_bit='unknown'
+    os_bit="$(retrieve_bitness_from_uname || :)" # Use it only as last resort (almost never happens)
   fi
 
   if test -e '/proc/cpuinfo' && tmp_var="$(grep -e '^flags[[:space:]]*:' -- '/proc/cpuinfo' | cut -d ':' -f '2-' -s)" && test -n "${tmp_var}"; then
