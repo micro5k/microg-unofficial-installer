@@ -13,11 +13,11 @@ export POSIXLY_CORRECT='y'
 $(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 
 readonly SCRIPT_NAME='Bits info'
-readonly SCRIPT_VERSION='1.1'
+readonly SCRIPT_VERSION='1.2'
 
 command 1> /dev/null 2>&1 -v 'local' || {
-  \eval ' \local() { :; } ' || : # Create a dummy "local" function for ksh shell
-  alias 'local'='typeset'        # On some versions of ksh this really works, but leave the function as dummy fallback
+  \eval ' local() { :; } ' || :                                               # Create a dummy "local" function for shells without support for local (example: ksh)
+  if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi # On some variants of ksh this really works, but leave the function as dummy fallback
 }
 
 NL='
