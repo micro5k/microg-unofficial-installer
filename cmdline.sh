@@ -7,12 +7,14 @@
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
-    if command 1> /dev/null 2>&1 -v local; then
+    if command 1> /dev/null 2>&1 -v 'local'; then
       local _main_dir _run_strategy _applet _newline
     else
-      typeset _main_dir _run_strategy _applet _newline
-      typeset _gse_shell_exe _gse_tmp_var
-      \eval ' \local() { :; } ' || :
+      if command 1> /dev/null 2>&1 -v 'typeset'; then
+        typeset _main_dir _run_strategy _applet _newline
+        typeset _gse_shell_exe _gse_tmp_var
+      fi
+      \eval ' local() { :; } ' || :
     fi
 
     _newline='
