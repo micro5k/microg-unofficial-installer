@@ -30,7 +30,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
         # shellcheck disable=SC3028,SC2128 # Intended: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
         if MAIN_DIR="${BASH_SOURCE-}" && test -n "${MAIN_DIR}"; then
           :
-        elif printf '%s\n' "${0-}" | grep -q -m 1 -- 'cmdline.sh$' && MAIN_DIR="${0}"; then
+        elif printf '%s\n' "${1}" | grep -q -m 1 -- 'cmdline.sh$' && MAIN_DIR="${1}"; then
           :
         else MAIN_DIR=''; fi
 
@@ -46,6 +46,8 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       fi
 
     fi
+
+    shift
 
     get_shell_exe()
     {
@@ -126,8 +128,8 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   }
 
   if test "${#}" -gt 0; then
-    main "${@}"
+    main "${0-}" "${@}"
   else
-    main
+    main "${0-}"
   fi
 fi
