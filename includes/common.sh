@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -232,6 +232,7 @@ restore_saved_title_if_exist()
 __update_title_and_ps1()
 {
   local _title
+  # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
   _title="Command-line: ${__TITLE_CMD_PREFIX-}$(basename 2> /dev/null "${0:--}" || printf '%s' "${0:--}" || :)$(test "${#}" -eq 0 || printf ' "%s"' "${@}" || :) (${SHLVL-}) - ${MODULE_NAME-}"
   PS1="${__DEFAULT_PS1-}"
 
@@ -367,6 +368,7 @@ _parse_webpage_and_get_url()
 {
   local _url _referrer _search_pattern
   local _domain _cookies _parsed_code _parsed_url _status
+  local _headers_file
 
   _url="${1:?}"
   _referrer="${2?}"
@@ -398,9 +400,14 @@ _parse_webpage_and_get_url()
     ui_debug ''
   fi
 
-  # shellcheck disable=SC2312
+  _headers_file="${MAIN_DIR:?}/cache/temp/headers/${_domain:?}.dat"
+  if test ! -e "${MAIN_DIR:?}/cache/temp/headers"; then mkdir -p "${MAIN_DIR:?}/cache/temp/headers" || return "${?}"; fi
+
   {
-    _parsed_code="$(grep -o -m 1 -e "${_search_pattern:?}")" || _status="${?}"
+    _parsed_code="$("${WGET_CMD:?}" -q -S -O '-' "${@}" -- "${_url:?}")" 2> "${_headers_file:?}" || _status="${?}"
+    _parsed_code="$({
+      printf '%s\n' "${_parsed_code?}" &
+    } | grep -o -m 1 -e "${_search_pattern:?}")" || _status="${?}"
     if test "${_status:?}" -eq 0; then
       _parsed_url="$(printf '%s\n' "${_parsed_code?}" | grep -o -m 1 -e 'href=".*' | cut -d '"' -f '2' | sed 's/\&amp;/\&/g')" || _status="${?}"
       if test "${DL_DEBUG:?}" = 'true'; then
@@ -415,10 +422,13 @@ _parse_webpage_and_get_url()
       fi
       return 1
     fi
-  } 0< <("${WGET_CMD:?}" -q -S -O '-' "${@}" -- "${_url:?}" 2> >(_parse_and_store_all_cookies "${_domain:?}" || {
+  }
+
+  _parse_and_store_all_cookies "${_domain:?}" 0< "${_headers_file:?}" || {
     ui_error_msg "Header parsing failed, error code => ${?}"
     return 2
-  }))
+  }
+  rm -f "${_headers_file:?}" || return "${?}"
 
   printf '%s\n' "${_parsed_url?}"
 }
