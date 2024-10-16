@@ -1275,8 +1275,10 @@ init_cmdline()
     if test -e "${ANDROID_SDK_ROOT:?}/build-tools"; then
       if AAPT2_PATH="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -iname 'aapt2*' | LC_ALL=C sort -V -r | head -n 1)" && test -n "${AAPT2_PATH?}"; then
         export AAPT2_PATH
-        # shellcheck disable=SC2139
-        alias 'aapt2'="'${AAPT2_PATH:?}'"
+        if command 1> /dev/null 2>&1 -v 'alias'; then
+          # shellcheck disable=SC2139
+          alias 'aapt2'="'${AAPT2_PATH:?}'"
+        fi
       else
         unset AAPT2_PATH
       fi
@@ -1287,37 +1289,39 @@ init_cmdline()
     export BB_OVERRIDE_APPLETS='; make'
   fi
 
-  alias 'dir'='ls'
-  alias 'cd..'='cd ..'
-  alias 'cd.'='cd .'
-  if test "${IS_BUSYBOX:?}" = 'true'; then
-    alias 'cls'='reset'
-  else
-    alias 'cls'='clear'
-  fi
-  alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
+  if command 1> /dev/null 2>&1 -v 'alias'; then
+    alias 'dir'='ls'
+    alias 'cd..'='cd ..'
+    alias 'cd.'='cd .'
+    if test "${IS_BUSYBOX:?}" = 'true'; then
+      alias 'cls'='reset'
+    else
+      alias 'cls'='clear'
+    fi
+    alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
 
-  if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
-    # shellcheck source=/dev/null
-    . "${MAIN_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
-  fi
+    if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
+      # shellcheck source=/dev/null
+      . "${MAIN_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
+    fi
 
-  alias 'build'='build.sh'
-  alias 'cmdline'='cmdline.sh'
-  if test "${PLATFORM:?}" = 'win'; then
-    alias 'gradlew'='gradlew.bat'
-    alias 'start'='start.sh'
-  fi
+    alias 'build'='build.sh'
+    alias 'cmdline'='cmdline.sh'
+    if test "${PLATFORM:?}" = 'win'; then
+      alias 'gradlew'='gradlew.bat'
+      alias 'start'='start.sh'
+    fi
 
-  alias 'bits-info'="bits-info.sh"
-  alias 'help'='help.sh'
+    alias 'bits-info'="bits-info.sh"
+    alias 'help'='help.sh'
+  fi
 
   add_to_path_env "${UTILS_DIR:?}"
   add_to_path_env "${MAIN_DIR:?}"
   PATH="%builtin${PATHSEP:?}${PATH-}"
   add_to_path_env "${MAIN_DIR:?}/tools"
 
-  if test -n "${BB_CMD?}"; then
+  if test -n "${BB_CMD?}" && command 1> /dev/null 2>&1 -v 'alias'; then
     create_bb_alias_if_missing 'su'
     create_bb_alias_if_missing 'ts'
     if test "${PLATFORM:?}" = 'win'; then
