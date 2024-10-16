@@ -120,7 +120,7 @@ jobs:
             fi
             if test "${1:?}" = 'cmdline.sh'; then
               case "${_s_shell?}" in
-                zsh | yash | posh) return 0 ;; # Skip
+                yash) if test "${current_os:?}" = 'macOS'; then return 0; fi ;; # Skip
                 *) ;;
               esac
             fi
