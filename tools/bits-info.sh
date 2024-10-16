@@ -13,7 +13,7 @@ export POSIXLY_CORRECT='y'
 $(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 
 readonly SCRIPT_NAME='Bits info'
-readonly SCRIPT_VERSION='1.2'
+readonly SCRIPT_VERSION='1.3'
 
 command 1> /dev/null 2>&1 -v 'local' || {
   \eval ' local() { :; } ' || :                                               # Create a dummy "local" function for shells without support for local (example: ksh)
@@ -949,6 +949,8 @@ main()
 }
 
 execute_script='true'
+STATUS=0
+
 while test "${#}" -gt 0; do
   case "${1}" in
     -V | --version)
@@ -989,11 +991,21 @@ while test "${#}" -gt 0; do
       shift
       break
       ;;
+
     -) # Get file list from STDIN
       break
       ;;
 
-    --* | -*) ;; # Ignore unsupported options
+    --*)
+      execute_script='false'
+      printf 1>&2 '%s\n' "${SCRIPT_NAME}: unrecognized option '${1}'"
+      STATUS=2
+      ;;
+    -*)
+      execute_script='false'
+      printf 1>&2 '%s\n' "${SCRIPT_NAME}: invalid option -- '${1#-}'"
+      STATUS=2
+      ;;
 
     *) break ;;
   esac
@@ -1011,4 +1023,6 @@ if test "${execute_script}" = 'true'; then
   fi
 
   pause_if_needed "${?}"
+elif test "${STATUS}" != 0; then
+  pause_if_needed "${STATUS}"
 fi
