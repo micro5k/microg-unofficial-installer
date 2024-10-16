@@ -917,9 +917,6 @@ dl_list()
   set -- ${1} || ui_error "Failed expanding DL info list inside dl_list()"
   if test -n "${_backup_ifs}"; then IFS="${_backup_ifs}"; else unset IFS; fi
 
-  # shellcheck disable=SC3040,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / C may run when A is true.
-  (set 2> /dev/null +o posix) && set +o posix || true
-
   for _current_line in "${@}"; do
     _backup_ifs="${IFS-}"
     IFS='|'
@@ -935,9 +932,6 @@ dl_list()
 
     dl_file "${local_path:?}" "${local_filename:?}.apk" "${dl_hash:?}" "${dl_url:?}" "${dl_mirror?}" || return "${?}"
   done
-
-  # shellcheck disable=SC3040,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / C may run when A is true.
-  (set 2> /dev/null -o posix) && set -o posix || true
 }
 
 get_32bit_programfiles()

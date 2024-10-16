@@ -120,9 +120,7 @@ jobs:
             fi
             if test "${1:?}" = 'cmdline.sh'; then
               case "${_s_shell?}" in
-                dash | mksh | zsh | yash | posh | pbosh | bosh) return 0 ;; # Skip
-                busybox) if test "${current_os:?}" = 'Linux'; then return 0; fi ;; # Skip on Linux
-                sh) if test "${current_os:?}" = 'macOS'; then return 0; fi ;; # Skip on macOS
+                zsh | yash | posh) return 0 ;; # Skip
                 *) ;;
               esac
             fi
