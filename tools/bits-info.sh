@@ -7,7 +7,6 @@
 
 set -u 2> /dev/null || :
 setopt SH_WORD_SPLIT 2> /dev/null || :
-export POSIXLY_CORRECT='y'
 
 # shellcheck disable=all
 $(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
@@ -20,8 +19,10 @@ command 1> /dev/null 2>&1 -v 'local' || {
   if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi # On some variants of ksh this really works, but leave the function as dummy fallback
 }
 
+POSIXLY_CORRECT='y'
 NL='
 '
+export POSIXLY_CORRECT NL
 
 convert_max_signed_int_to_bit()
 {
