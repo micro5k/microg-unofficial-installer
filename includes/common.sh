@@ -1245,9 +1245,8 @@ init_cmdline()
   fi
 
   # Set environment variables
-  UTILS_DIR="${MAIN_DIR:?}/utils"
-  UTILS_DATA_DIR="${UTILS_DIR:?}/data"
-  readonly UTILS_DIR UTILS_DATA_DIR
+  readonly UTILS_DIR="${MAIN_DIR:?}/utils"
+  readonly UTILS_DATA_DIR="${UTILS_DIR:?}/data"
   export UTILS_DIR UTILS_DATA_DIR
 
   # Set the path of Android SDK if not already set

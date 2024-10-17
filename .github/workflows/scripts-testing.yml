@@ -121,7 +121,6 @@ jobs:
             if test "${1:?}" = 'cmdline.sh'; then
               case "${_s_shell?}" in
                 #ksh) return 0 ;; # Skip
-                zsh) return 0 ;; # Skip
                 *) ;;
               esac
             fi
