@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
-
 # SPDX-FileCopyrightText: (c) 2024 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
@@ -9,10 +9,9 @@ SCRIPT_NAME='Bits info'
 SCRIPT_VERSION='1.4'
 
 set -u 2> /dev/null || :
-setopt SH_WORD_SPLIT 2> /dev/null || :
-
-# shellcheck disable=all
-$(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
+# shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
+case "$(set -o || :)" in *'pipefail'*) set -o pipefail ;; *) ;; esac
+if command 1> /dev/null 2>&1 -v 'setopt'; then setopt SH_WORD_SPLIT || printf '%s\n' 'Failed: setopt'; fi
 
 command 1> /dev/null 2>&1 -v 'local' || {
   \eval ' local() { :; } ' || :                                               # Create a dummy "local" function for shells without support for local (example: ksh)
