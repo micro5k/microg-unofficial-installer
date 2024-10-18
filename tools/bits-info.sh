@@ -633,7 +633,7 @@ get_shell_info()
         : # For dash under Linux (it is slow)
       elif test "${_shell_name}" = 'posh' && test -n "${POSH_VERSION-}" && _shell_version="${POSH_VERSION}"; then
         : # For posh
-      elif _shell_version="$(\eval 2> /dev/null ' \echo "${.sh.version-}" ' || :)" && test -n "${_shell_version}"; then
+      elif _shell_version="$(\eval 2> /dev/null ' echo "${.sh.version}" ' || :)" && test -n "${_shell_version}"; then
         : # Fallback for old ksh and bosh
       elif test -n "${version-}" && _shell_version="${version}"; then
         : # Fallback for tcsh and fish (NOTE: although this variable would show the version unfortunately the code cannot be run on tcsh and fish due to syntax difference)
@@ -805,6 +805,15 @@ main()
   shell_info="$(get_shell_info "${shell_exe}" || :)"
   shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1' || :)"
 
+  printf '%s %s\n' "Shell:" "${shell_name}"
+  if shell_applet="$(get_applet_name "${shell_name}")"; then
+    printf '%s %s\n' "Shell applet:" "${shell_applet}"
+  fi
+  printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '2-' -s || :)"
+  printf '%s %s\n' "Shell path:" "${shell_exe:-unknown}"
+  printf '%s %s\n' "OS:" "$(get_os_info || :)"
+  printf '%s %s\n\n' "Version of uname:" "$(get_version 'uname' || :)"
+
   if test -n "${shell_exe}" && shell_bit="$(detect_bitness_of_files "${shell_exe}")"; then
     :
   elif test "${OS-}" = 'Windows_NT' && shell_bit="${PROCESSOR_ARCHITECTURE-}" && test -n "${shell_bit}"; then
@@ -921,15 +930,6 @@ main()
     _max="${_n}"
   done
   _date_u_bit="$(convert_max_signed_int_to_bit "${_max}")" || _date_u_bit='unknown'
-
-  printf '%s %s\n' "Shell:" "${shell_name}"
-  if shell_applet="$(get_applet_name "${shell_name}")"; then
-    printf '%s %s\n' "Shell applet:" "${shell_applet}"
-  fi
-  printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '2-' -s || :)"
-  printf '%s %s\n' "Shell path:" "${shell_exe:-unknown}"
-  printf '%s %s\n' "OS:" "$(get_os_info || :)"
-  printf '%s %s\n\n' "Version of uname:" "$(get_version 'uname' || :)"
 
   printf '%s\n' "Bits of shell: ${shell_bit}"
   printf '%s\n' "Bits of OS: ${os_bit}"
