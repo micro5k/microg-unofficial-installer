@@ -15,7 +15,9 @@ set -u 2> /dev/null || :
 case "$(set -o || :)" in *'pipefail'*) set -o pipefail || printf 1>&2 '%s\n' 'Failed: pipefail' ;; *) ;; esac
 
 # The "obosh" shell does NOT support "command" while the "posh" shell does NOT support "type"
-command 1> /dev/null 2>&1 -v 'command' || command()
+{
+  command 1> /dev/null -v 'command'
+} 2> /dev/null || command()
 {
   test "${1-}" = '-v' || exit 255
   shift
@@ -789,14 +791,6 @@ get_version()
   printf '%s\n' "${_version}"
 }
 
-get_max_unsigned_int_of_shell_printf()
-{
-  # Some shells do NOT allow this, so we run it in a subshell and hide the errors
-  (
-    printf '%u\n' '-1' || return "${?}"
-  ) 2> /dev/null
-}
-
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
@@ -909,7 +903,8 @@ main()
   done
   _shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max}")" || _shell_arithmetic_bit='unknown'
 
-  tmp_var="$(get_max_unsigned_int_of_shell_printf)" || :
+  # Some shells do NOT allow this, so we hide the errors
+  tmp_var="$(printf '%u\n' '-1')" 2> /dev/null || :
   _shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}")" || :
 
   tmp_var="$(awk -- 'BEGIN { printf "%u\n", "-1" }')" || :
