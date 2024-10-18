@@ -5,14 +5,14 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
+SCRIPT_NAME='Bits info'
+SCRIPT_VERSION='1.4'
+
 set -u 2> /dev/null || :
 setopt SH_WORD_SPLIT 2> /dev/null || :
 
 # shellcheck disable=all
 $(set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
-
-readonly SCRIPT_NAME='Bits info'
-readonly SCRIPT_VERSION='1.3'
 
 command 1> /dev/null 2>&1 -v 'local' || {
   \eval ' local() { :; } ' || :                                               # Create a dummy "local" function for shells without support for local (example: ksh)
@@ -978,7 +978,7 @@ while test "${#}" -gt 0; do
       printf '%s\n' "find './dir_to_test' -type f -print0 | xargs -0 -- '${script_filename}' -- ''"
       printf '%s\n' "find './dir_to_test' -type f | ${script_filename} -"
       ;;
-    -i | --prefer-internal-applets)
+    -i | --prefer-included-utilities)
       ASH_STANDALONE='1' # This only works on some versions of BusyBox under Android
       export ASH_STANDALONE
       unset BB_OVERRIDE_APPLETS # This only works on BusyBox under Windows
