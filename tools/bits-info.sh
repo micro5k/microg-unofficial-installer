@@ -585,7 +585,7 @@ get_shell_exe()
     case "${_gse_tmp_var}" in *'/'* | *"\\"*) ;; *) _gse_tmp_var="$(which 2> /dev/null "${_gse_tmp_var}")" || return 3 ;; esac # We may not get the full path with "command -v" on osh
   elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var}"; then
     if test "${_gse_tmp_var}" = '/bin/sh' && test "$(uname 2> /dev/null || :)" = 'Windows_NT'; then _gse_tmp_var="$(command 2> /dev/null -v 'busybox')" || return 2; fi
-    if test ! -e "${_gse_tmp_var}" && test -e "${_gse_tmp_var}.exe"; then _gse_tmp_var="${_gse_tmp_var}.exe"; fi # Special fix for broken versions of Bash under Windows
+    if test ! -x "${_gse_tmp_var}" && test -x "${_gse_tmp_var}.exe"; then _gse_tmp_var="${_gse_tmp_var}.exe"; fi # Special fix for broken versions of Bash under Windows
   else
     return 1
   fi
@@ -691,7 +691,7 @@ get_applet_name()
 
   case "${1}" in
     'busybox' | 'osh')
-      if test -e "/proc/${$}/cmdline" && _shell_cmdline="$(tr 2> /dev/null -- '\0' ' ' 0< "/proc/${$}/cmdline")" && test -n "${_shell_cmdline}"; then
+      if test -r "/proc/${$}/cmdline" && _shell_cmdline="$(tr 2> /dev/null -- '\0' ' ' 0< "/proc/${$}/cmdline")" && test -n "${_shell_cmdline}"; then
         :
       elif _shell_cmdline="$(ps 2> /dev/null -p "${$}" -o 'args=')"; then
         :
@@ -849,7 +849,7 @@ main()
     esac
   elif command 1> /dev/null 2>&1 -v 'getconf' && os_bit="$(getconf 'LONG_BIT')" && test -n "${os_bit}"; then
     os_bit="${os_bit}-bit"
-  elif test -e '/system/build.prop'; then
+  elif test -f '/system/build.prop'; then
     # On Android
     case "$(file_getprop 'ro.product.cpu.abi' '/system/build.prop' || :)" in
       'x86_64' | 'arm64-v8a' | 'mips64' | 'riscv64') os_bit='64-bit' ;;
@@ -860,7 +860,7 @@ main()
     os_bit="$(retrieve_bitness_from_uname || :)" # Use it only as last resort (almost never happens)
   fi
 
-  if test -e '/proc/cpuinfo' && tmp_var="$(grep -e '^flags[[:space:]]*:' -- '/proc/cpuinfo' | cut -d ':' -f '2-' -s)" && test -n "${tmp_var}"; then
+  if test -r '/proc/cpuinfo' && tmp_var="$(grep -e '^flags[[:space:]]*:' -- '/proc/cpuinfo' | cut -d ':' -f '2-' -s)" && test -n "${tmp_var}"; then
     if printf '%s\n' "${tmp_var}" | grep -m 1 -q -w -e '[[:lower:]]\{1,\}_lm'; then
       cpu_bit='64-bit'
     else
@@ -1033,7 +1033,7 @@ while test "${#}" -gt 0; do
 done
 
 if test "${execute_script}" = 'true'; then
-  if test -e '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi # Avoid bugs on Bash under Windows
+  if test -x '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi # Avoid bugs on Bash under Windows
 
   if test "${#}" -eq 0; then
     main
