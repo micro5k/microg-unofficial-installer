@@ -8,20 +8,40 @@
 SCRIPT_NAME='Bits info'
 SCRIPT_VERSION='1.4'
 
+### CONFIGURATION ###
+
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
-case "$(set -o || :)" in *'pipefail'*) set -o pipefail ;; *) ;; esac
-if command 1> /dev/null 2>&1 -v 'setopt'; then setopt SH_WORD_SPLIT || printf '%s\n' 'Failed: setopt'; fi
+case "$(set -o || :)" in *'pipefail'*) set -o pipefail || printf 1>&2 '%s\n' 'Failed: pipefail' ;; *) ;; esac
 
-command 1> /dev/null 2>&1 -v 'local' || {
-  \eval ' local() { :; } ' || :                                               # Create a dummy "local" function for shells without support for local (example: ksh)
-  if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi # On some variants of ksh this really works, but leave the function as dummy fallback
+# The "obosh" shell does NOT support "command" while the "posh" shell does NOT support "type"
+command 1> /dev/null 2>&1 -v 'command' || command()
+{
+  test "${1-}" = '-v' || exit 255
+  shift
+  type "${@}"
 }
+
+# For "zsh" shell
+if command 1> /dev/null 2>&1 -v 'setopt'; then
+  setopt SH_WORD_SPLIT || printf 1>&2 '%s\n' 'Failed: setopt'
+fi
+
+# Workaround for shells without support for local (example: ksh pbosh obosh)
+command 1> /dev/null 2>&1 -v 'local' || {
+  \eval ' local() { :; } ' || :
+  # On some variants of ksh this really works, but leave the function as dummy fallback
+  if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi
+}
+
+### GLOBAL VARIABLES ###
 
 POSIXLY_CORRECT='y'
 NL='
 '
 export POSIXLY_CORRECT NL
+
+### SCRIPT ###
 
 convert_max_signed_int_to_bit()
 {
@@ -781,7 +801,7 @@ pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
   if test "${NO_PAUSE:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM-}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
-    printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit...' || :
+    printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit... ' || :
     # shellcheck disable=SC3045
     IFS='' read 1> /dev/null 2>&1 -r -s -n 1 _ || IFS='' read 1>&2 -r _ || :
     printf 1>&2 '\n' || :
@@ -799,10 +819,10 @@ main()
   _limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
-  shell_exe="$(get_shell_exe || :)"
+  shell_exe="$(get_shell_exe)" || :
   if test "$(uname 2> /dev/null -o || :)" = 'Msys' && command 1> /dev/null 2>&1 -v 'cygpath'; then shell_exe="$(cygpath -m -a -l -- "${shell_exe}" || :)"; fi
-  shell_info="$(get_shell_info "${shell_exe}" || :)"
-  shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1' || :)"
+  shell_info="$(get_shell_info "${shell_exe}")" || :
+  shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1')" || :
 
   printf '%s %s\n' "Shell:" "${shell_name}"
   if shell_applet="$(get_applet_name "${shell_name}")"; then
@@ -889,9 +909,11 @@ main()
   done
   _shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max}")" || _shell_arithmetic_bit='unknown'
 
-  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "$(get_max_unsigned_int_of_shell_printf || :)")" || _shell_printf_bit='unknown'
+  tmp_var="$(get_max_unsigned_int_of_shell_printf)" || :
+  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}")" || :
 
-  _awk_printf_bit="$(convert_max_unsigned_int_to_bit "$(awk -- 'BEGIN { printf "%u\n", "-1" }' || :)")" || _awk_printf_bit='unknown'
+  tmp_var="$(awk -- 'BEGIN { printf "%u\n", "-1" }')" || :
+  _awk_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}")" || :
 
   # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
