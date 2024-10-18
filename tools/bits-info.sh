@@ -903,8 +903,10 @@ main()
   done
   _shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max}")" || _shell_arithmetic_bit='unknown'
 
-  # Some shells do NOT allow this, so we hide the errors
-  tmp_var="$(printf '%u\n' '-1')" 2> /dev/null || :
+  {
+    # Some shells do NOT allow this, so we hide the errors
+    tmp_var="$(printf '%u\n' '-1')" || :
+  } 2> /dev/null
   _shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}")" || :
 
   tmp_var="$(awk -- 'BEGIN { printf "%u\n", "-1" }')" || :
