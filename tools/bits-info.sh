@@ -12,7 +12,7 @@ SCRIPT_VERSION='1.4'
 
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
-case "$(set -o || :)" in *'pipefail'*) set -o pipefail || printf 1>&2 '%s\n' 'Failed: pipefail' ;; *) ;; esac
+case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || printf 1>&2 '%s\n' 'Failed: pipefail' ;; *) ;; esac
 
 # The "obosh" shell does NOT support "command" while the "posh" shell does NOT support "type"
 {
