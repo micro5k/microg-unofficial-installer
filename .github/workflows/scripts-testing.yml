@@ -121,6 +121,7 @@ jobs:
             if test "${1:?}" = 'cmdline.sh'; then
               case "${_s_shell?}" in
                 #ksh) return 0 ;; # Skip
+                obosh) return 0 ;; # Skip
                 *) ;;
               esac
             fi
