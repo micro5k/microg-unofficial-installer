@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5'
+SCRIPT_VERSION='1.5.1'
 
 ### CONFIGURATION ###
 
@@ -810,6 +810,17 @@ get_max_unsigned_int_of_shell_printf()
   _mup_val="$(printf '%u\n' '-1')" && printf "%s\n" "${_mup_val}"
 }
 
+list_available_shells()
+{
+  if chsh 2> /dev/null -l; then
+    :
+  elif test -r '/etc/shells' && grep -v -e '^#' -- '/etc/shells' | sort -u; then
+    :
+  else
+    return 3
+  fi
+}
+
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
@@ -1030,6 +1041,13 @@ while test "${#}" -gt 0; do
     --no-pause)
       NO_PAUSE='1'
       export NO_PAUSE
+      ;;
+
+    -l | --list-available-shells)
+      execute_script='false'
+      NO_PAUSE='1'
+      export NO_PAUSE
+      list_available_shells || STATUS="${?}"
       ;;
 
     --)
