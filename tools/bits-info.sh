@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.4'
+SCRIPT_VERSION='1.5'
 
 ### CONFIGURATION ###
 
@@ -685,6 +685,18 @@ get_shell_info()
   printf '%s %s\n' "${_shell_name:-unknown}" "${_shell_version:-unknown}"
 }
 
+prefer_shell_dir_if_requested()
+{
+  local _psd_dir
+  if test "${PREFER_INCLUDED_UTILITIES:-0}" = 0 || test -z "${1}"; then return 0; fi
+
+  if test "${2}" = 'busybox'; then
+    : # ToDO
+  elif _psd_dir="$(dirname "${1}")" && test -n "${_psd_dir}" && PATH="${_psd_dir}:${PATH:-%empty}"; then
+    :
+  fi
+}
+
 get_applet_name()
 {
   local _shell_cmdline _current_applet
@@ -811,8 +823,8 @@ pause_if_needed()
 
 main()
 {
-  local date_timezone_bug _limits _limits_date _limits_u _max _n tmp_var
-  local shell_exe shell_info shell_name shell_applet shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
+  local shell_exe shell_exe_original date_timezone_bug _limits _limits_date _limits_u _max _n tmp_var
+  local shell_info shell_name shell_applet shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
 
   date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
@@ -820,9 +832,11 @@ main()
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
   shell_exe="$(get_shell_exe || :)"
-  if test "$(uname 2> /dev/null -o || :)" = 'Msys' && command 1> /dev/null 2>&1 -v 'cygpath'; then shell_exe="$(cygpath -m -a -l -- "${shell_exe}" || :)"; fi
+  shell_exe_original="${shell_exe}"
+  if test "${IS_MSYS}" = 'true' && command 1> /dev/null 2>&1 -v 'cygpath'; then shell_exe="$(cygpath -m -a -l -- "${shell_exe}" || :)"; fi
   shell_info="$(get_shell_info "${shell_exe}" || :)"
   shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1' || :)"
+  prefer_shell_dir_if_requested "${shell_exe_original}" "${shell_name}"
 
   printf '%s %s\n' "Shell:" "${shell_name}"
   if shell_applet="$(get_applet_name "${shell_name}")"; then
@@ -972,6 +986,7 @@ main()
 }
 
 execute_script='true'
+IS_MSYS='false'
 STATUS=0
 
 while test "${#}" -gt 0; do
@@ -1001,9 +1016,15 @@ while test "${#}" -gt 0; do
       printf '%s\n' "find './dir_to_test' -type f | ${script_filename} -"
       ;;
     -i | --prefer-included-utilities)
-      ASH_STANDALONE='1' # This only works on some versions of BusyBox under Android
+      # Enable code to prefer utilities that are in the same directory of the shell
+      PREFER_INCLUDED_UTILITIES='1'
+      export PREFER_INCLUDED_UTILITIES
+
+      # Prefer internal applets over external utilities (only BusyBox under Windows)
+      unset BB_OVERRIDE_APPLETS
+      # Prefer internal applets over external utilities (only some versions of BusyBox under Android)
+      ASH_STANDALONE='1'
       export ASH_STANDALONE
-      unset BB_OVERRIDE_APPLETS # This only works on BusyBox under Windows
       ;;
     --no-pause)
       NO_PAUSE='1'
@@ -1037,7 +1058,11 @@ while test "${#}" -gt 0; do
 done
 
 if test "${execute_script}" = 'true'; then
-  if test -x '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi # Avoid bugs on Bash under Windows
+  if test -x '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then
+    IS_MSYS='true'
+    # We must do this in all cases with Bash under Windows using this POSIX layer otherwise we may run into freezes, obscure errors and unknown infinite loops!!!
+    PATH="/usr/bin:${PATH:-/usr/bin}"
+  fi
 
   if test "${#}" -eq 0; then
     main
