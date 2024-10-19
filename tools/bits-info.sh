@@ -816,7 +816,7 @@ list_available_shells()
     :
   elif test -r '/etc/shells' && grep -v -e '^#' -- '/etc/shells' | sort -u; then
     :
-  elif getent 2> /dev/null 'shells'; then # On OpenBSD and NetBSD
+  elif getent 2> /dev/null 1>&2 'shells' && getent 2> /dev/null 'shells'; then # On OpenBSD / NetBSD
     :
   else
     return 3
