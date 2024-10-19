@@ -616,7 +616,7 @@ get_shell_info()
   fi
 
   case "${_shell_exe}" in
-    *'/bosh/'*'/sh') _shell_name='bosh' ;;
+    *'/bosh/'*'/sh' | *'/bosh/sh') _shell_name='bosh' ;;
     *'/oils-for-unix' | *'/oil.ovm') _shell_name='osh' ;;
     *) ;;
   esac
@@ -624,6 +624,7 @@ get_shell_info()
   case "${_shell_name}" in
     *'ksh'*) _shell_is_ksh='true' ;;
     'zsh' | 'bosh' | 'osh' | 'yash' | 'tcsh' | 'fish') _shell_use_ver_opt='true' ;;
+    *'\bash') _shell_name='bash' ;; # For bugged versions of Bash under Windows
     *) ;;
   esac
 
