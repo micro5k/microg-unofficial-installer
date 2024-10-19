@@ -793,7 +793,8 @@ get_version()
 
 get_max_unsigned_int_of_shell_printf()
 {
-  printf '%u\n' '-1'
+  local _mup_val
+  _mup_val="$(printf '%u\n' '-1')" && printf "%s\n" "${_mup_val}"
 }
 
 pause_if_needed()
