@@ -813,10 +813,10 @@ main()
   _limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
 
-  shell_exe="$(get_shell_exe)" || :
+  shell_exe="$(get_shell_exe || :)"
   if test "$(uname 2> /dev/null -o || :)" = 'Msys' && command 1> /dev/null 2>&1 -v 'cygpath'; then shell_exe="$(cygpath -m -a -l -- "${shell_exe}" || :)"; fi
-  shell_info="$(get_shell_info "${shell_exe}")" || :
-  shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1')" || :
+  shell_info="$(get_shell_info "${shell_exe}" || :)"
+  shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1' || :)"
 
   printf '%s %s\n' "Shell:" "${shell_name}"
   if shell_applet="$(get_applet_name "${shell_name}")"; then
@@ -905,12 +905,12 @@ main()
 
   {
     # Some shells do NOT allow this, so we hide the errors
-    tmp_var="$(printf '%u\n' '-1')" || :
+    tmp_var="$(printf '%u\n' '-1' || :)"
   } 2> /dev/null
-  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}")" || :
+  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
-  tmp_var="$(awk -- 'BEGIN { printf "%u\n", "-1" }')" || :
-  _awk_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}")" || :
+  tmp_var="$(awk -- 'BEGIN { printf "%u\n", "-1" }' || :)"
+  _awk_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
   # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
