@@ -79,7 +79,7 @@ jobs:
           if test "${current_os:?}" = 'Linux'; then PATH="${PATH:-/usr/bin}:${workspace_dir:?}/cache/shells/extracted/bosh/opt/schily/bin" || exit "${?}"; fi
           if diff 1> /dev/null 2>&1 -- "$(command -v 'sh' || :)" "$(command -v 'bash' || :)"; then SH_IS_BASH='true'; fi
           if command 1> /dev/null -v 'apt-get'; then sudo apt-get -y -qq install 'mksh' 'yash' 'posh' 1> /dev/null; fi
-          if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'ksh93' 'yash'; fi
+          if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'oksh' 'ksh93' 'yash'; fi
           if command 1> /dev/null -v 'choco'; then choco 1> /dev/null install 'busybox' -y --no-progress; fi
           #
           resolve_base()
@@ -118,6 +118,10 @@ jobs:
             else
               _s_shell="$(resolve_base "${2:?}")" || _s_shell="${2:?}"
             fi
+            case "${_s_shell?}" in
+              obosh) return 0 ;; # Skip
+              *) ;;
+            esac
             if test "${1:?}" = 'cmdline.sh'; then
               case "${_s_shell?}" in
                 #ksh) return 0 ;; # Skip
@@ -131,7 +135,7 @@ jobs:
           {
             local _shell _shell_cmd _status
             EXECUTED_LIST=''
-            for _shell in sh dash bash busybox ash hush mksh ksh93 ksh zsh yash posh osh bosh pbosh; do
+            for _shell in sh dash bash busybox ash hush mksh pdksh oksh ksh88 ksh93 ksh zsh yash posh osh bosh pbosh obosh; do
               if test "${_shell:?}" = 'ksh' && test -n "${ORIGINAL_KSH?}"; then _shell="${ORIGINAL_KSH:?}"; fi
               if ! _shell_cmd="$(command -v "${_shell:?}")" || skip "${1:?}" "${_shell:?}" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
