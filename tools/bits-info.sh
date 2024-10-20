@@ -907,13 +907,13 @@ main()
       '0') cpu_bit='32-bit' ;;
       *) cpu_bit='unknown' ;;
     esac
-  elif command 1> /dev/null 2>&1 -v 'wmic.exe' && cpu_bit="$(MSYS_NO_PATHCONV=1 wmic.exe 2> /dev/null cpu get DataWidth /VALUE | cut -d '=' -f '2-' -s | tr -d '\r\n')" && test -n "${cpu_bit}"; then
+  elif command 1> /dev/null 2>&1 -v 'wmic.exe' && cpu_bit="$(wmic.exe 2> /dev/null cpu get 'DataWidth' | grep -v -F -e 'DataWidth' | tr -d ' \r\n')" && test -n "${cpu_bit}"; then
     # On Windows / ReactOS (if WMIC is present)
     case "${cpu_bit}" in
       '64' | '32') cpu_bit="${cpu_bit}-bit" ;;
       *) cpu_bit='unknown' ;;
     esac
-  elif command 1> /dev/null 2>&1 -v 'powershell.exe' && cpu_bit="$(powershell.exe 2> /dev/null -c 'gwmi Win32_Processor | select -ExpandProperty DataWidth')" && test -n "${cpu_bit}"; then
+  elif command 1> /dev/null 2>&1 -v 'powershell.exe' && cpu_bit="$(powershell.exe 2> /dev/null -NoProfile -ExecutionPolicy 'Bypass' -c 'gwmi Win32_Processor | select -ExpandProperty DataWidth')" && test -n "${cpu_bit}"; then
     # On Windows (if PowerShell is installed - it is slow)
     case "${cpu_bit}" in
       '64' | '32') cpu_bit="${cpu_bit}-bit" ;;
