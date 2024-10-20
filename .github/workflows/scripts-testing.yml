@@ -50,7 +50,6 @@ jobs:
           {
             if test ! -s "${shells_dir:?}/${1:?}.${2:?}"; then
               printf '%s\n' "Downloading '${1?}'..."
-              mkdir -p -- "${shells_dir:?}" || return "${?}"
               if wget -q -O "${shells_dir:?}/${1:?}.${2:?}" -- "${3:?}" && test -s "${shells_dir:?}/${1:?}.${2:?}"; then
                 : # OK
               else
@@ -58,11 +57,24 @@ jobs:
                 return 1
               fi
             fi
-            mkdir -p -- "${shells_dir:?}/extracted/${1?}" || return "${?}"
-            tar -x -f "${shells_dir:?}/${1:?}.${2:?}" -C "${shells_dir:?}/extracted/${1:?}" || return "${?}"
+            mkdir -p -- "${shells_dir:?}/extracted/${1:?}" || return "${?}"
+            if test "${2:?}" = 'tar.xz'; then
+              tar -x -f "${shells_dir:?}/${1:?}.${2:?}" -C "${shells_dir:?}/extracted/${1:?}" || return "${?}"
+            else
+              cp -f -p -- "${shells_dir:?}/${1:?}.${2:?}" "${shells_dir:?}/extracted/${1:?}/${1:?}" || return "${?}"
+              chmod +x -- "${shells_dir:?}/extracted/${1:?}/${1:?}" || return "${?}"
+            fi
+            printf '%s\n' "${shells_dir:?}/extracted/${1:?}" 1>> "${shells_dir:?}/extracted/list.dat" || return "${?}"
           }
+          if command 1> /dev/null -v 'sudo' && legacy_bb="$(command -v 'busybox')" && legacy_bb_dir="$(dirname "${legacy_bb:?}")"; then
+            sudo mv -f -- "${legacy_bb:?}" "${legacy_bb_dir:?}/busybox-legacy" || exit "${?}"
+          fi
+          mkdir -p -- "${shells_dir:?}/extracted" || exit "${?}"
+          rm -f -- "${shells_dir:?}/extracted/list.dat" || exit "${?}"
+          touch -- "${shells_dir:?}/extracted/list.dat" || exit "${?}"
           if test "${current_os:?}" = 'Linux'; then
-            prepare_shell 'bosh' 'tar.xz' 'http://fuz.su/pub/schilytools/bin/schily-2024-03-21-x86_64-linux-gcc.tar.xz' || exit "${?}"
+            prepare_shell 'busybox' 'bin' 'https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox'
+            prepare_shell 'bosh' 'tar.xz' 'http://fuz.su/pub/schilytools/bin/schily-2024-03-21-x86_64-linux-gcc.tar.xz'
           fi
       - name: "Test scripts"
         shell: bash
@@ -75,12 +87,21 @@ jobs:
           {
             readonly current_os='${{ runner.os }}'
             readonly workspace_dir='${{ github.workspace }}'
+            readonly shells_dir='${{ github.workspace }}/cache/shells'
           }
+          if dl_shells="$(tr -- '\n' ':' 0< "${shells_dir:?}/extracted/list.dat")" && dl_shells="${dl_shells%':'}" && test -n "${dl_shells?}"; then
+            PATH="${PATH:-/usr/bin}:${dl_shells:?}" || exit "${?}"
+          fi
           if test "${current_os:?}" = 'Linux'; then PATH="${PATH:-/usr/bin}:${workspace_dir:?}/cache/shells/extracted/bosh/opt/schily/bin" || exit "${?}"; fi
           if diff 1> /dev/null 2>&1 -- "$(command -v 'sh' || :)" "$(command -v 'bash' || :)"; then SH_IS_BASH='true'; fi
-          if command 1> /dev/null -v 'apt-get'; then sudo apt-get -y -qq install 'mksh' 'yash' 'posh' 1> /dev/null; fi
-          if command 1> /dev/null -v 'brew'; then brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'oksh' 'ksh93' 'yash'; fi
-          if command 1> /dev/null -v 'choco'; then choco 1> /dev/null install 'busybox' -y --no-progress; fi
+          if test "${current_os:?}" = 'Linux'; then
+            sudo apt-get -y -qq install 'mksh' 'yash' 'posh' 1> /dev/null
+          elif test "${current_os:?}" = 'macOS'; then
+            brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'oksh' 'ksh93' 'yash'
+          else
+            choco 1> /dev/null install 'busybox' -y --no-progress
+            #choco install 'schily-cdrtools' --pre -y --no-progress
+          fi
           #
           resolve_base()
           {
@@ -135,12 +156,12 @@ jobs:
           {
             local _shell _shell_cmd _status
             EXECUTED_LIST=''
-            for _shell in sh dash bash busybox ash hush mksh pdksh oksh ksh88 ksh93 ksh zsh yash posh osh bosh pbosh obosh; do
+            for _shell in sh dash bash busybox-legacy busybox ash hush mksh pdksh oksh ksh88 ksh93 ksh zsh yash posh osh bosh pbosh obosh; do
               if test "${_shell:?}" = 'ksh' && test -n "${ORIGINAL_KSH?}"; then _shell="${ORIGINAL_KSH:?}"; fi
               if ! _shell_cmd="$(command -v "${_shell:?}")" || skip "${1:?}" "${_shell:?}" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
               _status='0'
-              if test "${_shell:?}" = 'busybox'; then
+              if test "${_shell:?}" = 'busybox' || test "${_shell:?}" = 'busybox-legacy'; then
                 "${_shell_cmd:?}" ash "${workspace_dir:?}/${1:?}" || _status="${?}"
               else
                 "${_shell_cmd:?}" "${workspace_dir:?}/${1:?}" || _status="${?}"
