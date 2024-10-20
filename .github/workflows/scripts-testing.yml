@@ -170,11 +170,25 @@ jobs:
               printf '\nRETURN CODE:%s\n\n' "${_status:?}"
             done
           }
-          export ONLY_FOR_TESTING='true'
-          for _script in 'tools/bits-info.sh' 'cmdline.sh'; do
-            test_on_all_shells "${_script:?}"
-            printf '%s\n' "---"
-          done
+          list_scripts()
+          {
+            printf '%s\n' 'tools/bits-info.sh'
+            printf '%s\n' 'cmdline.sh'
+          }
+          main()
+          {
+            local backup_ifs _script
+            export ONLY_FOR_TESTING='true'
+            backup_ifs="${IFS-}"
+            IFS=$'\n'
+            set -- $(list_scripts) || exit "${?}"
+            IFS="${backup_ifs}"
+            for _script in "${@}"; do
+              test_on_all_shells "${_script:?}"
+              printf '%s\n' "---"
+            done
+          }
+          main
           exit "${EXIT_CODE:?}"
       - name: "Clean extracted files"
         if: "always()"
