@@ -1032,7 +1032,11 @@ while test "${#}" -gt 0; do
 
       printf '\n%s\n\n' 'Coming soon...'
 
-      if test -z "${0}" || ! script_filename="$(basename "${0}")"; then exit 1; fi
+      if test -n "${0-}" && script_filename="$(basename "${0}")"; then
+        :
+      else
+        exit 1
+      fi
 
       printf '%s\n' 'Notes:'
       printf '%s\n' 'If a single parameter is given, then it returns the specific error code, otherwise if there are multiple files, it returns the number of files that were not recognized.'
