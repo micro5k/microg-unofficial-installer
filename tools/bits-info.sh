@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.1'
+SCRIPT_VERSION='1.5.2'
 
 ### CONFIGURATION ###
 
@@ -687,15 +687,24 @@ get_shell_info()
   printf '%s %s\n' "${_shell_name:-unknown}" "${_shell_version:-unknown}"
 }
 
-prefer_shell_dir_if_requested()
+prefer_included_utilities_if_requested()
 {
-  local _psd_dir
+  local _piu_applet _piu_pathsep _piu_dir
   if test "${PREFER_INCLUDED_UTILITIES:-0}" = 0 || test -z "${1}"; then return 0; fi
 
   if test "${2}" = 'busybox'; then
-    : # ToDO
-  elif _psd_dir="$(dirname "${1}")" && test -n "${_psd_dir}" && PATH="${_psd_dir}:${PATH:-%empty}"; then
-    :
+    for _piu_applet in test printf uname awk date; do
+      # Check if it does NOT already run the internal applet by default
+      if test "$(command 2> /dev/null -v "${_piu_applet}" || :)" != "${_piu_applet}"; then
+        \eval " ${_piu_applet}() { '${1}' '${_piu_applet}' \"\${@}\"; } " || : # Force internal applet
+      fi
+    done
+  fi
+
+  if test "${IS_MSYS}" != 'true' && test "$(uname 2> /dev/null || :)" = 'Windows_NT'; then _piu_pathsep=';'; else _piu_pathsep=':'; fi
+
+  if _piu_dir="$(dirname "${1}")" && test -n "${_piu_dir}"; then
+    PATH="${_piu_dir}${_piu_pathsep}${PATH:-%empty}"
   fi
 }
 
@@ -851,7 +860,7 @@ main()
   if test "${IS_MSYS}" = 'true' && command 1> /dev/null 2>&1 -v 'cygpath'; then shell_exe="$(cygpath -m -a -l -- "${shell_exe}" || :)"; fi
   shell_info="$(get_shell_info "${shell_exe}" || :)"
   shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1' || :)"
-  prefer_shell_dir_if_requested "${shell_exe_original}" "${shell_name}"
+  prefer_included_utilities_if_requested "${shell_exe_original}" "${shell_name}"
 
   printf '%s %s\n' "Shell:" "${shell_name}"
   if shell_applet="$(get_applet_name "${shell_name}")"; then
@@ -1001,7 +1010,6 @@ main()
 }
 
 execute_script='true'
-IS_MSYS='false'
 STATUS=0
 
 while test "${#}" -gt 0; do
@@ -1080,6 +1088,7 @@ while test "${#}" -gt 0; do
 done
 
 if test "${execute_script}" = 'true'; then
+  IS_MSYS='false'
   if test -x '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then
     IS_MSYS='true'
     # We must do this in all cases with Bash under Windows using this POSIX layer otherwise we may run into freezes, obscure errors and unknown infinite loops!!!
