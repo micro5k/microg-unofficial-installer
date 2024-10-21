@@ -162,9 +162,9 @@ jobs:
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
               _status='0'
               if test "${_shell:?}" = 'busybox' || test "${_shell:?}" = 'busybox-legacy'; then
-                "${_shell_cmd:?}" ash "${workspace_dir:?}/${1:?}" || _status="${?}"
+                "${_shell_cmd:?}" ash "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}"
               else
-                "${_shell_cmd:?}" "${workspace_dir:?}/${1:?}" || _status="${?}"
+                "${_shell_cmd:?}" "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}"
               fi
               test "${_status:?}" = 0 || EXIT_CODE="${_status:?}"
               printf '\nRETURN CODE:%s\n\n' "${_status:?}"
@@ -172,7 +172,7 @@ jobs:
           }
           list_scripts()
           {
-            printf '%s\n' 'tools/bits-info.sh'
+            printf '%s|%s\n' 'tools/bits-info.sh' '-i'
             printf '%s\n' 'cmdline.sh'
           }
           main()
@@ -184,7 +184,7 @@ jobs:
             set -- $(list_scripts) || exit "${?}"
             IFS="${backup_ifs}"
             for _script in "${@}"; do
-              test_on_all_shells "${_script:?}"
+              test_on_all_shells "$(printf '%s\n' "${_script:?}" | cut -d '|' -f '1' || :)" "$(printf '%s\n' "${_script:?}" | cut -d '|' -f '2-' -s || :)"
               printf '%s\n' "---"
             done
           }
