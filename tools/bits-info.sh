@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.2'
+SCRIPT_VERSION='1.5.3'
 
 ### CONFIGURATION ###
 
@@ -826,7 +826,7 @@ list_available_shells()
     :
   elif test -r '/etc/shells' && grep -v -e '^#' -- '/etc/shells' | sort -u; then
     :
-  elif getent 2> /dev/null 1>&2 'shells' && getent 2> /dev/null 'shells'; then # On OpenBSD / NetBSD
+  elif getent 2> /dev/null 1>&2 'shells' && getent 'shells'; then # On OpenBSD / NetBSD
     :
   else
     return 3
@@ -893,7 +893,7 @@ main()
     esac
   elif command 1> /dev/null 2>&1 -v 'getconf' && os_bit="$(getconf 'LONG_BIT')" && test -n "${os_bit}"; then
     os_bit="${os_bit}-bit"
-  elif test -f '/system/build.prop'; then
+  elif test -r '/system/build.prop'; then
     # On Android
     case "$(file_getprop 'ro.product.cpu.abi' '/system/build.prop' || :)" in
       'x86_64' | 'arm64-v8a' | 'mips64' | 'riscv64') os_bit='64-bit' ;;
@@ -935,15 +935,17 @@ main()
 
   _max='-1'
   for _n in ${_limits}; do
-    if ! test 2> /dev/null "${_n}" -gt 0; then break; fi
-    _max="${_n}"
+    if test 2> /dev/null "${_n}" -gt 0; then
+      _max="${_n}"
+    else break; fi
   done
   _shell_test_bit="$(convert_max_signed_int_to_bit "${_max}")" || _shell_test_bit='unknown'
 
   _max='-1'
   for _n in ${_limits}; do
-    if test "$((_n))" != "${_n}"; then break; fi
-    _max="${_n}"
+    if test "$((_n))" = "${_n}"; then
+      _max="${_n}"
+    else break; fi
   done
   _shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max}")" || _shell_arithmetic_bit='unknown'
 
@@ -957,37 +959,41 @@ main()
   # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
   for _n in ${_limits}; do
-    if ! tmp_var="$(awk -v n="${_n}" -- 'BEGIN { printf "%d\n", n }')" || ! permissively_comparison "${tmp_var}" "${_n}"; then break; fi
-    _max="${_n}"
+    if tmp_var="$(awk -v n="${_n}" -- 'BEGIN { printf "%d\n", n }')" && permissively_comparison "${tmp_var}" "${_n}"; then
+      _max="${_n}"
+    else break; fi
   done
   _awk_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || _awk_printf_signed_bit='unknown'
 
   # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
   for _n in ${_limits_u}; do
-    if ! tmp_var="$(awk -v n="${_n}" -- 'BEGIN { printf "%u\n", n }')" || ! permissively_comparison "${tmp_var}" "${_n}"; then break; fi
-    _max="${_n}"
+    if tmp_var="$(awk -v n="${_n}" -- 'BEGIN { printf "%u\n", n }')" && permissively_comparison "${tmp_var}" "${_n}"; then
+      _max="${_n}"
+    else break; fi
   done
   _awk_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || _awk_printf_unsigned_bit='unknown'
 
   _max='-1'
   for _n in ${_limits_date}; do
-    if ! tmp_var="$(TZ='CET-1' date 2> /dev/null -d "@${_n}" -- '+%s')"; then break; fi
-    if test "${tmp_var}" != "${_n}"; then
+    if tmp_var="$(TZ='CET-1' date 2> /dev/null -d "@${_n}" -- '+%s')" && test "${tmp_var}" = "${_n}"; then
+      _max="${_n}"
+    else
       if test "${tmp_var}" = "$((_n - 14400))"; then
         date_timezone_bug='true'
+        _max="${_n}"
       else
         break
       fi
     fi
-    _max="${_n}"
   done
   _date_bit="$(convert_max_signed_int_to_bit "${_max}")" || _date_bit='unknown'
 
   _max='-1'
   for _n in ${_limits_date}; do
-    if ! tmp_var="$(TZ='CET-1' date 2> /dev/null -u -d "@${_n}" -- '+%s')" || test "${tmp_var}" != "${_n}"; then break; fi
-    _max="${_n}"
+    if tmp_var="$(TZ='CET-1' date 2> /dev/null -u -d "@${_n}" -- '+%s')" && test "${tmp_var}" = "${_n}"; then
+      _max="${_n}"
+    else break; fi
   done
   _date_u_bit="$(convert_max_signed_int_to_bit "${_max}")" || _date_u_bit='unknown'
 
@@ -1005,7 +1011,7 @@ main()
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit}"
 
   printf '%s %s\n' "Version of date:" "$(get_version 'date' || :)"
-  printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${_date_bit}" "$(test "${date_timezone_bug}" = 'false' || printf ' %s\n' '(with time zone bug)' || :)"
+  printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${_date_bit}" "$(test "${date_timezone_bug}" = 'false' || printf ' %s\n' '(with time zone BUG)' || :)"
   printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit}"
 }
 
