@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.3'
+SCRIPT_VERSION='1.5.4'
 
 ### CONFIGURATION ###
 
@@ -16,7 +16,7 @@ case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || pr
 
 # The "obosh" shell does NOT support "command" while the "posh" shell does NOT support "type"
 {
-  command 1> /dev/null -v 'command'
+  command 1> /dev/null -v ':'
 } 2> /dev/null || command()
 {
   test "${1-}" = '-v' || exit 255
@@ -884,6 +884,7 @@ main()
     shell_bit="$(retrieve_bitness_from_uname || :)" # Use it only as last resort (almost never happens)
   fi
 
+  os_bit='unknown'
   if test "${OS-}" = 'Windows_NT' && os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${os_bit}"; then
     # On Windows 2000+ / ReactOS
     case "${os_bit}" in
