@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.5'
+SCRIPT_VERSION='1.5.6'
 
 ### CONFIGURATION ###
 
@@ -39,9 +39,9 @@ command 1> /dev/null 2>&1 -v 'local' || {
 ### GLOBAL VARIABLES ###
 
 POSIXLY_CORRECT='y'
-NL='
+NEWLINE='
 '
-export POSIXLY_CORRECT NL
+export POSIXLY_CORRECT NEWLINE
 
 ### SCRIPT ###
 
@@ -526,7 +526,7 @@ detect_bitness_of_files()
     (
       _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
 
-      IFS="${NL}"
+      IFS="${NEWLINE}"
       # shellcheck disable=SC2030 # Intended: Modification of LC_ALL is local (to subshell)
       LC_ALL='C' # We only use bytes and not characters
       export LC_ALL
@@ -703,7 +703,7 @@ prefer_included_utilities_if_requested()
     done
   fi
 
-  if test "${IS_MSYS}" != 'true' && test "$(uname 2> /dev/null || :)" = 'Windows_NT'; then _piu_pathsep=';'; else _piu_pathsep=':'; fi
+  if test "${IS_MSYS}" != 'true' && test "$(uname 2> /dev/null -o || :)" = 'MS/Windows'; then _piu_pathsep=';'; else _piu_pathsep=':'; fi
 
   if _piu_dir="$(dirname "${1}")" && test -n "${_piu_dir}"; then
     PATH="${_piu_dir}${_piu_pathsep}${PATH:-%empty}"
