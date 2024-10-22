@@ -89,6 +89,7 @@ jobs:
           printf 'cache_is_outdated=%s\n' "${CACHE_IS_OUTDATED:?}" >> "${GITHUB_OUTPUT:?}"
       - name: "Delete outdated cache"
         if: "${{ steps.cache-action.outputs.cache-hit && steps.prepare-shells.outputs.cache_is_outdated == 'true' }}"
+        shell: bash
         run: |
           # Deleting outdated cache...
           gh extension install 'actions/gh-actions-cache' || exit "${?}"
