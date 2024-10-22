@@ -139,13 +139,14 @@ jobs:
             else
               _s_shell="$(resolve_base "${2:?}")" || _s_shell="${2:?}"
             fi
-            case "${_s_shell?}" in
-              obosh) return 0 ;; # Skip
-              *) ;;
-            esac
             if test "${1:?}" = 'cmdline.sh'; then
               case "${_s_shell?}" in
-                #ksh) return 0 ;; # Skip
+                #ksh) return 0 ;;
+                obosh) return 0 ;; # Skip
+                *) ;;
+              esac
+            else
+              case "${_s_shell?}" in
                 obosh) return 0 ;; # Skip
                 *) ;;
               esac
@@ -161,11 +162,10 @@ jobs:
               if ! _shell_cmd="$(command -v "${_shell:?}")" || skip "${1:?}" "${_shell:?}" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
               _status='0'
-              if test "${_shell:?}" = 'busybox' || test "${_shell:?}" = 'busybox-legacy'; then
-                "${_shell_cmd:?}" ash "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}"
-              else
-                "${_shell_cmd:?}" "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}"
-              fi
+              case "${_shell:?}" in
+                'busybox'*) "${_shell_cmd:?}" ash "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}" ;;
+                *) "${_shell_cmd:?}" "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}" ;;
+              esac
               test "${_status:?}" = 0 || EXIT_CODE="${_status:?}"
               printf '\nRETURN CODE:%s\n\n' "${_status:?}"
             done
