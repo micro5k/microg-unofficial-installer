@@ -77,9 +77,9 @@ convert_max_unsigned_int_to_bit()
     '2147483648') printf '%s\n' "32-bit (with BusyBox unsigned limit bug)" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox under Windows / Android)
     '4294967295') printf '%s\n' "32-bit" ;;
     '18446744073709551615') printf '%s\n' "64-bit" ;;
-    'unsupported')
-      printf '%s\n' 'unsupported'
-      return 1
+    'unsupported' | 'ignored')
+      printf '%s\n' "${1}"
+      return 2
       ;;
     *)
       printf '%s\n' 'unknown'
@@ -965,9 +965,20 @@ main()
 
   _max='-1'
   last_random_val='-1'
-  RANDOM='1234'
   # shellcheck disable=SC3028 # In POSIX sh, RANDOM is undefined
-  if test "${RANDOM}" != '1234'; then # We are checking if $RANDOM is supported
+  if RANDOM='1234' && test "${RANDOM}" = '1234'; then
+    _max='unsupported' # $RANDOM is NOT supported
+  elif
+    test "$(
+      RANDOM='1234'
+      printf '%s\n' "${RANDOM}" || :
+    )" != "$(
+      RANDOM='1234'
+      printf '%s\n' "${RANDOM}" || :
+    )"
+  then
+    _max='ignored' # $RANDOM is supported but the seed is ignored
+  else
     for _num in ${limits_rnd_u}; do
       RANDOM="${_num}" # Seed random
       tmp_var="${RANDOM}"
@@ -978,8 +989,6 @@ main()
         last_random_val="${tmp_var}"
       else break; fi
     done
-  else
-    _max='unsupported'
   fi
   shell_random_seed_bit="$(convert_max_unsigned_int_to_bit "${_max}" || :)"
 
