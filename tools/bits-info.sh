@@ -77,6 +77,10 @@ convert_max_unsigned_int_to_bit()
     '2147483648') printf '%s\n' "32-bit (with BusyBox unsigned limit bug)" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox under Windows / Android)
     '4294967295') printf '%s\n' "32-bit" ;;
     '18446744073709551615') printf '%s\n' "64-bit" ;;
+    'unsupported')
+      printf '%s\n' 'unsupported'
+      return 1
+      ;;
     *)
       printf '%s\n' 'unknown'
       return 1
@@ -707,6 +711,7 @@ prefer_included_utilities_if_requested()
 
   if _piu_dir="$(dirname "${1}")" && test -n "${_piu_dir}"; then
     PATH="${_piu_dir}${_piu_pathsep}${PATH:-%empty}"
+    export PATH
   fi
 }
 
@@ -849,7 +854,7 @@ pause_if_needed()
 
 main()
 {
-  local shell_exe shell_exe_original date_timezone_bug _limits _limits_date _limits_u _max _num tmp_var
+  local shell_exe shell_exe_original date_timezone_bug _limits _limits_date _limits_u limits_rnd_u _max _num last_random_val tmp_var
   local shell_info shell_name shell_applet shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
   local shell_printf_max_u
 
@@ -857,6 +862,7 @@ main()
   _limits='32767 2147483647 9223372036854775807'
   _limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
   _limits_u='65535 2147483647 2147483648 4294967295 18446744073709551615'
+  limits_rnd_u='65535 2147483647 4294967295 18446744073709551615'
 
   shell_exe="$(get_shell_exe || :)"
   shell_exe_original="${shell_exe}"
@@ -957,6 +963,25 @@ main()
   shell_printf_max_u="$(get_max_unsigned_int_of_shell_printf 2> /dev/null)" || shell_printf_max_u='unknown'
   _shell_printf_bit="$(convert_max_unsigned_int_to_bit "${shell_printf_max_u}" || :)"
 
+  _max='-1'
+  last_random_val='-1'
+  RANDOM='1234'
+  if test "${RANDOM}" != '1234'; then # We are checking if $RANDOM is supported
+    for _num in ${limits_rnd_u}; do
+      RANDOM="${_num}" # Seed random
+      tmp_var="${RANDOM}"
+      # All the overflowed RANDOM seeds produce the same random numbers
+      # IMPORTANT: This check is NOT always reliable because shells may break differently at overflow
+      if test "${last_random_val}" != "${tmp_var}"; then
+        _max="${_num}"
+        last_random_val="${tmp_var}"
+      else break; fi
+    done
+  else
+    _max='unsupported'
+  fi
+  shell_random_seed_bit="$(convert_max_unsigned_int_to_bit "${_max}" || :)"
+
   tmp_var="$(awk -- 'BEGIN { printf "%u\n", "-1" }' || :)"
   _awk_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
@@ -1010,6 +1035,8 @@ main()
 
   printf '%s\n' "Bits of shell 'printf': ${_shell_printf_bit}"
   printf '%s\n\n' "Shell 'printf' unsigned range: 0-${shell_printf_max_u}"
+
+  printf '%s %s\n\n' "Bits of \$RANDOM seed:" "${shell_random_seed_bit}"
 
   printf '%s %s\n' "Version of awk:" "$(get_version 'awk' || :)"
   printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit}"
