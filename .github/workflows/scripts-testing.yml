@@ -27,20 +27,28 @@ jobs:
       fail-fast: false
     name: "${{ matrix.os }}"
     runs-on: "${{ matrix.os }}"
+    env:
+      cache-key: "shells"
+
+    permissions:
+      actions: write # Needed to delete a cache
 
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v4
       - name: "Cache shells"
+        id: cache-action
         if: "${{ runner.os == 'Linux' }}"
         uses: actions/cache@v4
         with:
           path: "cache/shells"
-          key: "${{ runner.os }}-shells"
+          key: "${{ runner.os }}-${{ env.cache-key }}"
       - name: "Prepare shells"
+        id: prepare-shells
         shell: bash
         run: |
           # Preparing shells...
+          CACHE_IS_OUTDATED='false'
           # shellcheck disable=SC2016 # Intended: Expressions don't expand in single quotes
           {
             readonly current_os='${{ runner.os }}'
@@ -56,6 +64,7 @@ jobs:
                 rm -f -- "${shells_dir:?}/${1:?}.${2:?}" || :
                 return 1
               fi
+              CACHE_IS_OUTDATED='true'
             fi
             mkdir -p -- "${shells_dir:?}/extracted/${1:?}" || return "${?}"
             if test "${2:?}" = 'tar.xz'; then
@@ -76,6 +85,16 @@ jobs:
             prepare_shell 'busybox' 'bin' 'https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox'
             prepare_shell 'bosh' 'tar.xz' 'http://fuz.su/pub/schilytools/bin/schily-2024-03-21-x86_64-linux-gcc.tar.xz'
           fi
+          printf 'cache_is_outdated=%s\n' "${CACHE_IS_OUTDATED:?}" >> "${GITHUB_OUTPUT:?}"
+      - name: "Delete outdated cache"
+        if: "${{ steps.cache-action.outputs.cache-hit && steps.prepare-shells.outputs.cache_is_outdated == 'true' }}"
+        run: |
+          # Deleting outdated cache...
+          gh extension install 'actions/gh-actions-cache' || exit "${?}"
+          gh actions-cache delete '${{ runner.os }}-${{ env.cache-key }}' --confirm || exit "${?}"
+          printf '%s\n' 'Cache deleted.'
+        env:
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: "Test scripts"
         shell: bash
         run: |
