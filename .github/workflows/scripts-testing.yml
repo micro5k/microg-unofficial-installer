@@ -45,6 +45,7 @@ jobs:
           key: "${{ runner.os }}-${{ env.cache-key }}"
       - name: "Prepare shells"
         id: prepare-shells
+        if: "${{ steps.cache-action.outcome != 'skipped' }}"
         shell: bash
         run: |
           # Preparing shells...
@@ -210,7 +211,7 @@ jobs:
           main
           exit "${EXIT_CODE:?}"
       - name: "Clean extracted files"
-        if: "always()"
+        if: "${{ always() && steps.cache-action.outcome != 'skipped' }}"
         shell: bash
         run: |
           # Cleaning extracted files...
