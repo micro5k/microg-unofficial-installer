@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.4'
+SCRIPT_VERSION='1.5.5'
 
 ### CONFIGURATION ###
 
@@ -181,8 +181,9 @@ hex_bytes_to_int()
 #  $4 Bytes to compare (hex)
 compare_hex_bytes()
 {
-  test "${3}" -gt 0 || return 1
-  test "$(printf '%s' "${1}" | cut -b "$((${2} * 2 + 1))-$(((${2} + ${3}) * 2))" || :)" = "${4}"
+  test "${3}" -gt 0 || return 2
+  set -- "${1}" "$((${2} * 2 + 1))" "$(((${2} + ${3}) * 2))" "${4}" || return 3
+  test "$(printf '%s' "${1}" | cut -b "${2}-${3}" || :)" = "${4}"
 }
 
 # Params:
@@ -191,8 +192,9 @@ compare_hex_bytes()
 #  $3 Length in bytes (int)
 extract_bytes()
 {
-  test "${3}" -gt 0 || return 1
-  printf '%s' "${1}" | cut -b "$((${2} * 2 + 1))-$(((${2} + ${3}) * 2))"
+  test "${3}" -gt 0 || return 2
+  set -- "${1}" "$((${2} * 2 + 1))" "$(((${2} + ${3}) * 2))" || return 3
+  printf '%s' "${1}" | cut -b "${2}-${3}"
 }
 
 # Params:
@@ -202,17 +204,17 @@ extract_bytes()
 #  $4 Need bytes swap (bool)
 extract_bytes_and_swap()
 {
-  test "${3}" -gt 0 || return 1
-  _ebas_bytes="$(printf '%s' "${1}" | cut -b "$((${2} * 2 + 1))-$(((${2} + ${3}) * 2))")" || return 2
+  test "${3}" -gt 0 || return 2
+  set -- "${1}" "$((${2} * 2 + 1))" "$(((${2} + ${3}) * 2))" "${3}" "${4-}" || return 3
 
-  if test "${4-}" = 'true'; then
-    if test "${3}" = 4; then
-      switch_endianness_4 "${_ebas_bytes}" || return "${?}"
+  if test "${5}" = 'true'; then
+    if test "${4}" = 4; then
+      switch_endianness_4 "$(printf '%s' "${1}" | cut -b "${2}-${3}" || :)" || return "${?}"
     else
-      return 3
+      return 4
     fi
   else
-    printf '%s' "${_ebas_bytes}"
+    printf '%s' "${1}" | cut -b "${2}-${3}"
   fi
 }
 
