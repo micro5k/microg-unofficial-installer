@@ -966,6 +966,7 @@ main()
   _max='-1'
   last_random_val='-1'
   RANDOM='1234'
+  # shellcheck disable=SC3028 # In POSIX sh, RANDOM is undefined
   if test "${RANDOM}" != '1234'; then # We are checking if $RANDOM is supported
     for _num in ${limits_rnd_u}; do
       RANDOM="${_num}" # Seed random
