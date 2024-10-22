@@ -849,8 +849,9 @@ pause_if_needed()
 
 main()
 {
-  local shell_exe shell_exe_original date_timezone_bug _limits _limits_date _limits_u _max _n tmp_var
+  local shell_exe shell_exe_original date_timezone_bug _limits _limits_date _limits_u _max _num tmp_var
   local shell_info shell_name shell_applet shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
+  local shell_printf_max_u
 
   date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
@@ -937,54 +938,54 @@ main()
   fi
 
   _max='-1'
-  for _n in ${_limits}; do
-    if test 2> /dev/null "${_n}" -gt 0; then
-      _max="${_n}"
+  for _num in ${_limits}; do
+    if test 2> /dev/null "${_num}" -gt 0; then
+      _max="${_num}"
     else break; fi
   done
   _shell_test_bit="$(convert_max_signed_int_to_bit "${_max}")" || _shell_test_bit='unknown'
 
   _max='-1'
-  for _n in ${_limits}; do
-    if test "$((_n))" = "${_n}"; then
-      _max="${_n}"
+  for _num in ${_limits}; do
+    if test "$((_num))" = "${_num}"; then
+      _max="${_num}"
     else break; fi
   done
   _shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max}")" || _shell_arithmetic_bit='unknown'
 
   # Some shells do NOT allow this, so we hide the errors
-  tmp_var="$(get_max_unsigned_int_of_shell_printf 2> /dev/null || :)"
-  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
+  shell_printf_max_u="$(get_max_unsigned_int_of_shell_printf 2> /dev/null)" || shell_printf_max_u='unknown'
+  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "${shell_printf_max_u}" || :)"
 
   tmp_var="$(awk -- 'BEGIN { printf "%u\n", "-1" }' || :)"
   _awk_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
   # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
-  for _n in ${_limits}; do
-    if tmp_var="$(awk -v n="${_n}" -- 'BEGIN { printf "%d\n", n }')" && permissively_comparison "${tmp_var}" "${_n}"; then
-      _max="${_n}"
+  for _num in ${_limits}; do
+    if tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%d\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
+      _max="${_num}"
     else break; fi
   done
   _awk_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || _awk_printf_signed_bit='unknown'
 
   # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
-  for _n in ${_limits_u}; do
-    if tmp_var="$(awk -v n="${_n}" -- 'BEGIN { printf "%u\n", n }')" && permissively_comparison "${tmp_var}" "${_n}"; then
-      _max="${_n}"
+  for _num in ${_limits_u}; do
+    if tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%u\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
+      _max="${_num}"
     else break; fi
   done
   _awk_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || _awk_printf_unsigned_bit='unknown'
 
   _max='-1'
-  for _n in ${_limits_date}; do
-    if tmp_var="$(TZ='CET-1' date 2> /dev/null -d "@${_n}" -- '+%s')" && test "${tmp_var}" = "${_n}"; then
-      _max="${_n}"
+  for _num in ${_limits_date}; do
+    if tmp_var="$(TZ='CET-1' date 2> /dev/null -d "@${_num}" -- '+%s')" && test "${tmp_var}" = "${_num}"; then
+      _max="${_num}"
     else
-      if test "${tmp_var}" = "$((_n - 14400))"; then
+      if test "${tmp_var}" = "$((_num - 14400))"; then
         date_timezone_bug='true'
-        _max="${_n}"
+        _max="${_num}"
       else
         break
       fi
@@ -993,9 +994,9 @@ main()
   _date_bit="$(convert_max_signed_int_to_bit "${_max}")" || _date_bit='unknown'
 
   _max='-1'
-  for _n in ${_limits_date}; do
-    if tmp_var="$(TZ='CET-1' date 2> /dev/null -u -d "@${_n}" -- '+%s')" && test "${tmp_var}" = "${_n}"; then
-      _max="${_n}"
+  for _num in ${_limits_date}; do
+    if tmp_var="$(TZ='CET-1' date 2> /dev/null -u -d "@${_num}" -- '+%s')" && test "${tmp_var}" = "${_num}"; then
+      _max="${_num}"
     else break; fi
   done
   _date_u_bit="$(convert_max_signed_int_to_bit "${_max}")" || _date_u_bit='unknown'
@@ -1005,8 +1006,10 @@ main()
   printf '%s\n\n' "Bits of CPU: ${cpu_bit}"
 
   printf '%s\n' "Bits of shell 'test' int comparison: ${_shell_test_bit}"
-  printf '%s\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit}"
-  printf '%s\n\n' "Bits of shell 'printf': ${_shell_printf_bit}"
+  printf '%s\n\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit}"
+
+  printf '%s\n' "Bits of shell 'printf': ${_shell_printf_bit}"
+  printf '%s\n\n' "Shell 'printf' unsigned range: 0-${shell_printf_max_u}"
 
   printf '%s %s\n' "Version of awk:" "$(get_version 'awk' || :)"
   printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit}"
