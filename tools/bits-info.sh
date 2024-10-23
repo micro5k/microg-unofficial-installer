@@ -960,8 +960,25 @@ main()
   _shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max}")" || _shell_arithmetic_bit='unknown'
 
   # Some shells do NOT allow this, so we hide the errors
-  shell_printf_max_u="$(get_max_unsigned_int_of_shell_printf 2> /dev/null)" || shell_printf_max_u='unknown'
-  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "${shell_printf_max_u}" || :)"
+  tmp_var="$(get_max_unsigned_int_of_shell_printf 2> /dev/null)" || tmp_var='unknown'
+  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
+
+  _max='-1'
+  for _num in ${_limits}; do
+    if tmp_var="$(printf "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
+      _max="${_num}"
+    else break; fi
+  done
+  shell_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || shell_printf_signed_bit='unknown'
+
+  _max='-1'
+  for _num in ${_limits_u}; do
+    if tmp_var="$(printf "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
+      _max="${_num}"
+    else break; fi
+  done
+  shell_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || shell_printf_unsigned_bit='unknown'
+  shell_printf_max_u="${_max}"
 
   _max='-1'
   last_random_val='-1'
@@ -1004,7 +1021,6 @@ main()
   done
   _awk_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || _awk_printf_signed_bit='unknown'
 
-  # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
   for _num in ${_limits_u}; do
     if tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%u\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
@@ -1044,9 +1060,11 @@ main()
   printf '%s\n\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit}"
 
   printf '%s\n' "Bits of shell 'printf': ${_shell_printf_bit}"
-  printf '%s\n\n' "Shell 'printf' unsigned range: 0-${shell_printf_max_u}"
-
+  printf '%s\n' "Bits of shell 'printf' - signed: ${shell_printf_signed_bit}"
+  printf '%s\n' "Bits of shell 'printf' - unsigned: ${shell_printf_unsigned_bit}"
   printf '%s %s\n\n' "Bits of \$RANDOM seed:" "${shell_random_seed_bit}"
+
+  printf '%s\n\n' "Shell 'printf' unsigned range: 0-${shell_printf_max_u}"
 
   printf '%s %s\n' "Version of awk:" "$(get_version 'awk' || :)"
   printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit}"
