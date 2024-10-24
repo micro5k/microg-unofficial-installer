@@ -856,6 +856,11 @@ get_max_unsigned_int_of_shell_printf()
   _mup_val="$(printf '%u\n' '-1')" && printf "%s\n" "${_mup_val}"
 }
 
+test_seed_of_random()
+{
+  RANDOM="${1}" 2>&1
+}
+
 list_available_shells()
 {
   if chsh 2> /dev/null -l; then
@@ -1047,6 +1052,12 @@ main()
     _max='ignored' # $RANDOM is supported but the seed is ignored
   else
     for _num in ${limits_rnd_u}; do
+      if tmp_var="$(test_seed_of_random "${_num}")" && test -z "${tmp_var}"; then
+        : # OK
+      else
+        break # Assigning an integer that is too large causes an error message to be displayed on zsh
+      fi
+
       RANDOM="${_num}" # Seed random
       tmp_var="${RANDOM}"
       # All the overflowed RANDOM seeds produce the same random numbers
