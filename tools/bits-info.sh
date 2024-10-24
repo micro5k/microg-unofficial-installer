@@ -857,8 +857,8 @@ get_version()
 
 get_max_unsigned_int_of_shell_printf()
 {
-  local _mup_val
-  _mup_val="$(printf '%u\n' '-1')" && printf "%s\n" "${_mup_val}"
+  # Some shells do NOT allow this, so we hide the errors
+  printf 2> /dev/null '%s\n' "$(printf '%u\n' '-1')"
 }
 
 test_seed_of_random()
@@ -1009,8 +1009,7 @@ main()
   done
   shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max}")" || shell_arithmetic_bit='unknown'
 
-  # Some shells do NOT allow this, so we hide the errors
-  tmp_var="$(get_max_unsigned_int_of_shell_printf 2> /dev/null)" || tmp_var='unknown'
+  tmp_var="$(get_max_unsigned_int_of_shell_printf)" || tmp_var='unknown'
   shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
   _max='-1'
