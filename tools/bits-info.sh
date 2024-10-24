@@ -858,7 +858,7 @@ get_max_unsigned_int_of_shell_printf()
 
 test_seed_of_random()
 {
-  RANDOM="${1}" 2>&1
+  RANDOM="${1}"
 }
 
 list_available_shells()
@@ -1052,7 +1052,7 @@ main()
     _max='ignored' # $RANDOM is supported but the seed is ignored
   else
     for _num in ${limits_rnd_u}; do
-      if tmp_var="$(test_seed_of_random "${_num}")" && test -z "${tmp_var}"; then
+      if tmp_var="$(test_seed_of_random 2>&1 "${_num}")" && test -z "${tmp_var}"; then
         : # OK
       else
         break # Assigning an integer that is too large causes an error message to be displayed on zsh
