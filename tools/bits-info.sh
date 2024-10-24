@@ -90,6 +90,27 @@ convert_max_unsigned_int_to_bit()
   return 0
 }
 
+inc_num()
+{
+  # NOTE: We are going to test integers at (and over) the shell limit so we can NOT use shell arithmetic because it can overflow
+
+  case "${1}" in
+    '32767') printf '%s\n' '32768' ;;
+    '65535') printf '%s\n' '65536' ;;
+    '2147483647') printf '%s\n' '2147483648' ;;
+    '2147483648') printf '%s\n' '2147483649' ;;
+    '4294967295') printf '%s\n' '4294967296' ;;
+    '18446744073709551615') printf '%s\n' '18446744073709551616' ;;
+    '9223372036854775807') printf '%s\n' '9223372036854775808' ;;
+
+    *)
+      printf 1>&2 '%s\n' "Unexpected number: ${1}"
+      return 1
+      ;;
+  esac
+
+  return 0
+}
 permissively_comparison()
 {
   local _comp_list _comp_num
@@ -948,7 +969,12 @@ main()
   for _num in ${_limits}; do
     if test 2> /dev/null "${_num}" -gt 0; then
       _max="${_num}"
-    else break; fi
+    else
+      if _num="$(inc_num "${_max}")" && test 2> /dev/null "${_num}" -gt 0; then
+        printf '%s\n' 'ERROR: Detection of shell test int comparison was inconclusive, please report it to the author!!!'
+      fi
+      break
+    fi
   done
   shell_test_bit="$(convert_max_signed_int_to_bit "${_max}")" || shell_test_bit='unknown'
 
@@ -956,7 +982,12 @@ main()
   for _num in ${_limits}; do
     if test "$((_num))" = "${_num}"; then
       _max="${_num}"
-    else break; fi
+    else
+      if _num="$(inc_num "${_max}")" && test "$((_num))" = "${_num}"; then
+        printf '%s\n' 'ERROR: Detection of shell arithmetic was inconclusive, please report it to the author!!!'
+      fi
+      break
+    fi
   done
   shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max}")" || shell_arithmetic_bit='unknown'
 
@@ -968,7 +999,12 @@ main()
   for _num in ${_limits}; do
     if tmp_var="$(printf "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
       _max="${_num}"
-    else break; fi
+    else
+      if _num="$(inc_num "${_max}")" && tmp_var="$(printf "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
+        printf '%s\n' 'ERROR: Detection of signed shell printf was inconclusive, please report it to the author!!!'
+      fi
+      break
+    fi
   done
   shell_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || shell_printf_signed_bit='unknown'
 
@@ -976,7 +1012,12 @@ main()
   for _num in ${_limits_u}; do
     if tmp_var="$(printf "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
       _max="${_num}"
-    else break; fi
+    else
+      if _num="$(inc_num "${_max}")" && tmp_var="$(printf "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
+        printf '%s\n' 'ERROR: Detection of unsigned shell printf was inconclusive, please report it to the author!!!'
+      fi
+      break
+    fi
   done
   shell_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || shell_printf_unsigned_bit='unknown'
   shell_printf_max_u="${_max}"
@@ -1018,7 +1059,12 @@ main()
   for _num in ${_limits}; do
     if tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%d\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
       _max="${_num}"
-    else break; fi
+    else
+      if _num="$(inc_num "${_max}")" && tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%d\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
+        printf '%s\n' 'ERROR: Detection of signed awk printf was inconclusive, please report it to the author!!!'
+      fi
+      break
+    fi
   done
   awk_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || awk_printf_signed_bit='unknown'
 
@@ -1026,7 +1072,12 @@ main()
   for _num in ${_limits_u}; do
     if tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%u\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
       _max="${_num}"
-    else break; fi
+    else
+      if _num="$(inc_num "${_max}")" && tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%u\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
+        printf '%s\n' 'ERROR: Detection of unsigned awk printf was inconclusive, please report it to the author!!!'
+      fi
+      break
+    fi
   done
   awk_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || awk_printf_unsigned_bit='unknown'
 
