@@ -921,6 +921,7 @@ main()
   printf '%s %s\n' "OS:" "$(get_os_info || :)"
   printf '%s %s\n\n' "Version of uname:" "$(get_version 'uname' || :)"
 
+  shell_bit='unknown'
   if test -n "${shell_exe}" && shell_bit="$(detect_bitness_of_files "${shell_exe}")"; then
     :
   elif test "${OS-}" = 'Windows_NT' && shell_bit="${PROCESSOR_ARCHITECTURE-}" && test -n "${shell_bit}"; then
@@ -942,7 +943,7 @@ main()
       x86) os_bit='32-bit' ;;
       *) os_bit='unknown' ;;
     esac
-  elif command 1> /dev/null 2>&1 -v 'getconf' && os_bit="$(getconf 'LONG_BIT')" && test -n "${os_bit}"; then
+  elif os_bit="$(getconf 2> /dev/null 'LONG_BIT')" && test -n "${os_bit}"; then
     os_bit="${os_bit}-bit"
   elif test -r '/system/build.prop'; then
     # On Android
@@ -955,6 +956,7 @@ main()
     os_bit="$(retrieve_bitness_from_uname || :)" # Use it only as last resort (almost never happens)
   fi
 
+  cpu_bit='unknown'
   if test -r '/proc/cpuinfo' && tmp_var="$(grep -e '^flags[[:space:]]*:' -- '/proc/cpuinfo' | cut -d ':' -f '2-' -s)" && test -n "${tmp_var}"; then
     if printf '%s\n' "${tmp_var}" | grep -m 1 -q -w -e '[[:lower:]]\{1,\}_lm'; then
       cpu_bit='64-bit'
