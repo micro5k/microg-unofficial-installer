@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.6'
+SCRIPT_VERSION='1.5.7'
 
 ### CONFIGURATION ###
 
@@ -95,17 +95,25 @@ inc_num()
   # NOTE: We are going to test integers at (and over) the shell limit so we can NOT use shell arithmetic because it can overflow
 
   case "${1}" in
+    '-1') return 1 ;;
     '32767') printf '%s\n' '32768' ;;
     '65535') printf '%s\n' '65536' ;;
+    '2147480047') printf '%s\n' '2147480048' ;;
     '2147483647') printf '%s\n' '2147483648' ;;
     '2147483648') printf '%s\n' '2147483649' ;;
     '4294967295') printf '%s\n' '4294967296' ;;
-    '18446744073709551615') printf '%s\n' '18446744073709551616' ;;
+    '32535215999') printf '%s\n' '32535216000' ;;
+    '32535244799') printf '%s\n' '32535244800' ;;
+    '67767976233529199') printf '%s\n' '67767976233529200' ;;
+    '67767976233532799') printf '%s\n' '67767976233532800' ;;
+    '67768036191673199') printf '%s\n' '67768036191673200' ;;
+    '67768036191676799') printf '%s\n' '67768036191676800' ;;
     '9223372036854775807') printf '%s\n' '9223372036854775808' ;;
+    '18446744073709551615') printf '%s\n' '18446744073709551616' ;;
 
     *)
       printf 1>&2 '%s\n' "Unexpected number: ${1}"
-      return 1
+      return 2
       ;;
   esac
 
@@ -1090,6 +1098,9 @@ main()
         date_timezone_bug='true'
         _max="${_num}"
       else
+        if _num="$(inc_num "${_max}")" && tmp_var="$(TZ='CET-1' date 2> /dev/null -d "@${_num}" -- '+%s')" && test "${tmp_var}" = "${_num}"; then
+          printf '%s\n' 'ERROR: Detection of date timestamp was inconclusive, please report it to the author!!!'
+        fi
         break
       fi
     fi
@@ -1100,7 +1111,12 @@ main()
   for _num in ${limits_date}; do
     if tmp_var="$(TZ='CET-1' date 2> /dev/null -u -d "@${_num}" -- '+%s')" && test "${tmp_var}" = "${_num}"; then
       _max="${_num}"
-    else break; fi
+    else
+      if _num="$(inc_num "${_max}")" && tmp_var="$(TZ='CET-1' date 2> /dev/null -u -d "@${_num}" -- '+%s')" && test "${tmp_var}" = "${_num}"; then
+        printf '%s\n' 'ERROR: Detection of date -u timestamp was inconclusive, please report it to the author!!!'
+      fi
+      break
+    fi
   done
   date_u_bit="$(convert_max_signed_int_to_bit "${_max}")" || date_u_bit='unknown'
 
@@ -1124,7 +1140,7 @@ main()
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${awk_printf_unsigned_bit}"
 
   printf '%s %s\n' "Version of date:" "$(get_version 'date' || :)"
-  printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${date_bit}" "$(test "${date_timezone_bug}" = 'false' || printf ' %s\n' '(with time zone BUG)' || :)"
+  printf '%s%s\n' "Bits of 'TZ=CET-1 date' timestamp: ${date_bit}" "$(test "${date_timezone_bug}" = 'false' || printf ' %s\n' '(with time zone BUG)' || :)"
   printf '%s\n' "Bits of 'date -u' timestamp: ${date_u_bit}"
 }
 
