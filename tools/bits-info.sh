@@ -76,7 +76,8 @@ convert_max_unsigned_int_to_bit()
     '2147483647') printf '%s\n' "32-bit (with unsigned limit bug)" ;;         # Bugged unsigned 'printf' of awk (seen on some versions of Bash)
     '2147483648') printf '%s\n' "32-bit (with BusyBox unsigned limit bug)" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox)
     '4294967295') printf '%s\n' "32-bit" ;;
-    '9223372036854775808') printf '%s\n' "64-bit (with unsigned limit bug)" ;; # Bugged unsigned 'printf' (seen on Ksh)
+    '9223372036854775807') printf '%s\n' "64-bit (with unsigned limit bug)" ;; # Bugged unsigned 'printf' (seen on Ksh93)
+    '9223372036854775808') printf '%s\n' "64-bit (with unsigned limit bug)" ;; # Bugged unsigned 'printf' (seen on Ksh93)
     '18446744073709551615') printf '%s\n' "64-bit" ;;
     'unsupported' | 'ignored')
       printf '%s\n' "${1}"
@@ -707,6 +708,7 @@ get_shell_info()
   case "${_shell_version}" in
     'BusyBox '*) _shell_name='busybox' ;;
     *' bash,'*) _shell_name='bash' ;; # Sometimes "sh" isn't just a symlink to "bash" but it is really called "sh" so we have to correct this
+    '93u+'* | *' 93u+'*) test "${_shell_name}" != 'ksh' || _shell_name='ksh93' ;;
     *) ;;
   esac
 
@@ -899,7 +901,7 @@ main()
   date_timezone_bug='false'
   limits='32767 2147483647 9223372036854775807'
   limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
-  limits_u='65535 2147483647 2147483648 4294967295 9223372036854775808 18446744073709551615'
+  limits_u='65535 2147483647 2147483648 4294967295 9223372036854775807 9223372036854775808 18446744073709551615'
   limits_rnd_u='65535 4294967295 18446744073709551615'
 
   shell_exe="$(get_shell_exe || :)"
