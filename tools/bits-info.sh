@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.7'
+SCRIPT_VERSION='1.5.8'
 
 ### CONFIGURATION ###
 
@@ -895,7 +895,7 @@ pause_if_needed()
 main()
 {
   local shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u _max _num last_random_val tmp_var
-  local shell_info shell_name shell_applet shell_bit os_bit cpu_bit
+  local shell_info shell_name shell_applet os_info is_win shell_bit os_bit cpu_bit
   local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_signed_bit shell_printf_unsigned_bit shell_printf_max_u shell_random_seed_bit
   local awk_printf_bit awk_printf_signed_bit awk_printf_unsigned_bit date_bit date_u_bit
 
@@ -911,6 +911,9 @@ main()
   shell_info="$(get_shell_info "${shell_exe}" || :)"
   shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1' || :)"
   prefer_included_utilities_if_requested "${shell_exe_original}" "${shell_name}"
+  os_info="$(get_os_info || :)"
+  is_win='false'
+  case "${os_info}" in 'MS/Windows'*) is_win='true' ;; *) ;; esac
 
   printf '%s %s\n' "Shell:" "${shell_name}"
   if shell_applet="$(get_applet_name "${shell_name}")"; then
@@ -918,13 +921,13 @@ main()
   fi
   printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '2-' -s || :)"
   printf '%s %s\n' "Shell path:" "${shell_exe:-unknown}"
-  printf '%s %s\n' "OS:" "$(get_os_info || :)"
+  printf '%s %s\n' "OS:" "${os_info}"
   printf '%s %s\n\n' "Version of uname:" "$(get_version 'uname' || :)"
 
   shell_bit='unknown'
   if test -n "${shell_exe}" && shell_bit="$(detect_bitness_of_files "${shell_exe}")"; then
     :
-  elif test "${OS-}" = 'Windows_NT' && shell_bit="${PROCESSOR_ARCHITECTURE-}" && test -n "${shell_bit}"; then
+  elif test "${is_win}" = 'true' && shell_bit="${PROCESSOR_ARCHITECTURE-}" && test -n "${shell_bit}"; then
     # On Windows 2000+ / ReactOS
     case "${shell_bit}" in
       AMD64 | ARM64 | IA64) shell_bit='64-bit' ;;
@@ -936,7 +939,7 @@ main()
   fi
 
   os_bit='unknown'
-  if test "${OS-}" = 'Windows_NT' && os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${os_bit}"; then
+  if test "${is_win}" = 'true' && os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${os_bit}"; then
     # On Windows 2000+ / ReactOS
     case "${os_bit}" in
       AMD64 | ARM64 | IA64) os_bit='64-bit' ;;
