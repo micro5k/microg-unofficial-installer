@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.8'
+SCRIPT_VERSION='1.5.9'
 
 ### CONFIGURATION ###
 
@@ -1178,12 +1178,16 @@ while test "${#}" -gt 0; do
   case "${1}" in
     -V | --version)
       execute_script='false'
+      NO_PAUSE='1'
+      export NO_PAUSE
       printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
       printf '%s\n' 'Copyright (c) 2024 ale5000'
       printf '%s\n' 'License GPLv3+'
       ;;
     -h | --help | '-?')
       execute_script='false'
+      NO_PAUSE='1'
+      export NO_PAUSE
       printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
 
       printf '\n%s\n\n' 'Coming soon...'
@@ -1254,20 +1258,24 @@ while test "${#}" -gt 0; do
 done
 
 if test "${execute_script}" = 'true'; then
+  BACKUP_PATH="${PATH:-%empty}"
+
   IS_MSYS='false'
   if test -x '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then
     IS_MSYS='true'
     # We must do this in all cases with Bash under Windows using this POSIX layer otherwise we may run into freezes, obscure errors and unknown infinite loops!!!
-    PATH="/usr/bin:${PATH:-/usr/bin}"
+    PATH="/usr/bin:${PATH:-%empty}"
   fi
 
   if test "${#}" -eq 0; then
-    main
+    main || STATUS="${?}"
   else
-    detect_bitness_of_files "${@}"
+    detect_bitness_of_files "${@}" || STATUS="${?}"
   fi
 
-  pause_if_needed "${?}"
-elif test "${STATUS}" != 0; then
-  pause_if_needed "${STATUS}"
+  PATH="${BACKUP_PATH}"
+  unset BACKUP_PATH IS_MSYS || :
 fi
+
+unset SCRIPT_NAME SCRIPT_VERSION POSIXLY_CORRECT NEWLINE PREFER_INCLUDED_UTILITIES ASH_STANDALONE execute_script || :
+pause_if_needed "${STATUS}"
