@@ -110,7 +110,7 @@ jobs:
             readonly workspace_dir='${{ github.workspace }}'
             readonly shells_dir='${{ github.workspace }}/cache/shells'
           }
-          if dl_shells="$(tr -- '\n' ':' 0< "${shells_dir:?}/extracted/list.dat")" && dl_shells="${dl_shells%':'}" && test -n "${dl_shells?}"; then
+          if test -f "${shells_dir:?}/extracted/list.dat" && dl_shells="$(tr -- '\n' ':' 0< "${shells_dir:?}/extracted/list.dat")" && dl_shells="${dl_shells%':'}" && test -n "${dl_shells?}"; then
             PATH="${PATH:-/usr/bin}:${dl_shells:?}" || exit "${?}"
           fi
           if test "${current_os:?}" = 'Linux'; then PATH="${PATH:-/usr/bin}:${workspace_dir:?}/cache/shells/extracted/bosh/opt/schily/bin" || exit "${?}"; fi
