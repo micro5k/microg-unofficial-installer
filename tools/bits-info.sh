@@ -855,8 +855,9 @@ pause_if_needed()
 main()
 {
   local shell_exe shell_exe_original date_timezone_bug _limits _limits_date _limits_u limits_rnd_u _max _num last_random_val tmp_var
-  local shell_info shell_name shell_applet shell_bit os_bit cpu_bit _shell_test_bit _shell_arithmetic_bit _shell_printf_bit _awk_printf_bit _awk_printf_signed_bit _awk_printf_unsigned_bit _date_bit _date_u_bit
-  local shell_printf_max_u
+  local shell_info shell_name shell_applet shell_bit os_bit cpu_bit
+  local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_signed_bit shell_printf_unsigned_bit shell_printf_max_u shell_random_seed_bit
+  local awk_printf_bit awk_printf_signed_bit awk_printf_unsigned_bit date_bit date_u_bit
 
   date_timezone_bug='false'
   _limits='32767 2147483647 9223372036854775807'
@@ -949,7 +950,7 @@ main()
       _max="${_num}"
     else break; fi
   done
-  _shell_test_bit="$(convert_max_signed_int_to_bit "${_max}")" || _shell_test_bit='unknown'
+  shell_test_bit="$(convert_max_signed_int_to_bit "${_max}")" || shell_test_bit='unknown'
 
   _max='-1'
   for _num in ${_limits}; do
@@ -957,11 +958,11 @@ main()
       _max="${_num}"
     else break; fi
   done
-  _shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max}")" || _shell_arithmetic_bit='unknown'
+  shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max}")" || shell_arithmetic_bit='unknown'
 
   # Some shells do NOT allow this, so we hide the errors
   tmp_var="$(get_max_unsigned_int_of_shell_printf 2> /dev/null)" || tmp_var='unknown'
-  _shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
+  shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
   _max='-1'
   for _num in ${_limits}; do
@@ -1010,7 +1011,7 @@ main()
   shell_random_seed_bit="$(convert_max_unsigned_int_to_bit "${_max}" || :)"
 
   tmp_var="$(awk -- 'BEGIN { printf "%u\n", "-1" }' || :)"
-  _awk_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
+  awk_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
   # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
   _max='-1'
@@ -1019,7 +1020,7 @@ main()
       _max="${_num}"
     else break; fi
   done
-  _awk_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || _awk_printf_signed_bit='unknown'
+  awk_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || awk_printf_signed_bit='unknown'
 
   _max='-1'
   for _num in ${_limits_u}; do
@@ -1027,7 +1028,7 @@ main()
       _max="${_num}"
     else break; fi
   done
-  _awk_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || _awk_printf_unsigned_bit='unknown'
+  awk_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || awk_printf_unsigned_bit='unknown'
 
   _max='-1'
   for _num in ${_limits_date}; do
@@ -1042,7 +1043,7 @@ main()
       fi
     fi
   done
-  _date_bit="$(convert_max_signed_int_to_bit "${_max}")" || _date_bit='unknown'
+  date_bit="$(convert_max_signed_int_to_bit "${_max}")" || date_bit='unknown'
 
   _max='-1'
   for _num in ${_limits_date}; do
@@ -1050,16 +1051,16 @@ main()
       _max="${_num}"
     else break; fi
   done
-  _date_u_bit="$(convert_max_signed_int_to_bit "${_max}")" || _date_u_bit='unknown'
+  date_u_bit="$(convert_max_signed_int_to_bit "${_max}")" || date_u_bit='unknown'
 
   printf '%s\n' "Bits of shell: ${shell_bit}"
   printf '%s\n' "Bits of OS: ${os_bit}"
   printf '%s\n\n' "Bits of CPU: ${cpu_bit}"
 
-  printf '%s\n' "Bits of shell 'test' int comparison: ${_shell_test_bit}"
-  printf '%s\n\n' "Bits of shell arithmetic: ${_shell_arithmetic_bit}"
+  printf '%s\n' "Bits of shell 'test' int comparison: ${shell_test_bit}"
+  printf '%s\n\n' "Bits of shell arithmetic: ${shell_arithmetic_bit}"
 
-  printf '%s\n' "Bits of shell 'printf': ${_shell_printf_bit}"
+  printf '%s\n' "Bits of shell 'printf': ${shell_printf_bit}"
   printf '%s\n' "Bits of shell 'printf' - signed: ${shell_printf_signed_bit}"
   printf '%s\n' "Bits of shell 'printf' - unsigned: ${shell_printf_unsigned_bit}"
   printf '%s %s\n\n' "Bits of \$RANDOM seed:" "${shell_random_seed_bit}"
@@ -1067,13 +1068,13 @@ main()
   printf '%s\n\n' "Shell 'printf' unsigned range: 0-${shell_printf_max_u}"
 
   printf '%s %s\n' "Version of awk:" "$(get_version 'awk' || :)"
-  printf '%s\n' "Bits of awk 'printf': ${_awk_printf_bit}"
-  printf '%s\n' "Bits of awk 'printf' - signed: ${_awk_printf_signed_bit}"
-  printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${_awk_printf_unsigned_bit}"
+  printf '%s\n' "Bits of awk 'printf': ${awk_printf_bit}"
+  printf '%s\n' "Bits of awk 'printf' - signed: ${awk_printf_signed_bit}"
+  printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${awk_printf_unsigned_bit}"
 
   printf '%s %s\n' "Version of date:" "$(get_version 'date' || :)"
-  printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${_date_bit}" "$(test "${date_timezone_bug}" = 'false' || printf ' %s\n' '(with time zone BUG)' || :)"
-  printf '%s\n' "Bits of 'date -u' timestamp: ${_date_u_bit}"
+  printf '%s%s\n' "Bits of CET-1 'date' timestamp: ${date_bit}" "$(test "${date_timezone_bug}" = 'false' || printf ' %s\n' '(with time zone BUG)' || :)"
+  printf '%s\n' "Bits of 'date -u' timestamp: ${date_u_bit}"
 }
 
 execute_script='true'
