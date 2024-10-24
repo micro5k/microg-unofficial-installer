@@ -1033,7 +1033,11 @@ main()
     fi
   done
   shell_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || shell_printf_unsigned_bit='unknown'
-  shell_printf_max_u="${_max}"
+  if test "${_max}" != '-1'; then
+    shell_printf_max_u="${_max}"
+  else
+    shell_printf_max_u='unknown'
+  fi
 
   _max='-1'
   last_random_val='-1'
