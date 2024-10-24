@@ -129,8 +129,8 @@ permissively_comparison()
 
   case "${2}" in
     '') return 1 ;;
-    '9223372036854775807') _comp_list="${2} 9223372036854775808" ;;
-    '18446744073709551615') _comp_list="${2} 1.84467e+19" ;;
+    '9223372036854775807') _comp_list="${2} 9223372036854775808 9.22337e+018" ;;
+    '18446744073709551615') _comp_list="${2} 1.84467e+19 1.84467e+019" ;;
     *) _comp_list="${2}" ;;
   esac
 
@@ -1013,11 +1013,12 @@ main()
   shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
   _max='-1'
+  # We hide the errors otherwise it will display an error on old Bash under Windows when an overflow occurs
   for _num in ${limits}; do
-    if tmp_var="$(printf "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
+    if tmp_var="$(printf 2> /dev/null "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
       _max="${_num}"
     else
-      if _num="$(inc_num "${_max}")" && tmp_var="$(printf "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
+      if _num="$(inc_num "${_max}")" && tmp_var="$(printf 2> /dev/null "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
         printf '%s\n' 'ERROR: Detection of signed shell printf was inconclusive, please report it to the author!!!'
       fi
       break
@@ -1026,8 +1027,8 @@ main()
   shell_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || shell_printf_signed_bit='unknown'
 
   _max='-1'
+  # We hide the errors otherwise it will display an error on old Bash under Windows (or a ValueError on OSH) when an overflow occurs
   for _num in ${limits_u}; do
-    # We hide the errors otherwise it will display a ValueError on OSH when an overflow occurs
     if tmp_var="$(printf 2> /dev/null "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
       _max="${_num}"
     else
