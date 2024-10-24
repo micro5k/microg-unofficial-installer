@@ -76,7 +76,7 @@ convert_max_unsigned_int_to_bit()
     '2147483647') printf '%s\n' "32-bit (with unsigned limit bug)" ;;         # Bugged unsigned 'printf' of awk (seen on some versions of Bash)
     '2147483648') printf '%s\n' "32-bit (with BusyBox unsigned limit bug)" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox)
     '4294967295') printf '%s\n' "32-bit" ;;
-    '9223372036854775807') printf '%s\n' "64-bit (with unsigned limit bug)" ;; # Bugged unsigned 'printf' (seen on Ksh93)
+    '9223372036854775807') printf '%s\n' "64-bit (with unsigned limit bug)" ;; # Bugged unsigned 'printf' (seen on Ksh93 / OSH)
     '9223372036854775808') printf '%s\n' "64-bit (with unsigned limit bug)" ;; # Bugged unsigned 'printf' (seen on Ksh93)
     '18446744073709551615') printf '%s\n' "64-bit" ;;
     'unsupported' | 'ignored')
@@ -621,7 +621,7 @@ get_shell_exe()
   elif _gse_tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${_gse_tmp_var}" && _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var}")"; then
     # On Linux / macOS
     # shellcheck disable=SC2230 # Ignore: 'which' is non-standard
-    case "${_gse_tmp_var}" in *'/'* | *"\\"*) ;; *) _gse_tmp_var="$(which 2> /dev/null "${_gse_tmp_var}")" || return 3 ;; esac # We may not get the full path with "command -v" on osh
+    case "${_gse_tmp_var}" in *'/'* | *"\\"*) ;; *) _gse_tmp_var="$(which 2> /dev/null "${_gse_tmp_var}")" || return 3 ;; esac # We may not get the full path with "command -v" on some versions of OSH
   elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var}"; then
     if test "${_gse_tmp_var}" = '/bin/sh' && test "$(uname 2> /dev/null || :)" = 'Windows_NT'; then _gse_tmp_var="$(command 2> /dev/null -v 'busybox')" || return 2; fi
     if test ! -x "${_gse_tmp_var}" && test -x "${_gse_tmp_var}.exe"; then _gse_tmp_var="${_gse_tmp_var}.exe"; fi # Special fix for broken versions of Bash under Windows
@@ -1028,10 +1028,11 @@ main()
 
   _max='-1'
   for _num in ${limits_u}; do
-    if tmp_var="$(printf "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
+    # We hide the errors otherwise it will display a ValueError on OSH when an overflow occurs
+    if tmp_var="$(printf 2> /dev/null "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
       _max="${_num}"
     else
-      if _num="$(inc_num "${_max}")" && tmp_var="$(printf "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
+      if _num="$(inc_num "${_max}")" && tmp_var="$(printf 2> /dev/null "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
         printf '%s\n' 'ERROR: Detection of unsigned shell printf was inconclusive, please report it to the author!!!'
       fi
       break
