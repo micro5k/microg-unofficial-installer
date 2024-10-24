@@ -68,11 +68,11 @@ jobs:
               CACHE_IS_OUTDATED='true'
             fi
             mkdir -p -- "${shells_dir:?}/extracted/${1:?}" || return "${?}"
-            if test "${2:?}" = 'tar.xz'; then
-              tar -x -f "${shells_dir:?}/${1:?}.${2:?}" -C "${shells_dir:?}/extracted/${1:?}" || return "${?}"
-            else
+            if test "${2:?}" = 'bin'; then
               cp -f -p -- "${shells_dir:?}/${1:?}.${2:?}" "${shells_dir:?}/extracted/${1:?}/${1:?}" || return "${?}"
               chmod +x -- "${shells_dir:?}/extracted/${1:?}/${1:?}" || return "${?}"
+            else
+              tar -x -f "${shells_dir:?}/${1:?}.${2:?}" -C "${shells_dir:?}/extracted/${1:?}" || return "${?}"
             fi
             printf '%s\n' "${shells_dir:?}/extracted/${1:?}" 1>> "${shells_dir:?}/extracted/list.dat" || return "${?}"
           }
@@ -84,6 +84,7 @@ jobs:
           touch -- "${shells_dir:?}/extracted/list.dat" || exit "${?}"
           if test "${current_os:?}" = 'Linux'; then
             prepare_shell 'busybox' 'bin' 'https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox'
+            prepare_shell 'busybox-x86' 'bin' 'https://busybox.net/downloads/binaries/1.35.0-i686-linux-musl/busybox'
             prepare_shell 'bosh' 'tar.xz' 'http://fuz.su/pub/schilytools/bin/schily-2024-03-21-x86_64-linux-gcc.tar.xz'
           fi
           printf 'cache_is_outdated=%s\n' "${CACHE_IS_OUTDATED:?}" >> "${GITHUB_OUTPUT:?}"
@@ -163,7 +164,7 @@ jobs:
             if test "${1:?}" = 'cmdline.sh'; then
               case "${_s_shell?}" in
                 #ksh) return 0 ;;
-                obosh) return 0 ;; # Skip
+                obosh | busybox-x86) return 0 ;; # Skip
                 *) ;;
               esac
             else
@@ -174,22 +175,38 @@ jobs:
             fi
             return 1 # Execute
           }
+          set_bb_applet()
+          {
+            if test "${CURRENT_SHELL:-none}" != "${1:?}"; then
+              CURRENT_APPLET=''
+              CURRENT_SHELL="${1:?}"
+            fi
+            case "${CURRENT_APPLET?}" in
+              ash) CURRENT_APPLET='hush' ;;
+              *) CURRENT_APPLET='ash' ;;
+            esac
+          }
           test_on_all_shells()
           {
             local _shell _shell_cmd _status
             EXECUTED_LIST=''
-            for _shell in sh dash bash busybox-legacy busybox ash hush mksh pdksh oksh ksh88 ksh93 ksh zsh yash posh osh bosh pbosh obosh; do
+            for _shell in sh dash bash busybox-legacy busybox busybox-x86 busybox-x86 ash hush mksh pdksh oksh ksh88 ksh93 ksh zsh yash posh osh bosh pbosh obosh; do
               if test "${_shell:?}" = 'ksh' && test -n "${ORIGINAL_KSH?}"; then _shell="${ORIGINAL_KSH:?}"; fi
-              if ! _shell_cmd="$(command -v "${_shell:?}")" || skip "${1:?}" "${_shell:?}" || ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
+              if ! _shell_cmd="$(command -v "${_shell:?}")" || skip "${1:?}" "${_shell:?}"; then continue; fi
+              if test "${_shell:?}" != 'busybox-x86' && ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
               _status='0'
               case "${_shell:?}" in
-                'busybox'*) "${_shell_cmd:?}" ash "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}" ;;
+                'busybox'*)
+                  set_bb_applet "${_shell_cmd:?}"
+                  "${_shell_cmd:?}" "${CURRENT_APPLET:?}" "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}"
+                  ;;
                 *) "${_shell_cmd:?}" "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}" ;;
               esac
               test "${_status:?}" = 0 || EXIT_CODE="${_status:?}"
               printf '\nRETURN CODE:%s\n\n' "${_status:?}"
             done
+            unset CURRENT_SHELL CURRENT_APPLET
           }
           list_scripts()
           {
