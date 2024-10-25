@@ -142,6 +142,11 @@ permissively_comparison()
   return 1
 }
 
+is_shell_msys()
+{
+  test -x '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'
+}
+
 file_getprop()
 {
   grep -m 1 -F -e "${1:?}=" -- "${2:?}" | cut -d '=' -f '2-' -s
@@ -1260,24 +1265,23 @@ done || :
 if test "${execute_script}" = 'true'; then
   BACKUP_PATH="${PATH:-%empty}"
 
-  IS_MSYS='false'
-  if test -x '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then
-    IS_MSYS='true'
+  shell_is_msys='false'
+  if is_shell_msys; then
+    shell_is_msys='true'
     # We must do this in all cases with Bash under Windows using this POSIX layer otherwise we may run into freezes, obscure errors and unknown infinite loops!!!
     PATH="/usr/bin:${PATH:-%empty}"
   fi
 
   if test "${#}" -eq 0; then
-    main "${IS_MSYS}" || STATUS="${?}"
+    main "${shell_is_msys}" || STATUS="${?}"
   else
     detect_bitness_of_files "${@}" || STATUS="${?}"
   fi
 
   PATH="${BACKUP_PATH}"
-  unset BACKUP_PATH IS_MSYS || :
 fi
 
-if test "${PREFER_INCLUDED_UTILITIES-}" = '1'; then unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE || :; fi
-unset SCRIPT_NAME SCRIPT_VERSION POSIXLY_CORRECT execute_script || :
+if test "${PREFER_INCLUDED_UTILITIES-}" = '1'; then unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE; fi
+unset SCRIPT_NAME SCRIPT_VERSION POSIXLY_CORRECT BACKUP_PATH shell_is_msys execute_script
 
 pause_if_needed "${STATUS}"
