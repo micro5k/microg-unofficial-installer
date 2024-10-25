@@ -1277,6 +1277,7 @@ if test "${execute_script}" = 'true'; then
   unset BACKUP_PATH IS_MSYS || :
 fi
 
-if test "${PREFER_INCLUDED_UTILITIES}" = '1'; then unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE || :; fi
+if test "${PREFER_INCLUDED_UTILITIES-}" = '1'; then unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE || :; fi
 unset SCRIPT_NAME SCRIPT_VERSION POSIXLY_CORRECT execute_script || :
+
 pause_if_needed "${STATUS}"
