@@ -903,7 +903,7 @@ main()
   local shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u _max _num last_random_val tmp_var
   local shell_info shell_name shell_applet os_info is_win shell_bit os_bit cpu_bit
   local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_signed_bit shell_printf_unsigned_bit shell_printf_max_u shell_random_seed_bit
-  local awk_printf_bit awk_printf_signed_bit awk_printf_unsigned_bit date_bit date_u_bit
+  local awk_printf_bit awk_printf_signed_bit awk_printf_unsigned_bit cut_b_bit date_bit date_u_bit
 
   shell_is_msys="${1}"
   date_timezone_bug='false'
@@ -1124,6 +1124,19 @@ main()
   awk_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || awk_printf_unsigned_bit='unknown'
 
   _max='-1'
+  for _num in ${limits}; do
+    if tmp_var="$(: | cut 2> /dev/null -b "${_num}")"; then
+      _max="${_num}"
+    else
+      if _num="$(inc_num "${_max}")" && tmp_var="$(: | cut 2> /dev/null -b "${_num}")"; then
+        printf '%s\n' 'ERROR: Detection of cut -b was inconclusive, please report it to the author!!!'
+      fi
+      break
+    fi
+  done
+  cut_b_bit="$(convert_max_signed_int_to_bit "${_max}")" || cut_b_bit='unknown'
+
+  _max='-1'
   for _num in ${limits_date}; do
     if tmp_var="$(TZ='CET-1' date 2> /dev/null -d "@${_num}" -- '+%s')" && test "${tmp_var}" = "${_num}"; then
       _max="${_num}"
@@ -1172,6 +1185,8 @@ main()
   printf '%s\n' "Bits of awk 'printf': ${awk_printf_bit}"
   printf '%s\n' "Bits of awk 'printf' - signed: ${awk_printf_signed_bit}"
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${awk_printf_unsigned_bit}"
+
+  printf '%s\n\n' "Bits of 'cut -b': ${cut_b_bit}"
 
   printf '%s %s\n' "Version of date:" "$(get_version 'date' || :)"
   printf '%s%s\n' "Bits of 'TZ=CET-1 date' timestamp: ${date_bit}" "$(test "${date_timezone_bug}" = 'false' || printf ' %s\n' '(with time zone BUG)' || :)"
