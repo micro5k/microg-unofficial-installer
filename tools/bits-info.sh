@@ -1255,7 +1255,7 @@ while test "${#}" -gt 0; do
   esac
 
   shift
-done
+done || :
 
 if test "${execute_script}" = 'true'; then
   BACKUP_PATH="${PATH:-%empty}"
