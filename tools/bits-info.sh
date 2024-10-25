@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.9'
+SCRIPT_VERSION='1.5.10'
 
 ### CONFIGURATION ###
 
@@ -39,9 +39,7 @@ command 1> /dev/null 2>&1 -v 'local' || {
 ### GLOBAL VARIABLES ###
 
 POSIXLY_CORRECT='y'
-NEWLINE='
-'
-export POSIXLY_CORRECT NEWLINE
+export POSIXLY_CORRECT
 
 ### SCRIPT ###
 
@@ -564,7 +562,7 @@ detect_bitness_of_files()
     (
       _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
 
-      IFS="${NEWLINE}"
+      IFS="$(printf '\n')"
       # shellcheck disable=SC2030 # Intended: Modification of LC_ALL is local (to subshell)
       LC_ALL='C' # We only use bytes and not characters
       export LC_ALL
@@ -733,7 +731,10 @@ prefer_included_utilities_if_requested()
   local _piu_applet _piu_pathsep _piu_dir
   if test "${PREFER_INCLUDED_UTILITIES:-0}" = 0 || test -z "${1}"; then return 0; fi
 
+  _piu_pathsep=':'
   if test "${2}" = 'busybox'; then
+    if test "$(uname 2> /dev/null -o || :)" = 'MS/Windows'; then _piu_pathsep=';'; fi
+
     for _piu_applet in test printf uname awk date; do
       # Check if it does NOT already run the internal applet by default
       if test "$(command 2> /dev/null -v "${_piu_applet}" || :)" != "${_piu_applet}"; then
@@ -741,8 +742,6 @@ prefer_included_utilities_if_requested()
       fi
     done
   fi
-
-  if test "${IS_MSYS}" != 'true' && test "$(uname 2> /dev/null -o || :)" = 'MS/Windows'; then _piu_pathsep=';'; else _piu_pathsep=':'; fi
 
   if _piu_dir="$(dirname "${1}")" && test -n "${_piu_dir}"; then
     PATH="${_piu_dir}${_piu_pathsep}${PATH:-%empty}"
@@ -894,11 +893,12 @@ pause_if_needed()
 
 main()
 {
-  local shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u _max _num last_random_val tmp_var
+  local shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u _max _num last_random_val tmp_var
   local shell_info shell_name shell_applet os_info is_win shell_bit os_bit cpu_bit
   local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_signed_bit shell_printf_unsigned_bit shell_printf_max_u shell_random_seed_bit
   local awk_printf_bit awk_printf_signed_bit awk_printf_unsigned_bit date_bit date_u_bit
 
+  shell_is_msys="${1}"
   date_timezone_bug='false'
   limits='32767 2147483647 9223372036854775807'
   limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
@@ -907,7 +907,7 @@ main()
 
   shell_exe="$(get_shell_exe || :)"
   shell_exe_original="${shell_exe}"
-  if test "${IS_MSYS}" = 'true' && command 1> /dev/null 2>&1 -v 'cygpath'; then shell_exe="$(cygpath -m -a -l -- "${shell_exe}" || :)"; fi
+  if test "${shell_is_msys}" = 'true' && command 1> /dev/null 2>&1 -v 'cygpath'; then shell_exe="$(cygpath -m -a -l -- "${shell_exe}" || :)"; fi
   shell_info="$(get_shell_info "${shell_exe}" || :)"
   shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1' || :)"
   prefer_included_utilities_if_requested "${shell_exe_original}" "${shell_name}"
@@ -1268,7 +1268,7 @@ if test "${execute_script}" = 'true'; then
   fi
 
   if test "${#}" -eq 0; then
-    main || STATUS="${?}"
+    main "${IS_MSYS}" || STATUS="${?}"
   else
     detect_bitness_of_files "${@}" || STATUS="${?}"
   fi
@@ -1277,5 +1277,6 @@ if test "${execute_script}" = 'true'; then
   unset BACKUP_PATH IS_MSYS || :
 fi
 
-unset SCRIPT_NAME SCRIPT_VERSION POSIXLY_CORRECT NEWLINE PREFER_INCLUDED_UTILITIES ASH_STANDALONE execute_script || :
+if test "${PREFER_INCLUDED_UTILITIES}" = '1'; then unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE || :; fi
+unset SCRIPT_NAME SCRIPT_VERSION POSIXLY_CORRECT execute_script || :
 pause_if_needed "${STATUS}"
