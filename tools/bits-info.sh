@@ -73,11 +73,12 @@ convert_max_unsigned_int_to_bit()
 {
   local bug_suffix
   bug_suffix=''
-  if test "${2-}" != 'true'; then bug_suffix=' (bug)'; fi
+  test "${2-}" = 'true' || bug_suffix=' (bug)'
 
   case "${1}" in
     '32767') printf '%s\n' "16-bit signed${bug_suffix}" ;;
     '65535') printf '%s\n' "16-bit unsigned" ;;
+    '256446000') printf '%s\n' "32-bit BUGGED" ;;
     '2147483647') printf '%s\n' "32-bit signed${bug_suffix}" ;;               # Bugged unsigned 'printf' of awk (seen on some versions of Bash)
     '2147483648') printf '%s\n' "32-bit signed + 1 (BusyBox unsigned bug)" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox)
     '4294967295') printf '%s\n' "32-bit unsigned" ;;
@@ -106,7 +107,7 @@ inc_num()
   # NOTE: We are going to test integers at (and over) the shell limit so we can NOT use shell arithmetic because it can overflow
 
   case "${1}" in
-    '-1') return 1 ;;
+    '-1' | '256446000') return 1 ;;
     '32767') printf '%s\n' '32768' ;;
     '65535') printf '%s\n' '65536' ;;
     '2147480047') printf '%s\n' '2147480048' ;;
@@ -924,7 +925,7 @@ main()
   limits_u='65535 2147483647 2147483648 4294967295 9223372036854775807 9223372036854775808 18446744073709551615 340282366920938463463374607431768211455'
   limits_rnd_u='65535 4294967295 18446744073709551615'
 
-  limits_s_u='32767 65535 2147483647 4294967295 9223372036854775807 18446744073709551614 18446744073709551615 170141183460469231731687303715884105727 340282366920938463463374607431768211455'
+  limits_s_u='32767 65535 256446000 2147483647 4294967295 9223372036854775807 18446744073709551614 18446744073709551615 170141183460469231731687303715884105727 340282366920938463463374607431768211455'
 
   shell_exe="$(get_shell_exe || :)"
   shell_exe_original="${shell_exe}"
