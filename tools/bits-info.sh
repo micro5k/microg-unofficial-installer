@@ -48,16 +48,16 @@ convert_max_signed_int_to_bit()
   # More info: https://www.netmeister.org/blog/epoch.html
 
   case "${1}" in
-    '32767') printf '%s\n' '16-bit signed' ;;                                               # Standard 16-bit limit
-    '2147480047') printf '%s\n' '32-bit signed - 3600' ;;                                   # Standard 32-bit limit - 3600 for timezone diff. on 'date'
-    '2147483647') printf '%s\n' '32-bit signed' ;;                                          # Standard 32-bit limit
+    '32767') printf '%s\n' '16-bit signed' ;;                                                      # Standard 16-bit limit
+    '2147480047') printf '%s\n' '32-bit signed - 3600' ;;                                          # Standard 32-bit limit - 3600 for timezone diff. on 'date'
+    '2147483647') printf '%s\n' '32-bit signed' ;;                                                 # Standard 32-bit limit
     '32535215999') printf '%s\n' "64-bit signed (with limit: ${1})" ;;                             # 64-bit 'date' limited by the OS (likely under Windows)
     '32535244799') printf '%s\n' '64-bit signed (limited by Windows localtime function)' ;;        # 64-bit 'date' limited by the OS (likely on BusyBox under Windows)
     '67767976233529199') printf '%s\n' '64-bit signed (limited by tzcode bug - 3600)' ;;           # 64-bit 'date' limited by the OS - 3600 for timezone diff. (likely on Bash under Windows)
     '67767976233532799') printf '%s\n' '64-bit signed (limited by tzcode bug)' ;;                  # 64-bit 'date' limited by the OS (likely on Bash under Windows)
     '67768036191673199') printf '%s\n' '64-bit signed (limited by 32-bit tm_year of tm - 3600)' ;; # 64-bit 'date' limited by the OS - 3600 for timezone diff. (likely under Linux)
     '67768036191676799') printf '%s\n' '64-bit signed (limited by 32-bit tm_year of tm)' ;;        # 64-bit 'date' limited by the OS (likely under Linux)
-    '9223372036854775807') printf '%s\n' '64-bit signed' ;;                                 # Standard 64-bit limit
+    '9223372036854775807') printf '%s\n' '64-bit signed' ;;                                        # Standard 64-bit limit
     '170141183460469231731687303715884105727') printf '%s\n' '128-bit signed' ;;
 
     *)
@@ -73,7 +73,7 @@ convert_max_unsigned_int_to_bit()
 {
   local bug_suffix
   bug_suffix=''
-  test "${2-}" = 'true' || bug_suffix=' (bug)'
+  if test "${2-}" != 'true'; then bug_suffix=' (bug)'; fi
 
   case "${1}" in
     '32767') printf '%s\n' "16-bit signed${bug_suffix}" ;;
@@ -752,7 +752,7 @@ prefer_included_utilities_if_requested()
   if test "${2}" = 'busybox'; then
     if test "$(uname 2> /dev/null -o || :)" = 'MS/Windows'; then _piu_pathsep=';'; fi
 
-    for _piu_applet in test printf uname awk date; do
+    for _piu_applet in test printf uname awk cut date; do
       # Check if it does NOT already run the internal applet by default
       if test "$(command 2> /dev/null -v "${_piu_applet}" || :)" != "${_piu_applet}"; then
         \eval " ${_piu_applet}() { '${1}' '${_piu_applet}' \"\${@}\"; } " || : # Force internal applet
