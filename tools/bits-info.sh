@@ -1011,6 +1011,10 @@ main()
     cpu_bit='unknown'
   fi
 
+  printf '%s\n' "Bits of shell: ${shell_bit}"
+  printf '%s\n' "Bits of OS: ${os_bit}"
+  printf '%s\n\n' "Bits of CPU: ${cpu_bit}"
+
   _max='-1'
   for _num in ${limits}; do
     if test 2> /dev/null "${_num}" -gt 0; then
@@ -1036,6 +1040,9 @@ main()
     fi
   done
   shell_arithmetic_bit="$(convert_max_signed_int_to_bit "${_max}")" || shell_arithmetic_bit='unknown'
+
+  printf '%s\n' "Bits of shell 'test' int comparison: ${shell_test_bit}"
+  printf '%s\n\n' "Bits of shell arithmetic: ${shell_arithmetic_bit}"
 
   tmp_var="$(get_max_unsigned_int_of_shell_printf)" || tmp_var='unknown'
   shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
@@ -1108,6 +1115,12 @@ main()
   fi
   shell_random_seed_bit="$(convert_max_unsigned_int_to_bit "${_max}" || :)"
 
+  printf '%s\n' "Bits of shell 'printf': ${shell_printf_bit}"
+  printf '%s\n' "Bits of shell 'printf' - signed: ${shell_printf_signed_bit}"
+  printf '%s\n' "Bits of shell 'printf' - unsigned: ${shell_printf_unsigned_bit}"
+  printf '%s %s\n\n' "Bits of \$RANDOM seed:" "${shell_random_seed_bit}"
+  printf '%s\n\n' "Shell 'printf' unsigned range: 0-${shell_printf_max_u}"
+
   tmp_var="$(awk -- 'BEGIN { printf "%u\n", "-1" }' || :)"
   awk_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
@@ -1138,18 +1151,27 @@ main()
   done
   awk_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || awk_printf_unsigned_bit='unknown'
 
-  _max='-1'
-  for _num in ${limits_s_u}; do
-    if tmp_var="$(: | cut 2> /dev/null -b "${_num}")"; then
-      _max="${_num}"
-    else
-      if _num="$(inc_num "${_max}")" && tmp_var="$(: | cut 2> /dev/null -b "${_num}")"; then
-        printf '%s\n' 'ERROR: Detection of cut -b was inconclusive, please report it to the author!!!'
+  printf '%s %s\n' "Version of awk:" "$(get_version 'awk' || :)"
+  printf '%s\n' "Bits of awk 'printf': ${awk_printf_bit}"
+  printf '%s\n' "Bits of awk 'printf' - signed: ${awk_printf_signed_bit}"
+  printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${awk_printf_unsigned_bit}"
+
+  if false; then # Disable for now
+    _max='-1'
+    for _num in ${limits_s_u}; do
+      if tmp_var="$(: | cut 2> /dev/null -b "${_num}")"; then
+        _max="${_num}"
+      else
+        if _num="$(inc_num "${_max}")" && tmp_var="$(: | cut 2> /dev/null -b "${_num}")"; then
+          printf '%s\n' 'ERROR: Detection of cut -b was inconclusive, please report it to the author!!!'
+        fi
+        break
       fi
-      break
-    fi
-  done
-  cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true')" || cut_b_bit='unknown'
+    done
+    cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true')" || cut_b_bit='unknown'
+
+    printf '%s\n\n' "Bits of 'cut -b': ${cut_b_bit}"
+  fi
 
   _max='-1'
   for _num in ${limits_date}; do
@@ -1181,27 +1203,6 @@ main()
     fi
   done
   date_u_bit="$(convert_max_signed_int_to_bit "${_max}")" || date_u_bit='unknown'
-
-  printf '%s\n' "Bits of shell: ${shell_bit}"
-  printf '%s\n' "Bits of OS: ${os_bit}"
-  printf '%s\n\n' "Bits of CPU: ${cpu_bit}"
-
-  printf '%s\n' "Bits of shell 'test' int comparison: ${shell_test_bit}"
-  printf '%s\n\n' "Bits of shell arithmetic: ${shell_arithmetic_bit}"
-
-  printf '%s\n' "Bits of shell 'printf': ${shell_printf_bit}"
-  printf '%s\n' "Bits of shell 'printf' - signed: ${shell_printf_signed_bit}"
-  printf '%s\n' "Bits of shell 'printf' - unsigned: ${shell_printf_unsigned_bit}"
-  printf '%s %s\n\n' "Bits of \$RANDOM seed:" "${shell_random_seed_bit}"
-
-  printf '%s\n\n' "Shell 'printf' unsigned range: 0-${shell_printf_max_u}"
-
-  printf '%s %s\n' "Version of awk:" "$(get_version 'awk' || :)"
-  printf '%s\n' "Bits of awk 'printf': ${awk_printf_bit}"
-  printf '%s\n' "Bits of awk 'printf' - signed: ${awk_printf_signed_bit}"
-  printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${awk_printf_unsigned_bit}"
-
-  printf '%s\n\n' "Bits of 'cut -b': ${cut_b_bit}"
 
   printf '%s %s\n' "Version of date:" "$(get_version 'date' || :)"
   printf '%s%s\n' "Bits of 'TZ=CET-1 date' timestamp: ${date_bit}" "$(test "${date_timezone_bug}" = 'false' || printf ' %s\n' '(with time zone BUG)' || :)"
