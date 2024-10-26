@@ -48,17 +48,18 @@ convert_max_signed_int_to_bit()
   # More info: https://www.netmeister.org/blog/epoch.html
 
   case "${1}" in
-    '32767') printf '%s\n' '16-bit' ;;                                                      # Standard 16-bit limit
-    '2147480047') printf '%s\n' '32-bit - 3600' ;;                                          # Standard 32-bit limit - 3600 for timezone diff. on 'date'
-    '2147483647') printf '%s\n' '32-bit' ;;                                                 # Standard 32-bit limit
-    '32535215999') printf '%s\n' "64-bit (with limit: ${1})" ;;                             # 64-bit 'date' limited by the OS (likely under Windows)
-    '32535244799') printf '%s\n' '64-bit (limited by Windows localtime function)' ;;        # 64-bit 'date' limited by the OS (likely on BusyBox under Windows)
-    '67767976233529199') printf '%s\n' '64-bit (limited by tzcode bug - 3600)' ;;           # 64-bit 'date' limited by the OS - 3600 for timezone diff. (likely on Bash under Windows)
-    '67767976233532799') printf '%s\n' '64-bit (limited by tzcode bug)' ;;                  # 64-bit 'date' limited by the OS (likely on Bash under Windows)
-    '67768036191673199') printf '%s\n' '64-bit (limited by 32-bit tm_year of tm - 3600)' ;; # 64-bit 'date' limited by the OS - 3600 for timezone diff. (likely under Linux)
-    '67768036191676799') printf '%s\n' '64-bit (limited by 32-bit tm_year of tm)' ;;        # 64-bit 'date' limited by the OS (likely under Linux)
-    '9223372036854775807') printf '%s\n' '64-bit' ;;                                        # Standard 64-bit limit
-    '170141183460469231731687303715884105727') printf '%s\n' '128-bit' ;;
+    '32767') printf '%s\n' '16-bit signed' ;;                                               # Standard 16-bit limit
+    '2147480047') printf '%s\n' '32-bit signed - 3600' ;;                                   # Standard 32-bit limit - 3600 for timezone diff. on 'date'
+    '2147483647') printf '%s\n' '32-bit signed' ;;                                          # Standard 32-bit limit
+    '32535215999') printf '%s\n' "64-bit signed (with limit: ${1})" ;;                             # 64-bit 'date' limited by the OS (likely under Windows)
+    '32535244799') printf '%s\n' '64-bit signed (limited by Windows localtime function)' ;;        # 64-bit 'date' limited by the OS (likely on BusyBox under Windows)
+    '67767976233529199') printf '%s\n' '64-bit signed (limited by tzcode bug - 3600)' ;;           # 64-bit 'date' limited by the OS - 3600 for timezone diff. (likely on Bash under Windows)
+    '67767976233532799') printf '%s\n' '64-bit signed (limited by tzcode bug)' ;;                  # 64-bit 'date' limited by the OS (likely on Bash under Windows)
+    '67768036191673199') printf '%s\n' '64-bit signed (limited by 32-bit tm_year of tm - 3600)' ;; # 64-bit 'date' limited by the OS - 3600 for timezone diff. (likely under Linux)
+    '67768036191676799') printf '%s\n' '64-bit signed (limited by 32-bit tm_year of tm)' ;;        # 64-bit 'date' limited by the OS (likely under Linux)
+    '9223372036854775807') printf '%s\n' '64-bit signed' ;;                                 # Standard 64-bit limit
+    '170141183460469231731687303715884105727') printf '%s\n' '128-bit signed' ;;
+
     *)
       printf '%s\n' 'unknown'
       return 1
@@ -70,15 +71,23 @@ convert_max_signed_int_to_bit()
 
 convert_max_unsigned_int_to_bit()
 {
+  local bug_suffix
+  bug_suffix=''
+  test "${2-}" = 'true' || bug_suffix=' (bug)'
+
   case "${1}" in
-    '65535') printf '%s\n' '16-bit' ;;
-    '2147483647') printf '%s\n' '32-bit (with unsigned limit bug)' ;;         # Bugged unsigned 'printf' of awk (seen on some versions of Bash)
-    '2147483648') printf '%s\n' '32-bit (with BusyBox unsigned limit bug)' ;; # Bugged unsigned 'printf' of awk (likely on BusyBox)
-    '4294967295') printf '%s\n' '32-bit' ;;
-    '9223372036854775807') printf '%s\n' '64-bit (with unsigned limit bug)' ;; # Bugged unsigned 'printf' (seen on Ksh93 / OSH)
-    '9223372036854775808') printf '%s\n' '64-bit (with unsigned limit bug)' ;; # Bugged unsigned 'printf' (seen on Ksh93)
-    '18446744073709551615') printf '%s\n' '64-bit' ;;
-    '340282366920938463463374607431768211455') printf '%s\n' '128-bit' ;;
+    '32767') printf '%s\n' "16-bit signed${bug_suffix}" ;;
+    '65535') printf '%s\n' "16-bit unsigned" ;;
+    '2147483647') printf '%s\n' "32-bit signed${bug_suffix}" ;;               # Bugged unsigned 'printf' of awk (seen on some versions of Bash)
+    '2147483648') printf '%s\n' "32-bit signed + 1 (BusyBox unsigned bug)" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox)
+    '4294967295') printf '%s\n' "32-bit unsigned" ;;
+    '9223372036854775807') printf '%s\n' "64-bit signed${bug_suffix}" ;;     # Bugged unsigned 'printf' (seen on Ksh93 / OSH)
+    '9223372036854775808') printf '%s\n' "64-bit signed + 1${bug_suffix}" ;; # Bugged unsigned 'printf' (seen on Ksh93)
+    '18446744073709551614') printf '%s\n' "64-bit unsigned - 1" ;;
+    '18446744073709551615') printf '%s\n' "64-bit unsigned" ;;
+    '170141183460469231731687303715884105727') printf '%s\n' "128-bit signed${bug_suffix}" ;;
+    '340282366920938463463374607431768211455') printf '%s\n' "128-bit unsigned" ;;
+
     'unsupported' | 'ignored')
       printf '%s\n' "${1}"
       return 2
@@ -112,6 +121,7 @@ inc_num()
     '67768036191676799') printf '%s\n' '67768036191676800' ;;
     '9223372036854775807') printf '%s\n' '9223372036854775808' ;;
     '9223372036854775808') printf '%s\n' '9223372036854775809' ;;
+    '18446744073709551614') printf '%s\n' '18446744073709551615' ;;
     '18446744073709551615') printf '%s\n' '18446744073709551616' ;;
 
     *)
@@ -900,17 +910,21 @@ pause_if_needed()
 
 main()
 {
-  local shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u _max _num last_random_val tmp_var
+  local shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u limits_s_u _max _num last_random_val tmp_var
   local shell_info shell_name shell_applet os_info is_win shell_bit os_bit cpu_bit
   local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_signed_bit shell_printf_unsigned_bit shell_printf_max_u shell_random_seed_bit
   local awk_printf_bit awk_printf_signed_bit awk_printf_unsigned_bit cut_b_bit date_bit date_u_bit
 
   shell_is_msys="${1}"
   date_timezone_bug='false'
+
   limits='32767 2147483647 9223372036854775807'
   limits_date='32767 2147480047 2147483647 32535215999 32535244799 67767976233529199 67767976233532799 67768036191673199 67768036191676799 9223372036854775807'
+
   limits_u='65535 2147483647 2147483648 4294967295 9223372036854775807 9223372036854775808 18446744073709551615 340282366920938463463374607431768211455'
   limits_rnd_u='65535 4294967295 18446744073709551615'
+
+  limits_s_u='32767 65535 2147483647 4294967295 9223372036854775807 18446744073709551614 18446744073709551615 170141183460469231731687303715884105727 340282366920938463463374607431768211455'
 
   shell_exe="$(get_shell_exe || :)"
   shell_exe_original="${shell_exe}"
@@ -1124,7 +1138,7 @@ main()
   awk_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || awk_printf_unsigned_bit='unknown'
 
   _max='-1'
-  for _num in ${limits}; do
+  for _num in ${limits_s_u}; do
     if tmp_var="$(: | cut 2> /dev/null -b "${_num}")"; then
       _max="${_num}"
     else
@@ -1134,7 +1148,7 @@ main()
       break
     fi
   done
-  cut_b_bit="$(convert_max_signed_int_to_bit "${_max}")" || cut_b_bit='unknown'
+  cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true')" || cut_b_bit='unknown'
 
   _max='-1'
   for _num in ${limits_date}; do
