@@ -909,6 +909,7 @@ detect_bits_of_cut_b_timeout()
 
   detect_bits_of_cut_b "${1}" &
   _pid="${!}"
+  if test -z "${_pid}"; then return 126; fi # Seriously broken shell
 
   _sec_limit=3
   while test "$((_sec_limit = _sec_limit - 1))" -ge 0; do
