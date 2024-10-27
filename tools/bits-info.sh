@@ -898,6 +898,7 @@ test_seed_of_random()
 seed_and_get_random()
 {
   RANDOM="${1}"
+  # shellcheck disable=SC3028 # In POSIX sh, RANDOM is undefined
   printf '%s\n' "${RANDOM}"
 }
 
