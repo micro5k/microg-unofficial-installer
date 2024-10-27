@@ -895,6 +895,12 @@ test_seed_of_random()
   RANDOM="${1}"
 }
 
+seed_and_get_random()
+{
+  RANDOM="${1}"
+  printf '%s\n' "${RANDOM}"
+}
+
 detect_bits_of_cut_b()
 {
   local _dbcb_max _dbcb_num _dbcb_tmp
@@ -964,7 +970,8 @@ pause_if_needed()
 
 main()
 {
-  local shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u limits_s_u _max _num last_random_val tmp_var
+  local shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u limits_s_u _max _num tmp_var
+  local random_val previous_random_val next_random_val
   local shell_info shell_name shell_applet os_info is_win shell_bit os_bit cpu_bit
   local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_signed_bit shell_printf_unsigned_bit shell_printf_max_u shell_random_seed_bit
   local awk_printf_bit awk_printf_signed_bit awk_printf_unsigned_bit cut_version cut_b_bit date_bit date_u_bit
@@ -1135,19 +1142,11 @@ main()
   fi
 
   _max='-1'
-  last_random_val='-1'
+  random_val='-1'
   # shellcheck disable=SC3028 # In POSIX sh, RANDOM is undefined
   if RANDOM='1234' && test "${RANDOM}" = '1234'; then
     _max='unsupported' # $RANDOM is NOT supported
-  elif
-    test "$(
-      RANDOM='1234'
-      printf '%s\n' "${RANDOM}" || :
-    )" != "$(
-      RANDOM='1234'
-      printf '%s\n' "${RANDOM}" || :
-    )"
-  then
+  elif test "$(seed_and_get_random '1234' || :)" != "$(seed_and_get_random '1234' || :)"; then
     _max='ignored' # $RANDOM is supported but the seed is ignored
   else
     for _num in ${limits_rnd_u}; do
@@ -1157,14 +1156,21 @@ main()
         break # Assigning an integer that is too large causes an error message to be displayed on zsh
       fi
 
-      RANDOM="${_num}" # Seed random
-      tmp_var="${RANDOM}"
-      # All the overflowed RANDOM seeds produce the same random numbers
+      tmp_var="$(seed_and_get_random "${_num}")"
+      # All the overflowed RANDOM seeds produce the same random numbers (sometimes the repetition is every 2 seed values)
       # IMPORTANT: This check is NOT always reliable because shells may break differently at overflow
-      if test "${last_random_val}" != "${tmp_var}"; then
+      if test "${random_val}" != "${tmp_var}"; then
         _max="${_num}"
-        last_random_val="${tmp_var}"
-      else break; fi
+        random_val="${tmp_var}"
+      else
+        if
+          _num="$(inc_num "${_max}")" && next_random_val="$(seed_and_get_random "${_num}")" && test "${next_random_val}" != "${random_val}" &&
+            _num="$((_max - 1))" && previous_random_val="$(seed_and_get_random "${_num}")" && test "${next_random_val}" != "${previous_random_val}"
+        then
+          printf 1>&2 '%s\n\n' 'ERROR: Detection of RANDOM seed was inconclusive, please report it to the author!!!'
+        fi
+        break
+      fi
     done
   fi
   shell_random_seed_bit="$(convert_max_unsigned_int_to_bit "${_max}" || :)"
@@ -1173,6 +1179,7 @@ main()
   printf '%s\n' "Bits of shell 'printf' - signed: ${shell_printf_signed_bit}"
   printf '%s\n' "Bits of shell 'printf' - unsigned: ${shell_printf_unsigned_bit}"
   printf '%s %s\n\n' "Bits of \$RANDOM seed:" "${shell_random_seed_bit}"
+
   printf '%s\n\n' "Shell 'printf' unsigned range: 0-${shell_printf_max_u}"
 
   tmp_var="$(awk -- 'BEGIN { printf "%u\n", "-1" }' || :)"
