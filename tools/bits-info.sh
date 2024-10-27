@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.11'
+SCRIPT_VERSION='1.5.12'
 
 ### CONFIGURATION ###
 
@@ -858,15 +858,26 @@ get_version()
     return 1
   fi
 
-  # NOTE: "date --help" and "awk --help" of BusyBox may return failure but still print the correct output although it may be printed to STDERR
-  _version="$("${1}" 2> /dev/null -Wversion || "${1}" 2> /dev/null --version || "${1}" 2>&1 --help || :)"
+  # NOTE: "cut --version" of GNU textutils 1.5 return failure but still print the correct output although it is printed to STDERR
+  _version="$("${1}" 2> /dev/null -Wversion || "${1}" 2>&1 --version || :)"
+  case "${_version}" in *'CENIT Advanced Logfile Adapter'*) printf '%s\n' 'CENIT' && return 0 ;; *) ;; esac
   _version="$(printf '%s\n' "${_version}" | head -n 1)" || _version=''
 
   case "${_version}" in
-    '' | *'Usage'* | *'invalid option'* | *'unrecognized option'* | *[Uu]'nknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'*)
-      printf '%s\n' 'unknown'
-      return 2
+    '' | *[Uu]'sage'* | *'invalid option'* | *'unrecognized option'* | *[Uu]'nknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'*)
+
+      # NOTE: "date --help" and "awk --help" of old BusyBox return failure but still print the correct output although it may be printed to STDERR
+      _version="$("${1}" 2>&1 --help || :)"
+      _version="$(printf '%s\n' "${_version}" | head -n 1)" || _version=''
+      case "${_version}" in
+        '' | *[Uu]'sage'* | *'invalid option'* | *'unrecognized option'* | *[Uu]'nknown option'* | *[Ii]'llegal option'* | *'not an option'* | *'bad option'*)
+          printf '%s\n' 'unknown'
+          return 2
+          ;;
+        *) ;;
+      esac
       ;;
+
     *) ;;
   esac
 
@@ -894,7 +905,7 @@ detect_bits_of_cut_b()
       _dbcb_max="${_dbcb_num}"
     else
       if _dbcb_num="$(inc_num "${_dbcb_max}")" && _dbcb_tmp="$(: | cut 2> /dev/null -b "${_dbcb_num}")"; then
-        printf 1>&3 '%s\n\n' 'ERROR: Detection of cut -b was inconclusive, please report it to the author!!!'
+        printf 1>&2 '%s\n\n' 'ERROR: Detection of cut -b was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -909,12 +920,12 @@ detect_bits_of_cut_b_timeout()
 
   detect_bits_of_cut_b "${1}" &
   _pid="${!}"
-  if test -z "${_pid}"; then return 126; fi # Seriously broken shell
+  if test -z "${_pid}" || test "${_pid}" = "${$}"; then return 126; fi # Seriously broken shell
 
   _sec_limit=3
   while test "$((_sec_limit = _sec_limit - 1))" -ge 0; do
     sleep 1
-    if kill 1>&2 -0 "${_pid}"; then
+    if kill 2> /dev/null 1>&2 -0 "${_pid}"; then
       : # Still running
     else
       wait 1>&2 "${_pid}" || return "${?}"
@@ -922,7 +933,7 @@ detect_bits_of_cut_b_timeout()
     fi
   done
 
-  kill 1>&2 -9 "${_pid}" || :
+  kill 2> /dev/null 1>&2 -9 "${_pid}" || :
   return 124
 }
 
@@ -956,7 +967,7 @@ main()
   local shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u limits_s_u _max _num last_random_val tmp_var
   local shell_info shell_name shell_applet os_info is_win shell_bit os_bit cpu_bit
   local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_signed_bit shell_printf_unsigned_bit shell_printf_max_u shell_random_seed_bit
-  local awk_printf_bit awk_printf_signed_bit awk_printf_unsigned_bit cut_b_bit date_bit date_u_bit
+  local awk_printf_bit awk_printf_signed_bit awk_printf_unsigned_bit cut_version cut_b_bit date_bit date_u_bit
 
   shell_is_msys="${1}"
   date_timezone_bug='false'
@@ -984,7 +995,8 @@ main()
     printf '%s %s\n' "Shell applet:" "${shell_applet}"
   fi
   printf '%s %s\n' "Shell version:" "$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '2-' -s || :)"
-  printf '%s %s\n' "Shell path:" "${shell_exe:-unknown}"
+  printf '%s %s\n\n' "Shell path:" "${shell_exe:-unknown}"
+
   printf '%s %s\n' "OS:" "${os_info}"
   printf '%s %s\n\n' "Version of uname:" "$(get_version 'uname' || :)"
 
@@ -1198,11 +1210,18 @@ main()
   printf '%s\n' "Bits of awk 'printf' - signed: ${awk_printf_signed_bit}"
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${awk_printf_unsigned_bit}"
 
+  cut_version="$(get_version 'cut' || :)"
+
   _max='-1'
-  _max="$(detect_bits_of_cut_b_timeout 3>&2 2> /dev/null "${limits_s_u}")" || _max='-1'
+  if test "${cut_version}" = 'GNU textutils 1.5'; then
+    # This "cut" does NOT freeze (so no timeout needed) but shells that come with this old "cut" may misbehave with background processes
+    _max="$(detect_bits_of_cut_b "${limits_s_u}")" || _max='-1'
+  else
+    _max="$(detect_bits_of_cut_b_timeout "${limits_s_u}")" || _max='-1'
+  fi
   cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true' || :)"
 
-  printf '%s %s\n' "Version of cut:" "$(get_version 'cut' || :)"
+  printf '%s %s\n' "Version of cut:" "${cut_version}"
   printf '%s\n\n' "Bits of 'cut -b': ${cut_b_bit}"
 
   _max='-1'
