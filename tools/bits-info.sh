@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.10'
+SCRIPT_VERSION='1.5.11'
 
 ### CONFIGURATION ###
 
@@ -884,6 +884,47 @@ test_seed_of_random()
   RANDOM="${1}"
 }
 
+detect_bits_of_cut_b()
+{
+  local _dbcb_max _dbcb_num _dbcb_tmp
+
+  _dbcb_max='-1'
+  for _dbcb_num in ${1}; do
+    if _dbcb_tmp="$(: | cut 2> /dev/null -b "${_dbcb_num}")"; then
+      _dbcb_max="${_dbcb_num}"
+    else
+      if _dbcb_num="$(inc_num "${_dbcb_max}")" && _dbcb_tmp="$(: | cut 2> /dev/null -b "${_dbcb_num}")"; then
+        printf 1>&3 '%s\n\n' 'ERROR: Detection of cut -b was inconclusive, please report it to the author!!!'
+      fi
+      break
+    fi
+  done
+
+  printf '%s\n' "${_dbcb_max}"
+}
+
+detect_bits_of_cut_b_timeout()
+{
+  local _sec_limit _pid
+
+  detect_bits_of_cut_b "${1}" &
+  _pid="${!}"
+
+  _sec_limit=3
+  while test "$((_sec_limit = _sec_limit - 1))" -ge 0; do
+    sleep 1
+    if kill 1>&2 -0 "${_pid}"; then
+      : # Still running
+    else
+      wait 1>&2 "${_pid}" || return "${?}"
+      return '0'
+    fi
+  done
+
+  kill 1>&2 -9 "${_pid}" || :
+  return 124
+}
+
 list_available_shells()
 {
   if chsh 2> /dev/null -l; then
@@ -1156,22 +1197,12 @@ main()
   printf '%s\n' "Bits of awk 'printf' - signed: ${awk_printf_signed_bit}"
   printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${awk_printf_unsigned_bit}"
 
-  if false; then # Disable for now
-    _max='-1'
-    for _num in ${limits_s_u}; do
-      if tmp_var="$(: | cut 2> /dev/null -b "${_num}")"; then
-        _max="${_num}"
-      else
-        if _num="$(inc_num "${_max}")" && tmp_var="$(: | cut 2> /dev/null -b "${_num}")"; then
-          printf '%s\n' 'ERROR: Detection of cut -b was inconclusive, please report it to the author!!!'
-        fi
-        break
-      fi
-    done
-    cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true')" || cut_b_bit='unknown'
+  _max='-1'
+  _max="$(detect_bits_of_cut_b_timeout 3>&2 2> /dev/null "${limits_s_u}")" || _max='-1'
+  cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true' || :)"
 
-    printf '%s\n\n' "Bits of 'cut -b': ${cut_b_bit}"
-  fi
+  printf '%s %s\n' "Version of cut:" "$(get_version 'cut' || :)"
+  printf '%s\n\n' "Bits of 'cut -b': ${cut_b_bit}"
 
   _max='-1'
   for _num in ${limits_date}; do
