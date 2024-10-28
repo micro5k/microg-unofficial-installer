@@ -974,8 +974,8 @@ main()
   local shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u limits_s_u _max _num tmp_var
   local random_val previous_random_val next_random_val
   local shell_info shell_name shell_applet os_info is_win shell_bit os_bit cpu_bit
-  local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_signed_bit shell_printf_unsigned_bit shell_printf_max_u shell_random_seed_bit
-  local awk_printf_bit awk_printf_signed_bit awk_printf_unsigned_bit cut_version cut_b_bit date_bit date_u_bit
+  local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_unsigned_bit shell_printf_signed_bit shell_printf_max_u shell_random_seed_bit
+  local awk_printf_bit awk_printf_unsigned_bit awk_printf_signed_bit cut_version cut_b_bit date_bit date_u_bit
 
   shell_is_msys="${1}"
   date_timezone_bug='false'
@@ -1110,20 +1110,6 @@ main()
   shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
   _max='-1'
-  # We hide the errors otherwise it will display an error on old Bash under Windows when an overflow occurs
-  for _num in ${limits}; do
-    if tmp_var="$(printf 2> /dev/null "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
-      _max="${_num}"
-    else
-      if _num="$(inc_num "${_max}")" && tmp_var="$(printf 2> /dev/null "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
-        printf '%s\n' 'ERROR: Detection of signed shell printf was inconclusive, please report it to the author!!!'
-      fi
-      break
-    fi
-  done
-  shell_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || shell_printf_signed_bit='unknown'
-
-  _max='-1'
   # We hide the errors otherwise it will display an error on old Bash under Windows (or a ValueError on OSH) when an overflow occurs
   for _num in ${limits_u}; do
     if tmp_var="$(printf 2> /dev/null "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
@@ -1136,11 +1122,22 @@ main()
     fi
   done
   shell_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || shell_printf_unsigned_bit='unknown'
-  if test "${_max}" != '-1'; then
-    shell_printf_max_u="${_max}"
-  else
-    shell_printf_max_u='unknown'
-  fi
+  shell_printf_max_u='unknown'
+  test "${_max}" = '-1' || shell_printf_max_u="${_max}"
+
+  _max='-1'
+  # We hide the errors otherwise it will display an error on old Bash under Windows when an overflow occurs
+  for _num in ${limits}; do
+    if tmp_var="$(printf 2> /dev/null "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
+      _max="${_num}"
+    else
+      if _num="$(inc_num "${_max}")" && tmp_var="$(printf 2> /dev/null "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
+        printf '%s\n' 'ERROR: Detection of signed shell printf was inconclusive, please report it to the author!!!'
+      fi
+      break
+    fi
+  done
+  shell_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || shell_printf_signed_bit='unknown'
 
   _max='-1'
   random_val='-1'
@@ -1177,8 +1174,8 @@ main()
   shell_random_seed_bit="$(convert_max_unsigned_int_to_bit "${_max}" || :)"
 
   printf '%s\n' "Bits of shell 'printf': ${shell_printf_bit}"
-  printf '%s\n' "Bits of shell 'printf' - signed: ${shell_printf_signed_bit}"
-  printf '%s\n' "Bits of shell 'printf' - unsigned: ${shell_printf_unsigned_bit}"
+  printf '%s\n' "Bits of shell 'printf' (unsigned): ${shell_printf_unsigned_bit}"
+  printf '%s\n' "Bits of shell 'printf' (signed): ${shell_printf_signed_bit}"
   printf '%s %s\n\n' "Bits of \$RANDOM seed:" "${shell_random_seed_bit}"
 
   printf '%s\n\n' "Shell 'printf' unsigned range: 0-${shell_printf_max_u}"
@@ -1187,19 +1184,6 @@ main()
   awk_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
   # IMPORTANT: For very big integer numbers GNU Awk may return the exponential notation or an imprecise number
-  _max='-1'
-  for _num in ${limits}; do
-    if tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%d\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
-      _max="${_num}"
-    else
-      if _num="$(inc_num "${_max}")" && tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%d\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
-        printf '%s\n' 'ERROR: Detection of signed awk printf was inconclusive, please report it to the author!!!'
-      fi
-      break
-    fi
-  done
-  awk_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || awk_printf_signed_bit='unknown'
-
   _max='-1'
   for _num in ${limits_u}; do
     if tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%u\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
@@ -1213,10 +1197,23 @@ main()
   done
   awk_printf_unsigned_bit="$(convert_max_unsigned_int_to_bit "${_max}")" || awk_printf_unsigned_bit='unknown'
 
+  _max='-1'
+  for _num in ${limits}; do
+    if tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%d\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
+      _max="${_num}"
+    else
+      if _num="$(inc_num "${_max}")" && tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%d\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
+        printf '%s\n' 'ERROR: Detection of signed awk printf was inconclusive, please report it to the author!!!'
+      fi
+      break
+    fi
+  done
+  awk_printf_signed_bit="$(convert_max_signed_int_to_bit "${_max}")" || awk_printf_signed_bit='unknown'
+
   printf '%s %s\n' "Version of awk:" "$(get_version 'awk' || :)"
   printf '%s\n' "Bits of awk 'printf': ${awk_printf_bit}"
-  printf '%s\n' "Bits of awk 'printf' - signed: ${awk_printf_signed_bit}"
-  printf '%s\n\n' "Bits of awk 'printf' - unsigned: ${awk_printf_unsigned_bit}"
+  printf '%s\n' "Bits of awk 'printf' (unsigned): ${awk_printf_unsigned_bit}"
+  printf '%s\n\n' "Bits of awk 'printf' (signed): ${awk_printf_signed_bit}"
 
   cut_version="$(get_version 'cut' || :)"
 
