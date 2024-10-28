@@ -902,6 +902,21 @@ seed_and_get_random()
   printf '%s\n' "${RANDOM}"
 }
 
+fix_num_for_cut_b()
+{
+  if test "${2}" = 'true'; then
+    case "${1}" in
+      '4294967296') # This number can make the "cut" of macOS freeze forever
+        printf '%s\n' '4294967297'
+        return 0
+        ;;
+      *) ;;
+    esac
+  fi
+
+  printf '%s\n' "${1}"
+}
+
 detect_bits_of_cut_b()
 {
   local _dbcb_max _dbcb_num _dbcb_tmp
@@ -911,7 +926,7 @@ detect_bits_of_cut_b()
     if _dbcb_tmp="$(: | cut 2> /dev/null -b "${_dbcb_num}")"; then
       _dbcb_max="${_dbcb_num}"
     else
-      if _dbcb_num="$(inc_num "${_dbcb_max}")" && _dbcb_tmp="$(: | cut 2> /dev/null -b "${_dbcb_num}")"; then
+      if _dbcb_num="$(inc_num "${_dbcb_max}")" && _dbcb_num="$(fix_num_for_cut_b "${_dbcb_num}" "${2}")" && _dbcb_tmp="$(: | cut 2> /dev/null -b "${_dbcb_num}")"; then
         printf 1>&2 '%s\n\n' 'ERROR: Detection of cut -b was inconclusive, please report it to the author!!!'
       fi
       break
@@ -925,9 +940,9 @@ detect_bits_of_cut_b_timeout()
 {
   local _sec_limit _pid
 
-  detect_bits_of_cut_b "${1}" &
+  detect_bits_of_cut_b "${1}" "${2}" &
   _pid="${!}"
-  if test -z "${_pid}" || test "${_pid}" = "${$}"; then return 126; fi # Seriously broken shell
+  if test -z "${_pid}" || test "${_pid}" = "${$}" || test "${_pid}" -le 1; then return 126; fi # Seriously broken shell
 
   _sec_limit=3
   while test "$((_sec_limit = _sec_limit - 1))" -ge 0; do
@@ -973,7 +988,7 @@ main()
 {
   local shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u limits_s_u _max _num tmp_var
   local random_val previous_random_val next_random_val
-  local shell_info shell_name shell_applet os_info is_win shell_bit os_bit cpu_bit
+  local shell_info shell_name shell_applet os_info is_win is_mac shell_bit os_bit cpu_bit
   local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_unsigned_bit shell_printf_signed_bit shell_printf_max_u shell_random_seed_bit
   local awk_printf_bit awk_printf_unsigned_bit awk_printf_signed_bit cut_version cut_b_bit date_bit date_u_bit
 
@@ -995,8 +1010,10 @@ main()
   shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1' || :)"
   prefer_included_utilities_if_requested "${shell_exe_original}" "${shell_name}"
   os_info="$(get_os_info || :)"
+
   is_win='false'
-  case "${os_info}" in 'MS/Windows'*) is_win='true' ;; *) ;; esac
+  is_mac='false'
+  case "${os_info}" in 'MS/Windows'*) is_win='true' ;; 'Darwin'*) is_mac='true' ;; *) ;; esac
 
   shell_bit='unknown'
   if test -n "${shell_exe}" && shell_bit="$(detect_bitness_of_files "${shell_exe}")"; then
@@ -1194,9 +1211,9 @@ main()
   _max='-1'
   if test "${cut_version}" = 'GNU textutils 1.5'; then
     # This "cut" does NOT freeze (so no timeout needed) but shells that come with this old "cut" may misbehave with background processes
-    _max="$(detect_bits_of_cut_b "${limits_s_u}")" || _max='-1'
+    _max="$(detect_bits_of_cut_b "${limits_s_u}" "${is_mac}")" || _max='-1'
   else
-    _max="$(detect_bits_of_cut_b_timeout "${limits_s_u}")" || _max='-1'
+    _max="$(detect_bits_of_cut_b_timeout "${limits_s_u}" "${is_mac}")" || _max='-1'
   fi
   cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true' || :)"
 
