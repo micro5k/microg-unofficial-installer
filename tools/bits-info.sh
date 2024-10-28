@@ -1209,12 +1209,11 @@ main()
   cut_version="$(get_version 'cut' || :)"
 
   _max='-1'
-  if test "${cut_version}" = 'GNU textutils 1.5'; then
-    # This "cut" does NOT freeze (so no timeout needed) but shells that come with this old "cut" may misbehave with background processes
-    _max="$(detect_bits_of_cut_b "${limits_s_u}" "${is_mac}")" || _max='-1'
-  else
-    _max="$(detect_bits_of_cut_b_timeout "${limits_s_u}" "${is_mac}")" || _max='-1'
-  fi
+  case "${cut_version}" in
+    # The "cut" of "GNU textutils 1.5" does NOT freeze (so no timeout needed) but shells that come with this old "cut" may NOT support background processes
+    *'GNU textutils'* | *'GNU coreutils'*) _max="$(detect_bits_of_cut_b "${limits_s_u}" "${is_mac}")" || _max='-1' ;;
+    *) _max="$(detect_bits_of_cut_b_timeout "${limits_s_u}" "${is_mac}")" || _max='-1' ;;
+  esac
   cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true' || :)"
 
   _max='-1'
