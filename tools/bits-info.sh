@@ -1030,17 +1030,20 @@ main()
       x86) os_bit='32-bit' ;;
       *) os_bit='unknown' ;;
     esac
-  elif os_bit="$(getconf 2> /dev/null 'LONG_BIT')" && test -n "${os_bit}"; then
-    os_bit="${os_bit}-bit"
-  elif test -r '/system/build.prop'; then
-    # On Android
-    case "$(file_getprop 'ro.product.cpu.abi' '/system/build.prop' || :)" in
-      'x86_64' | 'arm64-v8a' | 'mips64' | 'riscv64') os_bit='64-bit' ;;
-      'x86' | 'armeabi-v7a' | 'armeabi' | 'mips') os_bit='32-bit' ;;
-      *) os_bit='unknown' ;;
-    esac
-  else
-    os_bit="$(retrieve_bitness_from_uname || :)" # Use it only as last resort (almost never happens)
+  fi
+  if test "${os_bit}" = 'unknown'; then
+    if os_bit="$(getconf 2> /dev/null 'LONG_BIT')" && test -n "${os_bit}"; then
+      os_bit="${os_bit}-bit"
+    elif test -r '/system/build.prop'; then
+      # On Android
+      case "$(file_getprop 'ro.product.cpu.abi' '/system/build.prop' || :)" in
+        'x86_64' | 'arm64-v8a' | 'mips64' | 'riscv64') os_bit='64-bit' ;;
+        'x86' | 'armeabi-v7a' | 'armeabi' | 'mips') os_bit='32-bit' ;;
+        *) os_bit='unknown' ;;
+      esac
+    else
+      os_bit="$(retrieve_bitness_from_uname || :)" # Use it only as last resort (almost never happens)
+    fi
   fi
 
   cpu_bit='unknown'
