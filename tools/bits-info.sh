@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.12'
+SCRIPT_VERSION='1.5.13'
 
 ### CONFIGURATION ###
 
@@ -944,7 +944,7 @@ detect_bits_of_cut_b_timeout()
   _pid="${!}"
   if test -z "${_pid}" || test "${_pid}" = "${$}" || test "${_pid}" -le 1; then return 126; fi # Seriously broken shell
 
-  _sec_limit=6
+  _sec_limit=7
   while test "$((_sec_limit = _sec_limit - 1))" -ge 0; do
     sleep 1
     if kill 2> /dev/null 1>&2 -0 "${_pid}"; then
