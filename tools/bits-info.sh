@@ -1286,6 +1286,7 @@ main()
   printf '%s\n' "Bits of 'date -u' timestamp: ${date_u_bit}"
 }
 
+unset PREFER_INCLUDED_UTILITIES
 execute_script='true'
 STATUS=0
 
@@ -1391,7 +1392,7 @@ if test "${execute_script}" = 'true'; then
   PATH="${BACKUP_PATH}"
 fi
 
-if test "${PREFER_INCLUDED_UTILITIES-}" = '1'; then unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE; fi
 unset SCRIPT_NAME SCRIPT_VERSION POSIXLY_CORRECT BACKUP_PATH shell_is_msys execute_script
+test "${PREFER_INCLUDED_UTILITIES-}" != '1' || unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE
 
 pause_if_needed "${STATUS}"
