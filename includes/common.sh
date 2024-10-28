@@ -1237,6 +1237,7 @@ init_cmdline()
     HOME="$("${CYGPATH:?}" -u -- "${HOME:?}")" || ui_error 'Unable to convert the home dir'
   fi
 
+  # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
   if test -n "${KILL_PPID-}" && test -z "${NO_KILL-}" && test "${PLATFORM:?}" = 'win' && test "${SHLVL:-1}" = '1' && test -n "${PPID-}" && test "${PPID}" -gt 1; then
     if kill 2> /dev/null "${PPID}" || kill -9 "${PPID}"; then
       PPID='1'
