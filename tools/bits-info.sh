@@ -940,11 +940,13 @@ detect_bits_of_cut_b_timeout()
 {
   local _sec_limit _pid
 
-  detect_bits_of_cut_b "${1}" "${2}" &
+  _sec_limit="${1}"
+  shift
+
+  detect_bits_of_cut_b "${@}" &
   _pid="${!}"
   if test -z "${_pid}" || test "${_pid}" = "${$}" || test "${_pid}" -le 1; then return 126; fi # Seriously broken shell
 
-  _sec_limit=7
   while test "$((_sec_limit = _sec_limit - 1))" -ge 0; do
     sleep 1
     if kill 2> /dev/null 1>&2 -0 "${_pid}"; then
@@ -1212,7 +1214,7 @@ main()
   case "${cut_version}" in
     # The "cut" of "GNU textutils 1.5" does NOT freeze (so no timeout needed) but shells that come with this old "cut" may NOT support background processes
     *'GNU textutils'* | *'GNU coreutils'*) _max="$(detect_bits_of_cut_b "${limits_s_u}" "${is_mac}")" || _max='-1' ;;
-    *) _max="$(detect_bits_of_cut_b_timeout "${limits_s_u}" "${is_mac}")" || _max='-1' ;;
+    *) _max="$(detect_bits_of_cut_b_timeout 7 "${limits_s_u}" "${is_mac}")" || _max='-1' ;;
   esac
   cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true' || :)"
 
