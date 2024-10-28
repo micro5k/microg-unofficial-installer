@@ -1237,6 +1237,13 @@ init_cmdline()
     HOME="$("${CYGPATH:?}" -u -- "${HOME:?}")" || ui_error 'Unable to convert the home dir'
   fi
 
+  if test -n "${KILL_PPID-}" && test -z "${NO_KILL-}" && test "${PLATFORM:?}" = 'win' && test "${SHLVL:-1}" = '1' && test -n "${PPID-}" && test "${PPID}" -gt 1; then
+    if kill 2> /dev/null "${PPID}" || kill -9 "${PPID}"; then
+      PPID='1'
+    fi
+  fi
+  unset KILL_PPID
+
   if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
 
   # Clean useless directories from the $PATH env

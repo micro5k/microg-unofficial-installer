@@ -102,6 +102,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     fi
 
     export DO_INIT_CMDLINE=1
+    unset KILL_PPID
     unset STARTED_FROM_BATCH_FILE
     unset IS_PATH_INITIALIZED
     unset __QUOTED_PARAMS
