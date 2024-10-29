@@ -104,7 +104,7 @@ convert_max_unsigned_int_to_bit()
 
 warn_msg()
 {
-  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1}"
+  printf 1>&2 '\r\033[0;33m\r%s\n\033[0m\r    \r' "WARNING: ${1}"
 }
 
 inc_num()
