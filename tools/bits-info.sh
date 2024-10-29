@@ -104,7 +104,13 @@ convert_max_unsigned_int_to_bit()
 
 warn_msg()
 {
-  printf 1>&2 '\r\033[0;33m\r%s\n\033[0m\r    \r' "WARNING: ${1}"
+  if test "${NO_COLOR:-0}" != 0; then
+    printf 1>&2 '%s\n' "WARNING: ${1}"
+  elif test "${CI:-false}" = 'false'; then
+    printf 1>&2 '\033[0;33m\r%s\n\033[0m\r    \r' "WARNING: ${1}"
+  else
+    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1}"
+  fi
 }
 
 inc_num()
