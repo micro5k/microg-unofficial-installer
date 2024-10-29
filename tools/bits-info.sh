@@ -1026,7 +1026,7 @@ main()
   is_mac='false'
   case "${os_info}" in 'MS/Windows'*) is_win='true' ;; 'Darwin'*) is_mac='true' ;; *) ;; esac
 
-  printf '%s\n\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
+  printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
 
   shell_bit='unknown'
   if test -n "${shell_exe}" && shell_bit="$(detect_bitness_of_files "${shell_exe}")"; then
@@ -1260,7 +1260,7 @@ main()
   done
   date_u_bit="$(convert_max_signed_int_to_bit "${_max}")" || date_u_bit='unknown'
 
-  printf '%s %s\n' "Shell:" "${shell_name}"
+  printf '\n%s %s\n' "Shell:" "${shell_name}"
   if shell_applet="$(get_applet_name "${shell_name}")"; then
     printf '%s %s\n' "Shell applet:" "${shell_applet}"
   fi
