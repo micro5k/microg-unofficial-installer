@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.13'
+SCRIPT_VERSION='1.5.14'
 
 ### CONFIGURATION ###
 
@@ -1026,6 +1026,8 @@ main()
   is_mac='false'
   case "${os_info}" in 'MS/Windows'*) is_win='true' ;; 'Darwin'*) is_mac='true' ;; *) ;; esac
 
+  printf '%s\n\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
+
   shell_bit='unknown'
   if test -n "${shell_exe}" && shell_bit="$(detect_bitness_of_files "${shell_exe}")"; then
     :
@@ -1258,8 +1260,6 @@ main()
   done
   date_u_bit="$(convert_max_signed_int_to_bit "${_max}")" || date_u_bit='unknown'
 
-  printf '%s\n\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
-
   printf '%s %s\n' "Shell:" "${shell_name}"
   if shell_applet="$(get_applet_name "${shell_name}")"; then
     printf '%s %s\n' "Shell applet:" "${shell_applet}"
@@ -1278,11 +1278,9 @@ main()
   printf '%s\n\n' "Bits of shell arithmetic: ${shell_arithmetic_bit}"
 
   printf '%s\n' "Bits of shell 'printf': ${shell_printf_bit}"
-  printf '%s\n' "Bits of shell 'printf' (unsigned): ${shell_printf_unsigned_bit}"
+  printf '%s\n' "Bits of shell 'printf' (unsigned): ${shell_printf_unsigned_bit} (0-${shell_printf_max_u})"
   printf '%s\n' "Bits of shell 'printf' (signed): ${shell_printf_signed_bit}"
   printf '%s %s\n\n' "Bits of \$RANDOM seed:" "${shell_random_seed_bit}"
-
-  printf '%s\n\n' "Shell 'printf' unsigned range: 0-${shell_printf_max_u}"
 
   printf '%s %s\n' "Version of awk:" "$(get_version 'awk' || :)"
   printf '%s\n' "Bits of awk 'printf': ${awk_printf_bit}"
