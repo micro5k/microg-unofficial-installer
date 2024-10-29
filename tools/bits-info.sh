@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.14'
+SCRIPT_VERSION='1.5.15'
 
 ### CONFIGURATION ###
 
@@ -73,12 +73,12 @@ convert_max_unsigned_int_to_bit()
 {
   local bug_suffix
   bug_suffix=''
-  test "${2-}" = 'true' || bug_suffix=' (bug)'
+  test "${2:-false}" = 'true' || bug_suffix=' BUG'
 
   case "${1}" in
     '32767') printf '%s\n' "16-bit signed${bug_suffix}" ;;
     '65535') printf '%s\n' "16-bit unsigned" ;;
-    '256446000') printf '%s\n' "32-bit BUGGED" ;;
+    '256446000') printf '%s\n' "32-bit BROKEN" ;;
     '2147483647') printf '%s\n' "32-bit signed${bug_suffix}" ;;               # Bugged unsigned 'printf' of awk (seen on some versions of Bash)
     '2147483648') printf '%s\n' "32-bit signed + 1 (BusyBox unsigned bug)" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox)
     '4294967295') printf '%s\n' "32-bit unsigned" ;;
