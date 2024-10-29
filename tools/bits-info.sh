@@ -102,6 +102,11 @@ convert_max_unsigned_int_to_bit()
   return 0
 }
 
+warn_msg()
+{
+  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1}"
+}
+
 inc_num()
 {
   # NOTE: We are going to test integers at (and over) the shell limit so we can NOT use shell arithmetic because it can overflow
@@ -126,7 +131,7 @@ inc_num()
     '18446744073709551615') printf '%s\n' '18446744073709551616' ;;
 
     *)
-      printf 1>&2 '%s\n' "Unexpected number: ${1}"
+      warn_msg "Unexpected number => ${1}"
       return 2
       ;;
   esac
@@ -927,7 +932,11 @@ detect_bits_of_cut_b()
       _dbcb_max="${_dbcb_num}"
     else
       if _dbcb_num="$(inc_num "${_dbcb_max}")" && _dbcb_num="$(fix_num_for_cut_b "${_dbcb_num}" "${2}")" && _dbcb_tmp="$(: | cut 2> /dev/null -b "${_dbcb_num}")"; then
-        printf 1>&2 '%s\n\n' 'ERROR: Detection of cut -b was inconclusive, please report it to the author!!!'
+        if test "${2}" = 'true'; then
+          warn_msg 'Detection of cut -b was inconclusive!!!'
+        else
+          warn_msg 'Detection of cut -b was inconclusive, please report it to the author!!!'
+        fi
       fi
       break
     fi
@@ -1091,7 +1100,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && test 2> /dev/null "${_num}" -gt 0; then
-        printf '%s\n' 'ERROR: Detection of shell test int comparison was inconclusive, please report it to the author!!!'
+        warn_msg 'Detection of shell test int comparison was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1104,7 +1113,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && test "$((_num))" = "${_num}"; then
-        printf '%s\n' 'ERROR: Detection of shell arithmetic was inconclusive, please report it to the author!!!'
+        warn_msg 'Detection of shell arithmetic was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1121,7 +1130,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && tmp_var="$(printf 2> /dev/null "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
-        printf '%s\n' 'ERROR: Detection of unsigned shell printf was inconclusive, please report it to the author!!!'
+        warn_msg 'Detection of unsigned shell printf was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1137,7 +1146,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && tmp_var="$(printf 2> /dev/null "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
-        printf '%s\n' 'ERROR: Detection of signed shell printf was inconclusive, please report it to the author!!!'
+        warn_msg 'Detection of signed shell printf was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1170,7 +1179,7 @@ main()
           _num="$(inc_num "${_max}")" && next_random_val="$(seed_and_get_random "${_num}")" && test "${next_random_val}" != "${random_val}" &&
             _num="$((_max - 1))" && previous_random_val="$(seed_and_get_random "${_num}")" && test "${next_random_val}" != "${previous_random_val}"
         then
-          printf 1>&2 '%s\n\n' 'ERROR: Detection of RANDOM seed was inconclusive, please report it to the author!!!'
+          warn_msg 'Detection of RANDOM seed was inconclusive, please report it to the author!!!'
         fi
         break
       fi
@@ -1188,7 +1197,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%u\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
-        printf '%s\n' 'ERROR: Detection of unsigned awk printf was inconclusive, please report it to the author!!!'
+        warn_msg 'Detection of unsigned awk printf was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1201,7 +1210,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%d\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
-        printf '%s\n' 'ERROR: Detection of signed awk printf was inconclusive, please report it to the author!!!'
+        warn_msg 'Detection of signed awk printf was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1228,7 +1237,7 @@ main()
         _max="${_num}"
       else
         if _num="$(inc_num "${_max}")" && tmp_var="$(TZ='CET-1' date 2> /dev/null -d "@${_num}" -- '+%s')" && test "${tmp_var}" = "${_num}"; then
-          printf '%s\n' 'ERROR: Detection of date timestamp was inconclusive, please report it to the author!!!'
+          warn_msg 'Detection of date timestamp was inconclusive, please report it to the author!!!'
         fi
         break
       fi
@@ -1242,7 +1251,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && tmp_var="$(TZ='CET-1' date 2> /dev/null -u -d "@${_num}" -- '+%s')" && test "${tmp_var}" = "${_num}"; then
-        printf '%s\n' 'ERROR: Detection of date -u timestamp was inconclusive, please report it to the author!!!'
+        warn_msg 'Detection of date -u timestamp was inconclusive, please report it to the author!!!'
       fi
       break
     fi
