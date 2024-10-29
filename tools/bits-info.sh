@@ -684,8 +684,11 @@ get_shell_info()
 
   case "${_shell_name}" in
     *'ksh'*) _shell_is_ksh='true' ;;
-    'zsh' | 'bosh' | 'osh' | 'yash' | 'tcsh' | 'fish') _shell_use_ver_opt='true' ;;
-    *'\bash') _shell_name='bash' ;; # For bugged versions of Bash under Windows
+    'bash' | 'zsh' | 'yash' | 'osh' | 'bosh' | 'pbosh' | 'obosh' | 'tcsh' | 'fish') _shell_use_ver_opt='true' ;;
+    *'\bash') # For bugged versions of Bash under Windows
+      _shell_use_ver_opt='true'
+      _shell_name='bash'
+      ;;
     *) ;;
   esac
 
