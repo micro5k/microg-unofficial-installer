@@ -19,7 +19,7 @@ case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || pr
   command 1> /dev/null -v ':'
 } 2> /dev/null || command()
 {
-  test "${1-}" = '-v' || exit 255
+  test "${1:-empty}" = '-v' || exit 255
   shift
   type "${@}"
 }
@@ -219,7 +219,7 @@ hex_bytes_to_int()
 {
   test -n "${1?}" || return 1
 
-  if test "${3-}" = 'true'; then
+  if test "${3:-false}" = 'true'; then
     if test "${2:?}" -eq 2; then
       _hbti_num="$(switch_endianness_2 "${1}")" || return "${?}"
     elif test "${2:?}" -eq 4; then
@@ -264,7 +264,7 @@ extract_bytes()
 extract_bytes_and_swap()
 {
   test "${3}" -gt 0 || return 2
-  set -- "${1}" "$((${2} * 2 + 1))" "$(((${2} + ${3}) * 2))" "${3}" "${4-}" || return 3
+  set -- "${1}" "$((${2} * 2 + 1))" "$(((${2} + ${3}) * 2))" "${3}" "${4:-false}" || return 3
 
   if test "${5}" = 'true'; then
     if test "${4}" = 4; then
@@ -580,7 +580,7 @@ detect_bitness_of_files()
   # If the number is greater than 125 then it returns 125.
   _dbof_ret_code=0
 
-  if test "${1-}" = '-' && test "${#}" -eq 1; then
+  if test "${1:-empty}" = '-' && test "${#}" -eq 1; then
 
     (
       _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
@@ -907,9 +907,9 @@ seed_and_get_random()
   printf '%s\n' "${RANDOM}"
 }
 
-fix_num_for_cut_b()
+validate_num_for_cut_b()
 {
-  if test "${2}" = 'true'; then
+  if test "${2}" = 'mac'; then
     case "${1}" in
       '4294967296') # This number can make the "cut" of macOS freeze forever
         printf '%s\n' '4294967297'
@@ -931,8 +931,8 @@ detect_bits_of_cut_b()
     if _dbcb_tmp="$(: | cut 2> /dev/null -b "${_dbcb_num}")"; then
       _dbcb_max="${_dbcb_num}"
     else
-      if _dbcb_num="$(inc_num "${_dbcb_max}")" && _dbcb_num="$(fix_num_for_cut_b "${_dbcb_num}" "${2}")" && _dbcb_tmp="$(: | cut 2> /dev/null -b "${_dbcb_num}")"; then
-        if test "${2}" = 'true'; then
+      if _dbcb_num="$(inc_num "${_dbcb_max}")" && _dbcb_num="$(validate_num_for_cut_b "${_dbcb_num}" "${2}")" && _dbcb_tmp="$(: | cut 2> /dev/null -b "${_dbcb_num}")"; then
+        if test "${2}" = 'mac'; then
           warn_msg 'Detection of cut -b was inconclusive!!!'
         else
           warn_msg 'Detection of cut -b was inconclusive, please report it to the author!!!'
@@ -986,7 +986,7 @@ list_available_shells()
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
-  if test "${NO_PAUSE:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM-}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
+  if test "${NO_PAUSE:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-unknown}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
     printf 1>&2 '\n\033[1;32m%s\033[0m' 'Press any key to exit... ' || :
     # shellcheck disable=SC3045
     IFS='' read 1> /dev/null 2>&1 -r -s -n 1 _ || IFS='' read 1>&2 -r _ || :
@@ -999,7 +999,7 @@ main()
 {
   local shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u limits_s_u _max _num tmp_var
   local random_val previous_random_val next_random_val
-  local shell_info shell_name shell_applet os_info is_win is_mac shell_bit os_bit cpu_bit
+  local shell_info shell_name shell_applet os_info operative_system shell_bit os_bit cpu_bit
   local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_unsigned_bit shell_printf_signed_bit shell_printf_max_u shell_random_seed_bit
   local awk_printf_bit awk_printf_unsigned_bit awk_printf_signed_bit cut_version cut_b_bit date_bit date_u_bit
 
@@ -1022,16 +1022,15 @@ main()
   prefer_included_utilities_if_requested "${shell_exe_original}" "${shell_name}"
   os_info="$(get_os_info || :)"
 
-  is_win='false'
-  is_mac='false'
-  case "${os_info}" in 'MS/Windows'*) is_win='true' ;; 'Darwin'*) is_mac='true' ;; *) ;; esac
+  operative_system='other'
+  case "${os_info}" in 'MS/Windows'*) operative_system='win' ;; 'Darwin'*) operative_system='mac' ;; *) ;; esac
 
   printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
 
   shell_bit='unknown'
   if test -n "${shell_exe}" && shell_bit="$(detect_bitness_of_files "${shell_exe}")"; then
     :
-  elif test "${is_win}" = 'true' && shell_bit="${PROCESSOR_ARCHITECTURE-}" && test -n "${shell_bit}"; then
+  elif test "${operative_system}" = 'win' && shell_bit="${PROCESSOR_ARCHITECTURE-}" && test -n "${shell_bit}"; then
     # On Windows 2000+ / ReactOS
     case "${shell_bit}" in
       AMD64 | ARM64 | IA64) shell_bit='64-bit' ;;
@@ -1043,7 +1042,7 @@ main()
   fi
 
   os_bit='unknown'
-  if test "${is_win}" = 'true' && os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${os_bit}"; then
+  if test "${operative_system}" = 'win' && os_bit="${PROCESSOR_ARCHITEW6432:-${PROCESSOR_ARCHITECTURE-}}" && test -n "${os_bit}"; then
     # On Windows 2000+ / ReactOS
     case "${os_bit}" in
       AMD64 | ARM64 | IA64) os_bit='64-bit' ;;
@@ -1224,8 +1223,8 @@ main()
   _max='-1'
   case "${cut_version}" in
     # The "cut" of "GNU textutils 1.5" does NOT freeze (so no timeout needed) but shells that come with this old "cut" may NOT support background processes
-    *'GNU textutils'* | *'GNU coreutils'*) _max="$(detect_bits_of_cut_b "${limits_s_u}" "${is_mac}")" || _max='-1' ;;
-    *) _max="$(detect_bits_of_cut_b_timeout 7 "${limits_s_u}" "${is_mac}")" || _max='-1' ;;
+    *'GNU textutils'* | *'GNU coreutils'*) _max="$(detect_bits_of_cut_b "${limits_s_u}" "${operative_system}")" || _max='-1' ;;
+    *) _max="$(detect_bits_of_cut_b_timeout 7 "${limits_s_u}" "${operative_system}")" || _max='-1' ;;
   esac
   cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true' || :)"
 
@@ -1402,6 +1401,6 @@ if test "${execute_script}" = 'true'; then
 fi
 
 unset SCRIPT_NAME SCRIPT_VERSION POSIXLY_CORRECT BACKUP_PATH shell_is_msys execute_script
-test "${PREFER_INCLUDED_UTILITIES-}" != '1' || unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE
+test "${PREFER_INCLUDED_UTILITIES:-0}" != '1' || unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE
 
 pause_if_needed "${STATUS}"
