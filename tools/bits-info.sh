@@ -1393,7 +1393,7 @@ while test "${#}" -gt 0; do
 done || :
 
 if test "${execute_script}" = 'true'; then
-  BACKUP_PATH="${PATH:-%empty}"
+  backup_path="${PATH-unset}"
 
   shell_is_msys='false'
   if is_shell_msys; then
@@ -1408,11 +1408,11 @@ if test "${execute_script}" = 'true'; then
     detect_bitness_of_files "${@}" || STATUS="${?}"
   fi
 
-  PATH="${BACKUP_PATH}"
+  if test "${backup_path}" = 'unset'; then unset PATH; else PATH="${backup_path}"; fi
 fi
 
-if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
-unset SCRIPT_NAME SCRIPT_VERSION BACKUP_PATH backup_posix execute_script shell_is_msys
 test "${PREFER_INCLUDED_UTILITIES:-0}" != '1' || unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE
+if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
+unset SCRIPT_NAME SCRIPT_VERSION backup_posix backup_path execute_script shell_is_msys
 
 pause_if_needed "${STATUS}"
