@@ -1240,7 +1240,7 @@ main()
   case "${cut_version}" in
     # The "cut" of "GNU textutils 1.5" does NOT freeze (so no timeout needed) but shells that come with this old "cut" may NOT support background processes
     *'GNU textutils'*) _max="$(detect_bits_of_cut_b "${limits_s_u}" "${operative_system}")" || _max='-1' ;;
-    *) _max="$(detect_bits_of_cut_b_timeout 7 "${limits_s_u}" "${operative_system}")" || _max='-1' ;;
+    *) _max="$(detect_bits_of_cut_b_timeout 8 "${limits_s_u}" "${operative_system}")" || _max='-1' ;;
   esac
   cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true' || :)"
 
