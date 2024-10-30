@@ -77,14 +77,15 @@ jobs:
             printf '%s\n' "${shells_dir:?}/extracted/${1:?}" 1>> "${shells_dir:?}/extracted/list.dat" || return "${?}"
           }
           if command 1> /dev/null -v 'sudo' && legacy_bb="$(command -v 'busybox')" && legacy_bb_dir="$(dirname "${legacy_bb:?}")"; then
-            sudo mv -f -- "${legacy_bb:?}" "${legacy_bb_dir:?}/busybox-legacy" || exit "${?}"
+            sudo mv -f -- "${legacy_bb:?}" "${legacy_bb_dir:?}/busybox-preinstalled" || exit "${?}"
           fi
           mkdir -p -- "${shells_dir:?}/extracted" || exit "${?}"
           rm -f -- "${shells_dir:?}/extracted/list.dat" || exit "${?}"
           touch -- "${shells_dir:?}/extracted/list.dat" || exit "${?}"
           if test "${current_os:?}" = 'Linux'; then
             prepare_shell 'busybox' 'bin' 'https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox'
-            prepare_shell 'busybox-x86' 'bin' 'https://busybox.net/downloads/binaries/1.30.0-i686/busybox'
+            prepare_shell 'busybox-x86' 'bin' 'https://busybox.net/downloads/binaries/1.35.0-i686-linux-musl/busybox'
+            prepare_shell 'busybox-x86-legacy' 'bin' 'https://busybox.net/downloads/binaries/1.30.0-i686/busybox'
             prepare_shell 'bosh' 'tar.xz' 'http://fuz.su/pub/schilytools/bin/schily-2024-03-21-x86_64-linux-gcc.tar.xz'
           fi
           printf 'cache_is_outdated=%s\n' "${CACHE_IS_OUTDATED:?}" >> "${GITHUB_OUTPUT:?}"
@@ -191,10 +192,10 @@ jobs:
           {
             local _shell _shell_cmd _status
             EXECUTED_LIST=''
-            for _shell in sh dash bash busybox-legacy busybox busybox-x86 busybox-x86 ash hush mksh pdksh oksh ksh88 ksh93 ksh zsh yash posh osh bosh pbosh obosh; do
+            for _shell in sh dash bash busybox busybox-x86 busybox-x86 busybox-x86-legacy busybox-x86-legacy ash hush mksh pdksh oksh ksh88 ksh93 ksh zsh yash posh osh bosh pbosh obosh; do
               if test "${_shell:?}" = 'ksh' && test -n "${ORIGINAL_KSH?}"; then _shell="${ORIGINAL_KSH:?}"; fi
               if ! _shell_cmd="$(command -v "${_shell:?}")" || skip "${1:?}" "${_shell:?}"; then continue; fi
-              if test "${_shell:?}" != 'busybox-x86' && ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
+              if test "${_shell:?}" != 'busybox-x86' && test "${_shell:?}" != 'busybox-x86-legacy' && ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
               _status='0'
               case "${_shell:?}" in
