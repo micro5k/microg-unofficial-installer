@@ -74,8 +74,8 @@ convert_max_unsigned_int_to_bit()
     '32767') printf '%s\n' "16-bit signed${bug_suffix}" ;;
     '65535') printf '%s\n' "16-bit unsigned" ;;
     '256446000') printf '%s\n' "32-bit BROKEN" ;;
-    '2147483647') printf '%s\n' "32-bit signed${bug_suffix}" ;;               # Bugged unsigned 'printf' of awk (seen on some versions of Bash)
-    '2147483648') printf '%s\n' "32-bit signed + 1 (BusyBox unsigned bug)" ;; # Bugged unsigned 'printf' of awk (likely on BusyBox)
+    '2147483647') printf '%s\n' "32-bit signed${bug_suffix}" ;; # Bugged unsigned 'printf' of awk (seen on some versions of Bash)
+    '2147483648') printf '%s\n' "32-bit signed + 1 BB BUG" ;;   # Bugged unsigned 'printf' of awk (likely on BusyBox)
     '4294967295') printf '%s\n' "32-bit unsigned" ;;
     '9223372036854775807') printf '%s\n' "64-bit signed${bug_suffix}" ;;     # Bugged unsigned 'printf' (seen on Ksh93 / OSH)
     '9223372036854775808') printf '%s\n' "64-bit signed + 1${bug_suffix}" ;; # Bugged unsigned 'printf' (seen on Ksh93)
