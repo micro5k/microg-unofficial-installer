@@ -120,7 +120,8 @@ jobs:
           if test "${current_os:?}" = 'Linux'; then
             sudo apt-get -y -qq install 'mksh' 'yash' 'posh' 1> /dev/null
           elif test "${current_os:?}" = 'macOS'; then
-            brew 1> /dev/null install --quiet 'oils-for-unix' 'mksh' 'oksh' 'ksh93' 'yash'
+            brew 1> /dev/null install --quiet 'mksh' 'oksh' 'ksh93' 'yash'
+            brew 1> /dev/null install --quiet 'oils-for-unix'
           else
             choco 1> /dev/null install 'busybox' -y --no-progress
             #choco install 'schily-cdrtools' --pre -y --no-progress
@@ -164,8 +165,7 @@ jobs:
             fi
             if test "${1:?}" = 'cmdline.sh'; then
               case "${_s_shell?}" in
-                #ksh) return 0 ;;
-                obosh | busybox-x86) return 0 ;; # Skip
+                obosh | busybox-x86 | busybox-x86-legacy) return 0 ;; # Skip
                 *) ;;
               esac
             else
@@ -206,7 +206,7 @@ jobs:
                 *) "${_shell_cmd:?}" "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}" ;;
               esac
               test "${_status:?}" = 0 || EXIT_CODE="${_status:?}"
-              printf '\nRETURN CODE:%s\n\n' "${_status:?}"
+              printf '\nRETURN CODE: %s\n\n' "${_status:?}"
             done
             unset CURRENT_SHELL CURRENT_APPLET
           }
