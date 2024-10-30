@@ -990,7 +990,7 @@ list_available_shells()
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # Intended: In POSIX sh, SHLVL is undefined
-  if test "${NO_PAUSE:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-unknown}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
+  if test "${NO_PAUSE:-0}" = '0' && test "${no_pause:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-unknown}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
     if test -n "${NO_COLOR-}"; then
       printf 1>&2 '\n%s' 'Press any key to exit... ' || :
     else
@@ -1001,6 +1001,7 @@ pause_if_needed()
     printf 1>&2 '\n' || :
     test -n "${NO_COLOR-}" || printf 1>&2 '\033[0m\r    \r' || :
   fi
+  unset no_pause
   return "${1}"
 }
 
@@ -1309,22 +1310,21 @@ export POSIXLY_CORRECT
 
 unset PREFER_INCLUDED_UTILITIES
 execute_script='true'
+no_pause=0
 STATUS=0
 
 while test "${#}" -gt 0; do
   case "${1}" in
     -V | --version)
       execute_script='false'
-      NO_PAUSE='1'
-      export NO_PAUSE
+      no_pause=1
       printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
       printf '%s\n' 'Copyright (c) 2024 ale5000'
       printf '%s\n' 'License GPLv3+'
       ;;
     -h | --help | '-?')
       execute_script='false'
-      NO_PAUSE='1'
-      export NO_PAUSE
+      no_pause=1
       printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
 
       printf '\n%s\n\n' 'Coming soon...'
@@ -1357,14 +1357,12 @@ while test "${#}" -gt 0; do
       export ASH_STANDALONE
       ;;
     --no-pause)
-      NO_PAUSE='1'
-      export NO_PAUSE
+      no_pause=1
       ;;
 
     -l | --list-available-shells)
       execute_script='false'
-      NO_PAUSE='1'
-      export NO_PAUSE
+      no_pause=1
       list_available_shells || STATUS="${?}"
       ;;
 
@@ -1414,7 +1412,7 @@ if test "${execute_script}" = 'true'; then
 fi
 
 if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
-unset SCRIPT_NAME SCRIPT_VERSION BACKUP_PATH backup_posix shell_is_msys execute_script
+unset SCRIPT_NAME SCRIPT_VERSION BACKUP_PATH backup_posix execute_script shell_is_msys
 test "${PREFER_INCLUDED_UTILITIES:-0}" != '1' || unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE
 
 pause_if_needed "${STATUS}"
