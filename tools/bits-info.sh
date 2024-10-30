@@ -36,11 +36,6 @@ command 1> /dev/null 2>&1 -v 'local' || {
   if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi
 }
 
-### GLOBAL VARIABLES ###
-
-POSIXLY_CORRECT='y'
-export POSIXLY_CORRECT
-
 ### SCRIPT ###
 
 convert_max_signed_int_to_bit()
@@ -1303,6 +1298,10 @@ main()
   printf '%s\n' "Bits of 'date -u' timestamp: ${date_u_bit}"
 }
 
+backup_posix="${POSIXLY_CORRECT-unset}"
+POSIXLY_CORRECT='y'
+export POSIXLY_CORRECT
+
 unset PREFER_INCLUDED_UTILITIES
 execute_script='true'
 STATUS=0
@@ -1409,7 +1408,8 @@ if test "${execute_script}" = 'true'; then
   PATH="${BACKUP_PATH}"
 fi
 
-unset SCRIPT_NAME SCRIPT_VERSION POSIXLY_CORRECT BACKUP_PATH shell_is_msys execute_script
+if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
+unset SCRIPT_NAME SCRIPT_VERSION BACKUP_PATH backup_posix shell_is_msys execute_script
 test "${PREFER_INCLUDED_UTILITIES:-0}" != '1' || unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE
 
 pause_if_needed "${STATUS}"
