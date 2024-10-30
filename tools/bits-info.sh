@@ -760,21 +760,21 @@ get_shell_info()
 prefer_included_utilities_if_requested()
 {
   local _piu_applet _piu_pathsep _piu_dir
-  if test "${PREFER_INCLUDED_UTILITIES:-0}" = 0 || test -z "${1}"; then return 0; fi
+  if test "${1}" = 0 || test -z "${2}"; then return 0; fi
 
   _piu_pathsep=':'
-  if test "${2}" = 'busybox'; then
+  if test "${3}" = 'busybox'; then
     if test "$(uname 2> /dev/null -o || :)" = 'MS/Windows'; then _piu_pathsep=';'; fi
 
     for _piu_applet in test printf uname awk cut date; do
       # Check if it does NOT already run the internal applet by default
       if test "$(command 2> /dev/null -v "${_piu_applet}" || :)" != "${_piu_applet}"; then
-        \eval " ${_piu_applet}() { '${1}' '${_piu_applet}' \"\${@}\"; } " || : # Force internal applet
+        \eval " ${_piu_applet}() { '${2}' '${_piu_applet}' \"\${@}\"; } " || : # Force internal applet
       fi
     done
   fi
 
-  if _piu_dir="$(dirname "${1}")" && test -n "${_piu_dir}"; then
+  if _piu_dir="$(dirname "${2}")" && test -n "${_piu_dir}"; then
     PATH="${_piu_dir}${_piu_pathsep}${PATH:-%empty}"
     export PATH
   fi
@@ -1013,13 +1013,14 @@ pause_if_needed()
 
 main()
 {
-  local shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u limits_s_u _max _num tmp_var
+  local prefer_included_utilities shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u limits_s_u _max _num tmp_var
   local random_val previous_random_val next_random_val
   local shell_info shell_name shell_applet os_info operative_system shell_bit os_bit cpu_bit
   local shell_test_bit shell_arithmetic_bit shell_printf_bit shell_printf_unsigned_bit shell_printf_signed_bit shell_printf_max_u shell_random_seed_bit
   local awk_printf_bit awk_printf_unsigned_bit awk_printf_signed_bit cut_version cut_b_bit date_bit date_u_bit
 
-  shell_is_msys="${1}"
+  prefer_included_utilities="${1}"
+  shell_is_msys="${2}"
   date_timezone_bug='false'
 
   limits='32767 2147483647 9223372036854775807'
@@ -1035,7 +1036,7 @@ main()
   if test "${shell_is_msys}" = 'true' && command 1> /dev/null 2>&1 -v 'cygpath'; then shell_exe="$(cygpath -m -a -l -- "${shell_exe}" || :)"; fi
   shell_info="$(get_shell_info "${shell_exe}" || :)"
   shell_name="$(printf '%s\n' "${shell_info}" | cut -d ' ' -f '1' || :)"
-  prefer_included_utilities_if_requested "${shell_exe_original}" "${shell_name}"
+  prefer_included_utilities_if_requested "${prefer_included_utilities}" "${shell_exe_original}" "${shell_name}"
   os_info="$(get_os_info || :)"
 
   operative_system='other'
@@ -1314,8 +1315,8 @@ backup_posix="${POSIXLY_CORRECT-unset}"
 POSIXLY_CORRECT='y'
 export POSIXLY_CORRECT
 
-unset PREFER_INCLUDED_UTILITIES
 execute_script='true'
+prefer_included_utilities=0
 no_pause=0
 STATUS=0
 
@@ -1353,8 +1354,7 @@ while test "${#}" -gt 0; do
       ;;
     -i | --prefer-included-utilities)
       # Enable code to prefer utilities that are in the same directory of the shell
-      PREFER_INCLUDED_UTILITIES='1'
-      export PREFER_INCLUDED_UTILITIES
+      prefer_included_utilities=1
 
       # Prefer internal applets over external utilities (only BusyBox under Windows)
       unset BB_OVERRIDE_APPLETS
@@ -1409,7 +1409,7 @@ if test "${execute_script}" = 'true'; then
   fi
 
   if test "${#}" -eq 0; then
-    main "${shell_is_msys}" || STATUS="${?}"
+    main "${prefer_included_utilities}" "${shell_is_msys}" || STATUS="${?}"
   else
     detect_bitness_of_files "${@}" || STATUS="${?}"
   fi
@@ -1417,8 +1417,8 @@ if test "${execute_script}" = 'true'; then
   if test "${backup_path}" = 'unset'; then unset PATH; else PATH="${backup_path}"; fi
 fi
 
-test "${PREFER_INCLUDED_UTILITIES:-0}" != '1' || unset PREFER_INCLUDED_UTILITIES ASH_STANDALONE
+test "${prefer_included_utilities}" != '1' || unset ASH_STANDALONE
 if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
-unset SCRIPT_NAME SCRIPT_VERSION backup_posix backup_path execute_script shell_is_msys
+unset SCRIPT_NAME SCRIPT_VERSION backup_posix backup_path execute_script prefer_included_utilities shell_is_msys
 
 pause_if_needed "${STATUS}"
