@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.15'
+SCRIPT_VERSION='1.5.16'
 
 ### CONFIGURATION ###
 
@@ -177,6 +177,8 @@ detect_hex_dump_cmd()
     printf '%s\n' 'xxd'
   elif command 1> /dev/null 2>&1 -v 'hexdump'; then
     printf '%s\n' 'hexdump'
+  elif command 1> /dev/null 2>&1 -v 'od'; then
+    printf '%s\n' 'od'
   else
     return 1
   fi
@@ -186,9 +188,11 @@ detect_hex_dump_cmd()
 dump_hex()
 {
   if test "${HEXDUMP_CMD:=$(detect_hex_dump_cmd || :)}" = 'xxd'; then
-    xxd -p -c "${3}" -s "${2}" -l "${3}" -- "${1}"
+    xxd -p -s "${2}" -c "${3}" -l "${3}" -- "${1}"
   elif test "${HEXDUMP_CMD?}" = 'hexdump'; then
     hexdump -v -e '/1 "%02x"' -s "${2}" -n "${3}" -- "${1}" && printf '\n'
+  elif test "${HEXDUMP_CMD?}" = 'od'; then
+    od -v -A 'n' -j "${2}" -N "${3}" -t 'x1' -- "${1}" | tr -d ' \n' && printf '\n'
   else
     return 1
   fi
