@@ -175,7 +175,7 @@ detect_hex_dump_cmd()
 {
   if command 1> /dev/null 2>&1 -v 'xxd'; then
     printf '%s\n' 'xxd'
-  elif command 1> /dev/null 2>&1 -v 'hexdump' && test "$(printf ' ' | hexdump 2> /dev/null -e '/1 "%02x"' || :)" = '20'; then
+  elif command 1> /dev/null 2>&1 -v 'hexdump' && test "$(printf ' ' | hexdump 2> /dev/null -v -e '/1 "%02x"' || :)" = '20'; then
     printf '%s\n' 'hexdump'
   elif command 1> /dev/null 2>&1 -v 'od'; then
     printf '%s\n' 'od'
