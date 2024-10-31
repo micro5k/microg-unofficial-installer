@@ -11,6 +11,7 @@ SCRIPT_VERSION='1.5.17'
 ### CONFIGURATION ###
 
 set -u 2> /dev/null || :
+set +m 2> /dev/null || :
 # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
 case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || printf 1>&2 '%s\n' 'Failed: pipefail' ;; *) ;; esac
 
@@ -1419,6 +1420,6 @@ fi
 
 test "${prefer_included_utilities}" != '1' || unset ASH_STANDALONE
 if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
-unset SCRIPT_NAME SCRIPT_VERSION backup_posix backup_path execute_script prefer_included_utilities shell_is_msys
+unset SCRIPT_NAME SCRIPT_VERSION HEXDUMP_CMD backup_posix backup_path execute_script prefer_included_utilities shell_is_msys
 
 pause_if_needed "${STATUS}"
