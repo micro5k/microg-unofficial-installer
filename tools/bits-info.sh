@@ -1178,6 +1178,7 @@ main()
   # shellcheck disable=SC3028 # In POSIX sh, RANDOM is undefined
   if RANDOM='1234' && test "${RANDOM}" = '1234'; then
     _max='unsupported' # $RANDOM is NOT supported
+    unset RANDOM
   elif test "$(seed_and_get_random '1234' || :)" != "$(seed_and_get_random '1234' || :)"; then
     _max='ignored' # $RANDOM is supported but the seed is ignored
   else

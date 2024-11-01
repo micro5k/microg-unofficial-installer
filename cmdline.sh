@@ -8,35 +8,27 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
     if command 1> /dev/null 2>&1 -v 'local'; then
-      local _main_dir _run_strategy _applet _newline
+      local _main_dir _run_strategy _applet
     else
       if command 1> /dev/null 2>&1 -v 'typeset'; then
-        typeset _main_dir _run_strategy _applet _newline
+        typeset _main_dir _run_strategy _applet
         typeset _gse_shell_exe _gse_tmp_var
       fi
       \eval ' local() { :; } ' || :
     fi
 
-    _newline='
-'
-
     # Execute only if the first initialization has not already been done
     if test -z "${MAIN_DIR-}" || test -z "${USER_HOME-}"; then
 
       # Avoid picturesque bugs on Bash under Windows
-      if test -e '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then PATH="/usr/bin:${PATH:-/usr/bin}"; fi
+      if test -x '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'; then PATH="/usr/bin:${PATH:-%empty}"; fi
 
       if test -z "${MAIN_DIR-}"; then
         # shellcheck disable=SC3028,SC2128 # Intended: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
-        if MAIN_DIR="${BASH_SOURCE-}" && test -n "${MAIN_DIR}"; then
-          :
-        elif printf '%s\n' "${1}" | grep -q -m 1 -- 'cmdline.sh$' && MAIN_DIR="${1}"; then
-          :
-        else MAIN_DIR=''; fi
+        if MAIN_DIR="${BASH_SOURCE-}" && test -n "${MAIN_DIR}"; then :; else MAIN_DIR="${1}"; fi
+        case "${MAIN_DIR}" in *'cmdline.sh') ;; *) MAIN_DIR='' ;; esac
 
-        if test -n "${MAIN_DIR}" && MAIN_DIR="$(dirname "${MAIN_DIR}")" && MAIN_DIR="$(realpath "${MAIN_DIR}")"; then
-          export MAIN_DIR
-        else unset MAIN_DIR; fi
+        if test -n "${MAIN_DIR}" && MAIN_DIR="$(dirname "${MAIN_DIR}")" && MAIN_DIR="$(realpath "${MAIN_DIR}")"; then export MAIN_DIR; else unset MAIN_DIR; fi
       fi
 
       if test -n "${MAIN_DIR-}" && test -z "${USER_HOME-}"; then
@@ -115,7 +107,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     else
       if test "${#}" -gt 0; then
         case "${*}" in
-          *"${_newline}"*) printf 1>&2 '%s\n' 'WARNING: Newline character found, parameters dropped' ;;
+          *"$(printf '\n')"*) printf 1>&2 '%s\n' 'WARNING: Newline character found, parameters dropped' ;;
           *)
             __QUOTED_PARAMS="$(printf '%s\n' "${@}")"
             export __QUOTED_PARAMS
