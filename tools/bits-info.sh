@@ -11,9 +11,9 @@ SCRIPT_VERSION='1.5.18'
 ### CONFIGURATION ###
 
 set -u 2> /dev/null || :
+
 # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
 case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || printf 1>&2 '%s\n' 'Failed: pipefail' ;; *) ;; esac
-case "$(set 2> /dev/null -o || set || :)" in *'monitor'*) set +m || printf 1>&2 '%s\n' 'Failed: monitor' ;; *) ;; esac
 
 # The "obosh" shell does NOT support "command" while the "posh" shell does NOT support "type"
 {
@@ -1243,7 +1243,7 @@ main()
   case "${cut_version}" in
     # The "cut" of "GNU textutils 1.5" does NOT freeze (so no timeout needed) but shells that come with this old "cut" may NOT support background processes
     *'GNU textutils'*) _max="$(detect_bits_of_cut_b "${limits_s_u}" "${operative_system}")" || _max='-1' ;;
-    *) _max="$(code_timeout 3>&2 2>/dev/null detect_bits_of_cut_b 8 "${limits_s_u}" "${operative_system}")" || _max='-1' ;;
+    *) _max="$(code_timeout 3>&2 2> /dev/null detect_bits_of_cut_b 8 "${limits_s_u}" "${operative_system}")" || _max='-1' ;;
   esac
   cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true' || :)"
 

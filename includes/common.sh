@@ -1369,13 +1369,12 @@ init_cmdline()
 }
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
-  set -u
-  # shellcheck disable=SC3040,SC3041,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / In POSIX sh, set flag -X is undefined. / C may run when A is true.
-  {
-    # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-    (set 2> /dev/null -o pipefail) && set -o pipefail || true
-    (set 2> /dev/null +H) && set +H || true
-  }
+  set -u 2> /dev/null || :
+
+  # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
+  case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || printf 1>&2 '%s\n' 'Failed: pipefail' ;; *) ;; esac
+  # shellcheck disable=SC3041,SC2015 # Ignore: In POSIX sh, set flag -H is undefined
+  (set +H 2> /dev/null) && set +H || :
 fi
 
 # Set environment variables
