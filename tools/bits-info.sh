@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.18'
+SCRIPT_VERSION='1.5.19'
 
 ### CONFIGURATION ###
 
@@ -586,12 +586,15 @@ detect_bitness_of_files()
   # If the number is greater than 125 then it returns 125.
   _dbof_ret_code=0
 
+  # Detect usable utility
+  : "${HEXDUMP_CMD:=$(detect_hex_dump_cmd || :)}"
+
   if test "${1:-empty}" = '-' && test "${#}" -eq 1; then
 
     (
       _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
 
-      IFS="$(printf '\n')"
+      IFS="$(printf '\nx')" IFS="${IFS%x}"
       # shellcheck disable=SC2030 # Intended: Modification of LC_ALL is local (to subshell)
       LC_ALL='C' # We only use bytes and not characters
       export LC_ALL
