@@ -139,10 +139,10 @@ jobs:
             local _shell
             _shell="$(realpath "${1:?}")" || return 2
             case "${EXECUTED_LIST?}|" in
-              *"|${_shell:?}|"*) return 1 ;; # Already executed
+              *"|${_shell:?} ${2?}|"*) return 1 ;; # Already executed
               *) ;;
             esac
-            EXECUTED_LIST="${EXECUTED_LIST?}|${_shell:?}"
+            EXECUTED_LIST="${EXECUTED_LIST?}|${_shell:?} ${2?}"
             return 0 # NOT already executed
           }
           skip()
@@ -158,34 +158,43 @@ jobs:
             fi
             if test -n "${_s_shell?}"; then
               :
-            elif test "${2:?}" = 'ksh93' || test "${2:?}" = 'osh' || test "${2:?}" = 'bosh'; then
+            elif test "${2:?}" = 'osh' || test "${2:?}" = 'bosh'; then
               _s_shell="${2:?}"
             else
               _s_shell="$(resolve_base "${2:?}")" || _s_shell="${2:?}"
             fi
             if test "${1:?}" = 'cmdline.sh'; then
               case "${_s_shell?}" in
-                obosh | busybox-x86 | busybox-x86-legacy) return 0 ;; # Skip
+                'obosh') return 0 ;;                                       # Skip
+                'busybox'*) if test "${3?}" = 'hush'; then return 0; fi ;; # Skip if hush
                 *) ;;
               esac
             else
               case "${_s_shell?}" in
-                osh) return 0 ;; # Skip until is fixed
-                obosh) return 0 ;; # Skip
+                'osh') return 0 ;; # Skip until is fixed
+                'obosh') return 0 ;; # Skip
                 *) ;;
               esac
             fi
             return 1 # Execute
           }
-          set_bb_applet()
+          set_applet()
           {
-            if test "${CURRENT_SHELL:-none}" != "${1:?}"; then
-              CURRENT_APPLET=''
-              CURRENT_SHELL="${1:?}"
-            fi
-            case "${CURRENT_APPLET?}" in
-              ash) CURRENT_APPLET='hush' ;;
-              *) CURRENT_APPLET='ash' ;;
+            case "${1:?}" in
+              'busybox'*)
+                if test "${CURRENT_SHELL:-none}" != "${2:?}"; then
+                  CURRENT_APPLET=''
+                  CURRENT_SHELL="${2:?}"
+                fi
+                case "${CURRENT_APPLET?}" in
+                  ash) CURRENT_APPLET='hush' ;;
+                  *) CURRENT_APPLET='ash' ;;
+                esac
+                ;;
+              *)
+                CURRENT_APPLET=''
+                CURRENT_SHELL=''
+                ;;
             esac
           }
           test_on_all_shells()
@@ -194,21 +203,19 @@ jobs:
             EXECUTED_LIST=''
             for _shell in sh dash bash busybox busybox-x86 busybox-x86 busybox-x86-legacy busybox-x86-legacy ash hush mksh pdksh oksh ksh88 ksh93 ksh zsh yash posh osh bosh pbosh obosh; do
               if test "${_shell:?}" = 'ksh' && test -n "${ORIGINAL_KSH?}"; then _shell="${ORIGINAL_KSH:?}"; fi
-              if ! _shell_cmd="$(command -v "${_shell:?}")" || skip "${1:?}" "${_shell:?}"; then continue; fi
-              if test "${_shell:?}" != 'busybox-x86' && test "${_shell:?}" != 'busybox-x86-legacy' && ! not_already_excuted "${_shell_cmd:?}"; then continue; fi
+              if ! _shell_cmd="$(command -v "${_shell:?}")"; then continue; fi
+              set_applet "${_shell:?}" "${_shell_cmd:?}"
+              if skip "${1:?}" "${_shell:?}" "${CURRENT_APPLET?}" || ! not_already_excuted "${_shell_cmd:?}" "${CURRENT_APPLET?}"; then continue; fi
               printf 'SHELL: %s - SCRIPT: %s\n\n' "${_shell_cmd:?}" "${1:?}"
               _status='0'
               case "${_shell:?}" in
-                'busybox'*)
-                  set_bb_applet "${_shell_cmd:?}"
-                  "${_shell_cmd:?}" "${CURRENT_APPLET:?}" "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}"
-                  ;;
+                'busybox'*) "${_shell_cmd:?}" "${CURRENT_APPLET:?}" "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}" ;;
                 *) "${_shell_cmd:?}" "${workspace_dir:?}/${1:?}" ${2-} || _status="${?}" ;;
               esac
               test "${_status:?}" = 0 || EXIT_CODE="${_status:?}"
               printf '\nRETURN CODE: %s\n\n' "${_status:?}"
             done
-            unset CURRENT_SHELL CURRENT_APPLET
+            unset EXECUTED_LIST CURRENT_SHELL CURRENT_APPLET
           }
           list_scripts()
           {
