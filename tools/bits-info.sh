@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.17'
+SCRIPT_VERSION='1.5.18'
 
 ### CONFIGURATION ###
 
@@ -954,14 +954,15 @@ detect_bits_of_cut_b()
   printf '%s\n' "${_dbcb_max}"
 }
 
-detect_bits_of_cut_b_timeout()
+code_timeout()
 {
-  local _sec_limit _pid _bg_status
+  local _func_name _sec_limit _pid _bg_status
 
-  _sec_limit="${1}"
-  shift
+  _func_name="${1}"
+  _sec_limit="${2}"
+  shift 2
 
-  detect_bits_of_cut_b "${@}" &
+  "${_func_name}" 2>&3 "${@}" &
   _pid="${!}"
   if test -z "${_pid}" || test "${_pid}" = "${$}" || test "${_pid}" -le 1; then return 126; fi # Seriously broken shell
 
@@ -971,8 +972,8 @@ detect_bits_of_cut_b_timeout()
       : # Still running
     else
       _bg_status=0
-      wait 1>&2 "${_pid}" || _bg_status="${?}"
-      test "${_bg_status}" != 127 || return 0 # On some shells wait does NOT work correctly and return 127
+      wait 1>&3 2>&3 "${_pid}" || _bg_status="${?}"
+      test "${_bg_status}" != 127 || return 0 # On some shells "wait" misbehave and return 127 even on success
       return "${_bg_status}"
     fi
   done
@@ -1242,7 +1243,7 @@ main()
   case "${cut_version}" in
     # The "cut" of "GNU textutils 1.5" does NOT freeze (so no timeout needed) but shells that come with this old "cut" may NOT support background processes
     *'GNU textutils'*) _max="$(detect_bits_of_cut_b "${limits_s_u}" "${operative_system}")" || _max='-1' ;;
-    *) _max="$(detect_bits_of_cut_b_timeout 8 "${limits_s_u}" "${operative_system}")" || _max='-1' ;;
+    *) _max="$(code_timeout 3>&2 2>/dev/null detect_bits_of_cut_b 8 "${limits_s_u}" "${operative_system}")" || _max='-1' ;;
   esac
   cut_b_bit="$(convert_max_unsigned_int_to_bit "${_max}" 'true' || :)"
 
