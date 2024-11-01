@@ -8,13 +8,15 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
     if command 1> /dev/null 2>&1 -v 'local'; then
-      local _main_dir _run_strategy _applet
+      local _main_dir _run_strategy _applet _nl
     else
       if command 1> /dev/null 2>&1 -v 'typeset'; then
-        typeset _main_dir _run_strategy _applet
+        typeset _main_dir _run_strategy _applet _nl
       fi
       \eval ' local() { :; } ' || :
     fi
+
+    _nl="$(printf '\nx')" _nl="${_nl%x}"
 
     # Execute only if the first initialization has not already been done
     if test -z "${MAIN_DIR-}" || test -z "${USER_HOME-}"; then
@@ -107,7 +109,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     else
       if test "${#}" -gt 0; then
         case "${*}" in
-          *"$(printf '\n')"*) printf 1>&2 '%s\n' 'WARNING: Newline character found, parameters dropped' ;;
+          *"${_nl}"*) printf 1>&2 '%s\n' 'WARNING: Newline character found, parameters dropped' ;;
           *)
             __QUOTED_PARAMS="$(printf '%s\n' "${@}")"
             export __QUOTED_PARAMS
