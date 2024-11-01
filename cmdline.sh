@@ -12,7 +12,6 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     else
       if command 1> /dev/null 2>&1 -v 'typeset'; then
         typeset _main_dir _run_strategy _applet
-        typeset _gse_shell_exe _gse_tmp_var
       fi
       \eval ' local() { :; } ' || :
     fi
@@ -67,6 +66,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
     __SHELL_EXE="$(get_shell_exe)" || __SHELL_EXE='bash'
     export __SHELL_EXE
+    unset _gse_shell_exe _gse_tmp_var
 
     _run_strategy='init-file'
     _applet=''
