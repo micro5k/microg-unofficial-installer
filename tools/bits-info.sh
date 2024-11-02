@@ -32,7 +32,7 @@ fi
 
 # Workaround for shells without support for local (example: ksh pbosh obosh)
 command 1> /dev/null 2>&1 -v 'local' || {
-  \eval ' local() { :; } ' || :
+  eval ' local() { :; } ' || :
   # On some variants of ksh this really works, but leave the function as dummy fallback
   if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi
 }
