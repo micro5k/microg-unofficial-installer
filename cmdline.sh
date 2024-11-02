@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
-  # Workaround for shells without support for local (example: ksh pbosh obosh)
-  command 1> /dev/null 2>&1 -v 'local' || {
-    eval ' local() { :; } ' || :
-    # On some variants of ksh this really works, but leave the function as dummy fallback
-    if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi
-  }
+# Workaround for shells without support for local (example: ksh pbosh obosh)
+command 1> /dev/null 2>&1 -v 'local' || {
+  eval ' local() { :; } ' || :
+  # On some variants of ksh this really works, but leave the function as dummy fallback
+  if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi
+}
 
+if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
     local _main_dir _run_strategy _applet _nl
