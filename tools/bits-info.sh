@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.19'
+SCRIPT_VERSION='1.5.20'
 
 ### CONFIGURATION ###
 
@@ -78,7 +78,7 @@ convert_max_unsigned_int_to_bit()
     '2147483647') printf '%s\n' "32-bit signed${bug_suffix}" ;; # Bugged unsigned 'printf' of awk (seen on some versions of Bash)
     '2147483648') printf '%s\n' "32-bit signed + 1 BB BUG" ;;   # Bugged unsigned 'printf' of awk (likely on BusyBox)
     '4294967295') printf '%s\n' "32-bit unsigned" ;;
-    '9223372036854775807') printf '%s\n' "64-bit signed${bug_suffix}" ;;     # Bugged unsigned 'printf' (seen on Ksh93 / OSH)
+    '9223372036854775807') printf '%s\n' "64-bit signed${bug_suffix}" ;;     # Bugged unsigned 'printf' (seen on Ksh93 / Oils)
     '9223372036854775808') printf '%s\n' "64-bit signed + 1${bug_suffix}" ;; # Bugged unsigned 'printf' (seen on Ksh93)
     '18446744073709551614') printf '%s\n' "64-bit unsigned - 1" ;;
     '18446744073709551615') printf '%s\n' "64-bit unsigned" ;;
@@ -652,7 +652,7 @@ get_shell_exe()
   elif _gse_tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${_gse_tmp_var}" && _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var}")"; then
     # On Linux / macOS
     # shellcheck disable=SC2230 # Ignore: 'which' is non-standard
-    case "${_gse_tmp_var}" in *'/'* | *"\\"*) ;; *) _gse_tmp_var="$(which 2> /dev/null "${_gse_tmp_var}")" || return 3 ;; esac # We may not get the full path with "command -v" on some versions of OSH
+    case "${_gse_tmp_var}" in *'/'* | *"\\"*) ;; *) _gse_tmp_var="$(which 2> /dev/null "${_gse_tmp_var}")" || return 3 ;; esac # We may not get the full path with "command -v" on some versions of Oils
   elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var}"; then
     if test "${_gse_tmp_var}" = '/bin/sh' && test "$(uname 2> /dev/null || :)" = 'Windows_NT'; then _gse_tmp_var="$(command 2> /dev/null -v 'busybox')" || return 2; fi
     if test ! -x "${_gse_tmp_var}" && test -x "${_gse_tmp_var}.exe"; then _gse_tmp_var="${_gse_tmp_var}.exe"; fi # Special fix for broken versions of Bash under Windows
@@ -687,13 +687,13 @@ get_shell_info()
 
   case "${_shell_exe}" in
     *'/bosh/'*'/sh' | *'/bosh/sh') _shell_name='bosh' ;;
-    *'/oils-for-unix' | *'/oil.ovm') _shell_name='osh' ;;
+    *'/oils-for-unix' | *'/oil.ovm') _shell_name='oils' ;;
     *) ;;
   esac
 
   case "${_shell_name}" in
     *'ksh'*) _shell_is_ksh='true' ;;
-    'bash' | 'zsh' | 'yash' | 'osh' | 'bosh' | 'pbosh' | 'obosh' | 'tcsh' | 'fish') _shell_use_ver_opt='true' ;;
+    'bash' | 'zsh' | 'yash' | 'oils' | 'bosh' | 'pbosh' | 'obosh' | 'tcsh' | 'fish') _shell_use_ver_opt='true' ;;
     *'\bash') # For bugged versions of Bash under Windows
       _shell_use_ver_opt='true'
       _shell_name='bash'
@@ -751,7 +751,7 @@ get_shell_info()
     'busybox') _shell_version="${_shell_version#BusyBox}" ;;
     'mksh') _shell_version="${_shell_version#*MIRBSD KSH}" ;;
     'pdksh' | 'oksh') _shell_version="${_shell_version#*PD KSH}" ;;
-    'osh') _shell_version="$(printf '%s\n' "${_shell_version#Oils}" | cut -f '1')" ;;
+    'oils') _shell_version="$(printf '%s\n' "${_shell_version#Oils}" | cut -f '1')" ;;
     '') ;;
     *) _shell_version="${_shell_version#"${_shell_name}"}" ;;
   esac
@@ -789,7 +789,7 @@ get_applet_name()
   local _shell_cmdline _gan_applet _gan_backup_ifs _gan_sep
 
   case "${1}" in
-    'busybox' | 'osh')
+    'busybox' | 'oils')
       if test -r "/proc/${$}/cmdline" && _shell_cmdline="$(tr -- '\n\0' ' \n' 0< "/proc/${$}/cmdline")" && test -n "${_shell_cmdline}"; then
         _gan_sep="$(printf '\nx')" _gan_sep="${_gan_sep%x}"
 
@@ -1170,7 +1170,7 @@ main()
   shell_printf_bit="$(convert_max_unsigned_int_to_bit "${tmp_var}" || :)"
 
   _max='-1'
-  # We hide the errors otherwise it will display an error on old Bash under Windows (or a ValueError on OSH) when an overflow occurs
+  # We hide the errors otherwise it will display an error on old Bash under Windows (or a ValueError on Oils) when an overflow occurs
   for _num in ${limits_u}; do
     if tmp_var="$(printf 2> /dev/null "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
       _max="${_num}"
