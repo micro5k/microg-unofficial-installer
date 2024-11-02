@@ -786,26 +786,42 @@ prefer_included_utilities_if_requested()
 
 get_applet_name()
 {
-  local _shell_cmdline _current_applet
+  local _shell_cmdline _gan_applet _gan_backup_ifs _gan_sep
 
   case "${1}" in
     'busybox' | 'osh')
-      if test -r "/proc/${$}/cmdline" && _shell_cmdline="$(tr 2> /dev/null -- '\0' ' ' 0< "/proc/${$}/cmdline")" && test -n "${_shell_cmdline}"; then
-        :
-      elif _shell_cmdline="$(ps 2> /dev/null -p "${$}" -o 'args=')"; then
-        :
+      if test -r "/proc/${$}/cmdline" && _shell_cmdline="$(tr -- '\n\0' ' \n' 0< "/proc/${$}/cmdline")" && test -n "${_shell_cmdline}"; then
+        _gan_sep="$(printf '\nx')" _gan_sep="${_gan_sep%x}"
+
+        _gan_backup_ifs="${IFS-unset}"
+        IFS="${_gan_sep}"
+        # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
+        set -- ${_shell_cmdline} || set --
+        if test "${_gan_backup_ifs}" = 'unset'; then unset IFS; else IFS="${_gan_backup_ifs}"; fi
+      elif _shell_cmdline="$(ps 2> /dev/null -p "${$}" -o 'args=')" && test -n "${_shell_cmdline}"; then
+        set -- "${_shell_cmdline}" || set --
       else
-        _shell_cmdline=''
+        printf '%s\n' 'failed'
+        return 3
       fi
 
-      if test -n "${_shell_cmdline}"; then
-        for _current_applet in bash lash msh hush ash osh sh; do
-          if printf '%s\n' "${_shell_cmdline}" | grep -m 1 -q -w -e "${_current_applet}"; then
-            printf '%s\n' "${_current_applet}"
-            return 0
-          fi
-        done
-      fi
+      # We cover two cases:
+      # - /bin/busybox ash
+      # - /bin/ash
+
+      for _gan_applet in bash lash msh hush ash osh ysh sh; do
+        if test "${2:-empty}" = "${_gan_applet}"; then
+          : # Found
+        else
+          case "${1:-empty}" in
+            *"/${_gan_applet}"* | *" ${_gan_applet}"*) ;; # Found
+            *) continue ;;                                # Not found yet
+          esac
+        fi
+
+        printf '%s\n' "${_gan_applet}"
+        return 0
+      done
       ;;
     *)
       printf '%s\n' 'not-an-applet'
@@ -996,6 +1012,13 @@ list_available_shells()
   else
     return 3
   fi
+}
+
+clean_env()
+{
+  test "${prefer_included_utilities}" != '1' || unset ASH_STANDALONE
+  if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
+  unset SCRIPT_NAME SCRIPT_VERSION HEXDUMP_CMD backup_posix backup_path execute_script prefer_included_utilities shell_is_msys
 }
 
 pause_if_needed()
@@ -1423,8 +1446,5 @@ if test "${execute_script}" = 'true'; then
   if test "${backup_path}" = 'unset'; then unset PATH; else PATH="${backup_path}"; fi
 fi
 
-test "${prefer_included_utilities}" != '1' || unset ASH_STANDALONE
-if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
-unset SCRIPT_NAME SCRIPT_VERSION HEXDUMP_CMD backup_posix backup_path execute_script prefer_included_utilities shell_is_msys
-
+clean_env
 pause_if_needed "${STATUS}"
