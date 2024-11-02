@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.20'
+SCRIPT_VERSION='1.5.21'
 
 ### CONFIGURATION ###
 
@@ -796,41 +796,41 @@ get_applet_name()
         _gan_backup_ifs="${IFS-unset}"
         IFS="${_gan_sep}"
         # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
-        set -- ${_shell_cmdline} || set --
+        set -- ${_shell_cmdline} || set -- || return 126
         if test "${_gan_backup_ifs}" = 'unset'; then unset IFS; else IFS="${_gan_backup_ifs}"; fi
       elif _shell_cmdline="$(ps 2> /dev/null -p "${$}" -o 'args=')" && test -n "${_shell_cmdline}"; then
-        set -- "${_shell_cmdline}" || set --
+        set -- "${_shell_cmdline}" || set -- || return 126
       else
-        printf '%s\n' 'failed'
-        return 3
+        set -- || return 126
       fi
 
       # We cover two cases:
       # - /bin/busybox ash
       # - /bin/ash
 
-      for _gan_applet in bash lash msh hush ash osh ysh oil sh; do
-        if test "${2:-empty}" = "${_gan_applet}"; then
-          : # Found
-        else
-          case "${1:-empty}" in
-            *"/${_gan_applet}"* | *" ${_gan_applet}"*) ;; # Found
-            *) continue ;;                                # Not found yet
-          esac
-        fi
+      if test "${#}" -gt 0; then
+        for _gan_applet in bash lash msh hush ash osh ysh oil sh; do
+          if test "${2:-empty}" = "${_gan_applet}"; then
+            : # Found
+          else
+            case "${1:-empty}" in
+              *"/${_gan_applet}"* | *" ${_gan_applet}"*) ;; # Found
+              *) continue ;;                                # Not found yet
+            esac
+          fi
 
-        printf '%s\n' "${_gan_applet}"
-        return 0
-      done
+          printf '%s\n' "${_gan_applet}"
+          return 0
+        done
+      fi
       ;;
     *)
-      printf '%s\n' 'not-an-applet'
-      return 1
+      return 2 # NOT an applet
       ;;
   esac
 
   printf '%s\n' 'unknown'
-  return 2
+  return 0
 }
 
 retrieve_bitness_from_uname()
