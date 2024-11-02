@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.21'
+SCRIPT_VERSION='1.5.22'
 
 ### CONFIGURATION ###
 
@@ -578,6 +578,22 @@ detect_bitness_of_single_file()
   return 2
 }
 
+detect_bitness_of_single_file_caller()
+{
+  local _dbsfc_ret_code _dbsfc_lcall
+
+  _dbsfc_lcall="${LC_ALL-unset}"
+  LC_ALL='C' # We only use bytes and not characters
+  export LC_ALL
+
+  _dbsfc_ret_code=0
+  detect_bitness_of_single_file "${1}" || _dbsfc_ret_code="${?}"
+
+  if test "${_dbsfc_lcall}" = 'unset'; then unset LC_ALL; else LC_ALL="${_dbsfc_lcall}"; fi
+
+  return "${_dbsfc_ret_code}"
+}
+
 detect_bitness_of_files()
 {
   local _dbof_ret_code _dbof_file_list _dbof_filename _dbof_lcall
@@ -617,7 +633,7 @@ detect_bitness_of_files()
   else
 
     # shellcheck disable=SC2031
-    _dbof_lcall="${LC_ALL-}"
+    _dbof_lcall="${LC_ALL-unset}"
     LC_ALL='C' # We only use bytes and not characters
     export LC_ALL
 
@@ -633,7 +649,7 @@ detect_bitness_of_files()
       printf '\nUnidentified files: %s\n' "${_dbof_ret_code}"
     fi
 
-    if test -n "${_dbof_lcall}"; then LC_ALL="${_dbof_lcall}"; else unset LC_ALL; fi
+    if test "${_dbof_lcall}" = 'unset'; then unset LC_ALL; else LC_ALL="${_dbof_lcall}"; fi
 
   fi
 
@@ -1073,7 +1089,7 @@ main()
   printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
 
   shell_bit='unknown'
-  if test -n "${shell_exe}" && shell_bit="$(detect_bitness_of_files "${shell_exe}")"; then
+  if test -n "${shell_exe}" && shell_bit="$(detect_bitness_of_single_file_caller "${shell_exe}")"; then
     :
   elif test "${operative_system}" = 'win' && shell_bit="${PROCESSOR_ARCHITECTURE-}" && test -n "${shell_bit}"; then
     # On Windows 2000+ / ReactOS
