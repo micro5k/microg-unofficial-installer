@@ -5,18 +5,16 @@
 # shellcheck enable=all
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
+  # Workaround for shells without support for local (example: ksh pbosh obosh)
+  command 1> /dev/null 2>&1 -v 'local' || {
+    \eval ' local() { :; } ' || :
+    # On some variants of ksh this really works, but leave the function as dummy fallback
+    if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi
+  }
+
   main()
   {
-    if command 1> /dev/null 2>&1 -v 'local'; then
-      local _main_dir _run_strategy _applet _nl
-    else
-      if command 1> /dev/null 2>&1 -v 'typeset'; then
-        typeset _main_dir _run_strategy _applet _nl
-      fi
-      \eval ' local() { :; } ' || :
-    fi
-
-    _nl="$(printf '\nx')" _nl="${_nl%x}"
+    local _main_dir _run_strategy _applet _nl
 
     # Execute only if the first initialization has not already been done
     if test -z "${MAIN_DIR-}" || test -z "${USER_HOME-}"; then
@@ -108,6 +106,8 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       exec "${__SHELL_EXE}" ${_applet} -s -c ". '${_main_dir}/includes/common.sh' || exit \${?}" "${_applet:-${0-}}" "${@}"
     else
       if test "${#}" -gt 0; then
+        _nl="$(printf '\nx')" _nl="${_nl%x}"
+
         case "${*}" in
           *"${_nl}"*) printf 1>&2 '%s\n' 'WARNING: Newline character found, parameters dropped' ;;
           *)
