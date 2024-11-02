@@ -191,6 +191,10 @@ jobs:
                   *) CURRENT_APPLET='ash' ;;
                 esac
                 ;;
+              'osh' | 'ysh')
+                CURRENT_APPLET="${1:?}"
+                CURRENT_SHELL="${2:?}"
+                ;;
               *)
                 CURRENT_APPLET=''
                 CURRENT_SHELL=''
