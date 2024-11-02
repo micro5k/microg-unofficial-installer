@@ -1014,7 +1014,7 @@ list_available_shells()
   fi
 }
 
-clean_env()
+clear_env()
 {
   test "${prefer_included_utilities}" != '1' || unset ASH_STANDALONE
   if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
@@ -1446,5 +1446,5 @@ if test "${execute_script}" = 'true'; then
   if test "${backup_path}" = 'unset'; then unset PATH; else PATH="${backup_path}"; fi
 fi
 
-clean_env
+clear_env
 pause_if_needed "${STATUS}"

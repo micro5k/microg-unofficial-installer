@@ -94,7 +94,7 @@ case "${BUILD_TYPE-}" in
 esac
 
 save_last_title
-change_title 'Building the flashable OTA zip...'
+set_title 'Building the flashable OTA zip...'
 
 # shellcheck source=SCRIPTDIR/conf-1.sh
 . "${MAIN_DIR}/conf-1.sh"
@@ -104,7 +104,7 @@ if test "${OPENSOURCE_ONLY:-false}" = 'false'; then . "${MAIN_DIR}/conf-2.sh"; f
 if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
   if ! is_oss_only_build_enabled; then
     echo 'WARNING: The OSS only build is disabled'
-    change_title 'OSS only build is disabled'
+    set_title 'OSS only build is disabled'
     # shellcheck disable=SC2317
     return 0 2>&- || exit 0
   fi
@@ -285,7 +285,7 @@ cd "${_init_dir:?}" || ui_error 'Failed to change back the folder'
 
 echo ''
 echo 'Done.'
-change_title 'Done'
+set_title 'Done'
 
 set +e
 

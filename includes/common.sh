@@ -189,7 +189,7 @@ detect_os_and_other_things()
   readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_EXE SHELL_APPLET
 }
 
-change_title()
+set_title()
 {
   test "${NO_TITLE:-0}" = '0' || return 0
   test "${CI:-false}" = 'false' || return 0
@@ -203,9 +203,9 @@ change_title()
 set_default_title()
 {
   if is_root; then
-    change_title "[root] Command-line: ${__TITLE_CMD_PREFIX-}${__TITLE_CMD_0-}${__TITLE_CMD_PARAMS-}"
+    set_title "[root] Command-line: ${__TITLE_CMD_PREFIX-}${__TITLE_CMD_0-}${__TITLE_CMD_PARAMS-}"
   else
-    change_title "Command-line: ${__TITLE_CMD_PREFIX-}${__TITLE_CMD_0-}${__TITLE_CMD_PARAMS-}"
+    set_title "Command-line: ${__TITLE_CMD_PREFIX-}${__TITLE_CMD_0-}${__TITLE_CMD_PARAMS-}"
   fi
   A5K_TITLE_IS_DEFAULT='true'
 }
@@ -224,7 +224,7 @@ restore_saved_title_if_exist()
   if test "${A5K_SAVED_TITLE-}" = 'default'; then
     set_default_title
   elif test -n "${A5K_SAVED_TITLE-}"; then
-    change_title "${A5K_SAVED_TITLE:?}"
+    set_title "${A5K_SAVED_TITLE:?}"
   fi
   A5K_SAVED_TITLE=''
 }
