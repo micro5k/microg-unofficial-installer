@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.22'
+SCRIPT_VERSION='1.5.23'
 
 ### CONFIGURATION ###
 
@@ -164,7 +164,9 @@ permissively_comparison()
 
 is_shell_msys()
 {
-  test -x '/usr/bin/uname' && test "$(/usr/bin/uname 2> /dev/null -o || :)" = 'Msys'
+  local _uname_os
+
+  test -x '/usr/bin/uname' && _uname_os="$(/usr/bin/uname 2> /dev/null -o)" && test "${_uname_os}" = 'Msys'
 }
 
 file_getprop()
@@ -602,6 +604,11 @@ detect_bitness_of_files()
   # If the number is greater than 125 then it returns 125.
   _dbof_ret_code=0
 
+  if is_shell_msys; then
+    # We must do this in all cases with Bash under Windows using this POSIX layer otherwise we may run into freezes, obscure errors and unknown infinite loops!!!
+    PATH="/usr/bin:${PATH:-%empty}"
+  fi
+
   # Detect usable utility
   : "${HEXDUMP_CMD:=$(detect_hex_dump_cmd || :)}"
 
@@ -1034,7 +1041,7 @@ clear_env()
 {
   test "${prefer_included_utilities}" != '1' || unset ASH_STANDALONE
   if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
-  unset SCRIPT_NAME SCRIPT_VERSION HEXDUMP_CMD backup_posix backup_path execute_script prefer_included_utilities shell_is_msys
+  unset SCRIPT_NAME SCRIPT_VERSION HEXDUMP_CMD backup_posix backup_path execute_script prefer_included_utilities
 }
 
 pause_if_needed()
@@ -1064,7 +1071,6 @@ main()
   local awk_printf_bit awk_printf_unsigned_bit awk_printf_signed_bit cut_version cut_b_bit date_bit date_u_bit
 
   prefer_included_utilities="${1}"
-  shell_is_msys="${2}"
   date_timezone_bug='false'
 
   limits='32767 2147483647 9223372036854775807'
@@ -1074,6 +1080,13 @@ main()
   limits_rnd_u='65535 4294967295 18446744073709551615'
 
   limits_s_u='32767 65535 256446000 2147483647 4294967295 9223372036854775807 18446744073709551614 18446744073709551615'
+
+  shell_is_msys='false'
+  if is_shell_msys; then
+    shell_is_msys='true'
+    # We must do this in all cases with Bash under Windows using this POSIX layer otherwise we may run into freezes, obscure errors and unknown infinite loops!!!
+    PATH="/usr/bin:${PATH:-%empty}"
+  fi
 
   shell_exe="$(get_shell_exe || :)"
   shell_exe_original="${shell_exe}"
@@ -1446,15 +1459,8 @@ done || :
 if test "${execute_script}" = 'true'; then
   backup_path="${PATH-unset}"
 
-  shell_is_msys='false'
-  if is_shell_msys; then
-    shell_is_msys='true'
-    # We must do this in all cases with Bash under Windows using this POSIX layer otherwise we may run into freezes, obscure errors and unknown infinite loops!!!
-    PATH="/usr/bin:${PATH:-%empty}"
-  fi
-
   if test "${#}" -eq 0; then
-    main "${prefer_included_utilities}" "${shell_is_msys}" || STATUS="${?}"
+    main "${prefer_included_utilities}" || STATUS="${?}"
   else
     detect_bitness_of_files "${@}" || STATUS="${?}"
   fi
