@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.23'
+SCRIPT_VERSION='1.5.24'
 
 ### CONFIGURATION ###
 
@@ -546,6 +546,14 @@ detect_bitness_of_single_file()
 
   if test "${_dbf_size}" = 0; then
     printf '%s\n' 'Empty file'
+    return 0
+  fi
+
+  if test "${_dbf_size}" -ge 512 && test "$(dump_hex "${1:?}" "$((_dbf_size - 512))" '4' || :)" = '6b6f6c79'; then
+    # DMG - Apple Disk Image - Header => koly (0x6B 0x6F 0x6C 0x79)
+    # More info: https://newosxbook.com/DMG.html
+
+    printf '%s\n' 'Bit-independent DMG'
     return 0
   fi
 
