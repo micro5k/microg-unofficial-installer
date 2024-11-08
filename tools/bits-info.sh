@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.25'
+SCRIPT_VERSION='1.5.26'
 
 ### CONFIGURATION ###
 
@@ -404,7 +404,7 @@ detect_bitness_of_single_file()
   fi
 
   if compare_hex_bytes "${_dbf_first_bytes}" '0' '8' 'd0cf11e0a1b11ae1'; then
-    # CFBF - Compound File Binary Format (.msi) - Start with: 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1
+    # CFBF - Compound File Binary Format (.msi / .msp) - Start with: 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1
 
     printf '%s\n' 'Bit-independent CFBF'
     return 0
@@ -561,6 +561,14 @@ detect_bitness_of_single_file()
     # More info: https://newosxbook.com/DMG.html
 
     printf '%s\n' 'Bit-independent DMG'
+    return 0
+  fi
+
+  if compare_hex_bytes "${_dbf_first_bytes}" '4' '4' '50413330'; then
+    # Windows Patch Delta - Magic: PA30 (0x50 0x41 0x33 0x30)
+    # More info: https://wumb0.in/extracting-and-diffing-ms-patches-in-2020.html
+
+    printf '%s\n' 'Bit-independent Windows Patch Delta'
     return 0
   fi
 
