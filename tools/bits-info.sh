@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.24'
+SCRIPT_VERSION='1.5.25'
 
 ### CONFIGURATION ###
 
@@ -401,6 +401,13 @@ detect_bitness_of_single_file()
 
     printf '%s\n' 'unknown-mz-file'
     return 5
+  fi
+
+  if compare_hex_bytes "${_dbf_first_bytes}" '0' '8' 'd0cf11e0a1b11ae1'; then
+    # CFBF - Compound File Binary Format (.msi) - Start with: 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1
+
+    printf '%s\n' 'Bit-independent CFBF'
+    return 0
   fi
 
   if compare_hex_bytes "${_dbf_first_bytes}" '0' '4' '7f454c46'; then
