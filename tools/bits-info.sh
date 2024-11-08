@@ -296,14 +296,14 @@ detect_bitness_of_single_file()
   _dbf_first_2_bytes="$(extract_bytes "${_dbf_first_bytes}" '0' '2')" || _dbf_first_2_bytes=''
 
   if test "${_dbf_first_2_bytes}" = '4d5a'; then
-    # MZ - Executable binaries for Windows / DOS (.exe) - Start with: MZ (0x4D 0x5A)
+    # MZ - Executable binaries for Windows / DOS (.exe) | Offset: 0x00 - Magic: MZ (0x4D 0x5A)
     # More info: https://wiki.osdev.org/MZ
 
     _dbf_bytes_swap='true'
     _dbf_exe_type=''
     _dbf_pos=''
 
-    # APE - Actually Portable Executables - Start with: MZ (0x4D 0x5A) + qFpD (0x71 0x46 0x70 0x44)
+    # APE - Actually Portable Executables | Offset: 0x00 - Magic: MZ (0x4D 0x5A), qFpD (0x71 0x46 0x70 0x44)
     if compare_hex_bytes "${_dbf_first_bytes}" '2' '4' '71467044'; then _dbf_exe_type='APE '; fi
 
     # The smallest possible PE file is 97 bytes: http://www.phreedom.org/research/tinype/
@@ -404,14 +404,14 @@ detect_bitness_of_single_file()
   fi
 
   if compare_hex_bytes "${_dbf_first_bytes}" '0' '8' 'd0cf11e0a1b11ae1'; then
-    # CFBF - Compound File Binary Format (.msi / .msp) - Start with: 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1
+    # CFBF - Compound File Binary Format (.msi / .msp) | Offset: 0x00 - Magic: 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1
 
     printf '%s\n' 'Bit-independent CFBF'
     return 0
   fi
 
   if compare_hex_bytes "${_dbf_first_bytes}" '0' '4' '7f454c46'; then
-    # ELF - Executable binaries for Linux / Android - Start with: 0x7F + ELF (0x45 0x4C 0x46) + 0x01 for 32-bit or 0x02 for 64-bit
+    # ELF - Executable binaries for Linux / Android | Offset: 0x00 - Magic: 0x7F, ELF (0x45 0x4C 0x46), 0x01 for 32-bit or 0x02 for 64-bit
 
     _header="$(extract_bytes "${_dbf_first_bytes}" '4' '1')" || _header=''
     case "${_header}" in
@@ -541,7 +541,7 @@ detect_bitness_of_single_file()
   fi
 
   if test "${_dbf_first_2_bytes?}" = '2321'; then
-    # Scripts (often shell scripts) - Start with: #! (0x23 0x21)
+    # Scripts (often shell scripts) | Offset: 0x00 - Magic: #! (0x23 0x21)
     printf '%s\n' 'Bit-independent script'
     return 0
   fi
@@ -557,7 +557,7 @@ detect_bitness_of_single_file()
   fi
 
   if test "${_dbf_size}" -ge 512 && test "$(dump_hex "${1:?}" "$((_dbf_size - 512))" '4' || :)" = '6b6f6c79'; then
-    # DMG - Apple Disk Image - Header => koly (0x6B 0x6F 0x6C 0x79)
+    # DMG - Apple Disk Image | Offset: 512 from end - Magic: koly (0x6B 0x6F 0x6C 0x79)
     # More info: https://newosxbook.com/DMG.html
 
     printf '%s\n' 'Bit-independent DMG'
@@ -565,7 +565,7 @@ detect_bitness_of_single_file()
   fi
 
   if compare_hex_bytes "${_dbf_first_bytes}" '4' '4' '50413330'; then
-    # Windows Patch Delta - Magic: PA30 (0x50 0x41 0x33 0x30)
+    # Windows Patch Delta | Offset: 0x04 - Magic: PA30 (0x50 0x41 0x33 0x30)
     # More info: https://wumb0.in/extracting-and-diffing-ms-patches-in-2020.html
 
     printf '%s\n' 'Bit-independent Windows Patch Delta'
