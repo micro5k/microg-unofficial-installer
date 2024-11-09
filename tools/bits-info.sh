@@ -288,6 +288,7 @@ extract_bytes_and_swap()
 detect_bitness_of_single_file()
 {
   local _dbf_first_bytes _dbf_first_2_bytes _dbf_size _dbf_bytes_swap _dbf_pos _header _dbf_exe_type _dbf_cpu_type _dbf_i _dbf_tmp
+  local _pe_size_optional_header _pe_size_all_headers _pe_size_initializ_data
 
   if test ! -f "${1}" || ! _dbf_first_bytes="$(dump_hex "${1}" '0' '64')"; then # Cache bytes at pos 0x00 - 0x40
     printf '%s\n' 'failed'
@@ -331,17 +332,17 @@ detect_bitness_of_single_file()
           if
             test "${_pe_size_optional_header}" -ge 64 &&
               # SizeOfHeaders => Offset: PE header pos + 0x54 (dec: 84)
-              _pe_size_headers="$(extract_bytes "${_header?}" '84' '4')" && _pe_size_headers="$(hex_bytes_to_int "${_pe_size_headers}" '4' "${_dbf_bytes_swap:?}")" &&
+              _pe_size_all_headers="$(extract_bytes "${_header?}" '84' '4')" && _pe_size_all_headers="$(hex_bytes_to_int "${_pe_size_all_headers}" '4' "${_dbf_bytes_swap:?}")" &&
               # SizeOfInitializedData => Offset: PE header pos + 0x20 (dec: 32)
               _pe_size_initializ_data="$(extract_bytes "${_header?}" '32' '4')" && _pe_size_initializ_data="$(hex_bytes_to_int "${_pe_size_initializ_data}" '4' "${_dbf_bytes_swap:?}")"
           then
             # IMPORTANT: Initial code (not compatible with all files)
-            if _dbf_tmp="$(dump_hex "${1:?}" "$((_pe_size_headers + _pe_size_initializ_data))" '6')" && compare_hex_bytes "${_dbf_tmp}" '0' '6' '377abcaf271c'; then
+            if _dbf_tmp="$(dump_hex "${1:?}" "$((_pe_size_all_headers + _pe_size_initializ_data))" '6')" && compare_hex_bytes "${_dbf_tmp}" '0' '6' '377abcaf271c'; then
               _dbf_exe_type="${_dbf_exe_type?}7z "
             fi
           fi
 
-          # PE header pos + 0x18 (decimal: 24) = PE type magic
+          # PE type magic => Offset: PE header pos + 0x18 (dec: 24)
           if _dbf_tmp="$(extract_bytes "${_header?}" '24' '2')" && _dbf_tmp="$(switch_endianness_2 "${_dbf_tmp?}")"; then
             case "${_dbf_tmp?}" in
               '010b') _dbf_exe_type="${_dbf_exe_type?}PE32" ;;
