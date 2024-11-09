@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.28'
+SCRIPT_VERSION='1.5.30'
 
 ### CONFIGURATION ###
 
@@ -311,7 +311,7 @@ detect_bitness_of_single_file()
     if
       _dbf_pos="$(extract_bytes "${_dbf_first_bytes}" '60' '4')" && _dbf_pos="$(hex_bytes_to_int "${_dbf_pos?}" '4' "${_dbf_bytes_swap:?}")" &&
         test "${_dbf_pos:?}" -ge 4 && test "${_dbf_pos:?}" -le 536870912 &&
-        _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '26')"
+        _header="$(dump_hex "${1:?}" "${_dbf_pos:?}" '88')"
     then
       :
     else _header=''; fi
@@ -322,11 +322,25 @@ detect_bitness_of_single_file()
         # More info: https://www.aldeid.com/wiki/PE-Portable-executable
         # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
 
-        # PE header pos + 0x14 (decimal: 20) = SizeOfOptionalHeader
         if
-          _dbf_tmp="$(extract_bytes "${_header?}" '20' '2')" && _dbf_tmp="$(hex_bytes_to_int "${_dbf_tmp?}" '2' "${_dbf_bytes_swap:?}")" &&
-            test "${_dbf_tmp:?}" -ge 2
+          # SizeOfOptionalHeader => Offset: PE header pos + 0x14 (dec: 20)
+          _pe_size_optional_header="$(extract_bytes "${_header?}" '20' '2')" &&
+            _pe_size_optional_header="$(hex_bytes_to_int "${_pe_size_optional_header}" '2' "${_dbf_bytes_swap:?}")"
         then
+
+          if
+            test "${_pe_size_optional_header}" -ge 64 &&
+              # SizeOfHeaders => Offset: PE header pos + 0x54 (dec: 84)
+              _pe_size_headers="$(extract_bytes "${_header?}" '84' '4')" && _pe_size_headers="$(hex_bytes_to_int "${_pe_size_headers}" '4' "${_dbf_bytes_swap:?}")" &&
+              # SizeOfInitializedData => Offset: PE header pos + 0x20 (dec: 32)
+              _pe_size_initializ_data="$(extract_bytes "${_header?}" '32' '4')" && _pe_size_initializ_data="$(hex_bytes_to_int "${_pe_size_initializ_data}" '4' "${_dbf_bytes_swap:?}")"
+          then
+            # IMPORTANT: Initial code (not compatible with all files)
+            if _dbf_tmp="$(dump_hex "${1:?}" "$((_pe_size_headers + _pe_size_initializ_data))" '6')" && compare_hex_bytes "${_dbf_tmp}" '0' '6' '377abcaf271c'; then
+              _dbf_exe_type="${_dbf_exe_type?}7z "
+            fi
+          fi
+
           # PE header pos + 0x18 (decimal: 24) = PE type magic
           if _dbf_tmp="$(extract_bytes "${_header?}" '24' '2')" && _dbf_tmp="$(switch_endianness_2 "${_dbf_tmp?}")"; then
             case "${_dbf_tmp?}" in
@@ -550,18 +564,18 @@ detect_bitness_of_single_file()
   fi
 
   if compare_hex_bytes "${_dbf_first_bytes}" '0' '4' '504b0304'; then
-    # ZIP - PKZip (.zip / .jar / .apk) | Offset: 0x00 - Magic: PK (0x50 0x4B), 0x03, 0x04
+    # PKZip archive (.zip / .jar / .apk) | Offset: 0x00 - Magic: PK (0x50 0x4B), 0x03, 0x04
     # More info: https://users.cs.jmu.edu/buchhofp/forensics/formats/pkzip.html
 
-    printf '%s\n' 'Bit-independent ZIP'
+    printf '%s\n' 'Bit-independent PKZip archive'
     return 0
   fi
 
   if compare_hex_bytes "${_dbf_first_bytes}" '0' '6' '377abcaf271c'; then
-    # 7-zip (.7z) | Offset: 0x00 - Magic: 7z (0x37 0x7A), 0xBC, 0xAF, 0x27, 0x1C
+    # 7z archive (.7z) | Offset: 0x00 - Magic: 7z (0x37 0x7A), 0xBC, 0xAF, 0x27, 0x1C
     # More info: https://py7zr.readthedocs.io/en/latest/archive_format.html
 
-    printf '%s\n' 'Bit-independent 7-zip'
+    printf '%s\n' 'Bit-independent 7z archive'
     return 0
   fi
 
