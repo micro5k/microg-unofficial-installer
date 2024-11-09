@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.26'
+SCRIPT_VERSION='1.5.27'
 
 ### CONFIGURATION ###
 
@@ -538,6 +538,22 @@ detect_bitness_of_single_file()
 
     printf '%s\n' 'unknown-mach-file'
     return 7
+  fi
+
+  if compare_hex_bytes "${_dbf_first_bytes}" '0' '4' '504b0304'; then
+    # ZIP - PKZip (.zip / .jar / .apk) | Offset: 0x00 - Magic: PK (0x50 0x4B), 0x03, 0x04
+    # More info: https://users.cs.jmu.edu/buchhofp/forensics/formats/pkzip.html
+
+    printf '%s\n' 'Bit-independent ZIP'
+    return 0
+  fi
+
+  if compare_hex_bytes "${_dbf_first_bytes}" '0' '6' '377abcaf271c'; then
+    # 7-zip (.7z) | Offset: 0x00 - Magic: 7z (0x37 0x7A), 0xBC, 0xAF, 0x27, 0x1C
+    # More info: https://py7zr.readthedocs.io/en/latest/archive_format.html
+
+    printf '%s\n' 'Bit-independent 7-zip'
+    return 0
   fi
 
   if test "${_dbf_first_2_bytes?}" = '2321'; then
