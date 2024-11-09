@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.27'
+SCRIPT_VERSION='1.5.28'
 
 ### CONFIGURATION ###
 
@@ -321,7 +321,6 @@ detect_bitness_of_single_file()
         # PE header => PE (0x50 0x45) + 0x00 + 0x00 + Machine field
         # More info: https://www.aldeid.com/wiki/PE-Portable-executable
         # More info: https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
-        _dbf_exe_type="${_dbf_exe_type?}PE"
 
         # PE header pos + 0x14 (decimal: 20) = SizeOfOptionalHeader
         if
@@ -331,12 +330,14 @@ detect_bitness_of_single_file()
           # PE header pos + 0x18 (decimal: 24) = PE type magic
           if _dbf_tmp="$(extract_bytes "${_header?}" '24' '2')" && _dbf_tmp="$(switch_endianness_2 "${_dbf_tmp?}")"; then
             case "${_dbf_tmp?}" in
-              '010b') _dbf_exe_type="${_dbf_exe_type:?}32" ;;
-              '020b') _dbf_exe_type="${_dbf_exe_type:?}32+" ;;
-              '0107') _dbf_exe_type="${_dbf_exe_type:?} ROM image" ;;
-              *) ;;
+              '010b') _dbf_exe_type="${_dbf_exe_type?}PE32" ;;
+              '020b') _dbf_exe_type="${_dbf_exe_type?}PE32+" ;;
+              '0107') _dbf_exe_type="${_dbf_exe_type?}PE ROM image" ;;
+              *) _dbf_exe_type="${_dbf_exe_type?}Unknown PE" ;;
             esac
           fi
+        else
+          _dbf_exe_type="${_dbf_exe_type?}PE"
         fi
 
         _dbf_cpu_type="$(extract_bytes "${_header:?}" '4' '2')" || _dbf_cpu_type=''
@@ -401,13 +402,6 @@ detect_bitness_of_single_file()
 
     printf '%s\n' 'unknown-mz-file'
     return 5
-  fi
-
-  if compare_hex_bytes "${_dbf_first_bytes}" '0' '8' 'd0cf11e0a1b11ae1'; then
-    # CFBF - Compound File Binary Format (.msi / .msp) | Offset: 0x00 - Magic: 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1
-
-    printf '%s\n' 'Bit-independent CFBF'
-    return 0
   fi
 
   if compare_hex_bytes "${_dbf_first_bytes}" '0' '4' '7f454c46'; then
@@ -540,6 +534,21 @@ detect_bitness_of_single_file()
     return 7
   fi
 
+  if compare_hex_bytes "${_dbf_first_bytes}" '0' '4' 'ffffffff'; then
+    # DOS device driver (.dos, .sys, .dev, .bin) | Offset: 0x00 - Magic: 0xFF, 0xFF, 0xFF, 0xFF
+    # More info: http://fileformats.archiveteam.org/wiki/DOS_device_driver
+
+    printf '%s\n' '16-bit DOS device driver'
+    return 0
+  fi
+
+  if compare_hex_bytes "${_dbf_first_bytes}" '0' '8' 'd0cf11e0a1b11ae1'; then
+    # CFBF - Compound File Binary Format (.msi / .msp) | Offset: 0x00 - Magic: 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1
+
+    printf '%s\n' 'Bit-independent CFBF'
+    return 0
+  fi
+
   if compare_hex_bytes "${_dbf_first_bytes}" '0' '4' '504b0304'; then
     # ZIP - PKZip (.zip / .jar / .apk) | Offset: 0x00 - Magic: PK (0x50 0x4B), 0x03, 0x04
     # More info: https://users.cs.jmu.edu/buchhofp/forensics/formats/pkzip.html
@@ -562,6 +571,14 @@ detect_bitness_of_single_file()
     return 0
   fi
 
+  if compare_hex_bytes "${_dbf_first_bytes}" '4' '4' '50413330'; then
+    # Windows Patch Delta | Offset: 0x04 - Magic: PA30 (0x50 0x41 0x33 0x30)
+    # More info: https://wumb0.in/extracting-and-diffing-ms-patches-in-2020.html
+
+    printf '%s\n' 'Bit-independent Windows Patch Delta'
+    return 0
+  fi
+
   _dbf_size="$(stat -c '%s' -- "${1}")" || {
     printf '%s\n' 'failed'
     return 1
@@ -577,14 +594,6 @@ detect_bitness_of_single_file()
     # More info: https://newosxbook.com/DMG.html
 
     printf '%s\n' 'Bit-independent DMG'
-    return 0
-  fi
-
-  if compare_hex_bytes "${_dbf_first_bytes}" '4' '4' '50413330'; then
-    # Windows Patch Delta | Offset: 0x04 - Magic: PA30 (0x50 0x41 0x33 0x30)
-    # More info: https://wumb0.in/extracting-and-diffing-ms-patches-in-2020.html
-
-    printf '%s\n' 'Bit-independent Windows Patch Delta'
     return 0
   fi
 
