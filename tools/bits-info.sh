@@ -587,6 +587,12 @@ detect_bitness_of_single_file()
   if test "${_dbf_size}" = 0; then
     printf '%s\n' 'Empty file'
     return 0
+  elif test "${_dbf_size}" -gt 0; then
+    : # OK
+  else
+    # It overflowed, probably the file is too big to be handled by this shell
+    printf '%s\n' 'failed'
+    return 1
   fi
 
   if test "${_dbf_size}" -ge 512 && test "$(dump_hex "${1:?}" "$((_dbf_size - 512))" '4' || :)" = '6b6f6c79'; then
