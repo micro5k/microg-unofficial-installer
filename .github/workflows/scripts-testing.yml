@@ -171,7 +171,6 @@ jobs:
               esac
             else
               case "${_s_shell?}" in
-                'osh') return 0 ;; # Skip until is fixed
                 'obosh') return 0 ;; # Skip
                 *) ;;
               esac
