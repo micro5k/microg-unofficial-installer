@@ -120,8 +120,9 @@ jobs:
           if test "${current_os:?}" = 'Linux'; then
             sudo apt-get -y -qq install 'mksh' 'yash' 'posh' 1> /dev/null
           elif test "${current_os:?}" = 'macOS'; then
-            brew 1> /dev/null install --quiet 'mksh' 'oksh' 'ksh93' 'yash'
-            brew 1> /dev/null install --quiet 'oils-for-unix'
+            brew 2> /dev/null update --quiet || exit "${?}"
+            brew 1> /dev/null install --quiet 'mksh' 'oksh' 'ksh93' 'yash' || exit "${?}"
+            brew 1> /dev/null install --quiet 'oils-for-unix' || exit "${?}"
           else
             choco 1> /dev/null install 'busybox' -y --no-progress
             #choco install 'schily-cdrtools' --pre -y --no-progress
