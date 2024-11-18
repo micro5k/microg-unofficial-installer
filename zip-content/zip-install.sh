@@ -2,10 +2,11 @@
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-readonly ZIPINSTALL_VERSION='1.2.0'
+readonly ZIPINSTALL_VERSION='1.2.1'
 
-umask 022 || true
+umask 022 || :
 PATH="${PATH:-/system/bin}:."
+END_OF_SCRIPT_REACHED=0
 
 ### PREVENTIVE CHECKS ###
 
@@ -106,7 +107,7 @@ if test -z "${*}"; then
   exit 5
 fi
 
-if test "$(whoami || true)" != 'root'; then
+if test "$(whoami || :)" != 'root'; then
   if test "${AUTO_ELEVATED:-false}" = 'false'; then
     printf '%s\n' 'Auto-rooting attempt...'
 
@@ -133,16 +134,16 @@ unset SCRIPT_NAME
 _clean_at_exit()
 {
   if test -n "${SCRIPT_NAME:-}" && test -e "${SCRIPT_NAME:?}"; then
-    rm -f "${SCRIPT_NAME:?}" || true
+    rm -f "${SCRIPT_NAME:?}" || :
   fi
   if test -n "${UPD_SCRIPT_NAME:-}" && test -e "${UPD_SCRIPT_NAME:?}"; then
-    rm -f "${UPD_SCRIPT_NAME:?}" || true
+    rm -f "${UPD_SCRIPT_NAME:?}" || :
   fi
   unset SCRIPT_NAME
   if test "${TMPDIR:-}" = '/dev/tmp'; then
     if test -e "${TMPDIR:?}"; then
       # Legacy versions of rmdir don't accept any parameter (not even --)
-      rmdir "${TMPDIR:?}" 2> /dev/null || true
+      rmdir "${TMPDIR:?}" 2> /dev/null || :
     fi
     unset TMPDIR
   fi
@@ -160,7 +161,7 @@ elif test -e '/dev'; then
   }
   chmod 01775 '/dev/tmp' || {
     ui_show_error "chmod failed on '/dev/tmp'"
-    rmdir '/dev/tmp' 2> /dev/null || true
+    rmdir '/dev/tmp' 2> /dev/null || :
     exit 10
   }
   TMPDIR='/dev/tmp'
@@ -185,10 +186,10 @@ test -s "${SCRIPT_NAME:?}" || {
   exit 14
 }
 
-unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/updater-script' 1> "${UPD_SCRIPT_NAME:?}" || true # Not strictly needed
+unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/updater-script' 1> "${UPD_SCRIPT_NAME:?}" || : # Not strictly needed
 
 STATUS=0
-if ! command 1> /dev/null -v head || test '#!' = "$(head -q -c 2 -- "${SCRIPT_NAME:?}" || true)"; then
+if ! command 1> /dev/null -v head || test '#!' = "$(head -q -c 2 -- "${SCRIPT_NAME:?}" || :)"; then
   printf '%s\n' 'Executing script...'
 
   # Use STDERR (2) for recovery messages to avoid possible problems with subshells intercepting output
@@ -203,13 +204,20 @@ else
   }
   "${SCRIPT_NAME:?}" 3 2 "${ZIPFILE:?}" 'zip-install' "${ZIPINSTALL_VERSION:?}" || STATUS="${?}"
 fi
+END_OF_SCRIPT_REACHED=1
 
 _clean_at_exit
-trap - 0 2 3 6 15 || true # Already cleaned, so unset traps
+trap - 0 2 3 6 15 || : # Already cleaned, so unset traps
 
 if test "${STATUS:-20}" != '0'; then
   ui_show_error "ZIP installation failed with error ${STATUS:-20}"
   exit "${STATUS:-20}"
+fi
+
+# This should theoretically never happen, but it's just to protect against unknown shell bugs
+if test "${END_OF_SCRIPT_REACHED:-0}" != '1'; then
+  ui_show_error "ZIP installation failed with an unknown error"
+  exit 120
 fi
 
 printf '\033[1;32m%s\033[0m\n' 'The ZIP installation is completed, now restart your device!!!'
