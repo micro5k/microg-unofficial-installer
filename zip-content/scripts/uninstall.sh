@@ -79,6 +79,7 @@ auroraservices|
 
 NewPipe|org.schabi.newpipe
 NewPipeLegacy|org.schabi.newpipelegacy
+NewPipeLegacyRevo|org.schabi.newpipelegacy.Revo
 YouTube|com.google.android.youtube
 YouTubeMusicPrebuilt|com.google.android.apps.youtube.music
 
