@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-readonly ZIPINSTALL_VERSION='1.1'
+readonly ZIPINSTALL_VERSION='1.2.0'
 
 umask 022 || true
 PATH="${PATH:-/system/bin}:."
@@ -110,8 +110,8 @@ if test "$(whoami || true)" != 'root'; then
   if test "${AUTO_ELEVATED:-false}" = 'false'; then
     printf '%s\n' 'Auto-rooting attempt...'
 
-    # First verify that "su" is working
-    su root sh -c 'command' '[su]verification' || {
+    # First verify that "su" is working (user 0 is root)
+    su 0 sh -c 'command' '[su]verification' || {
       _status="${?}" # Usually it return 1 or 255 when root is present but disabled
       ui_show_error 'Auto-rooting failed, you must execute this as root!!!'
       exit "${_status:-2}"
@@ -121,7 +121,7 @@ if test "$(whoami || true)" != 'root'; then
       ui_show_error 'Unable to find myself'
       exit 3
     }
-    exec su root sh -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' CI='${CI:-false}' TMPDIR='${TMPDIR:-}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_show_error 'failed: exec'
+    exec su 0 sh -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' CI='${CI:-false}' TMPDIR='${TMPDIR:-}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_show_error 'failed: exec'
     exit "${?}"
   fi
 
