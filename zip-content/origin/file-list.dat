@@ -1,9 +1,9 @@
-priv-app/GmsCore|19||GmsCore|libs|com.google.android.gms|4275cb55e470200a54c3b7f0ce3d43b4d4b1f899
+priv-app/GmsCore|19||GmsCore|libs|com.google.android.gms|56581e1be7834007d68f6f588c5cd5423cf51364
 priv-app/GmsCore-ale5000|14||GmsCore|libs|com.google.android.gms|f0722d9a9e607202e1434871f8dbfdcccdc81b25
 priv-app/GmsCoreVtm|14||GmsCore|libs|com.google.android.gms|dd5ed6eadc470b7b99379832dfe40b2e4e41ab59
 priv-app/GmsCoreVtmLegacy|9|13|GmsCore|libs|com.google.android.gms|da538490beadc760a7a8519ec5ed367f19ae8d7b
 priv-app/GsfProxy|9||GoogleServicesFramework||com.google.android.gsf|4c063d6eab1ef467f2fc2efb8bf0c50e5611140d
-priv-app/FakeStore|19||Phonesky||com.android.vending|a3761dc29813717e8fe4c6a03291cd51d800de40
+priv-app/FakeStore|19||Phonesky||com.android.vending|d6864855897dbbd97d429dc864775b9fe8a18440
 priv-app/FakeStore-ale5000|14||Phonesky||com.android.vending|18ee1c904b6e0e1bef895faae0a07167e6bf6ce6
 priv-app/FakeStoreLegacy|8||Phonesky||com.android.vending|fd9ebf3beca682644efc1df3bb313bcc15bd65a5
 priv-app/FDroidPrivilegedExtension|8||FDroidPrivilegedExtension||org.fdroid.fdroid.privileged|cb05a14c986f7c470c0eeb2b3f57c27fe2a72a23
