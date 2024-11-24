@@ -714,7 +714,7 @@ initialize()
     ui_msg_empty_line
   fi
 
-  # Previously installed module version code (0 if wasn't installed)
+  # Previously installed version code (0 if not already installed)
   PREV_MODULE_VERCODE="$(simple_file_getprop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
   case "${PREV_MODULE_VERCODE?}" in
     '' | *[!0-9]*) PREV_MODULE_VERCODE='0' ;; # Not installed (empty) or invalid data
@@ -730,8 +730,8 @@ initialize()
   export FIRST_INSTALLATION PREV_MODULE_VERCODE
 
   IS_INSTALLATION='true'
-  if test "${LIVE_SETUP_ENABLED:?}" = 'true' && test "${PREV_MODULE_VERCODE:?}" -ge 3; then
-    choose 'What do you want to do?' '+) Update / reinstall' '-) Uninstall'
+  if test "${LIVE_SETUP_ENABLED:?}" = 'true' && test "${MODULE_VERCODE:?}" = "${PREV_MODULE_VERCODE:?}" && test "${PREV_MODULE_VERCODE:?}" -gt 0; then
+    choose 'What do you want to do?' '+) Reinstall' '-) Uninstall'
     if test "${?}" != '3'; then
       IS_INSTALLATION='false'
     fi
