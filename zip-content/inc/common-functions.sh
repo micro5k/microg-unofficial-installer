@@ -729,8 +729,14 @@ initialize()
   readonly FIRST_INSTALLATION PREV_MODULE_VERCODE
   export FIRST_INSTALLATION PREV_MODULE_VERCODE
 
+  if test "${MODULE_VERCODE:?}" -ge "${PREV_MODULE_VERCODE:?}"; then
+    : # OK
+  else
+    ui_error 'Downgrade not allowed!!!'
+  fi
+
   IS_INSTALLATION='true'
-  if test "${LIVE_SETUP_ENABLED:?}" = 'true' && test "${MODULE_VERCODE:?}" = "${PREV_MODULE_VERCODE:?}" && test "${PREV_MODULE_VERCODE:?}" -gt 0; then
+  if test "${LIVE_SETUP_ENABLED:?}" = 'true' && test "${MODULE_VERCODE:?}" -eq "${PREV_MODULE_VERCODE:?}" && test "${PREV_MODULE_VERCODE:?}" -gt 0; then
     choose 'What do you want to do?' '+) Reinstall' '-) Uninstall'
     if test "${?}" != '3'; then
       IS_INSTALLATION='false'
