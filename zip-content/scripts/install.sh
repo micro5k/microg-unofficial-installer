@@ -12,12 +12,23 @@ TMP_PATH="${2:?}"
 # shellcheck source=SCRIPTDIR/../inc/common-functions.sh
 . "${TMP_PATH:?}/inc/common-functions.sh" || exit "${?}"
 
+setup_fakestore()
+{
+  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false; then
+    :
+  elif setup_app 1 '' 'microG Companion (FakeStore) - signed by ale5000' 'FakeStore-ale5000' 'priv-app' false false; then
+    :
+  elif setup_app 1 '' 'microG Companion Legacy (FakeStore)' 'FakeStoreLegacy' 'priv-app' false false; then
+    :
+  fi
+}
+
 rollback_complete_callback()
 {
   case "${1:?}" in
     'Google Play Store' | 'Google Play Store (legacy)')
       # Fallback to FakeStore
-      setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false
+      setup_fakestore
       ;;
 
     *) ;;
@@ -86,8 +97,6 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     install_backends='true'
   elif setup_app 1 '' 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' true false; then
     install_backends='true'
-  else
-    ui_error 'No compatible app found'
   fi
 
   setup_app 1 '' 'microG Services Framework Proxy' 'GsfProxy' 'priv-app' false false
@@ -105,13 +114,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     SELECTED_MARKET='PlayStore'
   else
     # Fallback to FakeStore
-    if test "${USE_MICROG_BY_ALE5000:?}" = 0 && setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false; then
-      :
-    elif setup_app 1 '' 'microG Companion (FakeStore) - signed by ale5000' 'FakeStore-ale5000' 'priv-app' false false; then
-      :
-    elif setup_app 1 '' 'microG Companion Legacy (FakeStore)' 'FakeStoreLegacy' 'priv-app' false false; then
-      :
-    fi
+    setup_fakestore
   fi
 
   if test "${SELECTED_MARKET:?}" = 'FakeStore'; then
