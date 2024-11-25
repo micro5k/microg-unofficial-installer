@@ -26,6 +26,12 @@ rollback_complete_callback()
 
 ### CODE ###
 
+if test "${API:?}" -ge 8; then
+  : # Supported Android version
+else
+  ui_error "Your Android version is too old, API: ${API?}"
+fi
+
 USE_MICROG_BY_ALE5000="$(parse_setting 'USE_MICROG_BY_ALE5000' "${USE_MICROG_BY_ALE5000:?}")"
 INSTALL_FDROIDPRIVEXT="$(parse_setting 'INSTALL_FDROIDPRIVEXT' "${INSTALL_FDROIDPRIVEXT:?}")"
 INSTALL_AURORASERVICES="$(parse_setting 'INSTALL_AURORASERVICES' "${INSTALL_AURORASERVICES:?}")"
@@ -34,12 +40,6 @@ INSTALL_NEWPIPE="$(parse_setting 'INSTALL_NEWPIPE' "${INSTALL_NEWPIPE:?}")"
 INSTALL_PLAYSTORE="$(parse_setting 'INSTALL_PLAYSTORE' "${INSTALL_PLAYSTORE:-}" 'custom' 'SELECTED_MARKET' 'PlayStore')"
 INSTALL_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7:-}")"
 INSTALL_ANDROIDAUTO="$(parse_setting 'INSTALL_ANDROIDAUTO' "${INSTALL_ANDROIDAUTO:-}")"
-
-if test "${API:?}" -ge 8; then
-  : ### Supported Android versions
-else
-  ui_error "Your Android version is too old, API: ${API:-}"
-fi
 
 # Display info
 display_info
@@ -89,7 +89,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   install_backends='false'
   if test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' "${microg_gmscore_vanity_name:?}" "${microg_gmscore_filename:?}" 'priv-app' true false; then
     :
-  elif test "${MAIN_ABI:?}" = 'armeabi' && setup_app 1 '' 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' true false; then
+  elif setup_app 1 '' 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' true false; then
     install_backends='true'
   elif setup_app 1 '' 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' true false; then
     install_backends='true'
