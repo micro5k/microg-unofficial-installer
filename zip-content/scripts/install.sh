@@ -70,8 +70,6 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   # Configuring
   ui_msg 'Configuring...'
 
-  setup_app 1 '' 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
-
   profile_filename="$(printf '%s\n' "${BUILD_MANUFACTURER?}-${BUILD_MODEL?}.xml" | tr -- '[:upper:]' '[:lower:]')"
   if test -e "${TMP_PATH:?}/origin/profiles/${profile_filename:?}"; then
     move_rename_file "${TMP_PATH:?}/origin/profiles/${profile_filename:?}" "${TMP_PATH:?}/files/etc/microg_device_profile.xml"
@@ -79,20 +77,17 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     move_rename_file "${TMP_PATH:?}/origin/profiles/lenovo_yoga_tab_3_pro_10_inches_23.xml" "${TMP_PATH:?}/files/etc/microg_device_profile.xml"
   fi
 
-  microg_gmscore_vanity_name='microG Services'
-  microg_gmscore_filename='GmsCore'
-  if test "${USE_MICROG_BY_ALE5000:?}" != 0; then
-    microg_gmscore_vanity_name='microG Services - signed by ale5000'
-    microg_gmscore_filename='GmsCore-ale5000'
-  fi
-
   install_backends='false'
-  if test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' "${microg_gmscore_vanity_name:?}" "${microg_gmscore_filename:?}" 'priv-app' true false; then
+  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' 'microG Services' 'GmsCore' 'priv-app' true false; then
+    :
+  elif test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' 'microG Services - signed by ale5000' 'GmsCore-ale5000' 'priv-app' true false; then
     :
   elif setup_app 1 '' 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' true false; then
     install_backends='true'
   elif setup_app 1 '' 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' true false; then
     install_backends='true'
+  else
+    ui_error 'No compatible app found'
   fi
 
   setup_app 1 '' 'microG Services Framework Proxy' 'GsfProxy' 'priv-app' false false
@@ -124,6 +119,8 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   else
     move_rename_file "${TMP_PATH:?}/origin/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
   fi
+
+  setup_app 1 '' 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
 
   setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'INSTALL_FDROIDPRIVEXT' 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
   setup_app "${INSTALL_AURORASERVICES:?}" 'INSTALL_AURORASERVICES' 'Aurora Services' 'AuroraServices' 'priv-app'
