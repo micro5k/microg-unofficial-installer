@@ -98,7 +98,6 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   setup_app 1 '' 'microG Services Framework Proxy' 'GsfProxy' 'priv-app' false false
 
   if test "${install_backends:?}" = 'true'; then
-    setup_app "${INSTALL_MOZILLABACKEND:?}" '' 'Mozilla UnifiedNlp Backend' 'IchnaeaNlpBackend' 'app'
     setup_app "${INSTALL_DEJAVUBACKEND:?}" '' 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
     setup_app "${INSTALL_NOMINATIMGEOBACKEND:?}" '' 'Nominatim Geocoder Backend' 'NominatimGeocoderBackend' 'app'
   fi
