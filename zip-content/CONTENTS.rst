@@ -108,7 +108,6 @@ Notes
 UnifiedNlp backends (only installed when microG Services <= 0.2.27 are installed)
 ---------------------------------------------------------------------------------
 - **origin/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.12 |star| |fire|
-- **origin/app/IchnaeaNlpBackend.apk** => Mozilla UnifiedNlp Backend 1.5.0 |star| |fire|
 - **origin/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star| |fire|
 
 |star| *Can be updated through F-Droid*.
