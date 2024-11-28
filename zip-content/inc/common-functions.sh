@@ -718,7 +718,7 @@ initialize()
   PREV_MODULE_VERCODE="$(simple_file_getprop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
   case "${PREV_MODULE_VERCODE?}" in
     '' | *[!0-9]*) # Empty (not installed) or invalid data
-      test -z "${PREV_MODULE_VERCODE?}" || ui_warning 'Previously installed version code is NOT valid'
+      test -z "${PREV_MODULE_VERCODE?}" || ui_warning 'Previously installed version code is NOT valid!!!'
       PREV_MODULE_VERCODE='0'
       ;;
     *) ;; # Valid
@@ -912,12 +912,11 @@ replace_permission_placeholders()
 
 prepare_installation()
 {
-  local _backup_ifs _need_newline
+  local _backup_ifs _need_newline _path_without_ext
 
   ui_msg 'Preparing installation...'
 
   _need_newline='false'
-  printf '\r\r' # Waste some time otherwise ui_debug may appear before the previous ui_msg
 
   if test "${API:?}" -ge 29; then # Android 10+
     ui_debug '  Processing ACCESS_BACKGROUND_LOCATION...'
@@ -982,9 +981,22 @@ prepare_installation()
   fi
 
   set_std_perm_recursive "${TMP_PATH:?}/files"
-  if test -e "${TMP_PATH:?}/addon.d"; then
+  if test -d "${TMP_PATH:?}/origin/bin"; then
+    set_std_perm_recursive "${TMP_PATH:?}/origin/bin"
+  fi
+
+  if test -d "${TMP_PATH:?}/addon.d"; then
     set_std_perm_recursive "${TMP_PATH:?}/addon.d"
     find "${TMP_PATH:?}/addon.d" -type f -name '*.sh' -exec chmod 0755 '{}' '+' || ui_error 'Failed to chmod addon.d scripts'
+  fi
+
+  if test -d "${TMP_PATH:?}/files/bin"; then
+    for entry in "${TMP_PATH:?}/files/bin"/*; do
+      if test ! -f "${entry:?}"; then continue; fi
+      _path_without_ext="$(remove_ext "${entry:?}")" || ui_error 'Failed to remove ext'
+      move_rename_file "${entry:?}" "${_path_without_ext:?}"
+      set_perm 0 2000 0755 "${_path_without_ext:?}"
+    done
   fi
 }
 
@@ -2644,8 +2656,8 @@ numerically_comparable_version()
 
 remove_ext()
 {
-  local str="$1"
-  echo "${str%.*}"
+  local str="${1}"
+  printf '%s\n' "${str%.*}"
 }
 
 # Find test: this is useful to test 'find' - if every file/folder, even the ones with spaces, is displayed in a single line then your version is good

@@ -173,9 +173,7 @@ fi
 unmount_extra_partitions
 
 # Preparing remaining files
-if test "${API:?}" -ge 19; then
-  move_rename_file "${TMP_PATH:?}/files/bin/minutil.sh" "${TMP_PATH:?}/files/bin/minutil"
-else
+if test "${API:?}" -lt 19; then
   delete_recursive "${TMP_PATH:?}/files/bin"
 fi
 
@@ -201,10 +199,6 @@ ui_debug ''
 prepare_installation
 printf '%s\n' "USE_MICROG_BY_ALE5000=${USE_MICROG_BY_ALE5000:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
-
-if test -e "${TMP_PATH:?}/files/bin/minutil"; then
-  set_perm 0 2000 0755 "${TMP_PATH:?}/files/bin/minutil"
-fi
 
 # Install
 if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg.xml" "${SYS_PATH:?}/etc"; fi
