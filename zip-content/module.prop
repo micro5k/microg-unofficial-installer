@@ -1,7 +1,6 @@
 # -*- coding: utf-8; mode: conf-unix -*-
 # SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
-# SPDX-FileType: OTHER
 
 id=microg-unofficial-installer
 name=microG unofficial installer

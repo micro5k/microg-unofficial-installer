@@ -99,9 +99,9 @@ set_title 'Building the flashable OTA zip...'
 # shellcheck source=SCRIPTDIR/conf-1.sh
 . "${MAIN_DIR}/conf-1.sh"
 # shellcheck source=SCRIPTDIR/conf-2.sh
-if test "${OPENSOURCE_ONLY:-false}" = 'false'; then . "${MAIN_DIR}/conf-2.sh"; fi
+if test "${OPENSOURCE_ONLY:?}" = 'false'; then . "${MAIN_DIR}/conf-2.sh"; fi
 
-if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
+if test "${OPENSOURCE_ONLY:?}" != 'false'; then
   if ! is_oss_only_build_enabled; then
     echo 'WARNING: The OSS only build is disabled'
     set_title 'OSS only build is disabled'
@@ -132,9 +132,7 @@ rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
 MODULE_ID="$(simple_get_prop 'id' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module id string'
 MODULE_VER="$(simple_get_prop 'version' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module version string'
 MODULE_AUTHOR="$(simple_get_prop 'author' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module author string'
-FILENAME="${MODULE_ID:?}-${MODULE_VER:?}-by-${MODULE_AUTHOR:?}"
-# shellcheck disable=SC2154
-if test "${OPENSOURCE_ONLY:-false}" != 'false'; then FILENAME="${FILENAME:?}-OSS"; fi
+FILENAME="${MODULE_ID:?}-${MODULE_VER:?}-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
 
 # shellcheck source=SCRIPTDIR/addition.sh
 . "${MAIN_DIR}/addition.sh"
@@ -158,7 +156,7 @@ fi
   current_dl_list="$(oss_files_to_download)" || ui_error 'Missing download list'
   dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files'
 
-  if test "${OPENSOURCE_ONLY:-false}" = 'false'; then
+  if test "${OPENSOURCE_ONLY:?}" = 'false'; then
     current_dl_list="$(files_to_download)" || ui_error 'Missing download list'
     dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files'
 
@@ -180,7 +178,7 @@ cp -f "${MAIN_DIR}/LIC-ADDITION.rst" "${TEMP_DIR}/zip-content/" || ui_error 'Fai
 mkdir -p "${TEMP_DIR}/zip-content/docs"
 cp -f "${MAIN_DIR}/CHANGELOG.rst" "${TEMP_DIR}/zip-content/docs/" || ui_error 'Failed to copy the changelog to the temp dir'
 
-if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
+if test "${OPENSOURCE_ONLY:?}" != 'false'; then
   mv -f "${TEMP_DIR}/zip-content/settings-oss.conf" "${TEMP_DIR}/zip-content/settings.conf" || ui_error 'Failed to choose the settings file'
 else
   mv -f "${TEMP_DIR}/zip-content/settings-full.conf" "${TEMP_DIR}/zip-content/settings.conf" || ui_error 'Failed to choose the settings file'
@@ -193,9 +191,9 @@ rm -rf "${TEMP_DIR}/zip-content/misc/aapt" || ui_error 'Failed to delete unused 
 rm -f "${TEMP_DIR}/zip-content/misc/busybox/busybox-"mips* || ui_error 'Failed to delete unused files in the temp dir'
 rm -f "${TEMP_DIR}/zip-content/LICENSES/Info-ZIP.txt" || ui_error 'Failed to delete unused files in the temp dir'
 
-if test "${OPENSOURCE_ONLY:-false}" != 'false'; then
-  printf '%s\n%s\n\n%s\n' '# SPDX-FileCopyrightText: none' '# SPDX-License-Identifier: CC0-1.0' 'Include only Open source components.' > "${TEMP_DIR}/zip-content/OPENSOURCE-ONLY" || ui_error 'Failed to create the OPENSOURCE-ONLY file'
-else
+printf '%s\n%s\n\n%s\n' '# SPDX-FileCopyrightText: none' '# SPDX-License-Identifier: CC0-1.0' "buildType=${BUILD_TYPE:?}" 1> "${TEMP_DIR:?}/zip-content/build-type.prop" || ui_error 'Failed to create the "build-type.prop" file'
+
+if test "${OPENSOURCE_ONLY:?}" = 'false'; then
   files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH MIN_API MAX_API FINAL_FILENAME INTERNAL_NAME FILE_HASH _; do
     mkdir -p -- "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}"
     cp -f -- "${MAIN_DIR:?}/cache/${LOCAL_PATH:?}/${LOCAL_FILENAME:?}.apk" "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}.apk'"
@@ -292,7 +290,7 @@ set +e
 # Ring bell
 beep
 
-#wait "${pid:?}" || true
+#wait "${pid:?}" || :
 
 pause_if_needed
 restore_saved_title_if_exist
