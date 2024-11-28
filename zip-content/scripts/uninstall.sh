@@ -98,6 +98,8 @@ DejaVuBackend|org.fitchfamily.android.dejavu
 DejaVuNlpBackend|
 IchnaeaNlpBackend|org.microg.nlp.backend.ichnaea
 MozillaNlpBackend|
+mozillaNLPBackend|
+mozillaNLPBacken|
 NominatimGeocoderBackend|org.microg.nlp.backend.nominatim
 NominatimNlpBackend|
 
