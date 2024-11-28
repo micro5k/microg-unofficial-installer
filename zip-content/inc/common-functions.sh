@@ -718,8 +718,8 @@ initialize()
   PREV_MODULE_VERCODE="$(simple_file_getprop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
   case "${PREV_MODULE_VERCODE?}" in
     '' | *[!0-9]*) # Empty (not installed) or invalid data
-      PREV_MODULE_VERCODE='0'
       test -z "${PREV_MODULE_VERCODE?}" || ui_warning 'Previously installed version code is NOT valid'
+      PREV_MODULE_VERCODE='0'
       ;;
     *) ;; # Valid
   esac
