@@ -884,8 +884,8 @@ clean_previous_installations()
 
   delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
 
-  # Reclaiming free space may take some time
-  _wait_free_space_changes 5 "${_initial_free_space:?}"
+  ui_debug ''
+  _wait_free_space_changes 5 "${_initial_free_space:?}" # Reclaiming free space may take some time
   ui_debug ''
 }
 
@@ -916,8 +916,8 @@ prepare_installation()
   local _backup_ifs _need_newline _path_without_ext
 
   ui_msg 'Preparing installation...'
-
   _need_newline='false'
+  sleep 2> /dev/null '0.05' || : # Wait some time otherwise ui_debug may appear before the previous ui_msg
 
   if test "${API:?}" -ge 29; then # Android 10+
     ui_debug '  Processing ACCESS_BACKGROUND_LOCATION...'
@@ -1033,7 +1033,6 @@ _wait_free_space_changes()
   local _max_attempts='15'
   if test -n "${1?}"; then _max_attempts="${1:?}"; fi
 
-  ui_debug ''
   printf 'Waiting..'
 
   while test "${_max_attempts:?}" -gt 0 && _max_attempts="$((_max_attempts - 1))"; do
@@ -1085,10 +1084,10 @@ _do_rollback_last_app_internal()
   done
   IFS="${_backup_ifs:-}"
 
-  fstrim 2> /dev/null -- "${SYS_MOUNTPOINT:?}" || true
+  fstrim 2> /dev/null -- "${SYS_MOUNTPOINT:?}" || :
 
-  # Reclaiming free space may take some time
-  _wait_free_space_changes '' "${_initial_free_space:?}"
+  ui_debug ''
+  _wait_free_space_changes '' "${_initial_free_space:?}" # Reclaiming free space may take some time
   ui_debug ''
 
   sed -ie '$ d' -- "${TMP_PATH:?}/processed-${1:?}s.log" || ui_error "Failed to remove the last line from read processed-${1?}s.log"
