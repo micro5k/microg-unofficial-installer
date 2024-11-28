@@ -886,6 +886,7 @@ clean_previous_installations()
 
   # Reclaiming free space may take some time
   _wait_free_space_changes 5 "${_initial_free_space:?}"
+  ui_debug ''
 }
 
 _move_app_into_subfolder()
@@ -1042,9 +1043,7 @@ _wait_free_space_changes()
     fi
     sleep 1
   done
-
-  ui_debug ''
-  ui_debug ''
+  printf '\n'
 }
 
 _custom_rollback()
@@ -1090,6 +1089,7 @@ _do_rollback_last_app_internal()
 
   # Reclaiming free space may take some time
   _wait_free_space_changes '' "${_initial_free_space:?}"
+  ui_debug ''
 
   sed -ie '$ d' -- "${TMP_PATH:?}/processed-${1:?}s.log" || ui_error "Failed to remove the last line from read processed-${1?}s.log"
 
