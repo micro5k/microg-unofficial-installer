@@ -14,11 +14,11 @@ TMP_PATH="${2:?}"
 
 setup_fakestore()
 {
-  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' false false; then
+  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' true false; then
     :
-  elif setup_app 1 '' 'microG Companion (FakeStore) - signed by ale5000' 'FakeStore-ale5000' 'priv-app' false false; then
+  elif setup_app 1 '' 'microG Companion (FakeStore) - signed by ale5000' 'FakeStore-ale5000' 'priv-app' true false; then
     :
-  elif setup_app 1 '' 'microG Companion Legacy (FakeStore)' 'FakeStoreLegacy' 'priv-app' false false; then
+  elif setup_app 1 '' 'microG Companion Legacy (FakeStore)' 'FakeStoreLegacy' 'priv-app' true false; then
     :
   fi
 }
@@ -93,9 +93,9 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     :
   elif test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' 'microG Services - signed by ale5000' 'GmsCore-ale5000' 'priv-app' true false; then
     :
-  elif setup_app 1 '' 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' true false; then
+  elif setup_app 1 '' 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
     install_backends='true'
-  elif setup_app 1 '' 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' true false; then
+  elif setup_app 1 '' 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
     install_backends='true'
   fi
 
