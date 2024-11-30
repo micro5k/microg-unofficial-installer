@@ -117,7 +117,7 @@ UnifiedNlp backends (only installed when microG Services <= 0.2.27 are installed
 
 Framework library
 -----------------
-- **files/framework/com.google.android.maps.jar** => microG Maps API v1 0.1.0 |fire|
+- **files/framework/com.google.android.maps.jar** => microG Maps v1 API 0.1.0 |fire|
 
 |fire| *Original version*.
 
