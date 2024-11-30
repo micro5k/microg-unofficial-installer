@@ -69,7 +69,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   # Configuring
   ui_msg 'Configuring...'
 
-  setup_framework_lib 1 '' 'microG Maps v1 API' 'com.google.android.maps' false
+  setup_lib 1 '' 'microG Maps v1 API' 'com.google.android.maps' false
 
   profile_filename="$(printf '%s\n' "${BUILD_MANUFACTURER?}-${BUILD_MODEL?}.xml" | tr -- '[:upper:]' '[:lower:]')"
   if test -e "${TMP_PATH:?}/origin/profiles/${profile_filename:?}"; then
@@ -124,6 +124,10 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   setup_app "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7:-}" 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' 'Gmail' 'Gmail' 'app' true
   setup_app "${INSTALL_ANDROIDAUTO:-}" 'INSTALL_ANDROIDAUTO' 'Android Auto stub' 'AndroidAuto' 'priv-app' true
 
+  if test "${API:?}" -ge 19; then
+    setup_util 'minutil' 'MinUtil'
+  fi
+
   if test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
     choose 'Do you want to reset GMS data of all apps?' '+) Yes' '-) No'
     if test "$?" -eq 3; then
@@ -163,9 +167,6 @@ fi
 unmount_extra_partitions
 
 # Preparing remaining files
-if test "${API:?}" -lt 19; then
-  delete_recursive "${TMP_PATH:?}/files/bin"
-fi
 if test "${API}" -lt 23; then
   delete_recursive "${TMP_PATH}/files/etc/default-permissions"
 fi
@@ -212,12 +213,6 @@ fi
 #if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_AM?}"; then
 #  PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null broadcast -a 'org.microg.gms.gcm.FORCE_TRY_RECONNECT' -n 'com.google.android.gms/org.microg.gms.gcm.TriggerReceiver' || true
 #fi
-
-# Install utilities
-if test -e "${TMP_PATH:?}/files/bin"; then
-  ui_msg 'Installing utilities...'
-  perform_secure_copy_to_device 'bin'
-fi
 
 # Install survival script
 if test -e "${SYS_PATH:?}/addon.d"; then

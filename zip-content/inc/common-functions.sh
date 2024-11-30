@@ -913,7 +913,7 @@ replace_permission_placeholders()
 
 prepare_installation()
 {
-  local _backup_ifs _need_newline _path_without_ext
+  local _backup_ifs _need_newline
 
   ui_msg 'Preparing installation...'
   _need_newline='false'
@@ -970,9 +970,8 @@ prepare_installation()
   {
     echo '# SPDX-FileCopyrightText: none'
     echo '# SPDX-License-Identifier: CC0-1.0'
-    echo '# SPDX-FileType: OTHER'
     echo ''
-    echo 'install.type=flashable-zip'
+    echo 'install.type=system'
     echo "install.version.code=${MODULE_VERCODE:?}"
     echo "install.version=${MODULE_VERSION:?}"
   } 1> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop" || ui_error 'Failed to generate the prop file of this zip'
@@ -982,22 +981,17 @@ prepare_installation()
   fi
 
   set_std_perm_recursive "${TMP_PATH:?}/files"
-  if test -d "${TMP_PATH:?}/origin/bin"; then
-    set_std_perm_recursive "${TMP_PATH:?}/origin/bin"
+
+  if test -d "${TMP_PATH:?}/files/bin"; then
+    for entry in "${TMP_PATH:?}/files/bin"/*; do
+      if test ! -f "${entry:?}"; then continue; fi
+      set_perm 0 2000 0755 "${entry:?}"
+    done
   fi
 
   if test -d "${TMP_PATH:?}/addon.d"; then
     set_std_perm_recursive "${TMP_PATH:?}/addon.d"
     find "${TMP_PATH:?}/addon.d" -type f -name '*.sh' -exec chmod 0755 '{}' '+' || ui_error 'Failed to chmod addon.d scripts'
-  fi
-
-  if test -d "${TMP_PATH:?}/files/bin"; then
-    for entry in "${TMP_PATH:?}/files/bin"/*; do
-      if test ! -f "${entry:?}"; then continue; fi
-      _path_without_ext="$(remove_ext "${entry:?}")" || ui_error 'Failed to remove ext'
-      move_rename_file "${entry:?}" "${_path_without_ext:?}"
-      set_perm 0 2000 0755 "${_path_without_ext:?}"
-    done
   fi
 }
 
@@ -1279,6 +1273,12 @@ perform_installation()
   if test "${PRIVAPP_FOLDERNAME:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDERNAME:?}"; fi
   perform_secure_copy_to_device 'app'
   perform_secure_copy_to_device 'etc/sysconfig'
+
+  if test -d "${TMP_PATH:?}/files/bin"; then
+    ui_msg 'Installing utilities...'
+    perform_secure_copy_to_device 'bin'
+  fi
+
   delete "${TMP_PATH:?}/origin"
 }
 
@@ -1939,7 +1939,7 @@ setup_app()
   return 1
 }
 
-setup_framework_lib()
+setup_lib()
 {
   local _install _chosen_option_name _vanity_name _filename _dir _optional
   local _app_conf _min_api _max_api _output_name _extract_libs _internal_name _file_hash _output_dir
@@ -2001,6 +2001,15 @@ setup_framework_lib()
   fi
 
   return 1
+}
+
+setup_util()
+{
+  ui_debug ''
+  ui_msg "Enabling utility: ${2?}"
+
+  mkdir -p "${TMP_PATH:?}/files/bin" || ui_error "Failed to create the folder for '${2?}'"
+  move_rename_file "${TMP_PATH:?}/origin/bin/${1:?}.sh" "${TMP_PATH:?}/files/bin/${1:?}" || ui_error "Failed to setup the util => '${2?}'"
 }
 
 list_files()
