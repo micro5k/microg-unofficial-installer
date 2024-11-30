@@ -1,7 +1,6 @@
 #!/sbin/sh
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
 ### GLOBAL VARIABLES ###
 
@@ -67,19 +66,10 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   custom_package_extract_dir 'addon.d' "${TMP_PATH:?}"
   create_dir "${TMP_PATH:?}/files/etc"
 
-  # Verifying
-  ui_msg_sameline_start 'Verifying... '
-  ui_debug ''
-  if verify_sha1 "${TMP_PATH}/files/framework/com.google.android.maps.jar" '14ce63b333e3c53c793e5eabfd7d554f5e7b56c7'; then
-    ui_msg_sameline_end 'OK'
-  else
-    ui_msg_sameline_end 'ERROR'
-    ui_error 'Verification failed'
-    sleep 1
-  fi
-
   # Configuring
   ui_msg 'Configuring...'
+
+  setup_framework_lib 1 '' 'microG Maps v1 API' 'com.google.android.maps' false
 
   profile_filename="$(printf '%s\n' "${BUILD_MANUFACTURER?}-${BUILD_MODEL?}.xml" | tr -- '[:upper:]' '[:lower:]')"
   if test -e "${TMP_PATH:?}/origin/profiles/${profile_filename:?}"; then
@@ -176,23 +166,12 @@ unmount_extra_partitions
 if test "${API:?}" -lt 19; then
   delete_recursive "${TMP_PATH:?}/files/bin"
 fi
-
 if test "${API}" -lt 23; then
   delete_recursive "${TMP_PATH}/files/etc/default-permissions"
 fi
-
 if test "${API:?}" -lt 21; then
   delete_recursive "${TMP_PATH:?}/files/etc/sysconfig"
 fi
-
-if test "${API:?}" -lt 9; then
-  delete "${TMP_PATH:?}/files/framework/com.google.android.maps.jar"
-  delete "${TMP_PATH:?}/files/etc/permissions/com.google.android.maps.xml"
-fi
-
-delete_dir_if_empty "${TMP_PATH:?}/files/etc/permissions"
-delete_dir_if_empty "${TMP_PATH:?}/files/framework"
-
 ui_debug ''
 
 # Prepare installation
@@ -204,7 +183,6 @@ printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET:?}" 1>> "${TMP_PATH:?}/files/et
 if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg.xml" "${SYS_PATH:?}/etc"; fi
 if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
 perform_installation
-
 reset_authenticator_and_sync_adapter_caches
 
 if test "${FIRST_INSTALLATION:?}" = 'true'; then

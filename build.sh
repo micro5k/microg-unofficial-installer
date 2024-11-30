@@ -141,7 +141,11 @@ FILENAME="${MODULE_ID:?}-${MODULE_VER:?}-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
 if test -e "${MAIN_DIR:?}/zip-content/origin/file-list.dat"; then
   while IFS='|' read -r LOCAL_FILENAME _ _ _ _ _ FILE_HASH _; do
     printf '.'
-    verify_sha1 "${MAIN_DIR:?}/zip-content/origin/${LOCAL_FILENAME:?}.apk" "${FILE_HASH:?}" || {
+
+    full_filename="${MAIN_DIR:?}/zip-content/origin/${LOCAL_FILENAME:?}"
+    if test -f "${full_filename:?}.apk"; then full_filename="${full_filename:?}.apk"; else full_filename="${full_filename:?}.jar"; fi
+
+    verify_sha1 "${full_filename:?}" "${FILE_HASH:?}" || {
       printf '\n'
       ui_error "Verification of '${LOCAL_FILENAME:-}' failed"
     }

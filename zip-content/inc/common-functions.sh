@@ -1272,9 +1272,9 @@ perform_installation()
     fi
   fi
 
-  perform_secure_copy_to_device 'etc/default-permissions'
   perform_secure_copy_to_device 'etc/permissions'
   perform_secure_copy_to_device 'framework'
+  perform_secure_copy_to_device 'etc/default-permissions'
   perform_secure_copy_to_device 'etc/org.fdroid.fdroid'
   if test "${PRIVAPP_FOLDERNAME:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDERNAME:?}"; fi
   perform_secure_copy_to_device 'app'
@@ -1856,7 +1856,7 @@ setup_app()
   local _app_conf _min_api _max_api _output_name _extract_libs _internal_name _file_hash _output_dir _installed_file_list
 
   _install="${1:-0}"
-  _chosen_option_name="${2:-}"
+  _chosen_option_name="${2-}"
   _vanity_name="${3:?}"
   _filename="${4:?}"
   _dir="${5:?}"
@@ -1927,6 +1927,70 @@ setup_app()
         '') ;;
         *) ui_error "Invalid value of extract libs => ${_extract_libs?}" ;;
       esac
+
+      return 0
+    else
+      ui_debug "Disabling: ${_vanity_name:?}"
+    fi
+  else
+    ui_debug "Skipping: ${_vanity_name:?}"
+  fi
+
+  return 1
+}
+
+setup_framework_lib()
+{
+  local _install _chosen_option_name _vanity_name _filename _dir _optional
+  local _app_conf _min_api _max_api _output_name _extract_libs _internal_name _file_hash _output_dir
+
+  _install="${1:-0}"
+  _chosen_option_name="${2-}"
+  _vanity_name="${3:?}"
+  _filename="${4:?}"
+  _optional="${5:-true}"
+  _dir='framework'
+  if test "${_optional:?}" = 'true' && test ! -f "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.jar"; then return 1; fi
+
+  _app_conf="$(file_get_first_line_that_start_with "${_dir:?}/${_filename:?}|" "${TMP_PATH:?}/origin/file-list.dat")" || ui_error "Failed to get app config for '${_vanity_name?}'"
+  _min_api="$(string_split "${_app_conf:?}" 2)" || ui_error "Failed to get min API for '${_vanity_name?}'"
+  _max_api="$(string_split "${_app_conf:?}" 3)" || ui_error "Failed to get max API for '${_vanity_name?}'"
+  _output_name="$(string_split "${_app_conf:?}" 4)" || ui_error "Failed to get output name for '${_vanity_name?}'"
+  _extract_libs=''
+  _internal_name=''
+  _file_hash="$(string_split "${_app_conf:?}" 7)" || ui_error "Failed to get the hash of '${_vanity_name?}'"
+
+  _output_dir="${_dir:?}"
+
+  ui_debug ''
+
+  if test "${API:?}" -ge "${_min_api:?}" && test "${API:?}" -le "${_max_api:-999}"; then
+    if test "${_optional:?}" = 'true' && test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
+      choose "Do you want to install ${_vanity_name:?}?" '+) Yes' '-) No'
+      if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
+    fi
+
+    if test -n "${_chosen_option_name?}" && test "${CURRENTLY_ROLLBACKING:-false}" != 'true' && test "${_optional:?}" = 'true'; then
+      printf '%s\n' "${_chosen_option_name:?}=${_install:?}" 1>> "${TMP_PATH:?}/saved-choices.dat" || ui_error 'Failed to update saved-choices.dat'
+    fi
+
+    if test "${_install:?}" -ne 0 || test "${_optional:?}" != 'true'; then
+      ui_msg "Enabling: ${_vanity_name:?}"
+
+      ui_msg_sameline_start 'Verifying... '
+      ui_debug ''
+      verify_sha1 "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.jar" "${_file_hash:?}" || ui_error "Failed hash verification of '${_vanity_name?}'"
+      ui_msg_sameline_end 'OK'
+
+      mkdir -p "${TMP_PATH:?}/files/${_output_dir:?}" || ui_error "Failed to create the folder for '${_vanity_name?}'"
+
+      if test -f "${TMP_PATH:?}/origin/etc/permissions/${_filename:?}.xml"; then
+        create_dir "${TMP_PATH:?}/files/etc/permissions" || ui_error "Failed to create the permissions folder for '${_vanity_name?}'"
+        move_rename_file "${TMP_PATH:?}/origin/etc/permissions/${_filename:?}.xml" "${TMP_PATH:?}/files/etc/permissions/${_output_name:?}.xml" || ui_error "Failed to setup the xml of '${_vanity_name?}'"
+      else
+        ui_error "Missing permission xml file for '${_vanity_name?}'"
+      fi
+      move_rename_file "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.jar" "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.jar" || ui_error "Failed to setup the app => '${_vanity_name?}'"
 
       return 0
     else
