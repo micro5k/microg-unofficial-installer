@@ -706,10 +706,13 @@ initialize()
   MODULE_VERSION="$(simple_file_getprop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
   MODULE_VERCODE="$(simple_file_getprop 'versionCode' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version code'
   MODULE_AUTHOR="$(simple_file_getprop 'author' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse author'
+  test "${MODULE_VERCODE:?}" -gt 0 || ui_error 'Invalid version code'
   readonly MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
   export MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
 
-  if test -e "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed"; then
+  PREV_INSTALL_FAILED='false'
+  if test -f "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed"; then
+    PREV_INSTALL_FAILED='true'
     ui_warning 'The previous installation has failed!!!'
     ui_msg_empty_line
   fi
@@ -724,22 +727,18 @@ initialize()
     *) ;; # Valid
   esac
 
-  if test "${PREV_MODULE_VERCODE:?}" -ne 0; then
-    FIRST_INSTALLATION='false'
-  else
-    FIRST_INSTALLATION='true'
-  fi
-  readonly FIRST_INSTALLATION PREV_MODULE_VERCODE
-  export FIRST_INSTALLATION PREV_MODULE_VERCODE
+  FIRST_INSTALLATION='true'
+  test "${PREV_MODULE_VERCODE:?}" -eq 0 || FIRST_INSTALLATION='false'
 
-  if test "${MODULE_VERCODE:?}" -ge "${PREV_MODULE_VERCODE:?}"; then
-    : # OK
-  else
+  readonly FIRST_INSTALLATION PREV_MODULE_VERCODE PREV_INSTALL_FAILED
+  export FIRST_INSTALLATION PREV_MODULE_VERCODE PREV_INSTALL_FAILED
+
+  if test "${MODULE_VERCODE:?}" -lt "${PREV_MODULE_VERCODE:?}"; then
     ui_error 'Downgrade not allowed!!!'
   fi
 
   IS_INSTALLATION='true'
-  if test "${LIVE_SETUP_ENABLED:?}" = 'true' && test "${MODULE_VERCODE:?}" -eq "${PREV_MODULE_VERCODE:?}" && test "${PREV_MODULE_VERCODE:?}" -gt 0; then
+  if test "${LIVE_SETUP_ENABLED:?}" = 'true' && test "${MODULE_VERCODE:?}" -eq "${PREV_MODULE_VERCODE:?}"; then
     choose 'What do you want to do?' '+) Reinstall' '-) Uninstall'
     if test "${?}" != '3'; then
       IS_INSTALLATION='false'
@@ -1224,14 +1223,14 @@ perform_secure_copy_to_device()
     done
   fi
 
-  touch 2> /dev/null "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || true
+  touch 2> /dev/null "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || :
 
   ui_debug ''
   df -h -T -- "${SYS_MOUNTPOINT:?}" || true
   ui_debug ''
 
   if test -n "${_error_text?}"; then
-    ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error_text?}" | head -n 1 || true)"
+    ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error_text?}" | head -n 1 || :)"
   fi
   ui_error "Failed to copy '${1?}' to the device"
 }
@@ -1284,7 +1283,7 @@ perform_installation()
 
 finalize_and_report_success()
 {
-  rm -f -- "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || true
+  rm -f -- "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || :
   deinitialize
   touch "${TMP_PATH:?}/installed"
 
