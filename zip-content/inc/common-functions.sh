@@ -738,7 +738,11 @@ initialize()
   fi
 
   IS_INSTALLATION='true'
-  if test "${LIVE_SETUP_ENABLED:?}" = 'true' && test "${MODULE_VERCODE:?}" -eq "${PREV_MODULE_VERCODE:?}"; then
+  if
+    test "${LIVE_SETUP_ENABLED:?}" = 'true' && {
+      test "${MODULE_VERCODE:?}" -eq "${PREV_MODULE_VERCODE:?}" || test "${PREV_INSTALL_FAILED:?}" = 'true'
+    }
+  then
     choose 'What do you want to do?' '+) Reinstall' '-) Uninstall'
     if test "${?}" != '3'; then
       IS_INSTALLATION='false'
