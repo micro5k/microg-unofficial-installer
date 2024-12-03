@@ -335,7 +335,7 @@ All notable changes to this project will be documented in this file.
 
 1.0.3-alpha
 -----------
-- Major rewrite of the installation script to add support for newer Android versions (big thanks to `@JanJabko <https://forum.xda-developers.com/m/7275198/>`_ for the phone)
+- Major rewrite of the installation script to add support for newer Android versions (big thanks to `@JanJabko <https://xdaforums.com/m/janjabko.7275198/>`_ for the phone)
 - Updated microG Service Core to 0.2.4-39
 - Updated Google Play Store to 5.4.12
 - Minimum API version back to 9
