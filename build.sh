@@ -238,8 +238,9 @@ fi
 find "${TEMP_DIR}/zip-content" -exec touch -c -t 200802290333.46 '{}' + || ui_error 'Failed to set the modification date of files'
 
 # Remove the previously built files (if they exist)
-rm -f "${OUT_DIR:?}/${FILENAME}".zip* || ui_error 'Failed to remove the previously built files'
-rm -f "${OUT_DIR:?}/${FILENAME}-signed".zip* || ui_error 'Failed to remove the previously built files'
+rm -f "${OUT_DIR:?}/${FILENAME:?}"*.zip || ui_error 'Failed to remove the previously built files'
+rm -f "${OUT_DIR:?}/${FILENAME:?}"*.zip.md5 || ui_error 'Failed to remove the previously built files'
+rm -f "${OUT_DIR:?}/${FILENAME:?}"*.zip.sha256 || ui_error 'Failed to remove the previously built files'
 
 # Compress (it ensure that the list of files to compress is in the same order under all OSes)
 # Note: Unicode filenames in the zip are disabled since we don't need them and also zipsigner.jar chokes on them
