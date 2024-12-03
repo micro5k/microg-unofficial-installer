@@ -20,7 +20,7 @@ This project is available on GitHub_, on GitLab_ as well as on XDA_.
 
 .. _GitHub: https://github.com/micro5k/microg-unofficial-installer
 .. _GitLab: https://gitlab.com/micro5k/microg-unofficial-installer
-.. _XDA: https://forum.xda-developers.com/showthread.php?t=3432360
+.. _XDA: https://xdaforums.com/t/3432360/
 
 .. image:: https://liberapay.com/assets/widgets/donate.svg
    :alt: Donate using Liberapay

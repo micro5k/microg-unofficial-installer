@@ -247,7 +247,7 @@ All notable changes to this project will be documented in this file.
 ------------
 - Updated microG Service Core to 0.2.4-103
 - Updated Nominatim Geocoder Backend to 1.2.2
-- Switched BusyBox binaries to the `ones <https://forum.xda-developers.com/showthread.php?t=3348543>`_ compiled by @YashdSaraf (BusyBox is used only during the installation, nothing on the device is altered)
+- Switched BusyBox binaries to the `ones <https://xdaforums.com/t/3348543/>`_ compiled by @YashdSaraf (BusyBox is used only during the installation, nothing on the device is altered)
 - Completely removed the disabler code for Play Store self update since it wasn't a clean method
 - Improved the internal GApps remover
 - GApps remover now also remove MIUI specific files

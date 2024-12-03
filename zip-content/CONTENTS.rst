@@ -129,4 +129,4 @@ Scripts
 
 Components used only during setup (not installed)
 -------------------------------------------------
-- BusyBox for Android (`original thread <https://forum.xda-developers.com/showthread.php?t=3348543>`_) - `More info here <misc/README.rst>`_
+- BusyBox for Android (`original thread <https://xdaforums.com/t/3348543/>`_) - `More info here <misc/README.rst>`_
