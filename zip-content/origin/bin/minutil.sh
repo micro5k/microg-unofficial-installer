@@ -16,7 +16,7 @@ set -e
 ### GLOBAL VARIABLES ###
 
 readonly SCRIPT_NAME='MinUtil'
-readonly SCRIPT_VERSION='1.2.1'
+readonly SCRIPT_VERSION='1.2.2'
 
 ### PREVENTIVE CHECKS ###
 
@@ -157,7 +157,6 @@ if _minutil_check_getopt; then
     \eval ' \set' '--' "${minutil_args?}" || exit 1
   else
     \set -- '--help' '--' || exit 1
-    _minutil_newline='true'
   fi
   unset minutil_args
 fi
@@ -411,8 +410,18 @@ minutil_display_version()
   printf '%s\n' "License GPLv3+"
 }
 
-while true; do
-  case "${1}" in
+invalid_param()
+{
+  _minutil_display_help='true'
+  _minutil_newline='true'
+  printf 1>&2 '%s\n' "${SCRIPT_NAME:?}: ${1?}"
+  STATUS=2
+}
+
+STATUS=0
+
+while test "${#}" -gt 0; do
+  case "${1?}" in
     -v) ;; # Early parameters, already parsed
 
     -V | --version)
@@ -457,25 +466,19 @@ while true; do
       ;;
 
     --)
+      shift
       break
       ;;
 
-    '') ;; # Ignore empty parameters
-
-    *)
-      _minutil_display_help='true'
-      _minutil_newline='true'
-      printf 1>&2 '%s\n' "MinUtil: invalid option -- '${1#-}'" || true
-      ;;
+    --*) invalid_param "unrecognized option '${1}'" ;;
+    -*) invalid_param "invalid option -- '${1#-}'" ;;
+    *) break ;;
   esac
 
-  # Note: 'shift' with nothing to shift cause some shells to exit and it can't be avoided so check it before using
-  if test "${#}" -gt 0; then
-    shift 2> /dev/null || break
-  else
-    break
-  fi
-done
+  shift
+done || :
+
+test "${#}" -eq 0 || invalid_param "invalid parameter '${1}'"
 
 if test "${_minutil_display_help:?}" = 'true'; then
 
