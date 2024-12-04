@@ -89,19 +89,25 @@ param_msg()
   fi
 }
 
-_minutil_error()
+error_msg()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_SHORTNAME:-}] ERROR: ${1?}"
+  if test -n "${NO_COLOR-}"; then
+    printf 1>&2 '%s\n' "ERROR: ${1}"
+  elif test "${CI:-false}" = 'false'; then
+    printf 1>&2 '\033[1;31m\r%s\n\033[0m\r    \r' "ERROR: ${1}"
+  else
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1}"
+  fi
 }
 
 warn_msg()
 {
   if test -n "${NO_COLOR-}"; then
-    printf 1>&2 '%s\n' "WARNING: ${1?}"
+    printf 1>&2 '%s\n' "WARNING: ${1}"
   elif test "${CI:-false}" = 'false'; then
-    printf 1>&2 '\033[0;33m\r%s\n\033[0m\r    \r' "WARNING: ${1?}"
+    printf 1>&2 '\033[0;33m\r%s\n\033[0m\r    \r' "WARNING: ${1}"
   else
-    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1?}"
+    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1}"
   fi
 }
 
@@ -123,7 +129,7 @@ _is_caller_user_0()
 _is_caller_adb_or_root_or_user_0()
 {
   if test "${_minutil_current_user?}" != 'shell' && test "${_minutil_current_user?}" != 'root' && ! _is_caller_user_0; then
-    _minutil_error 'You must execute it as either ADB or root or user 0'
+    error_msg 'You must execute it as either ADB or root or user 0'
     return 1
   fi
 }
@@ -131,7 +137,7 @@ _is_caller_adb_or_root_or_user_0()
 _is_caller_adb_or_root()
 {
   if test "${_minutil_current_user?}" != 'shell' && test "${_minutil_current_user?}" != 'root'; then
-    _minutil_error 'You must execute it as either ADB or root'
+    error_msg 'You must execute it as either ADB or root'
     return 1
   fi
 }
@@ -139,7 +145,7 @@ _is_caller_adb_or_root()
 _is_caller_root()
 {
   if test "${_minutil_current_user?}" != 'root'; then
-    _minutil_error 'You must execute it as root'
+    error_msg 'You must execute it as root'
     return 1
   fi
 }
@@ -196,7 +202,7 @@ fi
 
 if _minutil_check_getopt; then
   if minutil_args="$(
-    getopt -o '+vVhsri:' -l 'version,help,rescan-storage,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n 'MinUtil' -- "${@}"
+    getopt -o '+vVhsri:' -l 'version,help,rescan-storage,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n "${SCRIPT_SHORTNAME:?}" -- "${@}"
   )"; then
     eval ' \set' '--' "${minutil_args?}" || exit 1
   else
@@ -247,7 +253,7 @@ _minutil_reinstall_split_package()
   _is_caller_adb_or_root || return 1
 
   if test "${SYSTEM_API:?}" -lt 23; then
-    _minutil_error "Split package reinstalling isn't currently supported on this version of Android"
+    error_msg "Split package reinstalling isn't currently supported on this version of Android"
     return 125
   fi
 
@@ -263,7 +269,7 @@ _minutil_reinstall_split_package()
       }
       _file_index="$((_file_index + 1))"
     else
-      _minutil_error 'Split package is missing'
+      error_msg 'Split package is missing'
       pm install-abandon "${_install_sid:?}"
       return 4
     fi
@@ -278,34 +284,34 @@ minutil_reinstall_package()
 
   printf '%s\n' "Reinstalling ${1:-}..."
   command -v pm 1> /dev/null || {
-    _minutil_error 'Package manager is NOT available'
+    error_msg 'Package manager is NOT available'
     return 1
   }
 
   if ! _package_path="$(_minutil_find_package "${1:?}")" || test -z "${_package_path:-}"; then
-    _minutil_error "Package '${1?}' not found"
+    error_msg "Package '${1?}' not found"
     return 2
   fi
   _apk_count="$(printf '%s\n' "${_package_path:-}" | wc -l)"
   if test "${_apk_count:?}" -ge 2; then
     _minutil_reinstall_split_package "${_package_path:?}" || {
       _status="${?}"
-      _minutil_error 'Split package reinstall failed'
+      error_msg 'Split package reinstall failed'
       return "${_status:?}"
     }
   else
     if test ! -e "${_package_path:?}"; then
-      _minutil_error "Package '${1?}' found but file missing"
+      error_msg "Package '${1?}' found but file missing"
       return 2
     fi
     if test "${SYSTEM_API:?}" -ge 23; then
       pm install -r -g -i 'com.android.vending' -- "${_package_path:?}" || {
-        _minutil_error 'Package reinstall failed'
+        error_msg 'Package reinstall failed'
         return 3
       }
     else
       pm install -r -i 'com.android.vending' -- "${_package_path:?}" || {
-        _minutil_error 'Package reinstall failed (legacy)'
+        error_msg 'Package reinstall failed (legacy)'
         return 3
       }
     fi
@@ -321,12 +327,12 @@ minutil_force_gcm_reconnection()
 
   printf '%s\n' "GCM reconnection..."
   command -v am 1> /dev/null || {
-    _minutil_error 'Activity manager is NOT available'
+    error_msg 'Activity manager is NOT available'
     return 1
   }
 
   am broadcast -a 'org.microg.gms.gcm.FORCE_TRY_RECONNECT' -n 'com.google.android.gms/org.microg.gms.gcm.TriggerReceiver' || {
-    _minutil_error 'GCM reconnection failed!'
+    error_msg 'GCM reconnection failed!'
     return 3
   }
   printf '%s\n' "Done!"
@@ -347,11 +353,11 @@ minutil_remove_all_accounts()
   _is_caller_root || return 1
 
   test -e '/data' || {
-    _minutil_error '/data NOT found'
+    error_msg '/data NOT found'
     return 1
   }
   test -w '/data' || {
-    _minutil_error '/data is NOT writable'
+    error_msg '/data is NOT writable'
     return 1
   }
 
@@ -361,7 +367,7 @@ minutil_remove_all_accounts()
       rm -f -- "${_file}" || return 1
     fi
   done || {
-    _minutil_error 'Failed to delete accounts'
+    error_msg 'Failed to delete accounts'
     return 4
   }
 
@@ -374,12 +380,12 @@ minutil_media_rescan()
 
   printf '%s\n' "Media rescanning..."
   command -v am 1> /dev/null || {
-    _minutil_error 'Activity manager is NOT available'
+    error_msg 'Activity manager is NOT available'
     return 1
   }
 
   am broadcast -a 'android.intent.action.BOOT_COMPLETED' -n 'com.android.providers.media/.MediaScannerReceiver' || {
-    _minutil_error 'Media rescanning failed!'
+    error_msg 'Media rescanning failed!'
     return 3
   }
   printf '%s\n' "Done!"
@@ -391,13 +397,13 @@ minutil_manual_media_rescan()
 
   printf '%s\n' "Manual media rescanning..."
   command -v am 1> /dev/null || {
-    _minutil_error 'Activity manager is NOT available'
+    error_msg 'Activity manager is NOT available'
     return 1
   }
 
   # First check if the broadcast is working
   am broadcast -a 'android.intent.action.MEDIA_SCANNER_SCAN_FILE' 1>&- || {
-    _minutil_error 'Manual media rescanning failed!'
+    error_msg 'Manual media rescanning failed!'
     return 3
   }
 
@@ -406,7 +412,7 @@ minutil_manual_media_rescan()
   elif test -e '/storage'; then
     find /storage/* -type 'd' '(' -path '/storage/*/Android' -o -path '/storage/*/.android_secure' ')' -prune -o -mtime '-3' -type 'f' ! -name '\.*' -exec sh -c 'am 1>&- broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${*}"' _ '{}' ';' || true
   else
-    _minutil_error 'Manual media rescanning failed!'
+    error_msg 'Manual media rescanning failed!'
     return 3
   fi
   printf '%s\n' "Done!"
