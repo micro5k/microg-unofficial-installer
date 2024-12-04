@@ -77,14 +77,31 @@ _minutil_initialize
 
 ### BASE FUNCTIONS ###
 
+param_msg()
+{
+  if test -n "${NO_COLOR-}"; then
+    printf 1>&2 '%s\n' "${SCRIPT_NAME:?}: ${1?}"
+  elif test "${CI:-false}" = 'false'; then
+    printf 1>&2 '\033[1;31m\r%s\n\033[0m\r    \r' "${SCRIPT_NAME:?}: ${1?}"
+  else
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "${SCRIPT_NAME:?}: ${1?}"
+  fi
+}
+
 _minutil_error()
 {
   printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_NAME:-}] ERROR: ${1?}"
 }
 
-_minutil_warn()
+warn_msg()
 {
-  printf 1>&2 '\033[0;33m%s\033[0m\n\n' "WARNING: ${1?}"
+  if test -n "${NO_COLOR-}"; then
+    printf 1>&2 '%s\n' "WARNING: ${1?}"
+  elif test "${CI:-false}" = 'false'; then
+    printf 1>&2 '\033[0;33m\r%s\n\033[0m\r    \r' "WARNING: ${1?}"
+  else
+    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1?}"
+  fi
 }
 
 _minutil_aligned_print()
@@ -137,7 +154,7 @@ _minutil_check_getopt()
   getopt_test='0'
   getopt -T -- 2> /dev/null || getopt_test="${?}"
   if test "${getopt_test:?}" != '4'; then
-    _minutil_warn 'Limited or missing getopt'
+    warn_msg 'Limited or missing getopt'
     return 1
   fi
   unset getopt_test
@@ -157,6 +174,7 @@ if _minutil_check_getopt; then
     \eval ' \set' '--' "${minutil_args?}" || exit 1
   else
     \set -- '--help' '--' || exit 1
+    _minutil_newline='true'
   fi
   unset minutil_args
 fi
@@ -182,7 +200,7 @@ if test -r '/system/build.prop' && MINUTIL_SYSTEM_SDK="$(_minutil_getprop 'ro.bu
 elif command -v getprop 1> /dev/null && MINUTIL_SYSTEM_SDK="$(getprop 'ro.build.version.sdk')" && test -n "${MINUTIL_SYSTEM_SDK?}"; then
   :
 else
-  _minutil_warn 'Failed to parse system SDK'
+  warn_msg 'Failed to parse system SDK'
   MINUTIL_SYSTEM_SDK='999'
 fi
 readonly MINUTIL_SYSTEM_SDK
@@ -414,7 +432,7 @@ invalid_param()
 {
   _minutil_display_help='true'
   _minutil_newline='true'
-  printf 1>&2 '%s\n' "${SCRIPT_NAME:?}: ${1?}"
+  param_msg "${1?}"
   STATUS=2
 }
 
