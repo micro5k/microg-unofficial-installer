@@ -2,21 +2,20 @@
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# shellcheck disable=SC2310 # This function is invoked in an 'if' condition so set -e will be disabled #
-
-set -e
-# shellcheck disable=SC3040,SC3041,SC2015
-{
-  # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-  (set -o posix 2> /dev/null) && set -o posix || true
-  (set +H 2> /dev/null) && set +H || true
-  (set -o pipefail 2> /dev/null) && set -o pipefail || true
-}
-
-### GLOBAL VARIABLES ###
+# shellcheck enable=all
+# shellcheck disable=SC2310 # Ignore: This function is invoked in an 'if' condition so set -e will be disabled
 
 readonly SCRIPT_NAME='MinUtil'
-readonly SCRIPT_VERSION='1.2.5'
+readonly SCRIPT_VERSION='1.2.6'
+
+### CONFIGURATION ###
+
+set -e
+# shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
+case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || printf 1>&2 '%s\n' 'Failed: pipefail' ;; *) ;; esac
+
+POSIXLY_CORRECT='y'
+export POSIXLY_CORRECT
 
 ### PREVENTIVE CHECKS ###
 
@@ -24,16 +23,17 @@ command 1> /dev/null -v printf || {
   if command 1> /dev/null -v busybox; then
     alias printf='busybox printf'
   else
-    {
-      printf()
-      {
-        if test "${1:-}" = '%s\n\n'; then _printf_newline='true'; fi
-        if test "${#}" -gt 1; then shift; fi
-        echo "${@}"
+    NO_COLOR=1
+    export NO_COLOR
 
-        test "${_printf_newline:-false}" = 'false' || echo ''
-        unset _printf_newline
-      }
+    printf()
+    {
+      if test "${1:-}" = '%s\n\n'; then _printf_newline='true'; fi
+      if test "${#}" -gt 1; then shift; fi
+      echo "${@}"
+
+      test "${_printf_newline:-false}" = 'false' || echo ''
+      unset _printf_newline
     }
   fi
 }
@@ -67,7 +67,7 @@ _minutil_initialize()
     *) ;;
   esac
 
-  if ! _minutil_current_user="$(\whoami)" || test -z "${_minutil_current_user?}"; then
+  if ! _minutil_current_user="$(whoami)" || test -z "${_minutil_current_user?}"; then
     printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_NAME:-}] ERROR: Invalid user"
     exit 1
   fi
@@ -182,7 +182,7 @@ if test -r '/system/build.prop' && SYSTEM_API="$(_minutil_getprop 'ro.build.vers
 elif command -v getprop 1> /dev/null && SYSTEM_API="$(getprop 'ro.build.version.sdk')" && test -n "${SYSTEM_API?}"; then
   :
 else
-  warn_msg 'Failed to parse system SDK'
+  warn_msg 'Failed to parse system API'
   SYSTEM_API='999'
 fi
 readonly SYSTEM_API
