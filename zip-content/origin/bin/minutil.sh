@@ -16,7 +16,7 @@ set -e
 ### GLOBAL VARIABLES ###
 
 readonly SCRIPT_NAME='MinUtil'
-readonly SCRIPT_VERSION='1.2.2'
+readonly SCRIPT_VERSION='1.2.3'
 
 ### PREVENTIVE CHECKS ###
 
@@ -164,8 +164,14 @@ _minutil_check_getopt()
 
 ### FUNCTIONS AND CODE ###
 
+STATUS=0
 SCRIPT_VERBOSE='false'
 _minutil_display_help='false'
+
+set_status_if_error()
+{
+  test "${1:?}" -eq 0 || STATUS="${1:?}"
+}
 
 if _minutil_check_getopt; then
   if minutil_args="$(
@@ -173,6 +179,7 @@ if _minutil_check_getopt; then
   )"; then
     \eval ' \set' '--' "${minutil_args?}" || exit 1
   else
+    set_status_if_error '2'
     \set -- '--help' '--' || exit 1
     _minutil_newline='true'
   fi
@@ -433,10 +440,8 @@ invalid_param()
   _minutil_display_help='true'
   _minutil_newline='true'
   param_msg "${1?}"
-  STATUS=2
+  set_status_if_error '2'
 }
-
-STATUS=0
 
 while test "${#}" -gt 0; do
   case "${1?}" in
@@ -493,6 +498,7 @@ while test "${#}" -gt 0; do
     *) break ;;
   esac
 
+  set_status_if_error "${?}"
   shift
 done || :
 
@@ -525,4 +531,4 @@ ${_minutil_script_name:?} --rescan-storage
 
 fi
 
-exit "${?}"
+exit "${STATUS:?}"
