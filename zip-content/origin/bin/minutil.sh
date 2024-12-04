@@ -16,7 +16,7 @@ set -e
 ### GLOBAL VARIABLES ###
 
 readonly SCRIPT_NAME='MinUtil'
-readonly SCRIPT_VERSION='1.2.4'
+readonly SCRIPT_VERSION='1.2.5'
 
 ### PREVENTIVE CHECKS ###
 
@@ -173,6 +173,12 @@ set_status_if_error()
   test "${1:?}" -eq 0 || STATUS="${1:?}"
 }
 
+if test "${#}" -eq 0; then
+  _minutil_display_help='true'
+elif test "${#}" -eq 1 && test "${1?}" = '--'; then
+  _minutil_display_help='true'
+fi
+
 if _minutil_check_getopt; then
   if minutil_args="$(
     getopt -o '+vVhsri:' -l 'version,help,rescan-storage,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n 'MinUtil' -- "${@}"
@@ -180,7 +186,7 @@ if _minutil_check_getopt; then
     eval ' \set' '--' "${minutil_args?}" || exit 1
   else
     set_status_if_error '2'
-    set -- '' || exit 1
+    set -- || exit 1
     _minutil_newline='true'
   fi
   unset minutil_args
@@ -452,12 +458,6 @@ invalid_param()
   set_status_if_error '2'
 }
 
-if test "${#}" -eq 0; then
-  _minutil_display_help='true'
-elif test "${#}" -eq 1 && test "${1?}" = '--'; then
-  _minutil_display_help='true'
-fi
-
 while test "${#}" -gt 0; do
   case "${1?}" in
     -v) ;; # Early parameters, already parsed
@@ -503,6 +503,7 @@ while test "${#}" -gt 0; do
 
     -R | --reset-permissions)
       printf '%s\n' 'Not yet supported'
+      set_status_if_error '1'
       ;;
 
     --)
@@ -519,9 +520,7 @@ while test "${#}" -gt 0; do
   shift
 done || :
 
-if test "${#}" -gt 0 && test -n "${1}"; then
-  invalid_param "invalid parameter '${1}'"
-fi
+test "${#}" -eq 0 || invalid_param "invalid parameter '${1-}'"
 
 if test "${_minutil_display_help:?}" = 'true'; then
   if test "${_minutil_newline:-false}" != 'false'; then printf '\n'; fi
