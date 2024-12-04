@@ -6,6 +6,7 @@
 # shellcheck disable=SC2310 # Ignore: This function is invoked in an 'if' condition so set -e will be disabled
 
 readonly SCRIPT_NAME='MinUtil'
+readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
 readonly SCRIPT_VERSION='1.2.6'
 
 ### CONFIGURATION ###
@@ -61,14 +62,14 @@ _minutil_initialize()
   case "${0:?}" in
     *'.sh') ;; # $0 => minutil.sh
     *'sh')     # $0 => sh | ash | bash | ...sh
-      printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_NAME:-}] ERROR: Cannot be sourced"
+      printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_SHORTNAME:-}] ERROR: Cannot be sourced"
       exit 1
       ;;
     *) ;;
   esac
 
   if ! _minutil_current_user="$(whoami)" || test -z "${_minutil_current_user?}"; then
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_NAME:-}] ERROR: Invalid user"
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_SHORTNAME:-}] ERROR: Invalid user"
     exit 1
   fi
   readonly _minutil_current_user
@@ -80,17 +81,17 @@ _minutil_initialize
 param_msg()
 {
   if test -n "${NO_COLOR-}"; then
-    printf 1>&2 '%s\n' "${SCRIPT_NAME:?}: ${1?}"
+    printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME:?}: ${1?}"
   elif test "${CI:-false}" = 'false'; then
-    printf 1>&2 '\033[1;31m\r%s\n\033[0m\r    \r' "${SCRIPT_NAME:?}: ${1?}"
+    printf 1>&2 '\033[1;31m\r%s\n\033[0m\r    \r' "${SCRIPT_SHORTNAME:?}: ${1?}"
   else
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "${SCRIPT_NAME:?}: ${1?}"
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "${SCRIPT_SHORTNAME:?}: ${1?}"
   fi
 }
 
 _minutil_error()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_NAME:-}] ERROR: ${1?}"
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_SHORTNAME:-}] ERROR: ${1?}"
 }
 
 warn_msg()
