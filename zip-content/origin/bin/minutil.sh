@@ -16,7 +16,7 @@ set -e
 ### GLOBAL VARIABLES ###
 
 readonly SCRIPT_NAME='MinUtil'
-readonly SCRIPT_VERSION='1.2.3'
+readonly SCRIPT_VERSION='1.2.4'
 
 ### PREVENTIVE CHECKS ###
 
@@ -177,18 +177,16 @@ if _minutil_check_getopt; then
   if minutil_args="$(
     getopt -o '+vVhsri:' -l 'version,help,rescan-storage,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n 'MinUtil' -- "${@}"
   )"; then
-    \eval ' \set' '--' "${minutil_args?}" || exit 1
+    eval ' \set' '--' "${minutil_args?}" || exit 1
   else
     set_status_if_error '2'
-    \set -- '--help' '--' || exit 1
+    set -- '' || exit 1
     _minutil_newline='true'
   fi
   unset minutil_args
 fi
 
-if test "${#}" -eq 0 || test "${*}" = '--'; then
-  _minutil_display_help='true'
-else
+if test "${#}" -gt 0; then
   for param in "${@}"; do
     if test "${param?}" = '-v'; then
       SCRIPT_VERBOSE='true'
@@ -435,13 +433,30 @@ minutil_display_version()
   printf '%s\n' "License GPLv3+"
 }
 
+validate_param_argument()
+{
+  test -z "${2-}" || return 0
+
+  if test "${#1}" -eq 2; then
+    param_msg "option requires an argument -- '${1#-}'"
+  else
+    param_msg "option '${1}' requires an argument"
+  fi
+  set_status_if_error '2'
+  return 2
+}
+
 invalid_param()
 {
-  _minutil_display_help='true'
-  _minutil_newline='true'
   param_msg "${1?}"
   set_status_if_error '2'
 }
+
+if test "${#}" -eq 0; then
+  _minutil_display_help='true'
+elif test "${#}" -eq 1 && test "${1?}" = '--'; then
+  _minutil_display_help='true'
+fi
 
 while test "${#}" -gt 0; do
   case "${1?}" in
@@ -456,8 +471,10 @@ while test "${#}" -gt 0; do
       ;;
 
     -i | --reinstall-package)
-      minutil_reinstall_package "${2:?Package name not specified}"
-      shift
+      if validate_param_argument "${1?}" "${2-}"; then
+        minutil_reinstall_package "${2:?}" || set_status_if_error "${?}"
+        shift
+      fi
       ;;
 
     --remove-all-accounts)
@@ -502,10 +519,11 @@ while test "${#}" -gt 0; do
   shift
 done || :
 
-test "${#}" -eq 0 || invalid_param "invalid parameter '${1}'"
+if test "${#}" -gt 0 && test -n "${1}"; then
+  invalid_param "invalid parameter '${1}'"
+fi
 
 if test "${_minutil_display_help:?}" = 'true'; then
-
   if test "${_minutil_newline:-false}" != 'false'; then printf '\n'; fi
   _minutil_script_name="$(basename "${0:?}")" || exit 1
   readonly _minutil_script_name
@@ -528,7 +546,8 @@ Examples:
 ${_minutil_script_name:?} -i org.schabi.newpipe
 ${_minutil_script_name:?} --rescan-storage
 "
-
+elif test "${STATUS:?}" -ne 0; then
+  printf 1>&2 '%s\n' "Try '$(basename "${0-}" || printf '%s\n' "${0-}" || :) --help' for more information."
 fi
 
 exit "${STATUS:?}"
