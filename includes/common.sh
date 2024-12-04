@@ -1372,7 +1372,7 @@ if test "${DO_INIT_CMDLINE:-0}" != '0'; then
   set -u 2> /dev/null || :
 
   # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
-  case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || printf 1>&2 '%s\n' 'Failed: pipefail' ;; *) ;; esac
+  case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'Failed: pipefail' ;; *) ;; esac
   # shellcheck disable=SC3041,SC2015 # Ignore: In POSIX sh, set flag -H is undefined
   (set +H 2> /dev/null) && set +H || :
 fi
