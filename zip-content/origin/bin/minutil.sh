@@ -20,6 +20,15 @@ export POSIXLY_CORRECT
 
 ### PREVENTIVE CHECKS ###
 
+case "${0-}" in
+  *'.sh') ;; # $0 => minutil.sh
+  *'sh')     # $0 => sh | ash | bash | ...sh
+    echo 1>&2 'ERROR: Cannot be sourced'
+    return 126 2>&- || exit 126
+    ;;
+  *) ;;
+esac
+
 command 1> /dev/null -v printf || {
   if command 1> /dev/null -v busybox; then
     alias printf='busybox printf'
@@ -59,15 +68,6 @@ command 1> /dev/null -v basename || {
 
 _minutil_initialize()
 {
-  case "${0:?}" in
-    *'.sh') ;; # $0 => minutil.sh
-    *'sh')     # $0 => sh | ash | bash | ...sh
-      printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_SHORTNAME:-}] ERROR: Cannot be sourced"
-      exit 1
-      ;;
-    *) ;;
-  esac
-
   if ! _minutil_current_user="$(whoami)" || test -z "${_minutil_current_user?}"; then
     printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_SHORTNAME:-}] ERROR: Invalid user"
     exit 1
