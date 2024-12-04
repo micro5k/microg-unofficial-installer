@@ -165,6 +165,7 @@ _minutil_check_getopt()
 ### FUNCTIONS AND CODE ###
 
 STATUS=0
+SYSTEM_API=''
 SCRIPT_VERBOSE='false'
 _minutil_display_help='false'
 
@@ -172,6 +173,19 @@ set_status_if_error()
 {
   test "${1:?}" -eq 0 || STATUS="${1:?}"
 }
+
+if test ! -e '/system/bin'; then mount 2> /dev/null -t 'auto' '/system' || :; fi
+if test ! -e '/data/data'; then mount 2> /dev/null -t 'auto' -o 'rw' '/data' || :; fi
+
+if test -r '/system/build.prop' && SYSTEM_API="$(_minutil_getprop 'ro.build.version.sdk' '/system/build.prop')" && test -n "${SYSTEM_API?}"; then
+  :
+elif command -v getprop 1> /dev/null && SYSTEM_API="$(getprop 'ro.build.version.sdk')" && test -n "${SYSTEM_API?}"; then
+  :
+else
+  warn_msg 'Failed to parse system SDK'
+  SYSTEM_API='999'
+fi
+readonly SYSTEM_API
 
 if test "${#}" -eq 0; then
   _minutil_display_help='true'
@@ -203,19 +217,6 @@ if test "${#}" -gt 0; then
   unset param
 fi
 
-if test ! -e '/system/bin'; then mount -t 'auto' '/system' 2> /dev/null || true; fi
-if test ! -e '/data/data'; then mount -t 'auto' -o 'rw' '/data' 2> /dev/null || true; fi
-
-if test -r '/system/build.prop' && MINUTIL_SYSTEM_SDK="$(_minutil_getprop 'ro.build.version.sdk' '/system/build.prop')" && test -n "${MINUTIL_SYSTEM_SDK?}"; then
-  :
-elif command -v getprop 1> /dev/null && MINUTIL_SYSTEM_SDK="$(getprop 'ro.build.version.sdk')" && test -n "${MINUTIL_SYSTEM_SDK?}"; then
-  :
-else
-  warn_msg 'Failed to parse system SDK'
-  MINUTIL_SYSTEM_SDK='999'
-fi
-readonly MINUTIL_SYSTEM_SDK
-
 _list_account_files()
 {
   cat << 'EOF'
@@ -244,7 +245,7 @@ _minutil_reinstall_split_package()
 {
   _is_caller_adb_or_root || return 1
 
-  if test "${MINUTIL_SYSTEM_SDK:?}" -lt 23; then
+  if test "${SYSTEM_API:?}" -lt 23; then
     _minutil_error "Split package reinstalling isn't currently supported on this version of Android"
     return 125
   fi
@@ -296,7 +297,7 @@ minutil_reinstall_package()
       _minutil_error "Package '${1?}' found but file missing"
       return 2
     fi
-    if test "${MINUTIL_SYSTEM_SDK:?}" -ge 23; then
+    if test "${SYSTEM_API:?}" -ge 23; then
       pm install -r -g -i 'com.android.vending' -- "${_package_path:?}" || {
         _minutil_error 'Package reinstall failed'
         return 3
