@@ -7,7 +7,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.2.6'
+readonly SCRIPT_VERSION='1.2.7'
 
 ### CONFIGURATION ###
 
@@ -81,11 +81,11 @@ _minutil_initialize
 param_msg()
 {
   if test -n "${NO_COLOR-}"; then
-    printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME:?}: ${1?}"
+    printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME}: ${1}"
   elif test "${CI:-false}" = 'false'; then
-    printf 1>&2 '\033[1;31m\r%s\n\033[0m\r    \r' "${SCRIPT_SHORTNAME:?}: ${1?}"
+    printf 1>&2 '\033[1;31m\r%s\n\033[0m\r    \r' "${SCRIPT_SHORTNAME}: ${1}"
   else
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "${SCRIPT_SHORTNAME:?}: ${1?}"
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "${SCRIPT_SHORTNAME}: ${1}"
   fi
 }
 
