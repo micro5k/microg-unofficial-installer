@@ -167,7 +167,7 @@ _minutil_check_getopt()
 STATUS=0
 SYSTEM_API=''
 SCRIPT_VERBOSE='false'
-_minutil_display_help='false'
+DISPLAY_HELP='false'
 
 set_status_if_error()
 {
@@ -188,9 +188,9 @@ fi
 readonly SYSTEM_API
 
 if test "${#}" -eq 0; then
-  _minutil_display_help='true'
+  DISPLAY_HELP='true'
 elif test "${#}" -eq 1 && test "${1?}" = '--'; then
-  _minutil_display_help='true'
+  DISPLAY_HELP='true'
 fi
 
 if _minutil_check_getopt; then
@@ -468,7 +468,7 @@ while test "${#}" -gt 0; do
       ;;
 
     -h | --help | '-?')
-      _minutil_display_help='true'
+      DISPLAY_HELP='true'
       ;;
 
     -i | --reinstall-package)
@@ -523,7 +523,7 @@ done || :
 
 test "${#}" -eq 0 || invalid_param "invalid parameter '${1-}'"
 
-if test "${_minutil_display_help:?}" = 'true'; then
+if test "${DISPLAY_HELP:?}" = 'true'; then
   if test "${_minutil_newline:-false}" != 'false'; then printf '\n'; fi
   _minutil_script_name="$(basename "${0:?}")" || exit 1
   readonly _minutil_script_name
