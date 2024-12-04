@@ -79,12 +79,12 @@ _minutil_initialize
 
 _minutil_error()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_NAME:-}] ERROR: ${*}"
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_NAME:-}] ERROR: ${1?}"
 }
 
 _minutil_warn()
 {
-  printf 1>&2 '\033[0;33m%s\033[0m\n\n' "WARNING: ${*}"
+  printf 1>&2 '\033[0;33m%s\033[0m\n\n' "WARNING: ${1?}"
 }
 
 _minutil_aligned_print()
@@ -162,7 +162,7 @@ if _minutil_check_getopt; then
   unset minutil_args
 fi
 
-if test -z "${*}" || test "${*}" = '--'; then
+if test "${#}" -eq 0 || test "${*}" = '--'; then
   _minutil_display_help='true'
 else
   for param in "${@}"; do
@@ -253,7 +253,7 @@ minutil_reinstall_package()
   }
 
   if ! _package_path="$(_minutil_find_package "${1:?}")" || test -z "${_package_path:-}"; then
-    _minutil_error "Package '${1:-}' not found"
+    _minutil_error "Package '${1?}' not found"
     return 2
   fi
   _apk_count="$(printf '%s\n' "${_package_path:-}" | wc -l)"
@@ -265,7 +265,7 @@ minutil_reinstall_package()
     }
   else
     if test ! -e "${_package_path:?}"; then
-      _minutil_error "Package '${1:-}' found but file missing"
+      _minutil_error "Package '${1?}' found but file missing"
       return 2
     fi
     if test "${MINUTIL_SYSTEM_SDK:?}" -ge 23; then
