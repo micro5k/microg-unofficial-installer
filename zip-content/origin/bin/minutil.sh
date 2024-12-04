@@ -13,7 +13,7 @@ readonly SCRIPT_VERSION='1.2.6'
 
 set -e
 # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
-case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || printf 1>&2 '%s\n' 'Failed: pipefail' ;; *) ;; esac
+case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'Failed: pipefail' ;; *) ;; esac
 
 POSIXLY_CORRECT='y'
 export POSIXLY_CORRECT
