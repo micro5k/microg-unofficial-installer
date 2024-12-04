@@ -15,8 +15,8 @@ set -e
 
 ### GLOBAL VARIABLES ###
 
-readonly MINUTIL_NAME='MinUtil'
-readonly MINUTIL_VERSION='1.2'
+readonly SCRIPT_NAME='MinUtil'
+readonly SCRIPT_VERSION='1.2.1'
 
 ### PREVENTIVE CHECKS ###
 
@@ -61,14 +61,14 @@ _minutil_initialize()
   case "${0:?}" in
     *'.sh') ;; # $0 => minutil.sh
     *'sh')     # $0 => sh | ash | bash | ...sh
-      printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: Cannot be sourced"
+      printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_NAME:-}] ERROR: Cannot be sourced"
       exit 1
       ;;
     *) ;;
   esac
 
   if ! _minutil_current_user="$(\whoami)" || test -z "${_minutil_current_user?}"; then
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: Invalid user"
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_NAME:-}] ERROR: Invalid user"
     exit 1
   fi
   readonly _minutil_current_user
@@ -79,7 +79,7 @@ _minutil_initialize
 
 _minutil_error()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "[${MINUTIL_NAME:-}] ERROR: ${*}"
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_NAME:-}] ERROR: ${*}"
 }
 
 _minutil_warn()
@@ -147,7 +147,7 @@ _minutil_check_getopt()
 
 ### FUNCTIONS AND CODE ###
 
-MINUTIL_VERBOSE='false'
+SCRIPT_VERBOSE='false'
 _minutil_display_help='false'
 
 if _minutil_check_getopt; then
@@ -167,8 +167,8 @@ if test -z "${*}" || test "${*}" = '--'; then
 else
   for param in "${@}"; do
     if test "${param?}" = '-v'; then
-      MINUTIL_VERBOSE='true'
-      : "${MINUTIL_VERBOSE}" # UNUSED
+      SCRIPT_VERBOSE='true'
+      : "${SCRIPT_VERBOSE}" # UNUSED
       break
     fi
   done
@@ -406,7 +406,7 @@ minutil_reset_battery()
 
 minutil_display_version()
 {
-  printf '%s\n' "${MINUTIL_NAME:?} v${MINUTIL_VERSION:?} (Minimal utilities)"
+  printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} (Minimal utilities)"
   printf '%s\n' "Copyright (c) 2022 ale5000"
   printf '%s\n' "License GPLv3+"
 }
@@ -483,7 +483,7 @@ if test "${_minutil_display_help:?}" = 'true'; then
   _minutil_script_name="$(basename "${0:?}")" || exit 1
   readonly _minutil_script_name
 
-  printf '%s\n' "${MINUTIL_NAME:?} v${MINUTIL_VERSION:?} - Minimal utilities"
+  printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} - Minimal utilities"
   printf '%s\n\n' 'Licensed under GPLv3+'
   printf '%s\n\n' "Usage: ${_minutil_script_name:?} [OPTIONS] [--]"
 
