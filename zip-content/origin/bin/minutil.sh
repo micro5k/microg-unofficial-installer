@@ -7,7 +7,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.2.7'
+readonly SCRIPT_VERSION='1.2.8'
 
 ### CONFIGURATION ###
 
@@ -282,7 +282,11 @@ minutil_reinstall_package()
 {
   _is_caller_adb_or_root || return 1
 
-  printf '%s\n' "Reinstalling ${1:-}..."
+  printf '%s\n' "Reinstalling ${1?}..."
+  test -n "${1?}" || {
+    error_msg 'Empty argument'
+    return 1
+  }
   command -v pm 1> /dev/null || {
     error_msg 'Package manager is NOT available'
     return 1
@@ -449,15 +453,20 @@ minutil_display_version()
 
 validate_param_argument()
 {
-  test -z "${2-}" || return 0
+  case "${2?}" in
+    'unset' | '-'*)
+      if test "${#1}" -eq 2; then
+        param_msg "option requires an argument -- '${1#-}'"
+      else
+        param_msg "option '${1}' requires an argument"
+      fi
+      set_status_if_error '2'
+      return 2
+      ;;
+    *) ;;
+  esac
 
-  if test "${#1}" -eq 2; then
-    param_msg "option requires an argument -- '${1#-}'"
-  else
-    param_msg "option '${1}' requires an argument"
-  fi
-  set_status_if_error '2'
-  return 2
+  return 0
 }
 
 invalid_param()
@@ -479,8 +488,8 @@ while test "${#}" -gt 0; do
       ;;
 
     -i | --reinstall-package)
-      if validate_param_argument "${1?}" "${2-}"; then
-        minutil_reinstall_package "${2:?}" || set_status_if_error "${?}"
+      if validate_param_argument "${1?}" "${2-unset}"; then
+        minutil_reinstall_package "${2?}" || set_status_if_error "${?}"
         shift
       fi
       ;;
