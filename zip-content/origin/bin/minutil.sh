@@ -7,7 +7,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.2.8'
+readonly SCRIPT_VERSION='1.2.9'
 
 ### CONFIGURATION ###
 
@@ -33,17 +33,40 @@ command 1> /dev/null -v printf || {
   if command 1> /dev/null -v busybox; then
     alias printf='busybox printf'
   else
+    EMULATED_PRINTF=1
     NO_COLOR=1
-    export NO_COLOR
 
     printf()
     {
-      if test "${1:-}" = '%s\n\n'; then _printf_newline='true'; fi
-      if test "${#}" -gt 1; then shift; fi
-      echo "${@}"
+      case "${1-unset}" in
+        '%s')
+          _printf_backup_ifs="${IFS-unset}"
+          shift && IFS='' && echo "${*}" | head -c '-1'
+          if test "${_printf_backup_ifs}" = 'unset'; then unset IFS; else IFS="${_printf_backup_ifs}"; fi
+          unset _printf_backup_ifs
+          ;;
+        '%s\n')
+          shift && for _printf_val in "${@}"; do
+            echo "${_printf_val?}"
+          done
+          ;;
+        '%s\n\n')
+          shift && for _printf_val in "${@}"; do
+            echo "${_printf_val?}" && echo ''
+          done
+          ;;
+        '\n') echo '' ;;
+        '\n\n') echo '' && echo '' ;;
+        '') ;;
 
-      test "${_printf_newline:-false}" = 'false' || echo ''
-      unset _printf_newline
+        *)
+          echo 1>&2 'ERROR: Unsupported printf parameter'
+          return 2
+          ;;
+      esac
+
+      unset _printf_val
+      return 0
     }
   fi
 }
@@ -113,7 +136,11 @@ warn_msg()
 
 _minutil_aligned_print()
 {
-  printf '\t%-37s %s\n' "${@}"
+  if test "${EMULATED_PRINTF-}" != '1'; then
+    printf '\t%-37s %s\n' "${@}"
+  else
+    echo "${@}"
+  fi
 }
 
 _is_caller_user_0()
