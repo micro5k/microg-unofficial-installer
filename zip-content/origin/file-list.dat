@@ -14,3 +14,4 @@ app/NominatimGeocoderBackend|9||NominatimGeocoderBackend||org.microg.nlp.backend
 app/LegacyNetworkLocation|9|18|NetworkLocation||com.google.android.location|8121295640985fad6c5b98890a156aafd18c2053
 app/NewPipe|21||NewPipe||org.schabi.newpipe|19c31fbc895dc5ee38f69feb35beca28a6a1fd3c
 app/NewPipeLegacyRevo|16|20|NewPipe||org.schabi.newpipelegacy.Revo|ba80930dd0a05ef7505e3a4dfcbbc06c54b09f7d
+app/MyLocation|21||MyLocation||com.mirfatif.mylocation|9a91e7b746df5797770f242bc45a9f8da2e220de

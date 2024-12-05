@@ -10,6 +10,7 @@
     <allow-in-power-save package="com.google.android.gms" />
     <allow-in-power-save package="com.google.android.ims" />
     <allow-in-power-save package="com.google.android.volta" />
+    <allow-in-power-save package="com.mirfatif.mylocation" />
 
     <!-- These are the packages that are white-listed to be able to run in the background while in data-usage save mode -->
     <allow-in-data-usage-save package="com.google.android.gms" />
