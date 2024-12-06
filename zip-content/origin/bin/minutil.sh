@@ -7,7 +7,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.2.9'
+readonly SCRIPT_VERSION='1.2.10'
 
 ### CONFIGURATION ###
 
@@ -47,12 +47,12 @@ command 1> /dev/null -v printf || {
           ;;
         '%s\n')
           shift && for _printf_val in "${@}"; do
-            echo "${_printf_val?}"
+            echo "${_printf_val}"
           done
           ;;
         '%s\n\n')
           shift && for _printf_val in "${@}"; do
-            echo "${_printf_val?}" && echo ''
+            echo "${_printf_val}" && echo ''
           done
           ;;
         '\n') echo '' ;;
@@ -92,12 +92,11 @@ command 1> /dev/null -v basename || {
 _minutil_initialize()
 {
   if ! _minutil_current_user="$(whoami)" || test -z "${_minutil_current_user?}"; then
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "[${SCRIPT_SHORTNAME:-}] ERROR: Invalid user"
+    error_msg 'Invalid user'
     exit 1
   fi
   readonly _minutil_current_user
 }
-_minutil_initialize
 
 ### BASE FUNCTIONS ###
 
@@ -202,6 +201,8 @@ STATUS=0
 SYSTEM_API=''
 SCRIPT_VERBOSE='false'
 DISPLAY_HELP='false'
+
+_minutil_initialize
 
 set_status_if_error()
 {
@@ -590,7 +591,7 @@ ${_minutil_script_name:?} -i org.schabi.newpipe
 ${_minutil_script_name:?} --rescan-storage
 "
 elif test "${STATUS:?}" -ne 0; then
-  printf 1>&2 '%s\n' "Try '$(basename "${0-}" || printf '%s\n' "${0-}" || :) --help' for more information."
+  printf 1>&2 '%s\n' "Try '$(basename "${0-script}" || echo "${0-script}" || :) --help' for more information."
 fi
 
 exit "${STATUS:?}"
