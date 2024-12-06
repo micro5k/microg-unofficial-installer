@@ -7,7 +7,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.2.10'
+readonly SCRIPT_VERSION='1.2.11'
 
 ### CONFIGURATION ###
 
@@ -31,7 +31,7 @@ esac
 
 command 1> /dev/null -v printf || {
   if command 1> /dev/null -v busybox; then
-    alias printf='busybox printf'
+    eval ' printf() { busybox printf "${@}"; } '
   else
     EMULATED_PRINTF=1
     NO_COLOR=1
