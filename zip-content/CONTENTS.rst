@@ -61,9 +61,9 @@ Apps
 | [#]_ Gmail 2020.05.31.316831277.release (62209002)                                          | X    |     | 5.0  | 7.1.2 | |no|     | |no|       |         | |fire| |         |
 +---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
 
-|boom| It is installed only on plain **armeabi** devices
+|boom| It is installed only on plain **armeabi** devices.
 
-|star| These are only enabled with **USE_MICROG_BY_ALE5000**, for example they can be enabled with this command:
+|star| It is installed only if **USE_MICROG_BY_ALE5000** is enabled. It can be enabled with this command:
 
 .. code-block:: sh
 
