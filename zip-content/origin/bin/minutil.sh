@@ -7,7 +7,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.2.11'
+readonly SCRIPT_VERSION='1.2.12'
 
 ### CONFIGURATION ###
 
@@ -24,6 +24,7 @@ case "${0-}" in
   *'.sh') ;; # $0 => minutil.sh
   *'sh')     # $0 => sh | ash | bash | ...sh
     echo 1>&2 'ERROR: Cannot be sourced'
+    # shellcheck disable=SC2317 # Ignore: Command appears to be unreachable
     return 126 2>&- || exit 126
     ;;
   *) ;;
@@ -89,15 +90,6 @@ command 1> /dev/null -v basename || {
   }
 }
 
-_minutil_initialize()
-{
-  if ! _minutil_current_user="$(whoami)" || test -z "${_minutil_current_user?}"; then
-    error_msg 'Invalid user'
-    exit 1
-  fi
-  readonly _minutil_current_user
-}
-
 ### BASE FUNCTIONS ###
 
 param_msg()
@@ -142,27 +134,22 @@ _minutil_aligned_print()
   fi
 }
 
-_is_caller_user_0()
-{
-  case "${_minutil_current_user?}" in
-    'u0_a'*) return 0 ;;
-    *) ;;
-  esac
+#_is_caller_user_0()
+#{
+#  case "${CURRENT_USER?}" in 'u0_a'*) return 0 ;; *) ;; esac
+#  return 1
+#}
 
-  return 1
-}
-
-_is_caller_adb_or_root_or_user_0()
-{
-  if test "${_minutil_current_user?}" != 'shell' && test "${_minutil_current_user?}" != 'root' && ! _is_caller_user_0; then
-    error_msg 'You must execute it as either ADB or root or user 0'
-    return 1
-  fi
-}
+#_is_caller_adb_or_root_or_user_0()
+#{
+#  if test "${CURRENT_USER?}" = 'shell' || test "${CURRENT_USER?}" = 'root' || _is_caller_user_0; then return 0; fi
+#  error_msg 'You must execute it as either ADB or root or user 0'
+#  return 1
+#}
 
 _is_caller_adb_or_root()
 {
-  if test "${_minutil_current_user?}" != 'shell' && test "${_minutil_current_user?}" != 'root'; then
+  if test "${CURRENT_USER?}" != 'shell' && test "${CURRENT_USER?}" != 'root'; then
     error_msg 'You must execute it as either ADB or root'
     return 1
   fi
@@ -170,7 +157,7 @@ _is_caller_adb_or_root()
 
 _is_caller_root()
 {
-  if test "${_minutil_current_user?}" != 'root'; then
+  if test "${CURRENT_USER?}" != 'root'; then
     error_msg 'You must execute it as root'
     return 1
   fi
@@ -195,6 +182,11 @@ _minutil_check_getopt()
   return 0
 }
 
+set_status_if_error()
+{
+  test "${1:?}" -eq 0 || STATUS="${1:?}"
+}
+
 ### FUNCTIONS AND CODE ###
 
 STATUS=0
@@ -202,25 +194,26 @@ SYSTEM_API=''
 SCRIPT_VERBOSE='false'
 DISPLAY_HELP='false'
 
-_minutil_initialize
-
-set_status_if_error()
-{
-  test "${1:?}" -eq 0 || STATUS="${1:?}"
-}
-
 if test ! -e '/system/bin'; then mount 2> /dev/null -t 'auto' '/system' || :; fi
 if test ! -e '/data/data'; then mount 2> /dev/null -t 'auto' -o 'rw' '/data' || :; fi
 
 if test -r '/system/build.prop' && SYSTEM_API="$(_minutil_getprop 'ro.build.version.sdk' '/system/build.prop')" && test -n "${SYSTEM_API?}"; then
   :
-elif command -v getprop 1> /dev/null && SYSTEM_API="$(getprop 'ro.build.version.sdk')" && test -n "${SYSTEM_API?}"; then
+elif command 1> /dev/null -v 'getprop' && SYSTEM_API="$(getprop 'ro.build.version.sdk')" && test -n "${SYSTEM_API?}"; then
   :
 else
   warn_msg 'Failed to parse system API'
   SYSTEM_API='999'
 fi
 readonly SYSTEM_API
+
+if CURRENT_USER="$(whoami)" && test -n "${CURRENT_USER?}"; then
+  :
+else
+  error_msg 'Current user NOT found'
+  exit 126
+fi
+readonly CURRENT_USER
 
 if test "${#}" -eq 0; then
   DISPLAY_HELP='true'
@@ -527,7 +520,7 @@ while test "${#}" -gt 0; do
       ;;
 
     -s | --rescan-storage)
-      if test "${_minutil_current_user?}" = 'root'; then
+      if test "${CURRENT_USER?}" = 'root'; then
         minutil_media_rescan
       else
         minutil_manual_media_rescan
