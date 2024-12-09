@@ -7,7 +7,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.2.12'
+readonly SCRIPT_VERSION='1.2.13'
 
 ### CONFIGURATION ###
 
@@ -222,16 +222,20 @@ elif test "${#}" -eq 1 && test "${1?}" = '--'; then
 fi
 
 if _minutil_check_getopt; then
+  test -n "${NO_COLOR-}" || printf 1>&2 '\033[1;31m\r       \r' || :
+
   if minutil_args="$(
     getopt -o '+vVhsri:' -l 'version,help,rescan-storage,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n "${SCRIPT_SHORTNAME:?}" -- "${@}"
   )"; then
-    eval ' \set' '--' "${minutil_args?}" || exit 1
+    eval ' \set' '--' "${minutil_args?}" || exit 126
   else
     set_status_if_error '2'
-    set -- || exit 1
+    set -- || :
     _minutil_newline='true'
   fi
   unset minutil_args
+
+  test -n "${NO_COLOR-}" || printf 1>&2 '\033[0m\r    \r' || :
 fi
 
 if test "${#}" -gt 0; then
@@ -444,25 +448,35 @@ minutil_manual_media_rescan()
   return 0
 }
 
+_fuel_gauge_reset()
+{
+  test -e "${1:?}" || return 1
+  printf '%s\n' 'Resetting fuel gauge...'
+  printf '%s\n' '1' 1> "${1:?}" || return "${?}"
+
+  return 0
+}
+
 minutil_reset_battery()
 {
   _is_caller_root || return 1
 
   printf '%s\n' 'Resetting battery stats...'
-  rm -f -- '/data/system/batterystats.bin' || true
-  rm -f -- '/data/system/batterystats-daily.xml' || true
-  rm -f -- '/data/system/batterystats-checkin.bin' || true
+  rm -f -- '/data/system/batterystats.bin' || :
+  rm -f -- '/data/system/batterystats-daily.xml' || :
+  rm -f -- '/data/system/batterystats-checkin.bin' || :
 
-  _fuel_gauge_reset()
-  {
-    if test -e "${1:?}"; then
-      printf '%s\n' 'Resetting fuel gauge...'
-      printf '%s\n' '1' 1> "${1:?}" || true
-    fi
-  }
+  if _fuel_gauge_reset '/sys/devices/platform/i2c-gpio.9/i2c-9/9-0036/power_supply/fuelgauge/fg_reset_soc'; then
+    : # Samsung Galaxy S2
+  elif _fuel_gauge_reset '/sys/class/power_supply/battery/fg_reset_cap'; then
+    : # Samsung Galaxy Tab 7.7 (maybe also others)
+  else
+    error_msg 'Fuel gauge reset failed!'
+    return 2
+  fi
 
-  _fuel_gauge_reset '/sys/devices/platform/i2c-gpio.9/i2c-9/9-0036/power_supply/fuelgauge/fg_reset_soc' # Samsung Galaxy S2
-  _fuel_gauge_reset '/sys/class/power_supply/battery/fg_reset_cap'                                      # Samsung Galaxy Tab 7.7 (maybe also others)
+  printf '%s\n' "Done!"
+  return 0
 }
 
 minutil_display_version()
