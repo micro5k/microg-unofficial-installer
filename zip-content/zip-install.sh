@@ -1,10 +1,14 @@
 #!/system/bin/sh
+# @name ZIP install
+# @brief It can execute a flashable ZIP directly without the need of a Recovery.
+# @author ale5000
+# Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/blob/HEAD/zip-content/zip-install.sh
+
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.2.3'
+readonly ZIPINSTALL_VERSION='1.2.4'
 
 umask 022 || :
 PATH="${PATH:-/system/bin}:."
