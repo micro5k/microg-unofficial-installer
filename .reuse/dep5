@@ -9,14 +9,6 @@ Files: README.rst
 Copyright: © 2016-2019, 2021-2023 ale5000
 License: GPL-3.0-or-later
 
-Files: gradlew
-Copyright: Copyright © 2015-2021 the original authors.
-License: Apache-2.0
-
-Files: gradlew.bat
-Copyright: Copyright 2015 the original author or authors.
-License: Apache-2.0
-
 Files: zip-content/misc/busybox/busybox-*.bin
 Copyright: Copyright (C) tons of folks. <https://github.com/yashdsaraf/busybox/raw/master/AUTHORS>
 License: GPL-2.0-only
@@ -24,9 +16,6 @@ Comment: {"Sources" => "https://github.com/yashdsaraf/busybox", "Binary" => "htt
 
 License: GPL-3.0-or-later
  <../LICENSES/GPL-3.0-or-later.txt>
-
-License: Apache-2.0
- <../LICENSES/Apache-2.0.txt>
 
 License: GPL-2.0-only
  <../LICENSES/GPL-2.0-only.txt>
