@@ -13,6 +13,12 @@ plugins {
     //id 'com.github.spotbugs' version '4.7.6'
 }
 
+develocity.buildScan {
+    termsOfUseUrl.set 'https://gradle.com/help/legal-terms-of-use'
+    termsOfUseAgree.set 'yes'
+    publishing.onlyIf { System.getenv('UPLOAD_BUILD_SCAN') != null }
+}
+
 /* ===FUNCTIONS=== */
 
 private void initialize() {
@@ -35,8 +41,8 @@ private void initialize() {
     println 'Version: ' + version
     println 'OS: ' + System.properties['os.name']
 
-    if(JavaVersion.current() < JavaVersion.VERSION_11) {
-        throw new GradleException('This require Java 11 or later')
+    if(JavaVersion.current() < JavaVersion.VERSION_17) {
+        throw new GradleException('This require Java 17 or later')
     }
 }
 
@@ -85,12 +91,6 @@ private void configureSigning(def android, File keystorePropsFile)
 initialize()
 
 /* ===BLOCKS=== */
-
-develocity.buildScan {
-    termsOfUseUrl.set 'https://gradle.com/help/legal-terms-of-use'
-    termsOfUseAgree.set 'yes'
-    publishing.onlyIf { System.getenv('UPLOAD_BUILD_SCAN') != null }
-}
 
 base {
     archivesName = getOurArchivesBaseName()
