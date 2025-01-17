@@ -7,7 +7,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.2.13'
+readonly SCRIPT_VERSION='1.2.14'
 
 ### CONFIGURATION ###
 
@@ -277,12 +277,16 @@ _minutil_reinstall_split_package()
 {
   _is_caller_adb_or_root || return 1
 
-  if test "${SYSTEM_API:?}" -lt 23; then
-    error_msg "Split package reinstalling isn't currently supported on this version of Android"
+  if test "${SYSTEM_API:?}" -lt 21; then
+    error_msg 'This version of Android does NOT support split APKs'
     return 125
   fi
 
-  _install_sid="$(pm install-create -r -g -i 'com.android.vending' | grep -m 1 -F -e 'Success: created install session' | grep -m 1 -o -w -e '[0-9][0-9]*')" || return "${?}"
+  if test "${SYSTEM_API:?}" -ge 23; then
+    _install_sid="$(pm install-create -r -g -i 'com.android.vending' | grep -m 1 -F -e 'Success: created install session' | grep -m 1 -o -w -e '[0-9][0-9]*')" || return "${?}"
+  else
+    _install_sid="$(pm install-create -r -i 'com.android.vending' | grep -m 1 -F -e 'Success: created install session' | grep -m 1 -o -w -e '[0-9][0-9]*')" || return "${?}"
+  fi
   _file_index=0
   if test -z "${_install_sid:-}"; then return 2; fi
 
