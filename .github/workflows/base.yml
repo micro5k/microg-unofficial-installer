@@ -22,8 +22,10 @@ jobs:
           # Parsing informations...
           version="$(grep -m 1 -e '^version=' -- 'zip-content/module.prop' | cut -d '=' -f '2-' -s)" || exit "${?}"
           author="$(grep -m 1 -e '^author=' -- 'zip-content/module.prop' | cut -d '=' -f '2-' -s)" || exit "${?}"
-          printf 'version=%s\n' "${version?}" >> "${GITHUB_OUTPUT:?}"
-          printf 'author=%s\n' "${author?}" >> "${GITHUB_OUTPUT:?}"
+          commit_id="$(git rev-parse --short "${GITHUB_SHA:?}")" || exit "${?}"
+          printf 'version=%s\n' "${version?}" >> "${GITHUB_OUTPUT?}"
+          printf 'author=%s\n' "${author?}" >> "${GITHUB_OUTPUT?}"
+          printf 'commit_id=%s\n' "${commit_id?}" >> "${GITHUB_OUTPUT?}"
       - name: "Setup Java"
         uses: actions/setup-java@v4
         with:
@@ -75,7 +77,7 @@ jobs:
         if: "${{ github.event_name != 'pull_request' }}"
         uses: actions/upload-artifact@v4
         with:
-          name: "${{ github.event.repository.name }}-${{ steps.zip-info.outputs.version }}-oss-by-${{ steps.zip-info.outputs.author }} archive (extract it)"
+          name: "${{ github.event.repository.name }}-${{ steps.zip-info.outputs.version }}-${{ steps.zip-info.outputs.commit_id }}-oss-by-${{ steps.zip-info.outputs.author }} archive (extract it)"
           path: "output/*.zip*"
           retention-days: 7
       - name: "Upload coverage reports to Codacy"
