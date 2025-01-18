@@ -88,7 +88,7 @@ jobs:
             prepare_shell 'busybox-x86-legacy' 'bin' 'https://busybox.net/downloads/binaries/1.30.0-i686/busybox'
             prepare_shell 'bosh' 'tar.xz' 'http://fuz.su/pub/schilytools/bin/schily-2024-03-21-x86_64-linux-gcc.tar.xz'
           fi
-          printf 'cache_is_outdated=%s\n' "${CACHE_IS_OUTDATED:?}" >> "${GITHUB_OUTPUT:?}"
+          printf 'cache_is_outdated=%s\n' "${CACHE_IS_OUTDATED:?}" >> "${GITHUB_OUTPUT?}"
       - name: "Delete outdated cache"
         if: "${{ steps.cache-action.outputs.cache-hit && steps.prepare-shells.outputs.cache_is_outdated == 'true' }}"
         shell: bash
