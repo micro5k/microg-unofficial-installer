@@ -22,12 +22,8 @@ jobs:
           # Parsing informations...
           id="$(grep -m 1 -e '^id=' -- 'zip-content/module.prop' | cut -d '=' -f '2-' -s)" || exit "${?}"
           version="$(grep -m 1 -e '^version=' -- 'zip-content/module.prop' | cut -d '=' -f '2-' -s)" || exit "${?}"
-          author="$(grep -m 1 -e '^author=' -- 'zip-content/module.prop' | cut -d '=' -f '2-' -s)" || exit "${?}"
-          commit_id="$(git rev-parse --short "${GITHUB_SHA:?}")" || exit "${?}"
           printf 'id=%s\n' "${id?}" >> "${GITHUB_OUTPUT?}"
           printf 'version=%s\n' "${version?}" >> "${GITHUB_OUTPUT?}"
-          printf 'author=%s\n' "${author?}" >> "${GITHUB_OUTPUT?}"
-          printf 'commit_id=%s\n' "${commit_id?}" >> "${GITHUB_OUTPUT?}"
       - name: "Setup Java"
         uses: actions/setup-java@v4
         with:
@@ -72,21 +68,25 @@ jobs:
       - name: "ZIP info"
         run: |
           # Retrieve informations...
-          ZIP_SHORT_COMMIT_ID='${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}'
+          ZIP_FOLDER='${{ steps.build.outputs.ZIP_FOLDER }}'
           ZIP_FILENAME='${{ steps.build.outputs.ZIP_FILENAME }}'
+          ZIP_VERSION='${{ steps.build.outputs.ZIP_VERSION }}'
+          ZIP_SHORT_COMMIT_ID='${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}'
           ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
           ZIP_MD5='${{ steps.build.outputs.ZIP_MD5 }}'
           # Displaying informations...
-          printf '%s\n' "::notice::Short commit ID: ${ZIP_SHORT_COMMIT_ID:-Missing}"
           printf '%s\n' "::notice::Filename: ${ZIP_FILENAME:-Missing}"
+          printf '%s\n' "::notice::Version: ${ZIP_VERSION:-Missing}"
+          printf '%s\n' "::notice::Short commit ID: ${ZIP_SHORT_COMMIT_ID:-Missing}"
           printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
+          : "${ZIP_FOLDER:?}" || exit "${?}"
       - name: "Upload artifacts"
         if: "${{ github.event_name != 'pull_request' }}"
         uses: actions/upload-artifact@v4
         with:
-          name: "${{ steps.repo-info.outputs.id }}-${{ steps.repo-info.outputs.version }}-${{ steps.repo-info.outputs.commit_id }}-oss-by-${{ steps.repo-info.outputs.author }} archive (extract it)"
-          path: "output/*.zip*"
+          name: "${{ steps.repo-info.outputs.id }}-${{ steps.repo-info.outputs.version }}-${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}-oss archive (extract it)"
+          path: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*"
           retention-days: 7
       - name: "Upload coverage reports to Codacy"
         if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"

@@ -128,11 +128,15 @@ if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
 # Empty our temp dir (should be already empty, but we must be sure)
 rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
 
+# Set short commit ID
+ZIP_SHORT_COMMIT_ID=''
+if command 1> /dev/null 2>&1 -v 'git'; then ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse --short HEAD)" || ZIP_SHORT_COMMIT_ID=''; fi
+
 # Set filename and version
 MODULE_ID="$(simple_get_prop 'id' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module id string'
 MODULE_VER="$(simple_get_prop 'version' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module version string'
 MODULE_AUTHOR="$(simple_get_prop 'author' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module author string'
-FILENAME="${MODULE_ID:?}-${MODULE_VER:?}-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
+FILENAME="${MODULE_ID:?}-${MODULE_VER:?}${ZIP_SHORT_COMMIT_ID:+-}${ZIP_SHORT_COMMIT_ID-}-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
 
 # shellcheck source=SCRIPTDIR/addition.sh
 . "${MAIN_DIR}/addition.sh"
@@ -270,9 +274,6 @@ rm -rf -- "${TEMP_DIR:?}" &
 echo ''
 
 # Generate info
-ZIP_SHORT_COMMIT_ID=''
-if command 1> /dev/null 2>&1 -v 'git'; then ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse --short HEAD)" || ZIP_SHORT_COMMIT_ID=''; fi
-
 ZIP_FOLDER="${OUT_DIR:?}"
 ZIP_FILENAME="${FILENAME:?}.zip"
 
@@ -297,9 +298,10 @@ fi
 # Save info for later use
 if test "${GITHUB_JOB:-false}" != 'false'; then
   {
-    printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
     printf 'ZIP_FOLDER=%s\n' "${ZIP_FOLDER?}"
     printf 'ZIP_FILENAME=%s\n' "${ZIP_FILENAME?}"
+    printf 'ZIP_VERSION=%s\n' "${MODULE_VER?}"
+    printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
     printf 'ZIP_SHA256=%s\n' "${ZIP_SHA256?}"
     printf 'ZIP_MD5=%s\n' "${ZIP_MD5?}"
   } >> "${GITHUB_OUTPUT?}"
