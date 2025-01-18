@@ -120,8 +120,8 @@ static String getScriptExt() {
 }
 
 tasks.register('buildOta', Exec) {
-    group '- OTA build'
-    description 'Build the flashable OTA zip.'
+    group = '- OTA build'
+    description = 'Build the flashable OTA zip.'
 
     doFirst {
         println 'Building the flashable OTA zip with Gradle...'
@@ -132,8 +132,8 @@ tasks.register('buildOta', Exec) {
 }
 
 tasks.register('buildOtaOSS', Exec) {
-    group '- OTA build'
-    description 'Build the flashable OTA zip (open-source components only).'
+    group = '- OTA build'
+    description = 'Build the flashable OTA zip (open-source components only).'
 
     doFirst {
         println 'Building the flashable OTA zip (open-source components only) with Gradle...'
