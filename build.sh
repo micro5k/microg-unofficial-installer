@@ -273,30 +273,36 @@ echo ''
 ZIP_SHORT_COMMIT_ID=''
 if command 1> /dev/null 2>&1 -v 'git'; then ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse --short HEAD)" || ZIP_SHORT_COMMIT_ID=''; fi
 
+ZIP_FOLDER="${OUT_DIR:?}"
 ZIP_FILENAME="${FILENAME:?}.zip"
 
-sha256sum "${ZIP_FILENAME:?}" > "${OUT_DIR:?}/${ZIP_FILENAME:?}.sha256" || ui_error 'Failed to compute the SHA-256 hash'
-ZIP_SHA256="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${ZIP_FILENAME:?}.sha256")" || ui_error 'Failed to read the SHA-256 hash'
+sha256sum "${ZIP_FILENAME:?}" > "${ZIP_FOLDER:?}/${ZIP_FILENAME:?}.sha256" || ui_error 'Failed to compute the SHA-256 hash'
+ZIP_SHA256="$(cut -d ' ' -f '1' -s 0< "${ZIP_FOLDER:?}/${ZIP_FILENAME:?}.sha256")" || ui_error 'Failed to read the SHA-256 hash'
+
+ZIP_MD5=''
+if test "${FAST_BUILD:-false}" = 'false'; then
+  md5sum "${ZIP_FILENAME:?}" > "${ZIP_FOLDER:?}/${ZIP_FILENAME:?}.md5" || ui_error 'Failed to compute the MD5 hash'
+  ZIP_MD5="$(cut -d ' ' -f '1' -s 0< "${ZIP_FOLDER:?}/${ZIP_FILENAME:?}.md5")" || ui_error 'Failed to read the MD5 hash'
+fi
 
 if test -n "${ZIP_SHORT_COMMIT_ID?}"; then
   printf '%s\n' "Short commit ID: ${ZIP_SHORT_COMMIT_ID:?}"
 fi
-printf '%s\n' "Filename: ${ZIP_FILENAME?}"
-printf '%s\n' "SHA-256: ${ZIP_SHA256?}"
+printf '%s\n' "Filename: ${ZIP_FILENAME:?}"
+printf '%s\n' "SHA-256: ${ZIP_SHA256:?}"
+if test -n "${ZIP_MD5?}"; then
+  printf '%s\n' "MD5: ${ZIP_MD5:?}"
+fi
 
 # Save info for later use
 if test "${GITHUB_JOB:-false}" != 'false'; then
   {
     printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
+    printf 'ZIP_FOLDER=%s\n' "${ZIP_FOLDER?}"
     printf 'ZIP_FILENAME=%s\n' "${ZIP_FILENAME?}"
     printf 'ZIP_SHA256=%s\n' "${ZIP_SHA256?}"
+    printf 'ZIP_MD5=%s\n' "${ZIP_MD5?}"
   } >> "${GITHUB_OUTPUT?}"
-fi
-
-if test "${FAST_BUILD:-false}" = 'false'; then
-  md5sum "${FILENAME}.zip" > "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to compute the MD5 hash'
-  printf '%s' 'MD5: '
-  cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${ZIP_FILENAME:?}.md5" || ui_error 'Failed to read the MD5 hash'
 fi
 
 cd "${_init_dir:?}" || ui_error 'Failed to change back the folder'
