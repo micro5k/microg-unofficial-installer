@@ -147,8 +147,8 @@ tasks.named('build').configure {
 }
 
 tasks.register('installTest', Exec) {
-    group 'verification'
-    description 'Emulate an Android recovery on your PC and inside it execute the flashable zip to see the result.'
+    group = 'verification'
+    description = 'Emulate an Android recovery on your PC and inside it execute the flashable zip to see the result.'
     mustRunAfter build, buildOta, buildOtaOSS
 
     doFirst {
