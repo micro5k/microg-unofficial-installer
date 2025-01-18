@@ -122,6 +122,7 @@ if test "${OPENSOURCE_ONLY:?}" != 'false'; then
         printf 'ZIP_FILENAME=\n'
         printf 'ZIP_VERSION=\n'
         printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
+        printf 'ZIP_BUILD_TYPE=%s\n' "${BUILD_TYPE?}"
         printf 'ZIP_SHA256=\n'
         printf 'ZIP_MD5=\n'
       } >> "${GITHUB_OUTPUT?}"
@@ -316,6 +317,7 @@ if test "${GITHUB_JOB:-false}" != 'false'; then
     printf 'ZIP_FILENAME=%s\n' "${ZIP_FILENAME?}"
     printf 'ZIP_VERSION=%s\n' "${MODULE_VER?}"
     printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
+    printf 'ZIP_BUILD_TYPE=%s\n' "${BUILD_TYPE?}"
     printf 'ZIP_SHA256=%s\n' "${ZIP_SHA256?}"
     printf 'ZIP_MD5=%s\n' "${ZIP_MD5?}"
   } >> "${GITHUB_OUTPUT?}"

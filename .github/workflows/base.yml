@@ -72,12 +72,14 @@ jobs:
           ZIP_FILENAME='${{ steps.build.outputs.ZIP_FILENAME }}'
           ZIP_VERSION='${{ steps.build.outputs.ZIP_VERSION }}'
           ZIP_SHORT_COMMIT_ID='${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}'
+          ZIP_BUILD_TYPE='${{ steps.build.outputs.ZIP_BUILD_TYPE }}'
           ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
           ZIP_MD5='${{ steps.build.outputs.ZIP_MD5 }}'
           # Displaying informations...
           printf '%s\n' "::notice::Filename: ${ZIP_FILENAME:-Missing}"
           printf '%s\n' "::notice::Version: ${ZIP_VERSION:-Missing}"
           printf '%s\n' "::notice::Short commit ID: ${ZIP_SHORT_COMMIT_ID:-Missing}"
+          printf '%s\n' "::notice::Build type: ${ZIP_BUILD_TYPE:-Missing}"
           printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
           : "${ZIP_FOLDER:?}" || exit "${?}"
