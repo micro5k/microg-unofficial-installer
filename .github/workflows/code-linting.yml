@@ -1,7 +1,7 @@
 ---
 # SPDX-FileCopyrightText: (c) 2021 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
+
 name: "Code linting"
 permissions: {}
 on:
@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Check out code"
+      - name: "Checkout sources"
         uses: actions/checkout@v4
       - name: "ShellChecker"
         uses: a5k-actions/shellchecker@v0
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Check out code"
+      - name: "Checkout sources"
         uses: actions/checkout@v4
       - name: "JSON and YAML - Validator"
         uses: GrantBirki/json-yaml-validate@v3
@@ -39,7 +39,7 @@ jobs:
       security-events: write
 
     steps:
-      - name: "Check out code"
+      - name: "Checkout sources"
         uses: actions/checkout@v4
       - name: "Run Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Check out code"
+      - name: "Checkout sources"
         uses: actions/checkout@v4
         with:
           fetch-depth: "0"
