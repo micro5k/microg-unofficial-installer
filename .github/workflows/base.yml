@@ -41,8 +41,8 @@ jobs:
         run: |
           # Installing Bashcov and simplecov-lcov...
           gem install bashcov:3.1.3 simplecov-lcov
-      - name: "Execute code coverage"
-        id: "coverage"
+      - name: "Build and coverage"
+        id: "build"
         run: |
           ### Executing code coverage...
           workspace_path='${{ github.workspace }}'; readonly workspace_path
@@ -69,12 +69,16 @@ jobs:
           if test -e "${workspace_path:?}/recovery-simulator/output/installed-files.log"; then
             cat "${workspace_path:?}/recovery-simulator/output/installed-files.log"
           fi
-      - name: "SHA256"
-        if: "${{ github.event_name != 'pull_request' }}"
+      - name: "ZIP info"
         run: |
-          # SHA256...
-          sha256_hash='${{ steps.coverage.outputs.sha256_hash }}'; readonly sha256_hash
-          echo "::notice::${sha256_hash:-Missing hash}"
+          # Retrieve informations...
+          ZIP_SHORT_COMMIT_ID='${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}'
+          ZIP_FILENAME='${{ steps.build.outputs.ZIP_FILENAME }}'
+          ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
+          # Displaying informations...
+          printf '%s\n' "::notice::${ZIP_SHORT_COMMIT_ID:-Missing short commit ID}"
+          printf '%s\n' "::notice::${ZIP_FILENAME:-Missing filename}"
+          printf '%s\n' "::notice::${ZIP_SHA256:-Missing hash}"
       - name: "Upload artifacts"
         if: "${{ github.event_name != 'pull_request' }}"
         uses: actions/upload-artifact@v4

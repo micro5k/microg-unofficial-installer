@@ -267,21 +267,34 @@ cd "${OUT_DIR}" || ui_error 'Failed to change the folder'
 rm -rf -- "${TEMP_DIR:?}" &
 #pid="${!}"
 
-# Create checksum files
 echo ''
-sha256sum "${FILENAME}.zip" > "${OUT_DIR}/${FILENAME}.zip.sha256" || ui_error 'Failed to compute the sha256 hash'
-sha256_hash="$(cat "${OUT_DIR}/${FILENAME}.zip.sha256")" || ui_error 'Failed to read the sha256 hash'
-echo 'SHA-256:'
-echo "${sha256_hash:?}" || ui_error 'Failed to display the sha256 hash'
 
+# Generate info
+ZIP_SHORT_COMMIT_ID=''
+if command 1> /dev/null 2>&1 -v 'git'; then ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse --short HEAD)" || ZIP_SHORT_COMMIT_ID=''; fi
+
+ZIP_FILENAME="${FILENAME:?}.zip"
+
+sha256sum "${ZIP_FILENAME:?}" > "${OUT_DIR:?}/${ZIP_FILENAME:?}.sha256" || ui_error 'Failed to compute the SHA-256 hash'
+ZIP_SHA256="$(cat "${OUT_DIR:?}/${ZIP_FILENAME:?}.sha256" | cut -d ' ' -f '1' -s)" || ui_error 'Failed to read the SHA-256 hash'
+
+if test -n "${ZIP_SHORT_COMMIT_ID?}"; then
+  printf '%s\n' "Short commit ID: ${ZIP_SHORT_COMMIT_ID:?}"
+fi
+printf '%s\n' "Filename: ${ZIP_FILENAME?}"
+printf '%s\n' "SHA-256: ${ZIP_SHA256?}"
+
+# Save info for later use
 if test "${GITHUB_JOB:-false}" != 'false'; then
-  printf 'sha256_hash=%s\n' "${sha256_hash:?}" >> "${GITHUB_OUTPUT:?}" # Save hash for later use
+  printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}" >> "${GITHUB_OUTPUT?}"
+  printf 'ZIP_FILENAME=%s\n' "${ZIP_FILENAME?}" >> "${GITHUB_OUTPUT?}"
+  printf 'ZIP_SHA256=%s\n' "${ZIP_SHA256?}" >> "${GITHUB_OUTPUT?}"
 fi
 
 if test "${FAST_BUILD:-false}" = 'false'; then
   md5sum "${FILENAME}.zip" > "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to compute the md5 hash'
-  echo 'MD5:'
-  cat "${OUT_DIR}/${FILENAME}.zip.md5" || ui_error 'Failed to read the md5 hash'
+  printf '%s' 'MD5: '
+  cat "${OUT_DIR:?}/${ZIP_FILENAME:?}.md5" | cut -d ' ' -f '1' -s || ui_error 'Failed to read the md5 hash'
 fi
 
 cd "${_init_dir:?}" || ui_error 'Failed to change back the folder'
