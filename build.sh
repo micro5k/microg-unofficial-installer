@@ -97,29 +97,48 @@ save_last_title
 set_title 'Building the flashable OTA zip...'
 
 # shellcheck source=SCRIPTDIR/conf-1.sh
-. "${MAIN_DIR}/conf-1.sh"
+. "${MAIN_DIR:?}/conf-1.sh"
 # shellcheck source=SCRIPTDIR/conf-2.sh
-if test "${OPENSOURCE_ONLY:?}" = 'false'; then . "${MAIN_DIR}/conf-2.sh"; fi
+if test "${OPENSOURCE_ONLY:?}" = 'false'; then . "${MAIN_DIR:?}/conf-2.sh"; fi
+
+_init_dir="$(pwd)" || ui_error 'Failed to read the current dir'
+
+# Set output dir
+OUT_DIR="${MAIN_DIR:?}/output"
+
+# Set short commit ID
+ZIP_SHORT_COMMIT_ID=''
+if command 1> /dev/null 2>&1 -v 'git'; then ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse --short HEAD)" || ZIP_SHORT_COMMIT_ID=''; fi
 
 if test "${OPENSOURCE_ONLY:?}" != 'false'; then
   if ! is_oss_only_build_enabled; then
     echo 'WARNING: The OSS only build is disabled'
     set_title 'OSS only build is disabled'
+
+    # Save info for later use
+    if test "${GITHUB_JOB:-false}" != 'false'; then
+      {
+        printf 'ZIP_FOLDER=%s\n' "${OUT_DIR?}"
+        printf 'ZIP_FILENAME=\n'
+        printf 'ZIP_VERSION=\n'
+        printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
+        printf 'ZIP_SHA256=\n'
+        printf 'ZIP_MD5=\n'
+      } >> "${GITHUB_OUTPUT?}"
+    fi
+
     # shellcheck disable=SC2317
     return 0 2>&- || exit 0
   fi
   if test ! -f "${MAIN_DIR:?}/zip-content/settings-oss.conf"; then ui_error 'The settings file is missing'; fi
 fi
 
-_init_dir="$(pwd)" || ui_error 'Failed to read the current dir'
-
 # Check dependencies
 command -v 'zip' 1> /dev/null || ui_error 'Zip is missing'
 command -v 'java' 1> /dev/null || ui_error 'Java is missing'
 
 # Create the output dir
-OUT_DIR="${MAIN_DIR}/output"
-mkdir -p "${OUT_DIR}" || ui_error 'Failed to create the output dir'
+mkdir -p "${OUT_DIR:?}" || ui_error 'Failed to create the output dir'
 
 # Create the temp dir
 TEMP_DIR="$(mktemp -d -t ZIPBUILDER-XXXXXX)" || ui_error 'Failed to create our temp dir'
@@ -127,10 +146,6 @@ if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
 
 # Empty our temp dir (should be already empty, but we must be sure)
 rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
-
-# Set short commit ID
-ZIP_SHORT_COMMIT_ID=''
-if command 1> /dev/null 2>&1 -v 'git'; then ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse --short HEAD)" || ZIP_SHORT_COMMIT_ID=''; fi
 
 # Set filename and version
 MODULE_ID="$(simple_get_prop 'id' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module id string'
@@ -274,16 +289,15 @@ rm -rf -- "${TEMP_DIR:?}" &
 echo ''
 
 # Generate info
-ZIP_FOLDER="${OUT_DIR:?}"
 ZIP_FILENAME="${FILENAME:?}.zip"
 
-sha256sum "${ZIP_FILENAME:?}" > "${ZIP_FOLDER:?}/${ZIP_FILENAME:?}.sha256" || ui_error 'Failed to compute the SHA-256 hash'
-ZIP_SHA256="$(cut -d ' ' -f '1' -s 0< "${ZIP_FOLDER:?}/${ZIP_FILENAME:?}.sha256")" || ui_error 'Failed to read the SHA-256 hash'
+sha256sum "${ZIP_FILENAME:?}" > "${OUT_DIR:?}/${ZIP_FILENAME:?}.sha256" || ui_error 'Failed to compute the SHA-256 hash'
+ZIP_SHA256="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${ZIP_FILENAME:?}.sha256")" || ui_error 'Failed to read the SHA-256 hash'
 
 ZIP_MD5=''
 if test "${FAST_BUILD:-false}" = 'false'; then
-  md5sum "${ZIP_FILENAME:?}" > "${ZIP_FOLDER:?}/${ZIP_FILENAME:?}.md5" || ui_error 'Failed to compute the MD5 hash'
-  ZIP_MD5="$(cut -d ' ' -f '1' -s 0< "${ZIP_FOLDER:?}/${ZIP_FILENAME:?}.md5")" || ui_error 'Failed to read the MD5 hash'
+  md5sum "${ZIP_FILENAME:?}" > "${OUT_DIR:?}/${ZIP_FILENAME:?}.md5" || ui_error 'Failed to compute the MD5 hash'
+  ZIP_MD5="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${ZIP_FILENAME:?}.md5")" || ui_error 'Failed to read the MD5 hash'
 fi
 
 if test -n "${ZIP_SHORT_COMMIT_ID?}"; then
@@ -298,7 +312,7 @@ fi
 # Save info for later use
 if test "${GITHUB_JOB:-false}" != 'false'; then
   {
-    printf 'ZIP_FOLDER=%s\n' "${ZIP_FOLDER?}"
+    printf 'ZIP_FOLDER=%s\n' "${OUT_DIR?}"
     printf 'ZIP_FILENAME=%s\n' "${ZIP_FILENAME?}"
     printf 'ZIP_VERSION=%s\n' "${MODULE_VER?}"
     printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
