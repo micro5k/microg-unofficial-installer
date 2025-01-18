@@ -76,9 +76,9 @@ jobs:
           ZIP_FILENAME='${{ steps.build.outputs.ZIP_FILENAME }}'
           ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
           # Displaying informations...
-          printf '%s\n' "::notice::${ZIP_SHORT_COMMIT_ID:-Missing short commit ID}"
-          printf '%s\n' "::notice::${ZIP_FILENAME:-Missing filename}"
-          printf '%s\n' "::notice::${ZIP_SHA256:-Missing hash}"
+          printf '%s\n' "::notice::Short commit ID: ${ZIP_SHORT_COMMIT_ID:-Missing short commit ID}"
+          printf '%s\n' "::notice::Filename: ${ZIP_FILENAME:-Missing filename}"
+          printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing hash}"
       - name: "Upload artifacts"
         if: "${{ github.event_name != 'pull_request' }}"
         uses: actions/upload-artifact@v4
