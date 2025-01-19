@@ -26,15 +26,16 @@ jobs:
           distribution: "temurin"
           java-version: "17"
       - name: "Build"
+        id: "build"
         shell: bash
         run: |
           ### Building...
           '${{ github.workspace }}/gradlew' clean buildOtaOSS
-      - name: "Upload release"
-        uses: ncipollo/release-action@v1
+      - name: "Create release"
+        uses: softprops/action-gh-release@v2
         with:
-          allowUpdates: true
-          artifactErrorsFailBuild: false
-          artifacts: "output/*.zip*"
           body: "See the full [**changelog**](./CHANGELOG.rst)."
-          replacesArtifacts: false
+          append_body: true
+          generate_release_notes: true
+          files: "output/*.zip*"
+          fail_on_unmatched_files: false
