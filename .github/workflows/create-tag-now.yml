@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: (c) 2025 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-name: "Create tag now"
+name: "- Create tag now"
 permissions: {}
 on:
   workflow_dispatch:
@@ -11,13 +11,15 @@ jobs:
     name: "Tag creation"
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # Needed to create a tag
+      actions: write # Needed to trigger a workflow
 
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v4
       - name: "Parse version"
         id: "repo-info"
+        shell: bash
         run: |
           # Parsing version...
           version="$(grep -m 1 -e '^version=' -- 'zip-content/module.prop' | cut -d '=' -f '2-' -s)" || exit "${?}"
@@ -25,16 +27,17 @@ jobs:
       - name: "Create tag"
         uses: actions/github-script@v7
         with:
+          retries: 3
           script: |
             console.log('::notice::Tag name: ${{ steps.repo-info.outputs.version }}')
-            github.rest.git.createRef({
+            const result = await github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: 'refs/tags/${{ steps.repo-info.outputs.version }}',
               sha: context.sha
             }).catch(error => {
-              console.log(error.message)
-              if(error.status == 422) {
+              console.log('Error message: ' + error.message)
+              if(error.status == 422 && error.message == 'Reference already exists') {
                 console.log('::warning::Tag already exist, ignored!!!')
                 return
               }
@@ -43,3 +46,13 @@ jobs:
               console.log('DEBUG:')
               throw error
             })
+            if(result && result.status >= 200 && result.status < 300) {
+              console.log('')
+              console.log('Triggered the workflow for the release.')
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'auto-release-from-tag.yml',
+                ref: 'refs/tags/${{ steps.repo-info.outputs.version }}'
+              })
+            }

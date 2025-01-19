@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: (c) 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-name: "Release"
+name: "Auto-release from tag"
 permissions: {}
 on:
   push:
@@ -13,6 +13,7 @@ jobs:
   base-job:
     name: "Release"
     runs-on: ubuntu-latest
+    if: "startsWith(github.ref, 'refs/tags/v')"
     permissions:
       contents: write
 
