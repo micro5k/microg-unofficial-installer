@@ -25,6 +25,7 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "17"
+          #cache: "gradle"
       - name: "Build"
         id: "build"
         shell: bash
@@ -37,5 +38,5 @@ jobs:
           body: "See the full [**changelog**](./CHANGELOG.rst)."
           append_body: true
           generate_release_notes: true
-          files: "output/*.zip*"
+          files: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*"
           fail_on_unmatched_files: false
