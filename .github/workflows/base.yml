@@ -16,14 +16,6 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v4
-      - name: Parse repo info
-        id: "repo-info"
-        run: |
-          # Parsing informations...
-          id="$(grep -m 1 -e '^id=' -- 'zip-content/module.prop' | cut -d '=' -f '2-' -s)" || exit "${?}"
-          version="$(grep -m 1 -e '^version=' -- 'zip-content/module.prop' | cut -d '=' -f '2-' -s)" || exit "${?}"
-          printf 'id=%s\n' "${id?}" >> "${GITHUB_OUTPUT?}"
-          printf 'version=%s\n' "${version?}" >> "${GITHUB_OUTPUT?}"
       - name: "Setup Java"
         uses: actions/setup-java@v4
         with:
@@ -83,13 +75,6 @@ jobs:
           printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
           : "${ZIP_FOLDER:?}" || exit "${?}"
-      - name: "Upload artifacts"
-        if: "${{ github.event_name != 'pull_request' }}"
-        uses: actions/upload-artifact@v4
-        with:
-          name: "${{ steps.repo-info.outputs.id }}-${{ steps.repo-info.outputs.version }}-${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}-oss archive (extract it)"
-          path: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*"
-          retention-days: 7
       - name: "Upload coverage reports to Codacy"
         if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
         uses: codacy/codacy-coverage-reporter-action@v1
