@@ -26,7 +26,7 @@ jobs:
         run: |
           # Parsing version...
           version="$(grep -m 1 -e '^version=' -- 'zip-content/module.prop' | cut -d '=' -f '2-' -s)" || exit "${?}"
-          printf 'version=%s\n' "${version:-Empty}" >> "${GITHUB_OUTPUT?}"
+          printf 'version=%s\n' "${version:?}" >> "${GITHUB_OUTPUT?}" || exit "${?}"
       - name: "Create tag"
         uses: actions/github-script@v7
         with:
