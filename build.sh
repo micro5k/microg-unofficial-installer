@@ -108,7 +108,13 @@ OUT_DIR="${MAIN_DIR:?}/output"
 
 # Set short commit ID
 ZIP_SHORT_COMMIT_ID=''
-if command 1> /dev/null 2>&1 -v 'git'; then ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse --short HEAD)" || ZIP_SHORT_COMMIT_ID=''; fi
+if command 1> /dev/null 2>&1 -v 'git'; then
+  if test "${GITHUB_JOB:-false}" != 'false'; then
+    ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse --short "${GITHUB_SHA:?}")" || ZIP_SHORT_COMMIT_ID=''
+  else
+    ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse --short HEAD)" || ZIP_SHORT_COMMIT_ID=''
+  fi
+fi
 
 if test "${OPENSOURCE_ONLY:?}" != 'false'; then
   if ! is_oss_only_build_enabled; then

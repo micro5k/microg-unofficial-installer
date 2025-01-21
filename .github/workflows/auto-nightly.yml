@@ -96,6 +96,7 @@ jobs:
         with:
           name: "Nightly build"
           tag_name: "nightly"
+          target_commitish: "${{ github.sha }}"
           body: "Latest automatically built ZIP (unstable development snapshot)\n\nSHA-256: ${{ steps.build.outputs.ZIP_SHA256 }}"
           append_body: false
           generate_release_notes: false
