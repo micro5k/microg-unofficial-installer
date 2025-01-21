@@ -69,6 +69,7 @@ jobs:
                 repo: context.repo.repo,
                 release_id: response.data.id
               });
+              console.log('Previous nightly release deleted:' + response.data.name)
             } else if(response.status !== 404) {
               throw response;
             }
