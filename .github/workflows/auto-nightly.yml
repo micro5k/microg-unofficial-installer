@@ -1,0 +1,88 @@
+---
+# SPDX-FileCopyrightText: (c) 2025 ale5000
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: "Auto-nightly"
+permissions: {}
+on:
+  push:
+    branches:
+      - "main"
+jobs:
+  base-job:
+    name: "Nightly"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to create a tag
+
+    steps:
+      - name: "Checkout sources"
+        uses: actions/checkout@v4
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+      - name: "Build nightly"
+        id: "build"
+        shell: bash
+        run: |
+          ### Building nightly...
+          BUILD_TYPE='oss' '${{ github.workspace }}/build.sh'
+      - name: "ZIP info"
+        run: |
+          # Retrieve informations...
+          ZIP_FOLDER='${{ steps.build.outputs.ZIP_FOLDER }}'
+          ZIP_FILENAME='${{ steps.build.outputs.ZIP_FILENAME }}'
+          ZIP_VERSION='${{ steps.build.outputs.ZIP_VERSION }}'
+          ZIP_SHORT_COMMIT_ID='${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}'
+          ZIP_BUILD_TYPE='${{ steps.build.outputs.ZIP_BUILD_TYPE }}'
+          ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
+          ZIP_MD5='${{ steps.build.outputs.ZIP_MD5 }}'
+          # Displaying informations...
+          printf '%s\n' "::notice::Filename: ${ZIP_FILENAME:-Missing}"
+          printf '%s\n' "::notice::Version: ${ZIP_VERSION:-Missing}"
+          printf '%s\n' "::notice::Short commit ID: ${ZIP_SHORT_COMMIT_ID:-Missing}"
+          printf '%s\n' "::notice::Build type: ${ZIP_BUILD_TYPE:-Missing}"
+          printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
+          printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
+          : "${ZIP_FOLDER:?}" || exit "${?}"
+      - name: "Delete previous nightly"
+        uses: actions/github-script@v7
+        with:
+          retries: 3
+          script: |
+            /* jshint esversion: 6 */
+            const response = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: 'nightly'
+            }).catch(response => response);
+            if(response.status >= 200 && response.status < 300 && response.data && response.data.id && response.data.tag_name === 'nightly') {
+              await github.rest.repos.deleteRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: response.data.id
+              });
+            } else if(response.status !== 404) {
+              throw response;
+            }
+            github.rest.git.deleteRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'tags/nightly'
+            }).catch(error => {
+              if(error.status !== 422 || error.message !== 'Reference does not exist') throw error;
+            });
+      - name: "Create nightly release"
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Nightly build"
+          tag_name: "nightly"
+          body: "Latest automatically built ZIP (unstable development snapshot)"
+          append_body: false
+          generate_release_notes: false
+          make_latest: false
+          draft: false
+          prerelease: true
+          files: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*"
