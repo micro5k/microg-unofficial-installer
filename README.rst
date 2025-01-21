@@ -29,9 +29,12 @@ This project is available on GitHub_, on GitLab_ as well as on XDA_.
 
 Release
 -------
-.. image:: https://img.shields.io/github/v/release/micro5k/microg-unofficial-installer.svg?include_prereleases&cacheSeconds=3600
-   :alt: GitHub (pre-)release
+.. image:: https://img.shields.io/github/v/release/micro5k/microg-unofficial-installer.svg?cacheSeconds=3600
+   :alt: GitHub release
    :target: docs/INSTRUCTIONS.rst
+.. image:: ../../actions/workflows/auto-nightly.yml/badge.svg
+   :alt: GitHub nightly
+   :target: ../../releases/tag/nightly
 
 See `here <docs/INSTRUCTIONS.rst>`_ for the instructions.
 
