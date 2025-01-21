@@ -6,6 +6,9 @@ name: "- Create tag now"
 permissions: {}
 on:
   workflow_dispatch:
+concurrency:
+  group: "${{ github.repository_id }}-${{ github.workflow }}"
+  cancel-in-progress: true
 jobs:
   tag-creation:
     name: "Tag creation"
@@ -29,30 +32,30 @@ jobs:
         with:
           retries: 3
           script: |
-            console.log('::notice::Tag name: ${{ steps.repo-info.outputs.version }}')
-            const result = await github.rest.git.createRef({
+            /* jshint esversion: 6 */
+            console.log('::notice::Tag name: ${{ steps.repo-info.outputs.version }}');
+            const response = await github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: 'refs/tags/${{ steps.repo-info.outputs.version }}',
               sha: context.sha
             }).catch(error => {
-              console.log('Error message: ' + error.message)
-              if(error.status == 422 && error.message == 'Reference already exists') {
-                console.log('::warning::Tag already exist, ignored!!!')
-                return
+              if(error.status === 422 && error.message === 'Reference already exists') {
+                console.warn('::warning::Tag already exist, ignored!!!');
+                return;
               }
-              console.log('::error::Tag creation failed with error ' + error.status)
-              console.log('')
-              console.log('DEBUG:')
-              throw error
-            })
-            if(result && result.status >= 200 && result.status < 300) {
-              console.log('')
-              console.log('Triggered the workflow for the release.')
-              await github.rest.actions.createWorkflowDispatch({
+              console.error('::error::Tag creation failed with error: ' + error.status);
+              console.error('::error::Error message: ' + error.message);
+              console.log('');
+              throw error;
+            });
+            if(response && response.status >= 200 && response.status < 300) {
+              console.log('');
+              console.log('Triggered the workflow for the release.');
+              github.rest.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 workflow_id: 'auto-release-from-tag.yml',
                 ref: 'refs/tags/${{ steps.repo-info.outputs.version }}'
-              })
+              });
             }
