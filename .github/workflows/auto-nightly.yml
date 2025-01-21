@@ -79,14 +79,17 @@ jobs:
               if(response && response.message) console.error('::error::' + response.message);
               throw new Error('getReleaseByTag failed.');
             }
-            await github.rest.git.deleteRef({
+            await github.rest.git.updateRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'tags/nightly'
+              ref: 'tags/nightly',
+              sha: context.sha,
+              force: true
+            }).then(response => {
+              console.log('Previous nightly tag updated.');
             }).catch(error => {
               if(error.status !== 422 || error.message !== 'Reference does not exist') throw error;
             });
-            console.log('Previous nightly tag deleted.');
       - name: "Create nightly release"
         uses: softprops/action-gh-release@v2
         if: "${{ github.event_name != 'pull_request' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}"
