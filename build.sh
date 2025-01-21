@@ -123,6 +123,8 @@ if test "${OPENSOURCE_ONLY:?}" != 'false'; then
         printf 'ZIP_VERSION=\n'
         printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
         printf 'ZIP_BUILD_TYPE=%s\n' "${BUILD_TYPE?}"
+        printf 'ZIP_BUILD_TYPE_SUPPORTED=%s\n' 'false'
+        printf 'ZIP_IS_ALPHA=\n'
         printf 'ZIP_SHA256=\n'
         printf 'ZIP_MD5=\n'
       } >> "${GITHUB_OUTPUT?}"
@@ -153,6 +155,10 @@ MODULE_ID="$(simple_get_prop 'id' "${MAIN_DIR:?}/zip-content/module.prop")" || u
 MODULE_VER="$(simple_get_prop 'version' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module version string'
 MODULE_AUTHOR="$(simple_get_prop 'author' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module author string'
 FILENAME="${MODULE_ID:?}-${MODULE_VER:?}${ZIP_SHORT_COMMIT_ID:+-}${ZIP_SHORT_COMMIT_ID-}-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
+case "${MODULE_VER:?}" in
+  *'-alpha') MODULE_IS_ALPHA='true' ;;
+  *) MODULE_IS_ALPHA='false' ;;
+esac
 
 # shellcheck source=SCRIPTDIR/addition.sh
 . "${MAIN_DIR}/addition.sh"
@@ -318,6 +324,8 @@ if test "${GITHUB_JOB:-false}" != 'false'; then
     printf 'ZIP_VERSION=%s\n' "${MODULE_VER?}"
     printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
     printf 'ZIP_BUILD_TYPE=%s\n' "${BUILD_TYPE?}"
+    printf 'ZIP_BUILD_TYPE_SUPPORTED=%s\n' 'true'
+    printf 'ZIP_IS_ALPHA=%s\n' "${MODULE_IS_ALPHA?}"
     printf 'ZIP_SHA256=%s\n' "${ZIP_SHA256?}"
     printf 'ZIP_MD5=%s\n' "${ZIP_MD5?}"
   } >> "${GITHUB_OUTPUT?}"
