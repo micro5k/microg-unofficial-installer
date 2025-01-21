@@ -8,6 +8,9 @@ on:
   push:
     branches:
       - "main"
+concurrency:
+  group: "${{ github.repository_id }}-${{ github.workflow }}"
+  cancel-in-progress: true
 jobs:
   base-job:
     name: "Nightly"
@@ -53,7 +56,7 @@ jobs:
           : "${ZIP_FOLDER:?}" || exit "${?}"
       - name: "Delete previous nightly release"
         uses: actions/github-script@v7
-        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}"
+        if: "${{ github.event_name != 'pull_request' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}"
         with:
           retries: 3
           script: |
@@ -69,7 +72,7 @@ jobs:
                 repo: context.repo.repo,
                 release_id: response.data.id
               });
-              console.log('Previous nightly release deleted:' + response.data.name)
+              console.log('Previous nightly release deleted: ' + response.data.name + ' (' + response.data.id + ')')
             } else if(response.status !== 404) {
               throw response;
             }
@@ -82,7 +85,7 @@ jobs:
             });
       - name: "Create nightly release"
         uses: softprops/action-gh-release@v2
-        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}"
+        if: "${{ github.event_name != 'pull_request' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}"
         with:
           name: "Nightly build"
           tag_name: "nightly"
