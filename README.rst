@@ -50,7 +50,7 @@ See `here <docs/INSTRUCTIONS.rst>`_ for the instructions.
 
 Copyright
 ---------
-© 2016-2019, 2021-2024 ale5000
+© 2016-2019, 2021-2025 ale5000
 
 
 Code analysis
