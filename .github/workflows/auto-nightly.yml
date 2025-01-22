@@ -30,7 +30,7 @@ jobs:
         id: "build"
         shell: bash
         run: |
-          ### Building nightly...
+          # Building nightly...
           BUILD_TYPE='oss' '${{ github.workspace }}/build.sh'
       - name: "ZIP info"
         run: |
@@ -54,9 +54,25 @@ jobs:
           printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
           : "${ZIP_FOLDER:?}" || exit "${?}"
+      - name: "Do we need to release?"
+        id: "release-decision"
+        shell: bash
+        run: |
+          # Do we need to release?
+          git fetch -q origin
+          CREATE_RELEASE='false'
+          IS_LATEST_COMMIT='false'
+          if test '${{ github.sha }}' = "$(git log -n 1 --pretty='%H' 'origin/main' || :)"; then
+            IS_LATEST_COMMIT='true'
+          fi
+          if test "${IS_LATEST_COMMIT:?}" = 'true' && '${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' && github.event_name != 'pull_request' }}'; then
+            CREATE_RELEASE='true'
+          fi
+          printf 'CREATE_RELEASE=%s\n' "${CREATE_RELEASE:?}" >> "${GITHUB_OUTPUT?}"
+          printf '%s\n' "${CREATE_RELEASE:?}"
       - name: "Delete previous nightly release"
         uses: actions/github-script@v7
-        if: "${{ github.event_name != 'pull_request' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}"
+        if: "${{ steps.release-decision.outputs.CREATE_RELEASE == 'true' }}"
         with:
           retries: 3
           script: |
@@ -92,7 +108,7 @@ jobs:
             });
       - name: "Create nightly release"
         uses: softprops/action-gh-release@v2
-        if: "${{ github.event_name != 'pull_request' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}"
+        if: "${{ steps.release-decision.outputs.CREATE_RELEASE == 'true' }}"
         with:
           name: "Nightly build"
           tag_name: "nightly"
