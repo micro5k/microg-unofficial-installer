@@ -226,6 +226,7 @@ rm -f "${TEMP_DIR}/zip-content/settings-full.conf"
 rm -rf "${TEMP_DIR}/zip-content/misc/aapt" || ui_error 'Failed to delete unused files in the temp dir'
 rm -f "${TEMP_DIR}/zip-content/misc/busybox/busybox-"mips* || ui_error 'Failed to delete unused files in the temp dir'
 rm -f "${TEMP_DIR}/zip-content/LICENSES/Info-ZIP.txt" || ui_error 'Failed to delete unused files in the temp dir'
+rm -f "${TEMP_DIR}/zip-content/LICENSES/Unlicense.txt" || ui_error 'Failed to delete unused files in the temp dir'
 
 printf '%s\n%s\n\n%s\n' '# SPDX-FileCopyrightText: none' '# SPDX-License-Identifier: CC0-1.0' "buildType=${BUILD_TYPE:?}" 1> "${TEMP_DIR:?}/zip-content/build-type.prop" || ui_error 'Failed to create the "build-type.prop" file'
 
