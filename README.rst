@@ -30,22 +30,17 @@ This project is available on GitHub_, on GitLab_ as well as on XDA_.
 Release
 -------
 .. image:: https://img.shields.io/github/v/release/micro5k/microg-unofficial-installer.svg?cacheSeconds=3600
-   :alt: GitHub release
-   :target: docs/INSTRUCTIONS.rst
-
-.. image:: ../../actions/workflows/auto-nightly.yml/badge.svg
-   :alt: GitHub nightly
-   :target: ../../releases/tag/nightly
-
-See `here <docs/INSTRUCTIONS.rst>`_ for the instructions.
+   :alt: GitHub latest release
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/latest/total.svg?cacheSeconds=3600
    :alt: Downloads of the latest OSS release
-   :target: `release`_
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/total.svg?cacheSeconds=3600
    :alt: Total OSS downloads
-   :target: `release`_
+
+Download `releases <docs/INSTRUCTIONS.rst>`_
+
+Download `nightly builds <https://github.com/micro5k/microg-unofficial-installer/releases/tag/nightly>`_
 
 
 Copyright
@@ -56,8 +51,12 @@ Copyright
 Code analysis
 -------------
 .. image:: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-linting.yml/badge.svg
-   :alt: Code linting of GitHub
+   :alt: Code linting workflow
    :target: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-linting.yml
+
+.. image:: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/auto-nightly.yml/badge.svg
+   :alt: Nightly workflow
+   :target: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/auto-nightly.yml
 
 .. image:: https://www.codefactor.io/repository/github/micro5k/microg-unofficial-installer/badge
    :alt: CodeFactor Badge
