@@ -160,7 +160,13 @@ rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
 MODULE_ID="$(simple_get_prop 'id' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module id string'
 MODULE_VER="$(simple_get_prop 'version' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module version string'
 MODULE_AUTHOR="$(simple_get_prop 'author' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module author string'
-FILENAME="${MODULE_ID:?}-${MODULE_VER:?}${ZIP_SHORT_COMMIT_ID:+-}${ZIP_SHORT_COMMIT_ID-}-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
+
+FILENAME_START="${MODULE_ID:?}-${MODULE_VER:?}"
+FILENAME_END="-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
+FILENAME="${FILENAME_START:?}${ZIP_SHORT_COMMIT_ID:+-}${ZIP_SHORT_COMMIT_ID-}${FILENAME_END:?}"
+
+FILENAME_EXT='.zip'
+
 case "${MODULE_VER:?}" in
   *'-alpha') MODULE_IS_ALPHA='true' ;;
   *) MODULE_IS_ALPHA='false' ;;
@@ -271,30 +277,30 @@ fi
 find "${TEMP_DIR}/zip-content" -exec touch -c -t 200802290333.46 '{}' + || ui_error 'Failed to set the modification date of files'
 
 # Remove the previously built files (if they exist)
-rm -f "${OUT_DIR:?}/${FILENAME:?}"*.zip || ui_error 'Failed to remove the previously built files'
-rm -f "${OUT_DIR:?}/${FILENAME:?}"*.zip.md5 || ui_error 'Failed to remove the previously built files'
-rm -f "${OUT_DIR:?}/${FILENAME:?}"*.zip.sha256 || ui_error 'Failed to remove the previously built files'
+rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}" || ui_error 'Failed to remove the previously built files'
+rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}".md5 || ui_error 'Failed to remove the previously built files'
+rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}".sha256 || ui_error 'Failed to remove the previously built files'
 
 # Compress (it ensure that the list of files to compress is in the same order under all OSes)
 # Note: Unicode filenames in the zip are disabled since we don't need them and also zipsigner.jar chokes on them
 cd "${TEMP_DIR}/zip-content" || ui_error 'Failed to change the folder'
 echo 'Zipping...'
-find . -type f | LC_ALL=C sort | zip -D -9 -X -UN=n -nw "${TEMP_DIR}/flashable.zip" -@ || ui_error 'Failed compressing'
-FILENAME="${FILENAME}-signed"
+find . -type f | LC_ALL=C sort | zip -D -9 -X -UN=n -nw "${TEMP_DIR}/flashable${FILENAME_EXT:?}" -@ || ui_error 'Failed compressing'
+FILENAME="${FILENAME:?}-signed"
 
 # Sign and zipalign
 echo ''
 echo 'Signing and zipaligning...'
 mkdir -p "${TEMP_DIR:?}/zipsign"
-java -Duser.timezone=UTC -Dzip.encoding=Cp437 -Djava.io.tmpdir="${TEMP_DIR}/zipsign" -jar "${MAIN_DIR}/tools/zipsigner.jar" "${TEMP_DIR}/flashable.zip" "${TEMP_DIR}/${FILENAME}.zip" || ui_error 'Failed signing and zipaligning'
+java -Duser.timezone=UTC -Dzip.encoding=Cp437 -Djava.io.tmpdir="${TEMP_DIR:?}/zipsign" -jar "${MAIN_DIR:?}/tools/zipsigner.jar" "${TEMP_DIR:?}/flashable${FILENAME_EXT:?}" "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" || ui_error 'Failed signing and zipaligning'
 
 if test "${FAST_BUILD:-false}" = 'false'; then
   echo ''
-  zip -T "${TEMP_DIR}/${FILENAME}.zip" || ui_error 'The zip file is corrupted'
+  zip -T "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" || ui_error 'The zip file is corrupted'
 fi
-cp -f "${TEMP_DIR}/${FILENAME}.zip" "${OUT_DIR}/${FILENAME}.zip" || ui_error 'Failed to copy the final file'
+cp -f "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" || ui_error 'Failed to copy the final file'
 
-cd "${OUT_DIR}" || ui_error 'Failed to change the folder'
+cd "${OUT_DIR:?}" || ui_error 'Failed to change the folder'
 
 # Cleanup remnants
 rm -rf -- "${TEMP_DIR:?}" &
@@ -303,21 +309,19 @@ rm -rf -- "${TEMP_DIR:?}" &
 echo ''
 
 # Generate info
-ZIP_FILENAME="${FILENAME:?}.zip"
-
-sha256sum "${ZIP_FILENAME:?}" > "${OUT_DIR:?}/${ZIP_FILENAME:?}.sha256" || ui_error 'Failed to compute the SHA-256 hash'
-ZIP_SHA256="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${ZIP_FILENAME:?}.sha256")" || ui_error 'Failed to read the SHA-256 hash'
+sha256sum "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.sha256" || ui_error 'Failed to compute the SHA-256 hash'
+ZIP_SHA256="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.sha256")" || ui_error 'Failed to read the SHA-256 hash'
 
 ZIP_MD5=''
 if test "${FAST_BUILD:-false}" = 'false'; then
-  md5sum "${ZIP_FILENAME:?}" > "${OUT_DIR:?}/${ZIP_FILENAME:?}.md5" || ui_error 'Failed to compute the MD5 hash'
-  ZIP_MD5="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${ZIP_FILENAME:?}.md5")" || ui_error 'Failed to read the MD5 hash'
+  md5sum "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5" || ui_error 'Failed to compute the MD5 hash'
+  ZIP_MD5="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5")" || ui_error 'Failed to read the MD5 hash'
 fi
 
 if test -n "${ZIP_SHORT_COMMIT_ID?}"; then
   printf '%s\n' "Short commit ID: ${ZIP_SHORT_COMMIT_ID:?}"
 fi
-printf '%s\n' "Filename: ${ZIP_FILENAME:?}"
+printf '%s\n' "Filename: ${FILENAME:?}${FILENAME_EXT:?}"
 printf '%s\n' "SHA-256: ${ZIP_SHA256:?}"
 if test -n "${ZIP_MD5?}"; then
   printf '%s\n' "MD5: ${ZIP_MD5:?}"
@@ -327,7 +331,7 @@ fi
 if test "${GITHUB_JOB:-false}" != 'false'; then
   {
     printf 'ZIP_FOLDER=%s\n' "${OUT_DIR?}"
-    printf 'ZIP_FILENAME=%s\n' "${ZIP_FILENAME?}"
+    printf 'ZIP_FILENAME=%s\n' "${FILENAME?}${FILENAME_EXT?}"
     printf 'ZIP_VERSION=%s\n' "${MODULE_VER?}"
     printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
     printf 'ZIP_BUILD_TYPE=%s\n' "${BUILD_TYPE?}"

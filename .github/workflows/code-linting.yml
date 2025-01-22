@@ -33,6 +33,9 @@ jobs:
     name: "Codacy"
     if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
     runs-on: ubuntu-latest
+    concurrency:
+      group: "${{ github.repository_id }}-${{ github.workflow }}-codacy"
+      cancel-in-progress: true
     permissions:
       security-events: write
 
