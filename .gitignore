@@ -15,7 +15,7 @@
 /.gradle/
 /build/
 
-# Local configuration files
+# Local Gradle configuration files
 local.properties
 user.gradle
 
@@ -26,16 +26,17 @@ user.gradle
 /build
 /cmdline
 
-# Code scanning, log and other files
+# Coverage, logs and other files
+/coverage/
+/.ssh/
+/.wget-hsts
+/.ash_history
+/.bash_history
 *.log
 *.sarif
 *.dex
-/coverage/
-/.ash_history
-/.bash_history
-/.wget-hsts
 
-# Caches and other files
+# Caches
 /.cache/
 /.git/
 __pycache__/
