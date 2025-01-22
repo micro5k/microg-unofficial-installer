@@ -5,8 +5,5 @@ Source: https://github.com/micro5k/microg-unofficial-installer
 Comment: Here I will list only files that don't have license and/or copyright in the files themselves as per REUSE specification
 License: GPL-3.0-or-later
 
-Files: README.rst
-License: GPL-3.0-or-later
-
 License: GPL-3.0-or-later
  <../LICENSES/GPL-3.0-or-later.txt>
