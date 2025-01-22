@@ -1,0 +1,6 @@
+SPDX-FileCopyrightText: Copyright (C) tons of folks. <https://github.com/yashdsaraf/busybox/raw/master/AUTHORS>
+SPDX-License-Identifier: GPL-2.0-only
+SPDX-FileType: APPLICATION
+
+Sources: https://github.com/yashdsaraf/busybox
+Binary: https://github.com/yashdsaraf/bb-bot/releases
