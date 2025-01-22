@@ -28,8 +28,6 @@ jobs:
         uses: actions/checkout@v4
       - name: "JSON and YAML - Validator"
         uses: GrantBirki/json-yaml-validate@v3
-        with:
-          json_exclude_regex: "^\\.vscode/tasks\\.json$"
 
   codacy:
     name: "Codacy"
