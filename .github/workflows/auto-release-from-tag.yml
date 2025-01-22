@@ -9,6 +9,9 @@ on:
     tags:
       - "v[0-9]+.[0-9]+*"
   workflow_dispatch:
+concurrency:
+  group: "${{ github.repository_id }}-${{ github.workflow }}"
+  cancel-in-progress: false
 jobs:
   base-job:
     name: "Release"
@@ -40,21 +43,27 @@ jobs:
           ZIP_VERSION='${{ steps.build.outputs.ZIP_VERSION }}'
           ZIP_SHORT_COMMIT_ID='${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}'
           ZIP_BUILD_TYPE='${{ steps.build.outputs.ZIP_BUILD_TYPE }}'
+          ZIP_BUILD_TYPE_SUPPORTED='${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED }}'
+          ZIP_IS_ALPHA='${{ steps.build.outputs.ZIP_IS_ALPHA }}'
           ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
           ZIP_MD5='${{ steps.build.outputs.ZIP_MD5 }}'
           # Displaying informations...
           printf '%s\n' "::notice::Filename: ${ZIP_FILENAME:-Missing}"
           printf '%s\n' "::notice::Version: ${ZIP_VERSION:-Missing}"
           printf '%s\n' "::notice::Short commit ID: ${ZIP_SHORT_COMMIT_ID:-Missing}"
-          printf '%s\n' "::notice::Build type: ${ZIP_BUILD_TYPE:-Missing}"
+          printf '%s\n' "::notice::Build type: ${ZIP_BUILD_TYPE:?}"
+          printf '%s\n' "::notice::Build type supported: ${ZIP_BUILD_TYPE_SUPPORTED:?}"
+          printf '%s\n' "::notice::Is alpha: ${ZIP_IS_ALPHA:-Missing}"
           printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
           : "${ZIP_FOLDER:?}" || exit "${?}"
       - name: "Create release"
         uses: softprops/action-gh-release@v2
+        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'false' && github.event_name != 'pull_request' }}"
         with:
           body: "See the complete [**changelog**](./CHANGELOG.rst)."
           append_body: true
           generate_release_notes: true
+          draft: false
           files: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*"
-          fail_on_unmatched_files: false
+          fail_on_unmatched_files: true
