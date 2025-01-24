@@ -1182,23 +1182,32 @@ convert_bytes_to_human_readable_format()
 
 verify_disk_space()
 {
-  local _needed_space_bytes _free_space_bytes
+  local _needed_space_bytes _free_space_bytes _stat_result
 
-  _needed_space_bytes="$(get_disk_space_usage_of_file_or_folder "${TMP_PATH:?}/files")" || _needed_space_bytes='-1'
-  _free_space_bytes="$(($(stat -f -c '%f * %S' -- "${1:?}")))" || _free_space_bytes='-1'
+  if _needed_space_bytes="$(get_disk_space_usage_of_file_or_folder "${TMP_PATH:?}/files")"; then
+    ui_msg "Disk space required: $(convert_bytes_to_mb "${_needed_space_bytes:?}" || :) MB"
+  else
+    _needed_space_bytes='-1'
+  fi
 
-  ui_msg "Disk space required: $(convert_bytes_to_mb "${_needed_space_bytes:?}" || true) MB"
-  ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || true) MB ($(convert_bytes_to_human_readable_format "${_free_space_bytes:?}" || true))"
+  if _stat_result="$(stat -f -c '%f * %S' -- "${1:?}")" && test -n "${_stat_result?}" && _free_space_bytes="$((_stat_result))"; then
+    ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || :) MB ($(convert_bytes_to_human_readable_format "${_free_space_bytes:?}" || :))"
+  else
+    ui_warning "Unable to get free disk space, output for '${1?}' => $(stat -f -c '%f * %S' -- "${1:?}" || :)"
+    _free_space_bytes='-1'
+  fi
 
-  if test "${_needed_space_bytes:?}" -lt 0 || test "${_free_space_bytes:?}" -lt 0; then
+  if test "${_needed_space_bytes:?}" -gt 0 && test "${_free_space_bytes:?}" -ge 0; then
+    : # OK
+  else
     ui_msg_empty_line
-    ui_warning "Unable to verify needed space, continuing anyway"
+    ui_warning 'Unable to verify needed space, continuing anyway'
     return 0
   fi
 
-  if test "${_needed_space_bytes:?}" -ge "${_free_space_bytes:?}"; then return 1; fi
+  if test "${_free_space_bytes:?}" -gt "${_needed_space_bytes:?}"; then return 0; fi
 
-  return 0
+  return 1
 }
 
 perform_secure_copy_to_device()
