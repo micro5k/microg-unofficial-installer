@@ -876,7 +876,7 @@ clean_previous_installations()
     ui_error "Something is wrong because '${SYS_PATH?}' is NOT really writable!!!"
   fi
 
-  _initial_free_space="$(_get_free_space)" || _initial_free_space='-1'
+  _initial_free_space="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" || _initial_free_space='-1'
 
   rm -f -- "${SYS_PATH:?}/etc/write-test-file.dat" || ui_error 'Failed to delete the test file'
 
@@ -1006,11 +1006,11 @@ _something_exists()
   return 1
 }
 
-_get_free_space()
+_get_free_disk_space_of_partition_using_df()
 {
   local _skip_first='true'
 
-  df -P -- "${SYS_MOUNTPOINT:?}" | while IFS=' ' read -r _ _ _ available_space _; do
+  df -B1 -P -- "${1:?}" | while IFS=' ' read -r _ _ _ available_space _; do
     if test "${_skip_first?}" = 'true'; then
       _skip_first='false'
       continue
@@ -1034,7 +1034,7 @@ _wait_free_space_changes()
 
   while test "${_max_attempts:?}" -gt 0 && _max_attempts="$((_max_attempts - 1))"; do
     printf '.'
-    if test "$(_get_free_space || true)" != "${2:?}"; then
+    if test "$(get_free_disk_space_of_partition "${SYS_PATH:?}" || :)" != "${2:?}"; then
       break
     fi
     sleep 1
@@ -1058,7 +1058,7 @@ _do_rollback_last_app_internal()
   local _backup_ifs _skip_first _initial_free_space _vanity_name _installed_file_list
   if test ! -s "${TMP_PATH:?}/processed-${1:?}s.log"; then return 1; fi
 
-  _initial_free_space="$(_get_free_space)" || return 2
+  _initial_free_space="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" || return 2
   _installed_file_list="$(tail -n '1' -- "${TMP_PATH:?}/processed-${1:?}s.log")" || ui_error "Failed to read processed-${1?}s.log"
   test -n "${_installed_file_list?}" || return 3
 
@@ -1124,16 +1124,27 @@ _is_free_space_error()
   return 1 # NOT found
 }
 
+get_free_disk_space_of_partition()
+{
+  local _stat_result
+
+  if _stat_result="$(PATH="${PATH:-%empty}:${PREVIOUS_PATH:-%empty}" stat -f -c '%f * %S' -- "${1:?}")" && test -n "${_stat_result?}" && printf '%s\n' "$((_stat_result))"; then
+    return 0
+  fi
+
+  return 1
+}
+
 get_disk_space_usage_of_file_or_folder()
 {
   local _result
 
-  if _result="$(du 2> /dev/null -s -B 1 -- "${1:?}" | cut -f 1 -s)" && test -n "${_result?}"; then
-    printf '%u\n' "${_result:?}"
+  if _result="$(du 2> /dev/null -s -B1 -- "${1:?}" | cut -f 1 -s)" && test -n "${_result?}"; then
+    printf '%s\n' "${_result:?}"
   elif _result="$(du -s -k -- "${1:?}" | cut -f 1 -s)" && test -n "${_result?}"; then
-    printf '%u\n' "$((_result * 1024))"
+    printf '%s\n' "$((_result * 1024))"
   else
-    printf '%d\n' '-1'
+    printf '%s\n' '-1'
     return 1
   fi
 }
@@ -1182,18 +1193,18 @@ convert_bytes_to_human_readable_format()
 
 verify_disk_space()
 {
-  local _needed_space_bytes _free_space_bytes _stat_result
+  local _needed_space_bytes _free_space_bytes
 
-  if _needed_space_bytes="$(get_disk_space_usage_of_file_or_folder "${TMP_PATH:?}/files")"; then
+  if _needed_space_bytes="$(get_disk_space_usage_of_file_or_folder "${TMP_PATH:?}/files")" && test -n "${_needed_space_bytes?}"; then
     ui_msg "Disk space required: $(convert_bytes_to_mb "${_needed_space_bytes:?}" || :) MB"
   else
     _needed_space_bytes='-1'
   fi
 
-  if _stat_result="$(stat -f -c '%f * %S' -- "${1:?}")" && test -n "${_stat_result?}" && _free_space_bytes="$((_stat_result))"; then
+  if _free_space_bytes="$(get_free_disk_space_of_partition "${1:?}")" && test -n "${_free_space_bytes?}"; then
     ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || :) MB ($(convert_bytes_to_human_readable_format "${_free_space_bytes:?}" || :))"
   else
-    ui_warning "Unable to get free disk space, output for '${1?}' => $(stat -f -c '%f * %S' -- "${1:?}" || :)"
+    ui_warning "Unable to get free disk space, output for '${1?}' => $(PATH="${PATH:-%empty}:${PREVIOUS_PATH:-%empty}" stat -f -c '%f * %S' -- "${1:?}" || :)"
     _free_space_bytes='-1'
   fi
 
@@ -1239,8 +1250,15 @@ perform_secure_copy_to_device()
   touch 2> /dev/null "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || :
 
   ui_debug ''
-  df -h -T -- "${SYS_MOUNTPOINT:?}" || true
+  df 2> /dev/null -B1 -P -- "${SYS_MOUNTPOINT:?}" || :
   ui_debug ''
+  df 2> /dev/null -h -T -- "${SYS_MOUNTPOINT:?}" || df -h -- "${SYS_MOUNTPOINT:?}" || :
+  ui_debug ''
+
+  local _free_space_bytes
+  if _free_space_bytes="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" && test -n "${_free_space_bytes?}"; then
+    ui_debug "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || :) MB ($(convert_bytes_to_human_readable_format "${_free_space_bytes:?}" || :))"
+  fi
 
   if test -n "${_error_text?}"; then
     ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error_text?}" | head -n 1 || :)"
