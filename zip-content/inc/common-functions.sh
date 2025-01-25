@@ -1027,7 +1027,9 @@ _get_free_disk_space_of_partition_using_df()
 
 _wait_free_space_changes()
 {
-  local _max_attempts='15'
+  local _max_attempts
+
+  _max_attempts='15'
   if test -n "${1?}"; then _max_attempts="${1:?}"; fi
 
   printf 'Waiting..'
@@ -1149,7 +1151,7 @@ get_free_disk_space_of_partition()
 
   if _stat_result="$(stat 2> /dev/null -f -c '%f * %S' -- "${1:?}")"; then
     : # OK
-  elif test -n "${DEVICE_STAT?}" && _stat_result="$(PATH="${PREVIOUS_PATH:?}" "${DEVICE_STAT:?}" -f -c '%f * %S' -- "${1:?}")"; then
+  elif test -n "${DEVICE_STAT?}" && _stat_result="$(PATH="${PREVIOUS_PATH:?}" "${DEVICE_STAT:?}" 2> /dev/null -f -c '%f * %S' -- "${1:?}")"; then
     : # OK
   else
     _stat_result=''
@@ -1159,6 +1161,7 @@ get_free_disk_space_of_partition()
     return 0
   fi
 
+  printf '%s\n' '-1'
   return 1
 }
 
@@ -1231,7 +1234,7 @@ verify_disk_space()
   if _free_space_bytes="$(get_free_disk_space_of_partition "${1:?}")" && test -n "${_free_space_bytes?}"; then
     ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || :) MB ($(convert_bytes_to_human_readable_format "${_free_space_bytes:?}" || :))"
   else
-    ui_warning "Unable to get free disk space, output for '${1?}' => $(stat 2> /dev/null -f -c '%f * %S' -- "${1:?}" || :)"
+    ui_warning "Unable to get free disk space, output for '${1?}' => $(stat -f -c '%f * %S' -- "${1:?}" || :)"
     _free_space_bytes='-1'
   fi
 
