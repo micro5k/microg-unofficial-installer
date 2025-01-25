@@ -1124,11 +1124,38 @@ _is_free_space_error()
   return 1 # NOT found
 }
 
+get_size_of_file()
+{
+  local _stat_result
+
+  if _stat_result="$(stat 2> /dev/null -c '%s' -- "${1:?}")"; then
+    : # OK
+  elif test -n "${DEVICE_STAT?}" && _stat_result="$(PATH="${PREVIOUS_PATH:?}" "${DEVICE_STAT:?}" -c '%s' -- "${1:?}")"; then
+    : # OK
+  else
+    _stat_result=''
+  fi
+
+  if test -n "${_stat_result?}" && printf '%s\n' "${_stat_result:?}"; then
+    return 0
+  fi
+
+  return 1
+}
+
 get_free_disk_space_of_partition()
 {
   local _stat_result
 
-  if _stat_result="$(PATH="${PATH:-%empty}:${PREVIOUS_PATH:-%empty}" stat -f -c '%f * %S' -- "${1:?}")" && test -n "${_stat_result?}" && printf '%s\n' "$((_stat_result))"; then
+  if _stat_result="$(stat 2> /dev/null -f -c '%f * %S' -- "${1:?}")"; then
+    : # OK
+  elif test -n "${DEVICE_STAT?}" && _stat_result="$(PATH="${PREVIOUS_PATH:?}" "${DEVICE_STAT:?}" -f -c '%f * %S' -- "${1:?}")"; then
+    : # OK
+  else
+    _stat_result=''
+  fi
+
+  if test -n "${_stat_result?}" && printf '%s\n' "$((_stat_result))"; then
     return 0
   fi
 
@@ -1204,7 +1231,7 @@ verify_disk_space()
   if _free_space_bytes="$(get_free_disk_space_of_partition "${1:?}")" && test -n "${_free_space_bytes?}"; then
     ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || :) MB ($(convert_bytes_to_human_readable_format "${_free_space_bytes:?}" || :))"
   else
-    ui_warning "Unable to get free disk space, output for '${1?}' => $(PATH="${PATH:-%empty}:${PREVIOUS_PATH:-%empty}" stat -f -c '%f * %S' -- "${1:?}" || :)"
+    ui_warning "Unable to get free disk space, output for '${1?}' => $(stat 2> /dev/null -f -c '%f * %S' -- "${1:?}" || :)"
     _free_space_bytes='-1'
   fi
 
@@ -1947,7 +1974,7 @@ setup_app()
       fi
       move_rename_file "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.apk" "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${_vanity_name?}'"
 
-      if test "${CURRENTLY_ROLLBACKING:-false}" != 'true' && test "${_optional:?}" = 'true' && test "$(stat -c '%s' -- "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.apk" || printf '0' || true)" -gt 300000; then
+      if test "${CURRENTLY_ROLLBACKING:-false}" != 'true' && test "${_optional:?}" = 'true' && test "$(get_size_of_file "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.apk" || printf '0' || :)" -gt 300000; then
         _installed_file_list="${_installed_file_list#|}"
         printf '%s\n' "${_vanity_name:?}|${_output_dir:?}/${_output_name:?}.apk|${_installed_file_list?}" 1>> "${TMP_PATH:?}/processed-${_dir:?}s.log" || ui_error "Failed to update processed-${_dir?}s.log"
       fi
