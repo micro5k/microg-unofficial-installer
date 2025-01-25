@@ -1087,7 +1087,7 @@ _do_rollback_last_app_internal()
   _wait_free_space_changes '' "${_initial_free_space:?}" # Reclaiming free space may take some time
   ui_debug ''
 
-  sed -ie '$ d' -- "${TMP_PATH:?}/processed-${1:?}s.log" || ui_error "Failed to remove the last line from read processed-${1?}s.log"
+  sed -ie '$ d' "${TMP_PATH:?}/processed-${1:?}s.log" || ui_error "Failed to remove the last line from processed-${1?}s.log"
 
   if command 1> /dev/null -v 'rollback_complete_callback'; then
     export CURRENTLY_ROLLBACKING='true'
@@ -1924,7 +1924,7 @@ setup_app()
         move_rename_file "${TMP_PATH:?}/origin/etc/default-permissions/default-permissions-${_filename:?}.xml" "${TMP_PATH:?}/files/etc/default-permissions/default-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the default permissions xml of '${_vanity_name?}'"
         _installed_file_list="${_installed_file_list?}|etc/default-permissions/default-permissions-${_output_name:?}.xml"
       fi
-      if test "${_url_handling:?}" != 'false'; then
+      if test "${_url_handling:?}" != 'false' && test "${CURRENTLY_ROLLBACKING:-false}" != 'true'; then
         add_line_in_file_after_string "${TMP_PATH:?}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${_vanity_name?}'"
       fi
       move_rename_file "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.apk" "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${_vanity_name?}'"
