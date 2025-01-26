@@ -793,7 +793,7 @@ initialize()
       DATA_INIT_STATUS=1
       ui_debug "Mounted: ${DATA_PATH:-}"
     else
-      ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be deleted and their Dalvik cache cannot be cleaned, but it doesn't matter if you do a factory reset"
+      ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be automatically deleted and their Dalvik cache cannot be automatically cleaned. I suggest to manually do a factory reset after flashing this ZIP."
     fi
   fi
   readonly DATA_PATH
