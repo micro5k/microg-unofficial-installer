@@ -22,13 +22,10 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v4
-      - name: "Run Codacy analysis"
+      - name: "Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
         with:
-          # Check https://github.com/codacy/codacy-analysis-cli#project-token to get your project token from your Codacy repository
-          # You can also omit the token and run the tools that support default configurations
-          # project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          verbose: true
+          #verbose: true
           output: results.sarif
           format: sarif
           # Adjust severity of non-security issues
