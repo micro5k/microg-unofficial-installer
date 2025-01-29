@@ -25,6 +25,7 @@ jobs:
       - name: "Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
         with:
+          project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
           #verbose: true
           output: results.sarif
           format: sarif
