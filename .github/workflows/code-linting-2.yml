@@ -43,8 +43,8 @@ jobs:
           sarif_file: "results.sarif"
           category: "Codacy"
 
-  sonarcloud:
-    name: "SonarCloud"
+  sonarqube:
+    name: "SonarQube"
     if: "${{ github.repository_owner == 'micro5k' }}"
     runs-on: ubuntu-latest
 
@@ -52,18 +52,8 @@ jobs:
       - name: "Checkout sources"
         uses: actions/checkout@v4
         with:
-          fetch-depth: "0"
-      - name: "Remove build.gradle"
-        shell: bash
-        run: |
-          # Removing build.gradle...
-          rm -f build.gradle
-      - name: "Run SonarCloud scan"
-        uses: SonarSource/sonarcloud-github-action@v4
+          fetch-depth: "0" # Shallow clones should be disabled for a better relevancy of analysis
+      - name: "SonarQube scan"
+        uses: SonarSource/sonarqube-scan-action@v4
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        # with:
-        #   args: >
-        #     -Dsonar.exclusions=build.gradle
-        #     -Dsonar.verbose=true
+          SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
