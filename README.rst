@@ -72,3 +72,7 @@ Code analysis
 .. image:: https://app.codacy.com/project/badge/Grade/e372a72b55f54bcf80966c8266e3e7fb
    :alt: Codacy Badge
    :target: https://app.codacy.com/gh/micro5k/microg-unofficial-installer/dashboard
+
+.. image:: https://sonarcloud.io/api/project_badges/measure?project=micro5k_microg-unofficial-installer&metric=reliability_rating
+   :alt: SonarQube reliability rating
+   :target: https://sonarcloud.io/summary/new_code?id=micro5k_microg-unofficial-installer
