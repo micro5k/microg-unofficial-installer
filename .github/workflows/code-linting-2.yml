@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: "${{ github.repository_id }}-${{ github.workflow }}-codacy"
-      cancel-in-progress: true
+      cancel-in-progress: false
     permissions:
       security-events: write
 
