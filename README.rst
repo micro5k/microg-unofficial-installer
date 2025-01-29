@@ -37,6 +37,10 @@ Release
    :alt: Downloads of the latest OSS release
    :target: `Release`_
 
+.. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/nightly/total.svg?cacheSeconds=3600
+   :alt: Downloads of the latest OSS nightly
+   :target: `Release`_
+
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/total.svg?cacheSeconds=3600
    :alt: Total OSS downloads
    :target: `Release`_
