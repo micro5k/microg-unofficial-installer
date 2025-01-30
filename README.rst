@@ -57,9 +57,9 @@ Copyright
 
 Code analysis
 -------------
-.. image:: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-linting.yml/badge.svg
+.. image:: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-linting-1.yml/badge.svg
    :alt: Code linting workflow
-   :target: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-linting.yml
+   :target: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-linting-1.yml
 
 .. image:: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/auto-nightly.yml/badge.svg
    :alt: Nightly workflow
