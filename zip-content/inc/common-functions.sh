@@ -1827,7 +1827,7 @@ select_lib()
 
 extract_libs()
 {
-  local _lib_selected
+  local _lib_selected _curr_arch _backup_ifs
 
   ui_msg "Extracting libs from ${1:?}/${2:?}.apk..."
   create_dir "${TMP_PATH:?}/libs"
@@ -1838,29 +1838,20 @@ extract_libs()
 
     _lib_selected='false'
 
-    if test "${ARCH_X64:?}" = 'true' && select_lib 'x86_64'; then
-      _lib_selected='true'
-    fi
-    if test "${ARCH_ARM64:?}" = 'true' && select_lib 'arm64-v8a'; then
-      _lib_selected='true'
-    fi
-    if test "${ARCH_MIPS64:?}" = 'true' && select_lib 'mips64'; then
-      _lib_selected='true'
-    fi
+    _backup_ifs="${IFS-}"
+    IFS=','
+    for _curr_arch in ${ARCH_LIST?}; do
+      if test -n "${_curr_arch?}" && select_lib "${_curr_arch:?}"; then
+        _lib_selected='true'
+        break
+      fi
+    done
+    IFS="${_backup_ifs?}"
 
-    if test "${ARCH_X86:?}" = 'true' && select_lib 'x86'; then
-      _lib_selected='true'
-    fi
-    if test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a'; then
-      _lib_selected='true'
-    elif test "${ARCH_LEGACY_ARM:?}" = 'true' && select_lib 'armeabi'; then
-      _lib_selected='true'
-    elif test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a-hard'; then # Use the deprecated Hard Float ABI only as fallback
-      _lib_selected='true'
-    fi
     # armeabi-v7a-hard is not a real ABI. No devices are built with this. The "hard float" variant only changes the function call ABI.
     # More info: https://android.googlesource.com/platform/ndk/+/master/docs/HardFloatAbi.md
-    if test "${ARCH_MIPS:?}" = 'true' && select_lib 'mips'; then
+    # Use the deprecated Hard Float ABI only as fallback
+    if test "${_lib_selected:?}" = 'false' && test "${ARCH_ARM:?}" = 'true' && select_lib 'armeabi-v7a-hard'; then
       _lib_selected='true'
     fi
 
