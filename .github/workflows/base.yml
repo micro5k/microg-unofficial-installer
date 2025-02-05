@@ -24,7 +24,7 @@ jobs:
       - name: "Setup Ruby"
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
+          ruby-version: "3.4"
       - name: "Install Bashcov and simplecov-lcov"
         run: |
           # Installing Bashcov and simplecov-lcov...
