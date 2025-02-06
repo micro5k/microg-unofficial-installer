@@ -1149,9 +1149,9 @@ get_free_disk_space_of_partition()
 {
   local _stat_result
 
-  if _stat_result="$(stat 2> /dev/null -f -c '%f * %S' -- "${1:?}")"; then
+  if _stat_result="$(stat 2> /dev/null -f -c '%a * %S' -- "${1:?}")"; then
     : # OK
-  elif test -n "${DEVICE_STAT?}" && _stat_result="$(PATH="${PREVIOUS_PATH:?}" "${DEVICE_STAT:?}" 2> /dev/null -f -c '%f * %S' -- "${1:?}")"; then
+  elif test -n "${DEVICE_STAT?}" && _stat_result="$(PATH="${PREVIOUS_PATH:?}" "${DEVICE_STAT:?}" 2> /dev/null -f -c '%a * %S' -- "${1:?}")"; then
     : # OK
   else
     _stat_result=''
@@ -1234,7 +1234,7 @@ verify_disk_space()
   if _free_space_bytes="$(get_free_disk_space_of_partition "${1:?}")" && test -n "${_free_space_bytes?}"; then
     ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || :) MB ($(convert_bytes_to_human_readable_format "${_free_space_bytes:?}" || :))"
   else
-    ui_warning "Unable to get free disk space, output for '${1?}' => $(stat -f -c '%f * %S' -- "${1:?}" || :)"
+    ui_warning "Unable to get free disk space, output for '${1?}' => $(stat -f -c '%a * %S' -- "${1:?}" || :)"
     _free_space_bytes='-1'
   fi
 
