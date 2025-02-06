@@ -131,17 +131,33 @@ ui_debug()
   printf '%s\n' "${1?}"
 }
 
+_show_text_on_recovery()
+{
+  if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
+
+  if test -e "${RECOVERY_PIPE:?}"; then
+    printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
+  else
+    printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
+  fi
+
+  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then printf 1>&2 '%s\n' "${1?}"; fi
+}
+
 enable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
-  export DEBUG_LOG_ENABLED=1
 
   ui_debug "Creating log: ${LOG_PATH:?}"
+  _show_text_on_recovery "Creating log: ${LOG_PATH:?}"
+
   touch "${LOG_PATH:?}" || {
-    ui_warning "Unable to write the log file at: ${LOG_PATH:-}"
     export DEBUG_LOG_ENABLED=0
+    ui_warning "Unable to write the log file at: ${LOG_PATH:-}"
     return
   }
+
+  export DEBUG_LOG_ENABLED=1
 
   # If they are already in use, then use alternatives
   if {
@@ -169,19 +185,6 @@ disable_debug_log()
     # shellcheck disable=SC3023
     exec 88>&- 89>&-
   fi
-}
-
-_show_text_on_recovery()
-{
-  if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
-
-  if test -e "${RECOVERY_PIPE:?}"; then
-    printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
-  else
-    printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
-  fi
-
-  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then printf 1>&2 '%s\n' "${1?}"; fi
 }
 
 ui_error()
