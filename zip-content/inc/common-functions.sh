@@ -1254,19 +1254,22 @@ verify_disk_space()
 perform_secure_copy_to_device()
 {
   if test ! -e "${TMP_PATH:?}/files/${1:?}"; then return 0; fi
-  local _error_text=''
+  local _error_text
 
   ui_debug "  Copying the '${1?}' folder to the device..."
   create_dir "${SYS_PATH:?}/${1:?}"
+  _error_text=''
 
-  if {
-    cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/ ||
-      _error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/)"
-  } && _custom_rollback "${1:?}"; then
+  if
+    {
+      cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}/" ||
+        _error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}/")"
+    } && _custom_rollback "${1:?}"
+  then
     return 0
   elif _is_free_space_error "${_error_text?}"; then
     while _do_rollback_last_app "${1:?}"; do
-      if ! _something_exists "${TMP_PATH:?}/files/${1:?}"/* || cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}"/; then
+      if ! _something_exists "${TMP_PATH:?}/files/${1:?}"/* || cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}/"; then
         if test -n "${_error_text?}"; then
           ui_recovered_error "$(printf '%s\n' "${_error_text:?}" | head -n 1 || true)"
         else
@@ -1285,15 +1288,20 @@ perform_secure_copy_to_device()
   df 2> /dev/null -h -T -- "${SYS_MOUNTPOINT:?}" || df -h -- "${SYS_MOUNTPOINT:?}" || :
   ui_debug ''
 
-  local _free_space_bytes
+  local _ret_code _free_space_bytes
+
   if _free_space_bytes="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" && test -n "${_free_space_bytes?}"; then
     ui_debug "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || :) MB ($(convert_bytes_to_human_readable_format "${_free_space_bytes:?}" || :))"
+    ui_debug ''
   fi
 
+  _ret_code=5
+  ! _is_free_space_error "${_error_text?}" || _ret_code=28
+
   if test -n "${_error_text?}"; then
-    ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error_text?}" | head -n 1 || :)"
+    ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error_text?}" | head -n 1 || :)" "${_ret_code?}"
   fi
-  ui_error "Failed to copy '${1?}' to the device"
+  ui_error "Failed to copy '${1?}' to the device" "${_ret_code?}"
 }
 
 perform_installation()
