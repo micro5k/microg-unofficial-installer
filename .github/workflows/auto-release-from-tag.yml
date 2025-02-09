@@ -61,7 +61,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'false' && github.event_name != 'pull_request' }}"
         with:
-          body: "See the complete [**changelog**](./CHANGELOG.rst)."
+          body: "SHA-256: ${{ steps.build.outputs.ZIP_SHA256 }}\n\nSee the complete [**changelog**](./CHANGELOG.rst)."
           append_body: true
           generate_release_notes: true
           draft: false
