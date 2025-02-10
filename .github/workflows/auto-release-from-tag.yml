@@ -13,10 +13,10 @@ concurrency:
   group: "${{ github.repository_id }}-${{ github.workflow }}"
   cancel-in-progress: false
 jobs:
-  base-job:
+  release:
     name: "Release"
     runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/v')"
+    if: "${{ startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request' }}"
     permissions:
       contents: write
 
@@ -59,7 +59,7 @@ jobs:
           : "${ZIP_FOLDER:?}" || exit "${?}"
       - name: "Create release"
         uses: softprops/action-gh-release@v2
-        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'false' && github.event_name != 'pull_request' }}"
+        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'false' }}"
         with:
           body: "SHA-256: ${{ steps.build.outputs.ZIP_SHA256 }}\n\nSee the complete [**changelog**](./CHANGELOG.rst)."
           append_body: true
