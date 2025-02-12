@@ -265,7 +265,7 @@ _ensure_mountpoint_exist()
 
 _manual_partition_mount()
 {
-  local _backup_ifs _path _block _found
+  local _backup_ifs _path _block _found _curr_mp_list
   unset LAST_MOUNTPOINT
   _backup_ifs="${IFS:-}"
   IFS="${NL:?}"
@@ -293,10 +293,12 @@ _manual_partition_mount()
   fi
 
   if test "${_found:?}" != 'false'; then
+    _curr_mp_list=''
     for _path in ${2?}; do
       test -n "${_path?}" || continue
       _ensure_mountpoint_exist "${_path:?}" || continue
       _path="$(_canonicalize "${_path:?}")"
+      _curr_mp_list="${_curr_mp_list?}${_curr_mp_list:+, }${_path:?}"
 
       umount 2> /dev/null "${_path:?}" || true
       if _mount_helper '-o' 'rw' "${_block:?}" "${_path:?}"; then
@@ -307,7 +309,7 @@ _manual_partition_mount()
       fi
     done
 
-    ui_warning 'Not mounted'
+    ui_warning "Not mounted => ${_curr_mp_list?}"
   fi
 
   IFS="${_backup_ifs:-}"
@@ -2188,7 +2190,7 @@ _find_hardware_keys()
             continue
             ;;
         esac
-        ui_debug "${key_name?} found at ${key_code?}"
+        if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then ui_debug "${key_name?} found at ${key_code?}"; fi
       done 0< "${SYS_PATH:?}/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl" || ui_warning "Failed parsing '${SYS_PATH:-}/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
     else
       ui_debug "Missing keylayout: '${SYS_PATH:-}/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
