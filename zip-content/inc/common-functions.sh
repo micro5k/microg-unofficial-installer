@@ -255,12 +255,18 @@ _ensure_mountpoint_exist()
 {
   if test -e "${1:?}"; then return 0; fi
 
-  ui_debug "Creating mountpoint '${1?}'..."
-  mkdir -p "${1:?}" || {
-    ui_warning "Failed to create mountpoint '${1?}'"
-    return 1
-  }
-  set_perm 0 0 0755 "${1:?}"
+  case "${1:?}" in
+    "${TMP_PATH:?}"/*)
+      ui_debug "Creating mountpoint '${1?}'..."
+      if mkdir -p "${1:?}" && set_perm 0 0 0755 "${1:?}"; then
+        return 0
+      fi
+      ;;
+    *) ;;
+  esac
+
+  ui_warning "Invalid mountpoint '${1?}'"
+  return 1
 }
 
 _manual_partition_mount()
@@ -273,6 +279,7 @@ _manual_partition_mount()
   _found='false'
   if test -e '/dev/block/mapper'; then
     for _path in ${1?}; do
+      test -n "${_path?}" || continue
       if test -e "/dev/block/mapper/${_path:?}"; then
         _block="$(_canonicalize "/dev/block/mapper/${_path:?}")"
         ui_msg "Found 'mapper/${_path:-}' block at: ${_block:-}"
@@ -284,6 +291,7 @@ _manual_partition_mount()
 
   if test "${_found:?}" = 'false' && test -e '/sys/dev/block'; then
     for _path in ${1?}; do
+      test -n "${_path?}" || continue
       if _block="$(_find_block "${_path:?}")"; then
         ui_msg "Found '${_path:-}' block at: ${_block:-}"
         _found='true'
@@ -292,15 +300,15 @@ _manual_partition_mount()
     done
   fi
 
+  _curr_mp_list=''
   if test "${_found:?}" != 'false'; then
-    _curr_mp_list=''
     for _path in ${2?}; do
       test -n "${_path?}" || continue
       _ensure_mountpoint_exist "${_path:?}" || continue
       _path="$(_canonicalize "${_path:?}")"
       _curr_mp_list="${_curr_mp_list?}${_curr_mp_list:+, }${_path:?}"
 
-      umount 2> /dev/null "${_path:?}" || true
+      umount 2> /dev/null "${_path:?}" || :
       if _mount_helper '-o' 'rw' "${_block:?}" "${_path:?}"; then
         IFS="${_backup_ifs:-}"
         ui_debug "Mounted: ${_path?}"
@@ -310,6 +318,8 @@ _manual_partition_mount()
     done
 
     ui_warning "Not mounted => ${_curr_mp_list?}"
+  else
+    ui_warning "Not found => ${1?}"
   fi
 
   IFS="${_backup_ifs:-}"
@@ -351,7 +361,7 @@ _find_and_mount_system()
 
     if _mount_and_verify_system_partition "${_sys_mountpoint_list?}"; then
       : # Mounted and found
-    elif _manual_partition_mount "system${SLOT:-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" && _verify_system_partition "${_sys_mountpoint_list?}"; then
+    elif _manual_partition_mount "${SLOT:+system}${SLOT-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" && _verify_system_partition "${_sys_mountpoint_list?}"; then
       : # Mounted and found
     else
       deinitialize
@@ -2212,11 +2222,10 @@ kill_pid_from_file()
   }
 
   if _pid="$(cat "${TMP_PATH:?}/${1:?}")" && test -n "${_pid?}"; then
-    #if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then ui_debug "Killing: ${_pid-}"; fi
-    kill -s 'KILL' "${_pid:?}" || :
-    kill 2> /dev/null "${_pid:?}" & # Since the above command may not work in some cases, keep this as fallback
+    #if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then ui_debug "Killing: ${_pid?}"; fi
+    kill -s 'KILL' "${_pid:?}" || kill "${_pid:?}" || ui_warning "Failed to kill PID => ${_pid?}"
   else
-    ui_debug "Not killing: ${_pid-}"
+    ui_warning "Unable to read PID from => ${1?}"
   fi
 
   delete_temp "${1:?}"
