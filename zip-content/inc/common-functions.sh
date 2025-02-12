@@ -831,14 +831,18 @@ initialize()
   fi
   readonly DATA_PATH
 
-  mount_extra_partitions_silent
-
   if mount_partition_if_exist "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" "/product"; then
     UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed '/product' false
   fi
-  if test -e '/vendor'; then remount_read_write_if_needed '/vendor' false; fi
-  if test -e '/system_ext'; then remount_read_write_if_needed '/system_ext' false; fi
+  if mount_partition_if_exist "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" "/vendor"; then
+    UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+    remount_read_write_if_needed '/vendor' false
+  fi
+  if mount_partition_if_exist "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" "/system_ext"; then
+    UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+    remount_read_write_if_needed '/system_ext' false
+  fi
 
   unset LAST_PARTITION_MUST_BE_UNMOUNTED
 
@@ -1512,40 +1516,12 @@ validate_return_code_warning()
 }
 
 # Mounting related functions
-mount_partition_silent()
-{
-  local partition
-  partition="$(_canonicalize "${1:?}")"
-
-  mount -o 'rw' "${partition:?}" 2> /dev/null || true
-  return 0 # Never fail
-}
-
 unmount()
 {
   local partition
   partition="$(_canonicalize "${1:?}")"
 
   umount "${partition:?}" || ui_warning "Failed to unmount '${partition}'"
-  return 0 # Never fail
-}
-
-_mount_if_needed_silent()
-{
-  if is_mounted "${1:?}"; then return 1; fi
-
-  mount_partition_silent "${1:?}"
-  is_mounted "${1:?}"
-  return "${?}"
-}
-
-mount_extra_partitions_silent()
-{
-  ! _mount_if_needed_silent '/system_ext'
-  UNMOUNT_SYS_EXT="${?}"
-  ! _mount_if_needed_silent '/vendor'
-  UNMOUNT_VENDOR="${?}"
-
   return 0 # Never fail
 }
 
