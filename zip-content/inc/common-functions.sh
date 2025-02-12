@@ -382,6 +382,27 @@ _find_and_mount_system()
   readonly SYS_MOUNTPOINT SYS_PATH
 }
 
+UNMOUNT_SYS_EXT=0
+UNMOUNT_PRODUCT=0
+UNMOUNT_VENDOR=0
+mount_partition_if_exist()
+{
+  local _path
+  LAST_PARTITION_MUST_BE_UNMOUNTED=0
+
+  test -e "${2:?}" || return 1
+  _path="$(_canonicalize "${2:?}")"
+
+  if is_mounted "${_path:?}"; then
+    return 0
+  elif _manual_partition_mount "${1:?}" "${_path:?}${NL:?}"; then
+    LAST_PARTITION_MUST_BE_UNMOUNTED=1
+    return 0
+  fi
+
+  return 1
+}
+
 _get_local_settings()
 {
   if test "${LOCAL_SETTINGS_READ:-false}" = 'true'; then return; fi
@@ -798,8 +819,8 @@ initialize()
   if test ! -e "${DATA_PATH:?}/data" && ! is_mounted "${DATA_PATH:?}"; then
     ui_debug "Mounting data..."
     unset LAST_MOUNTPOINT
-    _mount_helper '-o' 'rw' "${DATA_PATH:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${ANDROID_DATA:-}${NL:?}/data${NL:?}" || true
-    if test -n "${LAST_MOUNTPOINT:-}"; then DATA_PATH="${LAST_MOUNTPOINT:?}"; fi
+    _mount_helper '-o' 'rw' "${DATA_PATH:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${ANDROID_DATA:-}${NL:?}/data${NL:?}" || :
+    if test -n "${LAST_MOUNTPOINT-}"; then DATA_PATH="${LAST_MOUNTPOINT:?}"; fi
 
     if is_mounted "${DATA_PATH:?}"; then
       DATA_INIT_STATUS=1
@@ -811,9 +832,15 @@ initialize()
   readonly DATA_PATH
 
   mount_extra_partitions_silent
-  if test -e '/product'; then remount_read_write_if_needed '/product' false; fi
+
+  if mount_partition_if_exist "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" "/product"; then
+    UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+    remount_read_write_if_needed '/product' false
+  fi
   if test -e '/vendor'; then remount_read_write_if_needed '/vendor' false; fi
   if test -e '/system_ext'; then remount_read_write_if_needed '/system_ext' false; fi
+
+  unset LAST_PARTITION_MUST_BE_UNMOUNTED
 
   # Display header
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
@@ -1512,15 +1539,10 @@ _mount_if_needed_silent()
   return "${?}"
 }
 
-UNMOUNT_SYS_EXT=0
-UNMOUNT_PRODUCT=0
-UNMOUNT_VENDOR=0
 mount_extra_partitions_silent()
 {
   ! _mount_if_needed_silent '/system_ext'
   UNMOUNT_SYS_EXT="${?}"
-  ! _mount_if_needed_silent '/product'
-  UNMOUNT_PRODUCT="${?}"
   ! _mount_if_needed_silent '/vendor'
   UNMOUNT_VENDOR="${?}"
 
