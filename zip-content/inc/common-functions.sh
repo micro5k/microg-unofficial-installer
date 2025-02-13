@@ -382,16 +382,17 @@ _find_and_mount_system()
   readonly SYS_MOUNTPOINT SYS_PATH
 }
 
-UNMOUNT_SYS_EXT=0
 UNMOUNT_PRODUCT=0
 UNMOUNT_VENDOR=0
+UNMOUNT_SYS_EXT=0
+UNMOUNT_ODM=0
 mount_partition_if_exist()
 {
   local _path
   LAST_PARTITION_MUST_BE_UNMOUNTED=0
 
-  test -e "${2:?}" || return 1
-  _path="$(_canonicalize "${2:?}")"
+  test -e "/${2:?}" || return 1
+  _path="$(_canonicalize "/${2:?}")"
 
   if is_mounted "${_path:?}"; then
     return 0
@@ -831,17 +832,21 @@ initialize()
   fi
   readonly DATA_PATH
 
-  if mount_partition_if_exist "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" "/product"; then
+  if mount_partition_if_exist "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" "product"; then
     UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed '/product' false
   fi
-  if mount_partition_if_exist "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" "/vendor"; then
+  if mount_partition_if_exist "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" "vendor"; then
     UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed '/vendor' false
   fi
-  if mount_partition_if_exist "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" "/system_ext"; then
+  if mount_partition_if_exist "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" "system_ext"; then
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed '/system_ext' false
+  fi
+  if mount_partition_if_exist "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}" "odm"; then
+    UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+    remount_read_write_if_needed '/odm' false
   fi
 
   unset LAST_PARTITION_MUST_BE_UNMOUNTED
@@ -1527,14 +1532,17 @@ unmount()
 
 unmount_extra_partitions()
 {
-  if test "${UNMOUNT_SYS_EXT:?}" = '1'; then
-    unmount '/system_ext'
-  fi
   if test "${UNMOUNT_PRODUCT:?}" = '1'; then
     unmount '/product'
   fi
   if test "${UNMOUNT_VENDOR:?}" = '1'; then
     unmount '/vendor'
+  fi
+  if test "${UNMOUNT_SYS_EXT:?}" = '1'; then
+    unmount '/system_ext'
+  fi
+  if test "${UNMOUNT_ODM:?}" = '1'; then
+    unmount '/odm'
   fi
 
   return 0 # Never fail
