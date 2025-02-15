@@ -1311,7 +1311,7 @@ verify_disk_space()
 
 perform_secure_copy_to_device()
 {
-  if test ! -e "${TMP_PATH:?}/files/${1:?}"; then return 0; fi
+  if test ! -d "${TMP_PATH:?}/files/${1:?}"; then return 0; fi
   local _error_text
 
   ui_debug "  Copying the '${1?}' folder to the device..."
@@ -1378,6 +1378,23 @@ perform_installation()
 
   set_perm 0 0 0640 "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
   perform_secure_copy_to_device 'etc/zips'
+  perform_secure_copy_to_device 'etc/permissions'
+
+  local _entry
+
+  ui_debug "  Copying the 'etc' folder to the device..."
+  for _entry in "${TMP_PATH:?}/files/etc"/*; do
+    if test -f "${_entry:?}"; then copy_file "${_entry:?}" "${SYS_PATH:?}/etc"; fi
+  done
+
+  for _entry in "${TMP_PATH:?}/files/etc"/*; do
+    if test -d "${_entry:?}"; then
+      case "${_entry:?}" in
+        */'etc/zips' | */'etc/permissions') ;;
+        *) perform_secure_copy_to_device "${_entry#"${TMP_PATH:?}/files/"}" ;;
+      esac
+    fi
+  done
 
   if test "${API:?}" -lt 21; then
     if test "${CPU64}" != false; then
@@ -1388,13 +1405,9 @@ perform_installation()
     fi
   fi
 
-  perform_secure_copy_to_device 'etc/permissions'
   perform_secure_copy_to_device 'framework'
-  perform_secure_copy_to_device 'etc/default-permissions'
-  perform_secure_copy_to_device 'etc/org.fdroid.fdroid'
   if test "${PRIVAPP_FOLDERNAME:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDERNAME:?}"; fi
   perform_secure_copy_to_device 'app'
-  perform_secure_copy_to_device 'etc/sysconfig'
 
   if test -d "${TMP_PATH:?}/files/bin"; then
     ui_msg 'Installing utilities...'
@@ -1759,7 +1772,7 @@ copy_dir_content()
 copy_file()
 {
   create_dir "$2"
-  cp -pf "$1" "$2"/ || ui_error "Failed to copy the file '$1' to '$2'" 99
+  cp -p -f -- "$1" "$2"/ || ui_error "Failed to copy the file '$1' to '$2'" 99
 }
 
 move_file()

@@ -184,8 +184,6 @@ printf '%s\n' "USE_MICROG_BY_ALE5000=${USE_MICROG_BY_ALE5000:?}" 1>> "${TMP_PATH
 printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 
 # Install
-if test -f "${TMP_PATH:?}/files/etc/microg.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg.xml" "${SYS_PATH:?}/etc"; fi
-if test -f "${TMP_PATH:?}/files/etc/microg_device_profile.xml"; then copy_file "${TMP_PATH:?}/files/etc/microg_device_profile.xml" "${SYS_PATH:?}/etc"; fi
 perform_installation
 reset_authenticator_and_sync_adapter_caches
 
