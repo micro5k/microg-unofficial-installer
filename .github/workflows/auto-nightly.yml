@@ -110,7 +110,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: "${{ steps.release-decision.outputs.CREATE_RELEASE == 'true' }}"
         with:
-          name: "Nightly build"
+          name: "${{ steps.build.outputs.ZIP_VERSION }} nightly"
           tag_name: "nightly"
           target_commitish: "${{ github.sha }}"
           body: "Latest automatically built ZIP (unstable development snapshot)\n\nSHA-256: ${{ steps.build.outputs.ZIP_SHA256 }}"
