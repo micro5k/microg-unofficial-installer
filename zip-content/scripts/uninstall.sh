@@ -161,9 +161,9 @@ if test "${IS_INCLUDED:-false}" = 'false'; then
     FIRST_INSTALLATION='true'
     API=999
     SYS_PATH="${ANDROID_ROOT:-/system}"
-    PRIVAPP_PATH="${SYS_PATH:?}/app"
-    if test -e "${SYS_PATH:?}/priv-app"; then PRIVAPP_PATH="${SYS_PATH:?}/priv-app"; fi
+    PRIVAPP_DIRNAME='priv-app'
     DATA_PATH="${ANDROID_DATA:-/data}"
+    DEST_PATH="${SYS_PATH:?}"
   }
 fi
 
@@ -189,32 +189,32 @@ if test -e '/mnt/sdcard'; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
 uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
   if test -n "${INTERNAL_NAME}"; then
-    delete "${PRIVAPP_PATH}/${INTERNAL_NAME}"
-    delete "${PRIVAPP_PATH}/${INTERNAL_NAME}.apk"
-    delete "${SYS_PATH}/app/${INTERNAL_NAME}"
-    delete "${SYS_PATH}/app/${INTERNAL_NAME}.apk"
+    delete "${SYS_PATH:?}/${PRIVAPP_DIRNAME:?}/${INTERNAL_NAME}"
+    delete "${SYS_PATH:?}/${PRIVAPP_DIRNAME:?}/${INTERNAL_NAME}.apk"
+    delete "${SYS_PATH:?}/app/${INTERNAL_NAME}"
+    delete "${SYS_PATH:?}/app/${INTERNAL_NAME}.apk"
   fi
 
   if test -n "${FILENAME}"; then
-    delete "${PRIVAPP_PATH}/${FILENAME}"
-    delete "${PRIVAPP_PATH}/${FILENAME}.apk"
-    delete "${PRIVAPP_PATH}/${FILENAME}.odex"
-    delete "${SYS_PATH}/app/${FILENAME}"
-    delete "${SYS_PATH}/app/${FILENAME}.apk"
-    delete "${SYS_PATH}/app/${FILENAME}.odex"
+    delete "${SYS_PATH:?}/${PRIVAPP_DIRNAME:?}/${FILENAME}"
+    delete "${SYS_PATH:?}/${PRIVAPP_DIRNAME:?}/${FILENAME}.apk"
+    delete "${SYS_PATH:?}/${PRIVAPP_DIRNAME:?}/${FILENAME}.odex"
+    delete "${SYS_PATH:?}/app/${FILENAME}"
+    delete "${SYS_PATH:?}/app/${FILENAME}.apk"
+    delete "${SYS_PATH:?}/app/${FILENAME}.odex"
 
-    delete "${SYS_PATH}/system_ext/priv-app/${FILENAME}"
-    delete "${SYS_PATH}/system_ext/app/${FILENAME}"
+    delete "${SYS_PATH:?}/system_ext/priv-app/${FILENAME}"
+    delete "${SYS_PATH:?}/system_ext/app/${FILENAME}"
     delete "/system_ext/priv-app/${FILENAME}"
     delete "/system_ext/app/${FILENAME}"
 
-    delete "${SYS_PATH}/product/priv-app/${FILENAME}"
-    delete "${SYS_PATH}/product/app/${FILENAME}"
+    delete "${SYS_PATH:?}/product/priv-app/${FILENAME}"
+    delete "${SYS_PATH:?}/product/app/${FILENAME}"
     delete "/product/priv-app/${FILENAME}"
     delete "/product/app/${FILENAME}"
 
-    delete "${SYS_PATH}/vendor/priv-app/${FILENAME}"
-    delete "${SYS_PATH}/vendor/app/${FILENAME}"
+    delete "${SYS_PATH:?}/vendor/priv-app/${FILENAME}"
+    delete "${SYS_PATH:?}/vendor/app/${FILENAME}"
     delete "/vendor/priv-app/${FILENAME}"
     delete "/vendor/app/${FILENAME}"
 
@@ -233,10 +233,10 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete "${SYS_PATH:?}/vendor/lib/${FILENAME:?}"
 
     # Current xml paths
-    delete "${SYS_PATH}/etc/permissions/privapp-permissions-${FILENAME:?}.xml"
-    delete "${SYS_PATH}/etc/default-permissions/default-permissions-${FILENAME:?}.xml"
+    delete "${SYS_PATH:?}/etc/permissions/privapp-permissions-${FILENAME:?}.xml"
+    delete "${SYS_PATH:?}/etc/default-permissions/default-permissions-${FILENAME:?}.xml"
     # Legacy xml paths
-    delete "${SYS_PATH}/etc/default-permissions/${FILENAME:?}-permissions.xml"
+    delete "${SYS_PATH:?}/etc/default-permissions/${FILENAME:?}-permissions.xml"
   fi
 
   if test -n "${INTERNAL_NAME}"; then
@@ -268,14 +268,14 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/app_cache_dg"
 
     # Legacy xml paths
-    delete "${SYS_PATH}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
+    delete "${SYS_PATH:?}/etc/default-permissions/${INTERNAL_NAME:?}-permissions.xml"
     # Other installers
-    delete "${SYS_PATH}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
-    delete "${SYS_PATH}/etc/permissions/permissions_${INTERNAL_NAME:?}.xml"
-    delete "${SYS_PATH}/etc/permissions/${INTERNAL_NAME:?}.xml"
-    delete "${SYS_PATH}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH:?}/etc/permissions/privapp-permissions-${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH:?}/etc/permissions/permissions_${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH:?}/etc/permissions/${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH:?}/etc/default-permissions/default-permissions-${INTERNAL_NAME:?}.xml"
 
-    delete "${SYS_PATH}/etc/sysconfig/sysconfig-${INTERNAL_NAME:?}.xml"
+    delete "${SYS_PATH:?}/etc/sysconfig/sysconfig-${INTERNAL_NAME:?}.xml"
   fi
 done
 STATUS="$?"
@@ -322,46 +322,46 @@ done
 
 delete "${DATA_PATH:?}"/backup/com.google.android.gms.backup.BackupTransportService
 
-delete "${SYS_PATH}"/addon.d/*-microg.sh
-delete "${SYS_PATH}"/addon.d/*-microg-*.sh
-delete "${SYS_PATH}"/addon.d/*-unifiednlp.sh
-delete "${SYS_PATH}"/addon.d/*-mapsapi.sh
-delete "${SYS_PATH}"/addon.d/*-gapps.sh
-delete "${SYS_PATH}"/addon.d/80-fdroid.sh
-delete "${SYS_PATH}"/addon.d/69-AuroraServices.sh
+delete "${SYS_PATH:?}"/addon.d/*-microg.sh
+delete "${SYS_PATH:?}"/addon.d/*-microg-*.sh
+delete "${SYS_PATH:?}"/addon.d/*-unifiednlp.sh
+delete "${SYS_PATH:?}"/addon.d/*-mapsapi.sh
+delete "${SYS_PATH:?}"/addon.d/*-gapps.sh
+delete "${SYS_PATH:?}"/addon.d/80-fdroid.sh
+delete "${SYS_PATH:?}"/addon.d/69-AuroraServices.sh
 
-delete "${SYS_PATH}"/etc/default-permissions/google-permissions.xml
-delete "${SYS_PATH}"/etc/default-permissions/phonesky-permissions.xml
-delete "${SYS_PATH}"/etc/default-permissions/contacts-calendar-sync.xml
-delete "${SYS_PATH}"/etc/default-permissions/opengapps-permissions.xml
-delete "${SYS_PATH}"/etc/default-permissions/unifiednlp-permissions.xml
-delete "${SYS_PATH}"/etc/default-permissions/microg-permissions.xml
-delete "${SYS_PATH}"/etc/default-permissions/permissions-com.google.android.gms.xml
-delete "${SYS_PATH}"/etc/default-permissions/microg-*-permissions.xml
+delete "${SYS_PATH:?}"/etc/default-permissions/google-permissions.xml
+delete "${SYS_PATH:?}"/etc/default-permissions/phonesky-permissions.xml
+delete "${SYS_PATH:?}"/etc/default-permissions/contacts-calendar-sync.xml
+delete "${SYS_PATH:?}"/etc/default-permissions/opengapps-permissions.xml
+delete "${SYS_PATH:?}"/etc/default-permissions/unifiednlp-permissions.xml
+delete "${SYS_PATH:?}"/etc/default-permissions/microg-permissions.xml
+delete "${SYS_PATH:?}"/etc/default-permissions/permissions-com.google.android.gms.xml
+delete "${SYS_PATH:?}"/etc/default-permissions/microg-*-permissions.xml
 
 # Note: Since we don't delete all Google apps, deleting these xml files will likely cause a bootloop, so don't delete them
 # ToDO: In the future, simply remove the parts related to the removed apps
-#delete "${SYS_PATH}"/etc/permissions/privapp-permissions-google.xml
-#delete "${SYS_PATH}"/etc/permissions/privapp-permissions-google-p.xml
-#delete "${SYS_PATH}"/etc/permissions/privapp-permissions-google-se.xml
+#delete "${SYS_PATH:?}"/etc/permissions/privapp-permissions-google.xml
+#delete "${SYS_PATH:?}"/etc/permissions/privapp-permissions-google-p.xml
+#delete "${SYS_PATH:?}"/etc/permissions/privapp-permissions-google-se.xml
 
-delete "${SYS_PATH}"/etc/permissions/features.xml
-delete "${SYS_PATH}"/etc/permissions/privapp-permissions-org.microG.xml
-delete "${SYS_PATH}"/etc/permissions/privapp-permissions-microg.xml
-delete "${SYS_PATH}"/etc/permissions/permissions_org.fdroid.fdroid.privileged.xml
+delete "${SYS_PATH:?}"/etc/permissions/features.xml
+delete "${SYS_PATH:?}"/etc/permissions/privapp-permissions-org.microG.xml
+delete "${SYS_PATH:?}"/etc/permissions/privapp-permissions-microg.xml
+delete "${SYS_PATH:?}"/etc/permissions/permissions_org.fdroid.fdroid.privileged.xml
 
-delete "${SYS_PATH}"/etc/sysconfig/features.xml
-delete "${SYS_PATH}"/etc/sysconfig/google.xml
-delete "${SYS_PATH}"/etc/sysconfig/google_build.xml
-delete "${SYS_PATH}"/etc/sysconfig/org.microG.xml
-delete "${SYS_PATH}"/etc/sysconfig/microg.xml
-delete "${SYS_PATH}"/etc/sysconfig/microg-*.xml
+delete "${SYS_PATH:?}"/etc/sysconfig/features.xml
+delete "${SYS_PATH:?}"/etc/sysconfig/google.xml
+delete "${SYS_PATH:?}"/etc/sysconfig/google_build.xml
+delete "${SYS_PATH:?}"/etc/sysconfig/org.microG.xml
+delete "${SYS_PATH:?}"/etc/sysconfig/microg.xml
+delete "${SYS_PATH:?}"/etc/sysconfig/microg-*.xml
 
-delete "${SYS_PATH}"/etc/preferred-apps/google.xml
+delete "${SYS_PATH:?}"/etc/preferred-apps/google.xml
 
-delete "${SYS_PATH}/etc/org.fdroid.fdroid/additional_repos.xml"
-delete "${SYS_PATH}/etc/microg.xml"
-delete "${SYS_PATH}/etc/microg_device_profile.xml"
+delete "${SYS_PATH:?}/etc/org.fdroid.fdroid/additional_repos.xml"
+delete "${SYS_PATH:?}/etc/microg.xml"
+delete "${SYS_PATH:?}/etc/microg_device_profile.xml"
 
 if test -e "${SYS_PATH:?}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/org.fdroid.fdroid" || true; fi
 

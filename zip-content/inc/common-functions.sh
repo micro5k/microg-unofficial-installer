@@ -642,13 +642,12 @@ display_info()
   ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
   ui_msg "Current slot: ${SLOT:-no slot}"
   ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
+  ui_msg "Fake signature perm.: ${FAKE_SIGN_PERMISSION:?}"
   ui_msg_empty_line
   ui_msg "System mount point: ${SYS_MOUNTPOINT:?}"
   ui_msg "System path: ${SYS_PATH:?}"
-  ui_msg "Priv-app path: ${PRIVAPP_PATH:?}"
-  ui_msg_empty_line
-  ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
-  ui_msg "Fake signature: ${FAKE_SIGN_PERMISSION:?}"
+  ui_msg "Priv-app dir: ${PRIVAPP_DIRNAME:?}"
+  #ui_msg "Android root ENV: ${ANDROID_ROOT-}"
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
 }
 
@@ -810,10 +809,6 @@ initialize()
     }
   fi
 
-  if test ! -w "${SYS_PATH:?}"; then
-    ui_error "The '${SYS_PATH:-}' partition is NOT writable"
-  fi
-
   if test "${ANDROID_DATA:-}" = '/data'; then ANDROID_DATA=''; fi # Avoid double checks
 
   DATA_PATH="$(_canonicalize "${ANDROID_DATA:-/data}")"
@@ -849,6 +844,17 @@ initialize()
     remount_read_write_if_needed '/odm' false
   fi
 
+  DEST_PATH="${SYS_PATH:?}"
+  readonly DEST_PATH
+
+  if test ! -w "${SYS_PATH:?}"; then
+    ui_error "The '${SYS_PATH?}' partition is NOT writable"
+  fi
+
+  if test "${DEST_PATH:?}" != "${SYS_PATH:?}" && test ! -w "${DEST_PATH:?}"; then
+    ui_error "The '${DEST_PATH?}' partition is NOT writable"
+  fi
+
   unset LAST_PARTITION_MUST_BE_UNMOUNTED
 
   # Display header
@@ -879,16 +885,15 @@ initialize()
   fi
 
   if test "${API:?}" -ge 19; then # KitKat or higher
-    PRIVAPP_FOLDERNAME='priv-app'
+    PRIVAPP_DIRNAME='priv-app'
   else
-    PRIVAPP_FOLDERNAME='app'
+    PRIVAPP_DIRNAME='app'
   fi
-  PRIVAPP_PATH="${SYS_PATH:?}/${PRIVAPP_FOLDERNAME:?}"
-  readonly PRIVAPP_FOLDERNAME PRIVAPP_PATH
-  export PRIVAPP_FOLDERNAME PRIVAPP_PATH
+  readonly PRIVAPP_DIRNAME
+  export PRIVAPP_DIRNAME
 
-  if test ! -e "${SYS_PATH:?}/${PRIVAPP_FOLDERNAME:?}"; then
-    ui_error "The ${PRIVAPP_FOLDERNAME?} folder does NOT exist"
+  if test ! -d "${SYS_PATH:?}/${PRIVAPP_DIRNAME:?}"; then
+    ui_error "The ${PRIVAPP_DIRNAME?} folder does NOT exist"
   fi
 
   FAKE_SIGN_PERMISSION='false'
@@ -987,10 +992,10 @@ prepare_installation()
 
   test "${_need_newline:?}" = 'false' || ui_debug ''
 
-  if test "${PRIVAPP_FOLDERNAME:?}" != 'priv-app' && test -e "${TMP_PATH:?}/files/priv-app"; then
-    ui_debug "  Merging priv-app folder with ${PRIVAPP_FOLDERNAME?} folder..."
-    mkdir -p -- "${TMP_PATH:?}/files/${PRIVAPP_FOLDERNAME:?}" || ui_error "Failed to create the dir '${TMP_PATH?}/files/${PRIVAPP_FOLDERNAME?}'"
-    copy_dir_content "${TMP_PATH:?}/files/priv-app" "${TMP_PATH:?}/files/${PRIVAPP_FOLDERNAME:?}"
+  if test "${PRIVAPP_DIRNAME:?}" != 'priv-app' && test -e "${TMP_PATH:?}/files/priv-app"; then
+    ui_debug "  Merging priv-app folder with ${PRIVAPP_DIRNAME?} folder..."
+    mkdir -p -- "${TMP_PATH:?}/files/${PRIVAPP_DIRNAME:?}" || ui_error "Failed to create the dir '${TMP_PATH?}/files/${PRIVAPP_DIRNAME?}'"
+    copy_dir_content "${TMP_PATH:?}/files/priv-app" "${TMP_PATH:?}/files/${PRIVAPP_DIRNAME:?}"
     delete_temp "files/priv-app"
   fi
 
@@ -1315,19 +1320,19 @@ perform_secure_copy_to_device()
   local _error_text
 
   ui_debug "  Copying the '${1?}' folder to the device..."
-  create_dir "${SYS_PATH:?}/${1:?}"
+  create_dir "${DEST_PATH:?}/${1:?}"
   _error_text=''
 
   if
     {
-      cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}/" ||
-        _error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}/")"
+      cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${DEST_PATH:?}/${1:?}/" ||
+        _error_text="$(cp 2>&1 -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${DEST_PATH:?}/${1:?}/")"
     } && _custom_rollback "${1:?}"
   then
     return 0
   elif _is_free_space_error "${_error_text?}"; then
     while _do_rollback_last_app "${1:?}"; do
-      if ! _something_exists "${TMP_PATH:?}/files/${1:?}"/* || cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${SYS_PATH:?}/${1:?}/"; then
+      if ! _something_exists "${TMP_PATH:?}/files/${1:?}"/* || cp 2> /dev/null -r -p -f -- "${TMP_PATH:?}/files/${1:?}"/* "${DEST_PATH:?}/${1:?}/"; then
         if test -n "${_error_text?}"; then
           ui_recovered_error "$(printf '%s\n' "${_error_text:?}" | head -n 1 || true)"
         else
@@ -1346,7 +1351,7 @@ perform_secure_copy_to_device()
   df 2> /dev/null -h -T -- "${SYS_MOUNTPOINT:?}" || df -h -- "${SYS_MOUNTPOINT:?}" || :
   ui_debug ''
 
-  display_free_space "${SYS_PATH:?}" "$(get_free_disk_space_of_partition "${SYS_PATH:?}" || :)"
+  display_free_space "${DEST_PATH:?}" "$(get_free_disk_space_of_partition "${DEST_PATH:?}" || :)"
 
   local _ret_code
   _ret_code=5
@@ -1362,7 +1367,7 @@ perform_installation()
 {
   ui_msg_empty_line
 
-  if ! verify_disk_space "${SYS_PATH:?}"; then
+  if ! verify_disk_space "${DEST_PATH:?}"; then
     ui_msg_empty_line
     ui_warning "There is NOT enough free space available, but let's try anyway"
   fi
@@ -1384,7 +1389,7 @@ perform_installation()
 
   ui_debug "  Copying the 'etc' folder to the device..."
   for _entry in "${TMP_PATH:?}/files/etc"/*; do
-    if test -f "${_entry:?}"; then copy_file "${_entry:?}" "${SYS_PATH:?}/etc"; fi
+    if test -f "${_entry:?}"; then copy_file "${_entry:?}" "${DEST_PATH:?}/etc"; fi
   done
 
   for _entry in "${TMP_PATH:?}/files/etc"/*; do
@@ -1406,7 +1411,7 @@ perform_installation()
   fi
 
   perform_secure_copy_to_device 'framework'
-  if test "${PRIVAPP_FOLDERNAME:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_FOLDERNAME:?}"; fi
+  if test "${PRIVAPP_DIRNAME:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_DIRNAME:?}"; fi
   perform_secure_copy_to_device 'app'
 
   if test -d "${TMP_PATH:?}/files/bin"; then
