@@ -1213,6 +1213,17 @@ get_free_disk_space_of_partition()
   return 1
 }
 
+display_free_space()
+{
+  if test -n "${2?}" && test "${2:?}" -ge 0; then
+    ui_msg "Free space on ${1?}: $(convert_bytes_to_mb "${2:?}" || :) MB ($(convert_bytes_to_human_readable_format 2> /dev/null "${2:?}" || :))"
+    return 0
+  fi
+
+  ui_warning "Unable to get free disk space, output for '${1?}' => $(stat -f -c '%a * %S' -- "${1:?}" || :)"
+  return 1
+}
+
 get_disk_space_usage_of_file_or_folder()
 {
   local _result
@@ -1279,14 +1290,13 @@ verify_disk_space()
     _needed_space_bytes='-1'
   fi
 
-  if _free_space_bytes="$(get_free_disk_space_of_partition "${1:?}")" && test -n "${_free_space_bytes?}"; then
-    ui_msg "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || :) MB ($(convert_bytes_to_human_readable_format "${_free_space_bytes:?}" || :))"
-  else
-    ui_warning "Unable to get free disk space, output for '${1?}' => $(stat -f -c '%a * %S' -- "${1:?}" || :)"
-    _free_space_bytes='-1'
-  fi
+  _free_space_bytes="$(get_free_disk_space_of_partition "${1:?}")" || _free_space_bytes='-1'
+  display_free_space "${1:?}" "${_free_space_bytes?}" || :
 
-  if test "${_needed_space_bytes:?}" -gt 0 && test "${_free_space_bytes:?}" -ge 0; then
+  if test -e '/product'; then display_free_space '/product' "$(get_free_disk_space_of_partition '/product' || :)"; fi
+  if test -e '/vendor'; then display_free_space '/vendor' "$(get_free_disk_space_of_partition '/vendor' || :)"; fi
+
+  if test "${_needed_space_bytes:?}" -ge 0 && test "${_free_space_bytes:?}" -ge 0; then
     : # OK
   else
     ui_msg_empty_line
@@ -1336,13 +1346,9 @@ perform_secure_copy_to_device()
   df 2> /dev/null -h -T -- "${SYS_MOUNTPOINT:?}" || df -h -- "${SYS_MOUNTPOINT:?}" || :
   ui_debug ''
 
-  local _ret_code _free_space_bytes
+  display_free_space "${SYS_PATH:?}" "$(get_free_disk_space_of_partition "${SYS_PATH:?}" || :)"
 
-  if _free_space_bytes="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" && test -n "${_free_space_bytes?}"; then
-    ui_debug "Free disk space: $(convert_bytes_to_mb "${_free_space_bytes:?}" || :) MB ($(convert_bytes_to_human_readable_format "${_free_space_bytes:?}" || :))"
-    ui_debug ''
-  fi
-
+  local _ret_code
   _ret_code=5
   ! _is_free_space_error "${_error_text?}" || _ret_code=28
 
