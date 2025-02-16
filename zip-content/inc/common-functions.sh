@@ -74,9 +74,12 @@ _detect_slot()
 
 _mount_helper()
 {
-  mount "${@}" 2> /dev/null || {
-    test -n "${DEVICE_MOUNT:-}" && "${DEVICE_MOUNT:?}" -t 'auto' "${@}"
-  } || return "${?}"
+  {
+    test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null "${@}"
+  } ||
+    mount "${@}" ||
+    return "${?}"
+
   return 0
 }
 
@@ -128,7 +131,7 @@ _mount_and_verify_system_partition()
     test -n "${_path?}" || continue
 
     case "${_path:?}" in
-      '/mnt/'* | "${TMP_PATH:?}/"*) continue ;; # Note: These paths can only be mounted manually (example: /mnt/system)
+      '/mnt'/* | "${TMP_PATH:?}"/*) continue ;; # NOTE: These paths can only be mounted manually (example: /mnt/system)
       *) ;;
     esac
 
@@ -309,9 +312,8 @@ _manual_partition_mount()
       _curr_mp_list="${_curr_mp_list?}${_curr_mp_list:+, }${_path:?}"
 
       umount 2> /dev/null "${_path:?}" || :
-      if _mount_helper '-o' 'rw' "${_block:?}" "${_path:?}"; then
+      if _mount_helper "${_block:?}" "${_path:?}"; then
         IFS="${_backup_ifs:-}"
-        ui_debug "Mounted: ${_path?}"
         LAST_MOUNTPOINT="${_path:?}"
         return 0
       fi
@@ -361,8 +363,8 @@ _find_and_mount_system()
 
     if _mount_and_verify_system_partition "${_sys_mountpoint_list?}"; then
       : # Mounted and found
-    elif _manual_partition_mount "${SLOT:+system}${SLOT-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" && _verify_system_partition "${_sys_mountpoint_list?}"; then
-      : # Mounted and found
+    elif _manual_partition_mount "${SLOT:+system}${SLOT-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" && test -n "${LAST_MOUNTPOINT?}" && _verify_system_partition "${_sys_mountpoint_list?}"; then
+      ui_debug "Mounted: ${LAST_MOUNTPOINT?}" # Mounted and found
     else
       deinitialize
 
@@ -384,20 +386,63 @@ _find_and_mount_system()
 
 mount_partition_if_exist()
 {
-  local _path
+  local _backup_ifs _partition_name _block_search_list _raw_mp_list _mp_list _mp
+  unset LAST_MOUNTPOINT
   LAST_PARTITION_MUST_BE_UNMOUNTED=0
 
-  test -e "/${2:?}" || return 1
-  _path="$(_canonicalize "/${2:?}")"
+  _partition_name="${2:?}"
+  _block_search_list="${1:?}"
+  _raw_mp_list="/mnt/${2:?}${NL:?}${3-}${NL:?}/${2:?}${NL:?}"
 
-  if is_mounted "${_path:?}"; then
-    return 0
-  elif _manual_partition_mount "${1:?}" "${_path:?}${NL:?}"; then
+  _backup_ifs="${IFS-}"
+  IFS="${NL:?}"
+
+  _mp_list=''
+  for _mp in ${_raw_mp_list?}; do
+    if test -n "${_mp?}" && test -e "${_mp:?}"; then
+      _mp="$(_canonicalize "${_mp:?}")"
+      _mp_list="${_mp_list?}${_mp:?}${NL:?}"
+    fi
+  done
+  unset _raw_mp_list
+  set -- ${_mp_list?} || ui_error 'Failed expanding ${_mp_list} inside mount_partition_if_exist()'
+
+  IFS="${_backup_ifs?}"
+
+  test -n "${_mp_list?}" || return 1 # No usable mountpoint found
+
+  ui_debug "Checking ${_partition_name?}..."
+
+  for _mp in "${@}"; do
+    if is_mounted "${_mp:?}"; then
+      LAST_MOUNTPOINT="${_mp:?}"
+      ui_debug "Already mounted: ${LAST_MOUNTPOINT?}"
+      return 0 # Already mounted
+    fi
+  done
+
+  if _manual_partition_mount "${_block_search_list:?}" "${_mp_list:?}" && test -n "${LAST_MOUNTPOINT?}"; then
     LAST_PARTITION_MUST_BE_UNMOUNTED=1
-    return 0
+    ui_debug "Mounted: ${LAST_MOUNTPOINT?}"
+    return 0 # Successfully mounted
   fi
 
-  return 1
+  for _mp in "${@}"; do
+    case "${_mp:?}" in
+      '/mnt'/* | "${TMP_PATH:?}"/*) continue ;; # NOTE: These paths can only be mounted manually (example: /mnt/system)
+      *) ;;
+    esac
+
+    if _mount_helper "${_mp:?}"; then
+      LAST_MOUNTPOINT="${_mp:?}"
+      LAST_PARTITION_MUST_BE_UNMOUNTED=1
+      ui_debug "Mounted (2): ${LAST_MOUNTPOINT?}"
+      return 0 # Successfully mounted
+    fi
+  done
+
+  ui_warning "Mounting of ${_partition_name?} failed"
+  return 2
 }
 
 _get_local_settings()
@@ -451,12 +496,11 @@ parse_setting()
 remount_read_write_if_needed()
 {
   local _mountpoint _required
-  _mountpoint="$(_canonicalize "${1:?}")"
+  _mountpoint="${1:?}"
   _required="${2:-true}"
 
   if is_mounted "${_mountpoint:?}" && is_mounted_read_only "${_mountpoint:?}"; then
     ui_msg "INFO: The '${_mountpoint:-}' mount point is read-only, it will be remounted"
-    ui_msg_empty_line
     remount_read_write "${_mountpoint:?}" || {
       if test "${_required:?}" = 'true'; then
         ui_error "Remounting of '${_mountpoint:-}' failed"
@@ -657,7 +701,8 @@ initialize()
   UNMOUNT_VENDOR=0
   UNMOUNT_SYS_EXT=0
   UNMOUNT_ODM=0
-  DATA_INIT_STATUS=0
+  UNMOUNT_DATA=0
+  DATA_PATH='/data'
   PRODUCT_WRITABLE='false'
   VENDOR_WRITABLE='false'
 
@@ -813,40 +858,33 @@ initialize()
     }
   fi
 
-  if test "${ANDROID_DATA:-}" = '/data'; then ANDROID_DATA=''; fi # Avoid double checks
+  if mount_partition_if_exist "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" 'product'; then
+    UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && PRODUCT_WRITABLE='true'
+  fi
+  if mount_partition_if_exist "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" 'vendor'; then
+    UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && VENDOR_WRITABLE='true'
+  fi
+  if mount_partition_if_exist "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" 'system_ext'; then
+    UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
+  fi
+  if mount_partition_if_exist "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}" 'odm'; then
+    UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
+  fi
 
-  DATA_PATH="$(_canonicalize "${ANDROID_DATA:-/data}")"
-  if test ! -e "${DATA_PATH:?}/data" && ! is_mounted "${DATA_PATH:?}"; then
-    ui_debug "Mounting data..."
-    unset LAST_MOUNTPOINT
-    _mount_helper '-o' 'rw' "${DATA_PATH:?}" || _manual_partition_mount "userdata${NL:?}DATAFS${NL:?}" "${ANDROID_DATA:-}${NL:?}/data${NL:?}" || :
-    if test -n "${LAST_MOUNTPOINT-}"; then DATA_PATH="${LAST_MOUNTPOINT:?}"; fi
-
-    if is_mounted "${DATA_PATH:?}"; then
-      DATA_INIT_STATUS=1
-      ui_debug "Mounted: ${DATA_PATH:-}"
-    else
-      ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be automatically deleted and their Dalvik cache cannot be automatically cleaned. I suggest to manually do a factory reset after flashing this ZIP."
-    fi
+  if test "${ANDROID_DATA-}" = '/data'; then ANDROID_DATA=''; fi # Avoid double checks
+  if mount_partition_if_exist "userdata${NL:?}DATAFS${NL:?}" 'data' "${ANDROID_DATA-}"; then
+    DATA_PATH="${LAST_MOUNTPOINT:?}"
+    UNMOUNT_DATA="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+    remount_read_write_if_needed "${DATA_PATH:?}" true
+  else
+    ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be automatically deleted and their Dalvik cache cannot be automatically cleaned. I suggest to manually do a factory reset after flashing this ZIP."
   fi
   readonly DATA_PATH
-
-  if mount_partition_if_exist "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" "product"; then
-    UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed '/product' false && PRODUCT_WRITABLE='true'
-  fi
-  if mount_partition_if_exist "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" "vendor"; then
-    UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed '/vendor' false && VENDOR_WRITABLE='true'
-  fi
-  if mount_partition_if_exist "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" "system_ext"; then
-    UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed '/system_ext' false
-  fi
-  if mount_partition_if_exist "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}" "odm"; then
-    UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed '/odm' false
-  fi
+  unset ANDROID_DATA
 
   DEST_PATH="${SYS_PATH:?}"
   readonly DEST_PATH
@@ -859,14 +897,12 @@ initialize()
     ui_error "The '${DEST_PATH?}' partition is NOT writable"
   fi
 
-  unset LAST_PARTITION_MUST_BE_UNMOUNTED
-
   # Display header
-  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
+  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
   ui_msg "${MODULE_NAME:?}"
   ui_msg "${MODULE_VERSION:?}"
   ui_msg "(by ${MODULE_AUTHOR:?})"
-  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
+  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
 
   # shellcheck disable=SC2312
   _raw_arch_list=','"$(sys_getprop 'ro.product.cpu.abi')"','"$(sys_getprop 'ro.product.cpu.abi2')"','"$(sys_getprop 'ro.product.cpu.upgradeabi')"','"$(sys_getprop 'ro.product.cpu.abilist')"','
@@ -904,12 +940,13 @@ initialize()
   zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH}/framework-res"
   XML_MANIFEST="${TMP_PATH}/framework-res/AndroidManifest.xml"
   # Detect the presence of the fake signature permission
-  # Note: It won't detect it if signature spoofing doesn't require a permission, but it is still fine for our case
+  # NOTE: It won't detect it if signature spoofing doesn't require a permission, but it is still fine for our case
   if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "${XML_MANIFEST}"; then
     FAKE_SIGN_PERMISSION='true'
   fi
 
   unset LAST_MOUNTPOINT
+  unset LAST_PARTITION_MUST_BE_UNMOUNTED
   unset CURRENTLY_ROLLBACKING
 }
 
@@ -920,7 +957,7 @@ deinitialize()
     rmdir -- "${TMP_PATH:?}/system_mountpoint" || ui_error 'Failed to delete the temp mountpoint'
   fi
 
-  if test "${DATA_INIT_STATUS:?}" -eq 1 && test -n "${DATA_PATH-}"; then unmount "${DATA_PATH:?}"; fi
+  if test "${UNMOUNT_DATA:?}" -eq 1 && test -n "${DATA_PATH-}"; then unmount "${DATA_PATH:?}"; fi
 }
 
 clean_previous_installations()
@@ -1632,7 +1669,7 @@ is_substring()
 
 replace_string_global()
 {
-  printf '%s' "${1:?}" | sed -e "s@${2:?}@${3:?}@g" || return "${?}" # Note: pattern and replacement cannot contain @
+  printf '%s' "${1:?}" | sed -e "s@${2:?}@${3:?}@g" || return "${?}" # NOTE: pattern and replacement cannot contain @
 }
 
 replace_slash_with_at()
@@ -2350,7 +2387,7 @@ _timeout_exit_code_remapper()
       ;;
     126) # COMMAND is found but cannot be invoked (126) - Example: missing execute permission
       ;;
-    127) # COMMAND cannot be found (127) - Note: this return value may even be used when timeout is unable to execute the COMMAND
+    127) # COMMAND cannot be found (127) - NOTE: this return value may even be used when timeout is unable to execute the COMMAND
       ui_msg_empty_line
       ui_warning 'timeout returned cmd NOT found (127)'
       return 127
