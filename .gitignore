@@ -1,12 +1,24 @@
 # SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
-# SPDX-FileType: OTHER
 
-# Custom project folders
-/cache/
-/output/
-/recovery-simulator/output/
-/utils/data/
+# Files to always ignore
+/coverage/
+/.ssh/
+/.ash_history
+/.bash_history
+/.wget-hsts
+/.lesshst
+*.log
+*.sarif
+*.dex
+
+# Caches
+/.cache/
+/.git/
+__pycache__/
+.DS_Store
+desktop.ini
+Thumbs.db
 
 # VS Code files
 /.vscode/launch.json
@@ -19,27 +31,15 @@
 local.properties
 user.gradle
 
-# Files to ignore
+# Local files to ignore
 .debug/
 .local/
 /local/
 /build
 /cmdline
 
-# Coverage, logs and other files
-/coverage/
-/.ssh/
-/.wget-hsts
-/.ash_history
-/.bash_history
-*.log
-*.sarif
-*.dex
-
-# Caches
-/.cache/
-/.git/
-__pycache__/
-.DS_Store
-desktop.ini
-Thumbs.db
+# Custom project folders
+/cache/
+/output/
+/recovery-simulator/output/
+/utils/data/
