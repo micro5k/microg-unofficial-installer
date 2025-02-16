@@ -382,10 +382,6 @@ _find_and_mount_system()
   readonly SYS_MOUNTPOINT SYS_PATH
 }
 
-UNMOUNT_PRODUCT=0
-UNMOUNT_VENDOR=0
-UNMOUNT_SYS_EXT=0
-UNMOUNT_ODM=0
 mount_partition_if_exist()
 {
   local _path
@@ -471,6 +467,7 @@ remount_read_write_if_needed()
       fi
     }
   fi
+  return 0
 }
 
 is_string_starting_with()
@@ -654,8 +651,15 @@ display_info()
 initialize()
 {
   local _raw_arch_list
+
   UNMOUNT_SYSTEM=0
+  UNMOUNT_PRODUCT=0
+  UNMOUNT_VENDOR=0
+  UNMOUNT_SYS_EXT=0
+  UNMOUNT_ODM=0
   DATA_INIT_STATUS=0
+  PRODUCT_WRITABLE='false'
+  VENDOR_WRITABLE='false'
 
   # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
   if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
@@ -728,7 +732,7 @@ initialize()
     *) ;;
   esac
 
-  if is_string_starting_with 'sdk_google_phone_' "${BUILD_PRODUCT?}" || is_valid_prop "$(simple_getprop 'ro.leapdroid.version' || true)"; then
+  if is_string_starting_with 'sdk_google_phone_' "${BUILD_PRODUCT?}" || is_valid_prop "$(simple_getprop 'ro.leapdroid.version' || :)"; then
     IS_EMU='true'
   fi
 
@@ -829,11 +833,11 @@ initialize()
 
   if mount_partition_if_exist "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" "product"; then
     UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed '/product' false
+    remount_read_write_if_needed '/product' false && PRODUCT_WRITABLE='true'
   fi
   if mount_partition_if_exist "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" "vendor"; then
     UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed '/vendor' false
+    remount_read_write_if_needed '/vendor' false && VENDOR_WRITABLE='true'
   fi
   if mount_partition_if_exist "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" "system_ext"; then
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
@@ -1298,8 +1302,8 @@ verify_disk_space()
   _free_space_bytes="$(get_free_disk_space_of_partition "${1:?}")" || _free_space_bytes='-1'
   display_free_space "${1:?}" "${_free_space_bytes?}" || :
 
-  if test -e '/product'; then display_free_space '/product' "$(get_free_disk_space_of_partition '/product' || :)"; fi
-  if test -e '/vendor'; then display_free_space '/vendor' "$(get_free_disk_space_of_partition '/vendor' || :)"; fi
+  if test "${PRODUCT_WRITABLE:?}" = 'true'; then display_free_space '/product' "$(get_free_disk_space_of_partition '/product' || :)"; fi
+  if test "${VENDOR_WRITABLE:?}" = 'true'; then display_free_space '/vendor' "$(get_free_disk_space_of_partition '/vendor' || :)"; fi
 
   if test "${_needed_space_bytes:?}" -ge 0 && test "${_free_space_bytes:?}" -ge 0; then
     : # OK
