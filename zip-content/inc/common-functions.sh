@@ -865,18 +865,22 @@ initialize()
   fi
 
   if mount_partition_if_exist "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" 'product'; then
+    PRODUCT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && PRODUCT_WRITABLE='true'
   fi
   if mount_partition_if_exist "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" 'vendor'; then
+    VENDOR_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && VENDOR_WRITABLE='true'
   fi
   if mount_partition_if_exist "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" 'system_ext'; then
+    SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
   fi
   if mount_partition_if_exist "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}" 'odm'; then
+    ODM_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
   fi
@@ -885,7 +889,7 @@ initialize()
   if mount_partition_if_exist "userdata${NL:?}DATAFS${NL:?}" 'data' "${ANDROID_DATA-}"; then
     DATA_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_DATA="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed "${DATA_PATH:?}" true
+    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" true
   else
     ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be automatically deleted and their Dalvik cache cannot be automatically cleaned. I suggest to manually do a factory reset after flashing this ZIP."
   fi
@@ -1345,8 +1349,8 @@ verify_disk_space()
   _free_space_bytes="$(get_free_disk_space_of_partition "${1:?}")" || _free_space_bytes='-1'
   display_free_space "${1:?}" "${_free_space_bytes?}" || :
 
-  if test "${PRODUCT_WRITABLE:?}" = 'true'; then display_free_space '/product' "$(get_free_disk_space_of_partition '/product' || :)"; fi
-  if test "${VENDOR_WRITABLE:?}" = 'true'; then display_free_space '/vendor' "$(get_free_disk_space_of_partition '/vendor' || :)"; fi
+  if test "${PRODUCT_WRITABLE:?}" = 'true'; then display_free_space "${PRODUCT_PATH:?}" "$(get_free_disk_space_of_partition "${PRODUCT_PATH:?}" || :)"; fi
+  if test "${VENDOR_WRITABLE:?}" = 'true'; then display_free_space "${VENDOR_PATH:?}" "$(get_free_disk_space_of_partition "${VENDOR_PATH:?}" || :)"; fi
 
   if test "${_needed_space_bytes:?}" -ge 0 && test "${_free_space_bytes:?}" -ge 0; then
     : # OK
@@ -1603,17 +1607,17 @@ unmount()
 
 unmount_extra_partitions()
 {
-  if test "${UNMOUNT_PRODUCT:?}" = '1'; then
-    unmount '/product'
+  if test "${UNMOUNT_PRODUCT:?}" = '1' && test -n "${PRODUCT_PATH-}"; then
+    unmount "${PRODUCT_PATH:?}"
   fi
-  if test "${UNMOUNT_VENDOR:?}" = '1'; then
-    unmount '/vendor'
+  if test "${UNMOUNT_VENDOR:?}" = '1' && test -n "${VENDOR_PATH-}"; then
+    unmount "${VENDOR_PATH:?}"
   fi
-  if test "${UNMOUNT_SYS_EXT:?}" = '1'; then
-    unmount '/system_ext'
+  if test "${UNMOUNT_SYS_EXT:?}" = '1' && test -n "${SYS_EXT_PATH-}"; then
+    unmount "${SYS_EXT_PATH:?}"
   fi
-  if test "${UNMOUNT_ODM:?}" = '1'; then
-    unmount '/odm'
+  if test "${UNMOUNT_ODM:?}" = '1' && test -n "${ODM_PATH-}"; then
+    unmount "${ODM_PATH:?}"
   fi
 
   return 0 # Never fail
