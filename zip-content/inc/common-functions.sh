@@ -35,7 +35,10 @@ if test -z "${ZIPFILE:-}" || test -z "${TMP_PATH:-}" || test -z "${RECOVERY_PIPE
   exit 90
 fi
 
-mkdir -p "${TMP_PATH:?}/func-tmp" || ui_error 'Failed to create the functions temp folder'
+mkdir -p "${TMP_PATH:?}/func-tmp" || {
+  echo 'Failed to create the functions temp folder'
+  exit 90
+}
 
 readonly ROLLBACK_TEST='false'
 readonly NL='
@@ -405,7 +408,10 @@ mount_partition_if_exist()
     fi
   done
   unset _raw_mp_list
-  set -- ${_mp_list?} || ui_error 'Failed expanding ${_mp_list} inside mount_partition_if_exist()'
+  set -f || :
+  # shellcheck disable=SC2086 # Word splitting is intended
+  set -- ${_mp_list?} || ui_error "Failed expanding \${_mp_list} inside mount_partition_if_exist()"
+  set +f || :
 
   IFS="${_backup_ifs?}"
 
