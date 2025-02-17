@@ -962,12 +962,18 @@ initialize()
 
 deinitialize()
 {
-  if test "${UNMOUNT_SYSTEM:?}" -eq 1 && test -n "${SYS_MOUNTPOINT-}"; then unmount "${SYS_MOUNTPOINT:?}"; fi
-  if test -e "${TMP_PATH:?}/system_mountpoint"; then
-    rmdir -- "${TMP_PATH:?}/system_mountpoint" || ui_error 'Failed to delete the temp mountpoint'
-  fi
+  if test "${UNMOUNT_DATA:?}" = '1' && test -n "${DATA_PATH-}"; then unmount "${DATA_PATH:?}"; fi
 
-  if test "${UNMOUNT_DATA:?}" -eq 1 && test -n "${DATA_PATH-}"; then unmount "${DATA_PATH:?}"; fi
+  if test "${UNMOUNT_PRODUCT:?}" = '1' && test -n "${PRODUCT_PATH-}"; then unmount "${PRODUCT_PATH:?}"; fi
+  if test "${UNMOUNT_VENDOR:?}" = '1' && test -n "${VENDOR_PATH-}"; then unmount "${VENDOR_PATH:?}"; fi
+  if test "${UNMOUNT_SYS_EXT:?}" = '1' && test -n "${SYS_EXT_PATH-}"; then unmount "${SYS_EXT_PATH:?}"; fi
+  if test "${UNMOUNT_ODM:?}" = '1' && test -n "${ODM_PATH-}"; then unmount "${ODM_PATH:?}"; fi
+
+  if test "${UNMOUNT_SYSTEM:?}" = '1' && test -n "${SYS_MOUNTPOINT-}"; then unmount "${SYS_MOUNTPOINT:?}"; fi
+
+  if test -e "${TMP_PATH:?}/system_mountpoint"; then
+    rmdir -- "${TMP_PATH:?}/system_mountpoint" || ui_error 'Failed to delete the temp system mountpoint'
+  fi
 }
 
 clean_previous_installations()
@@ -1272,11 +1278,11 @@ get_free_disk_space_of_partition()
 display_free_space()
 {
   if test -n "${2?}" && test "${2:?}" -ge 0; then
-    ui_msg "Free space on ${1?}: $(convert_bytes_to_mb "${2:?}" || :) MB ($(convert_bytes_to_human_readable_format 2> /dev/null "${2:?}" || :))"
+    ui_msg "Free space on ${1?}: $(convert_bytes_to_mb "${2:?}" || :) MB ($(convert_bytes_to_human_readable_format "${2:?}" || :))"
     return 0
   fi
 
-  ui_warning "Unable to get free disk space, output for '${1?}' => $(stat -f -c '%a * %S' -- "${1:?}" || :)"
+  ui_warning "Unable to get free disk space, output for '${1?}' => $(stat 2>&1 -f -c '%a * %S' -- "${1:?}" || :)"
   return 1
 }
 
@@ -1598,29 +1604,10 @@ validate_return_code_warning()
 # Mounting related functions
 unmount()
 {
-  local partition
-  partition="$(_canonicalize "${1:?}")"
-
-  umount "${partition:?}" || ui_warning "Failed to unmount '${partition}'"
-  return 0 # Never fail
-}
-
-unmount_extra_partitions()
-{
-  if test "${UNMOUNT_PRODUCT:?}" = '1' && test -n "${PRODUCT_PATH-}"; then
-    unmount "${PRODUCT_PATH:?}"
-  fi
-  if test "${UNMOUNT_VENDOR:?}" = '1' && test -n "${VENDOR_PATH-}"; then
-    unmount "${VENDOR_PATH:?}"
-  fi
-  if test "${UNMOUNT_SYS_EXT:?}" = '1' && test -n "${SYS_EXT_PATH-}"; then
-    unmount "${SYS_EXT_PATH:?}"
-  fi
-  if test "${UNMOUNT_ODM:?}" = '1' && test -n "${ODM_PATH-}"; then
-    unmount "${ODM_PATH:?}"
-  fi
-
-  return 0 # Never fail
+  umount "${1:?}" || {
+    ui_warning "Failed to unmount '${1:?}'"
+    return 1
+  }
 }
 
 # Getprop related functions

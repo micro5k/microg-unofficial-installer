@@ -163,11 +163,8 @@ if test "${IS_INSTALLATION:?}" != 'true'; then
   clear_app 'com.google.android.gms'
   reset_gms_data_of_all_apps
 
-  unmount_extra_partitions
   finalize_and_report_success
 fi
-
-unmount_extra_partitions
 
 # Preparing remaining files
 if test "${API}" -lt 23; then
