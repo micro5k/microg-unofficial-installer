@@ -402,8 +402,8 @@ _find_and_mount_system()
 
       ui_msg_empty_line
       ui_msg "Current slot: ${SLOT:-no slot}"
-      ui_msg "Device locked state: ${DEVICE_STATE:-unknown}"
-      ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE:-unknown}"
+      ui_msg "Device locked state: ${DEVICE_STATE?}"
+      ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
       ui_msg "Verity mode: ${VERITY_MODE?}"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
       ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
@@ -709,8 +709,8 @@ display_info()
   ui_msg "ABI list: ${ARCH_LIST?}"
   ui_msg_empty_line
   ui_msg "Current slot: ${SLOT:-no slot}"
-  ui_msg "Device locked state: ${DEVICE_STATE:-unknown}"
-  ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE:-unknown}"
+  ui_msg "Device locked state: ${DEVICE_STATE?}"
+  ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
   ui_msg "Verity mode: ${VERITY_MODE?}"
   ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
   ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
@@ -773,8 +773,8 @@ initialize()
   readonly SLOT
   export SLOT
 
-  DEVICE_STATE="$(_parse_kernel_cmdline 'vbmeta\.device_state')" || DEVICE_STATE='unsupported'
-  VERIFIED_BOOT_STATE="$(_parse_kernel_cmdline 'verifiedbootstate')" || VERIFIED_BOOT_STATE='unsupported'
+  DEVICE_STATE="$(_parse_kernel_cmdline 'vbmeta\.device_state')" || DEVICE_STATE='unknown'
+  VERIFIED_BOOT_STATE="$(_parse_kernel_cmdline 'verifiedbootstate')" || VERIFIED_BOOT_STATE='unknown'
   VERITY_MODE="$(_detect_verity_status)" || VERITY_MODE='unknown'
   readonly DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
   export DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
@@ -876,8 +876,8 @@ initialize()
       ui_msg "Device: ${BUILD_DEVICE?}"
       ui_msg_empty_line
       ui_msg "Current slot: ${SLOT:-no slot}"
-      ui_msg "Device locked state: ${DEVICE_STATE:-unknown}"
-      ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE:-unknown}"
+      ui_msg "Device locked state: ${DEVICE_STATE?}"
+      ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
       ui_msg "Verity mode: ${VERITY_MODE?}"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
       ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
