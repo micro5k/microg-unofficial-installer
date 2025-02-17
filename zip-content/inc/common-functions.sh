@@ -67,7 +67,7 @@ _parse_kernel_cmdline()
   local _var
   if test ! -e '/proc/cmdline'; then return 2; fi
 
-  if _var="$(grep -o -m 1 -e "androidboot\.${1:?}=[^ ]*" -- '/proc/cmdline' | cut -d '=' -f 2 -s)"; then
+  if _var="$(grep -o -m 1 -e "androidboot\.${1:?}=[^ ]*" -- '/proc/cmdline' | cut -d '=' -f '2-' -s)"; then
     printf '%s\n' "${_var?}"
     return 0
   fi
@@ -91,6 +91,16 @@ _detect_verity_status()
   else
     printf '%s\n' 'unsupported'
   fi
+}
+
+_detect_battery_level()
+{
+  if test -n "${DEVICE_DUMPSYS?}" && _val="$("${DEVICE_DUMPSYS:?}" battery | grep -m 1 -F -e 'level:' | cut -d ':' -f '2-' -s)" && _val="${_val# }" && test -n "${_val?}"; then
+    printf '%s\n' "${_val:?}"
+    return 0
+  fi
+
+  return 1
 }
 
 is_verity_enabled()
@@ -692,6 +702,7 @@ display_info()
   ui_msg "Device: ${BUILD_DEVICE?}"
   ui_msg "Product: ${BUILD_PRODUCT?}"
   ui_msg "Emulator: ${IS_EMU:?}"
+  ui_msg "Battery level: ${BATTERY_LEVEL:-unknown}"
   ui_msg_empty_line
   ui_msg "First installation: ${FIRST_INSTALLATION:?}"
   ui_msg "Boot mode: ${BOOTMODE:?}"
@@ -720,7 +731,7 @@ display_info()
   ui_msg "System path: ${SYS_PATH:?}"
   ui_msg "Priv-app dir: ${PRIVAPP_DIRNAME:?}"
   #ui_msg "Android root ENV: ${ANDROID_ROOT-}"
-  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || true)"
+  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
 }
 
 initialize()
@@ -781,6 +792,13 @@ initialize()
 
   if test -e '/dev/block/mapper'; then readonly DYNAMIC_PARTITIONS='true'; else readonly DYNAMIC_PARTITIONS='false'; fi
   export DYNAMIC_PARTITIONS
+
+  BATTERY_LEVEL="$(_detect_battery_level)" || BATTERY_LEVEL=''
+  readonly BATTERY_LEVEL
+  export BATTERY_LEVEL
+  if test -n "${BATTERY_LEVEL?}" && test "${BATTERY_LEVEL:?}" -le 15; then
+    ui_error "The battery is too low. Current level: ${BATTERY_LEVEL?}%" 108
+  fi
 
   _find_and_mount_system
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
