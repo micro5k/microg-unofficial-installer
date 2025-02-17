@@ -62,17 +62,45 @@ _canonicalize()
   return 0
 }
 
-_detect_slot()
+_parse_kernel_cmdline()
 {
-  if test ! -e '/proc/cmdline'; then return 1; fi
+  local _var
+  if test ! -e '/proc/cmdline'; then return 2; fi
 
-  local _slot
-  if _slot="$(grep -o -e 'androidboot.slot_suffix=[_[:alpha:]]*' '/proc/cmdline' | cut -d '=' -f 2)" && test -n "${_slot:-}"; then
-    printf '%s' "${_slot:?}"
+  if _var="$(grep -o -m 1 -e "androidboot\.${1:?}=[^ ]*" -- '/proc/cmdline' | cut -d '=' -f 2 -s)"; then
+    printf '%s\n' "${_var?}"
     return 0
   fi
 
   return 1
+}
+
+_detect_slot()
+{
+  _parse_kernel_cmdline 'slot_suffix'
+}
+
+_detect_verity_status()
+{
+  if _parse_kernel_cmdline 'veritymode'; then # Value from kernel command-line
+    :
+  elif _val="$(simple_getprop 'ro.boot.veritymode')" && is_valid_prop "${_val?}"; then # Value from getprop
+    printf '%s\n' "${_val:?}"
+  elif simple_getprop | grep -q -m 1 -e '^\[ro\.boot\.veritymode\]'; then # If the value exist, even if empty, it is supported
+    printf '%s\n' 'unknown'
+  else
+    printf '%s\n' 'unsupported'
+  fi
+}
+
+is_verity_enabled()
+{
+  case "${VERITY_MODE?}" in
+    'unsupported' | 'unknown' | 'disabled' | 'ignore_corruption' | '') return 1 ;; # NOT enabled
+    *) ;;
+  esac
+
+  return 0 # Enabled
 }
 
 _mount_helper()
@@ -373,10 +401,10 @@ _find_and_mount_system()
       deinitialize
 
       ui_msg_empty_line
-      ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
+      ui_msg "Verity mode: ${VERITY_MODE?}"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
       ui_msg "Current slot: ${SLOT:-no slot}"
-      ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
+      ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
       ui_msg_empty_line
 
       ui_error "The ROM cannot be found!"
@@ -454,14 +482,8 @@ _get_local_settings()
 {
   if test "${LOCAL_SETTINGS_READ:-false}" = 'true'; then return; fi
 
-  LOCAL_SETTINGS=''
-  if test -n "${DEVICE_GETPROP?}"; then
-    ui_debug 'Parsing local settings...'
-    LOCAL_SETTINGS="$("${DEVICE_GETPROP:?}" | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
-  elif command -v getprop 1> /dev/null; then
-    ui_debug 'Parsing local settings (2)...'
-    LOCAL_SETTINGS="$(getprop | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
-  fi
+  ui_debug 'Parsing local settings...'
+  LOCAL_SETTINGS="$(simple_getprop | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
   LOCAL_SETTINGS_READ='true'
 
   readonly LOCAL_SETTINGS LOCAL_SETTINGS_READ
@@ -677,17 +699,17 @@ display_info()
   else
     ui_msg "Zip install: ${ZIP_INSTALL:?}"
   fi
-  ui_msg "Recovery API ver: ${RECOVERY_API_VER:-}"
+  ui_msg "Recovery API ver: ${RECOVERY_API_VER-}"
   ui_msg_empty_line
   ui_msg "Android API: ${API:?}"
   ui_msg "64-bit CPU arch: ${CPU64:?}"
   ui_msg "32-bit CPU arch: ${CPU:?}"
   ui_msg "ABI list: ${ARCH_LIST?}"
   ui_msg_empty_line
-  ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
+  ui_msg "Verity mode: ${VERITY_MODE?}"
   ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
   ui_msg "Current slot: ${SLOT:-no slot}"
-  ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
+  ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
   ui_msg "Fake signature perm.: ${FAKE_SIGN_PERMISSION:?}"
   ui_msg_empty_line
   ui_msg "System mount point: ${SYS_MOUNTPOINT:?}"
@@ -750,7 +772,7 @@ initialize()
   readonly SLOT
   export SLOT
 
-  VERITY_MODE="$(simple_getprop 'ro.boot.veritymode')" || VERITY_MODE=''
+  VERITY_MODE="$(_detect_verity_status)" || VERITY_MODE=''
   readonly VERITY_MODE
   export VERITY_MODE
 
@@ -847,10 +869,10 @@ initialize()
       ui_msg_empty_line
       ui_msg "Device: ${BUILD_DEVICE?}"
       ui_msg_empty_line
-      ui_msg "Verity mode: ${VERITY_MODE:-disabled}"
+      ui_msg "Verity mode: ${VERITY_MODE?}"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
       ui_msg "Current slot: ${SLOT:-no slot}"
-      ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
+      ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
       ui_msg_empty_line
 
       if test "${VERITY_MODE?}" = 'enforcing'; then
@@ -1616,9 +1638,9 @@ build_getprop()
 simple_getprop()
 {
   if test -n "${DEVICE_GETPROP?}"; then
-    "${DEVICE_GETPROP:?}" "${1:?}" || return "${?}"
-  elif command -v getprop 1> /dev/null; then
-    getprop "${1:?}" || return "${?}"
+    PATH="${PREVIOUS_PATH:?}" "${DEVICE_GETPROP:?}" "${@}" || return "${?}"
+  elif command 1> /dev/null -v getprop; then
+    getprop "${@}" || return "${?}"
   else
     return 1
   fi
