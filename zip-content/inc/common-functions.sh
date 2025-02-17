@@ -401,9 +401,11 @@ _find_and_mount_system()
       deinitialize
 
       ui_msg_empty_line
+      ui_msg "Current slot: ${SLOT:-no slot}"
+      ui_msg "Device locked state: ${DEVICE_STATE:-unknown}"
+      ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE:-unknown}"
       ui_msg "Verity mode: ${VERITY_MODE?}"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
-      ui_msg "Current slot: ${SLOT:-no slot}"
       ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
       ui_msg_empty_line
 
@@ -706,9 +708,11 @@ display_info()
   ui_msg "32-bit CPU arch: ${CPU:?}"
   ui_msg "ABI list: ${ARCH_LIST?}"
   ui_msg_empty_line
+  ui_msg "Current slot: ${SLOT:-no slot}"
+  ui_msg "Device locked state: ${DEVICE_STATE:-unknown}"
+  ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE:-unknown}"
   ui_msg "Verity mode: ${VERITY_MODE?}"
   ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
-  ui_msg "Current slot: ${SLOT:-no slot}"
   ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
   ui_msg "Fake signature perm.: ${FAKE_SIGN_PERMISSION:?}"
   ui_msg_empty_line
@@ -765,16 +769,18 @@ initialize()
   fi
   export RECOVERY_FAKE_SYSTEM
 
-  if test -e '/dev/block/mapper'; then readonly DYNAMIC_PARTITIONS='true'; else readonly DYNAMIC_PARTITIONS='false'; fi
-  export DYNAMIC_PARTITIONS
-
   SLOT="$(_detect_slot)" || SLOT=''
   readonly SLOT
   export SLOT
 
-  VERITY_MODE="$(_detect_verity_status)" || VERITY_MODE=''
-  readonly VERITY_MODE
-  export VERITY_MODE
+  DEVICE_STATE="$(_parse_kernel_cmdline 'vbmeta\.device_state')" || DEVICE_STATE='unsupported'
+  VERIFIED_BOOT_STATE="$(_parse_kernel_cmdline 'verifiedbootstate')" || VERIFIED_BOOT_STATE='unsupported'
+  VERITY_MODE="$(_detect_verity_status)" || VERITY_MODE='unknown'
+  readonly DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
+  export DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
+
+  if test -e '/dev/block/mapper'; then readonly DYNAMIC_PARTITIONS='true'; else readonly DYNAMIC_PARTITIONS='false'; fi
+  export DYNAMIC_PARTITIONS
 
   _find_and_mount_system
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
@@ -869,13 +875,15 @@ initialize()
       ui_msg_empty_line
       ui_msg "Device: ${BUILD_DEVICE?}"
       ui_msg_empty_line
+      ui_msg "Current slot: ${SLOT:-no slot}"
+      ui_msg "Device locked state: ${DEVICE_STATE:-unknown}"
+      ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE:-unknown}"
       ui_msg "Verity mode: ${VERITY_MODE?}"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
-      ui_msg "Current slot: ${SLOT:-no slot}"
       ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
       ui_msg_empty_line
 
-      if test "${VERITY_MODE?}" = 'enforcing'; then
+      if is_verity_enabled; then
         ui_error "Remounting of '${SYS_MOUNTPOINT?}' failed, you should DISABLE dm-verity!!!"
       else
         ui_error "Remounting of '${SYS_MOUNTPOINT?}' failed!!!"
