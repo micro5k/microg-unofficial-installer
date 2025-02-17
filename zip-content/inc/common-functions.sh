@@ -80,8 +80,7 @@ _mount_helper()
   {
     test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null "${@}"
   } ||
-    mount "${@}" ||
-    return "${?}"
+    mount "${@}" || return "${?}"
 
   return 0
 }
@@ -217,13 +216,15 @@ is_mounted_read_only()
   return 1
 }
 
-remount_read_write()
+_remount_read_write_helper()
 {
-  if test -n "${DEVICE_MOUNT:-}"; then
-    "${DEVICE_MOUNT:?}" -o 'remount,rw' "${1:?}" || "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}" "${1:?}" || return 1
-  else
-    mount -o 'remount,rw' "${1:?}" || return 1
-  fi
+  {
+    test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}"
+  } ||
+    {
+      test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}" "${1:?}"
+    } ||
+    mount -o 'remount,rw' "${1:?}" || return "${?}"
 
   if is_mounted_read_only "${1:?}"; then return 1; fi
 
@@ -377,8 +378,6 @@ _find_and_mount_system()
       ui_msg "Current slot: ${SLOT:-no slot}"
       ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
       ui_msg_empty_line
-      ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
-      ui_msg_empty_line
 
       ui_error "The ROM cannot be found!"
     fi
@@ -501,22 +500,22 @@ parse_setting()
 
 remount_read_write_if_needed()
 {
-  local _mountpoint _required
-  _mountpoint="${1:?}"
+  local _required
   _required="${2:-true}"
 
-  if is_mounted "${_mountpoint:?}" && is_mounted_read_only "${_mountpoint:?}"; then
-    ui_msg "INFO: The '${_mountpoint:-}' mount point is read-only, it will be remounted"
-    remount_read_write "${_mountpoint:?}" || {
+  if is_mounted_read_only "${1:?}"; then
+    ui_msg "INFO: The '${1?}' mountpoint is read-only, it will be remounted"
+    _remount_read_write_helper "${1:?}" || {
       if test "${_required:?}" = 'true'; then
-        ui_error "Remounting of '${_mountpoint:-}' failed"
+        ui_error "Remounting of '${1?}' failed"
       else
-        ui_warning "Remounting of '${_mountpoint:-}' failed"
+        ui_warning "Remounting of '${1?}' failed"
         ui_msg_empty_line
         return 1
       fi
     }
   fi
+
   return 0
 }
 
@@ -840,9 +839,9 @@ initialize()
   export IS_INSTALLATION
 
   if is_mounted_read_only "${SYS_MOUNTPOINT:?}"; then
-    ui_msg "INFO: The '${SYS_MOUNTPOINT:-}' mount point is read-only, it will be remounted"
+    ui_msg "INFO: The '${SYS_MOUNTPOINT?}'  mountpoint is read-only, it will be remounted"
     ui_msg_empty_line
-    remount_read_write "${SYS_MOUNTPOINT:?}" || {
+    _remount_read_write_helper "${SYS_MOUNTPOINT:?}" || {
       deinitialize
 
       ui_msg_empty_line
@@ -853,13 +852,11 @@ initialize()
       ui_msg "Current slot: ${SLOT:-no slot}"
       ui_msg "Recov. fake system: ${RECOVERY_FAKE_SYSTEM:?}"
       ui_msg_empty_line
-      ui_msg "Android root ENV: ${ANDROID_ROOT:-}"
-      ui_msg_empty_line
 
       if test "${VERITY_MODE?}" = 'enforcing'; then
-        ui_error "Remounting of '${SYS_MOUNTPOINT:-}' failed, you should DISABLE dm-verity!!!"
+        ui_error "Remounting of '${SYS_MOUNTPOINT?}' failed, you should DISABLE dm-verity!!!"
       else
-        ui_error "Remounting of '${SYS_MOUNTPOINT:-}' failed!!!"
+        ui_error "Remounting of '${SYS_MOUNTPOINT?}' failed!!!"
       fi
     }
   fi
@@ -889,7 +886,7 @@ initialize()
   if mount_partition_if_exist "userdata${NL:?}DATAFS${NL:?}" 'data' "${ANDROID_DATA-}"; then
     DATA_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_DATA="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" true
+    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}"
   else
     ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be automatically deleted and their Dalvik cache cannot be automatically cleaned. I suggest to manually do a factory reset after flashing this ZIP."
   fi
@@ -962,14 +959,14 @@ initialize()
 
 deinitialize()
 {
-  if test "${UNMOUNT_DATA:?}" = '1' && test -n "${DATA_PATH-}"; then unmount "${DATA_PATH:?}"; fi
+  if test "${UNMOUNT_DATA:?}" = '1' && test -n "${DATA_PATH-}"; then _unmount_helper "${DATA_PATH:?}"; fi
 
-  if test "${UNMOUNT_PRODUCT:?}" = '1' && test -n "${PRODUCT_PATH-}"; then unmount "${PRODUCT_PATH:?}"; fi
-  if test "${UNMOUNT_VENDOR:?}" = '1' && test -n "${VENDOR_PATH-}"; then unmount "${VENDOR_PATH:?}"; fi
-  if test "${UNMOUNT_SYS_EXT:?}" = '1' && test -n "${SYS_EXT_PATH-}"; then unmount "${SYS_EXT_PATH:?}"; fi
-  if test "${UNMOUNT_ODM:?}" = '1' && test -n "${ODM_PATH-}"; then unmount "${ODM_PATH:?}"; fi
+  if test "${UNMOUNT_PRODUCT:?}" = '1' && test -n "${PRODUCT_PATH-}"; then _unmount_helper "${PRODUCT_PATH:?}"; fi
+  if test "${UNMOUNT_VENDOR:?}" = '1' && test -n "${VENDOR_PATH-}"; then _unmount_helper "${VENDOR_PATH:?}"; fi
+  if test "${UNMOUNT_SYS_EXT:?}" = '1' && test -n "${SYS_EXT_PATH-}"; then _unmount_helper "${SYS_EXT_PATH:?}"; fi
+  if test "${UNMOUNT_ODM:?}" = '1' && test -n "${ODM_PATH-}"; then _unmount_helper "${ODM_PATH:?}"; fi
 
-  if test "${UNMOUNT_SYSTEM:?}" = '1' && test -n "${SYS_MOUNTPOINT-}"; then unmount "${SYS_MOUNTPOINT:?}"; fi
+  if test "${UNMOUNT_SYSTEM:?}" = '1' && test -n "${SYS_MOUNTPOINT-}"; then _unmount_helper "${SYS_MOUNTPOINT:?}"; fi
 
   if test -e "${TMP_PATH:?}/system_mountpoint"; then
     rmdir -- "${TMP_PATH:?}/system_mountpoint" || ui_error 'Failed to delete the temp system mountpoint'
@@ -1475,8 +1472,6 @@ perform_installation()
     ui_msg 'Installing utilities...'
     perform_secure_copy_to_device 'bin'
   fi
-
-  delete "${TMP_PATH:?}/origin"
 }
 
 finalize_and_report_success()
@@ -1602,12 +1597,14 @@ validate_return_code_warning()
 }
 
 # Mounting related functions
-unmount()
+_unmount_helper()
 {
   umount "${1:?}" || {
     ui_warning "Failed to unmount '${1:?}'"
     return 1
   }
+
+  return 0
 }
 
 # Getprop related functions
