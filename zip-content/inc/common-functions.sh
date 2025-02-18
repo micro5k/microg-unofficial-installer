@@ -130,7 +130,7 @@ _verify_system_partition()
   IFS="${NL:?}"
 
   for _path in ${1?}; do
-    if test -z "${_path:-}"; then continue; fi
+    test -n "${_path?}" || continue
     _path="$(_canonicalize "${_path:?}")"
 
     if test -e "${_path:?}/system/build.prop"; then
@@ -153,46 +153,6 @@ _verify_system_partition()
       fi
 
       IFS="${_backup_ifs:-}"
-      return 0
-    fi
-  done
-
-  IFS="${_backup_ifs:-}"
-  return 1
-}
-
-_mount_and_verify_system_partition()
-{
-  local _backup_ifs _path
-  _backup_ifs="${IFS:-}"
-  IFS="${NL:?}"
-
-  for _path in ${1?}; do
-    test -n "${_path?}" || continue
-
-    case "${_path:?}" in
-      '/mnt'/* | "${TMP_PATH:?}"/*) continue ;; # NOTE: These paths can only be mounted manually (example: /mnt/system)
-      *) ;;
-    esac
-
-    _path="$(_canonicalize "${_path:?}")"
-    _mount_helper '-o' 'rw' "${_path:?}" || true
-
-    if test -e "${_path:?}/system/build.prop"; then
-      SYS_PATH="${_path:?}/system"
-      SYS_MOUNTPOINT="${_path:?}"
-
-      IFS="${_backup_ifs:-}"
-      ui_debug "Mounted: ${SYS_MOUNTPOINT:-}"
-      return 0
-    fi
-
-    if test -e "${_path:?}/build.prop"; then
-      SYS_PATH="${_path:?}"
-      SYS_MOUNTPOINT="${_path:?}"
-
-      IFS="${_backup_ifs:-}"
-      ui_debug "Mounted: ${SYS_MOUNTPOINT:-}"
       return 0
     fi
   done
@@ -403,10 +363,8 @@ _find_and_mount_system()
     UNMOUNT_SYSTEM=1
     ui_debug "Mounting system..."
 
-    if _mount_and_verify_system_partition "${_sys_mountpoint_list?}"; then
-      : # Mounted and found
-    elif _manual_partition_mount "${SLOT:+system}${SLOT-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" && test -n "${LAST_MOUNTPOINT?}" && _verify_system_partition "${_sys_mountpoint_list?}"; then
-      ui_debug "Mounted: ${LAST_MOUNTPOINT?}" # Mounted and found
+    if mount_system_partition "${SLOT:+system}${SLOT-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" && test -n "${LAST_MOUNTPOINT?}" && _verify_system_partition "${_sys_mountpoint_list?}"; then
+      : # Mounted
     else
       deinitialize
 
@@ -424,6 +382,62 @@ _find_and_mount_system()
   fi
 
   readonly SYS_MOUNTPOINT SYS_PATH
+}
+
+mount_system_partition()
+{
+  local _backup_ifs _partition_name _block_search_list _raw_mp_list _mp_list _mp
+  unset LAST_MOUNTPOINT
+  LAST_PARTITION_MUST_BE_UNMOUNTED=0
+
+  _partition_name='system'
+  _block_search_list="${1:?}"
+  _raw_mp_list="${2:?}"
+
+  _backup_ifs="${IFS-}"
+  IFS="${NL:?}"
+
+  _mp_list=''
+  for _mp in ${_raw_mp_list?}; do
+    if test -n "${_mp?}"; then # && test -e "${_mp:?}"
+      _mp="$(_canonicalize "${_mp:?}")"
+      _mp_list="${_mp_list?}${_mp:?}${NL:?}"
+    fi
+  done
+  unset _raw_mp_list
+  set -f || :
+  # shellcheck disable=SC2086 # Word splitting is intended
+  set -- ${_mp_list?} || ui_error "Failed expanding \${_mp_list} inside mount_partition_if_exist()"
+  set +f || :
+
+  IFS="${_backup_ifs?}"
+
+  test -n "${_mp_list?}" || return 1 # No usable mountpoint found
+
+  #ui_debug "Checking ${_partition_name?}..."
+
+  if _manual_partition_mount "${_block_search_list:?}" "${_mp_list:?}" && test -n "${LAST_MOUNTPOINT?}"; then
+    LAST_PARTITION_MUST_BE_UNMOUNTED=1
+    ui_debug "Mounted: ${LAST_MOUNTPOINT?}"
+    return 0 # Successfully mounted
+  fi
+
+  for _mp in "${@}"; do
+    case "${_mp:?}" in
+      '/mnt'/* | "${TMP_PATH:?}"/*) continue ;; # NOTE: These paths can only be mounted manually (example: /mnt/system)
+      *) ;;
+    esac
+
+    if _mount_helper "${_mp:?}"; then
+      LAST_MOUNTPOINT="${_mp:?}"
+      LAST_PARTITION_MUST_BE_UNMOUNTED=1
+      ui_debug "Mounted (2): ${LAST_MOUNTPOINT?}"
+      return 0 # Successfully mounted
+    fi
+  done
+
+  ui_warning "Mounting of ${_partition_name?} failed"
+  return 2
 }
 
 mount_partition_if_exist()
@@ -885,8 +899,7 @@ initialize()
   export IS_INSTALLATION
 
   if is_mounted_read_only "${SYS_MOUNTPOINT:?}"; then
-    ui_msg "INFO: The '${SYS_MOUNTPOINT?}'  mountpoint is read-only, it will be remounted"
-    ui_msg_empty_line
+    ui_msg "INFO: The '${SYS_MOUNTPOINT?}' mountpoint is read-only, it will be remounted"
     _remount_read_write_helper "${SYS_MOUNTPOINT:?}" || {
       deinitialize
 
@@ -902,9 +915,9 @@ initialize()
       ui_msg_empty_line
 
       if is_verity_enabled; then
-        ui_error "Remounting of '${SYS_MOUNTPOINT?}' failed, you should DISABLE dm-verity!!!"
+        ui_error "Remounting '${SYS_MOUNTPOINT?}' failed, it is possible that DM-Verity is enabled. If this is the case you should DISABLE it!!!"
       else
-        ui_error "Remounting of '${SYS_MOUNTPOINT?}' failed!!!"
+        ui_error "Remounting '${SYS_MOUNTPOINT?}' failed!!!"
       fi
     }
   fi
