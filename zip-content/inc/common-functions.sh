@@ -161,6 +161,20 @@ _verify_system_partition()
   return 1
 }
 
+_set_system_path_from_mountpoint()
+{
+  if test -e "${1:?}/system/build.prop"; then
+    SYS_PATH="${1:?}/system"
+    return 0
+  elif test -e "${1:?}/build.prop"; then
+    SYS_PATH="${1:?}"
+    return 0
+  fi
+
+  ui_error "System path not found from '${1?}' mountpoint"
+  return 1
+}
+
 _get_mount_info()
 {
   if test ! -e "${1:?}"; then return 2; fi
@@ -345,17 +359,16 @@ _find_and_mount_system()
   ui_debug ''
 
   if _verify_system_partition "${_sys_mountpoint_list?}"; then
-    : # Found (it was already mounted)
+    ui_debug "Already mounted: ${SYS_MOUNTPOINT?}" # Found (it was already mounted)
   else
-    UNMOUNT_SYSTEM=1
-    ui_debug "Mounting system..."
 
     if
       mount_system_partition 'system' "${SLOT:+system}${SLOT-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" &&
-        test -n "${LAST_MOUNTPOINT?}" &&
-        _verify_system_partition "${_sys_mountpoint_list?}"
+        test -n "${LAST_MOUNTPOINT?}" && _set_system_path_from_mountpoint "${LAST_MOUNTPOINT:?}"
     then
-      : # Mounted
+      # SYS_PATH already set
+      SYS_MOUNTPOINT="${LAST_MOUNTPOINT:?}"
+      UNMOUNT_SYSTEM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     else
       deinitialize
 
