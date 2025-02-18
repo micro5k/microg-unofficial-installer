@@ -270,22 +270,23 @@ _find_block()
   return 1
 }
 
-_ensure_mountpoint_exist()
+_prepare_mountpoint()
 {
-  if test -e "${1:?}"; then return 0; fi
-
   case "${1:?}" in
     "${TMP_PATH:?}"/*)
-      ui_debug "Creating mountpoint '${1?}'..."
-      if mkdir -p "${1:?}" && set_perm 0 0 0755 "${1:?}"; then
-        return 0
+      if test ! -e "${1:?}"; then
+        ui_debug "Creating mountpoint '${1?}'..."
+        if mkdir -p "${1:?}" && set_perm 0 0 0755 "${1:?}"; then
+          return 0
+        fi
+        ui_warning "Unable to prepare mountpoint '${1?}'"
+        return 1
       fi
       ;;
     *) ;;
   esac
 
-  ui_warning "Invalid mountpoint '${1?}'"
-  return 1
+  return 0
 }
 
 _manual_partition_mount()
@@ -323,9 +324,9 @@ _manual_partition_mount()
   if test "${_found:?}" != 'false'; then
     for _path in ${2?}; do
       test -n "${_path?}" || continue
-      if test "${RECOVERY_FAKE_SYSTEM:?}" = 'true' && test "${_path?}" = '/system'; then continue; fi
-      _ensure_mountpoint_exist "${_path:?}" || continue
+      if test "${RECOVERY_FAKE_SYSTEM:?}" = 'true' && test "${_path:?}" = '/system'; then continue; fi
       _path="$(_canonicalize "${_path:?}")"
+      _prepare_mountpoint "${_path:?}" || continue
       _curr_mp_list="${_curr_mp_list?}${_curr_mp_list:+, }${_path:?}"
 
       if _mount_helper "${_block:?}" "${_path:?}"; then
@@ -979,14 +980,14 @@ initialize()
 
 deinitialize()
 {
-  if test "${UNMOUNT_DATA:?}" = '1' && test -n "${DATA_PATH-}"; then _unmount_helper "${DATA_PATH:?}"; fi
+  if test "${UNMOUNT_DATA:?}" = '1' && test -n "${DATA_PATH-}"; then unmount_partition "${DATA_PATH:?}"; fi
 
-  if test "${UNMOUNT_PRODUCT:?}" = '1' && test -n "${PRODUCT_PATH-}"; then _unmount_helper "${PRODUCT_PATH:?}"; fi
-  if test "${UNMOUNT_VENDOR:?}" = '1' && test -n "${VENDOR_PATH-}"; then _unmount_helper "${VENDOR_PATH:?}"; fi
-  if test "${UNMOUNT_SYS_EXT:?}" = '1' && test -n "${SYS_EXT_PATH-}"; then _unmount_helper "${SYS_EXT_PATH:?}"; fi
-  if test "${UNMOUNT_ODM:?}" = '1' && test -n "${ODM_PATH-}"; then _unmount_helper "${ODM_PATH:?}"; fi
+  if test "${UNMOUNT_PRODUCT:?}" = '1' && test -n "${PRODUCT_PATH-}"; then unmount_partition "${PRODUCT_PATH:?}"; fi
+  if test "${UNMOUNT_VENDOR:?}" = '1' && test -n "${VENDOR_PATH-}"; then unmount_partition "${VENDOR_PATH:?}"; fi
+  if test "${UNMOUNT_SYS_EXT:?}" = '1' && test -n "${SYS_EXT_PATH-}"; then unmount_partition "${SYS_EXT_PATH:?}"; fi
+  if test "${UNMOUNT_ODM:?}" = '1' && test -n "${ODM_PATH-}"; then unmount_partition "${ODM_PATH:?}"; fi
 
-  if test "${UNMOUNT_SYSTEM:?}" = '1' && test -n "${SYS_MOUNTPOINT-}"; then _unmount_helper "${SYS_MOUNTPOINT:?}"; fi
+  if test "${UNMOUNT_SYSTEM:?}" = '1' && test -n "${SYS_MOUNTPOINT-}"; then unmount_partition "${SYS_MOUNTPOINT:?}"; fi
 
   if test -e "${TMP_PATH:?}/system_mountpoint"; then
     rmdir -- "${TMP_PATH:?}/system_mountpoint" || ui_error 'Failed to delete the temp system mountpoint'
@@ -1617,7 +1618,7 @@ validate_return_code_warning()
 }
 
 # Mounting related functions
-_unmount_helper()
+unmount_partition()
 {
   umount "${1:?}" || {
     ui_warning "Failed to unmount '${1:?}'"
