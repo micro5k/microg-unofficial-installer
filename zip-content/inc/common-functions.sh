@@ -171,7 +171,7 @@ _set_system_path_from_mountpoint()
     return 0
   fi
 
-  ui_error "System path not found from '${1?}' mountpoint"
+  ui_warning "System path not found from '${1?}' mountpoint"
   return 1
 }
 
@@ -364,7 +364,7 @@ _find_and_mount_system()
   else
 
     if
-      mount_system_partition 'system' "${SLOT:+system}${SLOT-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" &&
+      mount_partition_if_possible 'system' "${SLOT:+system}${SLOT-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" &&
         test -n "${LAST_MOUNTPOINT?}" && _set_system_path_from_mountpoint "${LAST_MOUNTPOINT:?}"
     then
       # SYS_PATH already set
@@ -402,11 +402,11 @@ generate_mountpoint_list()
   done
   test -n "${_mp_list?}" || return 1 # Empty list
 
-  printf '%s\n' "${_mp_list:?}"
+  printf '%s' "${_mp_list:?}"
   return 0
 }
 
-mount_system_partition()
+mount_partition_if_possible()
 {
   local _backup_ifs _partition_name _block_search_list _mp_list _mp
   unset LAST_MOUNTPOINT
@@ -421,55 +421,7 @@ mount_system_partition()
 
   set -f || :
   # shellcheck disable=SC2086 # Word splitting is intended
-  set -- ${_mp_list?} || ui_error "Failed expanding \${_mp_list} inside mount_system_partition()"
-  set +f || :
-
-  IFS="${_backup_ifs?}"
-
-  test -n "${_mp_list?}" || return 1 # No usable mountpoint found
-
-  ui_debug "Checking ${_partition_name?}..."
-
-  if _manual_partition_mount "${_block_search_list:?}" "${_mp_list:?}" && test -n "${LAST_MOUNTPOINT?}"; then
-    LAST_PARTITION_MUST_BE_UNMOUNTED=1
-    ui_debug "Mounted: ${LAST_MOUNTPOINT?}"
-    return 0 # Successfully mounted
-  fi
-
-  for _mp in "${@}"; do
-    case "${_mp:?}" in
-      '/mnt'/* | "${TMP_PATH:?}"/*) continue ;; # NOTE: These paths can only be mounted manually (example: /mnt/system)
-      *) ;;
-    esac
-
-    if _mount_helper "${_mp:?}"; then
-      LAST_MOUNTPOINT="${_mp:?}"
-      LAST_PARTITION_MUST_BE_UNMOUNTED=1
-      ui_debug "Mounted (2): ${LAST_MOUNTPOINT?}"
-      return 0 # Successfully mounted
-    fi
-  done
-
-  ui_warning "Mounting of ${_partition_name?} failed"
-  return 2
-}
-
-mount_partition_if_exist()
-{
-  local _backup_ifs _partition_name _block_search_list _mp_list _mp
-  unset LAST_MOUNTPOINT
-  LAST_PARTITION_MUST_BE_UNMOUNTED=0
-
-  _partition_name="${1:?}"
-  _block_search_list="${2:?}"
-  _mp_list="${3?}"
-
-  _backup_ifs="${IFS-}"
-  IFS="${NL:?}"
-
-  set -f || :
-  # shellcheck disable=SC2086 # Word splitting is intended
-  set -- ${_mp_list?} || ui_error "Failed expanding \${_mp_list} inside mount_partition_if_exist()"
+  set -- ${_mp_list?} || ui_error "Failed expanding \${_mp_list} inside mount_partition_if_possible()"
   set +f || :
 
   IFS="${_backup_ifs?}"
@@ -928,22 +880,22 @@ initialize()
     }
   fi
 
-  if mount_partition_if_exist 'product' "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" "$(generate_mountpoint_list 'product' || :)"; then
+  if mount_partition_if_possible 'product' "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" "$(generate_mountpoint_list 'product' || :)"; then
     PRODUCT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && PRODUCT_WRITABLE='true'
   fi
-  if mount_partition_if_exist 'vendor' "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" "$(generate_mountpoint_list 'vendor' || :)"; then
+  if mount_partition_if_possible 'vendor' "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" "$(generate_mountpoint_list 'vendor' || :)"; then
     VENDOR_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && VENDOR_WRITABLE='true'
   fi
-  if mount_partition_if_exist 'system_ext' "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" "$(generate_mountpoint_list 'system_ext' || :)"; then
+  if mount_partition_if_possible 'system_ext' "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" "$(generate_mountpoint_list 'system_ext' || :)"; then
     SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
   fi
-  if mount_partition_if_exist 'odm' "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}" "$(generate_mountpoint_list 'odm' || :)"; then
+  if mount_partition_if_possible 'odm' "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}" "$(generate_mountpoint_list 'odm' || :)"; then
     ODM_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
@@ -952,7 +904,7 @@ initialize()
   local _additional_data_mountpoint=''
   if test -n "${ANDROID_DATA-}" && test "${ANDROID_DATA:?}" != '/data'; then _additional_data_mountpoint="${ANDROID_DATA:?}"; fi
 
-  if mount_partition_if_exist 'data' "userdata${NL:?}DATAFS${NL:?}" "$(generate_mountpoint_list 'data' "${_additional_data_mountpoint?}" || :)"; then
+  if mount_partition_if_possible 'data' "userdata${NL:?}DATAFS${NL:?}" "$(generate_mountpoint_list 'data' "${_additional_data_mountpoint?}" || :)"; then
     DATA_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_DATA="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}"
