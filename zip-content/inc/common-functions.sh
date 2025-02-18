@@ -309,11 +309,11 @@ _manual_partition_mount()
   if test "${_found:?}" != 'false'; then
     for _path in ${2?}; do
       test -n "${_path?}" || continue
+      if test "${RECOVERY_FAKE_SYSTEM:?}" = 'true' && test "${_path?}" = '/system'; then continue; fi
       _ensure_mountpoint_exist "${_path:?}" || continue
       _path="$(_canonicalize "${_path:?}")"
       _curr_mp_list="${_curr_mp_list?}${_curr_mp_list:+, }${_path:?}"
 
-      umount 2> /dev/null "${_path:?}" || :
       if _mount_helper "${_block:?}" "${_path:?}"; then
         IFS="${_backup_ifs:-}"
         LAST_MOUNTPOINT="${_path:?}"
@@ -332,30 +332,17 @@ _manual_partition_mount()
 
 _find_and_mount_system()
 {
-  local _sys_mountpoint_list='' # This is a list of paths separated by newlines
+  local _sys_mountpoint_list _additional_system_mountpoint
 
-  if test "${TEST_INSTALL:-false}" != 'false' && test -n "${ANDROID_ROOT-}" && test -e "${ANDROID_ROOT:?}"; then
-    _sys_mountpoint_list="${ANDROID_ROOT:?}${NL:?}"
-  else
-    if test -e '/mnt/system'; then
-      _sys_mountpoint_list="${_sys_mountpoint_list?}/mnt/system${NL:?}"
-    fi
-    if test -n "${ANDROID_ROOT-}" &&
-      test "${ANDROID_ROOT:?}" != '/system_root' &&
-      test "${ANDROID_ROOT:?}" != '/system' &&
-      test -e "${ANDROID_ROOT:?}"; then
-      _sys_mountpoint_list="${_sys_mountpoint_list?}${ANDROID_ROOT:?}${NL:?}"
-    fi
-    if test -e '/system_root'; then
-      _sys_mountpoint_list="${_sys_mountpoint_list?}/system_root${NL:?}"
-    fi
-    if test "${RECOVERY_FAKE_SYSTEM:?}" = 'false' && test -e '/system'; then
-      _sys_mountpoint_list="${_sys_mountpoint_list?}/system${NL:?}"
-    fi
-    _sys_mountpoint_list="${_sys_mountpoint_list?}${TMP_PATH:?}/system_mountpoint${NL:?}"
+  _additional_system_mountpoint=''
+  if test -n "${ANDROID_ROOT-}" && test "${ANDROID_ROOT:?}" != '/system_root' && test "${ANDROID_ROOT:?}" != '/system'; then
+    _additional_system_mountpoint="${ANDROID_ROOT:?}"
   fi
+
+  _sys_mountpoint_list="$(generate_mountpoint_list 'system' "${_additional_system_mountpoint?}" '/system_root' || :)${NL:?}${TMP_PATH:?}/system_mountpoint"
   ui_debug 'System mountpoint list:'
   ui_debug "${_sys_mountpoint_list?}"
+  ui_debug ''
 
   if _verify_system_partition "${_sys_mountpoint_list?}"; then
     : # Found (it was already mounted)
@@ -363,7 +350,11 @@ _find_and_mount_system()
     UNMOUNT_SYSTEM=1
     ui_debug "Mounting system..."
 
-    if mount_system_partition "${SLOT:+system}${SLOT-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" && test -n "${LAST_MOUNTPOINT?}" && _verify_system_partition "${_sys_mountpoint_list?}"; then
+    if
+      mount_system_partition 'system' "${SLOT:+system}${SLOT-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" &&
+        test -n "${LAST_MOUNTPOINT?}" &&
+        _verify_system_partition "${_sys_mountpoint_list?}"
+    then
       : # Mounted
     else
       deinitialize
@@ -384,30 +375,39 @@ _find_and_mount_system()
   readonly SYS_MOUNTPOINT SYS_PATH
 }
 
-mount_system_partition()
+generate_mountpoint_list()
 {
-  local _backup_ifs _partition_name _block_search_list _raw_mp_list _mp_list _mp
-  unset LAST_MOUNTPOINT
-  LAST_PARTITION_MUST_BE_UNMOUNTED=0
-
-  _partition_name='system'
-  _block_search_list="${1:?}"
-  _raw_mp_list="${2:?}"
-
-  _backup_ifs="${IFS-}"
-  IFS="${NL:?}"
+  local _mp_list _mp
 
   _mp_list=''
-  for _mp in ${_raw_mp_list?}; do
-    if test -n "${_mp?}"; then # && test -e "${_mp:?}"
+  for _mp in "${2-}" "/mnt/${1:?}" "${3-}" "/${1:?}"; do
+    if test -n "${_mp?}" && test -e "${_mp:?}"; then
       _mp="$(_canonicalize "${_mp:?}")"
       _mp_list="${_mp_list?}${_mp:?}${NL:?}"
     fi
   done
-  unset _raw_mp_list
+  test -n "${_mp_list?}" || return 1 # Empty list
+
+  printf '%s\n' "${_mp_list:?}"
+  return 0
+}
+
+mount_system_partition()
+{
+  local _backup_ifs _partition_name _block_search_list _mp_list _mp
+  unset LAST_MOUNTPOINT
+  LAST_PARTITION_MUST_BE_UNMOUNTED=0
+
+  _partition_name="${1:?}"
+  _block_search_list="${2:?}"
+  _mp_list="${3?}"
+
+  _backup_ifs="${IFS-}"
+  IFS="${NL:?}"
+
   set -f || :
   # shellcheck disable=SC2086 # Word splitting is intended
-  set -- ${_mp_list?} || ui_error "Failed expanding \${_mp_list} inside mount_partition_if_exist()"
+  set -- ${_mp_list?} || ui_error "Failed expanding \${_mp_list} inside mount_system_partition()"
   set +f || :
 
   IFS="${_backup_ifs?}"
@@ -442,25 +442,17 @@ mount_system_partition()
 
 mount_partition_if_exist()
 {
-  local _backup_ifs _partition_name _block_search_list _raw_mp_list _mp_list _mp
+  local _backup_ifs _partition_name _block_search_list _mp_list _mp
   unset LAST_MOUNTPOINT
   LAST_PARTITION_MUST_BE_UNMOUNTED=0
 
-  _partition_name="${2:?}"
-  _block_search_list="${1:?}"
-  _raw_mp_list="/mnt/${2:?}${NL:?}${3-}${NL:?}/${2:?}${NL:?}"
+  _partition_name="${1:?}"
+  _block_search_list="${2:?}"
+  _mp_list="${3?}"
 
   _backup_ifs="${IFS-}"
   IFS="${NL:?}"
 
-  _mp_list=''
-  for _mp in ${_raw_mp_list?}; do
-    if test -n "${_mp?}" && test -e "${_mp:?}"; then
-      _mp="$(_canonicalize "${_mp:?}")"
-      _mp_list="${_mp_list?}${_mp:?}${NL:?}"
-    fi
-  done
-  unset _raw_mp_list
   set -f || :
   # shellcheck disable=SC2086 # Word splitting is intended
   set -- ${_mp_list?} || ui_error "Failed expanding \${_mp_list} inside mount_partition_if_exist()"
@@ -922,29 +914,31 @@ initialize()
     }
   fi
 
-  if mount_partition_if_exist "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" 'product'; then
+  if mount_partition_if_exist 'product' "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" "$(generate_mountpoint_list 'product' || :)"; then
     PRODUCT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && PRODUCT_WRITABLE='true'
   fi
-  if mount_partition_if_exist "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" 'vendor'; then
+  if mount_partition_if_exist 'vendor' "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" "$(generate_mountpoint_list 'vendor' || :)"; then
     VENDOR_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && VENDOR_WRITABLE='true'
   fi
-  if mount_partition_if_exist "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" 'system_ext'; then
+  if mount_partition_if_exist 'system_ext' "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" "$(generate_mountpoint_list 'system_ext' || :)"; then
     SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
   fi
-  if mount_partition_if_exist "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}" 'odm'; then
+  if mount_partition_if_exist 'odm' "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}" "$(generate_mountpoint_list 'odm' || :)"; then
     ODM_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
   fi
 
-  if test "${ANDROID_DATA-}" = '/data'; then ANDROID_DATA=''; fi # Avoid double checks
-  if mount_partition_if_exist "userdata${NL:?}DATAFS${NL:?}" 'data' "${ANDROID_DATA-}"; then
+  local _additional_data_mountpoint=''
+  if test -n "${ANDROID_DATA-}" && test "${ANDROID_DATA:?}" != '/data'; then _additional_data_mountpoint="${ANDROID_DATA:?}"; fi
+
+  if mount_partition_if_exist 'data' "userdata${NL:?}DATAFS${NL:?}" "$(generate_mountpoint_list 'data' "${_additional_data_mountpoint?}" || :)"; then
     DATA_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_DATA="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}"
@@ -952,7 +946,6 @@ initialize()
     ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be automatically deleted and their Dalvik cache cannot be automatically cleaned. I suggest to manually do a factory reset after flashing this ZIP."
   fi
   readonly DATA_PATH
-  unset ANDROID_DATA
 
   DEST_PATH="${SYS_PATH:?}"
   readonly DEST_PATH
