@@ -359,6 +359,7 @@ _find_and_mount_system()
   ui_debug ''
 
   if _verify_system_partition "${_sys_mountpoint_list?}"; then
+    ui_debug 'Checking system...'
     ui_debug "Already mounted: ${SYS_MOUNTPOINT?}" # Found (it was already mounted)
   else
 
@@ -427,7 +428,7 @@ mount_system_partition()
 
   test -n "${_mp_list?}" || return 1 # No usable mountpoint found
 
-  #ui_debug "Checking ${_partition_name?}..."
+  ui_debug "Checking ${_partition_name?}..."
 
   if _manual_partition_mount "${_block_search_list:?}" "${_mp_list:?}" && test -n "${LAST_MOUNTPOINT?}"; then
     LAST_PARTITION_MUST_BE_UNMOUNTED=1
