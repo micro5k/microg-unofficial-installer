@@ -291,7 +291,7 @@ _prepare_mountpoint()
 
 _manual_partition_mount()
 {
-  local _backup_ifs _path _block _found _curr_mp_list
+  local _backup_ifs _path _block _found
   unset LAST_MOUNTPOINT
   _backup_ifs="${IFS:-}"
   IFS="${NL:?}"
@@ -302,7 +302,7 @@ _manual_partition_mount()
       test -n "${_path?}" || continue
       if test -e "/dev/block/mapper/${_path:?}"; then
         _block="$(_canonicalize "/dev/block/mapper/${_path:?}")"
-        ui_msg "Found 'mapper/${_path:-}' block at: ${_block:-}"
+        ui_msg "Found 'mapper/${_path?}' block at: ${_block?}"
         _found='true'
         break
       fi
@@ -313,21 +313,18 @@ _manual_partition_mount()
     for _path in ${1?}; do
       test -n "${_path?}" || continue
       if _block="$(_find_block "${_path:?}")"; then
-        ui_msg "Found '${_path:-}' block at: ${_block:-}"
+        ui_msg "Found '${_path?}' block at: ${_block?}"
         _found='true'
         break
       fi
     done
   fi
 
-  _curr_mp_list=''
   if test "${_found:?}" != 'false'; then
     for _path in ${2?}; do
       test -n "${_path?}" || continue
       if test "${RECOVERY_FAKE_SYSTEM:?}" = 'true' && test "${_path:?}" = '/system'; then continue; fi
-      _path="$(_canonicalize "${_path:?}")"
       _prepare_mountpoint "${_path:?}" || continue
-      _curr_mp_list="${_curr_mp_list?}${_curr_mp_list:+, }${_path:?}"
 
       if _mount_helper "${_block:?}" "${_path:?}"; then
         IFS="${_backup_ifs:-}"
@@ -335,10 +332,8 @@ _manual_partition_mount()
         return 0
       fi
     done
-
-    ui_warning "Not mounted => ${_curr_mp_list?}"
   else
-    ui_warning "Not found => ${1?}"
+    ui_warning "Block not found => ${1?}"
   fi
 
   IFS="${_backup_ifs:-}"
@@ -416,18 +411,17 @@ mount_partition_if_possible()
   _partition_name="${1:?}"
   _block_search_list="${2:?}"
   _mp_list="${3?}"
+  test -n "${_mp_list?}" || return 1 # No usable mountpoint found
 
   _backup_ifs="${IFS-}"
   IFS="${NL:?}"
 
   set -f || :
   # shellcheck disable=SC2086 # Word splitting is intended
-  set -- ${_mp_list?} || ui_error "Failed expanding \${_mp_list} inside mount_partition_if_possible()"
+  set -- ${_mp_list:?} || ui_error "Failed expanding \${_mp_list} inside mount_partition_if_possible()"
   set +f || :
 
   IFS="${_backup_ifs?}"
-
-  test -n "${_mp_list?}" || return 1 # No usable mountpoint found
 
   ui_debug "Checking ${_partition_name?}..."
 
