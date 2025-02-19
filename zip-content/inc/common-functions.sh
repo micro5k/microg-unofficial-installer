@@ -410,7 +410,11 @@ mount_partition_if_possible()
 
   _partition_name="${1:?}"
   _block_search_list="${2:?}"
-  _mp_list="${3?}"
+  _mp_list="${3-auto}"
+
+  if test "${_mp_list?}" = 'auto'; then
+    _mp_list="$(generate_mountpoint_list "${_partition_name:?}" || :)"
+  fi
   test -n "${_mp_list?}" || return 1 # No usable mountpoint found
 
   _backup_ifs="${IFS-}"
@@ -875,22 +879,22 @@ initialize()
     }
   fi
 
-  if mount_partition_if_possible 'product' "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}" "$(generate_mountpoint_list 'product' || :)"; then
+  if mount_partition_if_possible 'product' "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}"; then
     PRODUCT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && PRODUCT_WRITABLE='true'
   fi
-  if mount_partition_if_possible 'vendor' "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}" "$(generate_mountpoint_list 'vendor' || :)"; then
+  if mount_partition_if_possible 'vendor' "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}"; then
     VENDOR_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && VENDOR_WRITABLE='true'
   fi
-  if mount_partition_if_possible 'system_ext' "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}" "$(generate_mountpoint_list 'system_ext' || :)"; then
+  if mount_partition_if_possible 'system_ext' "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}"; then
     SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
   fi
-  if mount_partition_if_possible 'odm' "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}" "$(generate_mountpoint_list 'odm' || :)"; then
+  if mount_partition_if_possible 'odm' "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}"; then
     ODM_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
