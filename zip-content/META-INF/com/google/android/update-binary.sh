@@ -100,7 +100,7 @@ _ub_detect_bootmode()
   export BOOTMODE
 }
 
-_show_text_on_recovery()
+_send_text_to_recovery()
 {
   if test "${BOOTMODE:?}" = 'true'; then
     printf '%s\n' "${1?}"
@@ -116,7 +116,7 @@ ui_error()
 {
   ERROR_CODE=79
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
-  _show_text_on_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
+  _send_text_to_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
 }
@@ -212,7 +212,7 @@ _ub_we_mounted_tmp=false
   else
     _ub_we_mounted_tmp=true
 
-    _show_text_on_recovery 'WARNING: Creating (if needed) and mounting the temp folder...'
+    _send_text_to_recovery 'WARNING: Creating (if needed) and mounting the temp folder...'
     printf 1>&2 '\033[0;33m%s\033[0m\n' 'WARNING: Creating (if needed) and mounting the temp folder...'
     if test ! -e '/tmp'; then
       mkdir -p '/tmp' || ui_error 'Failed to create the temp folder'

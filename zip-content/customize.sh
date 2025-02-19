@@ -131,7 +131,7 @@ ui_debug()
   printf '%s\n' "${1?}"
 }
 
-_show_text_on_recovery()
+_send_text_to_recovery()
 {
   if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
 
@@ -149,7 +149,7 @@ enable_debug_log()
   if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
 
   ui_debug "Creating log: ${LOG_PATH:?}"
-  _show_text_on_recovery "Creating log: ${LOG_PATH:?}"
+  _send_text_to_recovery "Creating log: ${LOG_PATH:?}"
 
   touch "${LOG_PATH:?}" || {
     export DEBUG_LOG_ENABLED=0
@@ -193,7 +193,7 @@ ui_error()
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
 
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _show_text_on_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
+    _send_text_to_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
   else
     printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   fi
@@ -204,7 +204,7 @@ ui_error()
 ui_warning()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _show_text_on_recovery "WARNING: ${1:?}"
+    _send_text_to_recovery "WARNING: ${1:?}"
   else
     printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
   fi
@@ -213,7 +213,7 @@ ui_warning()
 ui_msg()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _show_text_on_recovery "${1:?}"
+    _send_text_to_recovery "${1:?}"
   else
     printf '%s\n' "${1:?}"
   fi

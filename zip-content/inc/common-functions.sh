@@ -1508,7 +1508,7 @@ finalize_and_report_success()
 }
 
 # Message related functions
-_show_text_on_recovery()
+_send_text_to_recovery()
 {
   if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
 
@@ -1527,7 +1527,7 @@ ui_error()
   if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
 
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _show_text_on_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
+    _send_text_to_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
   else
     printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
   fi
@@ -1538,7 +1538,7 @@ ui_error()
 ui_recovered_error()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _show_text_on_recovery "RECOVERED ERROR: ${1:?}"
+    _send_text_to_recovery "RECOVERED ERROR: ${1:?}"
   else
     printf 1>&2 '\033[1;31;103m%s\033[0m\n' "RECOVERED ERROR: ${1:?}"
   fi
@@ -1547,7 +1547,7 @@ ui_recovered_error()
 ui_warning()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _show_text_on_recovery "WARNING: ${1:?}"
+    _send_text_to_recovery "WARNING: ${1:?}"
   else
     printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
   fi
@@ -1556,7 +1556,7 @@ ui_warning()
 ui_msg_empty_line()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _show_text_on_recovery ' '
+    _send_text_to_recovery ' '
   else
     printf '\n'
   fi
@@ -1565,7 +1565,7 @@ ui_msg_empty_line()
 ui_msg()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _show_text_on_recovery "${1:?}"
+    _send_text_to_recovery "${1:?}"
   else
     printf '%s\n' "${1:?}"
   fi
