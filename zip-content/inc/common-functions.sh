@@ -30,7 +30,7 @@ unset CDPATH
 
 ### PREVENTIVE CHECKS ###
 
-if test -z "${ZIPFILE:-}" || test -z "${TMP_PATH:-}" || test -z "${RECOVERY_PIPE:-}" || test -z "${OUTFD:-}" || test -z "${INPUT_FROM_TERMINAL:-}" || test -z "${DEBUG_LOG_ENABLED:-}"; then
+if test -z "${ZIPFILE:-}" || test -z "${TMP_PATH:-}" || test "${RECOVERY_PIPE-unset}" = 'unset' || test -z "${OUTFD:-}" || test -z "${INPUT_FROM_TERMINAL:-}" || test -z "${DEBUG_LOG_ENABLED:-}"; then
   echo 'Some variables are NOT set.'
   exit 90
 fi
@@ -51,27 +51,37 @@ _send_text_to_recovery()
 {
   if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
 
-  if test -e "${RECOVERY_PIPE:?}"; then
+  if test -n "${RECOVERY_PIPE?}"; then
     printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
   else
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
 
-  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then printf 1>&2 '%s\n' "${1?}"; fi
+  if test "${DEBUG_LOG_ENABLED:?}" = '1'; then printf 1>&2 '%s\n' "${1?}"; fi
+}
+
+_print_text()
+{
+  if test -n "${NO_COLOR-}"; then
+    printf '%s\n' "${2?}"
+  else
+    printf "${1:?}\n" "${2?}"
+  fi
 }
 
 ui_error()
 {
-  ERROR_CODE=91
-  if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
+  local _error_code
+  _error_code=91
+  test -z "${2-}" || _error_code="${2:?}"
 
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
+    _send_text_to_recovery "ERROR ${_error_code:?}: ${1:?}"
   else
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
+    _print_text 1>&2 '\033[1;31m%s\033[0m' "ERROR ${_error_code:?}: ${1:?}"
   fi
 
-  exit "${ERROR_CODE:?}"
+  exit "${_error_code:?}"
 }
 
 ui_recovered_error()
@@ -79,7 +89,7 @@ ui_recovered_error()
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _send_text_to_recovery "RECOVERED ERROR: ${1:?}"
   else
-    printf 1>&2 '\033[1;31;103m%s\033[0m\n' "RECOVERED ERROR: ${1:?}"
+    _print_text 1>&2 '\033[1;31;103m%s\033[0m' "RECOVERED ERROR: ${1:?}"
   fi
 }
 
@@ -88,7 +98,7 @@ ui_warning()
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _send_text_to_recovery "WARNING: ${1:?}"
   else
-    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
+    _print_text 1>&2 '\033[0;33m%s\033[0m' "WARNING: ${1:?}"
   fi
 }
 
@@ -115,13 +125,13 @@ ui_msg_sameline_start()
   if test "${RECOVERY_OUTPUT:?}" = 'false'; then
     printf '%s ' "${1:?}"
     return
-  elif test -e "${RECOVERY_PIPE:?}"; then
+  elif test -n "${RECOVERY_PIPE?}"; then
     printf 'ui_print %s' "${1:?}" >> "${RECOVERY_PIPE:?}"
   else
     printf 'ui_print %s' "${1:?}" 1>&"${OUTFD:?}"
   fi
 
-  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then printf 1>&2 '%s\n' "${1:?}"; fi
+  if test "${DEBUG_LOG_ENABLED:?}" = '1'; then printf 1>&2 '%s\n' "${1:?}"; fi
 }
 
 ui_msg_sameline_end()
@@ -129,13 +139,13 @@ ui_msg_sameline_end()
   if test "${RECOVERY_OUTPUT:?}" = 'false'; then
     printf '%s\n' "${1:?}"
     return
-  elif test -e "${RECOVERY_PIPE:?}"; then
+  elif test -n "${RECOVERY_PIPE?}"; then
     printf '%s\nui_print\n' "${1:?}" >> "${RECOVERY_PIPE:?}"
   else
     printf '%s\nui_print\n' "${1:?}" 1>&"${OUTFD:?}"
   fi
 
-  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then printf 1>&2 '%s\n' "${1:?}"; fi
+  if test "${DEBUG_LOG_ENABLED:?}" = '1'; then printf 1>&2 '%s\n' "${1:?}"; fi
 }
 
 ui_debug()

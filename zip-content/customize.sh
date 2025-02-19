@@ -19,29 +19,34 @@ export POSIXLY_CORRECT='y'
 
 ### PREVENTIVE CHECKS ###
 
-if test -z "${BOOTMODE:-}"; then
+if test -z "${BOOTMODE-}"; then
   printf 1>&2 '%s\n' 'Missing BOOTMODE variable'
-  abort 'Missing BOOTMODE variable' 2> /dev/null || exit 1
+  abort 2> /dev/null 'Missing BOOTMODE variable'
+  exit 1
 fi
-if test -z "${OUTFD:-}" || test "${OUTFD:?}" -lt 1; then
+if test -z "${ZIPFILE-}"; then
+  printf 1>&2 '%s\n' 'Missing ZIPFILE variable'
+  abort 2> /dev/null 'Missing ZIPFILE variable'
+  exit 1
+fi
+if test -z "${TMPDIR-}" || test ! -e "${TMPDIR:?}"; then
+  printf 1>&2 '%s\n' 'The temp folder is missing (2)'
+  abort 2> /dev/null 'The temp folder is missing (2)'
+  exit 1
+fi
+if test -z "${OUTFD-}" || test "${OUTFD:?}" -lt 1; then
   printf 1>&2 '%s\n' 'Missing or invalid OUTFD variable'
-  abort 'Missing or invalid OUTFD variable' 2> /dev/null || exit 1
+  abort 2> /dev/null  'Missing or invalid OUTFD variable'
+  exit 1
 fi
 RECOVERY_PIPE="/proc/self/fd/${OUTFD:?}"
-if test -z "${ZIPFILE:-}"; then
-  printf 1>&2 '%s\n' 'Missing ZIPFILE variable'
-  abort 'Missing ZIPFILE variable' 2> /dev/null || exit 1
-fi
-if test -z "${TMPDIR:-}" || test ! -e "${TMPDIR:?}"; then
-  printf 1>&2 '%s\n' 'The temp folder is missing (2)'
-  abort 'The temp folder is missing (2)' 2> /dev/null || exit 1
-fi
+test -e "${RECOVERY_PIPE:?}" || RECOVERY_PIPE=''
 
 export BOOTMODE
-export OUTFD
-export RECOVERY_PIPE
 export ZIPFILE
 export TMPDIR
+export OUTFD
+export RECOVERY_PIPE
 export ANDROID_ROOT
 export ANDROID_DATA
 unset REPLACE
@@ -130,13 +135,13 @@ _send_text_to_recovery()
 {
   if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
 
-  if test -e "${RECOVERY_PIPE:?}"; then
+  if test -n "${RECOVERY_PIPE?}"; then
     printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
   else
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
 
-  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then printf 1>&2 '%s\n' "${1?}"; fi
+  if test "${DEBUG_LOG_ENABLED:?}" = '1'; then printf 1>&2 '%s\n' "${1?}"; fi
 }
 
 ui_error()
