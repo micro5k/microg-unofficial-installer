@@ -144,18 +144,28 @@ _send_text_to_recovery()
   if test "${DEBUG_LOG_ENABLED:?}" = '1'; then printf 1>&2 '%s\n' "${1?}"; fi
 }
 
+_print_text()
+{
+  if test -n "${NO_COLOR-}"; then
+    printf '%s\n' "${2?}"
+  else
+    printf "${1:?}\n" "${2?}"
+  fi
+}
+
 ui_error()
 {
-  ERROR_CODE=79
-  if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
+  local _error_code
+  _error_code=79
+  test -z "${2-}" || _error_code="${2:?}"
 
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
+    _send_text_to_recovery "ERROR ${_error_code:?}: ${1:?}"
   else
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
+    _print_text 1>&2 '\033[1;31m%s\033[0m' "ERROR ${_error_code:?}: ${1:?}"
   fi
 
-  abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
+  exit "${_error_code:?}"
 }
 
 ui_warning()
@@ -163,7 +173,7 @@ ui_warning()
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _send_text_to_recovery "WARNING: ${1:?}"
   else
-    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
+    _print_text 1>&2 '\033[0;33m%s\033[0m' "WARNING: ${1:?}"
   fi
 }
 
@@ -178,7 +188,7 @@ ui_msg()
 
 ui_debug()
 {
-  printf '%s\n' "${1?}"
+  printf 1>&2 '%s\n' "${1?}"
 }
 
 enable_debug_log()
