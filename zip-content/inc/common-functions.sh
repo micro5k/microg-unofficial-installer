@@ -65,6 +65,7 @@ _print_text()
   if test -n "${NO_COLOR-}"; then
     printf '%s\n' "${2?}"
   else
+    # shellcheck disable=SC2059
     printf "${1:?}\n" "${2?}"
   fi
 }
@@ -202,16 +203,6 @@ _detect_verity_status()
   fi
 }
 
-_detect_battery_level()
-{
-  if test -n "${DEVICE_DUMPSYS?}" && _val="$("${DEVICE_DUMPSYS:?}" battery | grep -m 1 -F -e 'level:' | cut -d ':' -f '2-' -s)" && _val="${_val# }" && test -n "${_val?}"; then
-    printf '%s\n' "${_val:?}"
-    return 0
-  fi
-
-  return 1
-}
-
 is_verity_enabled()
 {
   case "${VERITY_MODE?}" in
@@ -220,6 +211,16 @@ is_verity_enabled()
   esac
 
   return 0 # Enabled
+}
+
+_detect_battery_level()
+{
+  if test -n "${DEVICE_DUMPSYS?}" && _val="$("${DEVICE_DUMPSYS:?}" battery | grep -m 1 -F -e 'level:' | cut -d ':' -f '2-' -s)" && _val="${_val# }" && test -n "${_val?}"; then
+    printf '%s\n' "${_val:?}"
+    return 0
+  fi
+
+  return 1
 }
 
 _mount_helper()

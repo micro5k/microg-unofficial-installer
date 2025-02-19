@@ -149,6 +149,7 @@ _print_text()
   if test -n "${NO_COLOR-}"; then
     printf '%s\n' "${2?}"
   else
+    # shellcheck disable=SC2059
     printf "${1:?}\n" "${2?}"
   fi
 }
@@ -204,6 +205,7 @@ enable_debug_log()
     return
   }
 
+  export NO_COLOR=1
   export DEBUG_LOG_ENABLED=1
 
   # If they are already in use, then use alternatives
@@ -223,7 +225,7 @@ enable_debug_log()
 disable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -ne 1; then return; fi
-  export DEBUG_LOG_ENABLED=0
+
   if test "${ALTERNATIVE_FDS:?}" -eq 0; then
     exec 1>&6 2>&7 # Restore stdout and stderr
     exec 6>&- 7>&-
@@ -232,6 +234,9 @@ disable_debug_log()
     # shellcheck disable=SC3023
     exec 88>&- 89>&-
   fi
+
+  export DEBUG_LOG_ENABLED=0
+  unset NO_COLOR
 }
 
 set_perm()
