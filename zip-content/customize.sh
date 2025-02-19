@@ -126,11 +126,6 @@ export KEYCHECK_ENABLED='false'
 
 ### FUNCTIONS ###
 
-ui_debug()
-{
-  printf '%s\n' "${1?}"
-}
-
 _send_text_to_recovery()
 {
   if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
@@ -142,6 +137,43 @@ _send_text_to_recovery()
   fi
 
   if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then printf 1>&2 '%s\n' "${1?}"; fi
+}
+
+ui_error()
+{
+  ERROR_CODE=79
+  if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
+
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
+    _send_text_to_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
+  else
+    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
+  fi
+
+  abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
+}
+
+ui_warning()
+{
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
+    _send_text_to_recovery "WARNING: ${1:?}"
+  else
+    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
+  fi
+}
+
+ui_msg()
+{
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
+    _send_text_to_recovery "${1:?}"
+  else
+    printf '%s\n' "${1:?}"
+  fi
+}
+
+ui_debug()
+{
+  printf '%s\n' "${1?}"
 }
 
 enable_debug_log()
@@ -184,38 +216,6 @@ disable_debug_log()
     exec 1>&88 2>&89 # Restore stdout and stderr
     # shellcheck disable=SC3023
     exec 88>&- 89>&-
-  fi
-}
-
-ui_error()
-{
-  ERROR_CODE=79
-  if test -n "${2:-}"; then ERROR_CODE="${2:?}"; fi
-
-  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "ERROR ${ERROR_CODE:?}: ${1:?}"
-  else
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR ${ERROR_CODE:?}: ${1:?}"
-  fi
-
-  abort '' 2> /dev/null || exit "${ERROR_CODE:?}"
-}
-
-ui_warning()
-{
-  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "WARNING: ${1:?}"
-  else
-    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1:?}"
-  fi
-}
-
-ui_msg()
-{
-  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "${1:?}"
-  else
-    printf '%s\n' "${1:?}"
   fi
 }
 
