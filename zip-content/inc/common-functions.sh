@@ -443,7 +443,7 @@ _manual_partition_mount()
       fi
     done
   else
-    ui_warning "Block not found => ${1?}"
+    ui_warning "Block not found for => $(printf '%s' "${1?}" | tr -- '\n' ' ' || :)"
   fi
 
   IFS="${_backup_ifs:-}"
