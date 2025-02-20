@@ -21,6 +21,8 @@ unset CDPATH
 
 ### INIT OPTIONS ###
 
+export DRY_RUN=0
+
 # shellcheck disable=SC3040,SC2015
 {
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
@@ -844,10 +846,18 @@ initialize()
   _get_local_settings
 
   if test "${INPUT_FROM_TERMINAL:?}" = 'true' && test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then LIVE_SETUP_TIMEOUT="$((LIVE_SETUP_TIMEOUT + 3))"; fi
+  DRY_RUN="$(parse_setting 'DRY_RUN' "${DRY_RUN:?}" 'false')"
   LIVE_SETUP_DEFAULT="$(parse_setting 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
   LIVE_SETUP_TIMEOUT="$(parse_setting 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
 
   ui_debug ''
+
+  case "${DRY_RUN?}" in '') DRY_RUN=0 ;; *[!0-9]*) DRY_RUN=1 ;; *) ;; esac
+  readonly DRY_RUN
+  if test "${DRY_RUN:?}" -gt 0; then
+    ui_warning "DRY RUN mode ${DRY_RUN?} enabled!!! No files on your device will be modified."
+    ui_debug ''
+  fi
 
   # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64 or, in some rare cases, just bin and usr.
   # Usable binaries are under the fake /system/bin so the /system mountpoint mustn't be used while in this recovery.
@@ -1106,6 +1116,8 @@ deinitialize()
 clean_previous_installations()
 {
   local _initial_free_space
+
+  test "${DRY_RUN:?}" -eq 0 || return
 
   if _write_test "${SYS_PATH:?}/etc"; then
     : # Really writable
@@ -1559,6 +1571,8 @@ perform_installation()
 
   ui_msg_empty_line
 
+  test "${DRY_RUN:?}" -eq 0 || return
+
   ui_msg 'Installing...'
 
   if test ! -d "${SYS_PATH:?}/etc/zips"; then
@@ -1607,7 +1621,9 @@ perform_installation()
 
 finalize_and_report_success()
 {
-  rm -f -- "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || :
+  if test "${DRY_RUN:?}" -eq 0; then
+    rm -f -- "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || :
+  fi
   deinitialize
   touch "${TMP_PATH:?}/installed"
 
@@ -2899,6 +2915,8 @@ clear_and_enable_app()
 
 reset_authenticator_and_sync_adapter_caches()
 {
+  test "${DRY_RUN:?}" -eq 0 || return
+
   # Reset to avoid problems with signature changes
   delete "${DATA_PATH:?}"/system/registered_services/android.accounts.AccountAuthenticator.xml
   delete "${DATA_PATH:?}"/system/registered_services/android.content.SyncAdapter.xml
