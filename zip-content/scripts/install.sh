@@ -144,14 +144,12 @@ else
   ui_msg_empty_line
 fi
 
-if test "${DRY_RUN:?}" -eq 0; then
-  if test "${IS_INSTALLATION:?}" = 'true'; then
-    disable_app 'com.android.vending'
-    disable_app 'com.google.android.gsf'
-    kill_app 'com.google.android.gsf.login'
-    if test "${FIRST_INSTALLATION:?}" = 'true'; then
-      disable_app 'com.google.android.gms'
-    fi
+if test "${IS_INSTALLATION:?}" = 'true'; then
+  disable_app 'com.android.vending'
+  disable_app 'com.google.android.gsf'
+  kill_app 'com.google.android.gsf.login'
+  if test "${FIRST_INSTALLATION:?}" = 'true'; then
+    disable_app 'com.google.android.gms'
   fi
 fi
 
@@ -159,13 +157,11 @@ fi
 clean_previous_installations
 
 if test "${IS_INSTALLATION:?}" != 'true'; then
-  if test "${DRY_RUN:?}" -eq 0; then
-    clear_app 'com.android.vending'
-    clear_app 'com.google.android.gsf'
-    clear_app 'com.google.android.gsf.login'
-    clear_app 'com.google.android.gms'
-    reset_gms_data_of_all_apps
-  fi
+  clear_app 'com.android.vending'
+  clear_app 'com.google.android.gsf'
+  clear_app 'com.google.android.gsf.login'
+  clear_app 'com.google.android.gms'
+  reset_gms_data_of_all_apps
 
   finalize_and_report_success
 fi
@@ -188,13 +184,13 @@ printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET:?}" 1>> "${TMP_PATH:?}/files/et
 perform_installation
 reset_authenticator_and_sync_adapter_caches
 
-if test "${DRY_RUN:?}" -eq 0; then
-  if test "${FIRST_INSTALLATION:?}" = 'true'; then
-    clear_and_enable_app 'com.google.android.gms'
-  fi
-  clear_and_enable_app 'com.google.android.gsf'
-  clear_and_enable_app 'com.android.vending'
+if test "${FIRST_INSTALLATION:?}" = 'true'; then
+  clear_and_enable_app 'com.google.android.gms'
+fi
+clear_and_enable_app 'com.google.android.gsf'
+clear_and_enable_app 'com.android.vending'
 
+if test "${DRY_RUN:?}" -eq 0; then
   # Resetting Android runtime permissions
   if test "${API:?}" -ge 23; then
     if test -e "${DATA_PATH:?}/system/users/0/runtime-permissions.xml"; then
@@ -224,11 +220,11 @@ if test "${DRY_RUN:?}" -eq 0; then
     replace_line_in_file_with_file "${TMP_PATH}/addon.d/00-1-microg.sh" '%PLACEHOLDER-1%' "${TMP_PATH}/backup-filelist.lst"
     copy_file "${TMP_PATH}/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
   fi
+fi
 
-  # Reset GMS data of all apps
-  if test "${RESET_GMS_DATA_OF_ALL_APPS:?}" != '0'; then
-    reset_gms_data_of_all_apps
-  fi
+# Reset GMS data of all apps
+if test "${RESET_GMS_DATA_OF_ALL_APPS:?}" != '0'; then
+  reset_gms_data_of_all_apps
 fi
 
 finalize_and_report_success

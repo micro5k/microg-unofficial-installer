@@ -1820,6 +1820,8 @@ zip_extract_dir()
 # Data reset functions
 reset_gms_data_of_all_apps()
 {
+  test "${DRY_RUN:?}" -eq 0 || return
+
   if test -e "${DATA_PATH:?}/data"; then
     ui_debug 'Resetting GMS data of all apps...'
     find "${DATA_PATH:?}"/data/*/shared_prefs -name 'com.google.android.gms.*.xml' -delete
@@ -2879,6 +2881,8 @@ live_setup_choice()
 # Other
 soft_kill_app()
 {
+  test "${DRY_RUN:?}" -eq 0 || return
+
   if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_AM?}"; then
     PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null kill "${1:?}" || true
   fi
@@ -2886,6 +2890,8 @@ soft_kill_app()
 
 kill_app()
 {
+  test "${DRY_RUN:?}" -eq 0 || return
+
   if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_AM?}"; then
     PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null force-stop "${1:?}" || PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null kill "${1:?}" || true
   fi
@@ -2893,6 +2899,8 @@ kill_app()
 
 disable_app()
 {
+  test "${DRY_RUN:?}" -eq 0 || return
+
   if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_PM?}"; then
     PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" 2> /dev/null disable "${1:?}" || true
   fi
@@ -2900,6 +2908,8 @@ disable_app()
 
 clear_app()
 {
+  test "${DRY_RUN:?}" -eq 0 || return
+
   if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_PM?}"; then
     PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" 2> /dev/null clear "${1:?}" || true
   fi
@@ -2907,6 +2917,8 @@ clear_app()
 
 clear_and_enable_app()
 {
+  test "${DRY_RUN:?}" -eq 0 || return
+
   if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_PM?}"; then
     PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" 2> /dev/null clear "${1:?}" || true
     PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" 2> /dev/null enable "${1:?}" || true
