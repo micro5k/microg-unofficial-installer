@@ -828,6 +828,7 @@ initialize()
   DATA_PATH='/data'
   PRODUCT_WRITABLE='false'
   VENDOR_WRITABLE='false'
+  SYS_EXT_WRITABLE='false'
 
   # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
   if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
@@ -1002,7 +1003,7 @@ initialize()
   if mount_partition_if_possible 'system_ext' "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}"; then
     SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
+    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && SYS_EXT_WRITABLE='true'
   fi
   if mount_partition_if_possible 'odm' "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}"; then
     ODM_PATH="${LAST_MOUNTPOINT:?}"
@@ -1483,6 +1484,7 @@ verify_disk_space()
 
   if test "${PRODUCT_WRITABLE:?}" = 'true'; then display_free_space "${PRODUCT_PATH:?}" "$(get_free_disk_space_of_partition "${PRODUCT_PATH:?}" || :)"; fi
   if test "${VENDOR_WRITABLE:?}" = 'true'; then display_free_space "${VENDOR_PATH:?}" "$(get_free_disk_space_of_partition "${VENDOR_PATH:?}" || :)"; fi
+  if test "${SYS_EXT_WRITABLE:?}" = 'true'; then display_free_space "${SYS_EXT_PATH:?}" "$(get_free_disk_space_of_partition "${SYS_EXT_PATH:?}" || :)"; fi
 
   if test "${_needed_space_bytes:?}" -ge 0 && test "${_free_space_bytes:?}" -ge 0; then
     : # OK
