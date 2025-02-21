@@ -187,13 +187,25 @@ _parse_kernel_cmdline()
   return 1
 }
 
-_detect_slot()
+_detect_slot_suffix()
 {
-  _parse_kernel_cmdline 'slot_suffix'
+  local _val
+
+  if _val="$(_parse_kernel_cmdline 'slot_suffix')" && test -n "${_val?}"; then
+    :
+  elif _val="$(_parse_kernel_cmdline 'slot')" && test -n "${_val?}" && _val="_${_val:?}"; then
+    :
+  else
+    return
+  fi
+
+  printf '%s\n' "${_val:?}"
 }
 
 _detect_verity_status()
 {
+  local _val
+
   if _parse_kernel_cmdline 'veritymode'; then # Value from kernel command-line
     :
   elif _val="$(simple_getprop 'ro.boot.veritymode')" && is_valid_prop "${_val?}"; then # Value from getprop
@@ -872,7 +884,7 @@ initialize()
   fi
   export RECOVERY_FAKE_SYSTEM
 
-  SLOT="$(_detect_slot)" || SLOT=''
+  SLOT="$(_detect_slot_suffix)"
   readonly SLOT
   export SLOT
 
