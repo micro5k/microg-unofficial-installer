@@ -196,7 +196,7 @@ _detect_slot_suffix()
   elif _val="$(_parse_kernel_cmdline 'slot')" && test -n "${_val?}" && _val="_${_val:?}"; then
     :
   else
-    return
+    return 1
   fi
 
   printf '%s\n' "${_val:?}"
@@ -217,14 +217,34 @@ _detect_verity_status()
   fi
 }
 
+is_device_locked()
+{
+  case "${DEVICE_STATE?}" in
+    'locked') return 0 ;; # Device locked
+    *) ;;                 # Device unlocked: 'unlocked' or 'unknown'
+  esac
+
+  return 1
+}
+
+is_bootloader_locked()
+{
+  case "${VERIFIED_BOOT_STATE?}" in
+    'green' | 'yellow' | 'red') return 0 ;; # Boot loader locked
+    *) ;;                                   # Boot loader unlocked: 'orange' or 'unknown'
+  esac
+
+  return 1
+}
+
 is_verity_enabled()
 {
   case "${VERITY_MODE?}" in
-    'unsupported' | 'unknown' | 'disabled' | 'logging' | '') return 1 ;; # NOT enabled
-    *) ;;
+    'unsupported' | 'unknown' | 'disabled' | 'logging' | '') return 1 ;; # Verity NOT enabled
+    *) ;;                                                                # Verity enabled: 'enforcing', 'eio' or 'panicking'
   esac
 
-  return 0 # Enabled
+  return 0
 }
 
 _detect_battery_level()
@@ -884,7 +904,7 @@ initialize()
   fi
   export RECOVERY_FAKE_SYSTEM
 
-  SLOT="$(_detect_slot_suffix)"
+  SLOT="$(_detect_slot_suffix)" || SLOT=''
   readonly SLOT
   export SLOT
 
@@ -905,8 +925,12 @@ initialize()
     ui_error "The battery is too low. Current level: ${BATTERY_LEVEL?}%" 108
   fi
 
-  if test "${DEVICE_STATE?}" = 'locked'; then
+  if is_device_locked; then
     ui_error 'The device is locked!!!' 37
+  fi
+
+  if is_bootloader_locked; then
+    ui_error "The boot loader is locked!!! Verified boot state: ${VERIFIED_BOOT_STATE?}" 37
   fi
 
   _find_and_mount_system
