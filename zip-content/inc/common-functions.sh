@@ -208,7 +208,7 @@ _detect_verity_status()
 is_verity_enabled()
 {
   case "${VERITY_MODE?}" in
-    'unsupported' | 'unknown' | 'disabled' | 'ignore_corruption' | '') return 1 ;; # NOT enabled
+    'unsupported' | 'unknown' | 'disabled' | 'logging' | '') return 1 ;; # NOT enabled
     *) ;;
   esac
 
@@ -490,7 +490,7 @@ _find_and_mount_system()
       ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
       ui_msg_empty_line
 
-      ui_error "The ROM cannot be found!"
+      ui_error "The ROM cannot be found!!!" 123
     fi
   fi
 
@@ -855,7 +855,7 @@ initialize()
   case "${DRY_RUN?}" in '') DRY_RUN=0 ;; *[!0-9]*) DRY_RUN=1 ;; *) ;; esac
   readonly DRY_RUN
   if test "${DRY_RUN:?}" -gt 0; then
-    ui_warning "DRY RUN mode ${DRY_RUN?} enabled!!! No files on your device will be modified."
+    ui_warning "DRY RUN mode ${DRY_RUN?} enabled!!! No files on your device will be modified"
     ui_debug ''
   fi
 
@@ -888,8 +888,13 @@ initialize()
   BATTERY_LEVEL="$(_detect_battery_level)" || BATTERY_LEVEL=''
   readonly BATTERY_LEVEL
   export BATTERY_LEVEL
+
   if test -n "${BATTERY_LEVEL?}" && test "${BATTERY_LEVEL:?}" -le 15; then
     ui_error "The battery is too low. Current level: ${BATTERY_LEVEL?}%" 108
+  fi
+
+  if test "${DEVICE_STATE?}" = 'locked'; then
+    ui_error 'The device is locked!!!' 37
   fi
 
   _find_and_mount_system
@@ -959,7 +964,7 @@ initialize()
   export FIRST_INSTALLATION PREV_MODULE_VERCODE PREV_INSTALL_FAILED
 
   if test "${MODULE_VERCODE:?}" -lt "${PREV_MODULE_VERCODE:?}"; then
-    ui_error 'Downgrade not allowed!!!'
+    ui_error 'Downgrade not allowed!!!' 95
   fi
 
   IS_INSTALLATION='true'
@@ -993,9 +998,9 @@ initialize()
       ui_msg_empty_line
 
       if is_verity_enabled; then
-        ui_error "Remounting '${SYS_MOUNTPOINT?}' failed, it is possible that DM-Verity is enabled. If this is the case you should DISABLE it!!!"
+        ui_error "Remounting '${SYS_MOUNTPOINT?}' failed, it is possible that Verity is enabled. If this is the case you should DISABLE it!!!" 30
       else
-        ui_error "Remounting '${SYS_MOUNTPOINT?}' failed!!!"
+        ui_error "Remounting '${SYS_MOUNTPOINT?}' failed!!!" 30
       fi
     }
   fi
@@ -1020,6 +1025,8 @@ initialize()
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
   fi
+  readonly PRODUCT_WRITABLE VENDOR_WRITABLE SYS_EXT_WRITABLE
+  export PRODUCT_WRITABLE VENDOR_WRITABLE SYS_EXT_WRITABLE
 
   local _additional_data_mountpoint=''
   if test -n "${ANDROID_DATA-}" && test "${ANDROID_DATA:?}" != '/data'; then _additional_data_mountpoint="${ANDROID_DATA:?}"; fi
@@ -1122,7 +1129,7 @@ clean_previous_installations()
   if _write_test "${SYS_PATH:?}/etc"; then
     : # Really writable
   else
-    ui_error "Something is wrong because '${SYS_PATH?}' is NOT really writable!!!"
+    ui_error "Something is wrong because '${SYS_PATH?}' is NOT really writable!!!" 30
   fi
 
   _initial_free_space="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" || _initial_free_space='-1'
@@ -1552,7 +1559,7 @@ perform_secure_copy_to_device()
 
   local _ret_code
   _ret_code=5
-  ! _is_free_space_error "${_error_text?}" || _ret_code=28
+  ! _is_free_space_error "${_error_text?}" || _ret_code=122
 
   if test -n "${_error_text?}"; then
     ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error_text?}" | head -n 1 || :)" "${_ret_code?}"
@@ -1796,9 +1803,9 @@ package_extract_file()
 
 custom_package_extract_dir()
 {
-  mkdir -p "${2:?}" || ui_error "Failed to create the dir '${2}' for extraction" 95
+  mkdir -p "${2:?}" || ui_error "Failed to create the dir '${2}' for extraction"
   set_perm 0 0 0755 "${2:?}"
-  unzip -oq "${ZIPFILE:?}" "${1:?}/*" -d "${2:?}" || ui_error "Failed to extract the dir '${1}' from this archive" 95
+  unzip -oq "${ZIPFILE:?}" "${1:?}/*" -d "${2:?}" || ui_error "Failed to extract the dir '${1}' from this archive"
 }
 
 zip_extract_file()
@@ -2629,7 +2636,7 @@ choose_read_with_timeout()
       'c' | 'C' | "${_esc_keycode:?}") _key='ESC' ;; # ESC or C key (allowed)
       '') continue ;;                                # Enter key (ignored)
       *)
-        printf 'Invalid choice!!!'
+        printf '%s' 'Invalid choice!!!'
         continue
         ;; # NOT allowed
     esac
@@ -2664,7 +2671,7 @@ choose_read()
       'c' | 'C' | "${_esc_keycode:?}") _key='ESC' ;; # ESC or C key (allowed)
       '') continue ;;                                # Enter key (ignored)
       *)
-        printf 'Invalid choice!!!'
+        printf '%s' 'Invalid choice!!!'
         continue
         ;; # NOT allowed
     esac
