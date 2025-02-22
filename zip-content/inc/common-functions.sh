@@ -202,6 +202,32 @@ _detect_slot_suffix()
   printf '%s\n' "${_val:?}"
 }
 
+_detect_device_state()
+{
+  local _val
+
+  if _parse_kernel_cmdline 'vbmeta\.device_state'; then # Value from kernel command-line
+    :
+  elif _val="$(simple_getprop 'ro.boot.vbmeta.device_state')" && is_valid_prop "${_val?}"; then # Value from getprop
+    printf '%s\n' "${_val:?}"
+  else
+    return 1
+  fi
+}
+
+_detect_verified_boot_state()
+{
+  local _val
+
+  if _parse_kernel_cmdline 'verifiedbootstate'; then # Value from kernel command-line
+    :
+  elif _val="$(simple_getprop 'ro.boot.verifiedbootstate')" && is_valid_prop "${_val?}"; then # Value from getprop
+    printf '%s\n' "${_val:?}"
+  else
+    return 1
+  fi
+}
+
 _detect_verity_status()
 {
   local _val
@@ -908,8 +934,8 @@ initialize()
   readonly SLOT
   export SLOT
 
-  DEVICE_STATE="$(_parse_kernel_cmdline 'vbmeta\.device_state')" || DEVICE_STATE='unknown'
-  VERIFIED_BOOT_STATE="$(_parse_kernel_cmdline 'verifiedbootstate')" || VERIFIED_BOOT_STATE='unknown'
+  DEVICE_STATE="$(_detect_device_state)" || DEVICE_STATE='unknown'
+  VERIFIED_BOOT_STATE="$(_detect_verified_boot_state)" || VERIFIED_BOOT_STATE='unknown'
   VERITY_MODE="$(_detect_verity_status)" || VERITY_MODE='unknown'
   readonly DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
   export DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
