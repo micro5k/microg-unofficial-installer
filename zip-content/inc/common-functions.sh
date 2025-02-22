@@ -187,13 +187,32 @@ _parse_kernel_cmdline()
   return 1
 }
 
+parse_boot_value()
+{
+  local _val
+
+  if _val="$(_parse_kernel_cmdline "${1:?}")"; then # Value from kernel command-line
+    :
+  elif _val="$(simple_getprop "ro.boot.${1:?}")" && is_valid_prop "${_val?}"; then # Value from getprop
+    :
+  else
+    return 1
+  fi
+
+  printf '%s\n' "${_val?}"
+}
+
 _detect_slot_suffix()
 {
   local _val
 
-  if _val="$(_parse_kernel_cmdline 'slot_suffix')" && test -n "${_val?}"; then
+  if _val="$(_parse_kernel_cmdline 'slot_suffix')" && test -n "${_val?}"; then # Value from kernel command-line
     :
-  elif _val="$(_parse_kernel_cmdline 'slot')" && test -n "${_val?}" && _val="_${_val:?}"; then
+  elif _val="$(_parse_kernel_cmdline 'slot')" && test -n "${_val?}" && _val="_${_val:?}"; then # Value from kernel command-line
+    :
+  elif _val="$(simple_getprop 'ro.boot.slot_suffix')" && is_valid_prop "${_val?}"; then # Value from getprop
+    :
+  elif _val="$(simple_getprop 'ro.boot.slot')" && is_valid_prop "${_val?}" && _val="_${_val:?}"; then # Value from getprop
     :
   else
     return 1
@@ -204,38 +223,18 @@ _detect_slot_suffix()
 
 _detect_device_state()
 {
-  local _val
-
-  if _parse_kernel_cmdline 'vbmeta\.device_state'; then # Value from kernel command-line
-    :
-  elif _val="$(simple_getprop 'ro.boot.vbmeta.device_state')" && is_valid_prop "${_val?}"; then # Value from getprop
-    printf '%s\n' "${_val:?}"
-  else
-    return 1
-  fi
+  parse_boot_value 'vbmeta.device_state' || printf '%s\n' 'unknown'
 }
 
 _detect_verified_boot_state()
 {
-  local _val
-
-  if _parse_kernel_cmdline 'verifiedbootstate'; then # Value from kernel command-line
-    :
-  elif _val="$(simple_getprop 'ro.boot.verifiedbootstate')" && is_valid_prop "${_val?}"; then # Value from getprop
-    printf '%s\n' "${_val:?}"
-  else
-    return 1
-  fi
+  parse_boot_value 'verifiedbootstate' || printf '%s\n' 'unknown'
 }
 
-_detect_verity_status()
+_detect_verity_state()
 {
-  local _val
-
-  if _parse_kernel_cmdline 'veritymode'; then # Value from kernel command-line
+  if parse_boot_value 'veritymode'; then
     :
-  elif _val="$(simple_getprop 'ro.boot.veritymode')" && is_valid_prop "${_val?}"; then # Value from getprop
-    printf '%s\n' "${_val:?}"
   elif simple_getprop | grep -q -m 1 -e '^\[ro\.boot\.veritymode\]'; then # If the value exist, even if empty, it is supported
     printf '%s\n' 'unknown'
   else
@@ -934,9 +933,9 @@ initialize()
   readonly SLOT
   export SLOT
 
-  DEVICE_STATE="$(_detect_device_state)" || DEVICE_STATE='unknown'
-  VERIFIED_BOOT_STATE="$(_detect_verified_boot_state)" || VERIFIED_BOOT_STATE='unknown'
-  VERITY_MODE="$(_detect_verity_status)" || VERITY_MODE='unknown'
+  DEVICE_STATE="$(_detect_device_state)"
+  VERIFIED_BOOT_STATE="$(_detect_verified_boot_state)"
+  VERITY_MODE="$(_detect_verity_state)"
   readonly DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
   export DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
 
