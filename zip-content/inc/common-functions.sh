@@ -575,7 +575,7 @@ _find_and_mount_system()
       ui_msg "Current slot: ${SLOT:-no slot}"
       ui_msg "Device locked state: ${DEVICE_STATE?}"
       ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
-      ui_msg "Verity mode: ${VERITY_MODE?}"
+      ui_msg "Verity mode: ${VERITY_MODE?} (detection is unreliable)"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
       ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
       ui_msg_empty_line
@@ -903,7 +903,7 @@ display_info()
   ui_msg "Current slot: ${SLOT:-no slot}"
   ui_msg "Device locked state: ${DEVICE_STATE?}"
   ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
-  ui_msg "Verity mode: ${VERITY_MODE?}"
+  ui_msg "Verity mode: ${VERITY_MODE?} (detection is unreliable)"
   ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
   ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
   ui_msg "Fake signature perm.: ${FAKE_SIGN_PERMISSION:?}"
@@ -1101,7 +1101,7 @@ initialize()
       ui_msg "Current slot: ${SLOT:-no slot}"
       ui_msg "Device locked state: ${DEVICE_STATE?}"
       ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
-      ui_msg "Verity mode: ${VERITY_MODE?}"
+      ui_msg "Verity mode: ${VERITY_MODE?} (detection is unreliable)"
       ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
       ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
       ui_msg_empty_line
