@@ -174,6 +174,19 @@ _canonicalize()
   return 0
 }
 
+_detect_recovery_name()
+{
+  local _val
+
+  if test -n "${DEVICE_TWRP?}" && _val="$("${DEVICE_TWRP:?}" --version | head -n 1)" && _val="${_val#*"openrecoveryscript command line tool, "}" && test -n "${_val?}"; then
+    :
+  else
+    return 1
+  fi
+
+  printf '%s\n' "${_val:?}"
+}
+
 _parse_kernel_cmdline()
 {
   local _var
@@ -864,6 +877,9 @@ display_info()
   ui_msg "Emulator: ${IS_EMU:?}"
   ui_msg "Battery level: ${BATTERY_LEVEL:-unknown}"
   ui_msg_empty_line
+  ui_msg "Recovery: ${RECOVERY_NAME:-unknown}"
+  ui_msg "Recovery API version: ${RECOVERY_API_VER-}"
+  ui_msg_empty_line
   ui_msg "First installation: ${FIRST_INSTALLATION:?}"
   ui_msg "Boot mode: ${BOOTMODE:?}"
   ui_msg "Sideload: ${SIDELOAD:?}"
@@ -872,7 +888,6 @@ display_info()
   else
     ui_msg "Zip install: ${ZIP_INSTALL:?}"
   fi
-  ui_msg "Recovery API ver: ${RECOVERY_API_VER-}"
   ui_msg_empty_line
   ui_msg "Android API: ${API:?}"
   ui_msg "64-bit CPU arch: ${CPU64:?}"
@@ -936,10 +951,12 @@ initialize()
     ui_debug ''
   fi
 
+  RECOVERY_NAME="$(_detect_recovery_name)" || RECOVERY_NAME=''
+
   # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64 or, in some rare cases, just bin and usr.
   # Usable binaries are under the fake /system/bin so the /system mountpoint mustn't be used while in this recovery.
   if test "${BOOTMODE:?}" != 'true' &&
-    test -e '/system/bin' &&
+    test -e '/system/bin/sh' &&
     test ! -e '/system/app' &&
     test ! -e '/system/build.prop' &&
     test ! -e '/system/system/build.prop'; then
