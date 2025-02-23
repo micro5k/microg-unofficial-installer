@@ -957,6 +957,11 @@ initialize()
     ui_debug ''
   fi
 
+  package_extract_file 'info.prop' "${TMP_PATH:?}/info.prop"
+  BUILD_TYPE="$(simple_file_getprop 'buildType' "${TMP_PATH:?}/info.prop")" || ui_error 'Failed to parse build type'
+  readonly BUILD_TYPE
+  export BUILD_TYPE
+
   RECOVERY_NAME="$(_detect_recovery_name)" || RECOVERY_NAME=''
 
   # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64 or, in some rare cases, just bin and usr.
@@ -1159,6 +1164,7 @@ initialize()
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
   ui_msg "${MODULE_NAME:?}"
   ui_msg "${MODULE_VERSION:?}"
+  ui_msg "${BUILD_TYPE:?}"
   ui_msg "(by ${MODULE_AUTHOR:?})"
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
 

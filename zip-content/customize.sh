@@ -277,7 +277,7 @@ package_extract_file_may_fail()
   } ||
     {
       rm -f -- "${2:?}" || true
-      ui_warning "Failed to extract the file '${1}' from this archive"
+      ui_debug "Failed to extract the file '${1}' from this archive"
       return 1
     }
 }
