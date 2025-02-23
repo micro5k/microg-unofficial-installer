@@ -276,18 +276,28 @@ _detect_battery_level()
 {
   local _val
 
-  if test -n "${DEVICE_DUMPSYS?}" && _val="$("${DEVICE_DUMPSYS:?}" 2> /dev/null battery | grep -m 1 -F -e 'level:' | cut -d ':' -f '2-' -s)" && _val="${_val# }" && test -n "${_val?}"; then
+  # Check also batt_soc, fg_psoc, uevent
+  if test -r '/sys/class/power_supply/battery/capacity' && _val="$(cat '/sys/class/power_supply/battery/capacity')" && test -n "${_val?}"; then
     :
-  elif test -e '/sys/class/power_supply/battery/capacity' && _val="$(cat '/sys/class/power_supply/battery/capacity')" && test -n "${_val?}"; then
-    : # Check also batt_soc, fg_psoc, uevent
+  elif test -n "${DEVICE_DUMPSYS?}" && _val="$("${DEVICE_DUMPSYS:?}" 2> /dev/null battery | grep -m 1 -F -e 'level:' | cut -d ':' -f '2-' -s)" && _val="${_val# }" && test -n "${_val?}"; then
+    :
   else
     _val=''
   fi
 
   case "${_val?}" in
-    '' | *[!0-9]*) return 1 ;;
+    '') return 1 ;;
+    *[!0-9]*)
+      ui_warning "Invalid battery level. Current value: ${_val?}"
+      return 2
+      ;;
     *) ;;
   esac
+
+  if test "${_val:?}" -eq 0 || test "${_val:?}" -gt 100; then
+    ui_warning "Invalid battery level. Current value: ${_val?}"
+    return 3
+  fi
 
   printf '%s\n' "${_val:?}"
 }
