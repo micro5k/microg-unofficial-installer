@@ -595,6 +595,12 @@ generate_mountpoint_list()
   for _mp in "${2-}" "/mnt/${1:?}" "${3-}" "/${1:?}"; do
     if test -n "${_mp?}" && test -e "${_mp:?}"; then
       _mp="$(_canonicalize "${_mp:?}")"
+
+      case "${_mp:?}" in
+        '/system'/*) continue ;; # NOTE: This is not a real partition, just a symbolic link to a folder under /system
+        *) ;;
+      esac
+
       _mp_list="${_mp_list?}${_mp:?}${NL:?}"
     fi
   done
