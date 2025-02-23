@@ -910,7 +910,7 @@ display_info()
   ui_msg_empty_line
   ui_msg "System mount point: ${SYS_MOUNTPOINT:?}"
   ui_msg "System path: ${SYS_PATH:?}"
-  ui_msg "Priv-app dir: ${PRIVAPP_DIRNAME:?}"
+  ui_msg "Priv-app dir name: ${PRIVAPP_DIRNAME:?}"
   #ui_msg "Android root ENV: ${ANDROID_ROOT-}"
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
 }
