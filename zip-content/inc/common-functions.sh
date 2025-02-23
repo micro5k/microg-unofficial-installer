@@ -274,12 +274,22 @@ is_verity_enabled()
 
 _detect_battery_level()
 {
-  if test -n "${DEVICE_DUMPSYS?}" && _val="$("${DEVICE_DUMPSYS:?}" battery | grep -m 1 -F -e 'level:' | cut -d ':' -f '2-' -s)" && _val="${_val# }" && test -n "${_val?}"; then
-    printf '%s\n' "${_val:?}"
-    return 0
+  local _val
+
+  if test -n "${DEVICE_DUMPSYS?}" && _val="$("${DEVICE_DUMPSYS:?}" 2> /dev/null battery | grep -m 1 -F -e 'level:' | cut -d ':' -f '2-' -s)" && _val="${_val# }" && test -n "${_val?}"; then
+    :
+  elif test -e '/sys/class/power_supply/battery/capacity' && _val="$(cat '/sys/class/power_supply/battery/capacity')" && test -n "${_val?}"; then
+    : # Check also batt_soc, fg_psoc, uevent
+  else
+    _val=''
   fi
 
-  return 1
+  case "${_val?}" in
+    '' | *[!0-9]*) return 1 ;;
+    *) ;;
+  esac
+
+  printf '%s\n' "${_val:?}"
 }
 
 _mount_helper()
