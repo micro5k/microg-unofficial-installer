@@ -593,13 +593,16 @@ generate_mountpoint_list()
 
   _mp_list=''
   for _mp in "${2-}" "/mnt/${1:?}" "${3-}" "/${1:?}"; do
-    if test -n "${_mp?}" && test -e "${_mp:?}"; then
+    if test -n "${_mp?}" && test -r "${_mp:?}"; then
       _mp="$(_canonicalize "${_mp:?}")"
 
-      case "${_mp:?}" in
-        '/system'/*) continue ;; # NOTE: This is not a real partition, just a symbolic link to a folder under /system
-        *) ;;
-      esac
+      if test "${1:?}" != 'system'; then
+        # Detect the case where there is NOT a real partition but just a symbolic link to a folder under /system (example: /product -> '/system/product').
+        # When it is inside Android the target of the symlink may be detected but when inside the recovery the symlink is missing,
+        # so detect also if the target directory exist (example: /system/product).
+        case "${_mp:?}" in '/system'/*) continue ;; *) ;; esac
+        if test -n "${SYS_PATH-}" && test -d "${SYS_PATH:?}/${1:?}"; then continue; fi
+      fi
 
       _mp_list="${_mp_list?}${_mp:?}${NL:?}"
     fi
