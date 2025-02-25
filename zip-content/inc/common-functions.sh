@@ -535,7 +535,7 @@ _manual_partition_mount()
       fi
     done
   else
-    ui_warning "Block not found for => $(printf '%s' "${1?}" | tr -- '\n' ' ' || :)"
+    ui_debug "Block not found for: $(printf '%s' "${1?}" | tr -- '\n' ' ' || :)"
   fi
 
   IFS="${_backup_ifs:-}"
@@ -597,11 +597,9 @@ generate_mountpoint_list()
       _mp="$(_canonicalize "${_mp:?}")"
 
       if test "${1:?}" != 'system'; then
-        # Detect the case where there is NOT a real partition but just a symbolic link to a folder under /system (example: /product -> '/system/product').
-        # When it is inside Android the target of the symlink may be detected but when inside the recovery the symlink is missing,
-        # so detect also if the target directory exist (example: /system/product).
+        # It detect the case where there is NO real partition but only a symbolic link to a folder under /system (example: /product -> '/system/product').
+        # It works when inside Android but when inside recovery the symbolic link is missing, so the other case is handled directly inside mount_partition_if_possible()
         case "${_mp:?}" in '/system'/*) continue ;; *) ;; esac
-        if test -n "${SYS_PATH-}" && test -d "${SYS_PATH:?}/${1:?}"; then continue; fi
       fi
 
       _mp_list="${_mp_list?}${_mp:?}${NL:?}"
@@ -615,13 +613,14 @@ generate_mountpoint_list()
 
 mount_partition_if_possible()
 {
-  local _backup_ifs _partition_name _block_search_list _mp_list _mp
+  local _backup_ifs _partition_name _block_search_list _mp_list _mp _skip_warnings
   unset LAST_MOUNTPOINT
   LAST_PARTITION_MUST_BE_UNMOUNTED=0
 
   _partition_name="${1:?}"
   _block_search_list="${2:?}"
   _mp_list="${3-auto}"
+  _skip_warnings='false'
 
   if test "${_mp_list?}" = 'auto'; then
     _mp_list="$(generate_mountpoint_list "${_partition_name:?}" || :)"
@@ -648,6 +647,12 @@ mount_partition_if_possible()
     fi
   done
 
+  if test "${_partition_name:?}" != 'system' && test "${_partition_name:?}" != 'data' && test -n "${SYS_PATH-}" && test -d "${SYS_PATH:?}/${_partition_name:?}"; then
+    # In some cases there is no real partition but it is just a folder inside the system partition.
+    # In these cases no warnings are shown when the partition is not found.
+    _skip_warnings='true'
+  fi
+
   if _manual_partition_mount "${_block_search_list:?}" "${_mp_list:?}" && test -n "${LAST_MOUNTPOINT?}"; then
     LAST_PARTITION_MUST_BE_UNMOUNTED=1
     ui_debug "Mounted: ${LAST_MOUNTPOINT?}"
@@ -656,11 +661,11 @@ mount_partition_if_possible()
 
   for _mp in "${@}"; do
     case "${_mp:?}" in
-      '/mnt'/* | '/odm' | "${TMP_PATH:?}"/*) continue ;; # NOTE: These paths can only be mounted manually (example: /mnt/system)
+      '/mnt'/* | "${TMP_PATH:?}"/*) continue ;; # NOTE: These paths can only be mounted manually (example: /mnt/system)
       *) ;;
     esac
 
-    if _mount_helper "${_mp:?}"; then
+    if _mount_helper 2> /dev/null "${_mp:?}"; then
       LAST_MOUNTPOINT="${_mp:?}"
       LAST_PARTITION_MUST_BE_UNMOUNTED=1
       ui_debug "Mounted (2): ${LAST_MOUNTPOINT?}"
@@ -668,7 +673,9 @@ mount_partition_if_possible()
     fi
   done
 
-  ui_warning "Mounting of ${_partition_name?} failed"
+  if test "${_skip_warnings:?}" = 'false'; then
+    ui_warning "Mounting of ${_partition_name?} failed"
+  fi
   return 2
 }
 
@@ -2992,6 +2999,7 @@ live_setup_choice()
       LIVE_SETUP_ENABLED='true'
     elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
 
+      ui_msg_empty_line
       if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
         ui_msg 'Using: read'
         _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
