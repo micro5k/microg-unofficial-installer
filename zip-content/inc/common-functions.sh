@@ -511,6 +511,18 @@ _manual_partition_mount()
     done
   fi
 
+  if test "${_found:?}" = 'false' && test -e '/dev/block/by-name'; then
+    for _path in ${1?}; do
+      test -n "${_path?}" || continue
+      if test -e "/dev/block/by-name/${_path:?}"; then
+        _block="$(_canonicalize "/dev/block/by-name/${_path:?}")"
+        ui_msg "Found 'by-name/${_path?}' block at: ${_block?}"
+        _found='true'
+        break
+      fi
+    done
+  fi
+
   if test "${_found:?}" = 'false' && test -e '/sys/dev/block'; then
     for _path in ${1?}; do
       test -n "${_path?}" || continue
