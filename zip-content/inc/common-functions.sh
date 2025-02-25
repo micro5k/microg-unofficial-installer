@@ -656,7 +656,7 @@ mount_partition_if_possible()
 
   for _mp in "${@}"; do
     case "${_mp:?}" in
-      '/mnt'/* | "${TMP_PATH:?}"/*) continue ;; # NOTE: These paths can only be mounted manually (example: /mnt/system)
+      '/mnt'/* | '/odm' | "${TMP_PATH:?}"/*) continue ;; # NOTE: These paths can only be mounted manually (example: /mnt/system)
       *) ;;
     esac
 
@@ -928,10 +928,16 @@ initialize()
   UNMOUNT_SYS_EXT=0
   UNMOUNT_ODM=0
   UNMOUNT_DATA=0
+
+  PRODUCT_PATH=''
+  VENDOR_PATH=''
+  SYS_EXT_PATH=''
+  ODM_PATH=''
   DATA_PATH='/data'
-  PRODUCT_WRITABLE='false'
-  VENDOR_WRITABLE='false'
-  SYS_EXT_WRITABLE='false'
+
+  PRODUCT_USABLE='false'
+  VENDOR_USABLE='false'
+  SYS_EXT_USABLE='false'
 
   # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
   if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
@@ -1120,25 +1126,27 @@ initialize()
   if mount_partition_if_possible 'product' "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}"; then
     PRODUCT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && PRODUCT_WRITABLE='true'
+    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && PRODUCT_USABLE='true'
   fi
   if mount_partition_if_possible 'vendor' "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}"; then
     VENDOR_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && VENDOR_WRITABLE='true'
+    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && VENDOR_USABLE='true'
   fi
   if mount_partition_if_possible 'system_ext' "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}"; then
     SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && SYS_EXT_WRITABLE='true'
+    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && SYS_EXT_USABLE='true'
   fi
   if mount_partition_if_possible 'odm' "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}"; then
     ODM_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
   fi
-  readonly PRODUCT_WRITABLE VENDOR_WRITABLE SYS_EXT_WRITABLE
-  export PRODUCT_WRITABLE VENDOR_WRITABLE SYS_EXT_WRITABLE
+  readonly PRODUCT_PATH VENDOR_PATH SYS_EXT_PATH ODM_PATH
+  export PRODUCT_PATH VENDOR_PATH SYS_EXT_PATH ODM_PATH
+  readonly PRODUCT_USABLE VENDOR_USABLE SYS_EXT_USABLE
+  export PRODUCT_USABLE VENDOR_USABLE SYS_EXT_USABLE
 
   local _additional_data_mountpoint=''
   if test -n "${ANDROID_DATA-}" && test "${ANDROID_DATA:?}" != '/data'; then _additional_data_mountpoint="${ANDROID_DATA:?}"; fi
@@ -1151,6 +1159,7 @@ initialize()
     ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be automatically deleted and their Dalvik cache cannot be automatically cleaned. I suggest to manually do a factory reset after flashing this ZIP."
   fi
   readonly DATA_PATH
+  export DATA_PATH
 
   DEST_PATH="${SYS_PATH:?}"
   readonly DEST_PATH
@@ -1219,12 +1228,12 @@ initialize()
 
 deinitialize()
 {
-  if test "${UNMOUNT_DATA:?}" = '1' && test -n "${DATA_PATH-}"; then unmount_partition "${DATA_PATH:?}"; fi
+  if test "${UNMOUNT_DATA:?}" = '1' && test -n "${DATA_PATH?}"; then unmount_partition "${DATA_PATH:?}"; fi
 
-  if test "${UNMOUNT_PRODUCT:?}" = '1' && test -n "${PRODUCT_PATH-}"; then unmount_partition "${PRODUCT_PATH:?}"; fi
-  if test "${UNMOUNT_VENDOR:?}" = '1' && test -n "${VENDOR_PATH-}"; then unmount_partition "${VENDOR_PATH:?}"; fi
-  if test "${UNMOUNT_SYS_EXT:?}" = '1' && test -n "${SYS_EXT_PATH-}"; then unmount_partition "${SYS_EXT_PATH:?}"; fi
-  if test "${UNMOUNT_ODM:?}" = '1' && test -n "${ODM_PATH-}"; then unmount_partition "${ODM_PATH:?}"; fi
+  if test "${UNMOUNT_ODM:?}" = '1' && test -n "${ODM_PATH?}"; then unmount_partition "${ODM_PATH:?}"; fi
+  if test "${UNMOUNT_SYS_EXT:?}" = '1' && test -n "${SYS_EXT_PATH?}"; then unmount_partition "${SYS_EXT_PATH:?}"; fi
+  if test "${UNMOUNT_VENDOR:?}" = '1' && test -n "${VENDOR_PATH?}"; then unmount_partition "${VENDOR_PATH:?}"; fi
+  if test "${UNMOUNT_PRODUCT:?}" = '1' && test -n "${PRODUCT_PATH?}"; then unmount_partition "${PRODUCT_PATH:?}"; fi
 
   if test "${UNMOUNT_SYSTEM:?}" = '1' && test -n "${SYS_MOUNTPOINT-}"; then unmount_partition "${SYS_MOUNTPOINT:?}"; fi
 
@@ -1536,8 +1545,17 @@ get_free_disk_space_of_partition()
 
 display_free_space()
 {
+  local _free_space_mb _free_space_auto
+
   if test -n "${2?}" && test "${2:?}" -ge 0; then
-    ui_msg "Free space on ${1?}: $(convert_bytes_to_mb "${2:?}" || :) MB ($(convert_bytes_to_human_readable_format "${2:?}" || :))"
+    _free_space_mb="$(convert_bytes_to_mb "${2:?}")"
+    _free_space_auto="$(convert_bytes_to_human_readable_format "${2:?}")"
+
+    if test "${_free_space_auto?}" != "${_free_space_mb?}"; then
+      ui_msg "Free space on ${1?}: ${_free_space_mb?} MB (${_free_space_auto?}) - usable: ${3?}"
+    else
+      ui_msg "Free space on ${1?}: ${_free_space_mb?} MB - usable: ${3?}"
+    fi
     return 0
   fi
 
@@ -1612,11 +1630,12 @@ verify_disk_space()
   fi
 
   _free_space_bytes="$(get_free_disk_space_of_partition "${1:?}")" || _free_space_bytes='-1'
-  display_free_space "${1:?}" "${_free_space_bytes?}" || :
+  display_free_space "${1:?}" "${_free_space_bytes?}" 'true'
 
-  if test "${PRODUCT_WRITABLE:?}" = 'true'; then display_free_space "${PRODUCT_PATH:?}" "$(get_free_disk_space_of_partition "${PRODUCT_PATH:?}" || :)"; fi
-  if test "${VENDOR_WRITABLE:?}" = 'true'; then display_free_space "${VENDOR_PATH:?}" "$(get_free_disk_space_of_partition "${VENDOR_PATH:?}" || :)"; fi
-  if test "${SYS_EXT_WRITABLE:?}" = 'true'; then display_free_space "${SYS_EXT_PATH:?}" "$(get_free_disk_space_of_partition "${SYS_EXT_PATH:?}" || :)"; fi
+  if test -n "${PRODUCT_PATH?}"; then display_free_space "${PRODUCT_PATH:?}" "$(get_free_disk_space_of_partition "${PRODUCT_PATH:?}" || :)" "${PRODUCT_USABLE:?}"; fi
+  if test -n "${VENDOR_PATH?}"; then display_free_space "${VENDOR_PATH:?}" "$(get_free_disk_space_of_partition "${VENDOR_PATH:?}" || :)" "${VENDOR_USABLE:?}"; fi
+  if test -n "${SYS_EXT_PATH?}"; then display_free_space "${SYS_EXT_PATH:?}" "$(get_free_disk_space_of_partition "${SYS_EXT_PATH:?}" || :)" "${SYS_EXT_USABLE:?}"; fi
+  if test -n "${ODM_PATH?}"; then display_free_space "${ODM_PATH:?}" "$(get_free_disk_space_of_partition "${ODM_PATH:?}" || :)" 'false'; fi
 
   if test "${_needed_space_bytes:?}" -ge 0 && test "${_free_space_bytes:?}" -ge 0; then
     : # OK
@@ -1668,7 +1687,7 @@ perform_secure_copy_to_device()
   df 2> /dev/null -h -T -- "${SYS_MOUNTPOINT:?}" || df -h -- "${SYS_MOUNTPOINT:?}" || :
   ui_debug ''
 
-  display_free_space "${DEST_PATH:?}" "$(get_free_disk_space_of_partition "${DEST_PATH:?}" || :)"
+  display_free_space "${DEST_PATH:?}" "$(get_free_disk_space_of_partition "${DEST_PATH:?}" || :)" 'true'
 
   local _ret_code
   _ret_code=5
@@ -1942,7 +1961,7 @@ reset_gms_data_of_all_apps()
 {
   test "${DRY_RUN:?}" -eq 0 || return
 
-  if test -e "${DATA_PATH:?}/data"; then
+  if test -n "${DATA_PATH?}" && test -e "${DATA_PATH:?}/data"; then
     ui_debug 'Resetting GMS data of all apps...'
     find "${DATA_PATH:?}"/data/*/shared_prefs -name 'com.google.android.gms.*.xml' -delete
     validate_return_code_warning "$?" 'Failed to reset GMS data of all apps'
@@ -3050,11 +3069,13 @@ reset_authenticator_and_sync_adapter_caches()
   test "${DRY_RUN:?}" -eq 0 || return
 
   # Reset to avoid problems with signature changes
-  delete "${DATA_PATH:?}"/system/registered_services/android.accounts.AccountAuthenticator.xml
-  delete "${DATA_PATH:?}"/system/registered_services/android.content.SyncAdapter.xml
-  delete "${DATA_PATH:?}"/system/users/*/registered_services/android.accounts.AccountAuthenticator.xml
-  delete "${DATA_PATH:?}"/system/users/*/registered_services/android.content.SyncAdapter.xml
-  delete "${DATA_PATH:?}"/system/uiderrors.txt
+  if test -n "${DATA_PATH?}"; then
+    delete "${DATA_PATH:?}"/system/registered_services/android.accounts.AccountAuthenticator.xml
+    delete "${DATA_PATH:?}"/system/registered_services/android.content.SyncAdapter.xml
+    delete "${DATA_PATH:?}"/system/users/*/registered_services/android.accounts.AccountAuthenticator.xml
+    delete "${DATA_PATH:?}"/system/users/*/registered_services/android.content.SyncAdapter.xml
+    delete "${DATA_PATH:?}"/system/uiderrors.txt
+  fi
 }
 
 parse_busybox_version()
