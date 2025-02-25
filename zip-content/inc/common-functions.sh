@@ -1551,7 +1551,7 @@ display_free_space()
     _free_space_mb="$(convert_bytes_to_mb "${2:?}")"
     _free_space_auto="$(convert_bytes_to_human_readable_format "${2:?}")"
 
-    if test "${_free_space_auto?}" != "${_free_space_mb?}"; then
+    if test "${_free_space_auto?}" != "${_free_space_mb?} MB"; then
       ui_msg "Free space on ${1?}: ${_free_space_mb?} MB (${_free_space_auto?}) - usable: ${3?}"
     else
       ui_msg "Free space on ${1?}: ${_free_space_mb?} MB - usable: ${3?}"
