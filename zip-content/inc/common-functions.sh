@@ -769,6 +769,20 @@ is_string_starting_with()
   return 1 # NOT found
 }
 
+verify_keycheck_compatibility()
+{
+  if test "${BUILD_MANUFACTURER?}" = 'OnePlus' && test "${BUILD_DEVICE?}" = 'OnePlus6'; then
+    : # OnePlus 6
+  elif test "${BUILD_MANUFACTURER?}" = 'Google' && test "${BUILD_DEVICE?}" = 'blueline'; then
+    : # Google Pixel 3
+  else
+    return # OK
+  fi
+
+  # It doesn't work properly on these devices
+  export KEYCHECK_ENABLED='false'
+}
+
 _write_test()
 {
   if test ! -d "${1:?}"; then
@@ -1051,9 +1065,7 @@ initialize()
   readonly BUILD_BRAND BUILD_MANUFACTURER BUILD_MODEL BUILD_DEVICE BUILD_PRODUCT
   export BUILD_BRAND BUILD_MANUFACTURER BUILD_MODEL BUILD_DEVICE BUILD_PRODUCT
 
-  if test "${BUILD_MANUFACTURER?}" = 'OnePlus' && test "${BUILD_DEVICE?}" = 'OnePlus6'; then
-    export KEYCHECK_ENABLED='false' # It doesn't work properly on this device
-  fi
+  verify_keycheck_compatibility
 
   _timeout_check
   live_setup_choice
