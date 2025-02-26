@@ -1003,7 +1003,7 @@ initialize()
 
   ui_debug ''
 
-  case "${DRY_RUN?}" in '') DRY_RUN=0 ;; *[!0-9]*) DRY_RUN=1 ;; *) ;; esac
+  case "${DRY_RUN?}" in '' | *[!0-1]*) DRY_RUN=1 ;; *) ;; esac
   readonly DRY_RUN
   if test "${DRY_RUN:?}" -gt 0; then
     ui_warning "DRY RUN mode ${DRY_RUN?} enabled!!! No files on your device will be modified"
