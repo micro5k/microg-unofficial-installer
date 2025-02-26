@@ -178,7 +178,13 @@ _detect_recovery_name()
 {
   local _val
 
+  test "${BOOTMODE:?}" != 'true' || return 2
+
   if test -n "${DEVICE_TWRP?}" && _val="$("${DEVICE_TWRP:?}" --version | head -n 1)" && _val="${_val#*"openrecoveryscript command line tool, "}" && test -n "${_val?}"; then
+    :
+  elif _val="$(simple_getprop 'ro.twrp.version')" && is_valid_prop "${_val?}" && _val="TWRP ${_val:?}"; then
+    :
+  elif _val="$(simple_getprop 'ro.build.date')" && is_valid_prop "${_val?}"; then
     :
   else
     return 1
@@ -924,7 +930,7 @@ display_info()
   ui_msg "Emulator: ${IS_EMU:?}"
   ui_msg "Battery level: ${BATTERY_LEVEL:-unknown}"
   ui_msg_empty_line
-  ui_msg "Recovery: ${RECOVERY_NAME:-unknown}"
+  ui_msg "Recovery: ${RECOVERY_NAME?}"
   ui_msg "Recovery API version: ${RECOVERY_API_VER-}"
   ui_msg_empty_line
   ui_msg "First installation: ${FIRST_INSTALLATION:?}"
@@ -1009,7 +1015,7 @@ initialize()
   readonly BUILD_TYPE
   export BUILD_TYPE
 
-  RECOVERY_NAME="$(_detect_recovery_name)" || RECOVERY_NAME=''
+  RECOVERY_NAME="$(_detect_recovery_name)" || RECOVERY_NAME='unknown'
 
   # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64 or, in some rare cases, just bin and usr.
   # Usable binaries are under the fake /system/bin so the /system mountpoint mustn't be used while in this recovery.
