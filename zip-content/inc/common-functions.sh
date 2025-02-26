@@ -351,7 +351,7 @@ _verify_system_partition()
         SYS_MOUNTPOINT="${_path:?}"
       else
         IFS="${_backup_ifs:-}"
-        ui_error "Found system path at '${SYS_PATH:-}' but failed to find the mount point"
+        ui_error "Found system path at '${SYS_PATH:-}' but failed to find the mountpoint"
       fi
 
       IFS="${_backup_ifs:-}"
@@ -605,15 +605,14 @@ generate_mountpoint_list()
 
   _mp_list=''
   for _mp in "${2-}" "/mnt/${1:?}" "${3-}" "/${1:?}"; do
-    if test -n "${_mp?}" && test -r "${_mp:?}"; then
+    test -n "${_mp?}" || continue
+
+    if test -L "${_mp:?}"; then
+      # It detect the case where there is NO real partition but only a symbolic link to a folder under /system (example: /product -> '/system/product').
+      # It works when inside Android but when inside recovery the symbolic link is missing, so the other case is handled directly inside mount_partition_if_possible()
+      ui_debug "INFO: ${_mp?} is a symlink to $(readlink "${_mp?}" || :)"
+    elif test -r "${_mp:?}"; then
       _mp="$(_canonicalize "${_mp:?}")"
-
-      if test "${1:?}" != 'system'; then
-        # It detect the case where there is NO real partition but only a symbolic link to a folder under /system (example: /product -> '/system/product').
-        # It works when inside Android but when inside recovery the symbolic link is missing, so the other case is handled directly inside mount_partition_if_possible()
-        case "${_mp:?}" in '/system'/*) continue ;; *) ;; esac
-      fi
-
       _mp_list="${_mp_list?}${_mp:?}${NL:?}"
     fi
   done
@@ -679,13 +678,13 @@ mount_partition_if_possible()
     fi
   done
 
+  # In some cases there is no real partition but it is just a folder inside the system partition.
+  # In these cases no warnings are shown when the partition is not found.
   if test "${_partition_name:?}" != 'system' && test "${_partition_name:?}" != 'data'; then
-    if test -n "${SYS_PATH-}" && test -d "${SYS_PATH:?}/${_partition_name:?}"; then # Example: /system_root/system/product
-      # In some cases there is no real partition but it is just a folder inside the system partition.
-      # In these cases no warnings are shown when the partition is not found.
+    if test -n "${SYS_PATH-}" && test ! -L "${SYS_PATH:?}/${_partition_name:?}" && test -d "${SYS_PATH:?}/${_partition_name:?}"; then # Example: /system_root/system/product
       _skip_warnings='true'
       ui_debug "Found ${_partition_name?} folder under: ${SYS_PATH?}"
-    elif test -n "${SYS_MOUNTPOINT-}" && test -d "${SYS_MOUNTPOINT:?}/${_partition_name:?}"; then # Example: /system_root/odm
+    elif test -n "${SYS_MOUNTPOINT-}" && test ! -L "${SYS_MOUNTPOINT:?}/${_partition_name:?}" && test -d "${SYS_MOUNTPOINT:?}/${_partition_name:?}"; then # Example: /system_root/odm
       _skip_warnings='true'
       ui_debug "Found ${_partition_name?} folder under: ${SYS_MOUNTPOINT?}"
     fi
@@ -950,7 +949,7 @@ display_info()
   ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
   ui_msg "Fake signature perm.: ${FAKE_SIGN_PERMISSION:?}"
   ui_msg_empty_line
-  ui_msg "System mount point: ${SYS_MOUNTPOINT:?}"
+  ui_msg "System mountpoint: ${SYS_MOUNTPOINT:?}"
   ui_msg "System path: ${SYS_PATH:?}"
   ui_msg "Priv-app dir name: ${PRIVAPP_DIRNAME:?}"
   #ui_msg "Android root ENV: ${ANDROID_ROOT-}"
