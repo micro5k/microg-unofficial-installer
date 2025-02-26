@@ -659,12 +659,6 @@ mount_partition_if_possible()
     fi
   done
 
-  if test "${_partition_name:?}" != 'system' && test "${_partition_name:?}" != 'data' && test -n "${SYS_PATH-}" && test -d "${SYS_PATH:?}/${_partition_name:?}"; then
-    # In some cases there is no real partition but it is just a folder inside the system partition.
-    # In these cases no warnings are shown when the partition is not found.
-    _skip_warnings='true'
-  fi
-
   if _manual_partition_mount "${_block_search_list:?}" "${_mp_list:?}" && test -n "${LAST_MOUNTPOINT?}"; then
     LAST_PARTITION_MUST_BE_UNMOUNTED=1
     ui_debug "Mounted: ${LAST_MOUNTPOINT?}"
@@ -684,6 +678,18 @@ mount_partition_if_possible()
       return 0 # Successfully mounted
     fi
   done
+
+  if test "${_partition_name:?}" != 'system' && test "${_partition_name:?}" != 'data'; then
+    if test -n "${SYS_PATH-}" && test -d "${SYS_PATH:?}/${_partition_name:?}"; then # Example: /system_root/system/product
+      # In some cases there is no real partition but it is just a folder inside the system partition.
+      # In these cases no warnings are shown when the partition is not found.
+      _skip_warnings='true'
+      ui_debug "Found ${_partition_name?} folder under: ${SYS_PATH?}"
+    elif test -n "${SYS_MOUNTPOINT-}" && test -d "${SYS_MOUNTPOINT:?}/${_partition_name:?}"; then # Example: /system_root/odm
+      _skip_warnings='true'
+      ui_debug "Found ${_partition_name?} folder under: ${SYS_MOUNTPOINT?}"
+    fi
+  fi
 
   if test "${_skip_warnings:?}" = 'false'; then
     ui_warning "Mounting of ${_partition_name?} failed"
