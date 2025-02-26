@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.2.4'
+readonly ZIPINSTALL_VERSION='1.2.5'
 
 umask 022 || :
 PATH="${PATH:-/system/bin}:."
@@ -168,7 +168,7 @@ if test "$(whoami || :)" != 'root'; then
       ui_error_msg 'Unable to find myself'
       exit 3
     }
-    exec su 0 sh -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' CI='${CI:-false}' TMPDIR='${TMPDIR:-}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_error_msg 'failed: exec'
+    exec su 0 sh -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG:-0}' DRY_RUN='${DRY_RUN:-0}' FORCE_HW_BUTTONS='${FORCE_HW_BUTTONS:-0}' CI='${CI:-false}' TMPDIR='${TMPDIR:-}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_error_msg 'failed: exec'
     exit "${?}"
   fi
 

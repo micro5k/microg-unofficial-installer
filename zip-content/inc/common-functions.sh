@@ -21,7 +21,7 @@ unset CDPATH
 
 ### INIT OPTIONS ###
 
-export DRY_RUN=0
+export DRY_RUN="${DRY_RUN:-0}"
 
 # shellcheck disable=SC3040,SC2015
 {
