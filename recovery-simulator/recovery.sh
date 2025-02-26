@@ -185,7 +185,7 @@ link_folder()
 
 remove_folder_link()
 {
-  if test -h "${1:?}"; then
+  if test -L "${1:?}"; then
     rm -f -- "${1:?}"
   else
     rmdir -- "${1:?}"

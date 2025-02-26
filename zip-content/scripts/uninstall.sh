@@ -170,7 +170,7 @@ fi
 delete_symlinks()
 {
   for filename in "${@}"; do
-    if test -h "${filename?}"; then
+    if test -L "${filename?}"; then
       ui_debug "Deleting symlink '${filename?}'...."
       rm -f -- "${filename:?}" || ui_debug 'Failed to delete symlink'
     fi
