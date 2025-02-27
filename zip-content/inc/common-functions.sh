@@ -21,7 +21,7 @@ unset CDPATH
 ### INIT OPTIONS ###
 
 export DRY_RUN="${DRY_RUN:-0}"
-export DEVICE_KEY_TEST_ONLY=0
+export KEY_TEST_ONLY=0
 
 readonly ROLLBACK_TEST='false'
 
@@ -1000,16 +1000,16 @@ initialize()
   _get_local_settings
 
   DRY_RUN="$(parse_setting 'DRY_RUN' "${DRY_RUN:?}" 'false')"
-  DEVICE_KEY_TEST_ONLY="$(parse_setting 'DEVICE_KEY_TEST_ONLY' "${DEVICE_KEY_TEST_ONLY:?}" 'false')"
+  KEY_TEST_ONLY="$(parse_setting 'KEY_TEST_ONLY' "${KEY_TEST_ONLY:?}" 'false')"
 
   LIVE_SETUP_DEFAULT="$(parse_setting 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
   LIVE_SETUP_TIMEOUT="$(parse_setting 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
 
   ui_debug ''
 
-  case "${DEVICE_KEY_TEST_ONLY?}" in '' | *[!0-1]*) DEVICE_KEY_TEST_ONLY=1 ;; *) ;; esac
-  if test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1; then DRY_RUN=2; fi
-  readonly DEVICE_KEY_TEST_ONLY
+  case "${KEY_TEST_ONLY?}" in '' | *[!0-1]*) KEY_TEST_ONLY=1 ;; *) ;; esac
+  if test "${KEY_TEST_ONLY:?}" -eq 1; then DRY_RUN=2; fi
+  readonly KEY_TEST_ONLY
 
   case "${DRY_RUN?}" in '' | *[!0-2]*) DRY_RUN=1 ;; *) ;; esac
   readonly DRY_RUN
@@ -2851,7 +2851,7 @@ choose_read()
       ui_msg_empty_line
       return 1
     }
-    test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1 || printf '\r                 \r' # Clean invalid choice message (if printed)
+    test "${KEY_TEST_ONLY:?}" -eq 1 || printf '\r                 \r' # Clean invalid choice message (if printed)
 
     case "${_key?}" in
       '+') ;;                                        # + key (allowed)
@@ -2859,7 +2859,7 @@ choose_read()
       'c' | 'C' | "${_esc_keycode:?}") _key='ESC' ;; # ESC or C key (allowed)
       '') continue ;;                                # Enter key (ignored)
       *)
-        test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1 || {
+        test "${KEY_TEST_ONLY:?}" -eq 1 || {
           printf '%s' 'Invalid choice!!!'
           continue
         }
@@ -2901,7 +2901,7 @@ choose_inputevent()
       return 1
     }
 
-    if test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1; then
+    if test "${KEY_TEST_ONLY:?}" -eq 1; then
       ui_msg "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -d -s '\n' '[:blank:]' || :)"
     elif test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
       ui_debug ''
@@ -2955,7 +2955,7 @@ choose_inputevent()
         continue # Power key (ignored)
         ;;
       *)
-        test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1 || {
+        test "${KEY_TEST_ONLY:?}" -eq 1 || {
           ui_msg "Invalid choice!!! Key code: ${_key:-}"
           continue
         }
@@ -2977,7 +2977,7 @@ choose_inputevent()
     ui_msg "Key press: - (${INPUT_CODE_VOLUME_DOWN:-})"
     ui_msg_empty_line
     return 2
-  elif test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1; then
+  elif test "${KEY_TEST_ONLY:?}" -eq 1; then
     ui_msg_empty_line
     ui_msg "Key press: (${_key?})"
     ui_msg_empty_line
@@ -3056,7 +3056,7 @@ _live_setup_choice_msg()
 live_setup_choice()
 {
   LIVE_SETUP_ENABLED='false'
-  test "${DEVICE_KEY_TEST_ONLY:?}" -eq 0 || _live_setup_key_test
+  test "${KEY_TEST_ONLY:?}" -eq 0 || _live_setup_key_test
 
   # Currently we don't handle this case properly so return in this case
   if test "${RECOVERY_OUTPUT:?}" != 'true' && test "${DEBUG_LOG_ENABLED}" -eq 1; then
