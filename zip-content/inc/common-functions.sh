@@ -5,6 +5,7 @@
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# shellcheck enable=all
 # shellcheck disable=SC3043 # SC3043: In POSIX sh, local is undefined #
 
 ### INIT ENV ###
@@ -580,7 +581,7 @@ _find_and_mount_system()
   else
 
     if
-      mount_partition_if_possible 'system' "${SLOT:+system}${SLOT-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" &&
+      mount_partition_if_possible 'system' "${SLOT_SUFFIX:+system}${SLOT_SUFFIX-}${NL:?}system${NL:?}FACTORYFS${NL:?}" "${_sys_mountpoint_list?}" &&
         test -n "${LAST_MOUNTPOINT?}" && _set_system_path_from_mountpoint "${LAST_MOUNTPOINT:?}"
     then
       # SYS_PATH already set
@@ -590,12 +591,12 @@ _find_and_mount_system()
       deinitialize
 
       ui_msg_empty_line
-      ui_msg "Current slot: ${SLOT:-no slot}"
+      ui_msg "Current slot: ${SLOT?}"
       ui_msg "Device locked state: ${DEVICE_STATE?}"
       ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
       ui_msg "Verity mode: ${VERITY_MODE?} (detection is unreliable)"
-      ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
-      ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
+      ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS?}"
+      ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM?}"
       ui_msg_empty_line
 
       ui_error "The ROM cannot be found!!!" 123
@@ -947,7 +948,7 @@ display_info()
   ui_msg "32-bit CPU arch: ${CPU:?}"
   ui_msg "ABI list: ${ARCH_LIST?}"
   ui_msg_empty_line
-  ui_msg "Current slot: ${SLOT:-no slot}"
+  ui_msg "Current slot: ${SLOT?}$(test "${VIRTUAL_AB?}" != 'true' || printf '%s\n' ' (Virtual A/B)' || :)"
   ui_msg "Device locked state: ${DEVICE_STATE?}"
   ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
   ui_msg "Verity mode: ${VERITY_MODE?} (detection is unreliable)"
@@ -1030,9 +1031,15 @@ initialize()
   fi
   export RECOVERY_FAKE_SYSTEM
 
-  SLOT="$(_detect_slot_suffix)" || SLOT=''
-  readonly SLOT
-  export SLOT
+  SLOT_SUFFIX="$(_detect_slot_suffix)" || SLOT_SUFFIX=''
+  if test -n "${SLOT_SUFFIX?}"; then
+    SLOT="${SLOT_SUFFIX#"_"}"
+  else
+    SLOT='no slot'
+  fi
+  if VIRTUAL_AB="$(simple_getprop 'ro.virtual_ab.enabled')" && is_valid_prop "${VIRTUAL_AB?}"; then :; else VIRTUAL_AB='false'; fi
+  readonly SLOT_SUFFIX SLOT VIRTUAL_AB
+  export SLOT_SUFFIX SLOT VIRTUAL_AB
 
   DEVICE_STATE="$(_detect_device_state)"
   VERIFIED_BOOT_STATE="$(_detect_verified_boot_state)"
@@ -1047,7 +1054,7 @@ initialize()
   readonly BATTERY_LEVEL
   export BATTERY_LEVEL
 
-  if test -n "${BATTERY_LEVEL?}" && test "${BATTERY_LEVEL:?}" -le 15; then
+  if test -n "${BATTERY_LEVEL?}" && test "${BATTERY_LEVEL:?}" -lt 15; then
     ui_error "The battery is too low. Current level: ${BATTERY_LEVEL?}%" 108
   fi
 
@@ -1149,12 +1156,12 @@ initialize()
       ui_msg_empty_line
       ui_msg "Device: ${BUILD_DEVICE?}"
       ui_msg_empty_line
-      ui_msg "Current slot: ${SLOT:-no slot}"
+      ui_msg "Current slot: ${SLOT?}"
       ui_msg "Device locked state: ${DEVICE_STATE?}"
       ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
       ui_msg "Verity mode: ${VERITY_MODE?} (detection is unreliable)"
-      ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
-      ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
+      ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS?}"
+      ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM?}"
       ui_msg_empty_line
 
       if is_verity_enabled; then
@@ -1165,22 +1172,22 @@ initialize()
     }
   fi
 
-  if mount_partition_if_possible 'product' "${SLOT:+product}${SLOT-}${NL:?}product${NL:?}"; then
+  if mount_partition_if_possible 'product' "${SLOT_SUFFIX:+product}${SLOT_SUFFIX-}${NL:?}product${NL:?}"; then
     PRODUCT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && PRODUCT_USABLE='true'
   fi
-  if mount_partition_if_possible 'vendor' "${SLOT:+vendor}${SLOT-}${NL:?}vendor${NL:?}"; then
+  if mount_partition_if_possible 'vendor' "${SLOT_SUFFIX:+vendor}${SLOT_SUFFIX-}${NL:?}vendor${NL:?}"; then
     VENDOR_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && VENDOR_USABLE='true'
   fi
-  if mount_partition_if_possible 'system_ext' "${SLOT:+system_ext}${SLOT-}${NL:?}system_ext${NL:?}"; then
+  if mount_partition_if_possible 'system_ext' "${SLOT_SUFFIX:+system_ext}${SLOT_SUFFIX-}${NL:?}system_ext${NL:?}"; then
     SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && SYS_EXT_USABLE='true'
   fi
-  if mount_partition_if_possible 'odm' "${SLOT:+odm}${SLOT-}${NL:?}odm${NL:?}"; then
+  if mount_partition_if_possible 'odm' "${SLOT_SUFFIX:+odm}${SLOT_SUFFIX-}${NL:?}odm${NL:?}"; then
     ODM_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
@@ -2887,7 +2894,7 @@ choose_inputevent()
 
     if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
       ui_debug ''
-      ui_debug "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -d -s '\n' '[:blank:]' || true)"
+      ui_debug "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -d -s '\n' '[:blank:]' || :)"
     fi
 
     _status=0
