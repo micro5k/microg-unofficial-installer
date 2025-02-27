@@ -951,6 +951,7 @@ display_info()
   ui_msg "32-bit CPU arch: ${CPU:?}"
   ui_msg "ABI list: ${ARCH_LIST?}"
   ui_msg_empty_line
+  ui_msg "Boot reason: ${BOOT_REASON?}"
   ui_msg "Current slot: ${SLOT?}$(test "${VIRTUAL_AB?}" != 'true' || printf '%s\n' ' (Virtual A/B)' || :)"
   ui_msg "Device locked state: ${DEVICE_STATE?}"
   ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
@@ -1049,11 +1050,12 @@ initialize()
   readonly SLOT_SUFFIX SLOT VIRTUAL_AB
   export SLOT_SUFFIX SLOT VIRTUAL_AB
 
+  BOOT_REASON="$(parse_boot_value 'bootreason')" || BOOT_REASON='unknown'
   DEVICE_STATE="$(_detect_device_state)"
   VERIFIED_BOOT_STATE="$(_detect_verified_boot_state)"
   VERITY_MODE="$(_detect_verity_state)"
-  readonly DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
-  export DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
+  readonly BOOT_REASON DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
+  export BOOT_REASON DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
 
   if test -e '/dev/block/mapper'; then readonly DYNAMIC_PARTITIONS='true'; else readonly DYNAMIC_PARTITIONS='false'; fi
   export DYNAMIC_PARTITIONS
