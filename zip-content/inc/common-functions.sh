@@ -3026,6 +3026,14 @@ write_separator_line()
 _live_setup_key_test()
 {
   ui_msg_empty_line
+  if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
+    ui_msg 'Using: read'
+  elif "${KEYCHECK_ENABLED:?}"; then
+    ui_msg 'Using: keycheck'
+  else
+    ui_msg 'Using: input event'
+  fi
+  ui_msg_empty_line
 
   while :; do
     choose 'Press any key' '' ''
