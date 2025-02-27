@@ -3025,6 +3025,8 @@ write_separator_line()
 
 _live_setup_key_test()
 {
+  local _count
+
   ui_msg_empty_line
   if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
     ui_msg 'Using: read'
@@ -3035,9 +3037,13 @@ _live_setup_key_test()
   fi
   ui_msg_empty_line
 
-  while :; do
-    choose 'Press any key' '' ''
+  _count=0
+  while test "${_count:?}" -lt 10 && _count="$((_count + 1))"; do
+    choose "${_count:?}) Press any key" '' ''
   done
+
+  deinitialize
+  exit 0
 }
 
 _live_setup_choice_msg()
