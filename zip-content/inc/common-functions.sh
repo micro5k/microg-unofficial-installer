@@ -692,10 +692,10 @@ mount_partition_if_possible()
   if test "${_partition_name:?}" != 'system' && test "${_partition_name:?}" != 'data'; then
     if test -n "${SYS_PATH-}" && test ! -L "${SYS_PATH:?}/${_partition_name:?}" && test -d "${SYS_PATH:?}/${_partition_name:?}"; then # Example: /system_root/system/product
       _skip_warnings='true'
-      ui_debug "Found ${_partition_name?} folder under: ${SYS_PATH?}"
+      ui_debug "Found ${_partition_name?} folder: ${SYS_PATH?}/${_partition_name?}"
     elif test -n "${SYS_MOUNTPOINT-}" && test ! -L "${SYS_MOUNTPOINT:?}/${_partition_name:?}" && test -d "${SYS_MOUNTPOINT:?}/${_partition_name:?}"; then # Example: /system_root/odm
       _skip_warnings='true'
-      ui_debug "Found ${_partition_name?} folder under: ${SYS_MOUNTPOINT?}"
+      ui_debug "Found ${_partition_name?} folder: ${SYS_MOUNTPOINT?}/${_partition_name?}"
     fi
   fi
 
