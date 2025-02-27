@@ -933,17 +933,18 @@ display_info()
   ui_msg "Emulator: ${IS_EMU:?}"
   ui_msg "Battery level: ${BATTERY_LEVEL:-unknown}"
   ui_msg_empty_line
-  ui_msg "Recovery: ${RECOVERY_NAME?}"
-  ui_msg "Recovery API version: ${RECOVERY_API_VER-}"
-  ui_msg_empty_line
   ui_msg "First installation: ${FIRST_INSTALLATION:?}"
   ui_msg "Boot mode: ${BOOTMODE:?}"
   ui_msg "Sideload: ${SIDELOAD:?}"
-  if test "${ZIP_INSTALL:?}" = 'true'; then
-    ui_msg "Zip install: ${ZIP_INSTALL:?} (${ZIPINSTALL_VERSION?})"
+  if test "${ZIP_INSTALL?}" = 'true'; then
+    ui_msg "Zip install: ${ZIP_INSTALL?} (${ZIPINSTALL_VERSION?})"
   else
-    ui_msg "Zip install: ${ZIP_INSTALL:?}"
+    ui_msg "Zip install: ${ZIP_INSTALL?}"
   fi
+  ui_msg "Fake signature perm.: ${FAKE_SIGN_PERMISSION?}"
+  ui_msg_empty_line
+  ui_msg "Recovery: ${RECOVERY_NAME?}"
+  ui_msg "Recovery API version: ${RECOVERY_API_VER-}"
   ui_msg_empty_line
   ui_msg "Android API: ${API:?}"
   ui_msg "64-bit CPU arch: ${CPU64:?}"
@@ -954,13 +955,15 @@ display_info()
   ui_msg "Device locked state: ${DEVICE_STATE?}"
   ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
   ui_msg "Verity mode: ${VERITY_MODE?} (detection is unreliable)"
-  ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS:?}"
-  ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM:?}"
-  ui_msg "Fake signature perm.: ${FAKE_SIGN_PERMISSION:?}"
+  ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS?}"
+  ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM?}"
   ui_msg_empty_line
-  ui_msg "System mountpoint: ${SYS_MOUNTPOINT:?}"
-  ui_msg "System path: ${SYS_PATH:?}"
-  ui_msg "Priv-app dir name: ${PRIVAPP_DIRNAME:?}"
+  ui_msg "Encryption state: ${ENCRYPTION_STATE?}"
+  ui_msg "Encryption type: ${ENCRYPTION_TYPE?}"
+  ui_msg_empty_line
+  ui_msg "System mountpoint: ${SYS_MOUNTPOINT?}"
+  ui_msg "System path: ${SYS_PATH?}"
+  ui_msg "Priv-app dir name: ${PRIVAPP_DIRNAME?}"
   #ui_msg "Android root ENV: ${ANDROID_ROOT-}"
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
 }
@@ -1023,8 +1026,6 @@ initialize()
   readonly BUILD_TYPE
   export BUILD_TYPE
 
-  RECOVERY_NAME="$(_detect_recovery_name)" || RECOVERY_NAME='unknown'
-
   # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64 or, in some rare cases, just bin and usr.
   # Usable binaries are under the fake /system/bin so the /system mountpoint mustn't be used while in this recovery.
   if test "${BOOTMODE:?}" != 'true' &&
@@ -1060,6 +1061,12 @@ initialize()
   BATTERY_LEVEL="$(_detect_battery_level)" || BATTERY_LEVEL=''
   readonly BATTERY_LEVEL
   export BATTERY_LEVEL
+
+  RECOVERY_NAME="$(_detect_recovery_name)" || RECOVERY_NAME='unknown'
+  ENCRYPTION_STATE="$(simple_getprop 'ro.crypto.state')" || ENCRYPTION_STATE='unknown'
+  ENCRYPTION_TYPE="$(simple_getprop 'ro.crypto.type')" || ENCRYPTION_TYPE='unknown'
+  readonly RECOVERY_NAME ENCRYPTION_STATE ENCRYPTION_TYPE
+  export RECOVERY_NAME ENCRYPTION_STATE ENCRYPTION_TYPE
 
   if test -n "${BATTERY_LEVEL?}" && test "${BATTERY_LEVEL:?}" -lt 15; then
     ui_error "The battery is too low. Current level: ${BATTERY_LEVEL?}%" 108
