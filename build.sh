@@ -255,6 +255,8 @@ fi
 
 printf '%s\n' 'Setting name;Visibility;Type' 1> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (1)'
 printf '%s\n' 'DRY_RUN;local;integer' 1>> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (2)'
+printf '%s\n' 'DEVICE_KEY_TEST_ONLY;local;integer' 1>> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (3)'
+
 while IFS='#=; ' read -r _ PROP_NAME PROP_VALUE PROP PROP_VISIBILITY PROP_TYPE _; do
   if test "${PROP?}" != 'setprop'; then continue; fi
 

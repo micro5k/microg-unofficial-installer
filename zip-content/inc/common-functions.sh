@@ -6,9 +6,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # shellcheck enable=all
-# shellcheck disable=SC3043 # SC3043: In POSIX sh, local is undefined #
-
-### INIT ENV ###
+# shellcheck disable=SC3043 # SC3043: In POSIX sh, local is undefined
 
 export TZ=UTC
 export LANG=en_US
@@ -23,6 +21,9 @@ unset CDPATH
 ### INIT OPTIONS ###
 
 export DRY_RUN="${DRY_RUN:-0}"
+export DEVICE_KEY_TEST_ONLY=0
+
+readonly ROLLBACK_TEST='false'
 
 # shellcheck disable=SC3040,SC2015
 {
@@ -43,7 +44,6 @@ mkdir -p "${TMP_PATH:?}/func-tmp" || {
   exit 90
 }
 
-readonly ROLLBACK_TEST='false'
 readonly NL='
 '
 
@@ -439,6 +439,8 @@ is_mounted_read_only()
 
 _remount_read_write_helper()
 {
+  test "${DRY_RUN:?}" -lt 2 || return 0
+
   {
     test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}"
   } ||
@@ -997,14 +999,19 @@ initialize()
 
   _get_local_settings
 
-  if test "${INPUT_FROM_TERMINAL:?}" = 'true' && test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then LIVE_SETUP_TIMEOUT="$((LIVE_SETUP_TIMEOUT + 3))"; fi
   DRY_RUN="$(parse_setting 'DRY_RUN' "${DRY_RUN:?}" 'false')"
+  DEVICE_KEY_TEST_ONLY="$(parse_setting 'DEVICE_KEY_TEST_ONLY' "${DEVICE_KEY_TEST_ONLY:?}" 'false')"
+
   LIVE_SETUP_DEFAULT="$(parse_setting 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
   LIVE_SETUP_TIMEOUT="$(parse_setting 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
 
   ui_debug ''
 
-  case "${DRY_RUN?}" in '' | *[!0-1]*) DRY_RUN=1 ;; *) ;; esac
+  case "${DEVICE_KEY_TEST_ONLY?}" in '' | *[!0-1]*) DEVICE_KEY_TEST_ONLY=1 ;; *) ;; esac
+  if test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1; then DRY_RUN=2; fi
+  readonly DEVICE_KEY_TEST_ONLY
+
+  case "${DRY_RUN?}" in '' | *[!0-2]*) DRY_RUN=1 ;; *) ;; esac
   readonly DRY_RUN
   if test "${DRY_RUN:?}" -gt 0; then
     ui_warning "DRY RUN mode ${DRY_RUN?} enabled!!! No files on your device will be modified"
@@ -2844,7 +2851,7 @@ choose_read()
       ui_msg_empty_line
       return 1
     }
-    printf '\r                 \r' # Clean invalid choice message (if printed)
+    test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1 || printf '\r                 \r' # Clean invalid choice message (if printed)
 
     case "${_key?}" in
       '+') ;;                                        # + key (allowed)
@@ -2852,8 +2859,10 @@ choose_read()
       'c' | 'C' | "${_esc_keycode:?}") _key='ESC' ;; # ESC or C key (allowed)
       '') continue ;;                                # Enter key (ignored)
       *)
-        printf '%s' 'Invalid choice!!!'
-        continue
+        test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1 || {
+          printf '%s' 'Invalid choice!!!'
+          continue
+        }
         ;; # NOT allowed
     esac
 
@@ -2892,7 +2901,9 @@ choose_inputevent()
       return 1
     }
 
-    if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
+    if test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1; then
+      ui_msg "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -d -s '\n' '[:blank:]' || :)"
+    elif test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
       ui_debug ''
       ui_debug "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -d -s '\n' '[:blank:]' || :)"
     fi
@@ -2944,8 +2955,10 @@ choose_inputevent()
         continue # Power key (ignored)
         ;;
       *)
-        ui_msg "Invalid choice!!! Key code: ${_key:-}"
-        continue
+        test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1 || {
+          ui_msg "Invalid choice!!! Key code: ${_key:-}"
+          continue
+        }
         ;;
     esac
 
@@ -2964,6 +2977,10 @@ choose_inputevent()
     ui_msg "Key press: - (${INPUT_CODE_VOLUME_DOWN:-})"
     ui_msg_empty_line
     return 2
+  elif test "${DEVICE_KEY_TEST_ONLY:?}" -eq 1; then
+    ui_msg_empty_line
+    ui_msg "Key press: (${_key?})"
+    ui_msg_empty_line
   else
     ui_error "choose_inputevent failed, key code: ${_key:-}"
   fi
@@ -2978,8 +2995,8 @@ choose()
   local _last_status=0
 
   ui_msg "QUESTION: ${1:?}"
-  ui_msg "${2:?}"
-  ui_msg "${3:?}"
+  test -z "${2?}" || ui_msg "${2:?}"
+  test -z "${3?}" || ui_msg "${3:?}"
   shift 3
 
   if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
@@ -3006,6 +3023,15 @@ write_separator_line()
   printf '%*s\n' "${1:?}" '' | tr -- ' ' "${2:?}"
 }
 
+_live_setup_key_test()
+{
+  ui_msg_empty_line
+
+  while :; do
+    choose 'Press any key' '' ''
+  done
+}
+
 _live_setup_choice_msg()
 {
   local _msg _sep
@@ -3030,6 +3056,7 @@ _live_setup_choice_msg()
 live_setup_choice()
 {
   LIVE_SETUP_ENABLED='false'
+  test "${DEVICE_KEY_TEST_ONLY:?}" -eq 0 || _live_setup_key_test
 
   # Currently we don't handle this case properly so return in this case
   if test "${RECOVERY_OUTPUT:?}" != 'true' && test "${DEBUG_LOG_ENABLED}" -eq 1; then
