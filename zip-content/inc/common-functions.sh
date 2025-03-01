@@ -248,6 +248,19 @@ _detect_verity_state()
   fi
 }
 
+_detect_encryption_options()
+{
+  local _val
+
+  if simple_getprop 'ro.crypto.volume.options'; then
+    :
+  elif _val="$(simple_getprop 'ro.crypto.volume.contents_mode')"; then
+    printf '%s\n' "${_val:?}:$(simple_getprop 'ro.crypto.volume.filenames_mode' || :)"
+  else
+    return 1
+  fi
+}
+
 is_device_locked()
 {
   case "${DEVICE_STATE?}" in
@@ -947,6 +960,7 @@ display_info()
   ui_msg_empty_line
   ui_msg "Encryption state: ${ENCRYPTION_STATE?}"
   ui_msg "Encryption type: ${ENCRYPTION_TYPE?}"
+  ui_msg "Encryption options: ${ENCRYPTION_OPTIONS?}"
   ui_msg_empty_line
   ui_msg "System mountpoint: ${SYS_MOUNTPOINT?}"
   ui_msg "System path: ${SYS_PATH?}"
@@ -1054,8 +1068,9 @@ initialize()
   RECOVERY_NAME="$(_detect_recovery_name)" || RECOVERY_NAME='unknown'
   ENCRYPTION_STATE="$(simple_getprop 'ro.crypto.state')" || ENCRYPTION_STATE='unknown'
   ENCRYPTION_TYPE="$(simple_getprop 'ro.crypto.type')" || ENCRYPTION_TYPE='unknown'
-  readonly RECOVERY_NAME ENCRYPTION_STATE ENCRYPTION_TYPE
-  export RECOVERY_NAME ENCRYPTION_STATE ENCRYPTION_TYPE
+  ENCRYPTION_OPTIONS="$(_detect_encryption_options)" || ENCRYPTION_OPTIONS='unknown'
+  readonly RECOVERY_NAME ENCRYPTION_STATE ENCRYPTION_TYPE ENCRYPTION_OPTIONS
+  export RECOVERY_NAME ENCRYPTION_STATE ENCRYPTION_TYPE ENCRYPTION_OPTIONS
 
   if test -n "${BATTERY_LEVEL?}" && test "${BATTERY_LEVEL:?}" -lt 15; then
     ui_error "The battery is too low. Current level: ${BATTERY_LEVEL?}%" 108
@@ -1878,7 +1893,7 @@ simple_file_getprop()
 
 is_valid_prop()
 {
-  test "${1:?}" != 'unknown' || return 1
+  test "${1?}" != 'unknown' || return 1
   return 0
 }
 
