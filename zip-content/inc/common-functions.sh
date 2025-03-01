@@ -209,17 +209,13 @@ _parse_kernel_cmdline()
 
 parse_boot_value()
 {
-  local _val
-
-  if _val="$(_parse_kernel_cmdline "${1:?}")"; then # Value from kernel command-line
+  if _parse_kernel_cmdline "${1:?}"; then # Value from kernel command-line
     :
-  elif _val="$(simple_getprop "ro.boot.${1:?}")"; then # Value from getprop
+  elif simple_getprop "ro.boot.${1:?}"; then # Value from getprop
     :
   else
     return 1
   fi
-
-  printf '%s\n' "${_val?}"
 }
 
 _detect_slot_suffix()
@@ -230,25 +226,15 @@ _detect_slot_suffix()
     :
   elif _val="$(_parse_kernel_cmdline 'slot')" && test -n "${_val?}" && _val="_${_val:?}"; then # Value from kernel command-line
     :
-  elif _val="$(simple_getprop 'ro.boot.slot_suffix')" && is_valid_prop "${_val?}"; then # Value from getprop
+  elif _val="$(simple_getprop 'ro.boot.slot_suffix')" && is_valid_prop "${_val:?}"; then # Value from getprop
     :
-  elif _val="$(simple_getprop 'ro.boot.slot')" && is_valid_prop "${_val?}" && _val="_${_val:?}"; then # Value from getprop
+  elif _val="$(simple_getprop 'ro.boot.slot')" && is_valid_prop "${_val:?}" && _val="_${_val:?}"; then # Value from getprop
     :
   else
     return 1
   fi
 
   printf '%s\n' "${_val:?}"
-}
-
-_detect_device_state()
-{
-  parse_boot_value 'vbmeta.device_state' || printf '%s\n' 'unknown'
-}
-
-_detect_verified_boot_state()
-{
-  parse_boot_value 'verifiedbootstate' || printf '%s\n' 'unknown'
 }
 
 _detect_verity_state()
@@ -1046,13 +1032,14 @@ initialize()
   else
     SLOT='no slot'
   fi
-  if VIRTUAL_AB="$(simple_getprop 'ro.virtual_ab.enabled')" && is_valid_prop "${VIRTUAL_AB?}"; then :; else VIRTUAL_AB='false'; fi
+  VIRTUAL_AB="$(simple_getprop 'ro.virtual_ab.enabled')" || VIRTUAL_AB='false'
+  is_valid_prop "${VIRTUAL_AB:?}" || VIRTUAL_AB='false'
   readonly SLOT_SUFFIX SLOT VIRTUAL_AB
   export SLOT_SUFFIX SLOT VIRTUAL_AB
 
   BOOT_REASON="$(parse_boot_value 'bootreason')" || BOOT_REASON='unknown'
-  DEVICE_STATE="$(_detect_device_state)"
-  VERIFIED_BOOT_STATE="$(_detect_verified_boot_state)"
+  DEVICE_STATE="$(parse_boot_value 'vbmeta.device_state')" || DEVICE_STATE='unknown'
+  VERIFIED_BOOT_STATE="$(parse_boot_value 'verifiedbootstate')" || VERIFIED_BOOT_STATE='unknown'
   VERITY_MODE="$(_detect_verity_state)"
   readonly BOOT_REASON DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
   export BOOT_REASON DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
@@ -1108,7 +1095,7 @@ initialize()
     *) ;;
   esac
 
-  if is_string_starting_with 'sdk_google_phone_' "${BUILD_PRODUCT?}" || is_valid_prop "$(simple_getprop 'ro.leapdroid.version' || :)"; then
+  if is_string_starting_with 'sdk_google_phone_' "${BUILD_PRODUCT?}" || is_valid_prop "$(simple_getprop 'ro.leapdroid.version' || printf '%s\n' 'unknown' || :)"; then
     IS_EMU='true'
   fi
 
@@ -1891,17 +1878,17 @@ simple_file_getprop()
 
 is_valid_prop()
 {
-  if test -z "${1?}" || test "${1?}" = 'unknown'; then return 1; fi
-  return 0 # Valid
+  test "${1:?}" != 'unknown' || return 1
+  return 0
 }
 
 sys_getprop()
 {
   local _val
 
-  if _val="$(simple_file_getprop "${1:?}" "${TMP_PATH:?}/build.prop")" && is_valid_prop "${_val?}"; then
+  if _val="$(simple_file_getprop "${1:?}" "${TMP_PATH:?}/build.prop")" && test -n "${_val?}" && is_valid_prop "${_val:?}"; then
     :
-  elif _val="$(simple_getprop "${1:?}")" && is_valid_prop "${_val?}"; then
+  elif _val="$(simple_getprop "${1:?}")" && is_valid_prop "${_val:?}"; then
     :
   else
     return 1

@@ -384,32 +384,29 @@ fi
 
 ui_debug 'Parsing common settings...'
 
-_simple_getprop()
-{
-  if test -n "${DEVICE_GETPROP?}"; then
-    "${DEVICE_GETPROP:?}" "${1:?}" || return "${?}"
-  elif command -v getprop 1> /dev/null; then
-    getprop "${1:?}" || return "${?}"
-  else
-    return 1
-  fi
-}
-_get_common_setting()
+simple_getprop()
 {
   local _val
-  if _val="$(_simple_getprop "zip.common.${1:?}")" && test -n "${_val?}"; then
-    printf '%s\n' "${_val:?}"
-    return
+
+  if test -n "${DEVICE_GETPROP?}" && _val="$(PATH="${PREVIOUS_PATH:?}" "${DEVICE_GETPROP:?}" "${@}")"; then
+    :
+  elif command 1> /dev/null -v getprop && _val="$(getprop "${@}")"; then
+    :
+  else
+    return 2
   fi
 
-  # Fallback to the default value
-  printf '%s\n' "${2?}"
+  test -n "${_val?}" || return 1
+  printf '%s\n' "${_val:?}"
+}
+
+_get_common_setting()
+{
+  simple_getprop "zip.common.${1:?}" ||
+    printf '%s\n' "${2?}" # Fallback to the default value
 }
 
 DEBUG_LOG="$(_get_common_setting 'DEBUG_LOG' "${DEBUG_LOG:-0}")"
-
-unset -f _simple_getprop
-unset -f _get_common_setting
 
 test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
 
