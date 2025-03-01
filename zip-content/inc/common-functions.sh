@@ -183,9 +183,9 @@ _detect_recovery_name()
 
   if test -n "${DEVICE_TWRP?}" && _val="$("${DEVICE_TWRP:?}" --version | head -n 1)" && _val="${_val#*"openrecoveryscript command line tool, "}" && test -n "${_val?}"; then
     :
-  elif _val="$(simple_getprop 'ro.twrp.version')" && is_valid_prop "${_val?}" && _val="TWRP ${_val:?}"; then
+  elif _val="$(simple_getprop 'ro.twrp.version')" && _val="TWRP v${_val:?}"; then
     :
-  elif _val="$(simple_getprop 'ro.build.date')" && is_valid_prop "${_val?}"; then
+  elif _val="$(simple_getprop 'ro.build.date')"; then
     :
   else
     return 1
@@ -213,7 +213,7 @@ parse_boot_value()
 
   if _val="$(_parse_kernel_cmdline "${1:?}")"; then # Value from kernel command-line
     :
-  elif _val="$(simple_getprop "ro.boot.${1:?}")" && is_valid_prop "${_val?}"; then # Value from getprop
+  elif _val="$(simple_getprop "ro.boot.${1:?}")"; then # Value from getprop
     :
   else
     return 1
@@ -936,7 +936,7 @@ display_info()
   ui_msg "First installation: ${FIRST_INSTALLATION:?}"
   ui_msg "Boot mode: ${BOOTMODE:?}"
   ui_msg "Sideload: ${SIDELOAD:?}"
-  if test "${ZIP_INSTALL?}" = 'true'; then
+  if test -n "${ZIPINSTALL_VERSION?}"; then
     ui_msg "Zip install: ${ZIP_INSTALL?} (${ZIPINSTALL_VERSION?})"
   else
     ui_msg "Zip install: ${ZIP_INSTALL?}"
@@ -1869,13 +1869,18 @@ build_getprop()
 
 simple_getprop()
 {
-  if test -n "${DEVICE_GETPROP?}"; then
-    PATH="${PREVIOUS_PATH:?}" "${DEVICE_GETPROP:?}" "${@}" || return "${?}"
-  elif command 1> /dev/null -v getprop; then
-    getprop "${@}" || return "${?}"
+  local _val
+
+  if test -n "${DEVICE_GETPROP?}" && _val="$(PATH="${PREVIOUS_PATH:?}" "${DEVICE_GETPROP:?}" "${@}")"; then
+    :
+  elif command 1> /dev/null -v getprop && _val="$(getprop "${@}")"; then
+    :
   else
-    return 1
+    return 2
   fi
+
+  test -n "${_val?}" || return 1
+  printf '%s\n' "${_val:?}"
 }
 
 simple_file_getprop()
