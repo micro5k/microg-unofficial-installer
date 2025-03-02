@@ -251,5 +251,11 @@ if test "${_ub_we_mounted_tmp:?}" = true; then
   umount '/tmp' || ui_error 'Failed to unmount the temp folder'
 fi
 
-if test "${STATUS:?}" -ne 0; then ui_error "Installation script failed" "${STATUS}"; fi
-if test "${UNKNOWN_ERROR:?}" -ne 0; then ui_error 'Installation failed with an unknown error'; fi
+case "${STATUS?}" in
+  '0') # Success
+    test "${UNKNOWN_ERROR:?}" -eq 0 || ui_error 'Installation failed with an unknown error' ;;
+  '250') # TEST mode
+    ui_msg 'TEST mode completed!' ;;
+  *) # Failure
+    ui_error "Installation script failed" "${STATUS:?}" ;;
+esac
