@@ -390,7 +390,7 @@ simple_getprop()
 
   if test -n "${DEVICE_GETPROP?}" && _val="$(PATH="${PREVIOUS_PATH:?}" "${DEVICE_GETPROP:?}" "${@}")"; then
     :
-  elif command 1> /dev/null -v getprop && _val="$(getprop "${@}")"; then
+  elif command 1> /dev/null -v 'getprop' && _val="$(getprop "${@}")"; then
     :
   else
     return 2

@@ -241,7 +241,7 @@ _detect_verity_state()
 {
   if parse_boot_value 'veritymode'; then
     :
-  elif simple_getprop | grep -q -m 1 -e '^\[ro\.boot\.veritymode\]'; then # If the value exist, even if empty, it is supported
+  elif list_props | grep -q -m 1 -e '^\[ro\.boot\.veritymode\]'; then # If the value exist, even if empty, it is supported
     printf '%s\n' 'unknown'
   else
     printf '%s\n' 'unsupported'
@@ -709,7 +709,7 @@ _get_local_settings()
   if test "${LOCAL_SETTINGS_READ:-false}" = 'true'; then return; fi
 
   ui_debug 'Parsing local settings...'
-  LOCAL_SETTINGS="$(simple_getprop | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
+  LOCAL_SETTINGS="$(list_props | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
   LOCAL_SETTINGS_READ='true'
 
   readonly LOCAL_SETTINGS LOCAL_SETTINGS_READ
@@ -1869,13 +1869,24 @@ build_getprop()
   grep "^ro\.$1=" "${TMP_PATH}/build.prop" | head -n1 | cut -d '=' -f 2
 }
 
+list_props()
+{
+  if test -n "${DEVICE_GETPROP?}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_GETPROP:?}"; then
+    :
+  elif command 1> /dev/null -v 'getprop' && getprop; then
+    :
+  else
+    return 2
+  fi
+}
+
 simple_getprop()
 {
   local _val
 
   if test -n "${DEVICE_GETPROP?}" && _val="$(PATH="${PREVIOUS_PATH:?}" "${DEVICE_GETPROP:?}" "${@}")"; then
     :
-  elif command 1> /dev/null -v getprop && _val="$(getprop "${@}")"; then
+  elif command 1> /dev/null -v 'getprop' && _val="$(getprop "${@}")"; then
     :
   else
     return 2
