@@ -136,7 +136,7 @@ _send_text_to_recovery()
   if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
 
   if test -n "${RECOVERY_PIPE?}"; then
-    printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
+    printf 'ui_print %s\nui_print\n' "${1?}" 1>> "${RECOVERY_PIPE:?}"
   else
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
@@ -152,6 +152,8 @@ _print_text()
     # shellcheck disable=SC2059
     printf "${1:?}\n" "${2?}"
   fi
+
+  if test "${DEBUG_LOG_ENABLED:?}" = '1' && test -n "${ORIGINAL_STDERR_FD_PATH?}"; then printf '%s\n' "${2?}" 1>> "${ORIGINAL_STDERR_FD_PATH:?}"; fi
 }
 
 ui_error()
@@ -183,18 +185,19 @@ ui_msg()
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _send_text_to_recovery "${1:?}"
   else
-    printf '%s\n' "${1:?}"
+    _print_text '%s' "${1:?}"
   fi
 }
 
 ui_debug()
 {
-  printf 1>&2 '%s\n' "${1?}"
+  _print_text 1>&2 '%s' "${1?}"
 }
 
 enable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
+  local _backup_stderr
 
   ui_debug "Creating log: ${LOG_PATH:?}"
   _send_text_to_recovery "Creating log: ${LOG_PATH:?}"
@@ -215,9 +218,17 @@ enable_debug_log()
     export ALTERNATIVE_FDS=1
     # shellcheck disable=SC3023
     exec 88>&1 89>&2 # Backup stdout and stderr
+    _backup_stderr=89
   else
     export ALTERNATIVE_FDS=0
     exec 6>&1 7>&2 # Backup stdout and stderr
+    _backup_stderr=7
+  fi
+
+  if test -e "/proc/$$/fd/${_backup_stderr:?}"; then
+    export ORIGINAL_STDERR_FD_PATH="/proc/$$/fd/${_backup_stderr:?}"
+  else
+    export ORIGINAL_STDERR_FD_PATH=''
   fi
   exec 1>> "${LOG_PATH:?}" 2>&1
 }
@@ -236,6 +247,7 @@ disable_debug_log()
   fi
 
   export DEBUG_LOG_ENABLED=0
+  unset ORIGINAL_STDERR_FD_PATH
   unset NO_COLOR
 }
 

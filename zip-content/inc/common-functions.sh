@@ -55,7 +55,7 @@ _send_text_to_recovery()
   if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
 
   if test -n "${RECOVERY_PIPE?}"; then
-    printf 'ui_print %s\nui_print\n' "${1?}" >> "${RECOVERY_PIPE:?}"
+    printf 'ui_print %s\nui_print\n' "${1?}" 1>> "${RECOVERY_PIPE:?}"
   else
     printf 'ui_print %s\nui_print\n' "${1?}" 1>&"${OUTFD:?}"
   fi
@@ -71,6 +71,8 @@ _print_text()
     # shellcheck disable=SC2059
     printf "${1:?}\n" "${2?}"
   fi
+
+  if test "${DEBUG_LOG_ENABLED:?}" = '1' && test -n "${ORIGINAL_STDERR_FD_PATH?}"; then printf '%s\n' "${2?}" 1>> "${ORIGINAL_STDERR_FD_PATH:?}"; fi
 }
 
 ui_error()
@@ -111,7 +113,7 @@ ui_msg_empty_line()
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _send_text_to_recovery ' '
   else
-    printf '\n'
+    _print_text '%s' ''
   fi
 }
 
@@ -120,7 +122,7 @@ ui_msg()
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _send_text_to_recovery "${1:?}"
   else
-    printf '%s\n' "${1:?}"
+    _print_text '%s' "${1:?}"
   fi
 }
 
@@ -154,7 +156,7 @@ ui_msg_sameline_end()
 
 ui_debug()
 {
-  printf 1>&2 '%s\n' "${1?}"
+  _print_text 1>&2 '%s' "${1?}"
 }
 
 # Other
@@ -3098,11 +3100,6 @@ live_setup_choice()
 {
   LIVE_SETUP_ENABLED='false'
   test "${KEY_TEST_ONLY:?}" -eq 0 || _live_setup_key_test
-
-  # Currently we don't handle this case properly so return in this case
-  if test "${RECOVERY_OUTPUT:?}" != 'true' && test "${DEBUG_LOG_ENABLED}" -eq 1; then
-    return
-  fi
 
   if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then
     if test "${LIVE_SETUP_DEFAULT:?}" -ne 0; then
