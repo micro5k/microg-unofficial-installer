@@ -3072,7 +3072,7 @@ _live_setup_key_test()
   done
 
   deinitialize
-  exit 0
+  exit 250
 }
 
 _live_setup_choice_msg()
