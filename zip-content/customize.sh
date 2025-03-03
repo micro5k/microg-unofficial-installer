@@ -208,9 +208,6 @@ enable_debug_log()
     return
   }
 
-  export NO_COLOR=1
-  export DEBUG_LOG_ENABLED=1
-
   # If they are already in use, then use alternatives
   if {
     command 1>&6 || command 1>&7
@@ -225,17 +222,24 @@ enable_debug_log()
     _backup_stderr=7
   fi
 
+  exec 1>> "${LOG_PATH:?}" 2>&1
+
+  export NO_COLOR=1
   if test -e "/proc/$$/fd/${_backup_stderr:?}"; then
     export ORIGINAL_STDERR_FD_PATH="/proc/$$/fd/${_backup_stderr:?}"
   else
     export ORIGINAL_STDERR_FD_PATH=''
   fi
-  exec 1>> "${LOG_PATH:?}" 2>&1
+  export DEBUG_LOG_ENABLED=1
 }
 
 disable_debug_log()
 {
   if test "${DEBUG_LOG_ENABLED}" -ne 1; then return; fi
+
+  export DEBUG_LOG_ENABLED=0
+  unset ORIGINAL_STDERR_FD_PATH
+  unset NO_COLOR
 
   if test "${ALTERNATIVE_FDS:?}" -eq 0; then
     exec 1>&6 2>&7 # Restore stdout and stderr
@@ -245,10 +249,6 @@ disable_debug_log()
     # shellcheck disable=SC3023
     exec 88>&- 89>&-
   fi
-
-  export DEBUG_LOG_ENABLED=0
-  unset ORIGINAL_STDERR_FD_PATH
-  unset NO_COLOR
 }
 
 set_perm()
