@@ -1087,6 +1087,7 @@ initialize()
   fi
 
   _find_and_mount_system
+  _timeout_check
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
   BUILD_BRAND="$(sys_getprop 'ro.product.brand')"
@@ -1096,11 +1097,6 @@ initialize()
   BUILD_PRODUCT="$(sys_getprop 'ro.product.name')"
   readonly BUILD_BRAND BUILD_MANUFACTURER BUILD_MODEL BUILD_DEVICE BUILD_PRODUCT
   export BUILD_BRAND BUILD_MANUFACTURER BUILD_MODEL BUILD_DEVICE BUILD_PRODUCT
-
-  verify_keycheck_compatibility
-
-  _timeout_check
-  live_setup_choice
 
   API="$(sys_getprop 'ro.build.version.sdk')" || API=0
   readonly API
@@ -1118,6 +1114,9 @@ initialize()
 
   readonly IS_EMU
   export IS_EMU
+
+  verify_keycheck_compatibility
+  live_setup_choice
 
   MODULE_NAME="$(simple_file_getprop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
   MODULE_VERSION="$(simple_file_getprop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
@@ -2663,12 +2662,12 @@ _parse_input_event()
       key_action="$(hex_to_dec "${key_action32:?}")" || return 123
     else
       ui_warning "Invalid input event size: ${INPUT_EVENT_SIZE?}"
-      return 122
+      return 127
     fi
 
     if test "${event_type:?}" -ne 1; then
       ui_warning "Invalid event type: ${event_type?}"
-      return 124
+      return 115
     fi
 
     # Only 0 and 1 are accepted
@@ -2949,13 +2948,16 @@ choose_inputevent()
 {
   local _key _status _last_key_pressed
 
-  _find_hardware_keys 'gpio-keys' ||
-    {
-      ui_msg_empty_line
-      ui_warning "Key detection failed (input event)"
-      ui_msg_empty_line
-      return 1
-    }
+  if _find_hardware_keys 'gpio-keys'; then
+    :
+  elif test "${IS_EMU:?}" = 'true' && _find_hardware_keys 'qwerty2'; then
+    :
+  else
+    ui_msg_empty_line
+    ui_warning "Key detection failed (input event)"
+    ui_msg_empty_line
+    return 1
+  fi
 
   _last_key_pressed=''
   while true; do
@@ -2986,9 +2988,10 @@ choose_inputevent()
     _key="$(_parse_input_event "${INPUT_EVENT_CURRENT?}")" || _status="${?}"
 
     case "${_status:?}" in
-      3) ;; # Key down event read (allowed)
-      4) ;; # Key up event read (allowed)
-      *)    # Event read failed
+      3) ;;            # Key down event read (allowed)
+      4) ;;            # Key up event read (allowed)
+      115) continue ;; # We got an unsupported event type (ignored)
+      *)               # Event read failed
         ui_warning "Key detection failed - parse (input event), status code: ${_status:-}"
         return 1
         ;;
