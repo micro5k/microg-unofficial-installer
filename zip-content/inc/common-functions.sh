@@ -2593,12 +2593,12 @@ _get_input_event()
     _var="$({
       cat -u "${INPUT_DEVICE_PATH:?}" &
       printf '%s' "${!}" > "${TMP_PATH:?}/pid-to-kill.dat"
-    } | _timeout_compat "${1:?}" hexdump -x -v -n "${INPUT_EVENT_SIZE-24}")" || _status="${?}"
+    } | _timeout_compat "${1:?}" hexdump -x -v -n "${INPUT_EVENT_SIZE:-24}")" || _status="${?}"
   else
     _var="$({
       cat -u "${INPUT_DEVICE_PATH:?}" &
       printf '%s' "${!}" > "${TMP_PATH:?}/pid-to-kill.dat"
-    } | hexdump -x -v -n "${INPUT_EVENT_SIZE-24}")" || _status="${?}"
+    } | hexdump -x -v -n "${INPUT_EVENT_SIZE:-24}")" || _status="${?}"
   fi
   kill_pid_from_file 'pid-to-kill.dat'
 
@@ -2673,7 +2673,7 @@ _parse_input_event()
     # Only 0 and 1 are accepted
     if test "${key_action:?}" -gt 1; then
       ui_warning "Invalid action: ${key_action?}"
-      return 125
+      return 115
     fi
 
     hex_to_dec "${key_code:?}" || return 126
@@ -2971,11 +2971,17 @@ choose_inputevent()
         return 0
       fi
 
-      ui_warning "Key detection failed - get (input event), status code: ${_status:-}"
+      ui_warning "Key detection failed - get (input event), status code: ${_status?}"
       return 1
     }
 
-    : "${INPUT_EVENT_SIZE:=$(_detect_input_event_size "${INPUT_EVENT_CURRENT?}" || :)}" # ${INPUT_EVENT_CURRENT} is set inside _get_input_event()
+    # $INPUT_EVENT_CURRENT is set inside _get_input_event()
+    if test -z "${INPUT_EVENT_SIZE-}"; then
+      INPUT_EVENT_SIZE="$(_detect_input_event_size "${INPUT_EVENT_CURRENT?}")" || {
+        ui_warning "Key detection failed - size check (input event), status code: ${?}"
+        return 1
+      }
+    fi
 
     if test "${KEY_TEST_ONLY:?}" -eq 1; then
       ui_msg "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -d -s '\n' '[:blank:]' || :)"
@@ -2990,7 +2996,7 @@ choose_inputevent()
     case "${_status:?}" in
       3) ;;            # Key down event read (allowed)
       4) ;;            # Key up event read (allowed)
-      115) continue ;; # We got an unsupported event type (ignored)
+      115) continue ;; # We got an unsupported event type or action (ignored)
       *)               # Event read failed
         ui_warning "Key detection failed - parse (input event), status code: ${_status:-}"
         return 1
