@@ -2653,11 +2653,11 @@ _parse_input_event()
 {
   printf "%s\n" "${1?}" | _prepare_hexdump_output | while IFS=' ' read -r _ _ _ _ ev_type32 key_code32 key_action32 _ ev_type64 key_code64 key_action64 _; do
     if test "${INPUT_EVENT_SIZE:?}" -eq 24; then
-      event_type="$(hex_to_dec ${ev_type64:?})" || return 123
+      event_type="$(hex_to_dec "${ev_type64:?}")" || return 123
       key_code="${key_code64:?}"
       key_action="$(hex_to_dec "${key_action64:?}")" || return 123
     elif test "${INPUT_EVENT_SIZE:?}" -eq 16; then
-      event_type="$(hex_to_dec ${ev_type32:?})" || return 123
+      event_type="$(hex_to_dec "${ev_type32:?}")" || return 123
       key_code="${key_code32:?}"
       key_action="$(hex_to_dec "${key_action32:?}")" || return 123
     else
