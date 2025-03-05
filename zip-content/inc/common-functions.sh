@@ -21,7 +21,7 @@ unset CDPATH
 ### INIT OPTIONS ###
 
 export DRY_RUN="${DRY_RUN:-0}"
-export KEY_TEST_ONLY=0
+export KEY_TEST_ONLY="${KEY_TEST_ONLY:-0}"
 
 readonly ROLLBACK_TEST='false'
 
