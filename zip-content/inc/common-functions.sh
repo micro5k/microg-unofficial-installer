@@ -2940,9 +2940,23 @@ choose_read()
   return "${?}"
 }
 
+_inputevent_keycode_to_key()
+{
+  case "${1?}" in
+    '') return 123 ;;
+
+    "${INPUT_CODE_VOLUME_UP?}") printf '%s\n' '+' ;;
+    "${INPUT_CODE_VOLUME_DOWN?}") printf '%s\n' '-' ;;
+    "${INPUT_CODE_POWER?}") printf '%s\n' 'POWER' ;;
+    "${INPUT_CODE_HOME?}") printf '%s\n' 'HOME' ;;
+
+    *) return 123 ;; # All other keys
+  esac
+}
+
 choose_inputevent()
 {
-  local _key _status _last_key_pressed
+  local _key _status _last_key_pressed _key_desc _ret
 
   if _find_hardware_keys 'gpio-keys'; then
     :
@@ -3045,25 +3059,18 @@ choose_inputevent()
     break
   done
 
-  : "UNUSED ${INPUT_CODE_HOME:?}"
+  _key_desc="$(_inputevent_keycode_to_key "${_key?}")" || _key_desc=''
+  _ret=1
+  case "${_key_desc?}" in
+    '+') _ret=3 ;;
+    '-') _ret=2 ;;
+    *) test "${KEY_TEST_ONLY:?}" -eq 1 || ui_error "choose_inputevent failed, key code: ${_key?}" ;;
+  esac
 
-  if test "${_key?}" = "${INPUT_CODE_VOLUME_UP:?}"; then
-    ui_msg_empty_line
-    ui_msg "Key press: + (${INPUT_CODE_VOLUME_UP:-})"
-    ui_msg_empty_line
-    return 3
-  elif test "${_key?}" = "${INPUT_CODE_VOLUME_DOWN:?}"; then
-    ui_msg_empty_line
-    ui_msg "Key press: - (${INPUT_CODE_VOLUME_DOWN:-})"
-    ui_msg_empty_line
-    return 2
-  elif test "${KEY_TEST_ONLY:?}" -eq 1; then
-    ui_msg_empty_line
-    ui_msg "Key press: (${_key?})"
-    ui_msg_empty_line
-  else
-    ui_error "choose_inputevent failed, key code: ${_key:-}"
-  fi
+  ui_msg_empty_line
+  ui_msg "Key press: ${_key_desc?} (${_key?})"
+  ui_msg_empty_line
+  return "${_ret:?}"
 
   #ui_msg "Key code: ${_key:-}"
   #_choose_inputevent_remapper "${_key:?}"
