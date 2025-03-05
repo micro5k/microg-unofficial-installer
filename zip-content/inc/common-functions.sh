@@ -2508,7 +2508,9 @@ _find_hardware_keys()
     INPUT_CODE_VOLUME_UP='115'
     INPUT_CODE_VOLUME_DOWN='114'
     INPUT_CODE_POWER='116'
+    INPUT_CODE_BACK='158'
     INPUT_CODE_HOME='102'
+    INPUT_CODE_APP_SWITCH='221' # Recent apps
 
     # Example file:
     ## key 115 VOLUME_UP
@@ -2955,7 +2957,9 @@ _inputevent_keycode_to_key()
     "${INPUT_CODE_VOLUME_UP?}") printf '%s\n' '+' ;;
     "${INPUT_CODE_VOLUME_DOWN?}") printf '%s\n' '-' ;;
     "${INPUT_CODE_POWER?}") printf '%s\n' 'POWER' ;;
+    "${INPUT_CODE_BACK?}") printf '%s\n' 'BACK' ;;
     "${INPUT_CODE_HOME?}") printf '%s\n' 'HOME' ;;
+    "${INPUT_CODE_APP_SWITCH?}") printf '%s\n' 'APP SWITCH' ;;
 
     *) return 123 ;; # All other keys
   esac
