@@ -2578,8 +2578,7 @@ hex_to_dec()
 
 _prepare_hexdump_output()
 {
-  cut -d ' ' -f '2-' -s | LC_ALL=C tr '[:cntrl:]' ' ' || return "${?}"
-  printf '\n'
+  cut -d ' ' -f '2-' -s | LC_ALL=C tr '[:cntrl:]' ' ' && printf '\n'
 }
 
 _get_input_event()
@@ -2632,11 +2631,11 @@ _get_input_event()
 _detect_input_event_size()
 {
   printf "%s\n" "${1?}" | _prepare_hexdump_output | while IFS=' ' read -r _ _ _ _ part5 _ _ part8 part9 _ _ part12 _; do
-    if test -n "${part9?}" && test "$(hex_to_dec "${part9?}" || :)" -eq 1 && test -n "${part12?}" && test "$(hex_to_dec "${part12?}" || printf '%s' '9' || :)" -eq 0; then
+    if test -n "${part9?}" && test "$(hex_to_dec "${part9:?}" || :)" -eq 1 && test -n "${part12?}" && test "$(hex_to_dec "${part12:?}" || printf '%s' '9' || :)" -eq 0; then
       ui_debug 'Input event is 64-bit'
       printf '%s\n' 24
       return 4
-    elif test -n "${part5?}" && test "$(hex_to_dec "${part5?}" || :)" -eq 1 && test -n "${part8?}" && test "$(hex_to_dec "${part8?}" || printf '%s' '9' || :)" -eq 0; then
+    elif test -n "${part5?}" && test "$(hex_to_dec "${part5:?}" || :)" -eq 1 && test -n "${part8?}" && test "$(hex_to_dec "${part8:?}" || printf '%s' '9' || :)" -eq 0; then
       ui_debug 'Input event is 32-bit'
       printf '%s\n' 16
       return 4
@@ -2984,10 +2983,10 @@ choose_inputevent()
     fi
 
     if test "${KEY_TEST_ONLY:?}" -eq 1; then
-      ui_msg "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -d -s '\n' '[:blank:]' || :)"
+      ui_msg "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -s -- ' ' || :)"
     elif test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
       ui_debug ''
-      ui_debug "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -d -s '\n' '[:blank:]' || :)"
+      ui_debug "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -s -- ' ' || :)"
     fi
 
     _status=0
@@ -3005,9 +3004,11 @@ choose_inputevent()
 
     if test "${_key?}" = "${INPUT_CODE_POWER:?}" && test "${KEY_TEST_ONLY:?}" -eq 0; then continue; fi # Power key (ignored completely)
 
-    if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
+    if test "${KEY_TEST_ONLY:?}" -eq 1; then
+      ui_msg "Event { Event type: 1, Key code: ${_key?}, Key action: ${_status?} }"
+    elif test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
       ui_debug ''
-      ui_debug "Key code: ${_key:-}, Action: ${_status:-}"
+      ui_debug "Event { Event type: 1, Key code: ${_key?}, Key action: ${_status?} }"
     fi
 
     if true; then
