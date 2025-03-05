@@ -2665,13 +2665,20 @@ _parse_input_event()
     fi
 
     if test "${event_type:?}" -ne 1; then
-      ui_warning "Invalid event type: ${event_type?}"
+      if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${KEY_TEST_ONLY:?}" -eq 1; then
+        ui_warning "Unsupported event type: ${event_type?}"
+      fi
+      return 115
+    fi
+
+    if test "${key_code:?}" = '014a'; then # 0x014a (330)
+      ui_warning 'Touch screen action ignored'
       return 115
     fi
 
     # Only 0 and 1 are accepted
     if test "${key_action:?}" -lt 0 || test "${key_action:?}" -gt 1; then
-      ui_warning "Invalid action: ${key_action?}"
+      ui_warning "Unsupported action: ${key_action?}"
       return 115
     fi
 
