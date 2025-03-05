@@ -3056,12 +3056,13 @@ choose_inputevent()
       _last_key_pressed=''
     fi
 
-    case "${_key?}" in
-      "${INPUT_CODE_VOLUME_UP:?}") ;;   # Vol + key (allowed)
-      "${INPUT_CODE_VOLUME_DOWN:?}") ;; # Vol - key (allowed)
+    _key_desc="$(_inputevent_keycode_to_key "${_key?}")" || _key_desc='Unknown'
+    case "${_key_desc?}" in
+      '+' | '-') ;; # Volume keys (allowed)
+      'BACK') ui_error 'Installation forcefully terminated' 143 ;;
       *)
         test "${KEY_TEST_ONLY:?}" -eq 1 || {
-          ui_msg "Invalid choice!!! Key code: ${_key:-}"
+          ui_msg "Invalid choice!!! Key: ${_key_desc?} (${_key?})"
           continue
         }
         ;;
@@ -3070,7 +3071,6 @@ choose_inputevent()
     break
   done
 
-  _key_desc="$(_inputevent_keycode_to_key "${_key?}")" || _key_desc=''
   _ret=1
   case "${_key_desc?}" in
     '+') _ret=3 ;;
