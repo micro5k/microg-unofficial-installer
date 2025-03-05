@@ -2670,18 +2670,15 @@ _parse_input_event()
     fi
 
     # Only 0 and 1 are accepted
-    if test "${key_action:?}" -gt 1; then
+    if test "${key_action:?}" -lt 0 || test "${key_action:?}" -gt 1; then
       ui_warning "Invalid action: ${key_action?}"
       return 115
     fi
 
     hex_to_dec "${key_code:?}" || return 126
 
-    if test "${key_action:?}" -eq 1; then
-      return 3
-    else
-      return 4
-    fi
+    return "$((key_action + 10))"
+
   done ||
     return "${?}"
 
@@ -2960,7 +2957,7 @@ choose_inputevent()
 
   _last_key_pressed=''
   while true; do
-    _get_input_event "${1:-}" || {
+    _get_input_event "${1-}" || {
       _status="${?}"
 
       if test "${_status:?}" -eq 124; then
@@ -2993,11 +2990,11 @@ choose_inputevent()
     _key="$(_parse_input_event "${INPUT_EVENT_CURRENT?}")" || _status="${?}"
 
     case "${_status:?}" in
-      3) ;;            # Key down event read (allowed)
-      4) ;;            # Key up event read (allowed)
+      11) ;;           # Key down event read (allowed)
+      10) ;;           # Key up event read (allowed)
       115) continue ;; # We got an unsupported event type or action (ignored)
       *)               # Event read failed
-        ui_warning "Key detection failed - parse (input event), status code: ${_status:-}"
+        ui_warning "Key detection failed - parse (input event), status code: ${_status?}"
         return 1
         ;;
     esac
@@ -3005,14 +3002,14 @@ choose_inputevent()
     if test "${_key?}" = "${INPUT_CODE_POWER:?}" && test "${KEY_TEST_ONLY:?}" -eq 0; then continue; fi # Power key (ignored completely)
 
     if test "${KEY_TEST_ONLY:?}" -eq 1; then
-      ui_msg "Event { Event type: 1, Key code: ${_key?}, Key action: ${_status?} }"
+      ui_msg "Event { Event type: 1, Key code: ${_key?}, Action: $((_status - 10)) }"
     elif test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
       ui_debug ''
-      ui_debug "Event { Event type: 1, Key code: ${_key?}, Key action: ${_status?} }"
+      ui_debug "Event { Event type: 1, Key code: ${_key?}, Action: $((_status - 10)) }"
     fi
 
     if true; then
-      if test "${_status:?}" -eq 3; then
+      if test "${_status:?}" -eq 11; then
         # Key down
         if test "${_last_key_pressed?}" = ''; then
           _last_key_pressed="${_key?}"
