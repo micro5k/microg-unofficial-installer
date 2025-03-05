@@ -2646,8 +2646,12 @@ _detect_input_event_size()
     fi
   done
 
-  if test "${?}" -eq 4; then return 0; fi # OK
-  return 127                              # Fail
+  if test "${?}" -eq 4; then
+    test "${KEY_TEST_ONLY:?}" -eq 0 || ui_debug ''
+    return 0 # OK
+  fi
+
+  return 127 # Fail
 }
 
 _parse_input_event()
