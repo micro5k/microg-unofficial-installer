@@ -205,18 +205,18 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
 
     delete "${SYS_PATH:?}/system_ext/priv-app/${FILENAME}"
     delete "${SYS_PATH:?}/system_ext/app/${FILENAME}"
-    delete "/system_ext/priv-app/${FILENAME}"
-    delete "/system_ext/app/${FILENAME}"
+    delete "${SYS_EXT_PATH:-/system_ext}/priv-app/${FILENAME}"
+    delete "${SYS_EXT_PATH:-/system_ext}/app/${FILENAME}"
 
     delete "${SYS_PATH:?}/product/priv-app/${FILENAME}"
     delete "${SYS_PATH:?}/product/app/${FILENAME}"
-    delete "/product/priv-app/${FILENAME}"
-    delete "/product/app/${FILENAME}"
+    delete "${PRODUCT_PATH:-/product}/priv-app/${FILENAME}"
+    delete "${PRODUCT_PATH:-/product}/app/${FILENAME}"
 
     delete "${SYS_PATH:?}/vendor/priv-app/${FILENAME}"
     delete "${SYS_PATH:?}/vendor/app/${FILENAME}"
-    delete "/vendor/priv-app/${FILENAME}"
-    delete "/vendor/app/${FILENAME}"
+    delete "${VENDOR_PATH:-/vendor}/priv-app/${FILENAME}"
+    delete "${VENDOR_PATH:-/vendor}/app/${FILENAME}"
 
     # Dalvik cache
     delete "${DATA_PATH:?}"/dalvik-cache/system@priv-app@"${FILENAME}"[@\.]*@classes*
@@ -227,8 +227,8 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     # Delete legacy libs (very unlikely to be present but possible)
     delete "${SYS_PATH:?}/lib64/${FILENAME:?}"
     delete "${SYS_PATH:?}/lib/${FILENAME:?}"
-    delete "/vendor/lib64/${FILENAME:?}"
-    delete "/vendor/lib/${FILENAME:?}"
+    delete "${VENDOR_PATH:-/vendor}/lib64/${FILENAME:?}"
+    delete "${VENDOR_PATH:-/vendor}/lib/${FILENAME:?}"
     delete "${SYS_PATH:?}/vendor/lib64/${FILENAME:?}"
     delete "${SYS_PATH:?}/vendor/lib/${FILENAME:?}"
 
