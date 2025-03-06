@@ -203,20 +203,20 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete "${SYS_PATH:?}/app/${FILENAME}.apk"
     delete "${SYS_PATH:?}/app/${FILENAME}.odex"
 
-    delete "${SYS_PATH:?}/system_ext/priv-app/${FILENAME}"
-    delete "${SYS_PATH:?}/system_ext/app/${FILENAME}"
-    delete "${SYS_EXT_PATH:-/system_ext}/priv-app/${FILENAME}"
-    delete "${SYS_EXT_PATH:-/system_ext}/app/${FILENAME}"
-
-    delete "${SYS_PATH:?}/product/priv-app/${FILENAME}"
-    delete "${SYS_PATH:?}/product/app/${FILENAME}"
     delete "${PRODUCT_PATH:-/product}/priv-app/${FILENAME}"
     delete "${PRODUCT_PATH:-/product}/app/${FILENAME}"
+    delete "${SYS_PATH:?}/product/priv-app/${FILENAME}"
+    delete "${SYS_PATH:?}/product/app/${FILENAME}"
 
-    delete "${SYS_PATH:?}/vendor/priv-app/${FILENAME}"
-    delete "${SYS_PATH:?}/vendor/app/${FILENAME}"
     delete "${VENDOR_PATH:-/vendor}/priv-app/${FILENAME}"
     delete "${VENDOR_PATH:-/vendor}/app/${FILENAME}"
+    delete "${SYS_PATH:?}/vendor/priv-app/${FILENAME}"
+    delete "${SYS_PATH:?}/vendor/app/${FILENAME}"
+
+    delete "${SYS_EXT_PATH:-/system_ext}/priv-app/${FILENAME}"
+    delete "${SYS_EXT_PATH:-/system_ext}/app/${FILENAME}"
+    delete "${SYS_PATH:?}/system_ext/priv-app/${FILENAME}"
+    delete "${SYS_PATH:?}/system_ext/app/${FILENAME}"
 
     # Dalvik cache
     delete "${DATA_PATH:?}"/dalvik-cache/system@priv-app@"${FILENAME}"[@\.]*@classes*
