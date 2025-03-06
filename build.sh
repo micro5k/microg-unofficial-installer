@@ -161,9 +161,9 @@ MODULE_ID="$(simple_get_prop 'id' "${MAIN_DIR:?}/zip-content/module.prop")" || u
 MODULE_VER="$(simple_get_prop 'version' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module version string'
 MODULE_AUTHOR="$(simple_get_prop 'author' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module author string'
 
-FILENAME_START="${MODULE_ID:?}-${MODULE_VER:?}"
+FILENAME_START="${MODULE_ID:?}-${MODULE_VER:?}-"
 FILENAME_END="-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
-FILENAME="${FILENAME_START:?}${ZIP_SHORT_COMMIT_ID:+-}${ZIP_SHORT_COMMIT_ID-}${FILENAME_END:?}"
+FILENAME="${FILENAME_START:?}${ZIP_SHORT_COMMIT_ID:-NOGIT}${FILENAME_END:?}"
 
 FILENAME_EXT='.zip'
 
