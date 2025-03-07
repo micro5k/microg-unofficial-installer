@@ -12,6 +12,6 @@ priv-app/AuroraServices|21||AuroraServices||com.aurora.services|a5fde752b5c75266
 app/DejaVuBackend|18||DejaVuBackend||org.fitchfamily.android.dejavu|9a6ffed69c510a06a719a2d52c3fd49218f71806
 app/NominatimGeocoderBackend|9||NominatimGeocoderBackend||org.microg.nlp.backend.nominatim|40b0917e9805cdab5abc53925f8732bff9ba8d84
 app/LegacyNetworkLocation|9|18|NetworkLocation||com.google.android.location|8121295640985fad6c5b98890a156aafd18c2053
-app/NewPipe|21||NewPipe||org.schabi.newpipe|d33a227873f8372921023b51fa655aa498750149
+app/NewPipe|21||NewPipe||org.schabi.newpipe|0543e8802367ecda4ae8f2d1f971744c63b16acb
 app/NewPipeLegacyRevo|16|20|NewPipe||org.schabi.newpipelegacy.Revo|45382f078717da8e88e832a8fa6522d0c76045a7
 app/MyLocation|21||MyLocation||com.mirfatif.mylocation|9a91e7b746df5797770f242bc45a9f8da2e220de
