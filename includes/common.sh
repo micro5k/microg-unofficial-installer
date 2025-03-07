@@ -1280,7 +1280,7 @@ init_cmdline()
     add_to_path_env "${ANDROID_SDK_ROOT:?}/platform-tools"
 
     if test -e "${ANDROID_SDK_ROOT:?}/build-tools"; then
-      if AAPT2_PATH="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -iname 'aapt2*' | LC_ALL=C sort -V -r | head -n 1)" && test -n "${AAPT2_PATH?}"; then
+      if AAPT2_PATH="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -maxdepth 2 -iname 'aapt2*' | LC_ALL=C sort -V -r | head -n 1)" && test -n "${AAPT2_PATH?}"; then
         export AAPT2_PATH
         if command 1> /dev/null 2>&1 -v 'alias'; then
           # shellcheck disable=SC2139
@@ -1288,6 +1288,15 @@ init_cmdline()
         fi
       else
         unset AAPT2_PATH
+      fi
+      if APKSIGNER_PATH="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -maxdepth 2 -iname 'apksigner*' | LC_ALL=C sort -V -r | head -n 1)" && test -n "${APKSIGNER_PATH?}"; then
+        export APKSIGNER_PATH
+        if command 1> /dev/null 2>&1 -v 'alias'; then
+          # shellcheck disable=SC2139
+          alias 'apksigner'="'${APKSIGNER_PATH:?}'"
+        fi
+      else
+        unset APKSIGNER_PATH
       fi
     fi
   fi
