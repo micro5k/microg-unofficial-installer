@@ -2505,12 +2505,15 @@ _find_hardware_keys()
     if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Found ${INPUT_DEVICE_NAME?} device at: ${INPUT_DEVICE_PATH?}"; fi
 
     # Set the default values, useful when the parsing of keylayout fails
-    INPUT_CODE_VOLUME_UP='115'
-    INPUT_CODE_VOLUME_DOWN='114'
+    INPUT_CODE_VOLUMEUP='115'
+    INPUT_CODE_VOLUMEDOWN='114'
     INPUT_CODE_POWER='116'
+
     INPUT_CODE_BACK='158'
     INPUT_CODE_HOME='102'
     INPUT_CODE_APP_SWITCH='221' # Recent apps
+
+    INPUT_CODE_MENU='139'
 
     # Example file:
     ## key 115 VOLUME_UP
@@ -2532,8 +2535,8 @@ _find_hardware_keys()
         fi
 
         case "${key_name:?}" in
-          'VOLUME_UP') INPUT_CODE_VOLUME_UP="${key_code:?}" ;;
-          'VOLUME_DOWN') INPUT_CODE_VOLUME_DOWN="${key_code:?}" ;;
+          'VOLUME_UP') INPUT_CODE_VOLUMEUP="${key_code:?}" ;;
+          'VOLUME_DOWN') INPUT_CODE_VOLUMEDOWN="${key_code:?}" ;;
           'POWER') INPUT_CODE_POWER="${key_code:?}" ;;
           'HOME') INPUT_CODE_HOME="${key_code:?}" ;;
           'ASSIST' | 'FOCUS' | 'CAMERA' | 'AI') : ;;
@@ -2960,12 +2963,13 @@ _inputevent_keycode_to_key()
   case "${1?}" in
     '') return 123 ;;
 
-    "${INPUT_CODE_VOLUME_UP?}") printf '%s\n' '+' ;;
-    "${INPUT_CODE_VOLUME_DOWN?}") printf '%s\n' '-' ;;
+    "${INPUT_CODE_VOLUMEUP?}") printf '%s\n' '+' ;;
+    "${INPUT_CODE_VOLUMEDOWN?}") printf '%s\n' '-' ;;
     "${INPUT_CODE_POWER?}") printf '%s\n' 'POWER' ;;
     "${INPUT_CODE_BACK?}") printf '%s\n' 'BACK' ;;
     "${INPUT_CODE_HOME?}") printf '%s\n' 'HOME' ;;
     "${INPUT_CODE_APP_SWITCH?}") printf '%s\n' 'APP SWITCH' ;;
+    "${INPUT_CODE_MENU?}") printf '%s\n' 'MENU' ;;
 
     *) return 123 ;; # All other keys
   esac
