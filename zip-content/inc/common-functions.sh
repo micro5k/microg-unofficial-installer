@@ -2670,6 +2670,8 @@ _parse_input_event()
       return 127
     fi
 
+    if test "${event_type:?}" -eq 0; then return 115; fi # Event type 0 is completely useless, ignore it earlier and never report it
+
     if test "${event_type:?}" -ne 1; then
       if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${KEY_TEST_ONLY:?}" -eq 1; then
         ui_warning "Unsupported event type: ${event_type?}"
