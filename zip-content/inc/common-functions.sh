@@ -2673,8 +2673,9 @@ _parse_input_event()
       return 127
     fi
 
-    if test "${event_type:?}" -eq 0; then return 115; fi # Event type 0 is completely useless, ignore it earlier and never report it
+    if test "${event_type:?}" -eq 0; then return 115; fi # Event type 0 (EV_SYN) is completely useless, ignore it earlier and never report it
 
+    # Only event type 1 (EV_KEY) is supported
     if test "${event_type:?}" -ne 1; then
       if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${KEY_TEST_ONLY:?}" -eq 1; then
         ui_warning "Unsupported event type: ${event_type?}"
@@ -2682,8 +2683,8 @@ _parse_input_event()
       return 115
     fi
 
-    if test "${key_code:?}" = '014a'; then # 0x014a (330)
-      ui_warning 'Touch screen action ignored'
+    if test "${key_code:?}" = '014a'; then # BTN_TOUCH => 0x014a (330)
+      ui_warning 'Touch screen event ignored'
       return 115
     fi
 
