@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.2.7'
+readonly ZIPINSTALL_VERSION='1.2.8'
 
 umask 022 || :
 PATH="${PATH:-/system/bin}:."
@@ -118,6 +118,12 @@ ui_error_msg()
   else
     printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1}"
   fi
+}
+
+is_head_functional()
+{
+  command 1> /dev/null -v 'head' || return 1
+  test "$(printf 2> /dev/null '%s\n' 'ABCD' | head 2> /dev/null -c 2 || :)" = 'AB' || return 2 # Some versions of head are broken or incomplete
 }
 
 if test -n "${*}"; then
@@ -235,7 +241,7 @@ test -s "${SCRIPT_NAME:?}" || {
 unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/updater-script' 1> "${UPD_SCRIPT_NAME:?}" || : # Not strictly needed
 
 STATUS=0
-if ! command 1> /dev/null -v head || test '#!' = "$(head -q -c 2 -- "${SCRIPT_NAME:?}" || :)"; then
+if ! is_head_functional || test '#!' = "$(head -c 2 -- "${SCRIPT_NAME:?}" || :)"; then
   printf '%s\n' 'Executing script...'
 
   # Use STDERR (2) for recovery messages to avoid possible problems with subshells intercepting output
