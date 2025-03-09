@@ -2491,86 +2491,150 @@ _find_input_device()
   return 1                                # NOT found
 }
 
-_find_hardware_keys()
+inputevent_initialize()
 {
-  if test -n "${INPUT_DEVICE_NAME-}" && test -n "${INPUT_DEVICE_PATH-}"; then return 0; fi
+  local _device _path
 
-  INPUT_DEVICE_NAME=''
-  INPUT_DEVICE_PATH=''
+  INPUT_CODE_VOLUMEUP=''
+  INPUT_CODE_VOLUMEDOWN=''
+  INPUT_CODE_POWER=''
+  INPUT_CODE_BACK=''
+  INPUT_CODE_HOME=''
+  INPUT_CODE_MENU=''
+  INPUT_CODE_APP_SWITCH=''
 
-  local _input_device_event
-  if _input_device_event="$(_find_input_device "${1:?}")" && test -r "/dev/input/${_input_device_event:?}"; then
-    INPUT_DEVICE_NAME="${1:?}"
-    INPUT_DEVICE_PATH="/dev/input/${_input_device_event:?}"
-    if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Found ${INPUT_DEVICE_NAME?} device at: ${INPUT_DEVICE_PATH?}"; fi
+  INPUT_DEVICE_LIST=''
 
-    # Set the default values, useful when the parsing of keylayout fails
-    INPUT_CODE_VOLUMEUP='115'
-    INPUT_CODE_VOLUMEDOWN='114'
-    INPUT_CODE_POWER='116'
-
-    INPUT_CODE_BACK='158'
-    INPUT_CODE_HOME='102'
-    INPUT_CODE_APP_SWITCH='221' # Recent apps
-
-    INPUT_CODE_MENU='139'
-
-    # Example file:
-    ## key 115 VOLUME_UP
-    ## key 114 VOLUME_DOWN
-    ## key 116 POWER
-    ## key 102 HOME
-    ## key 217 ASSIST
-    ## key 528 FOCUS
-    ## key 766 CAMERA
-    ## key 689 AI
-
-    if test -e "${SYS_PATH:?}/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl"; then
-      while IFS=' ' read -r key_type key_code key_name _; do
-        if test "${key_type?}" != 'key'; then continue; fi
-
-        if test -z "${key_name?}" || test -z "${key_code?}"; then
-          ui_warning "Missing key code, debug info: '${key_type?}' '${key_code?}' '${key_name?}'"
-          continue
-        fi
-
-        case "${key_name:?}" in
-          'VOLUME_UP') INPUT_CODE_VOLUMEUP="${key_code:?}" ;;
-          'VOLUME_DOWN') INPUT_CODE_VOLUMEDOWN="${key_code:?}" ;;
-          'POWER') INPUT_CODE_POWER="${key_code:?}" ;;
-          'HOME') INPUT_CODE_HOME="${key_code:?}" ;;
-          'ASSIST' | 'FOCUS' | 'CAMERA' | 'AI') : ;;
-          *)
-            ui_debug "Unknown key: ${key_name?}"
-            continue
-            ;;
-        esac
-        if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then ui_debug "${key_name?} found at ${key_code?}"; fi
-      done 0< "${SYS_PATH:?}/usr/keylayout/${INPUT_DEVICE_NAME:?}.kl" || ui_warning "Failed parsing '${SYS_PATH:-}/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
-    else
-      ui_debug "Missing keylayout: '${SYS_PATH:-}/usr/keylayout/${INPUT_DEVICE_NAME:-}.kl'"
+  for _device in 'gpio-keys' 'qpnp_pon' 'sec_touchkey' 'qwerty' 'qwerty2'; do
+    if test "${IS_EMU:?}" != 'true'; then
+      case "${_device:?}" in 'qwerty' | 'qwerty2') continue ;; *) ;; esac
     fi
 
-    return 0
-  fi
+    if _path="$(_find_input_device "${_device:?}")" && _path="/dev/input/${_path:?}" && test -r "${_path:?}"; then
+      if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${KEY_TEST_ONLY:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Found '${_device?}' device at: ${_path?}"; fi
+      INPUT_DEVICE_LIST="${INPUT_DEVICE_LIST?}${_path:?}${NL:?}"
+    fi
 
-  return 1
+    _parse_keylayout "${_device:?}"
+  done
 }
 
-kill_pid_from_file()
+input_device_listener_start()
 {
-  local _pid
+  local _backup_ifs _device_path
+  test -n "${INPUT_DEVICE_LIST?}" || return 1
+
+  INPUT_EVENT_START_OFFSET='0'
+  if test -e "${TMP_PATH:?}/working-files/input"; then
+    ui_warning "Previous input device listener NOT cleaned correctly"
+    delete_temp 'working-files/input'
+  fi
+
+  _backup_ifs="${IFS-}"
+  IFS="${NL:?}"
+  set -f
+  # shellcheck disable=SC2086 # Word splitting is intended
+  set -- ${INPUT_DEVICE_LIST:?} || ui_error "Failed expanding \$INPUT_DEVICE_LIST inside input_device_listener_start()"
+  set +f
+  IFS="${_backup_ifs?}"
+
+  mkdir -p "${TMP_PATH:?}/working-files/input/input-events" || ui_error 'Failed to create the folder for input events'
+  for _device_path in "${@}"; do
+    cat 1>> "${TMP_PATH:?}/working-files/input/input-events/0" -u -- "${_device_path:?}" &
+    printf '%s\n' "${!}" 1>> "${TMP_PATH:?}/working-files/input/pids-to-kill.dat"
+  done
+}
+
+input_device_listener_stop()
+{
+  kill_pids_from_file 'working-files/input/pids-to-kill.dat'
+  delete_temp 'working-files/input'
+  unset INPUT_EVENT_START_OFFSET
+}
+
+_parse_keylayout()
+{
+  local _kl_file
+  _kl_file="${SYS_PATH:?}/usr/keylayout/${1:?}.kl"
+
+  # Example file:
+  ## key 115 VOLUME_UP
+  ## key 114 VOLUME_DOWN
+  ## key 116 POWER
+  ## key 102 HOME
+  ## key 217 ASSIST
+  ## key 528 FOCUS
+  ## key 766 CAMERA
+  ## key 689 AI
+
+  if test -f "${_kl_file:?}"; then
+    ui_debug "Parsing keylayout: ${_kl_file?}"
+
+    # The default IFS of space, tab and newline is fine
+    while read -r key_type key_code key_name _; do
+      if test "${key_type?}" != 'key'; then continue; fi
+      if test -z "${key_name?}" || test -z "${key_code?}"; then
+        ui_warning "Missing key name or key code, debug info: '${key_type?}' '${key_code?}' '${key_name?}'"
+        continue
+      fi
+      if test "${key_code:?}" -le 1; then continue; fi
+
+      case "${key_name:?}" in
+        'VOLUME_UP')
+          test -z "${INPUT_CODE_VOLUMEUP?}" || continue
+          INPUT_CODE_VOLUMEUP="${key_code:?}"
+          ;;
+        'VOLUME_DOWN')
+          test -z "${INPUT_CODE_VOLUMEDOWN?}" || continue
+          INPUT_CODE_VOLUMEDOWN="${key_code:?}"
+          ;;
+        'POWER')
+          test -z "${INPUT_CODE_POWER?}" || continue
+          INPUT_CODE_POWER="${key_code:?}"
+          ;;
+        'BACK')
+          test -z "${INPUT_CODE_BACK?}" || continue
+          INPUT_CODE_BACK="${key_code:?}"
+          ;;
+        'HOME')
+          test -z "${INPUT_CODE_HOME?}" || continue
+          INPUT_CODE_HOME="${key_code:?}"
+          ;;
+
+        'MENU') continue ;; # Do NOT parse MENU since there can be multiple ones
+        'ASSIST' | 'FOCUS' | 'CAMERA' | 'AI' | 'APP_SWITCH') ;;
+        *)
+          ui_debug "Unknown key: ${key_name?}"
+          continue
+          ;;
+      esac
+      if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${KEY_TEST_ONLY:?}" -eq 1; then ui_debug "KEY_${key_name?} found at: ${key_code?}"; fi
+    done 0< "${_kl_file:?}" || ui_warning "Failed parsing keylayout '${_kl_file?}'"
+  fi
+}
+
+kill_pids_from_file()
+{
+  local _found
 
   test -e "${TMP_PATH:?}/${1:?}" || {
-    ui_debug "File with PID to kill is missing: ${1-}"
+    ui_warning "File with PIDs to kill is missing => ${1?}"
     return
   }
 
-  if _pid="$(cat "${TMP_PATH:?}/${1:?}")" && test -n "${_pid?}"; then
-    #if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then ui_debug "Killing: ${_pid?}"; fi
+  _found='false'
+  while IFS='' read -r _pid; do
+    if test -z "${_pid?}" || test "${_pid:?}" -le 2; then
+      ui_warning "Invalid PID: ${_pid?}"
+      continue
+    fi
+    if test "${KEY_TEST_ONLY:?}" -eq 1; then ui_debug "Killing: ${_pid?}"; fi
     kill "${_pid:?}" || ui_warning "Failed to kill PID => ${_pid?}"
-  else
-    ui_warning "Unable to read PID from => ${1?}"
+    _found='true'
+  done 0< "${TMP_PATH:?}/${1:?}"
+
+  if test "${_found:?}" = 'false'; then
+    ui_warning "Unable to read PIDs from => ${1?}"
   fi
 
   delete_temp "${1:?}"
@@ -2583,37 +2647,35 @@ hex_to_dec()
 
 _prepare_hexdump_output()
 {
-  cut -d ' ' -f '2-' -s | LC_ALL=C tr '[:cntrl:]' ' ' && printf '\n'
+  tr -s -- ' ' | cut -d ' ' -f '2-' -s | tr -- '\n' ' ' && printf '\n'
 }
 
 _get_input_event()
 {
-  local _var _status
+  local _size _file_size _expected_file_size _max_cycles _val
 
   INPUT_EVENT_CURRENT=''
 
-  _status=0
-  if test -n "${1:-}"; then
-    _var="$({
-      cat -u "${INPUT_DEVICE_PATH:?}" &
-      printf '%s' "${!}" > "${TMP_PATH:?}/pid-to-kill.dat"
-    } | _timeout_compat "${1:?}" hexdump -x -v -n "${INPUT_EVENT_SIZE:-24}")" || _status="${?}"
-  else
-    _var="$({
-      cat -u "${INPUT_DEVICE_PATH:?}" &
-      printf '%s' "${!}" > "${TMP_PATH:?}/pid-to-kill.dat"
-    } | hexdump -x -v -n "${INPUT_EVENT_SIZE:-24}")" || _status="${?}"
-  fi
-  kill_pid_from_file 'pid-to-kill.dat'
+  _size="${INPUT_EVENT_SIZE:-24}"
+  _expected_file_size="$((INPUT_EVENT_START_OFFSET + _size))"
+  _max_cycles=''
+  if test -n "${1-}"; then _max_cycles="$((${1:?} * 4))" || return 120; fi
 
-  case "${_status:?}" in
-    0) ;;                       # OK
-    124) return 124 ;;          # Timed out
-    *) return "${_status:?}" ;; # Failure
-  esac
-  if test -z "${_var?}"; then return 1; fi
+  while true; do
+    _file_size="$(get_size_of_file "${TMP_PATH:?}/working-files/input/input-events/0")" || return 121
 
-  INPUT_EVENT_CURRENT="${_var?}"
+    if test "${_file_size:?}" -ge "${_expected_file_size:?}"; then
+      _val="$(hexdump -x -v -s "${INPUT_EVENT_START_OFFSET:?}" -n "${_size:?}" -- "${TMP_PATH:?}/working-files/input/input-events/0" | _prepare_hexdump_output)" || return "${?}"
+      break
+    fi
+
+    if test -n "${_max_cycles?}" && test "$((_max_cycles = _max_cycles - 1))" -le 0; then return 124; fi # Timed out
+    sleep '0.25'
+  done
+
+  INPUT_EVENT_START_OFFSET="$((INPUT_EVENT_START_OFFSET + _size))"
+  INPUT_EVENT_CURRENT="${_val:?}"
+
   return 0
 }
 
@@ -2635,7 +2697,7 @@ _get_input_event()
 
 _detect_input_event_size()
 {
-  printf "%s\n" "${1?}" | _prepare_hexdump_output | while IFS=' ' read -r _ _ _ _ part5 _ _ part8 part9 _ _ part12 _; do
+  printf "%s\n" "${1?}" | while IFS=' ' read -r _ _ _ _ part5 _ _ part8 part9 _ _ part12 _; do
     if test -n "${part9?}" && test "$(hex_to_dec "${part9:?}" || :)" -eq 1 && test -n "${part12?}" && test "$(hex_to_dec "${part12:?}" || printf '%s' '9' || :)" -eq 0; then
       ui_debug 'Input event is 64-bit'
       printf '%s\n' 24
@@ -2659,7 +2721,7 @@ _detect_input_event_size()
 
 _parse_input_event()
 {
-  printf "%s\n" "${1?}" | _prepare_hexdump_output | while IFS=' ' read -r _ _ _ _ ev_type32 key_code32 key_action32 _ ev_type64 key_code64 key_action64 _; do
+  printf "%s\n" "${1?}" | while IFS=' ' read -r _ _ _ _ ev_type32 key_code32 key_action32 _ ev_type64 key_code64 key_action64 _; do
     if test "${INPUT_EVENT_SIZE:?}" -eq 24; then
       event_type="$(hex_to_dec "${ev_type64:?}")" || return 123
       key_code="${key_code64:?}"
@@ -2673,19 +2735,26 @@ _parse_input_event()
       return 127
     fi
 
-    if test "${event_type:?}" -eq 0; then return 115; fi # Event type 0 (EV_SYN) is completely useless, ignore it earlier and never report it
+    if test "${event_type:?}" -eq 0; then return 115; fi # Event type 0 (EV_SYN) is useless, ignore it earlier and never report it
 
     # Only event type 1 (EV_KEY) is supported
     if test "${event_type:?}" -ne 1; then
       if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${KEY_TEST_ONLY:?}" -eq 1; then
-        ui_warning "Unsupported event type: ${event_type?}"
+        ui_warning "Event type ignored, event type: ${event_type?}"
       fi
       return 115
     fi
 
-    if test "${key_code:?}" = '014a'; then # BTN_TOUCH => 0x014a (330)
-      ui_warning 'Touch screen event ignored'
+    if test "${key_code:?}" = '014a' || test "${key_code:?}" = '0145'; then # BTN_TOUCH => 0x014a (330), BTN_TOOL_FINGER => 0x0145 (325)
+      ui_warning "Touch screen event ignored, key: 0x${key_code?}"
       return 115
+    fi
+
+    if test "${KEY_TEST_ONLY:?}" -eq 1; then
+      ui_msg 1>&2 "EVENT DEBUG: ${INPUT_EVENT_CURRENT?}"
+    elif test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
+      ui_debug ''
+      ui_debug "EVENT DEBUG: ${INPUT_EVENT_CURRENT?}"
     fi
 
     # Only 0 and 1 are accepted
@@ -2964,13 +3033,15 @@ _inputevent_keycode_to_key()
   case "${1?}" in
     '') return 123 ;;
 
-    "${INPUT_CODE_VOLUMEUP?}") printf '%s\n' '+' ;;
-    "${INPUT_CODE_VOLUMEDOWN?}") printf '%s\n' '-' ;;
-    "${INPUT_CODE_POWER?}") printf '%s\n' 'POWER' ;;
-    "${INPUT_CODE_BACK?}") printf '%s\n' 'BACK' ;;
-    "${INPUT_CODE_HOME?}") printf '%s\n' 'HOME' ;;
-    "${INPUT_CODE_APP_SWITCH?}") printf '%s\n' 'APP SWITCH' ;;
-    "${INPUT_CODE_MENU?}") printf '%s\n' 'MENU' ;;
+    "${INPUT_CODE_VOLUMEUP?}" | '115') printf '%s\n' '+' ;;
+    "${INPUT_CODE_VOLUMEDOWN?}" | '114') printf '%s\n' '-' ;;
+    "${INPUT_CODE_POWER?}" | '116') printf '%s\n' 'POWER' ;;
+
+    "${INPUT_CODE_BACK?}" | '158') printf '%s\n' 'BACK' ;;
+    "${INPUT_CODE_HOME?}" | '102') printf '%s\n' 'HOME' ;;
+    "${INPUT_CODE_MENU?}" | '139') printf '%s\n' 'MENU' ;;
+
+    "${INPUT_CODE_APP_SWITCH?}" | '221') printf '%s\n' 'APP SWITCH' ;; # Recent apps
 
     *) return 123 ;; # All other keys
   esac
@@ -2980,21 +3051,18 @@ choose_inputevent()
 {
   local _key _status _last_key_pressed _key_desc _ret
 
-  if _find_hardware_keys 'gpio-keys'; then
-    :
-  elif test "${IS_EMU:?}" = 'true' && _find_hardware_keys 'qwerty2'; then
-    :
-  else
+  input_device_listener_start || {
     ui_msg_empty_line
     ui_warning "Key detection failed (input event)"
     ui_msg_empty_line
     return 1
-  fi
+  }
 
   _last_key_pressed=''
   while true; do
-    _get_input_event "${1-}" || {
+    _get_input_event "${1-}" || { # It set ${INPUT_EVENT_CURRENT}
       _status="${?}"
+      input_device_listener_stop
 
       if test "${_status:?}" -eq 124; then
         ui_msg_empty_line
@@ -3003,39 +3071,34 @@ choose_inputevent()
         return 0
       fi
 
-      ui_warning "Key detection failed - get (input event), status code: ${_status?}"
+      ui_warning "Key detection failed (input event) - get, status code: ${_status?}"
       return 1
     }
 
-    # $INPUT_EVENT_CURRENT is set inside _get_input_event()
     if test -z "${INPUT_EVENT_SIZE-}"; then
       INPUT_EVENT_SIZE="$(_detect_input_event_size "${INPUT_EVENT_CURRENT?}")" || {
-        ui_warning "Key detection failed - size check (input event), status code: ${?}"
+        ui_warning "Key detection failed (input event) - size check, status code: ${?}"
+        input_device_listener_stop
         return 1
       }
-    fi
-
-    if test "${KEY_TEST_ONLY:?}" -eq 1; then
-      ui_msg "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -s -- ' ' || :)"
-    elif test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
-      ui_debug ''
-      ui_debug "EVENT DEBUG:$(printf '%s\n' "${INPUT_EVENT_CURRENT?}" | _prepare_hexdump_output | LC_ALL=C tr -s -- ' ' || :)"
+      if test "${INPUT_EVENT_SIZE:?}" -ne 24; then INPUT_EVENT_START_OFFSET="$((INPUT_EVENT_START_OFFSET - 24 + INPUT_EVENT_SIZE))"; fi
     fi
 
     _status=0
     _key="$(_parse_input_event "${INPUT_EVENT_CURRENT?}")" || _status="${?}"
 
     case "${_status:?}" in
-      11) ;;           # Key down event read (allowed)
-      10) ;;           # Key up event read (allowed)
+      11) ;;           # Key press event (allowed)
+      10) ;;           # Key release event (allowed)
       115) continue ;; # We got an unsupported event type or action (ignored)
-      *)               # Event read failed
-        ui_warning "Key detection failed - parse (input event), status code: ${_status?}"
+      *)               # Event parsing failed (fail)
+        input_device_listener_stop
+        ui_warning "Key detection failed (input event) - parse, status code: ${_status?}"
         return 1
         ;;
     esac
 
-    if test "${_key?}" = "${INPUT_CODE_POWER:?}" && test "${KEY_TEST_ONLY:?}" -eq 0; then continue; fi # Power key (ignored completely)
+    if test "${_key?}" = "${INPUT_CODE_POWER:-116}" && test "${KEY_TEST_ONLY:?}" -eq 0; then continue; fi # Power key (ignored completely)
 
     if test "${KEY_TEST_ONLY:?}" -eq 1; then
       ui_msg "Event { Event type: 1, Key code: ${_key?}, Action: $((_status - 10)) }"
@@ -3070,7 +3133,10 @@ choose_inputevent()
     _key_desc="$(_inputevent_keycode_to_key "${_key?}")" || _key_desc='Unknown'
     case "${_key_desc?}" in
       '+' | '-') ;; # Volume keys (allowed)
-      'BACK') ui_error 'Installation forcefully terminated' 143 ;;
+      'BACK')
+        input_device_listener_stop
+        ui_error 'Installation forcefully terminated' 143
+        ;;
       *)
         test "${KEY_TEST_ONLY:?}" -eq 1 || {
           ui_msg "Invalid choice!!! Key: ${_key_desc?} (${_key?})"
@@ -3082,21 +3148,20 @@ choose_inputevent()
     break
   done
 
+  input_device_listener_stop
+
   _ret=1
   case "${_key_desc?}" in
     '+') _ret=3 ;;
     '-') _ret=2 ;;
-    *) test "${KEY_TEST_ONLY:?}" -eq 1 || ui_error "choose_inputevent failed, key code: ${_key?}" ;;
+    *) test "${KEY_TEST_ONLY:?}" -eq 1 || ui_error "Key detection failed (input event) - key, key code: ${_key?}" ;;
   esac
 
   ui_msg_empty_line
   ui_msg "Key press: ${_key_desc?} (${_key?})"
   ui_msg_empty_line
-  return "${_ret:?}"
 
-  #ui_msg "Key code: ${_key:-}"
-  #_choose_inputevent_remapper "${_key:?}"
-  #return "${?}"
+  return "${_ret:?}"
 }
 
 choose()
@@ -3143,6 +3208,8 @@ _live_setup_key_test()
     ui_msg 'Using: keycheck'
   else
     ui_msg 'Using: input event'
+    inputevent_initialize
+    sleep '0.1'
   fi
   ui_msg_empty_line
 
@@ -3197,6 +3264,7 @@ live_setup_choice()
         choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
       else
         ui_msg 'Using: input event'
+        inputevent_initialize
         _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
         choose_inputevent "${LIVE_SETUP_TIMEOUT}"
       fi
