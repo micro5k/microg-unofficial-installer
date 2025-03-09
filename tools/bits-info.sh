@@ -13,7 +13,7 @@ SCRIPT_VERSION='1.5.30'
 set -u 2> /dev/null || :
 
 # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
-case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || printf 1>&2 '%s\n' 'Failed: pipefail' ;; *) ;; esac
+case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'Failed: pipefail' ;; *) ;; esac
 
 # The "obosh" shell does NOT support "command" while the "posh" shell does NOT support "type"
 {
@@ -352,7 +352,7 @@ detect_bitness_of_single_file()
             esac
           fi
         else
-          _dbf_exe_type="${_dbf_exe_type?}PE"
+          _dbf_exe_type="${_dbf_exe_type?}Invalid PE"
         fi
 
         _dbf_cpu_type="$(extract_bytes "${_header:?}" '4' '2')" || _dbf_cpu_type=''
