@@ -2721,19 +2721,27 @@ _detect_input_event_size()
 
 _parse_input_event()
 {
-  printf "%s\n" "${1?}" | while IFS=' ' read -r _ _ _ _ ev_type32 key_code32 key_action32 _ ev_type64 key_code64 key_action64 _; do
+  printf "%s\n" "${1?}" | while IFS=' ' read -r _ _ _ _ ev_type32 key_code32 key_action32p2 key_action32p1 ev_type64 key_code64 key_action64p2 key_action64p1 _; do
     if test "${INPUT_EVENT_SIZE:?}" -eq 24; then
-      event_type="$(hex_to_dec "${ev_type64:?}")" || return 123
-      key_code="${key_code64:?}"
-      key_action="$(hex_to_dec "${key_action64:?}")" || return 123
+      event_type="${ev_type64?}"
+      key_code="${key_code64?}"
+      key_action="${key_action64p1?}${key_action64p2?}"
     elif test "${INPUT_EVENT_SIZE:?}" -eq 16; then
-      event_type="$(hex_to_dec "${ev_type32:?}")" || return 123
-      key_code="${key_code32:?}"
-      key_action="$(hex_to_dec "${key_action32:?}")" || return 123
+      event_type="${ev_type32?}"
+      key_code="${key_code32?}"
+      key_action="${key_action32p1?}${key_action32p2?}"
     else
       ui_warning "Invalid input event size: ${INPUT_EVENT_SIZE?}"
       return 127
     fi
+
+    if test -z "${event_type?}" || test -z "${key_code?}" || test -z "${key_action?}"; then
+      ui_warning "Corrupted event data"
+      return 122
+    fi
+
+    event_type="$(hex_to_dec "${event_type:?}")" || return 123
+    key_action="$(hex_to_dec "${key_action:?}")" || return 123
 
     if test "${event_type:?}" -eq 0; then return 115; fi # Event type 0 (EV_SYN) is useless, ignore it earlier and never report it
 
@@ -3077,9 +3085,9 @@ choose_inputevent()
 
     if test -z "${INPUT_EVENT_SIZE-}"; then
       INPUT_EVENT_SIZE="$(_detect_input_event_size "${INPUT_EVENT_CURRENT?}")" || {
-        ui_warning "Key detection failed (input event) - size check, status code: ${?}"
+        _status="${?}"
         input_device_listener_stop
-        return 1
+        ui_error "Key detection failed (input event) - size check, status code: ${_status?}"
       }
       if test "${INPUT_EVENT_SIZE:?}" -ne 24; then INPUT_EVENT_START_OFFSET="$((INPUT_EVENT_START_OFFSET - 24 + INPUT_EVENT_SIZE))"; fi
     fi
@@ -3093,8 +3101,7 @@ choose_inputevent()
       115) continue ;; # We got an unsupported event type or action (ignored)
       *)               # Event parsing failed (fail)
         input_device_listener_stop
-        ui_warning "Key detection failed (input event) - parse, status code: ${_status?}"
-        return 1
+        ui_error "Key detection failed (input event) - parse, status code: ${_status?}"
         ;;
     esac
 
