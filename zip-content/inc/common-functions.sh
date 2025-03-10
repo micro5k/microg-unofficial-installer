@@ -2662,7 +2662,7 @@ _get_input_event()
   if test -n "${1-}"; then _max_cycles="$((${1:?} * 4))" || return 120; fi
 
   while true; do
-    _file_size="$(get_size_of_file "${TMP_PATH:?}/working-files/input/input-events/0")" || return 121
+    _file_size="$(get_size_of_file 2> /dev/null "${TMP_PATH:?}/working-files/input/input-events/0")" || return 121
 
     if test "${_file_size:?}" -ge "${_expected_file_size:?}"; then
       _val="$(hexdump -x -v -s "${INPUT_EVENT_START_OFFSET:?}" -n "${_size:?}" -- "${TMP_PATH:?}/working-files/input/input-events/0" | _prepare_hexdump_output)" || return "${?}"
@@ -3067,6 +3067,7 @@ choose_inputevent()
   }
 
   _last_key_pressed=''
+
   while true; do
     _get_input_event "${1-}" || { # It set ${INPUT_EVENT_CURRENT}
       _status="${?}"
@@ -3114,27 +3115,25 @@ choose_inputevent()
       ui_debug "Event { Event type: 1, Key code: ${_key?}, Action: $((_status - 10)) }"
     fi
 
-    if true; then
+    if :; then
       if test "${_status:?}" -eq 11; then
         # Key down
         if test "${_last_key_pressed?}" = ''; then
-          _last_key_pressed="${_key?}"
+          _last_key_pressed="${_key?}" # One key pressed (waiting release)
         else
-          _last_key_pressed='' # Two buttons pressed simultaneously (ignored)
+          _last_key_pressed=''
+          ui_msg 'Key mismatch, ignored!!!' # Two keys pressed simultaneously (ignored)
         fi
         continue
       else
         # Key up
-        if test -n "${_key?}" && test "${_key:?}" = "${_last_key_pressed?}"; then
+        if test -n "${_last_key_pressed?}" && test "${_key?}" = "${_last_key_pressed:?}"; then
           : # OK
         else
-          _last_key_pressed=''
-          ui_msg 'Key mismatch, ignored!!!' # Key mismatch (ignored)
+          _last_key_pressed='' # Key mismatch from earlier (ignored)
           continue
         fi
       fi
-
-      _last_key_pressed=''
     fi
 
     _key_desc="$(_inputevent_keycode_to_key "${_key?}")" || _key_desc='Unknown'
@@ -3145,6 +3144,7 @@ choose_inputevent()
         ui_error 'Installation forcefully terminated' 143
         ;;
       *)
+        _last_key_pressed=''
         test "${KEY_TEST_ONLY:?}" -eq 1 || {
           ui_msg "Invalid choice!!! Key: ${_key_desc?} (${_key?})"
           continue
