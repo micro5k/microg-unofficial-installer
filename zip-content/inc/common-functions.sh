@@ -2505,7 +2505,7 @@ inputevent_initialize()
 
   INPUT_DEVICE_LIST=''
 
-  for _device in 'gpio-keys' 'qpnp_pon' 'sec_touchkey' 'qwerty' 'qwerty2'; do
+  for _device in 'gpio-keys' 'qpnp_pon' 'sec_key' 'sec_touchkey' 'qwerty' 'qwerty2'; do
     if test "${IS_EMU:?}" != 'true'; then
       case "${_device:?}" in 'qwerty' | 'qwerty2') continue ;; *) ;; esac
     fi
@@ -2600,11 +2600,16 @@ _parse_keylayout()
           test -z "${INPUT_CODE_HOME?}" || continue
           INPUT_CODE_HOME="${key_code:?}"
           ;;
+        'MENU')
+          test -z "${INPUT_CODE_MENU?}" || continue
+          test "${1?}" != 'qwerty' || continue # Since there are multiple MENU values in 'qwerty', skip it
+          INPUT_CODE_MENU="${key_code:?}"
+          ;;
 
-        'MENU') continue ;; # Do NOT parse MENU since there can be multiple ones
-        'ASSIST' | 'FOCUS' | 'CAMERA' | 'AI' | 'APP_SWITCH') ;;
+        'ASSIST' | 'FOCUS' | 'CAMERA' | 'AI' | 'APP_SWITCH') ;;                                       # ToDO: Check later
+        'ENDCALL' | 'DPAD_LEFT' | 'DPAD_RIGHT' | 'DPAD_UP' | 'DPAD_DOWN' | 'DPAD_CENTER') continue ;; # Always ignore
         *)
-          ui_debug "Unknown key: ${key_name?}"
+          case "${1?}" in 'qwerty') ;; *) ui_debug "Unknown key: ${key_name?}" ;; esac
           continue
           ;;
       esac
@@ -3041,17 +3046,30 @@ _inputevent_keycode_to_key()
   case "${1?}" in
     '') return 123 ;;
 
-    "${INPUT_CODE_VOLUMEUP?}" | '115') printf '%s\n' '+' ;;
-    "${INPUT_CODE_VOLUMEDOWN?}" | '114') printf '%s\n' '-' ;;
-    "${INPUT_CODE_POWER?}" | '116') printf '%s\n' 'POWER' ;;
+    "${INPUT_CODE_VOLUMEUP?}") printf '%s\n' '+' ;;
+    "${INPUT_CODE_VOLUMEDOWN?}") printf '%s\n' '-' ;;
+    "${INPUT_CODE_POWER?}") printf '%s\n' 'POWER' ;;
 
-    "${INPUT_CODE_BACK?}" | '158') printf '%s\n' 'BACK' ;;
-    "${INPUT_CODE_HOME?}" | '102') printf '%s\n' 'HOME' ;;
-    "${INPUT_CODE_MENU?}" | '139') printf '%s\n' 'MENU' ;;
+    "${INPUT_CODE_BACK?}") printf '%s\n' 'BACK' ;;
+    "${INPUT_CODE_HOME?}") printf '%s\n' 'HOME' ;;
+    "${INPUT_CODE_MENU?}") printf '%s\n' 'MENU' ;;
+    "${INPUT_CODE_APP_SWITCH?}") printf '%s\n' 'APP SWITCH' ;; # Recent apps
 
-    "${INPUT_CODE_APP_SWITCH?}" | '221') printf '%s\n' 'APP SWITCH' ;; # Recent apps
+    *)
+      case "${1?}" in
+        '115') printf '%s\n' '+' ;;
+        '114') printf '%s\n' '-' ;;
+        '116') printf '%s\n' 'POWER' ;;
 
-    *) return 123 ;; # All other keys
+        '158') printf '%s\n' 'BACK' ;;
+        '102') printf '%s\n' 'HOME' ;;
+        '139') printf '%s\n' 'MENU' ;;
+        '221') printf '%s\n' 'APP SWITCH' ;; # Recent apps
+
+        *) return 123 ;; # All other keys
+      esac
+      ;;
+
   esac
 }
 
