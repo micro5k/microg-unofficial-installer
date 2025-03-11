@@ -3222,10 +3222,8 @@ write_separator_line()
   printf '%*s\n' "${1:?}" '' | tr -- ' ' "${2:?}"
 }
 
-_live_setup_key_test()
+_live_setup_initialize()
 {
-  local _count
-
   ui_msg_empty_line
   if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
     ui_msg 'Using: read'
@@ -3234,13 +3232,21 @@ _live_setup_key_test()
   else
     ui_msg 'Using: input event'
     inputevent_initialize
-    sleep '0.1'
   fi
+}
+
+_live_setup_key_test()
+{
+  local _count
+
+  _live_setup_initialize
+  sleep '0.05'
+
   ui_msg_empty_line
 
   _count=0
-  while test "${_count:?}" -lt 10 && _count="$((_count + 1))"; do
-    choose "${_count:?}) Press any key" '' ''
+  while test "${_count:?}" -lt 8 && _count="$((_count + 1))"; do
+    choose "${_count:?}/8) Press any key" '' ''
   done
 
   deinitialize
@@ -3278,21 +3284,17 @@ live_setup_choice()
       LIVE_SETUP_ENABLED='true'
     elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
 
-      ui_msg_empty_line
+      _live_setup_initialize
+      _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
+
       if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
-        ui_msg 'Using: read'
-        _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
         choose_read_with_timeout "${LIVE_SETUP_TIMEOUT}"
       elif "${KEYCHECK_ENABLED:?}"; then
-        ui_msg 'Using: keycheck'
-        _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
         choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
       else
-        ui_msg 'Using: input event'
-        inputevent_initialize
-        _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
         choose_inputevent "${LIVE_SETUP_TIMEOUT}"
       fi
+
       if test "${?}" = '3'; then LIVE_SETUP_ENABLED='true'; fi
 
     fi
