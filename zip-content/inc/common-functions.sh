@@ -924,6 +924,16 @@ _generate_architectures_list()
   export ARCH_LIST
 }
 
+display_basic_info()
+{
+  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
+  ui_msg "${MODULE_NAME:?}"
+  ui_msg "${MODULE_VERSION:?}"
+  ui_msg "${BUILD_TYPE:?}"
+  ui_msg "(by ${MODULE_AUTHOR:?})"
+  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
+}
+
 display_info()
 {
   ui_msg "Brand: ${BUILD_BRAND?}"
@@ -942,15 +952,21 @@ display_info()
   else
     ui_msg "Zip install: ${ZIP_INSTALL?}"
   fi
-  ui_msg "Fake signature perm.: ${FAKE_SIGN_PERMISSION?}"
+  if test -n "${FAKE_SIGN_PERMISSION-}"; then
+    ui_msg "Fake signature perm.: ${FAKE_SIGN_PERMISSION?}"
+  fi
   ui_msg_empty_line
   ui_msg "Recovery: ${RECOVERY_NAME?}"
   ui_msg "Recovery API version: ${RECOVERY_API_VER-}"
   ui_msg_empty_line
   ui_msg "Android API: ${API:?}"
-  ui_msg "64-bit CPU arch: ${CPU64:?}"
-  ui_msg "32-bit CPU arch: ${CPU:?}"
-  ui_msg "ABI list: ${ARCH_LIST?}"
+  if test -n "${CPU-}" && test -n "${CPU64-}"; then
+    ui_msg "64-bit CPU arch: ${CPU64:?}"
+    ui_msg "32-bit CPU arch: ${CPU:?}"
+  fi
+  if test -n "${ARCH_LIST-}"; then
+    ui_msg "ABI list: ${ARCH_LIST?}"
+  fi
   ui_msg_empty_line
   ui_msg "Boot reason: ${BOOT_REASON?}"
   ui_msg "Current slot: ${SLOT?}$(test "${VIRTUAL_AB?}" != 'true' || printf '%s\n' ' (Virtual A/B)' || :)"
@@ -1102,6 +1118,14 @@ initialize()
   readonly API
   export API
 
+  if test "${API:?}" -ge 19; then # KitKat or higher
+    PRIVAPP_DIRNAME='priv-app'
+  else
+    PRIVAPP_DIRNAME='app'
+  fi
+  readonly PRIVAPP_DIRNAME
+  export PRIVAPP_DIRNAME
+
   IS_EMU='false'
   case "${BUILD_DEVICE?}" in
     'windows_x86_64' | 'emu64'*) IS_EMU='true' ;;
@@ -1114,9 +1138,6 @@ initialize()
 
   readonly IS_EMU
   export IS_EMU
-
-  verify_keycheck_compatibility
-  live_setup_choice
 
   MODULE_NAME="$(simple_file_getprop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
   MODULE_VERSION="$(simple_file_getprop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
@@ -1152,6 +1173,8 @@ initialize()
   if test "${MODULE_VERCODE:?}" -lt "${PREV_MODULE_VERCODE:?}"; then
     ui_error 'Downgrade not allowed!!!' 95
   fi
+
+  live_setup_choice
 
   IS_INSTALLATION='true'
   if
@@ -1241,12 +1264,7 @@ initialize()
   fi
 
   # Display header
-  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
-  ui_msg "${MODULE_NAME:?}"
-  ui_msg "${MODULE_VERSION:?}"
-  ui_msg "${BUILD_TYPE:?}"
-  ui_msg "(by ${MODULE_AUTHOR:?})"
-  ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
+  display_basic_info
 
   # shellcheck disable=SC2312
   _raw_arch_list=','"$(sys_getprop 'ro.product.cpu.abi')"','"$(sys_getprop 'ro.product.cpu.abi2')"','"$(sys_getprop 'ro.product.cpu.upgradeabi')"','"$(sys_getprop 'ro.product.cpu.abilist')"','
@@ -1267,14 +1285,6 @@ initialize()
   if test "${API:?}" -lt 1; then
     ui_error 'Invalid API level'
   fi
-
-  if test "${API:?}" -ge 19; then # KitKat or higher
-    PRIVAPP_DIRNAME='priv-app'
-  else
-    PRIVAPP_DIRNAME='app'
-  fi
-  readonly PRIVAPP_DIRNAME
-  export PRIVAPP_DIRNAME
 
   if test ! -d "${SYS_PATH:?}/${PRIVAPP_DIRNAME:?}"; then
     ui_error "The ${PRIVAPP_DIRNAME?} folder does NOT exist"
@@ -3239,6 +3249,9 @@ _live_setup_key_test()
 {
   local _count
 
+  display_basic_info
+  display_info
+
   _live_setup_initialize
   sleep '0.05'
 
@@ -3248,6 +3261,8 @@ _live_setup_key_test()
   while test "${_count:?}" -lt 8 && _count="$((_count + 1))"; do
     choose "${_count:?}/8) Press any key" '' ''
   done
+
+  ui_msg 'Many keys have been pressed, now you can rest ;-)'
 
   deinitialize
   exit 250
@@ -3277,6 +3292,7 @@ _live_setup_choice_msg()
 live_setup_choice()
 {
   LIVE_SETUP_ENABLED='false'
+  verify_keycheck_compatibility
   test "${KEY_TEST_ONLY:?}" -eq 0 || _live_setup_key_test
 
   if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then
