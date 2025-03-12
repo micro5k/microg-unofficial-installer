@@ -440,7 +440,7 @@ is_mounted_read_only()
 
 _remount_read_write_helper()
 {
-  test "${DRY_RUN:?}" -lt 2 || return 0
+  test "${DRY_RUN:?}" -lt 2 || return 2
 
   {
     test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}"
@@ -749,12 +749,37 @@ parse_setting()
   printf '%s\n' "${2?}"
 }
 
-remount_read_write_if_needed()
+remount_read_write()
+{
+  if is_mounted_read_only "${1:?}"; then
+    test "${DRY_RUN:?}" -lt 2 || {
+      ui_msg "INFO: The '${1?}' mountpoint is read-only"
+      return 0
+    }
+
+    ui_msg "INFO: The '${1?}' mountpoint is read-only, it will be remounted"
+    _remount_read_write_helper "${1:?}" || {
+      return 1
+    }
+  fi
+
+  return 0
+}
+
+remount_read_write_if_possible()
 {
   local _required
   _required="${2:-true}"
 
   if is_mounted_read_only "${1:?}"; then
+    test "${DRY_RUN:?}" -lt 2 || {
+      ui_msg "INFO: The '${1?}' mountpoint is read-only"
+      case "${_required:?}" in
+        'true') return 0 ;;
+        *) return 2 ;;
+      esac
+    }
+
     ui_msg "INFO: The '${1?}' mountpoint is read-only, it will be remounted"
     _remount_read_write_helper "${1:?}" || {
       if test "${_required:?}" = 'true'; then
@@ -1198,49 +1223,46 @@ initialize()
   readonly IS_INSTALLATION
   export IS_INSTALLATION
 
-  if is_mounted_read_only "${SYS_MOUNTPOINT:?}"; then
-    ui_msg "INFO: The '${SYS_MOUNTPOINT?}' mountpoint is read-only, it will be remounted"
-    _remount_read_write_helper "${SYS_MOUNTPOINT:?}" || {
-      deinitialize
+  remount_read_write "${SYS_MOUNTPOINT:?}" || {
+    deinitialize
 
-      ui_msg_empty_line
-      ui_msg "Device: ${BUILD_DEVICE?}"
-      ui_msg_empty_line
-      ui_msg "Current slot: ${SLOT?}"
-      ui_msg "Device locked state: ${DEVICE_STATE?}"
-      ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
-      ui_msg "Verity mode: ${VERITY_MODE?} (detection is unreliable)"
-      ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS?}"
-      ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM?}"
-      ui_msg_empty_line
+    ui_msg_empty_line
+    ui_msg "Device: ${BUILD_DEVICE?}"
+    ui_msg_empty_line
+    ui_msg "Current slot: ${SLOT?}"
+    ui_msg "Device locked state: ${DEVICE_STATE?}"
+    ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
+    ui_msg "Verity mode: ${VERITY_MODE?} (detection is unreliable)"
+    ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS?}"
+    ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM?}"
+    ui_msg_empty_line
 
-      if is_verity_enabled; then
-        ui_error "Remounting '${SYS_MOUNTPOINT?}' failed, it is possible that Verity is enabled. If this is the case you should DISABLE it!!!" 30
-      else
-        ui_error "Remounting '${SYS_MOUNTPOINT?}' failed!!!" 30
-      fi
-    }
-  fi
+    if is_verity_enabled; then
+      ui_error "Remounting '${SYS_MOUNTPOINT?}' failed, it is possible that Verity is enabled. If this is the case you should DISABLE it!!!" 30
+    else
+      ui_error "Remounting '${SYS_MOUNTPOINT?}' failed!!!" 30
+    fi
+  }
 
   if mount_partition_if_possible 'product' "${SLOT_SUFFIX:+product}${SLOT_SUFFIX-}${NL:?}product${NL:?}"; then
     PRODUCT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && PRODUCT_USABLE='true'
+    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && PRODUCT_USABLE='true'
   fi
   if mount_partition_if_possible 'vendor' "${SLOT_SUFFIX:+vendor}${SLOT_SUFFIX-}${NL:?}vendor${NL:?}"; then
     VENDOR_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && VENDOR_USABLE='true'
+    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && VENDOR_USABLE='true'
   fi
   if mount_partition_if_possible 'system_ext' "${SLOT_SUFFIX:+system_ext}${SLOT_SUFFIX-}${NL:?}system_ext${NL:?}"; then
     SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false && SYS_EXT_USABLE='true'
+    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && SYS_EXT_USABLE='true'
   fi
   if mount_partition_if_possible 'odm' "${SLOT_SUFFIX:+odm}${SLOT_SUFFIX-}${NL:?}odm${NL:?}"; then
     ODM_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}" false
+    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false
   fi
   readonly PRODUCT_PATH VENDOR_PATH SYS_EXT_PATH ODM_PATH
   export PRODUCT_PATH VENDOR_PATH SYS_EXT_PATH ODM_PATH
@@ -1253,7 +1275,7 @@ initialize()
   if mount_partition_if_possible 'data' "userdata${NL:?}DATAFS${NL:?}" "$(generate_mountpoint_list 'data' "${_additional_data_mountpoint?}" || :)"; then
     DATA_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_DATA="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_needed "${LAST_MOUNTPOINT:?}"
+    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}"
   else
     ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be automatically deleted and their Dalvik cache cannot be automatically cleaned. I suggest to manually do a factory reset after flashing this ZIP."
   fi
@@ -1271,11 +1293,11 @@ initialize()
   fi
 
   if test ! -w "${SYS_PATH:?}"; then
-    ui_error "The partition of '${SYS_PATH?}' is NOT writable"
+    ui_error "The '${SYS_PATH?}' folder is NOT writable"
   fi
 
   if test "${DEST_PATH:?}" != "${SYS_PATH:?}" && test ! -w "${DEST_PATH:?}"; then
-    ui_error "The partition of '${DEST_PATH?}' is NOT writable"
+    ui_error "The '${DEST_PATH?}' folder is NOT writable"
   fi
 
   ###
