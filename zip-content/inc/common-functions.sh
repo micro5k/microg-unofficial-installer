@@ -711,6 +711,7 @@ _get_local_settings()
   if test "${LOCAL_SETTINGS_READ:-false}" = 'true'; then return; fi
 
   ui_debug 'Parsing local settings...'
+  ui_debug ''
   LOCAL_SETTINGS="$(list_props | grep -e "^\[zip\.${MODULE_ID:?}\.")" || LOCAL_SETTINGS=''
   LOCAL_SETTINGS_READ='true'
 
@@ -942,7 +943,10 @@ display_info()
   ui_msg "Device: ${BUILD_DEVICE?}"
   ui_msg "Product: ${BUILD_PRODUCT?}"
   ui_msg "Emulator: ${IS_EMU:?}"
-  ui_msg "Battery level: ${BATTERY_LEVEL:-unknown}"
+  ui_msg "Fake signature permission: ${FAKE_SIGN_PERMISSION?}"
+  ui_msg_empty_line
+  ui_msg "Recovery: ${RECOVERY_NAME?}"
+  ui_msg "Recovery API version: ${RECOVERY_API_VER-}"
   ui_msg_empty_line
   ui_msg "First installation: ${FIRST_INSTALLATION:?}"
   ui_msg "Boot mode: ${BOOTMODE:?}"
@@ -952,12 +956,7 @@ display_info()
   else
     ui_msg "Zip install: ${ZIP_INSTALL?}"
   fi
-  if test -n "${FAKE_SIGN_PERMISSION-}"; then
-    ui_msg "Fake signature perm.: ${FAKE_SIGN_PERMISSION?}"
-  fi
-  ui_msg_empty_line
-  ui_msg "Recovery: ${RECOVERY_NAME?}"
-  ui_msg "Recovery API version: ${RECOVERY_API_VER-}"
+  ui_msg "Battery level: ${BATTERY_LEVEL:?}"
   ui_msg_empty_line
   ui_msg "Android API: ${API:?}"
   if test -n "${CPU-}" && test -n "${CPU64-}"; then
@@ -989,7 +988,13 @@ display_info()
 
 initialize()
 {
-  local _raw_arch_list
+  local _raw_arch_list _additional_data_mountpoint
+
+  # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
+  if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
+    # shellcheck source=SCRIPTDIR/../../recovery-simulator/inc/configure-overrides.sh
+    . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
+  fi
 
   UNMOUNT_SYSTEM=0
   UNMOUNT_PRODUCT=0
@@ -1008,16 +1013,19 @@ initialize()
   VENDOR_USABLE='false'
   SYS_EXT_USABLE='false'
 
-  # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
-  if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
-    # shellcheck source=SCRIPTDIR/../../recovery-simulator/inc/configure-overrides.sh
-    . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
-  fi
-
   package_extract_file 'module.prop' "${TMP_PATH:?}/module.prop"
   MODULE_ID="$(simple_file_getprop 'id' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse id'
-  readonly MODULE_ID
-  export MODULE_ID
+  MODULE_NAME="$(simple_file_getprop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
+  MODULE_VERSION="$(simple_file_getprop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
+  MODULE_VERCODE="$(simple_file_getprop 'versionCode' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version code'
+  MODULE_AUTHOR="$(simple_file_getprop 'author' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse author'
+  readonly MODULE_ID MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
+  export MODULE_ID MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
+
+  package_extract_file 'info.prop' "${TMP_PATH:?}/info.prop"
+  BUILD_TYPE="$(simple_file_getprop 'buildType' "${TMP_PATH:?}/info.prop")" || ui_error 'Failed to parse build type'
+  readonly BUILD_TYPE
+  export BUILD_TYPE
 
   _get_local_settings
 
@@ -1027,36 +1035,40 @@ initialize()
   LIVE_SETUP_DEFAULT="$(parse_setting 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
   LIVE_SETUP_TIMEOUT="$(parse_setting 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
 
-  ui_debug ''
-
   case "${KEY_TEST_ONLY?}" in '' | *[!0-1]*) KEY_TEST_ONLY=1 ;; *) ;; esac
   if test "${KEY_TEST_ONLY:?}" -eq 1; then DRY_RUN=2; fi
   readonly KEY_TEST_ONLY
+  export KEY_TEST_ONLY
 
-  case "${DRY_RUN?}" in '' | *[!0-2]*) DRY_RUN=1 ;; *) ;; esac
+  case "${DRY_RUN?}" in '' | *[!0-2]*) DRY_RUN=2 ;; *) ;; esac
   readonly DRY_RUN
+  export DRY_RUN
+
   if test "${DRY_RUN:?}" -gt 0; then
-    ui_warning "DRY RUN mode ${DRY_RUN?} enabled!!! No files on your device will be modified"
+    ui_warning "DRY RUN mode ${DRY_RUN?} enabled. No files on your device will be modified!!!"
     ui_debug ''
   fi
 
-  package_extract_file 'info.prop' "${TMP_PATH:?}/info.prop"
-  BUILD_TYPE="$(simple_file_getprop 'buildType' "${TMP_PATH:?}/info.prop")" || ui_error 'Failed to parse build type'
-  readonly BUILD_TYPE
-  export BUILD_TYPE
-
-  # Some recoveries have a fake system folder when nothing is mounted with just bin, etc and lib / lib64 or, in some rare cases, just bin and usr.
+  # Some recoveries have a "system" folder under "/" when "/system" is NOT mounted with just bin, etc and lib / lib64 or, in some rare cases, just bin and usr.
   # Usable binaries are under the fake /system/bin so the /system mountpoint mustn't be used while in this recovery.
-  if test "${BOOTMODE:?}" != 'true' &&
-    test -e '/system/bin/sh' &&
-    test ! -e '/system/app' &&
-    test ! -e '/system/build.prop' &&
-    test ! -e '/system/system/build.prop'; then
-    readonly RECOVERY_FAKE_SYSTEM='true'
+  if
+    test "${BOOTMODE:?}" != 'true' &&
+      test -e '/system/bin/sh' &&
+      test ! -e '/system/app' &&
+      test ! -e '/system/build.prop' &&
+      test ! -e '/system/system/build.prop'
+  then
+    RECOVERY_FAKE_SYSTEM='true'
   else
-    readonly RECOVERY_FAKE_SYSTEM='false'
+    RECOVERY_FAKE_SYSTEM='false'
   fi
+  readonly RECOVERY_FAKE_SYSTEM
   export RECOVERY_FAKE_SYSTEM
+
+  RECOVERY_NAME="$(_detect_recovery_name)" || RECOVERY_NAME='unknown'
+  BATTERY_LEVEL="$(_detect_battery_level)" || BATTERY_LEVEL='unknown'
+  readonly RECOVERY_NAME BATTERY_LEVEL
+  export RECOVERY_NAME BATTERY_LEVEL
 
   SLOT_SUFFIX="$(_detect_slot_suffix)" || SLOT_SUFFIX=''
   if test -n "${SLOT_SUFFIX?}"; then
@@ -1073,24 +1085,17 @@ initialize()
   DEVICE_STATE="$(parse_boot_value 'vbmeta.device_state')" || DEVICE_STATE='unknown'
   VERIFIED_BOOT_STATE="$(parse_boot_value 'verifiedbootstate')" || VERIFIED_BOOT_STATE='unknown'
   VERITY_MODE="$(_detect_verity_state)"
-  readonly BOOT_REASON DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
-  export BOOT_REASON DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE
+  if test -e '/dev/block/mapper'; then DYNAMIC_PARTITIONS='true'; else DYNAMIC_PARTITIONS='false'; fi
+  readonly BOOT_REASON DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE DYNAMIC_PARTITIONS
+  export BOOT_REASON DEVICE_STATE VERIFIED_BOOT_STATE VERITY_MODE DYNAMIC_PARTITIONS
 
-  if test -e '/dev/block/mapper'; then readonly DYNAMIC_PARTITIONS='true'; else readonly DYNAMIC_PARTITIONS='false'; fi
-  export DYNAMIC_PARTITIONS
-
-  BATTERY_LEVEL="$(_detect_battery_level)" || BATTERY_LEVEL=''
-  readonly BATTERY_LEVEL
-  export BATTERY_LEVEL
-
-  RECOVERY_NAME="$(_detect_recovery_name)" || RECOVERY_NAME='unknown'
   ENCRYPTION_STATE="$(simple_getprop 'ro.crypto.state')" || ENCRYPTION_STATE='unknown'
   ENCRYPTION_TYPE="$(simple_getprop 'ro.crypto.type')" || ENCRYPTION_TYPE='unknown'
   ENCRYPTION_OPTIONS="$(_detect_encryption_options)" || ENCRYPTION_OPTIONS='unknown'
-  readonly RECOVERY_NAME ENCRYPTION_STATE ENCRYPTION_TYPE ENCRYPTION_OPTIONS
-  export RECOVERY_NAME ENCRYPTION_STATE ENCRYPTION_TYPE ENCRYPTION_OPTIONS
+  readonly ENCRYPTION_STATE ENCRYPTION_TYPE ENCRYPTION_OPTIONS
+  export ENCRYPTION_STATE ENCRYPTION_TYPE ENCRYPTION_OPTIONS
 
-  if test -n "${BATTERY_LEVEL?}" && test "${BATTERY_LEVEL:?}" -lt 15; then
+  if test "${BATTERY_LEVEL:?}" != 'unknown' && test "${BATTERY_LEVEL:?}" -lt 15; then
     ui_error "The battery is too low. Current level: ${BATTERY_LEVEL?}%" 108
   fi
 
@@ -1106,6 +1111,31 @@ initialize()
   _timeout_check
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
+  PREV_INSTALL_FAILED='false'
+  if test -f "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed"; then
+    PREV_INSTALL_FAILED='true'
+    ui_warning 'The previous installation has failed!!!'
+    ui_msg_empty_line
+  fi
+  readonly PREV_INSTALL_FAILED
+  export PREV_INSTALL_FAILED
+
+  # Previously installed version code (0 if not already installed or broken)
+  PREV_MODULE_VERCODE="$(simple_file_getprop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
+  case "${PREV_MODULE_VERCODE?}" in
+    '') PREV_MODULE_VERCODE='0' ;; # Empty (not installed)
+    *[!0-9]*)                      # Broken data
+      PREV_MODULE_VERCODE='0'
+      ui_warning 'Previously installed version code is NOT valid!!!'
+      ui_msg_empty_line
+      ;;
+    *) ;; # Valid
+  esac
+  FIRST_INSTALLATION='true'
+  test "${PREV_MODULE_VERCODE:?}" -eq 0 || FIRST_INSTALLATION='false'
+  readonly FIRST_INSTALLATION PREV_MODULE_VERCODE
+  export FIRST_INSTALLATION PREV_MODULE_VERCODE
+
   BUILD_BRAND="$(sys_getprop 'ro.product.brand')"
   BUILD_MANUFACTURER="$(sys_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(sys_getprop 'ro.product.brand')"
   BUILD_MODEL="$(sys_getprop 'ro.product.model')"
@@ -1113,6 +1143,26 @@ initialize()
   BUILD_PRODUCT="$(sys_getprop 'ro.product.name')"
   readonly BUILD_BRAND BUILD_MANUFACTURER BUILD_MODEL BUILD_DEVICE BUILD_PRODUCT
   export BUILD_BRAND BUILD_MANUFACTURER BUILD_MODEL BUILD_DEVICE BUILD_PRODUCT
+
+  IS_EMU='false'
+  case "${BUILD_DEVICE?}" in
+    'windows_x86_64' | 'emu64'*) IS_EMU='true' ;;
+    *) ;;
+  esac
+  if is_string_starting_with 'sdk_google_phone_' "${BUILD_PRODUCT?}" || is_valid_prop "$(simple_getprop 'ro.leapdroid.version' || printf '%s\n' 'unknown' || :)"; then
+    IS_EMU='true'
+  fi
+  readonly IS_EMU
+  export IS_EMU
+
+  FAKE_SIGN_PERMISSION='false'
+  zip_extract_file "${SYS_PATH:?}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH:?}/framework-res"
+  XML_MANIFEST="${TMP_PATH:?}/framework-res/AndroidManifest.xml"
+  # Detect the presence of the fake signature permission
+  # NOTE: It won't detect it if signature spoofing doesn't require a permission, but it is still fine for our case
+  if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "${XML_MANIFEST}"; then
+    FAKE_SIGN_PERMISSION='true'
+  fi
 
   API="$(sys_getprop 'ro.build.version.sdk')" || API=0
   readonly API
@@ -1126,55 +1176,13 @@ initialize()
   readonly PRIVAPP_DIRNAME
   export PRIVAPP_DIRNAME
 
-  IS_EMU='false'
-  case "${BUILD_DEVICE?}" in
-    'windows_x86_64' | 'emu64'*) IS_EMU='true' ;;
-    *) ;;
-  esac
+  live_setup_choice
 
-  if is_string_starting_with 'sdk_google_phone_' "${BUILD_PRODUCT?}" || is_valid_prop "$(simple_getprop 'ro.leapdroid.version' || printf '%s\n' 'unknown' || :)"; then
-    IS_EMU='true'
-  fi
-
-  readonly IS_EMU
-  export IS_EMU
-
-  MODULE_NAME="$(simple_file_getprop 'name' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse name'
-  MODULE_VERSION="$(simple_file_getprop 'version' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version'
-  MODULE_VERCODE="$(simple_file_getprop 'versionCode' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse version code'
-  MODULE_AUTHOR="$(simple_file_getprop 'author' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse author'
   test "${MODULE_VERCODE:?}" -gt 0 || ui_error 'Invalid version code'
-  readonly MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
-  export MODULE_NAME MODULE_VERSION MODULE_VERCODE MODULE_AUTHOR
-
-  PREV_INSTALL_FAILED='false'
-  if test -f "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed"; then
-    PREV_INSTALL_FAILED='true'
-    ui_warning 'The previous installation has failed!!!'
-    ui_msg_empty_line
-  fi
-
-  # Previously installed version code (0 if not already installed)
-  PREV_MODULE_VERCODE="$(simple_file_getprop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
-  case "${PREV_MODULE_VERCODE?}" in
-    '' | *[!0-9]*) # Empty (not installed) or invalid data
-      test -z "${PREV_MODULE_VERCODE?}" || ui_warning 'Previously installed version code is NOT valid!!!'
-      PREV_MODULE_VERCODE='0'
-      ;;
-    *) ;; # Valid
-  esac
-
-  FIRST_INSTALLATION='true'
-  test "${PREV_MODULE_VERCODE:?}" -eq 0 || FIRST_INSTALLATION='false'
-
-  readonly FIRST_INSTALLATION PREV_MODULE_VERCODE PREV_INSTALL_FAILED
-  export FIRST_INSTALLATION PREV_MODULE_VERCODE PREV_INSTALL_FAILED
 
   if test "${MODULE_VERCODE:?}" -lt "${PREV_MODULE_VERCODE:?}"; then
     ui_error 'Downgrade not allowed!!!' 95
   fi
-
-  live_setup_choice
 
   IS_INSTALLATION='true'
   if
@@ -1239,7 +1247,7 @@ initialize()
   readonly PRODUCT_USABLE VENDOR_USABLE SYS_EXT_USABLE
   export PRODUCT_USABLE VENDOR_USABLE SYS_EXT_USABLE
 
-  local _additional_data_mountpoint=''
+  _additional_data_mountpoint=''
   if test -n "${ANDROID_DATA-}" && test "${ANDROID_DATA:?}" != '/data'; then _additional_data_mountpoint="${ANDROID_DATA:?}"; fi
 
   if mount_partition_if_possible 'data' "userdata${NL:?}DATAFS${NL:?}" "$(generate_mountpoint_list 'data' "${_additional_data_mountpoint?}" || :)"; then
@@ -1252,19 +1260,25 @@ initialize()
   readonly DATA_PATH
   export DATA_PATH
 
+  # Display header
+  display_basic_info
+
   DEST_PATH="${SYS_PATH:?}"
   readonly DEST_PATH
 
+  if test "${API:?}" -lt 1; then
+    ui_error 'Invalid API level'
+  fi
+
   if test ! -w "${SYS_PATH:?}"; then
-    ui_error "The '${SYS_PATH?}' partition is NOT writable"
+    ui_error "The partition of '${SYS_PATH?}' is NOT writable"
   fi
 
   if test "${DEST_PATH:?}" != "${SYS_PATH:?}" && test ! -w "${DEST_PATH:?}"; then
-    ui_error "The '${DEST_PATH?}' partition is NOT writable"
+    ui_error "The partition of '${DEST_PATH?}' is NOT writable"
   fi
 
-  # Display header
-  display_basic_info
+  ###
 
   # shellcheck disable=SC2312
   _raw_arch_list=','"$(sys_getprop 'ro.product.cpu.abi')"','"$(sys_getprop 'ro.product.cpu.abi2')"','"$(sys_getprop 'ro.product.cpu.upgradeabi')"','"$(sys_getprop 'ro.product.cpu.abilist')"','
@@ -1280,23 +1294,6 @@ initialize()
 
   if test "${CPU64:?}" = 'false' && test "${CPU:?}" = 'false'; then
     ui_error "Unsupported CPU, ABI list => $(printf '%s\n' "${_raw_arch_list?}" | LC_ALL=C tr -s -- ',' || true)"
-  fi
-
-  if test "${API:?}" -lt 1; then
-    ui_error 'Invalid API level'
-  fi
-
-  if test ! -d "${SYS_PATH:?}/${PRIVAPP_DIRNAME:?}"; then
-    ui_error "The ${PRIVAPP_DIRNAME?} folder does NOT exist"
-  fi
-
-  FAKE_SIGN_PERMISSION='false'
-  zip_extract_file "${SYS_PATH}/framework/framework-res.apk" 'AndroidManifest.xml' "${TMP_PATH}/framework-res"
-  XML_MANIFEST="${TMP_PATH}/framework-res/AndroidManifest.xml"
-  # Detect the presence of the fake signature permission
-  # NOTE: It won't detect it if signature spoofing doesn't require a permission, but it is still fine for our case
-  if search_ascii_string_as_utf16_in_file 'android.permission.FAKE_PACKAGE_SIGNATURE' "${XML_MANIFEST}"; then
-    FAKE_SIGN_PERMISSION='true'
   fi
 
   unset LAST_MOUNTPOINT
@@ -3243,6 +3240,7 @@ _live_setup_initialize()
     ui_msg 'Using: input event'
     inputevent_initialize
   fi
+  ui_msg_empty_line
 }
 
 _live_setup_key_test()
@@ -3254,8 +3252,6 @@ _live_setup_key_test()
 
   _live_setup_initialize
   sleep '0.05'
-
-  ui_msg_empty_line
 
   _count=0
   while test "${_count:?}" -lt 8 && _count="$((_count + 1))"; do
@@ -3408,4 +3404,4 @@ find_test()
 
 ### INITIALIZATION ###
 
-initialize
+initialize || exit "${?}"
