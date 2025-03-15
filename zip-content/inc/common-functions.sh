@@ -2736,11 +2736,11 @@ _detect_input_event_size()
 {
   printf "%s\n" "${1?}" | while IFS=' ' read -r _ _ _ _ part5 _ _ part8 part9 _ _ part12 _; do
     if test -n "${part9?}" && test "$(hex_to_dec "${part9:?}" || :)" -eq 1 && test -n "${part12?}" && test "$(hex_to_dec "${part12:?}" || printf '%s' '9' || :)" -eq 0; then
-      ui_debug 'Input event is 64-bit'
+      test "${DEBUG_LOG_ENABLED:?}" != 1 || ui_debug 'Input event is 64-bit'
       printf '%s\n' 24
       return 4
     elif test -n "${part5?}" && test "$(hex_to_dec "${part5:?}" || :)" -eq 1 && test -n "${part8?}" && test "$(hex_to_dec "${part8:?}" || printf '%s' '9' || :)" -eq 0; then
-      ui_debug 'Input event is 32-bit'
+      test "${DEBUG_LOG_ENABLED:?}" != 1 || ui_debug 'Input event is 32-bit'
       printf '%s\n' 16
       return 4
     else
