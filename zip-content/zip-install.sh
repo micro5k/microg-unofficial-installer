@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.3.1'
+readonly ZIPINSTALL_VERSION='1.3.2'
 
 END_OF_SCRIPT=0
 PATH="${PATH:-/system/bin}:."
@@ -16,7 +16,10 @@ umask 022 || :
 
 ### PREVENTIVE CHECKS ###
 
-command 1> /dev/null -v 'echo' || exit 99
+command 1> /dev/null -v 'echo' || {
+  echo || :
+  exit 99
+}
 
 case "$(:)" in '') ;; *)
   echo 1>&2 'ERROR: Command substitution NOT supported by your shell'
@@ -39,14 +42,14 @@ _is_head_functional()
   return 2
 }
 
-command 1> /dev/null -v head || {
+command 1> /dev/null -v 'head' || {
   if command 1> /dev/null -v 'busybox'; then
     _busybox_executability_check
     eval ' head() { busybox head "${@}"; } '
   fi
 }
 
-command 1> /dev/null -v printf || {
+command 1> /dev/null -v 'printf' || {
   if command 1> /dev/null -v 'busybox'; then
     _busybox_executability_check
     eval ' printf() { busybox printf "${@}"; } '
