@@ -3109,6 +3109,8 @@ choose_inputevent()
 {
   local _key _status _last_key_pressed _key_desc _ret
 
+  test "${#}" -le 1 || ui_error "Key detection failed (input event) - invalid number of arguments"
+
   input_device_listener_start || {
     ui_msg_empty_line
     ui_warning "Key detection failed (input event)"
@@ -3157,6 +3159,8 @@ choose_inputevent()
     esac
 
     if test "${_key?}" = "${INPUT_CODE_POWER:-116}" && test "${KEY_TEST_ONLY:?}" -eq 0; then continue; fi # Power key (ignored completely)
+
+    test "${#}" -eq 0 || shift # Remove timeout after the first successful key press / release event (excluding power key)
 
     if test "${KEY_TEST_ONLY:?}" -eq 1; then
       ui_msg "Event { Event type: 1, Key code: ${_key?}, Action: $((_status - 10)) }"
