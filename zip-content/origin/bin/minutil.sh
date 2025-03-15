@@ -7,7 +7,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.2.14'
+readonly SCRIPT_VERSION='1.2.15'
 
 ### CONFIGURATION ###
 
@@ -30,6 +30,13 @@ case "${0-}" in
   *) ;;
 esac
 
+_is_head_functional()
+{
+  command 1> /dev/null -v 'head' || return 1
+  case "$(echo 2> /dev/null 'ABCD' | head 2> /dev/null -c 2 || :)" in 'AB') return 0 ;; *) ;; esac # Some versions of head are broken or incomplete
+  return 2
+}
+
 command 1> /dev/null -v printf || {
   if command 1> /dev/null -v busybox; then
     eval ' printf() { busybox printf "${@}"; } '
@@ -42,19 +49,19 @@ command 1> /dev/null -v printf || {
       case "${1-unset}" in
         '%s')
           _printf_backup_ifs="${IFS-unset}"
-          shift && IFS='' && echo "${*}" | head -c '-1'
+          if _is_head_functional; then
+            shift && IFS='' && echo "${*}" | head -c '-1'
+          else
+            shift && IFS='' && echo "${*}"
+          fi
           if test "${_printf_backup_ifs}" = 'unset'; then unset IFS; else IFS="${_printf_backup_ifs}"; fi
           unset _printf_backup_ifs
           ;;
         '%s\n')
-          shift && for _printf_val in "${@}"; do
-            echo "${_printf_val}"
-          done
+          shift && for _printf_val in "${@}"; do echo "${_printf_val}"; done
           ;;
         '%s\n\n')
-          shift && for _printf_val in "${@}"; do
-            echo "${_printf_val}" && echo ''
-          done
+          shift && for _printf_val in "${@}"; do echo "${_printf_val}" && echo ''; done
           ;;
         '\n') echo '' ;;
         '\n\n') echo '' && echo '' ;;
@@ -66,7 +73,7 @@ command 1> /dev/null -v printf || {
           ;;
       esac
 
-      unset _printf_val
+      unset _printf_val || :
       return 0
     }
   fi
