@@ -2693,7 +2693,10 @@ _get_input_event()
   _size="${INPUT_EVENT_SIZE:-24}"
   _expected_file_size="$((INPUT_EVENT_START_OFFSET + _size))"
   _max_cycles=''
-  if test -n "${1-}"; then _max_cycles="$((${1:?} * 4))" || return 120; fi
+  if test -n "${1-}"; then
+    test "${1:?}" -gt 0 || return 124 # Timed out
+    _max_cycles="$((${1:?} * 10))" || return 120
+  fi
 
   while true; do
     _file_size="$(get_size_of_file 2> /dev/null "${TMP_PATH:?}/working-files/input/input-events/0")" || return 121
@@ -2704,7 +2707,7 @@ _get_input_event()
     fi
 
     if test -n "${_max_cycles?}" && test "$((_max_cycles = _max_cycles - 1))" -le 0; then return 124; fi # Timed out
-    sleep '0.25'
+    sleep '0.1'
   done
 
   INPUT_EVENT_START_OFFSET="$((INPUT_EVENT_START_OFFSET + _size))"
@@ -3300,8 +3303,8 @@ _live_setup_choice_msg()
   ui_msg "${_msg:?}"
   ui_msg "${_sep:?}"
 
-  if test -n "${1:-}"; then
-    ui_msg "Waiting input for ${1:?} seconds..."
+  if test -n "${1-}"; then
+    ui_msg "Waiting input for ${1?} seconds..."
   else
     ui_msg "Waiting input..."
   fi
