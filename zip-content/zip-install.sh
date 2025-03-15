@@ -8,18 +8,25 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.3.0'
+readonly ZIPINSTALL_VERSION='1.3.1'
 
-umask 022 || :
+END_OF_SCRIPT=0
 PATH="${PATH:-/system/bin}:."
-END_OF_SCRIPT_REACHED=0
+umask 022 || :
 
 ### PREVENTIVE CHECKS ###
 
+command 1> /dev/null -v 'echo' || exit 99
+
+case "$(:)" in '') ;; *)
+  echo 1>&2 'ERROR: Command substitution NOT supported by your shell'
+  exit 100
+  ;;
+esac
+
 _busybox_executability_check()
 {
-  test -x 'busybox' ||
-    chmod 0755 'busybox' || {
+  test -x 'busybox' || chmod 0755 'busybox' || {
     echo 1>&2 'ERROR: chmod failed on busybox'
     exit 100
   }
@@ -256,7 +263,7 @@ else
   }
   "${SCRIPT_NAME:?}" 3 2 "${ZIPFILE:?}" 'zip-install' "${ZIPINSTALL_VERSION:?}" || STATUS="${?}"
 fi
-END_OF_SCRIPT_REACHED=1
+END_OF_SCRIPT=1
 
 _clean_at_exit
 trap - 0 2 3 6 15 || : # Already cleaned, so unset traps
@@ -267,7 +274,7 @@ if test "${STATUS:-20}" != '0'; then
 fi
 
 # This should theoretically never happen, but it's just to protect against unknown shell bugs
-if test "${END_OF_SCRIPT_REACHED:-0}" != '1'; then
+if test "${END_OF_SCRIPT:-0}" != '1'; then
   ui_error_msg "ZIP installation failed with an unknown error"
   exit 120
 fi
