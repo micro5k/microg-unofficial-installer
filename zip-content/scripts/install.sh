@@ -15,7 +15,7 @@ setup_fakestore()
 {
   if test "${USE_MICROG_BY_ALE5000:?}" = 0 && setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' true false; then
     :
-  elif setup_app 1 '' 'microG Companion (FakeStore) - signed by ale5000' 'FakeStore-ale5000' 'priv-app' true false; then
+  elif setup_app 1 '' 'microG Companion (FakeStore) - signed by ale5000' 'FakeStoreA5K' 'priv-app' true false; then
     :
   elif setup_app 1 '' 'microG Companion Legacy (FakeStore)' 'FakeStoreLegacy' 'priv-app' true false; then
     :
@@ -84,7 +84,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   install_backends='false'
   if test "${USE_MICROG_BY_ALE5000:?}" = 0 && test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' 'microG Services' 'GmsCore' 'priv-app' true false; then
     :
-  elif test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' 'microG Services - signed by ale5000' 'GmsCore-ale5000' 'priv-app' true false; then
+  elif test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' 'microG Services - signed by ale5000' 'GmsCoreA5K' 'priv-app' true false; then
     :
   elif setup_app 1 '' 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
     install_backends='true'
@@ -92,7 +92,7 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
     install_backends='true'
   fi
 
-  setup_app 1 '' 'microG Services Framework Proxy' 'GsfProxy' 'priv-app' false false
+  setup_app 1 '' 'microG Services Framework Proxy' 'GsfProxyA5K' 'priv-app' false false
 
   if test "${install_backends:?}" = 'true'; then
     setup_app "${INSTALL_DEJAVUBACKEND:?}" '' 'Déjà Vu Location Service' 'DejaVuBackend' 'app'

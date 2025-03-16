@@ -1,11 +1,11 @@
 framework/com.google.android.maps|9||com.google.android.maps|||14ce63b333e3c53c793e5eabfd7d554f5e7b56c7
 priv-app/GmsCore|19||GmsCore|libs|com.google.android.gms|eee4d6418361e2bf5ee88cfe2aa16cde9711650d
-priv-app/GmsCore-ale5000|14||GmsCore|libs|com.google.android.gms|f0722d9a9e607202e1434871f8dbfdcccdc81b25
+priv-app/GmsCoreA5K|14||GmsCore|libs|com.google.android.gms|f0722d9a9e607202e1434871f8dbfdcccdc81b25
 priv-app/GmsCoreVtm|14||GmsCore|libs|com.google.android.gms|dd5ed6eadc470b7b99379832dfe40b2e4e41ab59
 priv-app/GmsCoreVtmLegacy|9|13|GmsCore|libs|com.google.android.gms|da538490beadc760a7a8519ec5ed367f19ae8d7b
-priv-app/GsfProxy|9||GoogleServicesFramework||com.google.android.gsf|4c063d6eab1ef467f2fc2efb8bf0c50e5611140d
+priv-app/GsfProxyA5K|9||GoogleServicesFramework||com.google.android.gsf|4c063d6eab1ef467f2fc2efb8bf0c50e5611140d
 priv-app/FakeStore|19||Phonesky||com.android.vending|bd778c1231481970314fd041bb3eba30fabe8dff
-priv-app/FakeStore-ale5000|14||Phonesky||com.android.vending|18ee1c904b6e0e1bef895faae0a07167e6bf6ce6
+priv-app/FakeStoreA5K|14||Phonesky||com.android.vending|18ee1c904b6e0e1bef895faae0a07167e6bf6ce6
 priv-app/FakeStoreLegacy|8||Phonesky||com.android.vending|fd9ebf3beca682644efc1df3bb313bcc15bd65a5
 priv-app/FDroidPrivilegedExtension|8||FDroidPrivilegedExtension||org.fdroid.fdroid.privileged|cb05a14c986f7c470c0eeb2b3f57c27fe2a72a23
 priv-app/AuroraServices|21||AuroraServices||com.aurora.services|a5fde752b5c7526615699cd21424106fae46ee10

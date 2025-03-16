@@ -75,17 +75,17 @@ Notes
 .. |GmsCore| replace:: |dl|
 .. _GmsCore: origin/priv-app/GmsCore.apk
 .. |GmsCoreMod| replace:: |dl|
-.. _GmsCoreMod: origin/priv-app/GmsCore-ale5000.apk
+.. _GmsCoreMod: origin/priv-app/GmsCoreA5K.apk
 .. |GmsCoreVtm| replace:: |dl|
 .. _GmsCoreVtm: origin/priv-app/GmsCoreVtm.apk
 .. |GmsCoreVtmLegacy| replace:: |dl|
 .. _GmsCoreVtmLegacy: origin/priv-app/GmsCoreVtmLegacy.apk
 .. |GsfProxy| replace:: |dl|
-.. _GsfProxy: origin/priv-app/GsfProxy.apk
+.. _GsfProxy: origin/priv-app/GsfProxyA5K.apk
 .. |FakeStore| replace:: |dl|
 .. _FakeStore: origin/priv-app/FakeStore.apk
 .. |FakeStoreMod| replace:: |dl|
-.. _FakeStoreMod: origin/priv-app/FakeStore-ale5000.apk
+.. _FakeStoreMod: origin/priv-app/FakeStoreA5K.apk
 .. |FakeStoreModLegacy| replace:: |dl|
 .. _FakeStoreModLegacy: origin/priv-app/FakeStoreLegacy.apk
 .. |FDroidPrivilegedExtension| replace:: |dl|
