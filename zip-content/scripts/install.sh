@@ -70,6 +70,8 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
   # Configuring
   ui_msg 'Configuring...'
 
+  set_filename_of_base_sysconfig_xml 'google.xml'
+
   setup_lib 1 '' 'microG Maps v1 API' 'com.google.android.maps' false
 
   profile_filename="$(printf '%s\n' "${BUILD_MANUFACTURER?}-${BUILD_MODEL?}.xml" | tr -- '[:upper:]' '[:lower:]')"

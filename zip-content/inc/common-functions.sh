@@ -1015,18 +1015,18 @@ initialize()
 {
   local _raw_arch_list _additional_data_mountpoint
 
-  # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
-  if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
-    # shellcheck source=SCRIPTDIR/../../recovery-simulator/inc/configure-overrides.sh
-    . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
-  fi
-
   UNMOUNT_SYSTEM=0
   UNMOUNT_PRODUCT=0
   UNMOUNT_VENDOR=0
   UNMOUNT_SYS_EXT=0
   UNMOUNT_ODM=0
   UNMOUNT_DATA=0
+
+  # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
+  if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
+    # shellcheck source=SCRIPTDIR/../../recovery-simulator/inc/configure-overrides.sh
+    . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
+  fi
 
   PRODUCT_PATH=''
   VENDOR_PATH=''
@@ -1037,6 +1037,8 @@ initialize()
   PRODUCT_USABLE='false'
   VENDOR_USABLE='false'
   SYS_EXT_USABLE='false'
+
+  BASE_SYSCONFIG_XML=''
 
   package_extract_file 'module.prop' "${TMP_PATH:?}/module.prop"
   MODULE_ID="$(simple_file_getprop 'id' "${TMP_PATH:?}/module.prop")" || ui_error 'Failed to parse id'
@@ -2277,6 +2279,11 @@ string_split()
   printf '%s' "${1:?}" | cut -d '|' -sf "${2:?}" || return "${?}"
 }
 
+set_filename_of_base_sysconfig_xml()
+{
+  BASE_SYSCONFIG_XML="etc/sysconfig/${1:?}"
+}
+
 # @description Configure an app for later installation.
 # (it automatically handle the API compatibility)
 #
@@ -2353,7 +2360,8 @@ setup_app()
         _installed_file_list="${_installed_file_list?}|etc/default-permissions/default-permissions-${_output_name:?}.xml"
       fi
       if test "${_url_handling:?}" != 'false' && test "${CURRENTLY_ROLLBACKING:-false}" != 'true'; then
-        add_line_in_file_after_string "${TMP_PATH:?}/files/etc/sysconfig/google.xml" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${_vanity_name?}'"
+        test -n "${BASE_SYSCONFIG_XML?}" || ui_error 'You have NOT set the filename of the base sysconfig XML'
+        add_line_in_file_after_string "${TMP_PATH:?}/files/${BASE_SYSCONFIG_XML:?}" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${_vanity_name?}'"
       fi
       move_rename_file "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.apk" "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${_vanity_name?}'"
 
