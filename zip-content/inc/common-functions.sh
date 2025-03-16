@@ -2282,6 +2282,7 @@ string_split()
 set_filename_of_base_sysconfig_xml()
 {
   BASE_SYSCONFIG_XML="etc/sysconfig/${1:?}"
+  test -e "${TMP_PATH:?}/files/${BASE_SYSCONFIG_XML:?}" || ui_error "You have set the wrong filename for the base sysconfig XML => ${BASE_SYSCONFIG_XML?}"
 }
 
 # @description Configure an app for later installation.
