@@ -1025,7 +1025,7 @@ initialize()
   # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
   if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
     # shellcheck source=SCRIPTDIR/../../recovery-simulator/inc/configure-overrides.sh
-    . "${RS_OVERRIDE_SCRIPT:?}" || exit "${?}"
+    command . "${RS_OVERRIDE_SCRIPT:?}" || ui_error "Sourcing override script failed with error: ${?}"
   fi
 
   PRODUCT_PATH=''
@@ -1360,7 +1360,7 @@ clean_previous_installations()
   readonly IS_INCLUDED='true'
   export IS_INCLUDED
   # shellcheck source=SCRIPTDIR/../scripts/uninstall.sh
-  . "${TMP_PATH:?}/uninstall.sh"
+  command . "${TMP_PATH:?}/uninstall.sh" || ui_error "Sourcing uninstall script failed with error: ${?}"
 
   delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
 

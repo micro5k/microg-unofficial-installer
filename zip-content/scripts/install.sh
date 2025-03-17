@@ -9,7 +9,7 @@ TMP_PATH="${2:?}"
 ### FUNCTIONS ###
 
 # shellcheck source=SCRIPTDIR/../inc/common-functions.sh
-. "${TMP_PATH:?}/inc/common-functions.sh" || exit "${?}"
+command . "${TMP_PATH:?}/inc/common-functions.sh" || exit "${?}"
 
 setup_fakestore()
 {
