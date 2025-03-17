@@ -11,7 +11,7 @@
 -->
 
 <exceptions>
-    <exception package="org.fitchfamily.android.dejavu">
+    <exception package="org.fitchfamily.android.dejavu" sha256-cert-digest="60:81:D3:18:47:7A:55:5A:74:ED:65:D1:15:98:A5:2E:91:D5:FD:B7:44:6B:07:BC:2C:B8:8D:D5:C0:F9:49:44">
         <!-- Location -->
         <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false" />
         <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />

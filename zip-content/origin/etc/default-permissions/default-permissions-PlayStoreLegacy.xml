@@ -11,12 +11,11 @@
 -->
 
 <exceptions>
-    <exception package="com.mirfatif.mylocation" sha256-cert-digest="96:46:2A:FE:18:29:62:D1:2D:3A:8C:AC:89:9C:22:4A:92:C3:8A:05:57:C2:10:FB:88:3F:F5:CA:7C:6F:0A:2D">
-        <!-- Location -->
-        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false" />
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
-
-        <!-- Notifications -->
-        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false" />
+    <exception package="com.android.vending" sha256-cert-digest="F0:FD:6C:5B:41:0F:25:CB:25:C3:B5:33:46:C8:97:2F:AE:30:F8:EE:74:11:DF:91:04:80:AD:6B:2D:60:DB:83">
+        <!-- Account -->
+        <permission name="android.permission.GET_ACCOUNTS" fixed="false" />
+        <!-- Storage -->
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false" />
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false" />
     </exception>
 </exceptions>
