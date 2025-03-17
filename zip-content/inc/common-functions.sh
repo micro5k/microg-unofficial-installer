@@ -1211,7 +1211,7 @@ initialize()
     ui_error 'Downgrade not allowed!!!' 95
   fi
 
-  IS_INSTALLATION='true'
+  SETUP_TYPE='install'
   if
     test "${LIVE_SETUP_ENABLED:?}" = 'true' && {
       test "${MODULE_VERCODE:?}" -eq "${PREV_MODULE_VERCODE:?}" || test "${PREV_INSTALL_FAILED:?}" = 'true'
@@ -1219,11 +1219,11 @@ initialize()
   then
     choose 'What do you want to do?' '+) Reinstall' '-) Uninstall'
     if test "${?}" != '3'; then
-      IS_INSTALLATION='false'
+      SETUP_TYPE='uninstall'
     fi
   fi
-  readonly IS_INSTALLATION
-  export IS_INSTALLATION
+  readonly SETUP_TYPE
+  export SETUP_TYPE
 
   remount_read_write "${SYS_MOUNTPOINT:?}" || {
     deinitialize
@@ -1864,11 +1864,11 @@ finalize_correctly()
   deinitialize
   touch "${TMP_PATH:?}/installed"
 
-  if test "${IS_INSTALLATION:?}" = 'true'; then
-    ui_msg 'Installation finished.'
-  else
-    ui_msg 'Uninstallation finished.'
-  fi
+  case "${SETUP_TYPE?}" in
+    'install') ui_msg 'Installation finished.' ;;
+    'uninstall') ui_msg 'Uninstallation finished.' ;;
+    *) ui_error 'Invalid setup type' ;;
+  esac
 }
 
 # Error checking functions

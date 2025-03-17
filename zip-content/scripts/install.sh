@@ -56,7 +56,7 @@ INSTALL_ANDROIDAUTO="$(parse_setting 'INSTALL_ANDROIDAUTO' "${INSTALL_ANDROIDAUT
 display_info
 ui_msg_empty_line
 
-if test "${IS_INSTALLATION:?}" = 'true'; then
+if test "${SETUP_TYPE:?}" = 'install'; then
   ui_msg 'Starting installation...'
   ui_msg_empty_line
 
@@ -146,7 +146,7 @@ else
   ui_msg_empty_line
 fi
 
-if test "${IS_INSTALLATION:?}" = 'true'; then
+if test "${SETUP_TYPE:?}" = 'install'; then
   disable_app 'com.android.vending'
   disable_app 'com.google.android.gsf'
   kill_app 'com.google.android.gsf.login'
@@ -158,7 +158,7 @@ fi
 # Clean previous installations
 clean_previous_installations
 
-if test "${IS_INSTALLATION:?}" != 'true'; then
+if test "${SETUP_TYPE:?}" = 'uninstall'; then
   clear_app 'com.android.vending'
   clear_app 'com.google.android.gsf'
   clear_app 'com.google.android.gsf.login'

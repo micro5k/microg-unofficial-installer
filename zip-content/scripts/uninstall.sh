@@ -157,7 +157,7 @@ if test "${IS_INCLUDED:-false}" = 'false'; then
 
   # shellcheck disable=SC2034
   {
-    IS_INSTALLATION='false'
+    SETUP_TYPE='uninstall'
     FIRST_INSTALLATION='true'
     API=999
     SYS_PATH="${ANDROID_ROOT:-/system}"
@@ -241,7 +241,7 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
 
   if test -n "${INTERNAL_NAME}"; then
     # Only delete app updates during uninstallation or first-time installation
-    if test "${IS_INSTALLATION:?}" != 'true' || test "${FIRST_INSTALLATION:?}" = 'true'; then
+    if test "${SETUP_TYPE:?}" = 'uninstall' || test "${FIRST_INSTALLATION:?}" = 'true'; then
       delete "${DATA_PATH:?}/app/${INTERNAL_NAME}"
       delete "${DATA_PATH:?}/app/${INTERNAL_NAME}.apk"
       delete "${DATA_PATH:?}/app/${INTERNAL_NAME}"-*
