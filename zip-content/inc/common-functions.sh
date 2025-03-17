@@ -1858,11 +1858,9 @@ perform_installation()
   fi
 }
 
-finalize_and_report_success()
+finalize_correctly()
 {
-  if test "${DRY_RUN:?}" -eq 0; then
-    rm -f -- "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || :
-  fi
+  test "${DRY_RUN:?}" -ne 0 || rm -f -- "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || :
   deinitialize
   touch "${TMP_PATH:?}/installed"
 
@@ -1870,7 +1868,6 @@ finalize_and_report_success()
     ui_msg 'Installation finished.'
   else
     ui_msg 'Uninstallation finished.'
-    exit 0
   fi
 }
 

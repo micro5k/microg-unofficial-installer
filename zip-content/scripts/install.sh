@@ -165,7 +165,8 @@ if test "${IS_INSTALLATION:?}" != 'true'; then
   clear_app 'com.google.android.gms'
   reset_gms_data_of_all_apps
 
-  finalize_and_report_success
+  finalize_correctly
+  exit 0
 fi
 
 # Preparing remaining files
@@ -229,4 +230,4 @@ if test "${RESET_GMS_DATA_OF_ALL_APPS:?}" != '0'; then
   reset_gms_data_of_all_apps
 fi
 
-finalize_and_report_success
+finalize_correctly
