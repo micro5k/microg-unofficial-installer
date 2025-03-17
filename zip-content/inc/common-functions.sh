@@ -1452,6 +1452,7 @@ prepare_installation()
     echo '# SPDX-License-Identifier: CC0-1.0'
     echo ''
     echo 'install.type=system'
+    echo "install.build.type=${BUILD_TYPE:?}"
     echo "install.version.code=${MODULE_VERCODE:?}"
     echo "install.version=${MODULE_VERSION:?}"
   } 1> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop" || ui_error 'Failed to generate the prop file of this zip'

@@ -48,9 +48,9 @@ INSTALL_AURORASERVICES="$(parse_setting 'INSTALL_AURORASERVICES' "${INSTALL_AURO
 INSTALL_NEWPIPE="$(parse_setting 'INSTALL_NEWPIPE' "${INSTALL_NEWPIPE:?}")"
 INSTALL_MYLOCATION="$(parse_setting 'INSTALL_MYLOCATION' "${INSTALL_MYLOCATION:?}")"
 
-INSTALL_PLAYSTORE="$(parse_setting 'INSTALL_PLAYSTORE' "${INSTALL_PLAYSTORE:-}" 'custom' 'SELECTED_MARKET' 'PlayStore')"
-INSTALL_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7:-}")"
-INSTALL_ANDROIDAUTO="$(parse_setting 'INSTALL_ANDROIDAUTO' "${INSTALL_ANDROIDAUTO:-}")"
+INSTALL_PLAYSTORE="$(parse_setting 'INSTALL_PLAYSTORE' "${INSTALL_PLAYSTORE-}" 'custom' 'SELECTED_MARKET' 'PlayStore')"
+INSTALL_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7-}")"
+INSTALL_ANDROIDAUTO="$(parse_setting 'INSTALL_ANDROIDAUTO' "${INSTALL_ANDROIDAUTO-}")"
 
 # Display info
 display_info
@@ -101,9 +101,9 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   # Store selection
   SELECTED_MARKET='FakeStore'
-  if setup_app "${INSTALL_PLAYSTORE:-}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
+  if setup_app "${INSTALL_PLAYSTORE?}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
-  elif setup_app "${INSTALL_PLAYSTORE:-}" '' 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
+  elif setup_app "${INSTALL_PLAYSTORE?}" '' 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
   else
     # Fallback to FakeStore
@@ -126,8 +126,8 @@ if test "${IS_INSTALLATION:?}" = 'true'; then
 
   setup_app "${INSTALL_MYLOCATION:?}" 'INSTALL_MYLOCATION' 'My Location' 'MyLocation' 'app'
 
-  setup_app "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7:-}" 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' 'Gmail' 'Gmail' 'app' true
-  setup_app "${INSTALL_ANDROIDAUTO:-}" 'INSTALL_ANDROIDAUTO' 'Android Auto stub' 'AndroidAuto' 'priv-app' true
+  setup_app "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7?}" 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' 'Gmail' 'Gmail' 'app' true
+  setup_app "${INSTALL_ANDROIDAUTO?}" 'INSTALL_ANDROIDAUTO' 'Android Auto stub' 'AndroidAuto' 'priv-app' true
 
   if test "${API:?}" -ge 19; then
     setup_util 'minutil' 'MinUtil'
