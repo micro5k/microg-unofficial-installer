@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.3.4'
+readonly ZIPINSTALL_VERSION='1.3.5'
 
 END_OF_SCRIPT=0
 PATH="${PATH:-/system/bin}:."
@@ -50,7 +50,7 @@ _redirect_command()
   }
 }
 
-command 1> /dev/null -v 'head' || {
+_is_head_functional || {
   if "${IS_BUSYBOX_AVAILABLE:=$(_is_busybox_available || :)}"; then _redirect_command 'head'; fi
 }
 
