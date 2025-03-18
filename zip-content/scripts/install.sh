@@ -94,6 +94,9 @@ if test "${SETUP_TYPE:?}" = 'install'; then
 
   setup_app 1 '' 'microG Services Framework Proxy' 'GsfProxyA5K' 'priv-app' false false
 
+  setup_app 1 '' 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false &&
+    install_backends='true'
+
   if test "${install_backends:?}" = 'true'; then
     setup_app "${INSTALL_DEJAVUBACKEND:?}" '' 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
     setup_app "${INSTALL_NOMINATIMGEOBACKEND:?}" '' 'Nominatim Geocoder Backend' 'NominatimGeocoderBackend' 'app'
@@ -115,8 +118,6 @@ if test "${SETUP_TYPE:?}" = 'install'; then
   else
     move_rename_file "${TMP_PATH:?}/origin/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
   fi
-
-  setup_app 1 '' 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false
 
   setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'INSTALL_FDROIDPRIVEXT' 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
   setup_app "${INSTALL_AURORASERVICES:?}" 'INSTALL_AURORASERVICES' 'Aurora Services' 'AuroraServices' 'priv-app'
