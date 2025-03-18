@@ -1173,12 +1173,17 @@ initialize()
 
   IS_EMU='false'
   case "${BUILD_DEVICE?}" in
-    'windows_x86_64' | 'emu64'*) IS_EMU='true' ;;
-    *) ;;
+    'windows_'* | 'emu64'*) IS_EMU='true' ;;
+    'generic_'*) if is_string_starting_with 'EMULATOR' "$(sys_getprop 'ro.serialno' || :)"; then IS_EMU='true'; fi ;;
+    *)
+      if
+        is_string_starting_with 'sdk_google_phone_' "${BUILD_PRODUCT?}" ||
+          is_valid_prop "$(simple_getprop 'ro.leapdroid.version' || printf '%s\n' 'unknown' || :)"
+      then
+        IS_EMU='true'
+      fi
+      ;;
   esac
-  if is_string_starting_with 'sdk_google_phone_' "${BUILD_PRODUCT?}" || is_valid_prop "$(simple_getprop 'ro.leapdroid.version' || printf '%s\n' 'unknown' || :)"; then
-    IS_EMU='true'
-  fi
   readonly IS_EMU
   export IS_EMU
 
