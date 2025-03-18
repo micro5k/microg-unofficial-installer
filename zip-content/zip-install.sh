@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.3.3'
+readonly ZIPINSTALL_VERSION='1.3.4'
 
 END_OF_SCRIPT=0
 PATH="${PATH:-/system/bin}:."
@@ -209,11 +209,12 @@ fi
 unset SCRIPT_NAME
 _clean_at_exit()
 {
-  if test -n "${SCRIPT_NAME:-}" && test -e "${SCRIPT_NAME:?}"; then
-    rm -f "${SCRIPT_NAME:?}" || :
+  if test -n "${SCRIPT_NAME-}" && test -f "${SCRIPT_NAME:?}"; then
+    # Legacy versions of rm don't accept any parameter (except -r and -R)
+    rm "${SCRIPT_NAME:?}" || :
   fi
-  if test -n "${UPD_SCRIPT_NAME:-}" && test -e "${UPD_SCRIPT_NAME:?}"; then
-    rm -f "${UPD_SCRIPT_NAME:?}" || :
+  if test -n "${UPD_SCRIPT_NAME-}" && test -f "${UPD_SCRIPT_NAME:?}"; then
+    rm "${UPD_SCRIPT_NAME:?}" || :
   fi
   unset SCRIPT_NAME
   if test "${TMPDIR:-}" = '/dev/tmp'; then

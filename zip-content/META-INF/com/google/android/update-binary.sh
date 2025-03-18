@@ -243,8 +243,11 @@ package_extract_file 'customize.sh' "${_ub_our_main_script:?}"
 
 echo "Loading ${LAST_RANDOM:?}-customize.sh..."
 # shellcheck source=SCRIPTDIR/../../../../customize.sh
-. "${_ub_our_main_script:?}" || ui_error "Failed to source customize.sh"
-rm -f "${_ub_our_main_script:?}" || ui_error "Failed to delete customize.sh"
+command . "${_ub_our_main_script:?}" || ui_error "Failed to source '${_ub_our_main_script?}'"
+
+if test -f "${_ub_our_main_script:?}"; then
+  rm "${_ub_our_main_script:?}" || ui_error "Failed to delete '${_ub_our_main_script?}'"
+fi
 unset _ub_our_main_script
 
 if test "${_ub_we_mounted_tmp:?}" = true; then
