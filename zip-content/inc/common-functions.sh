@@ -2126,7 +2126,7 @@ copy_file()
 
 move_file()
 {
-  mv -f "$1" "$2"/ || ui_error "Failed to move the file '$1' to '$2'" 100
+  mv -f "$1" "$2"/ || ui_error "Failed to move the file '$1' to '$2'" 101
 }
 
 move_rename_file()

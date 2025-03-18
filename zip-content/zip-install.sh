@@ -18,7 +18,7 @@ umask 022 || :
 
 command 1> /dev/null -v 'echo' || {
   echo || :
-  exit 99
+  exit 100
 }
 
 case "$(:)" in '') ;; *)
