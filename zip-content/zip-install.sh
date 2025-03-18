@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.3.5'
+readonly ZIPINSTALL_VERSION='1.3.6'
 
 END_OF_SCRIPT=0
 PATH="${PATH:-/system/bin}:."
@@ -29,10 +29,15 @@ esac
 
 _is_busybox_available()
 {
-  if test -e './busybox'; then
-    test -x './busybox' || chmod 0755 './busybox' || echo 1>&2 'WARNING: Chmod failed on busybox'
-  fi
-  if command 1> /dev/null -v 'busybox'; then echo 'true'; else echo 'false'; fi
+  if test -f './busybox'; then test -x './busybox' || chmod 0755 './busybox' || echo 1>&2 'WARNING: Chmod failed on busybox'; fi
+
+  command 1> /dev/null -v 'busybox' || {
+    echo 'false'
+    return
+  }
+
+  PROPAGATE_BUSYBOX='true'
+  echo 'true'
 }
 
 _is_head_functional()
@@ -206,6 +211,19 @@ if ! is_root; then
   exit 4
 fi
 
+propagate_busybox()
+{
+  mkdir -p "${TMPDIR:?}/bb-applets" || {
+    ui_error_msg 'Failed to create a temp folder for busybox applets'
+    return
+  }
+  busybox 2> /dev/null --install -s "${TMPDIR:?}/bb-applets" || {
+    ui_error_msg 'Failed to propagate busybox'
+    return
+  }
+  PATH="${PATH?}:${TMPDIR:?}/bb-applets"
+}
+
 unset SCRIPT_NAME
 _clean_at_exit()
 {
@@ -216,9 +234,13 @@ _clean_at_exit()
   if test -n "${UPD_SCRIPT_NAME-}" && test -f "${UPD_SCRIPT_NAME:?}"; then
     rm "${UPD_SCRIPT_NAME:?}" || :
   fi
+  if test -n "${TMPDIR-}" && test -d "${TMPDIR:?}/bb-applets"; then
+    rm -r "${TMPDIR:?}/bb-applets" || :
+  fi
+
   unset SCRIPT_NAME
   if test "${TMPDIR:-}" = '/dev/tmp'; then
-    if test -e "${TMPDIR:?}"; then
+    if test -d "${TMPDIR:?}"; then
       # Legacy versions of rmdir don't accept any parameter (not even --)
       rmdir "${TMPDIR:?}" 2> /dev/null || :
     fi
@@ -227,7 +249,7 @@ _clean_at_exit()
 }
 trap ' _clean_at_exit' 0 2 3 6 15
 
-if test -n "${TMPDIR:-}" && test -w "${TMPDIR:?}" && test "${TMPDIR:?}" != '/data/local/tmp'; then
+if test -n "${TMPDIR-}" && test "${TMPDIR:?}" != '/data/local/tmp' && test -w "${TMPDIR:?}"; then
   : # Already ready
 elif test -w '/tmp'; then
   TMPDIR='/tmp'
@@ -238,7 +260,7 @@ elif test -e '/dev'; then
   }
   chmod 01775 '/dev/tmp' || {
     ui_error_msg "chmod failed on '/dev/tmp'"
-    rmdir '/dev/tmp' 2> /dev/null || :
+    rmdir 2> /dev/null '/dev/tmp' || :
     exit 10
   }
   TMPDIR='/dev/tmp'
@@ -249,6 +271,8 @@ if test -z "${TMPDIR:-}" || test ! -w "${TMPDIR:?}"; then
   exit 11
 fi
 export TMPDIR
+
+test "${PROPAGATE_BUSYBOX:-false}" = 'false' || propagate_busybox
 
 SCRIPT_NAME="${TMPDIR:?}/update-binary" || exit 12
 UPD_SCRIPT_NAME="${TMPDIR:?}/updater-script" || exit 12
