@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.3.2'
+readonly ZIPINSTALL_VERSION='1.3.3'
 
 END_OF_SCRIPT=0
 PATH="${PATH:-/system/bin}:."
@@ -27,12 +27,12 @@ case "$(:)" in '') ;; *)
   ;;
 esac
 
-_busybox_executability_check()
+_is_busybox_available()
 {
-  test -x 'busybox' || chmod 0755 'busybox' || {
-    echo 1>&2 'ERROR: chmod failed on busybox'
-    exit 100
-  }
+  if test -e './busybox'; then
+    test -x './busybox' || chmod 0755 './busybox' || echo 1>&2 'WARNING: Chmod failed on busybox'
+  fi
+  if command 1> /dev/null -v 'busybox'; then echo 'true'; else echo 'false'; fi
 }
 
 _is_head_functional()
@@ -42,17 +42,21 @@ _is_head_functional()
   return 2
 }
 
+_redirect_command()
+{
+  eval " ${1:?}() { busybox '${1:?}' \"\${@}\"; } " || {
+    echo 1>&2 "ERROR: Replacing ${1?} failed"
+    exit 100
+  }
+}
+
 command 1> /dev/null -v 'head' || {
-  if command 1> /dev/null -v 'busybox'; then
-    _busybox_executability_check
-    eval ' head() { busybox head "${@}"; } '
-  fi
+  if "${IS_BUSYBOX_AVAILABLE:=$(_is_busybox_available || :)}"; then _redirect_command 'head'; fi
 }
 
 command 1> /dev/null -v 'printf' || {
-  if command 1> /dev/null -v 'busybox'; then
-    _busybox_executability_check
-    eval ' printf() { busybox printf "${@}"; } '
+  if "${IS_BUSYBOX_AVAILABLE:=$(_is_busybox_available || :)}"; then
+    _redirect_command 'printf'
   else
     NO_COLOR=1
 
@@ -91,21 +95,9 @@ command 1> /dev/null -v 'printf' || {
   fi
 }
 
-command 1> /dev/null -v whoami || {
-  whoami()
-  {
-    _whoami_val="$(id | grep -o -m '1' -e "uid=[0-9]*([a-z]*)" | grep -o -e "([a-z]*)")" || return "${?}"
-    _whoami_val="${_whoami_val#\(}"
-    _whoami_val="${_whoami_val%\)}"
-    printf '%s\n' "${_whoami_val?}"
-    unset _whoami_val
-  }
-}
-
 command 1> /dev/null -v unzip || {
-  if command 1> /dev/null -v busybox; then
-    _busybox_executability_check
-    alias unzip='busybox unzip'
+  if "${IS_BUSYBOX_AVAILABLE:=$(_is_busybox_available || :)}"; then
+    _redirect_command 'unzip'
   else
     echo 1>&2 'ERROR: "unzip" is missing'
     exit 100
@@ -136,6 +128,28 @@ ui_error_msg()
   fi
 }
 
+is_root()
+{
+  if command 1> /dev/null -v 'whoami'; then
+    case "$(whoami || :)" in 'root') return 0 ;; *) ;; esac
+  else
+    command 1> /dev/null -v 'grep' || {
+      if "${IS_BUSYBOX_AVAILABLE:=$(_is_busybox_available || :)}"; then
+        _redirect_command 'grep'
+      else
+        echo 1>&2 'ERROR: "grep" is missing'
+        exit 100
+      fi
+    }
+
+    if id | grep -m '1' -q -e "uid=0[ (]"; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
 if test -n "${*}"; then
   for _param in "${@}"; do
     shift || {
@@ -151,7 +165,7 @@ if test -n "${*}"; then
     }
 
     _param_copy="${_param:?}"
-    _param="$(readlink -f "${_param_copy:?}")" || _param="$(realpath "${_param_copy:?}")" || {
+    _param="$(readlink 2> /dev/null -f "${_param_copy:?}")" || _param="$(realpath "${_param_copy:?}")" || {
       ui_error_msg "Canonicalization failed => '${_param_copy:-}'"
       exit 8
     }
@@ -169,7 +183,7 @@ if test -z "${*}"; then
   exit 5
 fi
 
-if test "$(whoami || :)" != 'root'; then
+if ! is_root; then
   if test "${AUTO_ELEVATED:-false}" = 'false'; then
     printf '%s\n' 'Auto-rooting attempt...'
 
@@ -180,7 +194,7 @@ if test "$(whoami || :)" != 'root'; then
       exit "${_status:-2}"
     }
 
-    ZIP_INSTALL_SCRIPT="$(readlink -f "${0:?}")" || ZIP_INSTALL_SCRIPT="$(realpath "${0:?}")" || {
+    ZIP_INSTALL_SCRIPT="$(readlink 2> /dev/null -f "${0:?}")" || ZIP_INSTALL_SCRIPT="$(realpath "${0:?}")" || {
       ui_error_msg 'Unable to find myself'
       exit 3
     }

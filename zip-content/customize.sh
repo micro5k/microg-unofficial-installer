@@ -108,7 +108,7 @@ _log_path_setter()
   if test ! -e "${1:?}"; then return 1; fi
 
   local _path
-  _path="$(readlink -f "${1:?}")" || _path="$(realpath "${1:?}")" || return 1
+  _path="$(readlink 2> /dev/null -f "${1:?}")" || _path="$(realpath "${1:?}")" || return 1
   if test -w "${_path:?}"; then
     LOG_PATH="${_path:?}/debug-a5k.log"
     return 0
