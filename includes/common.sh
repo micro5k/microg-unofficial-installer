@@ -79,7 +79,7 @@ export ftp_proxy="${ftp_proxy-}"
 {
   readonly WGET_CMD='wget'
   readonly DL_UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0'
-  readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+  readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
   readonly DL_ACCEPT_ALL_HEADER='Accept: */*'
   readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
   readonly DL_DNT_HEADER='DNT: 1'
@@ -531,7 +531,9 @@ send_web_request_and_output_response()
   if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
   if test "${_method:?}" = 'POST'; then
     _body_data_length="$(_get_byte_length "${_body_data?}")" || return "${?}"
-    set -- "${@}" --header 'Content-Type: text/plain;charset=UTF-8' --header "Content-Length: ${_body_data_length:?}" || return "${?}"
+    if test "${_body_data_length:?}" -gt 0; then
+      set -- "${@}" --header 'Content-Type: text/plain;charset=UTF-8' --header "Content-Length: ${_body_data_length:?}" || return "${?}"
+    fi
   fi
   if test -n "${_origin?}"; then set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"; fi
   if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"; fi
@@ -766,6 +768,7 @@ dl_type_two()
   while true; do
     _http_headers="$(send_web_request_and_output_headers "${_last_location_url:?}" 'GET')"
     _status_code="$(parse_headers_and_get_status_code "${_http_headers?}")"
+    if test "${DL_DEBUG:?}" = 'true'; then printf '%s\n' "Status code: ${_status_code?}"; fi
 
     case "${_status_code?}" in
       2*) # Final location URL found (usually 200)
@@ -779,11 +782,11 @@ dl_type_two()
           }
         ;;
       404)
-        report_failure 2 "77" "get location url ${_count:?}" 'THE FILE HAS BEEN DELETED ON THE SERVER!!!'
+        report_failure 2 "77" "get location url ${_count:?}" 'WARNING: THE FILE HAS BEEN DELETED ON THE SERVER!!!'
         return "${?}"
         ;;
       *)
-        report_failure 2 "78" "get location url ${_count:?}" "UNSUPPORTED HTTP STATUS CODE: ${_status_code?}"
+        report_failure 2 "78" "get location url ${_count:?}" "Unsupported HTTP status code: ${_status_code?}"
         return "${?}"
         ;;
     esac
@@ -796,10 +799,10 @@ dl_type_two()
 
   _loc_code="$(printf '%s\n' "${_last_location_url:?}" | cut -d '/' -f '5-' -s)" ||
     report_failure 2 "${?}" 'get location code' || return "${?}"
-  # DEBUG => echo "${_loc_code:?}"
+  if test "${DL_DEBUG:?}" = 'true'; then printf '%s\n' "Loc code: ${_loc_code?}"; fi
 
   sleep 0.2
-  _json_response="$(send_web_request_and_output_response "${_base_api_url:?}/accounts" 'POST' "${_base_referrer:?}" "${_base_origin:?}" '' '' '{}')" ||
+  _json_response="$(send_web_request_and_output_response "${_base_api_url:?}/accounts" 'POST' "${_base_referrer:?}" "${_base_origin:?}" '' '' '')" ||
     report_failure 2 "${?}" 'do AJAX post req' || return "${?}"
   if test "${DL_DEBUG:?}" = 'true'; then printf '%s\n' "${_json_response?}"; fi
 
@@ -867,7 +870,7 @@ dl_file()
 
     if test "${CI:-false}" = 'false'; then sleep 0.5; else sleep 3; fi
     case "${_domain:?}" in
-      *\.'go''file''.io')
+      *\.'go''file''.io' | 'go''file''.io')
         printf '\n %s: ' 'DL type 2'
         dl_type_two "${_url:?}" "${MAIN_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
         ;;
