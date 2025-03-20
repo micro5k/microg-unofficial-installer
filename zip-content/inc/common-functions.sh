@@ -708,7 +708,7 @@ mount_partition_if_possible()
 
 _get_local_settings()
 {
-  if test "${LOCAL_SETTINGS_READ:-false}" = 'true'; then return; fi
+  test "${LOCAL_SETTINGS_READ:-false}" = 'false' || return
 
   ui_debug 'Parsing local settings...'
   ui_debug ''
@@ -721,32 +721,37 @@ _get_local_settings()
 
 parse_setting()
 {
-  local _var _use_last_choice
+  local _var _sett_name _sett_default_val _use_last_choice
 
+  _sett_name="${1:?}"
+  _sett_default_val="${2?}"
   _use_last_choice="${3:-true}"
+
   _get_local_settings
 
-  _var="$(printf '%s\n' "${LOCAL_SETTINGS?}" | grep -m 1 -F -e "[zip.${MODULE_ID:?}.${1:?}]" | cut -d ':' -f '2-' -s)" || _var=''
+  _var="$(printf '%s\n' "${LOCAL_SETTINGS?}" | grep -m 1 -F -e "[zip.${MODULE_ID:?}.${_sett_name:?}]" | cut -d ':' -f '2-' -s)" || _var=''
   _var="${_var# }"
+
+  # If the length is 2 it is empty: []
   if test "${#_var}" -gt 2; then
     printf '%s\n' "${_var?}" | cut -c "2-$((${#_var} - 1))"
     return
   fi
 
   # Fallback to the last choice
-  if test "${_use_last_choice:?}" = 'true' && _var="$(simple_file_getprop "${1:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
+  if test "${_use_last_choice:?}" = 'true' && _var="$(simple_file_getprop "${_sett_name:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
     printf '%s\n' "${_var:?}"
     return
   elif test "${_use_last_choice:?}" = 'custom' && _var="$(simple_file_getprop "${4:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
     case "${_var:?}" in
-      "${5:?}") printf '1\n' ;;
-      *) printf '0\n' ;;
+      "${5:?}") printf '%s\n' '1' ;;
+      *) printf '%s\n' '0' ;;
     esac
     return
   fi
 
   # Fallback to the default value
-  printf '%s\n' "${2?}"
+  printf '%s\n' "${_sett_default_val?}"
 }
 
 remount_read_write()
