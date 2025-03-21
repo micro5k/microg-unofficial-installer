@@ -89,7 +89,7 @@ if test "${SETUP_TYPE:?}" = 'install'; then
   if test "${USE_MICROG_BY_ALE5000:?}" = 0 && test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' 'microG Services' 'GmsCore' 'priv-app' true false; then
     :
   elif test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' 'microG Services - signed by ale5000' 'GmsCoreA5K' 'priv-app' true false; then
-    :
+    USE_MICROG_BY_ALE5000=1
   elif setup_app 1 '' 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
     install_backends='true'
   elif setup_app 1 '' 'microG Services (vtm-legacy)' 'GmsCoreVtmLegacy' 'priv-app' false false; then
