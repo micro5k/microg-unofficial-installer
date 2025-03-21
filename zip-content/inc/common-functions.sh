@@ -1475,7 +1475,7 @@ prepare_installation()
     echo '# SPDX-FileCopyrightText: none'
     echo '# SPDX-License-Identifier: CC0-1.0'
     echo ''
-    echo 'install.type=system'
+    echo 'install.destination=system'
     echo "install.build.type=${BUILD_TYPE:?}"
     echo "install.version.code=${MODULE_VERCODE:?}"
     echo "install.version=${MODULE_VERSION:?}"
