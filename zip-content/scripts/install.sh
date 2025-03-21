@@ -42,15 +42,15 @@ else
   ui_error "Your Android version is too old, API: ${API?}"
 fi
 
-USE_MICROG_BY_ALE5000="$(parse_setting 'USE_MICROG_BY_ALE5000' "${USE_MICROG_BY_ALE5000:?}")"
-INSTALL_FDROIDPRIVEXT="$(parse_setting 'INSTALL_FDROIDPRIVEXT' "${INSTALL_FDROIDPRIVEXT:?}")"
-INSTALL_AURORASERVICES="$(parse_setting 'INSTALL_AURORASERVICES' "${INSTALL_AURORASERVICES:?}")"
-INSTALL_NEWPIPE="$(parse_setting 'INSTALL_NEWPIPE' "${INSTALL_NEWPIPE:?}")"
-INSTALL_MYLOCATION="$(parse_setting 'INSTALL_MYLOCATION' "${INSTALL_MYLOCATION:?}")"
+USE_MICROG_BY_ALE5000="$(parse_setting 'false' 'USE_MICROG_BY_ALE5000' "${USE_MICROG_BY_ALE5000:?}")"
+APP_FDROIDPRIVEXT="$(parse_setting 'true' 'FDROIDPRIVEXT' "${APP_FDROIDPRIVEXT:?}")"
+APP_AURORASERVICES="$(parse_setting 'true' 'AURORASERVICES' "${APP_AURORASERVICES:?}")"
+APP_NEWPIPE="$(parse_setting 'true' 'NEWPIPE' "${APP_NEWPIPE:?}")"
+APP_MYLOCATION="$(parse_setting 'true' 'MYLOCATION' "${APP_MYLOCATION:?}")"
 
-INSTALL_PLAYSTORE="$(parse_setting 'INSTALL_PLAYSTORE' "${INSTALL_PLAYSTORE-}" 'custom' 'SELECTED_MARKET' 'PlayStore')"
-INSTALL_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7-}")"
-INSTALL_ANDROIDAUTO="$(parse_setting 'INSTALL_ANDROIDAUTO' "${INSTALL_ANDROIDAUTO-}")"
+APP_PLAYSTORE="$(parse_setting 'true' 'PLAYSTORE' "${APP_PLAYSTORE-}" 'custom' 'SELECTED_MARKET' 'PlayStore')"
+APP_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'true' 'GMAIL_FOR_ANDROID_5_TO_7' "${APP_GMAIL_FOR_ANDROID_5_TO_7-}")"
+APP_ANDROIDAUTO="$(parse_setting 'true' 'ANDROIDAUTO' "${APP_ANDROIDAUTO-}")"
 
 # Display info
 display_info
@@ -98,15 +98,15 @@ if test "${SETUP_TYPE:?}" = 'install'; then
     install_backends='true'
 
   if test "${install_backends:?}" = 'true'; then
-    setup_app "${INSTALL_DEJAVUBACKEND:?}" '' 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
-    setup_app "${INSTALL_NOMINATIMGEOBACKEND:?}" '' 'Nominatim Geocoder Backend' 'NominatimGeocoderBackend' 'app'
+    setup_app "${APP_DEJAVUBACKEND:?}" '' 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
+    setup_app "${APP_NOMINATIMGEOBACKEND:?}" '' 'Nominatim Geocoder Backend' 'NominatimGeocoderBackend' 'app'
   fi
 
   # Store selection
   SELECTED_MARKET='FakeStore'
-  if setup_app "${INSTALL_PLAYSTORE?}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
+  if setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
-  elif setup_app "${INSTALL_PLAYSTORE?}" '' 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
+  elif setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
   else
     # Fallback to FakeStore
@@ -119,16 +119,16 @@ if test "${SETUP_TYPE:?}" = 'install'; then
     move_rename_file "${TMP_PATH:?}/origin/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
   fi
 
-  setup_app "${INSTALL_FDROIDPRIVEXT:?}" 'INSTALL_FDROIDPRIVEXT' 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
-  setup_app "${INSTALL_AURORASERVICES:?}" 'INSTALL_AURORASERVICES' 'Aurora Services' 'AuroraServices' 'priv-app'
+  setup_app "${APP_FDROIDPRIVEXT:?}" 'APP_FDROIDPRIVEXT' 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
+  setup_app "${APP_AURORASERVICES:?}" 'APP_AURORASERVICES' 'Aurora Services' 'AuroraServices' 'priv-app'
 
-  setup_app "${INSTALL_NEWPIPE:?}" 'INSTALL_NEWPIPE' 'NewPipe' 'NewPipe' 'app' true ||
-    setup_app "${INSTALL_NEWPIPE:?}" 'INSTALL_NEWPIPE' 'NewPipe Legacy Revo' 'NewPipeLegacyRevo' 'app' true
+  setup_app "${APP_NEWPIPE:?}" 'APP_NEWPIPE' 'NewPipe' 'NewPipe' 'app' true ||
+    setup_app "${APP_NEWPIPE:?}" 'APP_NEWPIPE' 'NewPipe Legacy Revo' 'NewPipeLegacyRevo' 'app' true
 
-  setup_app "${INSTALL_MYLOCATION:?}" 'INSTALL_MYLOCATION' 'My Location' 'MyLocation' 'app'
+  setup_app "${APP_MYLOCATION:?}" 'APP_MYLOCATION' 'My Location' 'MyLocation' 'app'
 
-  setup_app "${INSTALL_GMAIL_FOR_ANDROID_5_TO_7?}" 'INSTALL_GMAIL_FOR_ANDROID_5_TO_7' 'Gmail' 'Gmail' 'app' true
-  setup_app "${INSTALL_ANDROIDAUTO?}" 'INSTALL_ANDROIDAUTO' 'Android Auto stub' 'AndroidAuto' 'priv-app' true
+  setup_app "${APP_GMAIL_FOR_ANDROID_5_TO_7?}" 'APP_GMAIL_FOR_ANDROID_5_TO_7' 'Gmail' 'Gmail' 'app' true
+  setup_app "${APP_ANDROIDAUTO?}" 'APP_ANDROIDAUTO' 'Android Auto stub' 'AndroidAuto' 'priv-app' true
 
   if test "${API:?}" -ge 19; then
     setup_util 'minutil' 'MinUtil'

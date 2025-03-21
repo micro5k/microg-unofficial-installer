@@ -719,32 +719,45 @@ _get_local_settings()
   export LOCAL_SETTINGS LOCAL_SETTINGS_READ
 }
 
+_parse_setting_helper()
+{
+  local _val
+
+  # If the length is 2 it is empty: []
+  if _val="$(printf '%s\n' "${LOCAL_SETTINGS?}" | grep -m 1 -F -e "[${1:?}]" | cut -d ':' -f '2-' -s)" && _val="${_val# }" && test "${#_val}" -gt 2; then
+    printf '%s\n' "${_val?}" | cut -c "2-$((${#_val} - 1))"
+    return 0
+  fi
+
+  return 1
+}
 parse_setting()
 {
-  local _var _sett_name _sett_default_val _use_last_choice
+  local _var _sett_is_app _sett_name _sett_default_val _sett_use_prev_choice
 
-  _sett_name="${1:?}"
-  _sett_default_val="${2?}"
-  _use_last_choice="${3:-true}"
+  _sett_is_app="${1:-true}"
+  _sett_name="${2:?}"
+  _sett_default_val="${3?}"
+  _sett_use_prev_choice="${4:-true}"
 
   _get_local_settings
 
-  _var="$(printf '%s\n' "${LOCAL_SETTINGS?}" | grep -m 1 -F -e "[zip.${MODULE_ID:?}.${_sett_name:?}]" | cut -d ':' -f '2-' -s)" || _var=''
-  _var="${_var# }"
-
-  # If the length is 2 it is empty: []
-  if test "${#_var}" -gt 2; then
-    printf '%s\n' "${_var?}" | cut -c "2-$((${#_var} - 1))"
+  if test "${_sett_is_app:?}" = 'true'; then
+    if _parse_setting_helper "zip.${MODULE_ID:?}.APP_${_sett_name:?}" || _parse_setting_helper "zip.${MODULE_ID:?}.INSTALL_${_sett_name:?}"; then
+      return
+    fi
+    _sett_name="APP_${_sett_name:?}"
+  elif _parse_setting_helper "zip.${MODULE_ID:?}.${_sett_name:?}"; then
     return
   fi
 
   # Fallback to the last choice
-  if test "${_use_last_choice:?}" = 'true' && _var="$(simple_file_getprop "${_sett_name:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
+  if test "${_sett_use_prev_choice:?}" = 'true' && _var="$(simple_file_getprop "${_sett_name:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
     printf '%s\n' "${_var:?}"
     return
-  elif test "${_use_last_choice:?}" = 'custom' && _var="$(simple_file_getprop "${4:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
+  elif test "${_sett_use_prev_choice:?}" = 'custom' && _var="$(simple_file_getprop "${5:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
     case "${_var:?}" in
-      "${5:?}") printf '%s\n' '1' ;;
+      "${6:?}") printf '%s\n' '1' ;;
       *) printf '%s\n' '0' ;;
     esac
     return
@@ -1061,11 +1074,11 @@ initialize()
 
   _get_local_settings
 
-  DRY_RUN="$(parse_setting 'DRY_RUN' "${DRY_RUN:?}" 'false')"
-  KEY_TEST_ONLY="$(parse_setting 'KEY_TEST_ONLY' "${KEY_TEST_ONLY:?}" 'false')"
+  DRY_RUN="$(parse_setting 'false' 'DRY_RUN' "${DRY_RUN:?}" 'false')"
+  KEY_TEST_ONLY="$(parse_setting 'false' 'KEY_TEST_ONLY' "${KEY_TEST_ONLY:?}" 'false')"
 
-  LIVE_SETUP_DEFAULT="$(parse_setting 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
-  LIVE_SETUP_TIMEOUT="$(parse_setting 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
+  LIVE_SETUP_DEFAULT="$(parse_setting 'false' 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
+  LIVE_SETUP_TIMEOUT="$(parse_setting 'false' 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
 
   case "${KEY_TEST_ONLY?}" in '' | *[!0-1]*) KEY_TEST_ONLY=1 ;; *) ;; esac
   if test "${KEY_TEST_ONLY:?}" -eq 1; then DRY_RUN=2; fi
