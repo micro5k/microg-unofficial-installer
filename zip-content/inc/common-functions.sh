@@ -731,18 +731,19 @@ _parse_setting_helper()
 
   return 1
 }
+
 parse_setting()
 {
-  local _var _sett_is_app _sett_name _sett_default_val _sett_use_prev_choice
+  local _var _sett_type _sett_name _sett_default_val _sett_use_prev_choice
 
-  _sett_is_app="${1:-true}"
+  _sett_type="${1:-app}"
   _sett_name="${2:?}"
   _sett_default_val="${3?}"
   _sett_use_prev_choice="${4:-true}"
 
   _get_local_settings
 
-  if test "${_sett_is_app:?}" = 'true'; then
+  if test "${_sett_type:?}" = 'app'; then
     if _parse_setting_helper "zip.${MODULE_ID:?}.APP_${_sett_name:?}" || _parse_setting_helper "zip.${MODULE_ID:?}.INSTALL_${_sett_name:?}"; then
       return
     fi
@@ -1074,11 +1075,11 @@ initialize()
 
   _get_local_settings
 
-  DRY_RUN="$(parse_setting 'false' 'DRY_RUN' "${DRY_RUN:?}" 'false')"
-  KEY_TEST_ONLY="$(parse_setting 'false' 'KEY_TEST_ONLY' "${KEY_TEST_ONLY:?}" 'false')"
+  DRY_RUN="$(parse_setting 'general' 'DRY_RUN' "${DRY_RUN:?}" 'false')"
+  KEY_TEST_ONLY="$(parse_setting 'general' 'KEY_TEST_ONLY' "${KEY_TEST_ONLY:?}" 'false')"
 
-  LIVE_SETUP_DEFAULT="$(parse_setting 'false' 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
-  LIVE_SETUP_TIMEOUT="$(parse_setting 'false' 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
+  LIVE_SETUP_DEFAULT="$(parse_setting 'general' 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
+  LIVE_SETUP_TIMEOUT="$(parse_setting 'general' 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
 
   case "${KEY_TEST_ONLY?}" in '' | *[!0-1]*) KEY_TEST_ONLY=1 ;; *) ;; esac
   if test "${KEY_TEST_ONLY:?}" -eq 1; then DRY_RUN=2; fi

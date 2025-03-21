@@ -42,15 +42,15 @@ else
   ui_error "Your Android version is too old, API: ${API?}"
 fi
 
-USE_MICROG_BY_ALE5000="$(parse_setting 'false' 'USE_MICROG_BY_ALE5000' "${USE_MICROG_BY_ALE5000:?}")"
-APP_FDROIDPRIVEXT="$(parse_setting 'true' 'FDROIDPRIVEXT' "${APP_FDROIDPRIVEXT:?}")"
-APP_AURORASERVICES="$(parse_setting 'true' 'AURORASERVICES' "${APP_AURORASERVICES:?}")"
-APP_NEWPIPE="$(parse_setting 'true' 'NEWPIPE' "${APP_NEWPIPE:?}")"
-APP_MYLOCATION="$(parse_setting 'true' 'MYLOCATION' "${APP_MYLOCATION:?}")"
+USE_MICROG_BY_ALE5000="$(parse_setting 'general' 'USE_MICROG_BY_ALE5000' "${USE_MICROG_BY_ALE5000:?}")"
+APP_FDROIDPRIVEXT="$(parse_setting 'app' 'FDROIDPRIVEXT' "${APP_FDROIDPRIVEXT:?}")"
+APP_AURORASERVICES="$(parse_setting 'app' 'AURORASERVICES' "${APP_AURORASERVICES:?}")"
+APP_NEWPIPE="$(parse_setting 'app' 'NEWPIPE' "${APP_NEWPIPE:?}")"
+APP_MYLOCATION="$(parse_setting 'app' 'MYLOCATION' "${APP_MYLOCATION:?}")"
 
-APP_PLAYSTORE="$(parse_setting 'true' 'PLAYSTORE' "${APP_PLAYSTORE-}" 'custom' 'SELECTED_MARKET' 'PlayStore')"
-APP_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'true' 'GMAIL_FOR_ANDROID_5_TO_7' "${APP_GMAIL_FOR_ANDROID_5_TO_7-}")"
-APP_ANDROIDAUTO="$(parse_setting 'true' 'ANDROIDAUTO' "${APP_ANDROIDAUTO-}")"
+APP_PLAYSTORE="$(parse_setting 'app' 'PLAYSTORE' "${APP_PLAYSTORE-}" 'custom' 'SELECTED_MARKET' 'PlayStore')"
+APP_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'app' 'GMAIL_FOR_ANDROID_5_TO_7' "${APP_GMAIL_FOR_ANDROID_5_TO_7-}")"
+APP_ANDROIDAUTO="$(parse_setting 'app' 'ANDROIDAUTO' "${APP_ANDROIDAUTO-}")"
 
 # Display info
 display_info
