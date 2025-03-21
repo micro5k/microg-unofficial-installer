@@ -45,7 +45,7 @@ fi
 USE_MICROG_BY_ALE5000="$(parse_setting 'general' 'USE_MICROG_BY_ALE5000' "${USE_MICROG_BY_ALE5000:?}")"
 
 APP_DEJAVUBACKEND="$(parse_setting 'app' 'DEJAVUBACKEND' "${APP_DEJAVUBACKEND:?}")"
-APP_NOMINATIMGEOBACKEND="$(parse_setting 'app' 'NOMINATIMGEOBACKEND' "${APP_NOMINATIMGEOBACKEND:?}")"
+APP_NOMINATIMBACKEND="$(parse_setting 'app' 'NOMINATIMBACKEND' "${APP_NOMINATIMBACKEND:?}")"
 
 APP_FDROIDPRIVEXT="$(parse_setting 'app' 'FDROIDPRIVEXT' "${APP_FDROIDPRIVEXT:?}")"
 APP_AURORASERVICES="$(parse_setting 'app' 'AURORASERVICES' "${APP_AURORASERVICES:?}")"
@@ -103,7 +103,7 @@ if test "${SETUP_TYPE:?}" = 'install'; then
 
   if test "${install_backends:?}" = 'true'; then
     setup_app "${APP_DEJAVUBACKEND:?}" 'APP_DEJAVUBACKEND' 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
-    setup_app "${APP_NOMINATIMGEOBACKEND:?}" 'APP_NOMINATIMGEOBACKEND' 'Nominatim Geocoder Backend' 'NominatimGeocoderBackend' 'app'
+    setup_app "${APP_NOMINATIMBACKEND:?}" 'APP_NOMINATIMBACKEND' 'Nominatim Geocoder Backend' 'NominatimGeocoderBackend' 'app'
   fi
 
   # Store selection
