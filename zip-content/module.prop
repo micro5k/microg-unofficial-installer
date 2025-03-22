@@ -5,8 +5,8 @@
 numericId=765145
 id=microg-unofficial-installer
 name=microG unofficial installer
-version=v1.3.1.86-alpha
-versionCode=5
+version=v1.3.2-beta
+versionCode=6
 author=ale5000
 description=It installs microG on Android.
 applicationId=net.ale5000.microg_unofficial_installer.ota
