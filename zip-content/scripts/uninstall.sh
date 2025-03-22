@@ -153,6 +153,25 @@ if test "${IS_INCLUDED:-false}" = 'false'; then
     done
   }
 
+  delete_if_sha256_match()
+  {
+    local _filename _filehash _hash
+
+    if test -f "${1:?}"; then
+      _filename="${1:?}"
+      _filehash="$(sha256sum -- "${_filename:?}" | cut -d ' ' -f '1' -s)" || ui_error 'Failed to calculate SHA256 hash'
+      shift
+      for _hash in "${@}"; do
+        if test "${_hash:?}" = "${_filehash:?}"; then
+          ui_debug "Deleting '${_filename:?}'..."
+          rm -f -- "${_filename:?}" || ui_error 'Failed to delete file in delete_if_sha256_match()'
+          return
+        fi
+      done
+      ui_debug "Deletion of '${_filename:?}' skipped due to hash mismatch!"
+    fi
+  }
+
   ui_debug 'Uninstalling...'
 
   # shellcheck disable=SC2034
@@ -299,17 +318,19 @@ STATUS="$?"
 if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
 if test "${API:?}" -lt 21; then
+  delete "${SYS_PATH:?}/lib64/libgmscore.so"
+  delete "${SYS_PATH:?}/lib64/libconscrypt_gmscore_jni.so"
+  delete "${SYS_PATH:?}/lib64/libcronet.102.0.5005.125.so"
   delete "${SYS_PATH:?}/lib64/libmapbox-gl.so"
   delete "${SYS_PATH:?}/lib64/libvtm-jni.so"
-  delete "${SYS_PATH:?}/lib64/libconscrypt_gmscore_jni.so"
-  delete "${SYS_PATH:?}/lib64/libcronet".*."so"
-  delete "${SYS_PATH:?}/lib64/libgmscore.so"
+  delete_if_sha256_match "${SYS_PATH:?}/lib64/libconscrypt_jni.so" '078e4458e63c7d49cebbf3b8181a7e14dfdfc013644382b678d6f94ecb72b85c' '1f025574c741445f9e8ae43067d2f7104ea497ef0cd0e4b63c06fd52dfea6bb4'
 
+  delete "${SYS_PATH:?}/lib/libgmscore.so"
+  delete "${SYS_PATH:?}/lib/libconscrypt_gmscore_jni.so"
+  delete "${SYS_PATH:?}/lib/libcronet.102.0.5005.125.so"
   delete "${SYS_PATH:?}/lib/libmapbox-gl.so"
   delete "${SYS_PATH:?}/lib/libvtm-jni.so"
-  delete "${SYS_PATH:?}/lib/libconscrypt_gmscore_jni.so"
-  delete "${SYS_PATH:?}/lib/libcronet".*."so"
-  delete "${SYS_PATH:?}/lib/libgmscore.so"
+  delete_if_sha256_match "${SYS_PATH:?}/lib/libconscrypt_jni.so" 'fc5b8c73f162b88eddd68a05ff0e2e3dbe08b50cd662a9f40f45367edc65cc9d' '6ba4cddde377ea7dca1fce6c6253655e448e8f32e8b9ff1d7446f46b696a972d'
 fi
 
 list_app_data_to_remove | while IFS='|' read -r FILENAME; do

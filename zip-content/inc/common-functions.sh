@@ -2199,10 +2199,29 @@ delete_temp()
 {
   for filename in "${@}"; do
     if test -e "${TMP_PATH:?}/${filename?}"; then
-      #ui_debug "Deleting '${TMP_PATH?}/${filename?}'..."
-      rm -rf -- "${TMP_PATH:?}/${filename:?}" || ui_error 'Failed to delete temp files/folders' 103
+      # ui_debug "Deleting '${TMP_PATH?}/${filename?}'..."
+      rm -rf -- "${TMP_PATH:?}/${filename:?}" || ui_error 'Failed to delete temp files/folders in delete_temp()' 103
     fi
   done
+}
+
+delete_if_sha256_match()
+{
+  local _filename _filehash _hash
+
+  if test -f "${1:?}"; then
+    _filename="${1:?}"
+    _filehash="$(sha256sum -- "${_filename:?}" | cut -d ' ' -f '1' -s)" || ui_error 'Failed to calculate SHA256 hash' 103
+    shift
+    for _hash in "${@}"; do
+      if test "${_hash:?}" = "${_filehash:?}"; then
+        ui_debug "Deleting '${_filename:?}'..."
+        rm -f -- "${_filename:?}" || ui_error 'Failed to delete file in delete_if_sha256_match()' 103
+        return
+      fi
+    done
+    ui_debug "Deletion of '${_filename:?}' skipped due to hash mismatch!"
+  fi
 }
 
 delete_dir_if_empty()
