@@ -14,8 +14,55 @@ All notable changes to this project will be documented in this file.
 -------------
 - Click above to see all the changes.
 
+`1.3.2-beta`_ - 2025-03-22
+--------------------------
+- The zip now include :code:`setprop-settings-list.csv` that contains all settings that can be changed via setprop
+- Improved the input event parsing code, now it check for a pair of key press / key release events before accepting the action
+- Added 64-bit support in the input event parsing code
+- Improved compatibility of :code:`zip-install.sh` with legacy Android versions
+- Added the possibility to reset battery in the MinUtil script
+- Now it only delete app updates during uninstallation or first-time installation
+- Automatically rollback optional apps to reclaim space when there isn't enough free space on the system partition
+- Improved rollback handling
+- Possibly fixed bootloops even in case of complete failure by changing the installation order
+- Added a working version of Gmail (only needed on Android 5.0 - 7.1.2)
+- Reduced permissions granted to Play Store
+- Updated microG Services Framework Proxy (signed by ale5000) to 0.1.0-7-gff1b9aa
+- Improved the free space change detection
+- Now it will use the last selected choice for all options when not using live setup
+- Added an option, disabled by default, that allow the installation of microG signed by ale5000: :code:`USE_GMSCORE_SIGNED_BY_ALE5000`
+- Allow to control the setting :code:`USE_GMSCORE_SIGNED_BY_ALE5000` via setprop
+- Renamed the option :code:`USE_GMSCORE_SIGNED_BY_ALE5000` to :code:`USE_MICROG_BY_ALE5000` (example: :code:`adb shell "setprop zip.microg-unofficial-installer.USE_MICROG_BY_ALE5000 1"`)
+- Added a separate microG Companion for legacy Android versions => microG Companion Legacy to 0.3.0.37524-42 (a00b36f)
+- Updated microG Services (signed by ale5000) to 0.3.0.240615-154 (fc1ef64)
+- Updated microG Companion (signed by ale5000) to 0.3.0.37524-106 (7c92307)
+- Added privacy mode to Android device info extractor
+- Improved compatibility of random number generation with old Android versions (used by the setup)
+- Added support for resetting GMS data of all apps inside MinUtil
+- Allow the project to be built with VS Code
+- Allow the project to be built with make / pdpmake
+- Display disk space required and available free space during installation
+- Warn about lack of free space
+- Replaced NewPipe old and NewPipe Legacy with NewPipe Legacy Revo which is still supported
+- Removed Mozilla UnifiedNlp Backend (it was only used on very old devices, and now the Mozilla Location Service has been shut down)
+- Added the app My Location (optional)
+- Updated microG Services to 0.3.6.244735 and microG Companion to 0.3.6.40226
+- Major overhaul of the mounting code
+- Improved mounting of all extra partitions
+- Do not allow flashing if the battery level is too low
+- Added :code:`DRY_RUN` setting to allow flashing the zip without modifying anything on the device (to enable: :code:`adb shell "setprop zip.microg-unofficial-installer.DRY_RUN 1"`)
+- Added support for :code:`DRY_RUN` env variable in :code:`zip-install.sh`
+- Added :code:`KEY_TEST_ONLY` setting to allow testing the recognition of key presses (to enable: :code:`adb shell "setprop zip.microg-unofficial-installer.KEY_TEST_ONLY 1"`)
+- Renamed :code:`FORCE_HW_BUTTONS` to :code:`FORCE_HW_KEYS`
+- Added support for :code:`KEY_TEST_ONLY` env variable in :code:`zip-install.sh`
+- Updated NewPipe Legacy Revo to 0.19.9.8
+- Updated NewPipe to 0.27.6
+- Rewritten input event parsing to handle more than one event source at a time (it fix the issue of volume down key ignored)
+- Changed prefix of app install settings from :code:`INSTALL_` to :code:`APP_` (compatibility with old :code:`INSTALL` settings via setprop is kept)
+- Increased default timeout for live setup to 4 seconds
+
 `1.3.1-beta`_ - 2023-05-01
------------------------------
+--------------------------
 - Improve compatibility of the MinUtil script with old Android versions
 - The MinUtil script is now installed under KitKat and higher
 - Add FORCE_HW_BUTTONS env variable to force using hardware buttons even when using :code:`zip-install.sh`
@@ -314,7 +361,7 @@ All notable changes to this project will be documented in this file.
 
 1.0.7-beta
 ----------
-- Downgraded Google Play Store to 5.1.11 (this fix the crash when searching)
+- Downgraded Play Store to 5.1.11 (this fix the crash when searching)
 
 1.0.6-beta
 ----------
@@ -337,7 +384,7 @@ All notable changes to this project will be documented in this file.
 -----------
 - Major rewrite of the installation script to add support for newer Android versions (big thanks to `@JanJabko <https://xdaforums.com/m/janjabko.7275198/>`_ for the phone)
 - Updated microG Service Core to 0.2.4-39
-- Updated Google Play Store to 5.4.12
+- Updated Play Store to 5.4.12
 - Minimum API version back to 9
 
 1.0.2-beta
@@ -357,7 +404,8 @@ All notable changes to this project will be documented in this file.
 - Initial release
 
 
-.. _Unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.1-beta...HEAD
+.. _Unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.2-beta...HEAD
+.. _1.3.2-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.1-beta...v1.3.2-beta
 .. _1.3.1-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.0-beta...v1.3.1-beta
 .. _1.3.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.2.0-beta...v1.3.0-beta
 .. _1.2.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.1.0-beta...v1.2.0-beta
