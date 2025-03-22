@@ -1,7 +1,6 @@
 #!/sbin/sh
 # SPDX-FileCopyrightText: (c) 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
 list_app_data_to_remove()
 {
@@ -155,8 +154,6 @@ if test "${IS_INCLUDED:-false}" = 'false'; then
 
   delete_if_sha256_match()
   {
-    local _filename _filehash _hash
-
     if test -f "${1:?}"; then
       _filename="${1:?}"
       _filehash="$(sha256sum -- "${_filename:?}" | cut -d ' ' -f '1' -s)" || ui_error 'Failed to calculate SHA256 hash'
