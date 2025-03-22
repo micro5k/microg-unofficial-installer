@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.3.6'
+readonly ZIPINSTALL_VERSION='1.3.7'
 
 END_OF_SCRIPT=0
 PATH="${PATH:-/system/bin}:."
@@ -26,6 +26,11 @@ case "$(:)" in '') ;; *)
   exit 100
   ;;
 esac
+
+command 1> /dev/null -v 'test' || {
+  echo 1>&2 'ERROR: "test" is missing'
+  exit 100
+}
 
 _is_busybox_available()
 {
@@ -100,7 +105,7 @@ command 1> /dev/null -v 'printf' || {
   fi
 }
 
-command 1> /dev/null -v unzip || {
+command 1> /dev/null -v 'unzip' || {
   if "${IS_BUSYBOX_AVAILABLE:=$(_is_busybox_available || :)}"; then
     _redirect_command 'unzip'
   else
