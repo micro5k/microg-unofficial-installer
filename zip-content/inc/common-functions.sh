@@ -3475,6 +3475,21 @@ remove_ext()
   printf '%s\n' "${str%.*}"
 }
 
+timing_start()
+{
+  START_TIME="$(date -u -- '+%s')" || return 1
+}
+
+timing_end()
+{
+  local _end_time
+
+  test -n "${START_TIME-}" || return 1
+  _end_time="$(date -u -- '+%s')" || return 2
+  printf '%s\n' "$((_end_time - START_TIME))"
+  unset START_TIME
+}
+
 # Find test: this is useful to test 'find' - if every file/folder, even the ones with spaces, is displayed in a single line then your version is good
 find_test()
 {
