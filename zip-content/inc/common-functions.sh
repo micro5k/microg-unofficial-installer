@@ -22,6 +22,7 @@ unset CDPATH
 
 export DRY_RUN="${DRY_RUN:-0}"
 export KEY_TEST_ONLY="${KEY_TEST_ONLY:-0}"
+export INPUT_TYPE="${INPUT_TYPE:-auto}"
 
 readonly ROLLBACK_TEST='false'
 
@@ -3007,7 +3008,7 @@ choose_keycheck_with_timeout()
     return 0
   elif test "${_status:?}" -eq 127 || test "${_status:?}" -eq 132; then
     ui_msg 'Fallbacking to manual input event parsing, waiting input...'
-    export KEYCHECK_ENABLED='false'
+    INPUT_TYPE='input event'
     _live_setup_initialize
 
     choose_inputevent "${@}"
@@ -3283,7 +3284,7 @@ choose()
   test -z "${3?}" || ui_msg "${3:?}"
   shift 3
 
-  case "${INPUT_SELECTED?}" in
+  case "${INPUT_TYPE?}" in
     'read') choose_read "${@}" ;;
     'input event') choose_inputevent "${@}" ;;
     'keycheck') choose_keycheck "${@}" ;;
@@ -3308,22 +3309,24 @@ write_separator_line()
 
 _live_setup_initialize()
 {
-  if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
-    INPUT_SELECTED='read'
-  elif "${KEYCHECK_ENABLED:?}"; then
-    INPUT_SELECTED='keycheck'
-  else
-    INPUT_SELECTED='input event'
+  if test "${INPUT_TYPE?}" = 'auto'; then
+    if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
+      INPUT_TYPE='read'
+    elif "${KEYCHECK_ENABLED:?}"; then
+      INPUT_TYPE='keycheck'
+    else
+      INPUT_TYPE='input event'
+    fi
   fi
 
   ui_msg_empty_line
-  ui_msg "Using: ${INPUT_SELECTED?}"
+  ui_msg "Using: ${INPUT_TYPE?}"
   ui_msg_empty_line
 
-  case "${INPUT_SELECTED?}" in
+  case "${INPUT_TYPE?}" in
     'input event') inputevent_initialize ;;
     'read' | 'keycheck') ;;
-    *) ui_error "Invalid input handling selected: ${INPUT_SELECTED?}" ;;
+    *) ui_error "Invalid input handling selected: ${INPUT_TYPE?}" ;;
   esac
 }
 
@@ -3383,7 +3386,7 @@ live_setup_choice()
       _live_setup_initialize
 
       _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
-      case "${INPUT_SELECTED?}" in
+      case "${INPUT_TYPE?}" in
         'read') choose_read_with_timeout "${LIVE_SETUP_TIMEOUT}" ;;
         'input event') choose_inputevent "${LIVE_SETUP_TIMEOUT}" ;;
         'keycheck') choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}" ;;
