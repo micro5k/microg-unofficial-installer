@@ -3006,11 +3006,10 @@ choose_keycheck_with_timeout()
     ui_msg_empty_line
     return 0
   elif test "${_status:?}" -eq 127 || test "${_status:?}" -eq 132; then
+    ui_msg 'Fallbacking to manual input event parsing, waiting input...'
     export KEYCHECK_ENABLED='false'
+    _live_setup_initialize
 
-    true # This is just to waste some time, otherwise the warning about the "timeout" failure may appear after the following message
-
-    ui_msg 'Fallbacking to manual input parsing, waiting input...'
     choose_inputevent "${@}"
     return "${?}"
   fi
@@ -3284,13 +3283,12 @@ choose()
   test -z "${3?}" || ui_msg "${3:?}"
   shift 3
 
-  if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
-    choose_read "${@}"
-  elif "${KEYCHECK_ENABLED:?}"; then
-    choose_keycheck "${@}"
-  else
-    choose_inputevent "${@}"
-  fi
+  case "${INPUT_SELECTED?}" in
+    'read') choose_read "${@}" ;;
+    'input event') choose_inputevent "${@}" ;;
+    'keycheck') choose_keycheck "${@}" ;;
+    *) ;;
+  esac
   _last_status="${?}"
   if test "${_last_status:?}" -eq 123; then
     ui_msg 'Invalid choice!!!'
@@ -3310,16 +3308,23 @@ write_separator_line()
 
 _live_setup_initialize()
 {
-  ui_msg_empty_line
   if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
-    ui_msg 'Using: read'
+    INPUT_SELECTED='read'
   elif "${KEYCHECK_ENABLED:?}"; then
-    ui_msg 'Using: keycheck'
+    INPUT_SELECTED='keycheck'
   else
-    ui_msg 'Using: input event'
-    inputevent_initialize
+    INPUT_SELECTED='input event'
   fi
+
   ui_msg_empty_line
+  ui_msg "Using: ${INPUT_SELECTED?}"
+  ui_msg_empty_line
+
+  case "${INPUT_SELECTED?}" in
+    'input event') inputevent_initialize ;;
+    'read' | 'keycheck') ;;
+    *) ui_error "Invalid input handling selected: ${INPUT_SELECTED?}" ;;
+  esac
 }
 
 _live_setup_key_test()
@@ -3372,22 +3377,19 @@ live_setup_choice()
 
   if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then
     if test "${LIVE_SETUP_DEFAULT:?}" -ne 0; then
+      _live_setup_initialize
       LIVE_SETUP_ENABLED='true'
     elif test "${LIVE_SETUP_TIMEOUT:?}" -gt 0; then
-
       _live_setup_initialize
+
       _live_setup_choice_msg "${LIVE_SETUP_TIMEOUT}"
-
-      if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
-        choose_read_with_timeout "${LIVE_SETUP_TIMEOUT}"
-      elif "${KEYCHECK_ENABLED:?}"; then
-        choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}"
-      else
-        choose_inputevent "${LIVE_SETUP_TIMEOUT}"
-      fi
-
+      case "${INPUT_SELECTED?}" in
+        'read') choose_read_with_timeout "${LIVE_SETUP_TIMEOUT}" ;;
+        'input event') choose_inputevent "${LIVE_SETUP_TIMEOUT}" ;;
+        'keycheck') choose_keycheck_with_timeout "${LIVE_SETUP_TIMEOUT}" ;;
+        *) ;;
+      esac
       if test "${?}" = '3'; then LIVE_SETUP_ENABLED='true'; fi
-
     fi
   fi
   readonly LIVE_SETUP_ENABLED
