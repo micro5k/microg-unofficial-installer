@@ -3354,7 +3354,7 @@ _live_setup_key_test()
 _live_setup_choice_msg()
 {
   local _msg _sep
-  if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
+  if test "${INPUT_TYPE?}" = 'read'; then
     _msg='INFO: Press the + sign button on your keyboard to enable live setup.'
   else
     _msg='INFO: Press the VOLUME + key to enable live setup.'
