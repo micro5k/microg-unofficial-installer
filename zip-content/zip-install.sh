@@ -208,13 +208,18 @@ if ! is_root; then
       ui_error_msg 'Unable to find myself'
       exit 3
     }
-    exec su 0 sh -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG:-0}' DRY_RUN='${DRY_RUN:-0}' KEY_TEST_ONLY='${KEY_TEST_ONLY:-0}' FORCE_HW_KEYS='${FORCE_HW_KEYS:-0}' CI='${CI:-false}' TMPDIR='${TMPDIR:-}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_error_msg 'failed: exec'
+    exec su 0 sh -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG-}' DRY_RUN='${DRY_RUN-}' KEY_TEST_ONLY='${KEY_TEST_ONLY-}' FORCE_HW_KEYS='${FORCE_HW_KEYS-}' CI='${CI:-false}' TMPDIR='${TMPDIR:-}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_error_msg 'failed: exec'
     exit "${?}"
   fi
 
   ui_error_msg 'You must execute this as root!!!'
   exit 4
 fi
+
+test -n "${DEBUG_LOG-unset}" || unset DEBUG_LOG
+test -n "${DRY_RUN-unset}" || unset DRY_RUN
+test -n "${KEY_TEST_ONLY-unset}" || unset KEY_TEST_ONLY
+test -n "${FORCE_HW_KEYS-unset}" || unset FORCE_HW_KEYS
 
 propagate_busybox()
 {
