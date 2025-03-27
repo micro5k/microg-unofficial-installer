@@ -824,20 +824,6 @@ is_string_starting_with()
   return 1 # NOT found
 }
 
-verify_keycheck_compatibility()
-{
-  if test "${BUILD_MANUFACTURER?}" = 'OnePlus' && test "${BUILD_DEVICE?}" = 'OnePlus6'; then
-    : # OnePlus 6
-  elif test "${BUILD_MANUFACTURER?}" = 'Google' && test "${BUILD_DEVICE?}" = 'blueline'; then
-    : # Google Pixel 3
-  else
-    return # OK
-  fi
-
-  # It doesn't work properly on these devices
-  export KEYCHECK_ENABLED='false'
-}
-
 _write_test()
 {
   if test ! -d "${1:?}"; then
@@ -2071,6 +2057,18 @@ package_extract_file()
   unzip -opq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" || ui_error "Failed to extract the file '${1}' from this archive" 94
 }
 
+package_extract_file_may_fail()
+{
+  {
+    unzip -o -p -qq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" && test -s "${2:?}"
+  } ||
+    {
+      rm -f -- "${2:?}" || :
+      ui_warning "Failed to extract the file '${1}' from this archive"
+      return 1
+    }
+}
+
 custom_package_extract_dir()
 {
   mkdir -p "${2:?}" || ui_error "Failed to create the dir '${2}' for extraction"
@@ -2977,6 +2975,18 @@ _choose_remapper()
   esac
 }
 
+_keycheck_initialize()
+{
+  test "${TEST_INSTALL:-false}" = 'false' || return 1
+
+  KEYCHECK_PATH="${TMP_PATH:?}/bin/keycheck"
+  package_extract_file_may_fail 'misc/keycheck/keycheck-arm.bin' "${KEYCHECK_PATH:?}"
+
+  test -e "${KEYCHECK_PATH:?}" || return 2
+  chmod 0755 "${KEYCHECK_PATH:?}" || ui_error "chmod failed on keycheck" # Give execution rights
+  return 0
+}
+
 _keycheck_map_keycode_to_key()
 {
   case "${1:?}" in
@@ -3312,8 +3322,6 @@ _live_setup_initialize()
   if test "${INPUT_TYPE?}" = 'auto'; then
     if test "${INPUT_FROM_TERMINAL:?}" = 'true'; then
       INPUT_TYPE='read'
-    elif "${KEYCHECK_ENABLED:?}"; then
-      INPUT_TYPE='keycheck'
     else
       INPUT_TYPE='input event'
     fi
@@ -3325,7 +3333,8 @@ _live_setup_initialize()
 
   case "${INPUT_TYPE?}" in
     'input event') inputevent_initialize ;;
-    'read' | 'keycheck') ;;
+    'keycheck') _keycheck_initialize || ui_error 'Failed to initialize keycheck' ;;
+    'read') ;;
     *) ui_error "Invalid input handling selected: ${INPUT_TYPE?}" ;;
   esac
 }
@@ -3375,7 +3384,6 @@ _live_setup_choice_msg()
 live_setup_choice()
 {
   LIVE_SETUP_ENABLED='false'
-  verify_keycheck_compatibility
   test "${KEY_TEST_ONLY:?}" -eq 0 || _live_setup_key_test
 
   if test "${LIVE_SETUP_ALLOWED:?}" = 'true'; then

@@ -127,8 +127,6 @@ unset -f _log_path_setter || true
 readonly LOG_PATH
 export LOG_PATH
 
-export KEYCHECK_ENABLED='false'
-
 ### FUNCTIONS ###
 
 _send_text_to_recovery()
@@ -282,18 +280,6 @@ package_extract_file()
     }
 }
 
-package_extract_file_may_fail()
-{
-  {
-    unzip -o -p -qq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" && test -s "${2:?}"
-  } ||
-    {
-      rm -f -- "${2:?}" || true
-      ui_debug "Failed to extract the file '${1}' from this archive"
-      return 1
-    }
-}
-
 package_extract_file_safe()
 {
   "${OUR_BB}" unzip -opq "${ZIPFILE:?}" "${1:?}" 1> "${2:?}" || ui_error "Failed to extract the file '${1}' from this archive" 83
@@ -342,7 +328,7 @@ detect_recovery_arch()
 detect_recovery_arch
 
 OUR_BB="${BASE_TMP_PATH:?}/busybox"
-if test -n "${CUSTOM_BUSYBOX:-}" && test -e "${CUSTOM_BUSYBOX:?}"; then
+if test -n "${CUSTOM_BUSYBOX-}" && test -x "${CUSTOM_BUSYBOX:?}"; then
   OUR_BB="${CUSTOM_BUSYBOX:?}"
   ui_debug "Using custom BusyBox... '${OUR_BB:?}'"
 elif test "${RECOVERY_ARCH}" = 'x86_64'; then
@@ -354,16 +340,14 @@ elif test "${RECOVERY_ARCH}" = 'x86'; then
 elif test "${RECOVERY_ARCH}" = 'arm64-v8a'; then
   ui_debug 'Extracting 64-bit ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm64.bin' "${OUR_BB:?}"
-  package_extract_file_may_fail 'misc/keycheck/keycheck-arm.bin' "${BASE_TMP_PATH:?}/keycheck"
 elif test "${RECOVERY_ARCH}" = 'armeabi-v7a' || test "${RECOVERY_ARCH}" = 'armeabi'; then
   ui_debug 'Extracting ARM BusyBox...'
   package_extract_file 'misc/busybox/busybox-arm.bin' "${OUR_BB:?}"
-  package_extract_file_may_fail 'misc/keycheck/keycheck-arm.bin' "${BASE_TMP_PATH:?}/keycheck"
 fi
-if ! test -e "${OUR_BB:?}"; then ui_error 'BusyBox not found'; fi
+if test ! -e "${OUR_BB:?}"; then ui_error 'BusyBox not found'; fi
 
 # Give execution rights (if needed)
-if test -z "${CUSTOM_BUSYBOX:-}" || test "${OUR_BB:?}" != "${CUSTOM_BUSYBOX:?}"; then
+if test -z "${CUSTOM_BUSYBOX-}" || test "${OUR_BB:?}" != "${CUSTOM_BUSYBOX:?}"; then
   # Legacy versions of chmod don't support +x and --
   chmod 0755 "${OUR_BB:?}" || ui_error "chmod failed on '${OUR_BB:?}'" # Needed to make working the "safe" functions
 fi
@@ -423,25 +407,10 @@ DEBUG_LOG="$(_get_common_setting 'DEBUG_LOG' "${DEBUG_LOG:-0}")"
 test "${DEBUG_LOG:?}" -ne 0 && enable_debug_log # Enable file logging if needed
 
 LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED:-true}"
-KEYCHECK_PATH=''
-if test "${TEST_INSTALL:-false}" != 'false'; then
-  "${OUR_BB:?}" rm -f "${BASE_TMP_PATH:?}/keycheck" || ui_error "Failed to remove keycheck"
-else
-  # Setup Keycheck in the temp folder
-  if test -e "${BASE_TMP_PATH:?}/keycheck"; then
-    KEYCHECK_PATH="${TMP_PATH:?}/bin/keycheck"
-    "${OUR_BB:?}" mv -f "${BASE_TMP_PATH:?}/keycheck" "${KEYCHECK_PATH:?}" || ui_error "Failed to move keycheck to the bin folder"
-    # Give execution rights
-    "${OUR_BB:?}" chmod 0755 "${KEYCHECK_PATH:?}" || ui_error "chmod failed on keycheck"
-    export KEYCHECK_ENABLED='true'
-  fi
-fi
+if test "${CI:-false}" != 'false'; then LIVE_SETUP_ALLOWED='false'; fi # Live setup under continuous integration systems doesn't make sense
 
-# Live setup under continuous integration systems doesn't make sense
-if test "${CI:-false}" != 'false'; then LIVE_SETUP_ALLOWED='false'; fi
-
-readonly LIVE_SETUP_ALLOWED KEYCHECK_PATH
-export LIVE_SETUP_ALLOWED KEYCHECK_PATH
+readonly LIVE_SETUP_ALLOWED
+export LIVE_SETUP_ALLOWED
 
 # Extract scripts
 ui_debug 'Extracting scripts...'
