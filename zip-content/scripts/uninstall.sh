@@ -81,6 +81,7 @@ NewPipeLegacy|org.schabi.newpipelegacy
 NewPipeLegacyRevo|org.schabi.newpipelegacy.Revo
 YouTube|com.google.android.youtube
 YouTubeMusicPrebuilt|com.google.android.apps.youtube.music
+MyLocation|com.mirfatif.mylocation
 
 |com.qualcomm.location
 AMAPNetworkLocation|com.amap.android.location
