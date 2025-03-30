@@ -1356,6 +1356,10 @@ clean_previous_installations()
 {
   local _initial_free_space
 
+  if test "${SETUP_TYPE?}" = 'uninstall'; then
+    ui_msg 'Uninstalling...'
+  fi
+
   test "${DRY_RUN:?}" -eq 0 || return
 
   if _write_test "${SYS_PATH:?}/etc"; then
@@ -1864,11 +1868,7 @@ perform_installation()
   perform_secure_copy_to_device 'framework'
   if test "${PRIVAPP_DIRNAME:?}" != 'app'; then perform_secure_copy_to_device "${PRIVAPP_DIRNAME:?}"; fi
   perform_secure_copy_to_device 'app'
-
-  if test -d "${TMP_PATH:?}/files/bin"; then
-    ui_msg 'Installing utilities...'
-    perform_secure_copy_to_device 'bin'
-  fi
+  perform_secure_copy_to_device 'bin'
 }
 
 finalize_correctly()

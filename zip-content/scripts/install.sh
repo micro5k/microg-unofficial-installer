@@ -61,9 +61,6 @@ display_info
 ui_msg_empty_line
 
 if test "${SETUP_TYPE:?}" = 'install'; then
-  ui_msg 'Starting installation...'
-  ui_msg_empty_line
-
   # Extracting
   ui_msg 'Extracting...'
   custom_package_extract_dir 'origin' "${TMP_PATH:?}"
@@ -146,9 +143,6 @@ if test "${SETUP_TYPE:?}" = 'install'; then
       RESET_GMS_DATA_OF_ALL_APPS='0'
     fi
   fi
-else
-  ui_msg 'Starting uninstallation...'
-  ui_msg_empty_line
 fi
 
 if test "${SETUP_TYPE:?}" = 'install'; then
