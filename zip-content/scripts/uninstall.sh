@@ -204,6 +204,8 @@ delete_folder_content_silent()
 INTERNAL_MEMORY_PATH='/sdcard0'
 if test -e '/mnt/sdcard'; then INTERNAL_MEMORY_PATH='/mnt/sdcard'; fi
 
+delete "${SYS_PATH:?}"/addon.d/*-microg.sh
+
 uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
   if test -n "${INTERNAL_NAME}"; then
     delete "${SYS_PATH:?}/${PRIVAPP_DIRNAME:?}/${INTERNAL_NAME}"
@@ -300,10 +302,10 @@ if test "${STATUS}" -ne 0; then exit "${STATUS}"; fi
 
 framework_uninstall_list | while IFS='|' read -r INTERNAL_NAME _; do
   if test -n "${INTERNAL_NAME}"; then
-    delete "${SYS_PATH:?}/etc/permissions/${INTERNAL_NAME:?}.xml"
     delete "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.jar"
     delete "${SYS_PATH:?}/framework/${INTERNAL_NAME:?}.odex"
     delete "${SYS_PATH:?}"/framework/oat/*/"${INTERNAL_NAME:?}.odex"
+    delete "${SYS_PATH:?}/etc/permissions/${INTERNAL_NAME:?}.xml"
 
     # Dalvik cache
     delete "${DATA_PATH:?}"/dalvik-cache/*/system@framework@"${INTERNAL_NAME:?}".jar@classes*
@@ -341,7 +343,6 @@ done
 
 delete "${DATA_PATH:?}"/backup/com.google.android.gms.backup.BackupTransportService
 
-delete "${SYS_PATH:?}"/addon.d/*-microg.sh
 delete "${SYS_PATH:?}"/addon.d/*-microg-*.sh
 delete "${SYS_PATH:?}"/addon.d/*-unifiednlp.sh
 delete "${SYS_PATH:?}"/addon.d/*-mapsapi.sh
@@ -377,9 +378,9 @@ delete "${SYS_PATH:?}"/etc/sysconfig/microg-*.xml
 delete "${SYS_PATH:?}"/etc/preferred-apps/google.xml
 
 delete "${SYS_PATH:?}/bin/minutil"
+delete "${SYS_PATH:?}/etc/org.fdroid.fdroid/additional_repos.xml"
 delete "${SYS_PATH:?}/etc/sysconfig/features.xml"
 delete "${SYS_PATH:?}/etc/sysconfig/google.xml"
-delete "${SYS_PATH:?}/etc/org.fdroid.fdroid/additional_repos.xml"
 delete "${SYS_PATH:?}/etc/microg_device_profile.xml"
 delete "${SYS_PATH:?}/etc/microg.xml"
 
