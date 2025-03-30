@@ -1872,14 +1872,21 @@ perform_installation()
 finalize_correctly()
 {
   test "${DRY_RUN:?}" -ne 0 || rm -f -- "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || :
-  deinitialize
-  touch "${TMP_PATH:?}/installed"
 
   case "${SETUP_TYPE?}" in
     'install') ui_msg 'Installation finished.' ;;
-    'uninstall') ui_msg 'Uninstallation finished.' ;;
-    *) ui_error 'Invalid setup type' ;;
+    'uninstall')
+      delete_dir_if_empty "${SYS_PATH:?}/etc/zips"
+      ui_msg 'Uninstallation finished.'
+      ;;
+    *)
+      deinitialize
+      ui_error 'Invalid setup type'
+      ;;
   esac
+
+  deinitialize
+  touch "${TMP_PATH:?}/installed"
 }
 
 # Error checking functions
@@ -2225,9 +2232,10 @@ delete_if_sha256_match()
 
 delete_dir_if_empty()
 {
-  if test -d "$1"; then
-    ui_debug "Deleting '$1' folder (if empty)..."
-    rmdir --ignore-fail-on-non-empty -- "$1" || ui_error "Failed to delete the '$1' folder" 104
+  if test -d "${1:?}"; then
+    ui_debug "Deleting '${1?}' folder (if empty)..."
+    test "${DRY_RUN:?}" -eq 0 || return
+    rmdir --ignore-fail-on-non-empty -- "${1:?}" || ui_error "Failed to delete the '${1?}' folder" 104
   fi
 }
 

@@ -368,8 +368,6 @@ delete "${SYS_PATH:?}"/etc/permissions/privapp-permissions-org.microG.xml
 delete "${SYS_PATH:?}"/etc/permissions/privapp-permissions-microg.xml
 delete "${SYS_PATH:?}"/etc/permissions/permissions_org.fdroid.fdroid.privileged.xml
 
-delete "${SYS_PATH:?}"/etc/sysconfig/features.xml
-delete "${SYS_PATH:?}"/etc/sysconfig/google.xml
 delete "${SYS_PATH:?}"/etc/sysconfig/google_build.xml
 delete "${SYS_PATH:?}"/etc/sysconfig/org.microG.xml
 delete "${SYS_PATH:?}"/etc/sysconfig/microg.xml
@@ -377,11 +375,14 @@ delete "${SYS_PATH:?}"/etc/sysconfig/microg-*.xml
 
 delete "${SYS_PATH:?}"/etc/preferred-apps/google.xml
 
+delete "${SYS_PATH:?}/bin/minutil"
+delete "${SYS_PATH:?}/etc/sysconfig/features.xml"
+delete "${SYS_PATH:?}/etc/sysconfig/google.xml"
 delete "${SYS_PATH:?}/etc/org.fdroid.fdroid/additional_repos.xml"
-delete "${SYS_PATH:?}/etc/microg.xml"
 delete "${SYS_PATH:?}/etc/microg_device_profile.xml"
+delete "${SYS_PATH:?}/etc/microg.xml"
 
-if test -e "${SYS_PATH:?}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/org.fdroid.fdroid" || true; fi
+if test -d "${SYS_PATH:?}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-non-empty -- "${SYS_PATH:?}/etc/org.fdroid.fdroid" || :; fi
 
 # Legacy file
 delete "${SYS_PATH:?}/etc/zips/ug.prop"
