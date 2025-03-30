@@ -1375,9 +1375,11 @@ clean_previous_installations()
 
   delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
 
-  ui_debug ''
-  _wait_free_space_changes 5 "${_initial_free_space:?}" # Reclaiming free space may take some time
-  ui_debug ''
+  if test "${SETUP_TYPE?}" != 'uninstall'; then
+    ui_debug ''
+    _wait_free_space_changes 5 "${_initial_free_space:?}" # Reclaiming free space may take some time
+    ui_debug ''
+  fi
 }
 
 _move_app_into_subfolder()
