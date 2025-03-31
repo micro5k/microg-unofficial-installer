@@ -2114,21 +2114,21 @@ reset_gms_data_of_all_apps()
 }
 
 # Hash related functions
-verify_sha1()
+verify_sha1_hash()
 {
-  if ! test -e "$1"; then
-    ui_debug "The file to verify is missing => '$1'"
-    return 1 # Failed
+  local _v_filename _v_file_hash
+
+  _v_filename="${2:?}/${1:?}"
+  test -f "${_v_filename:?}" || ui_error "The file to verify is missing => '${_v_filename?}'"
+
+  _v_file_hash="$(sha1sum -- "${_v_filename:?}" | cut -d ' ' -f '1' -s)" || ui_error "Failed to calculate SHA1 hash of '${_v_filename?}'"
+  if test -z "${_v_file_hash?}" || test "${_v_file_hash:?}" != "${3?}"; then
+    ui_msg "Verifying ${1?}... ERROR"
+    return 1
   fi
-  ui_debug "$1"
 
-  local file_name="$1"
-  local hash="$2"
-  local file_hash
-
-  file_hash="$(sha1sum "${file_name}" | cut -d ' ' -f 1)"
-  if test -z "${file_hash}" || test "${hash}" != "${file_hash}"; then return 1; fi # Failed
-  return 0                                                                         # Success
+  ui_msg "Verifying ${1?}... OK"
+  return 0
 }
 
 # File / folder related functions
@@ -2270,7 +2270,7 @@ extract_libs()
 {
   local _lib_selected _curr_arch _backup_ifs
 
-  ui_msg "Extracting libs from ${1:?}/${2:?}.apk..."
+  ui_msg "Extracting libs..."
   create_dir "${TMP_PATH:?}/libs"
   zip_extract_dir "${TMP_PATH:?}/files/${1:?}/${2:?}.apk" 'lib' "${TMP_PATH:?}/libs"
 
@@ -2387,11 +2387,7 @@ setup_app()
 
     if test "${_install:?}" -ne 0 || test "${_optional:?}" != 'true'; then
       ui_msg "Enabling: ${_vanity_name:?}"
-
-      ui_msg_sameline_start 'Verifying... '
-      ui_debug ''
-      verify_sha1 "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.apk" "${_file_hash:?}" || ui_error "Failed hash verification of '${_vanity_name?}'"
-      ui_msg_sameline_end 'OK'
+      verify_sha1_hash "${_filename:?}.apk" "${TMP_PATH:?}/origin/${_dir:?}" "${_file_hash:?}" || ui_error "Failed hash verification of '${_vanity_name?}'"
 
       if test "${API:?}" -ge 21; then
         _output_dir="${_dir:?}/${_output_name:?}"
@@ -2475,11 +2471,7 @@ setup_lib()
 
     if test "${_install:?}" -ne 0 || test "${_optional:?}" != 'true'; then
       ui_msg "Enabling: ${_vanity_name:?}"
-
-      ui_msg_sameline_start 'Verifying... '
-      ui_debug ''
-      verify_sha1 "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.jar" "${_file_hash:?}" || ui_error "Failed hash verification of '${_vanity_name?}'"
-      ui_msg_sameline_end 'OK'
+      verify_sha1_hash "${_filename:?}.jar" "${TMP_PATH:?}/origin/${_dir:?}" "${_file_hash:?}" || ui_error "Failed hash verification of '${_vanity_name?}'"
 
       mkdir -p "${TMP_PATH:?}/files/${_output_dir:?}" || ui_error "Failed to create the folder for '${_vanity_name?}'"
 
