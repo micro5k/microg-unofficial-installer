@@ -612,22 +612,30 @@ _find_and_mount_system()
 
 generate_mountpoint_list()
 {
-  local _mp_list _mp
+  local _mp_list _use_dummy _mp
 
   _mp_list=''
+  _use_dummy='false'
   for _mp in "${2-}" "/mnt/${1:?}" "${3-}" "/${1:?}"; do
     test -n "${_mp?}" || continue
 
     if test -L "${_mp:?}"; then
-      # It detect the case where there is NO real partition but only a symbolic link to a folder under /system (example: /product -> '/system/product').
-      # It works when inside Android but when inside recovery the symbolic link is missing, so the other case is handled directly inside mount_partition_if_possible()
+      # It detect the case where there is NO real partition but only a symbolic link to a folder under /system (example: /product -> '/system/product')
       ui_debug "INFO: ${_mp?} is a symlink to $(readlink "${_mp?}" || :)"
+      _use_dummy='true'
     elif test -r "${_mp:?}"; then
       _mp="$(_canonicalize "${_mp:?}")"
       _mp_list="${_mp_list?}${_mp:?}${NL:?}"
     fi
   done
-  test -n "${_mp_list?}" || return 1 # Empty list
+
+  if test -z "${_mp_list?}"; then
+    if test "${_use_dummy:?}" = 'true'; then
+      _mp_list='dummy'
+    else
+      return 1 # Empty list
+    fi
+  fi
 
   printf '%s' "${_mp_list:?}"
   return 0
@@ -647,14 +655,18 @@ mount_partition_if_possible()
   if test "${_mp_list?}" = 'auto'; then
     _mp_list="$(generate_mountpoint_list "${_partition_name:?}" || :)"
   fi
-  test -n "${_mp_list?}" || return 1 # No usable mountpoint found
+  case "${_mp_list?}" in
+    '') return 1 ;; # No usable mountpoint found
+    'dummy') _mp_list='' ;;
+    *) ;;
+  esac
 
   _backup_ifs="${IFS-}"
   IFS="${NL:?}"
 
   set -f || :
   # shellcheck disable=SC2086 # Word splitting is intended
-  set -- ${_mp_list:?} || ui_error "Failed expanding \${_mp_list} inside mount_partition_if_possible()"
+  set -- ${_mp_list?} || ui_error "Failed expanding \${_mp_list} inside mount_partition_if_possible()"
   set +f || :
 
   IFS="${_backup_ifs?}"
@@ -669,7 +681,7 @@ mount_partition_if_possible()
     fi
   done
 
-  if _manual_partition_mount "${_block_search_list:?}" "${_mp_list:?}" && test -n "${LAST_MOUNTPOINT?}"; then
+  if _manual_partition_mount "${_block_search_list:?}" "${_mp_list?}" && test -n "${LAST_MOUNTPOINT?}"; then
     LAST_PARTITION_MUST_BE_UNMOUNTED=1
     ui_debug "Mounted: ${LAST_MOUNTPOINT?}"
     return 0 # Successfully mounted
