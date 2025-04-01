@@ -1244,7 +1244,7 @@ parse_nv_data()
   _path="$(get_data_folder)" || return 1
   rm -f "${_path:?}/nv_data.bin" || return 1
 
-  adb 1> /dev/null -s "${1:?}" pull '/efs/nv_data.bin' "${_path:?}/nv_data.bin" || return 1
+  adb 1> /dev/null 2>&1 -s "${1:?}" pull '/efs/nv_data.bin' "${_path:?}/nv_data.bin" || return 1
   if test ! -r "${_path:?}/nv_data.bin"; then return 1; fi
 
   HARDWARE_VERSION="$(dd if="${_path:?}/nv_data.bin" skip=1605636 count=18 iflag=skip_bytes,count_bytes status=none)"
