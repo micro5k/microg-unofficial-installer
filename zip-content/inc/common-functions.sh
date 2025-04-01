@@ -1295,8 +1295,9 @@ initialize()
   readonly DATA_PATH
   export DATA_PATH
 
-  # Display header
   display_basic_info
+  test "${DEBUG_LOG_ENABLED:?}" -ne 1 || display_info
+  ui_msg_empty_line
 
   DEST_PATH="${SYS_PATH:?}"
   readonly DEST_PATH
@@ -3346,7 +3347,7 @@ _live_setup_key_test()
   local _count
 
   display_basic_info
-  display_info
+  test "${DEBUG_LOG_ENABLED:?}" -ne 1 || display_info
 
   _live_setup_initialize
   sleep '0.05'

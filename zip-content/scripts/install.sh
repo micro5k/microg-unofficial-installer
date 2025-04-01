@@ -56,10 +56,6 @@ APP_PLAYSTORE="$(parse_setting 'app' 'PLAYSTORE' "${APP_PLAYSTORE-}" 'custom' 'S
 APP_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'app' 'GMAIL_FOR_ANDROID_5_TO_7' "${APP_GMAIL_FOR_ANDROID_5_TO_7-}")"
 APP_ANDROIDAUTO="$(parse_setting 'app' 'ANDROIDAUTO' "${APP_ANDROIDAUTO-}")"
 
-# Display info
-display_info
-ui_msg_empty_line
-
 if test "${SETUP_TYPE:?}" = 'install'; then
   # Extracting
   ui_msg 'Extracting...'
