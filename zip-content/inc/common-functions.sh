@@ -1346,7 +1346,7 @@ initialize()
 
   unset LAST_MOUNTPOINT
   unset LAST_PARTITION_MUST_BE_UNMOUNTED
-  unset CURRENTLY_ROLLBACKING
+  unset CURRENTLY_ROLLING_BACK
 }
 
 deinitialize()
@@ -1600,9 +1600,9 @@ _do_rollback_last_app_internal()
   sed -ie '$ d' "${TMP_PATH:?}/processed-${1:?}s.log" || ui_error "Failed to remove the last line from processed-${1?}s.log"
 
   if command 1> /dev/null -v 'rollback_complete_callback'; then
-    export CURRENTLY_ROLLBACKING='true'
+    export CURRENTLY_ROLLING_BACK='true'
     rollback_complete_callback "${_vanity_name:?}"
-    unset CURRENTLY_ROLLBACKING
+    unset CURRENTLY_ROLLING_BACK
   else
     ui_warning "The function 'rollback_complete_callback' is missing"
   fi
@@ -2394,7 +2394,7 @@ setup_app()
       if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
     fi
 
-    if test -n "${_chosen_option_name?}" && test "${CURRENTLY_ROLLBACKING:-false}" != 'true' && test "${_optional:?}" = 'true'; then
+    if test -n "${_chosen_option_name?}" && test "${CURRENTLY_ROLLING_BACK:-false}" != 'true' && test "${_optional:?}" = 'true'; then
       printf '%s\n' "${_chosen_option_name:?}=${_install:?}" 1>> "${TMP_PATH:?}/saved-choices.dat" || ui_error 'Failed to update saved-choices.dat'
     fi
 
@@ -2419,13 +2419,13 @@ setup_app()
         move_rename_file "${TMP_PATH:?}/origin/etc/default-permissions/default-permissions-${_filename:?}.xml" "${TMP_PATH:?}/files/etc/default-permissions/default-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the default permissions xml of '${_vanity_name?}'"
         _installed_file_list="${_installed_file_list?}|etc/default-permissions/default-permissions-${_output_name:?}.xml"
       fi
-      if test "${_url_handling:?}" != 'false' && test "${CURRENTLY_ROLLBACKING:-false}" != 'true'; then
+      if test "${_url_handling:?}" != 'false' && test "${CURRENTLY_ROLLING_BACK:-false}" != 'true'; then
         test -n "${BASE_SYSCONFIG_XML?}" || ui_error 'You have NOT set the filename of the base sysconfig XML'
         add_line_in_file_after_string "${TMP_PATH:?}/files/${BASE_SYSCONFIG_XML:?}" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${_vanity_name?}'"
       fi
       move_rename_file "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.apk" "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${_vanity_name?}'"
 
-      if test "${CURRENTLY_ROLLBACKING:-false}" != 'true' && test "${_optional:?}" = 'true' && test "$(get_size_of_file "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.apk" || printf '0' || :)" -gt 102400; then
+      if test "${CURRENTLY_ROLLING_BACK:-false}" != 'true' && test "${_optional:?}" = 'true' && test "$(get_size_of_file "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.apk" || printf '0' || :)" -gt 102400; then
         _installed_file_list="${_installed_file_list#|}"
         printf '%s\n' "${_vanity_name:?}|${_output_dir:?}/${_output_name:?}.apk|${_installed_file_list?}" 1>> "${TMP_PATH:?}/processed-${_dir:?}s.log" || ui_error "Failed to update processed-${_dir?}s.log"
       fi
@@ -2478,7 +2478,7 @@ setup_lib()
       if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
     fi
 
-    if test -n "${_chosen_option_name?}" && test "${CURRENTLY_ROLLBACKING:-false}" != 'true' && test "${_optional:?}" = 'true'; then
+    if test -n "${_chosen_option_name?}" && test "${CURRENTLY_ROLLING_BACK:-false}" != 'true' && test "${_optional:?}" = 'true'; then
       printf '%s\n' "${_chosen_option_name:?}=${_install:?}" 1>> "${TMP_PATH:?}/saved-choices.dat" || ui_error 'Failed to update saved-choices.dat'
     fi
 
