@@ -50,7 +50,7 @@ Apps
 +---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
 | [#]_ Gmail 2020.05.31.316831277.release (62209002)                                          | X    |     | 5.0  | 7.1.2 | |no|     | |no|       |         | |fire| |         |
 +---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
-| Legacy components                                                                                                                                                            |
+| *Legacy components*                                                                                                                                                          |
 +---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
 | |GmsCoreVtmLegacy|_ microG Services 0.2.6.13280-vtm (legacy)                                | X    | X   | 2.3  | 3.2.6 | |no-upd| | |no|       |         | |fire| |         |
 +---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
@@ -70,6 +70,8 @@ Apps
 .. code-block:: sh
 
    adb shell "setprop zip.microg-unofficial-installer.USE_MICROG_BY_ALE5000 1"
+
+**IMPORTANT:** While flashing the zip it automatically removes old versions and conflicting GApps components.
 
 Notes
 -----
@@ -126,11 +128,6 @@ Framework library
 - **origin/framework/com.google.android.maps.jar** => microG Maps v1 API 0.1.0 |fire|
 
 |fire| *Original version*.
-
-
-Scripts
--------
-- microG / GApps removal script
 
 
 Components used only during setup (not installed)
