@@ -49,6 +49,10 @@ CONTENTS
 +---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
 | [#]_ Gmail 2020.05.31.316831277.release (62209002)                                          | X    |     | 5.0  | 7.1.2 | |no|     | |no|       |         | |fire| |         |
 +---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
+| **Framework libraries**                                                                                                                                                      |
++---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
+| |MapsV1API|_ microG Maps v1 API 0.1.0                                                       | X    | X   | 2.3  |       | |no|     | |no|       |         | |fire| |         |
++---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
 | **Legacy components**                                                                                                                                                        |
 +---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
 | |GmsCoreVtmLegacy|_ microG Services 0.2.6.13280-vtm (legacy)                                | X    | X   | 2.3  | 3.2.6 | |no-upd| | |no|       |         | |fire| |         |
@@ -108,23 +112,19 @@ Notes
 .. [#] <origin/app/Gmail.apk>
 .. [#] <origin/priv-app/PlayStoreLegacy.apk>
 
+.. |MapsV1API| replace:: |dl|
+.. _MapsV1API: origin/framework/com.google.android.maps.jar
+
 ..
    https://microg.org/dl/core-nightly.apk
 
 
-UnifiedNlp backends (only installed when microG Services <= 0.2.27 are installed)
----------------------------------------------------------------------------------
+UnifiedNlp backends (only installed on Android < 4.4)
+-----------------------------------------------------
 - **origin/app/DejaVuBackend.apk** => Déjà Vu Location Service 1.1.12 |star| |fire|
 - **origin/app/NominatimGeocoderBackend.apk** => Nominatim Geocoder Backend 1.2.2 |star| |fire|
 
 |star| *Can be updated through F-Droid*.
-
-|fire| *Original version*.
-
-
-Framework library
------------------
-- **origin/framework/com.google.android.maps.jar** => microG Maps v1 API 0.1.0 |fire|
 
 |fire| *Original version*.
 
