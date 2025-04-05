@@ -129,6 +129,6 @@ UnifiedNlp backends (only installed on Android < 4.4)
 |fire| *Original version*.
 
 
-Components used only during setup (not installed)
--------------------------------------------------
+Components that are only used during installation but not installed
+-------------------------------------------------------------------
 - BusyBox for Android (`original thread <https://xdaforums.com/t/3348543/>`_) - `More info here <misc/README.rst>`_
