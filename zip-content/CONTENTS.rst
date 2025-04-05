@@ -104,9 +104,9 @@ Notes
 .. |MyLocation| replace:: |dl|
 .. _MyLocation: origin/app/MyLocation.apk
 .. [#] <origin/priv-app/PlayStore.apk>
-.. [#] <origin/priv-app/PlayStoreLegacy.apk>
 .. [#] <origin/priv-app/AndroidAuto.apk>
 .. [#] <origin/app/Gmail.apk>
+.. [#] <origin/priv-app/PlayStoreLegacy.apk>
 
 ..
    https://microg.org/dl/core-nightly.apk
