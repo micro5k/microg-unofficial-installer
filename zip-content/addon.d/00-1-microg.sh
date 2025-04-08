@@ -19,7 +19,7 @@ _display_msg()
   test "${DEBUG_LOG:?}" = 0 || echo "${1?}" 1>> "${DEBUG_LOG_FILE:?}"
 }
 
-# NOTE: The following file come from: https://github.com/LineageOS/android_vendor_lineage/blob/HEAD/prebuilt/common/bin/backuptool.functions
+# NOTE: The following file come from => https://github.com/LineageOS/android_vendor_lineage/blob/HEAD/prebuilt/common/bin/backuptool.functions
 # shellcheck source=/dev/null
 command . '/tmp/backuptool.functions' || {
   _init_debug_log
