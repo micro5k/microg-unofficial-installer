@@ -9,7 +9,8 @@ _init_debug_log()
   DEBUG_LOG_FILE=''
 
   if command 1> /dev/null -v 'getprop' && test "$(getprop 'zip.common.DEBUG_LOG' '0' || :)" = 1; then
-    if test -d "${TMPDIR:-/tmp}" && DEBUG_LOG_FILE="${TMPDIR:-/tmp}/debug-a5k.log" && touch "${DEBUG_LOG_FILE:?}"; then DEBUG_LOG=1; fi
+    if test -d "${TMPDIR:-/tmp}" && DEBUG_LOG_FILE="${TMPDIR:-/tmp}/debug-a5k.log"; then :; else test -d '/postinstall/tmp' && DEBUG_LOG_FILE='/postinstall/tmp/debug-a5k.log'; fi
+    if test -n "${DEBUG_LOG_FILE?}" && touch "${DEBUG_LOG_FILE:?}"; then DEBUG_LOG=1; fi
   fi
 }
 
@@ -24,6 +25,7 @@ _display_msg()
 command . /tmp/backuptool.functions || {
   _init_debug_log
   _display_msg 1>&2 'ERROR: Failed to source backuptool.functions'
+  # shellcheck disable=SC2317
   return 9 || exit 9
 }
 
