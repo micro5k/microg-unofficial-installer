@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.3.8'
+readonly ZIPINSTALL_VERSION='1.3.9'
 
 END_OF_SCRIPT=0
 PATH="${PATH:-/system/bin}:."
@@ -160,14 +160,14 @@ is_root()
   return 1
 }
 
-if test -n "${*}"; then
+if test "${#}" -gt 0; then
   for _param in "${@}"; do
     shift || {
       ui_error_msg 'shift failed'
       exit 6
     }
     # Skip empty parameters or parameters that may get passed due to buggy su implementation
-    if test -z "${_param:-}" || test "${_param:?}" = '--' || test "${_param:?}" = '[su]zip-install.sh'; then continue; fi
+    if test -z "${_param?}" || test "${_param:?}" = '--' || test "${_param:?}" = '[su]zip-install.sh'; then continue; fi
 
     test -e "${_param:?}" || {
       ui_error_msg "ZIP file doesn't exist => '${_param:-}'"
@@ -188,7 +188,7 @@ if test -n "${*}"; then
   unset _param _param_copy
 fi
 
-if test -z "${*}"; then
+if test "${#}" -eq 0; then
   ui_error_msg 'You must specify the ZIP file to install'
   exit 5
 fi
@@ -233,6 +233,7 @@ propagate_busybox()
     return
   }
   PATH="${PATH?}:${TMPDIR:?}/bb-applets"
+  export PATH
 }
 
 unset SCRIPT_NAME
@@ -264,6 +265,8 @@ if test -n "${TMPDIR-}" && test "${TMPDIR:?}" != '/data/local/tmp' && test -w "$
   : # Already ready
 elif test -w '/tmp'; then
   TMPDIR='/tmp'
+elif test -w '/postinstall/tmp'; then
+  TMPDIR='/postinstall/tmp'
 elif test -e '/dev'; then
   mkdir -p '/dev/tmp' || {
     ui_error_msg 'Failed to create a temp folder'
@@ -277,7 +280,7 @@ elif test -e '/dev'; then
   TMPDIR='/dev/tmp'
 fi
 
-if test -z "${TMPDIR:-}" || test ! -w "${TMPDIR:?}"; then
+if test -z "${TMPDIR-}" || test ! -w "${TMPDIR:?}"; then
   ui_error_msg 'Unable to find a temp folder'
   exit 11
 fi

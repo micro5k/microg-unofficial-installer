@@ -127,34 +127,6 @@ ui_msg()
   fi
 }
 
-ui_msg_sameline_start()
-{
-  if test "${RECOVERY_OUTPUT:?}" = 'false'; then
-    printf '%s ' "${1:?}"
-    return
-  elif test -n "${RECOVERY_PIPE?}"; then
-    printf 'ui_print %s' "${1:?}" >> "${RECOVERY_PIPE:?}"
-  else
-    printf 'ui_print %s' "${1:?}" 1>&"${OUTFD:?}"
-  fi
-
-  if test "${DEBUG_LOG_ENABLED:?}" = '1'; then printf 1>&2 '%s\n' "${1:?}"; fi
-}
-
-ui_msg_sameline_end()
-{
-  if test "${RECOVERY_OUTPUT:?}" = 'false'; then
-    printf '%s\n' "${1:?}"
-    return
-  elif test -n "${RECOVERY_PIPE?}"; then
-    printf '%s\nui_print\n' "${1:?}" >> "${RECOVERY_PIPE:?}"
-  else
-    printf '%s\nui_print\n' "${1:?}" 1>&"${OUTFD:?}"
-  fi
-
-  if test "${DEBUG_LOG_ENABLED:?}" = '1'; then printf 1>&2 '%s\n' "${1:?}"; fi
-}
-
 ui_debug()
 {
   _print_text 1>&2 '%s' "${1?}"
