@@ -278,6 +278,8 @@ elif test -d '/dev'; then
     exit 10
   }
   TMPDIR='/dev/tmp'
+else
+  unset TMPDIR
 fi
 
 if test -z "${TMPDIR-}" || test ! -w "${TMPDIR:?}"; then
