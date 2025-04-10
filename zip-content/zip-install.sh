@@ -267,7 +267,7 @@ elif test -w '/tmp'; then
   TMPDIR='/tmp'
 elif test -w '/postinstall/tmp'; then
   TMPDIR='/postinstall/tmp'
-elif test -e '/dev'; then
+elif test -d '/dev'; then
   mkdir -p '/dev/tmp' || {
     ui_error_msg 'Failed to create a temp folder'
     exit 9
