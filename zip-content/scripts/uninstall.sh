@@ -55,6 +55,7 @@ PlayAutoInstallConfig|android.autoinstalls.config.google.nexus
 Velvet|com.google.android.googlequicksearchbox
 GoogleQuickSearchBox|
 PrebuiltGmail|com.google.android.gm
+Gmail|
 PlayGames|com.google.android.play.games
 
 Phonesky|com.android.vending
