@@ -1,1 +1,1 @@
-microG unofficial installer is a flashable zip created for a simple installation of microG on Android.
+microG unofficial installer is a flashable zip created by ale5000 for a simple installation of microG on Android.
