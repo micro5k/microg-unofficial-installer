@@ -16,21 +16,25 @@
     <feature name="com.google.android.feature.PIXEL_2020_MIDYEAR_EXPERIENCE" />
     <feature name="com.google.android.feature.PIXEL_2021_EXPERIENCE" />
     <feature name="com.google.android.feature.PIXEL_2021_MIDYEAR_EXPERIENCE" />
-    <feature name="com.google.android.feature.PIXEL_2022_EXPERIENCE" />
+    <feature name="com.google.android.feature.PIXEL_2022_MIDYEAR_EXPERIENCE" />
     <feature name="com.google.android.feature.TURBO_PRELOAD" />
-    <feature name="com.google.android.apps.photos.PIXEL_2019_PRELOAD" />
 
     <feature name="com.google.android.feature.GLOBAL_ASSIST_TRIGGERING" />
     <feature name="com.google.android.feature.NEXT_GENERATION_ASSISTANT" />
 
     <feature name="com.google.android.apps.dialer.SUPPORTED" />
     <feature name="com.google.android.apps.dialer.call_recording_audio" />
+    <feature name="com.google.android.apps.photos.PIXEL_2019_PRELOAD" />
     <feature name="com.google.android.feature.D2D_CABLE_MIGRATION_FEATURE" />
+    <feature name="com.google.android.feature.DPS" />
+    <feature name="com.google.android.feature.GOOGLE_FI_BUNDLED" />
     <feature name="com.google.android.feature.PERSONAL_SAFETY" />
     <feature name="com.google.android.feature.WELLBEING" />
+    <feature name="com.google.android.googlequicksearchbox.SMARTSPACE_DEVICE_FEATURE" />
 
     <feature name="android.software.live_wallpaper" />
     <feature name="android.hardware.camera.ar" />
     <feature name="android.software.vr.mode" />
+    <feature name="com.google.preload_photos" />
     <feature name="com.nvidia.feature.shield" />
 </config>
