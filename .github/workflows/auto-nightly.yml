@@ -54,11 +54,11 @@ jobs:
           printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
           : "${ZIP_FOLDER:?}" || exit "${?}"
-      - name: "Do we need to release?"
-        id: "release-decision"
+      - name: "Do we need to release the nightly?"
+        id: "nightly-logic"
         shell: bash
         run: |
-          # Do we need to release?
+          # Do we need to release the nightly?
           git fetch -q origin
           CREATE_RELEASE='false'
           IS_LATEST_COMMIT='false'
@@ -72,7 +72,7 @@ jobs:
           printf '%s\n' "${CREATE_RELEASE:?}"
       - name: "Delete previous nightly release"
         uses: actions/github-script@v7
-        if: "${{ steps.release-decision.outputs.CREATE_RELEASE == 'true' }}"
+        if: "${{ steps.nightly-logic.outputs.CREATE_RELEASE == 'true' }}"
         with:
           retries: 3
           script: |
@@ -108,7 +108,7 @@ jobs:
             });
       - name: "Create nightly release"
         uses: softprops/action-gh-release@v2
-        if: "${{ steps.release-decision.outputs.CREATE_RELEASE == 'true' }}"
+        if: "${{ steps.nightly-logic.outputs.CREATE_RELEASE == 'true' }}"
         with:
           name: "${{ steps.build.outputs.ZIP_VERSION }} nightly"
           tag_name: "nightly"
