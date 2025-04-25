@@ -10,6 +10,8 @@
     <privapp-permissions package="com.google.android.gms" sha256-cert-digest="9B:D0:67:27:E6:27:96:C0:13:0E:B6:DA:B3:9B:73:15:74:51:58:2C:BD:13:8E:86:C4:68:AC:C3:95:D1:41:65">
         <permission name="android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST" />
         <permission name="android.permission.INSTALL_LOCATION_PROVIDER" />
+        <permission name="android.permission.INTERACT_ACROSS_PROFILES" />
+        <permission name="android.permission.INTERACT_ACROSS_USERS" />
         <permission name="android.permission.LOCATION_HARDWARE" />
         <permission name="android.permission.MANAGE_USB" />
         <permission name="android.permission.MODIFY_PHONE_STATE" />
