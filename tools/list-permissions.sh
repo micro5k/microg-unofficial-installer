@@ -6,7 +6,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 export SCRIPT_NAME='List permissions used by apps'
-export SCRIPT_VERSION='0.0.2'
+export SCRIPT_VERSION='0.0.3'
 
 # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
 case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'Failed: pipefail' ;; *) ;; esac
@@ -51,9 +51,9 @@ main()
   AAPT2_PATH="$(find_android_build_tool 'aapt2' "${AAPT2_PATH-}")" || AAPT_PATH="$(find_android_build_tool 'aapt' "${AAPT_PATH-}")" || :
 
   if test -n "${AAPT2_PATH-}"; then
-    "${AAPT2_PATH:?}" dump permissions "${@}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' || return "${?}"
+    "${AAPT2_PATH:?}" dump permissions "${@}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL=C sort || return "${?}"
   elif test -n "${AAPT_PATH-}"; then
-    "${AAPT_PATH:?}" dump permissions "${@}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' || return "${?}"
+    "${AAPT_PATH:?}" dump permissions "${@}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL=C sort || return "${?}"
   else
     return 255
   fi
