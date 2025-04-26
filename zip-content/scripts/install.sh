@@ -13,11 +13,11 @@ command . "${TMP_PATH:?}/inc/common-functions.sh" || exit "${?}"
 
 setup_fakestore()
 {
-  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && setup_app 1 '' 'microG Companion (FakeStore)' 'FakeStore' 'priv-app' true false; then
+  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && setup_app 1 '' 'microG Companion' 'FakeStore' 'priv-app' true false; then
     :
-  elif setup_app 1 '' 'microG Companion (FakeStore) - signed by ale5000' 'FakeStoreA5K' 'priv-app' true false; then
+  elif setup_app 1 '' 'microG Companion - signed by ale5000' 'FakeStoreA5K' 'priv-app' true false; then
     :
-  elif setup_app 1 '' 'microG Companion Legacy (FakeStore)' 'FakeStoreLegacy' 'priv-app' true false; then
+  elif setup_app 1 '' 'microG Companion Legacy' 'FakeStoreLegacy' 'priv-app' true false; then
     :
   fi
 }
