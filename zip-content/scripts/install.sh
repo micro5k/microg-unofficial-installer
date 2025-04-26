@@ -102,7 +102,9 @@ if test "${SETUP_TYPE:?}" = 'install'; then
 
   # Store selection
   SELECTED_MARKET='FakeStore'
-  if setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
+  if test "${MAIN_ABI:?}" = 'arm64-v8a' && setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store (ARM64)' 'PlayStoreARM64' 'priv-app' true; then
+    SELECTED_MARKET='PlayStore'
+  elif test "${MAIN_ABI:?}" != 'arm64-v8a' && setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
   elif setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'

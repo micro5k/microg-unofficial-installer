@@ -242,7 +242,7 @@ if test "${OPENSOURCE_ONLY:?}" = 'false'; then
     cp -f -- "${MAIN_DIR:?}/cache/${LOCAL_PATH:?}/${LOCAL_FILENAME:?}.apk" "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}.apk'"
 
     _extract_libs=''
-    if test "${LOCAL_FILENAME:?}" = 'PlayStore'; then _extract_libs='libs'; fi
+    if test "${LOCAL_FILENAME:?}" = 'PlayStore' || test "${LOCAL_FILENAME:?}" = 'PlayStoreARM64'; then _extract_libs='libs'; fi
 
     printf '%s\n' "${LOCAL_PATH:?}/${LOCAL_FILENAME:?}|${MIN_API:?}|${MAX_API?}|${FINAL_FILENAME:?}|${_extract_libs?}|${INTERNAL_NAME:?}|${FILE_HASH:?}" >> "${TEMP_DIR:?}/zip-content/origin/file-list.dat"
   done

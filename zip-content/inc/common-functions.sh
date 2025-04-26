@@ -2283,7 +2283,7 @@ extract_libs()
 
     if test "${_lib_selected:?}" = 'true'; then
       move_rename_dir "${TMP_PATH:?}/selected-libs" "${TMP_PATH:?}/files/${1:?}/lib"
-    elif test "${MAIN_ABI:?}" = 'arm64-v8a' || test "${MAIN_ABI:?}" = 'mips64' || test "${MAIN_ABI:?}" = 'mips'; then
+    elif test "${MAIN_ABI:?}" = 'mips64' || test "${MAIN_ABI:?}" = 'mips'; then
       : # Tolerate missing libraries
     else
       ui_error "Failed to select library"
