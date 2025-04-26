@@ -91,8 +91,9 @@ if test "${SETUP_TYPE:?}" = 'install'; then
 
   setup_app 1 '' 'microG Services Framework Proxy' 'GsfProxyA5K' 'priv-app' false false
 
-  setup_app 1 '' 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false &&
+  if setup_app 1 '' 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false; then
     install_backends='true'
+  fi
 
   if test "${install_backends:?}" = 'true'; then
     setup_app "${APP_DEJAVUBACKEND:?}" 'APP_DEJAVUBACKEND' 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
