@@ -2108,11 +2108,11 @@ verify_sha1_hash()
 
   _v_file_hash="$(sha1sum -- "${_v_filename:?}" | cut -d ' ' -f '1' -s)" || ui_error "Failed to calculate SHA1 hash of '${_v_filename?}'"
   if test -z "${_v_file_hash?}" || test "${_v_file_hash:?}" != "${3?}"; then
-    ui_msg "Verifying ${1?}... ERROR"
+    ui_msg "  Verifying ${1?}... ERROR"
     return 1
   fi
 
-  ui_msg "Verifying ${1?}... OK"
+  ui_msg "  Verifying ${1?}... OK"
   return 0
 }
 
@@ -2255,7 +2255,7 @@ extract_libs()
 {
   local _lib_selected _curr_arch _backup_ifs
 
-  ui_msg "Extracting libs..."
+  ui_msg "  Extracting libs..."
   create_dir "${TMP_PATH:?}/libs"
   zip_extract_dir "${TMP_PATH:?}/files/${1:?}/${2:?}.apk" 'lib' "${TMP_PATH:?}/libs"
 
@@ -2358,8 +2358,6 @@ setup_app()
   _output_dir=''
   _installed_file_list=''
 
-  ui_debug ''
-
   if test "${API:?}" -ge "${_min_api:?}" && test "${API:?}" -le "${_max_api:-999}"; then
     if test "${_optional:?}" = 'true' && test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
       choose "Do you want to install ${_vanity_name:?}?" '+) Yes' '-) No'
@@ -2442,8 +2440,6 @@ setup_lib()
 
   _output_dir="${_dir:?}"
 
-  ui_debug ''
-
   if test "${API:?}" -ge "${_min_api:?}" && test "${API:?}" -le "${_max_api:-999}"; then
     if test "${_optional:?}" = 'true' && test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
       choose "Do you want to install ${_vanity_name:?}?" '+) Yes' '-) No'
@@ -2481,7 +2477,6 @@ setup_lib()
 
 setup_util()
 {
-  ui_debug ''
   ui_msg "Enabling utility: ${2?}"
 
   mkdir -p "${TMP_PATH:?}/files/bin" || ui_error "Failed to create the folder for '${2?}'"
@@ -3276,6 +3271,7 @@ choose()
 {
   local _last_status=0
 
+  ui_msg_empty_line
   ui_msg "QUESTION: ${1:?}"
   test -z "${2?}" || ui_msg "${2:?}"
   test -z "${3?}" || ui_msg "${3:?}"

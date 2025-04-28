@@ -66,6 +66,7 @@ if test "${SETUP_TYPE:?}" = 'install'; then
 
   # Configuring
   ui_msg 'Configuring...'
+  ui_msg_empty_line
 
   set_filename_of_base_sysconfig_xml 'google.xml'
 
