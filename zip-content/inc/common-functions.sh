@@ -1052,12 +1052,12 @@ initialize()
   LIVE_SETUP_DEFAULT="$(parse_setting 'general' 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
   LIVE_SETUP_TIMEOUT="$(parse_setting 'general' 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
 
-  case "${KEY_TEST_ONLY?}" in '' | *[!0-1]*) KEY_TEST_ONLY=1 ;; *) ;; esac
+  case "${KEY_TEST_ONLY?}" in 0 | 1) ;; *) KEY_TEST_ONLY=1 ;; esac
   if test "${KEY_TEST_ONLY:?}" -eq 1; then DRY_RUN=2; fi
   readonly KEY_TEST_ONLY
   export KEY_TEST_ONLY
 
-  case "${DRY_RUN?}" in '' | *[!0-2]*) DRY_RUN=2 ;; *) ;; esac
+  case "${DRY_RUN?}" in 0 | 1 | 2) ;; *) DRY_RUN=2 ;; esac
   readonly DRY_RUN
   export DRY_RUN
 
