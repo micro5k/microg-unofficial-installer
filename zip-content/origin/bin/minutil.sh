@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.3.0'
+readonly SCRIPT_VERSION='1.3.1'
 
 ### CONFIGURATION ###
 
@@ -131,6 +131,15 @@ warn_msg()
   else
     printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1}"
   fi
+}
+
+contains()
+{
+  case "${2?}" in
+    *"${1:?}"*) return 0 ;; # Found
+    *) ;;                   # NOT found
+  esac
+  return 1 # NOT found
 }
 
 _minutil_aligned_print()
@@ -458,13 +467,7 @@ _minutil_package_is_microg()
 
 _minutil_is_perm_granted()
 {
-  if
-    {
-      printf 2> /dev/null '%s\n' "${2?}" || : # Avoid possible broken pipe
-    } | grep -q -m 1 -F -e " ${1:?}: granted=true" && ! {
-      printf 2> /dev/null '%s\n' "${2?}" || : # Avoid possible broken pipe
-    } | grep -q -m 1 -F -e " ${1:?}: granted=false"
-  then
+  if contains " ${1:?}: granted=true" "${2?}" && ! contains " ${1:?}: granted=false" "${2?}"; then
     return 0
   fi
 
