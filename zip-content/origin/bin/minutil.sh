@@ -7,7 +7,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.2.15'
+readonly SCRIPT_VERSION='1.3.0'
 
 ### CONFIGURATION ###
 
@@ -232,7 +232,7 @@ if _minutil_check_getopt; then
   test -n "${NO_COLOR-}" || printf 1>&2 '\033[1;31m\r       \r' || :
 
   if minutil_args="$(
-    getopt -o '+vVhsri:' -l 'version,help,rescan-storage,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n "${SCRIPT_SHORTNAME:?}" -- "${@}"
+    getopt -o '+vVhsmri:' -l 'version,help,rescan-storage,fix-microg,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n "${SCRIPT_SHORTNAME:?}" -- "${@}"
   )"; then
     eval ' \set' '--' "${minutil_args?}" || exit 126
   else
@@ -249,7 +249,6 @@ if test "${#}" -gt 0; then
   for param in "${@}"; do
     if test "${param?}" = '-v'; then
       SCRIPT_VERBOSE='true'
-      : "${SCRIPT_VERBOSE}" # UNUSED
       break
     fi
   done
@@ -272,6 +271,91 @@ _list_account_files()
 /data/system/sync/pending.xml
 /data/system/sync/accounts.xml
 /data/system/sync/status.bin
+EOF
+}
+
+_gms_list_perms()
+{
+  cat << 'EOF'
+android.permission.ACCESS_COARSE_LOCATION
+android.permission.ACCESS_FINE_LOCATION
+android.permission.ACCESS_BACKGROUND_LOCATION
+android.permission.ACCESS_NETWORK_STATE
+android.permission.ACCESS_WIFI_STATE
+android.permission.AUTHENTICATE_ACCOUNTS
+android.permission.BLUETOOTH
+android.permission.BLUETOOTH_ADMIN
+android.permission.BLUETOOTH_ADVERTISE
+android.permission.BLUETOOTH_CONNECT
+android.permission.BLUETOOTH_SCAN
+android.permission.BODY_SENSORS
+android.permission.CAMERA
+android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST
+android.permission.CHANGE_WIFI_STATE
+android.permission.FAKE_PACKAGE_SIGNATURE
+android.permission.FOREGROUND_SERVICE
+android.permission.GET_ACCOUNTS
+android.permission.INSTALL_LOCATION_PROVIDER
+android.permission.INTERACT_ACROSS_PROFILES
+android.permission.INTERACT_ACROSS_USERS
+android.permission.INTERNET
+android.permission.LOCATION_HARDWARE
+android.permission.MANAGE_ACCOUNTS
+android.permission.MANAGE_USB
+android.permission.MODIFY_PHONE_STATE
+android.permission.NETWORK_SCAN
+android.permission.NFC
+android.permission.POST_NOTIFICATIONS
+android.permission.READ_CONTACTS
+android.permission.READ_EXTERNAL_STORAGE
+android.permission.READ_PHONE_STATE
+android.permission.READ_SYNC_SETTINGS
+android.permission.READ_SYNC_STATS
+android.permission.RECEIVE_BOOT_COMPLETED
+android.permission.RECEIVE_SMS
+android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+android.permission.START_ACTIVITIES_FROM_BACKGROUND
+android.permission.SYSTEM_ALERT_WINDOW
+android.permission.UPDATE_APP_OPS_STATS
+android.permission.UPDATE_DEVICE_STATS
+android.permission.USE_BIOMETRIC
+android.permission.USE_CREDENTIALS
+android.permission.USE_FINGERPRINT
+android.permission.WAKE_LOCK
+android.permission.WATCH_APPOPS
+android.permission.WRITE_EXTERNAL_STORAGE
+android.permission.WRITE_SYNC_SETTINGS
+com.google.android.c2dm.permission.RECEIVE
+com.google.android.c2dm.permission.SEND
+com.google.android.gms.auth.api.phone.permission.SEND
+com.google.android.gms.auth.permission.GOOGLE_ACCOUNT_CHANGE
+com.google.android.gms.nearby.exposurenotification.EXPOSURE_CALLBACK
+com.google.android.gms.permission.AD_ID
+com.google.android.gtalkservice.permission.GTALK_SERVICE
+org.microg.gms.STATUS_BROADCAST
+EOF
+}
+
+_store_list_perms()
+{
+  cat << 'EOF'
+android.permission.ACCESS_COARSE_LOCATION
+android.permission.ACCESS_NETWORK_STATE
+android.permission.DELETE_PACKAGES
+android.permission.FAKE_PACKAGE_SIGNATURE
+android.permission.FOREGROUND_SERVICE
+android.permission.GET_ACCOUNTS
+android.permission.INSTALL_PACKAGES
+android.permission.INTERACT_ACROSS_PROFILES
+android.permission.INTERACT_ACROSS_USERS
+android.permission.INTERNET
+android.permission.POST_NOTIFICATIONS
+android.permission.QUERY_ALL_PACKAGES
+android.permission.REQUEST_INSTALL_PACKAGES
+android.permission.USE_CREDENTIALS
+com.google.android.gms.auth.permission.GOOGLE_ACCOUNT_CHANGE
+com.google.android.gms.permission.READ_SETTINGS
+org.microg.gms.permission.READ_SETTINGS
 EOF
 }
 
@@ -359,6 +443,102 @@ minutil_reinstall_package()
 
   unset _package_path _apk_count
   printf '%s\n' "Package ${1:-} reinstalled."
+}
+
+_minutil_package_is_microg()
+{
+  if dumpsys 2> /dev/null package "${1:?}" | grep -q -m 1 -F -e '/org.microg.gms.'; then
+    printf '%s\n' "  ${2?}"
+    return 0
+  fi
+
+  return 1
+}
+
+_minutil_is_perm_granted()
+{
+  if
+    {
+      printf 2> /dev/null '%s\n' "${2?}" || : # Avoid possible broken pipe
+    } | grep -q -m 1 -F -e " ${1:?}: granted=true" && ! {
+      printf 2> /dev/null '%s\n' "${2?}" || : # Avoid possible broken pipe
+    } | grep -q -m 1 -F -e " ${1:?}: granted=false"
+  then
+    return 0
+  fi
+
+  return 1
+}
+
+_minutil_grant_perms()
+{
+  local _status _result _granted_perms_cache
+
+  _granted_perms_cache="$(dumpsys package "${1:?}" | grep -F -e 'granted=')" || return 2
+
+  _status=0
+  while IFS='' read -r _perm; do
+    test -n "${_perm?}" || continue
+    if _minutil_is_perm_granted "${_perm:?}" "${_granted_perms_cache?}"; then continue; fi
+
+    _result="$(pm 2>&1 grant "${1:?}" "${_perm:?}")" || {
+      case "${_result?}" in
+        *"Unknown permission: ${_perm:?}"*)
+          # Permission NOT supported by the ROM
+          if test "${SCRIPT_VERBOSE:?}" = 'false'; then
+            test "${_perm:?}" != 'android.permission.FAKE_PACKAGE_SIGNATURE' || continue                    # May NOT be supported by all ROMs
+            test "${_perm:?}" != 'android.permission.POST_NOTIFICATIONS' || continue                        # NOT supported by old ROMs
+            test "${_perm:?}" != 'com.google.android.gms.auth.permission.GOOGLE_ACCOUNT_CHANGE' || continue # This permission did NOT exist in old versions of microG
+          fi
+          warn_msg "Unknown permission => ${_perm?}"
+          ;;
+        *"Package ${1:?} has not requested permission ${_perm:?}"*)
+          # Permission has NOT been requested by the app (probably it is an old version of microG)
+          test "${SCRIPT_VERBOSE:?}" = 'false' || warn_msg "Permission has NOT been requested by the app => ${_perm?}"
+          ;;
+        *"Permission ${_perm:?} is not a changeable permission type"* | *"Permission ${_perm:?} requested by ${1:?} is not a changeable permission type"*)
+          # Permission CANNOT be granted manually
+          if test "${SCRIPT_VERBOSE:?}" = 'false'; then
+            test "${_perm:?}" != 'android.permission.INTERACT_ACROSS_PROFILES' || continue
+            test "${_perm:?}" != 'android.permission.START_ACTIVITIES_FROM_BACKGROUND' || continue
+          fi
+          warn_msg "NOT a changeable permission => ${_perm?}"
+          ;;
+        *"Permission ${_perm:?} is managed by role"*)
+          # Permission CANNOT be granted manually
+          warn_msg "Permission is managed by role => ${_perm?}"
+          ;;
+        *)
+          _status=255
+          warn_msg "Failed to grant '${_perm?}' to '${1?}'"
+          ;;
+      esac
+      continue
+    }
+    printf '%s\n' "    Granted '${_perm?}' to '${1?}'"
+  done ||
+    {
+      warn_msg "Failed to grant permissions to '${1?}'"
+      return 1
+    }
+
+  return "${_status:?}"
+}
+
+minutil_fix_microg()
+{
+  printf '%s\n\n' 'Granting permissions to microG...'
+  if _minutil_package_is_microg 'com.google.android.gms' 'microG Services'; then
+    _gms_list_perms | _minutil_grant_perms 'com.google.android.gms' || set_status_if_error "${?}"
+    pm 2> /dev/null set-installer 'com.google.android.gms' 'com.android.vending' || :
+    printf '\n'
+  fi
+  if _minutil_package_is_microg 'com.android.vending' 'microG Companion'; then
+    _store_list_perms | _minutil_grant_perms 'com.android.vending' || set_status_if_error "${?}"
+    pm 2> /dev/null set-installer 'com.android.vending' 'com.android.vending' || :
+    printf '\n'
+  fi
+  printf '%s\n' 'Done'
 }
 
 minutil_force_gcm_reconnection()
@@ -552,6 +732,14 @@ while test "${#}" -gt 0; do
       fi
       ;;
 
+    -m | --fix-microg)
+      if test "${SYSTEM_API:?}" -ge 24; then
+        minutil_fix_microg
+      else
+        printf '%s\n' 'Not yet supported'
+      fi
+      ;;
+
     --reset-battery)
       minutil_reset_battery
       ;;
@@ -596,6 +784,7 @@ if test "${DISPLAY_HELP:?}" = 'true'; then
 
   _minutil_aligned_print '-h,--help' 'Show this help'
   _minutil_aligned_print '-s,--rescan-storage' 'Rescan storage to find file changes'
+  _minutil_aligned_print '-m,--fix-microg'
   _minutil_aligned_print '--force-gcm-reconnection' 'Force GCM reconnection'
   _minutil_aligned_print '--remove-all-accounts' 'Remove all accounts from the device (need root)'
   _minutil_aligned_print '--reset-battery' 'Reset battery stats and, if possible, also reset battery fuel gauge chip (need root)'
