@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # shellcheck enable=all
+# shellcheck disable=SC3043 # In POSIX sh, local is undefined
 # shellcheck disable=SC2310 # Ignore: This function is invoked in an 'if' condition so set -e will be disabled
 
 readonly SCRIPT_NAME='MinUtil'
