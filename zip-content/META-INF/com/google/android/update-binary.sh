@@ -5,7 +5,7 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined #
 
-echo 'PRELOADER'
+echo 'PRE-LOADER'
 
 ### INIT OPTIONS ###
 
