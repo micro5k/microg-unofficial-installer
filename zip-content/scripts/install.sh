@@ -57,14 +57,12 @@ APP_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'app' 'GMAIL_FOR_ANDROID_5_TO_7' "
 APP_ANDROIDAUTO="$(parse_setting 'app' 'ANDROIDAUTO' "${APP_ANDROIDAUTO-}")"
 
 if test "${SETUP_TYPE:?}" = 'install'; then
-  # Extracting
   ui_msg 'Extracting...'
   custom_package_extract_dir 'origin' "${TMP_PATH:?}"
   custom_package_extract_dir 'files' "${TMP_PATH:?}"
   custom_package_extract_dir 'addon.d' "${TMP_PATH:?}"
   create_dir "${TMP_PATH:?}/files/etc"
 
-  # Configuring
   ui_msg 'Configuring...'
   ui_msg_empty_line
 
