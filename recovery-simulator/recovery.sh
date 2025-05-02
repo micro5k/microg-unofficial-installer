@@ -262,9 +262,9 @@ if test "${ENV_RESETTED:-false}" = 'false'; then
   reset_env_and_rerun_myself()
   {
     if test "${COVERAGE:-false}" = 'false'; then
-      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${SHELL:?}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_KEYS="${FORCE_HW_KEYS-}" CI="${CI-}" "${SHELL:?}" -- "${THIS_SCRIPT:?}" "${@}"
+      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${SHELL:?}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" DRY_RUN="${DRY_RUN-}" KEY_TEST_ONLY="${KEY_TEST_ONLY-}" INPUT_TYPE="${INPUT_TYPE-}" FORCE_HW_KEYS="${FORCE_HW_KEYS-}" CI="${CI-}" "${SHELL:?}" -- "${THIS_SCRIPT:?}" "${@}"
     else
-      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${SHELL:?}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" FORCE_HW_KEYS="${FORCE_HW_KEYS-}" CI="${CI-}" BASH_XTRACEFD="${BASH_XTRACEFD-}" BASH_ENV="${BASH_ENV-}" OLDPWD="${OLDPWD-}" SHELLOPTS="${SHELLOPTS-}" PS4="${PS4-}" "${SHELL:?}" -x -- "${THIS_SCRIPT:?}" "${@}"
+      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${SHELL:?}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" DRY_RUN="${DRY_RUN-}" KEY_TEST_ONLY="${KEY_TEST_ONLY-}" INPUT_TYPE="${INPUT_TYPE-}" FORCE_HW_KEYS="${FORCE_HW_KEYS-}" CI="${CI-}" BASH_XTRACEFD="${BASH_XTRACEFD-}" BASH_ENV="${BASH_ENV-}" OLDPWD="${OLDPWD-}" SHELLOPTS="${SHELLOPTS-}" PS4="${PS4-}" "${SHELL:?}" -x -- "${THIS_SCRIPT:?}" "${@}"
     fi
   }
 
@@ -274,7 +274,11 @@ fi
 unset ENV_RESETTED
 if test -z "${DEBUG_LOG-}"; then unset DEBUG_LOG; fi
 if test -z "${LIVE_SETUP_ALLOWED-}"; then unset LIVE_SETUP_ALLOWED; fi
-if test -z "${FORCE_HW_KEYS-}"; then unset FORCE_HW_KEYS; fi
+
+test -n "${DRY_RUN-unset}" || unset DRY_RUN
+test -n "${KEY_TEST_ONLY-unset}" || unset KEY_TEST_ONLY
+test -n "${INPUT_TYPE-unset}" || unset INPUT_TYPE
+test -n "${FORCE_HW_KEYS-unset}" || unset FORCE_HW_KEYS
 
 if test -z "${CI-}"; then unset CI; fi
 if test -z "${SHELLOPTS-}"; then unset SHELLOPTS; fi
