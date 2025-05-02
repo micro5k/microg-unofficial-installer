@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.3.1'
+readonly SCRIPT_VERSION='1.3.2'
 
 ### CONFIGURATION ###
 
@@ -539,22 +539,31 @@ _minutil_grant_perms()
   return "${_status:?}"
 }
 
+_minutil_set_installer()
+{
+  test -n "{2?}" || return 2
+  su "${2:?}" pm set-installer "${1:?}" 'com.android.vending'
+}
+
 minutil_fix_microg()
 {
+  local _store_uid
+
   # In some cases ${TMPDIR} is not set and it cause absurd errors with HereDocs
-  if test -z "${TMPDIR-}" && test -w '/data/local/tmp'; then
-    TMPDIR='/data/local/tmp'
-  fi
+  if test -z "${TMPDIR-}" && test -w '/data/local/tmp'; then TMPDIR='/data/local/tmp'; fi
+
+  # Get store uid
+  _store_uid="$(dumpsys 2> /dev/null package 'com.android.vending' | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2-' -s || :)"
 
   printf '%s\n\n' 'Granting permissions to microG...'
   if _minutil_package_is_microg 'com.google.android.gms' 'microG Services'; then
     _gms_list_perms | _minutil_grant_perms 'com.google.android.gms' || set_status_if_error "${?}"
-    pm 2> /dev/null set-installer 'com.google.android.gms' 'com.android.vending' || :
+    _minutil_set_installer 1> /dev/null 2>&1 'com.google.android.gms' "${_store_uid?}" || :
     printf '\n'
   fi
   if _minutil_package_is_microg 'com.android.vending' 'microG Companion'; then
     _store_list_perms | _minutil_grant_perms 'com.android.vending' || set_status_if_error "${?}"
-    pm 2> /dev/null set-installer 'com.android.vending' 'com.android.vending' || :
+    _minutil_set_installer 1> /dev/null 2>&1 'com.android.vending' "${_store_uid?}" || :
     printf '\n'
   fi
   printf '%s\n' 'Done'
