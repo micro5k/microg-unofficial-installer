@@ -3271,7 +3271,7 @@ choose()
 {
   local _last_status=0
 
-  ui_msg_empty_line
+  test "${KEY_TEST_ONLY:?}" -eq 1 || ui_msg_empty_line
   ui_msg "QUESTION: ${1:?}"
   test -z "${2?}" || ui_msg "${2:?}"
   test -z "${3?}" || ui_msg "${3:?}"
