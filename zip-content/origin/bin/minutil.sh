@@ -286,7 +286,8 @@ EOF
 
 _gms_list_perms()
 {
-  cat << 'EOF'
+  {
+    cat << 'EOF'
 android.permission.ACCESS_COARSE_LOCATION
 android.permission.ACCESS_FINE_LOCATION
 android.permission.ACCESS_BACKGROUND_LOCATION
@@ -344,11 +345,16 @@ com.google.android.gms.permission.AD_ID
 com.google.android.gtalkservice.permission.GTALK_SERVICE
 org.microg.gms.STATUS_BROADCAST
 EOF
+  } || {
+    error_msg 'HereDoc failed'
+    return 1
+  }
 }
 
 _store_list_perms()
 {
-  cat << 'EOF'
+  {
+    cat << 'EOF'
 android.permission.ACCESS_COARSE_LOCATION
 android.permission.ACCESS_NETWORK_STATE
 android.permission.DELETE_PACKAGES
@@ -367,6 +373,10 @@ com.google.android.gms.auth.permission.GOOGLE_ACCOUNT_CHANGE
 com.google.android.gms.permission.READ_SETTINGS
 org.microg.gms.permission.READ_SETTINGS
 EOF
+  } || {
+    error_msg 'HereDoc failed'
+    return 1
+  }
 }
 
 _minutil_find_package()
@@ -531,6 +541,11 @@ _minutil_grant_perms()
 
 minutil_fix_microg()
 {
+  # In some cases ${TMPDIR} is not set and it cause absurd errors with HereDocs
+  if test -z "${TMPDIR-}" && test -w '/data/local/tmp'; then
+    TMPDIR='/data/local/tmp'
+  fi
+
   printf '%s\n\n' 'Granting permissions to microG...'
   if _minutil_package_is_microg 'com.google.android.gms' 'microG Services'; then
     _gms_list_perms | _minutil_grant_perms 'com.google.android.gms' || set_status_if_error "${?}"
