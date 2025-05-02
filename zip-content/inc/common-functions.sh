@@ -2565,7 +2565,7 @@ inputevent_initialize()
 
   INPUT_DEVICE_LIST=''
 
-  for _device in 'gpio-keys' 'qpnp_pon' 'sec_key' 'sec_touchkey' 'qwerty' 'qwerty2'; do
+  for _device in 'gpio-keys' 'gpio_keys' 'qpnp_pon' 'sec_key' 'sec_touchkey' 'qwerty' 'qwerty2'; do
     if test "${IS_EMU:?}" != 'true'; then
       case "${_device:?}" in 'qwerty' | 'qwerty2') continue ;; *) ;; esac
     fi
