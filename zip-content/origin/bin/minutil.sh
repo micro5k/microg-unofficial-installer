@@ -142,6 +142,12 @@ contains()
   return 1 # NOT found
 }
 
+_minutil_fix_tmpdir()
+{
+  # In some cases ${TMPDIR} is not set and it cause absurd errors with HereDocs
+  if test -z "${TMPDIR-}" && test -w '/data/local/tmp'; then TMPDIR='/data/local/tmp'; fi
+}
+
 _minutil_aligned_print()
 {
   if test "${EMULATED_PRINTF-}" != '1'; then
@@ -267,7 +273,8 @@ fi
 
 _list_account_files()
 {
-  cat << 'EOF'
+  {
+    cat << 'EOF'
 /data/system_de/0/accounts_de.db
 /data/system_de/0/accounts_de.db-journal
 /data/system_ce/0/accounts_ce.db
@@ -282,6 +289,10 @@ _list_account_files()
 /data/system/sync/accounts.xml
 /data/system/sync/status.bin
 EOF
+  } || {
+    error_msg 'HereDoc failed'
+    return 1
+  }
 }
 
 _gms_list_perms()
@@ -549,8 +560,7 @@ minutil_fix_microg()
 {
   local _store_uid
 
-  # In some cases ${TMPDIR} is not set and it cause absurd errors with HereDocs
-  if test -z "${TMPDIR-}" && test -w '/data/local/tmp'; then TMPDIR='/data/local/tmp'; fi
+  _minutil_fix_tmpdir
 
   # Get store uid
   _store_uid="$(dumpsys 2> /dev/null package 'com.android.vending' | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2-' -s || :)"
@@ -600,7 +610,7 @@ minutil_remove_all_accounts()
 {
   _is_caller_root || return 1
 
-  test -e '/data' || {
+  test -d '/data' || {
     error_msg '/data NOT found'
     return 1
   }
@@ -608,6 +618,8 @@ minutil_remove_all_accounts()
     error_msg '/data is NOT writable'
     return 1
   }
+
+  _minutil_fix_tmpdir
 
   _list_account_files | while IFS='' read -r _file; do
     if test -e "${_file:?}"; then
