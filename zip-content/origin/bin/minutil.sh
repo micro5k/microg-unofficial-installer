@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.3.3'
+readonly SCRIPT_VERSION='1.3.4'
 
 ### CONFIGURATION ###
 
@@ -513,19 +513,19 @@ _minutil_grant_perms()
   _status=0
   while IFS='' read -r _perm; do
     if _minutil_is_perm_granted "${_perm:?}"; then continue; fi
-    if _minutil_is_system_perm "${_perm:?}" && ! contains "${_perm:?}" "${CACHE_USABLE_PERMS:?}"; then
-      test "${SCRIPT_VERBOSE:?}" = 'false' || warn_msg "Permission NOT supported by your ROM => ${_perm?}"
-      continue
-    fi
 
     _result="$(pm 2>&1 grant "${1:?}" "${_perm:?}")" || {
       case "${_result?}" in
         *"Unknown permission: ${_perm:?}"*)
           # Unknown permission
-          if test "${SCRIPT_VERBOSE:?}" = 'false'; then
-            test "${_perm:?}" != 'com.google.android.gms.auth.permission.GOOGLE_ACCOUNT_CHANGE' || continue # This permission did NOT exist in old versions of microG
+          if test "${SCRIPT_VERBOSE:?}" != 'false'; then
+            # ${CACHE_USABLE_PERMS} does NOT always list all permissions so it can't be used to filter permissions earlier in the code
+            if _minutil_is_system_perm "${_perm:?}" && ! contains "${_perm:?}" "${CACHE_USABLE_PERMS:?}"; then
+              warn_msg "Permission NOT supported by your ROM => ${_perm?}"
+            else
+              warn_msg "Unknown permission => ${_perm?}"
+            fi
           fi
-          warn_msg "Unknown permission => ${_perm?}"
           ;;
         *"Package ${1:?} has not requested permission ${_perm:?}"*)
           # Permission has NOT been requested by the app (probably it is an old version of microG)
@@ -568,7 +568,7 @@ minutil_fix_microg()
 
   _minutil_fix_tmpdir
 
-  CACHE_USABLE_PERMS="$(pm list permissions | cut -d ':' -f '2-' -s)" || return 2
+  CACHE_USABLE_PERMS="$(pm list permissions | grep -F -e 'permission:' | cut -d ':' -f '2-' -s)" || return 2
   _store_uid="$(dumpsys 2> /dev/null package 'com.android.vending' | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2-' -s || :)" # Get store uid
 
   printf '%s\n\n' 'Granting permissions to microG...'
