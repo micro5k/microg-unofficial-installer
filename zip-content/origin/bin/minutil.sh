@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.3.2'
+readonly SCRIPT_VERSION='1.3.3'
 
 ### CONFIGURATION ###
 
@@ -488,31 +488,41 @@ _minutil_package_is_microg()
 
 _minutil_is_perm_granted()
 {
-  if contains " ${1:?}: granted=true" "${2?}" && ! contains " ${1:?}: granted=false" "${2?}"; then
+  if contains " ${1:?}: granted=true" "${CACHE_GRANTED_PERMS?}" && ! contains " ${1:?}: granted=false" "${CACHE_GRANTED_PERMS?}"; then
     return 0
   fi
 
   return 1
 }
 
+_minutil_is_system_perm()
+{
+  case "${1:?}" in
+    'android.permission.'* | 'com.android.permission.'*) return 0 ;;
+    *) ;;
+  esac
+  return 1
+}
+
 _minutil_grant_perms()
 {
-  local _status _result _granted_perms_cache
+  local _status _result
 
-  _granted_perms_cache="$(dumpsys package "${1:?}" | grep -F -e 'granted=')" || return 2
+  CACHE_GRANTED_PERMS="$(dumpsys package "${1:?}" | grep -F -e 'granted=')" || return 3
 
   _status=0
   while IFS='' read -r _perm; do
-    test -n "${_perm?}" || continue
-    if _minutil_is_perm_granted "${_perm:?}" "${_granted_perms_cache?}"; then continue; fi
+    if _minutil_is_perm_granted "${_perm:?}"; then continue; fi
+    if _minutil_is_system_perm "${_perm:?}" && ! contains "${_perm:?}" "${CACHE_USABLE_PERMS:?}"; then
+      test "${SCRIPT_VERBOSE:?}" = 'false' || warn_msg "Permission NOT supported by your ROM => ${_perm?}"
+      continue
+    fi
 
     _result="$(pm 2>&1 grant "${1:?}" "${_perm:?}")" || {
       case "${_result?}" in
         *"Unknown permission: ${_perm:?}"*)
-          # Permission NOT supported by the ROM
+          # Unknown permission
           if test "${SCRIPT_VERBOSE:?}" = 'false'; then
-            test "${_perm:?}" != 'android.permission.FAKE_PACKAGE_SIGNATURE' || continue                    # May NOT be supported by all ROMs
-            test "${_perm:?}" != 'android.permission.POST_NOTIFICATIONS' || continue                        # NOT supported by old ROMs
             test "${_perm:?}" != 'com.google.android.gms.auth.permission.GOOGLE_ACCOUNT_CHANGE' || continue # This permission did NOT exist in old versions of microG
           fi
           warn_msg "Unknown permission => ${_perm?}"
@@ -523,11 +533,7 @@ _minutil_grant_perms()
           ;;
         *"Permission ${_perm:?} is not a changeable permission type"* | *"Permission ${_perm:?} requested by ${1:?} is not a changeable permission type"*)
           # Permission CANNOT be granted manually
-          if test "${SCRIPT_VERBOSE:?}" = 'false'; then
-            test "${_perm:?}" != 'android.permission.INTERACT_ACROSS_PROFILES' || continue
-            test "${_perm:?}" != 'android.permission.START_ACTIVITIES_FROM_BACKGROUND' || continue
-          fi
-          warn_msg "NOT a changeable permission => ${_perm?}"
+          test "${SCRIPT_VERBOSE:?}" = 'false' || warn_msg "NOT a changeable permission => ${_perm?}"
           ;;
         *"Permission ${_perm:?} is managed by role"*)
           # Permission CANNOT be granted manually
@@ -541,12 +547,12 @@ _minutil_grant_perms()
       continue
     }
     printf '%s\n' "    Granted '${_perm?}' to '${1?}'"
-  done ||
-    {
-      warn_msg "Failed to grant permissions to '${1?}'"
-      return 1
-    }
+  done || {
+    _status=2
+    warn_msg "Failed to grant permissions to '${1?}'"
+  }
 
+  unset CACHE_GRANTED_PERMS
   return "${_status:?}"
 }
 
@@ -562,8 +568,8 @@ minutil_fix_microg()
 
   _minutil_fix_tmpdir
 
-  # Get store uid
-  _store_uid="$(dumpsys 2> /dev/null package 'com.android.vending' | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2-' -s || :)"
+  CACHE_USABLE_PERMS="$(pm list permissions | cut -d ':' -f '2-' -s)" || return 2
+  _store_uid="$(dumpsys 2> /dev/null package 'com.android.vending' | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2-' -s || :)" # Get store uid
 
   printf '%s\n\n' 'Granting permissions to microG...'
   if _minutil_package_is_microg 'com.google.android.gms' 'microG Services'; then
@@ -576,6 +582,8 @@ minutil_fix_microg()
     _minutil_set_installer 1> /dev/null 2>&1 'com.android.vending' "${_store_uid?}" || :
     printf '\n'
   fi
+
+  unset CACHE_USABLE_PERMS
   printf '%s\n' 'Done'
 }
 
