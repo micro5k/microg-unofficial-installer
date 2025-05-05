@@ -16,6 +16,7 @@ _fix_tmpdir()
 _init_debug_log()
 {
   test -z "${DEBUG_LOG-}" || return
+  _fix_tmpdir
   DEBUG_LOG=0
   DEBUG_LOG_FILE=''
 
@@ -56,7 +57,6 @@ EOF
 
 case "${1-}" in
   backup)
-    _fix_tmpdir
     _display_msg "${VANITY_NAME?} - stage: ${1?}..."
     list_files | while IFS='|' read -r FILE _; do
       test -n "${FILE?}" || continue
@@ -66,7 +66,6 @@ case "${1-}" in
     _display_msg 'Done.'
     ;;
   restore)
-    _fix_tmpdir
     _display_msg "${VANITY_NAME?} - stage: ${1?}..."
     list_files | while IFS='|' read -r FILE REPLACEMENT; do
       test -n "${FILE?}" || continue
