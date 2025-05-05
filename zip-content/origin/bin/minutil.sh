@@ -145,7 +145,7 @@ contains()
 _minutil_fix_tmpdir()
 {
   # In some cases ${TMPDIR} is not set and it cause errors with HereDocs
-  if test -z "${TMPDIR-}"; then
+  if test -z "${TMPDIR-}" || test ! -w "${TMPDIR:?}"; then
     if test -w '/tmp'; then TMPDIR='/tmp'; elif test -w '/postinstall/tmp'; then TMPDIR='/postinstall/tmp'; elif test -w '/data/local/tmp'; then TMPDIR='/data/local/tmp'; fi
   fi
 }

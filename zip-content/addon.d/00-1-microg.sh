@@ -3,7 +3,15 @@
 # SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
 
-BASE_NAME='microG unofficial installer'
+VANITY_NAME='microG unofficial installer'
+
+_fix_tmpdir()
+{
+  # In some cases ${TMPDIR} is not set and it cause errors with HereDocs
+  if test -z "${TMPDIR-}" || test ! -w "${TMPDIR:?}"; then
+    if test -w '/tmp'; then TMPDIR='/tmp'; elif test -w '/data/local/tmp'; then TMPDIR='/data/local/tmp'; elif test -w '/postinstall/tmp'; then TMPDIR='/postinstall/tmp'; fi
+  fi
+}
 
 _init_debug_log()
 {
@@ -12,8 +20,7 @@ _init_debug_log()
   DEBUG_LOG_FILE=''
 
   if command 1> /dev/null -v 'getprop' && test "$(getprop 'zip.common.DEBUG_LOG' '0' || :)" = 1; then
-    if test -w "${TMPDIR:-/tmp}" && DEBUG_LOG_FILE="${TMPDIR:-/tmp}/debug-a5k.log"; then :; else test -w '/postinstall/tmp' && DEBUG_LOG_FILE='/postinstall/tmp/debug-a5k.log'; fi
-    if test -n "${DEBUG_LOG_FILE?}" && touch "${DEBUG_LOG_FILE:?}"; then
+    if test -n "${TMPDIR-}" && test -w "${TMPDIR:?}" && DEBUG_LOG_FILE="${TMPDIR:?}/debug-a5k.log" && touch "${DEBUG_LOG_FILE:?}"; then
       echo 1>&2 "Writing log: ${DEBUG_LOG_FILE?}"
       DEBUG_LOG=1
     fi
@@ -37,14 +44,20 @@ command . /tmp/backuptool.functions || {
 
 list_files()
 {
-  cat << 'EOF'
+  {
+    cat << 'EOF'
 %PLACEHOLDER-1%
 EOF
+  } || {
+    _display_msg 1>&2 'ERROR: HereDoc failed'
+    return 1
+  }
 }
 
 case "${1-}" in
   backup)
-    _display_msg "${BASE_NAME?} - stage: ${1?}..."
+    _fix_tmpdir
+    _display_msg "${VANITY_NAME?} - stage: ${1?}..."
     list_files | while IFS='|' read -r FILE _; do
       test -n "${FILE?}" || continue
       _display_msg " ${S:?}/${FILE:?}"
@@ -53,7 +66,8 @@ case "${1-}" in
     _display_msg 'Done.'
     ;;
   restore)
-    _display_msg "${BASE_NAME?} - stage: ${1?}..."
+    _fix_tmpdir
+    _display_msg "${VANITY_NAME?} - stage: ${1?}..."
     list_files | while IFS='|' read -r FILE REPLACEMENT; do
       test -n "${FILE?}" || continue
       R=''
