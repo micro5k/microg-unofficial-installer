@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.3.4'
+readonly SCRIPT_VERSION='1.3.5'
 
 ### CONFIGURATION ###
 
@@ -144,8 +144,10 @@ contains()
 
 _minutil_fix_tmpdir()
 {
-  # In some cases ${TMPDIR} is not set and it cause absurd errors with HereDocs
-  if test -z "${TMPDIR-}" && test -w '/data/local/tmp'; then TMPDIR='/data/local/tmp'; fi
+  # In some cases ${TMPDIR} is not set and it cause errors with HereDocs
+  if test -z "${TMPDIR-}"; then
+    if test -w '/tmp'; then TMPDIR='/tmp'; elif test -w '/postinstall/tmp'; then TMPDIR='/postinstall/tmp'; elif test -w '/data/local/tmp'; then TMPDIR='/data/local/tmp'; fi
+  fi
 }
 
 _minutil_aligned_print()
