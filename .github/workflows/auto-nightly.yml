@@ -12,7 +12,7 @@ concurrency:
   group: "${{ github.repository_id }}-${{ github.workflow }}"
   cancel-in-progress: true
 jobs:
-  base-job:
+  nightly:
     name: "Nightly"
     runs-on: ubuntu-latest
     if: "${{ github.event_name == 'push' && github.ref_type == 'branch' }}"
@@ -61,13 +61,8 @@ jobs:
         run: |
           # Do we need to release the nightly?
           tag_count="$(git ls-remote --tags -- '${{ github.server_url }}/${{ github.repository }}.git' | wc -l)" || tag_count=0
-          git fetch -q origin
           CREATE_RELEASE='false'
-          IS_LATEST_COMMIT='false'
-          if test '${{ github.sha }}' = "$(git log -n 1 --pretty='%H' 'origin/main' || :)"; then
-            IS_LATEST_COMMIT='true'
-          fi
-          if test "${tag_count?}" != 0 && test "${IS_LATEST_COMMIT:?}" = 'true' && '${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}'; then
+          if test "${tag_count?}" != 0 && '${{ github.run_attempt == '1' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}'; then
             CREATE_RELEASE='true'
           fi
           printf 'CREATE_RELEASE=%s\n' "${CREATE_RELEASE:?}" >> "${GITHUB_OUTPUT?}"
