@@ -1024,9 +1024,10 @@ initialize()
   ODM_PATH=''
   DATA_PATH='/data'
 
-  PRODUCT_USABLE='false'
-  VENDOR_USABLE='false'
-  SYS_EXT_USABLE='false'
+  PRODUCT_RW='false'
+  VENDOR_RW='false'
+  SYS_EXT_RW='false'
+  ODM_RW='false'
 
   BASE_SYSCONFIG_XML=''
 
@@ -1244,27 +1245,27 @@ initialize()
   if mount_partition_if_possible 'product' "${SLOT_SUFFIX:+product}${SLOT_SUFFIX-}${NL:?}product${NL:?}"; then
     PRODUCT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && PRODUCT_USABLE='true'
+    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && PRODUCT_RW='true'
   fi
   if mount_partition_if_possible 'vendor' "${SLOT_SUFFIX:+vendor}${SLOT_SUFFIX-}${NL:?}vendor${NL:?}"; then
     VENDOR_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && VENDOR_USABLE='true'
+    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && VENDOR_RW='true'
   fi
   if mount_partition_if_possible 'system_ext' "${SLOT_SUFFIX:+system_ext}${SLOT_SUFFIX-}${NL:?}system_ext${NL:?}"; then
     SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && SYS_EXT_USABLE='true'
+    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && SYS_EXT_RW='true'
   fi
   if mount_partition_if_possible 'odm' "${SLOT_SUFFIX:+odm}${SLOT_SUFFIX-}${NL:?}odm${NL:?}"; then
     ODM_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false
+    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && ODM_RW='true'
   fi
   readonly PRODUCT_PATH VENDOR_PATH SYS_EXT_PATH ODM_PATH
   export PRODUCT_PATH VENDOR_PATH SYS_EXT_PATH ODM_PATH
-  readonly PRODUCT_USABLE VENDOR_USABLE SYS_EXT_USABLE
-  export PRODUCT_USABLE VENDOR_USABLE SYS_EXT_USABLE
+  readonly PRODUCT_RW VENDOR_RW SYS_EXT_RW ODM_RW
+  export PRODUCT_RW VENDOR_RW SYS_EXT_RW ODM_RW
 
   _additional_data_mountpoint=''
   if test -n "${ANDROID_DATA-}" && test "${ANDROID_DATA:?}" != '/data'; then _additional_data_mountpoint="${ANDROID_DATA:?}"; fi
@@ -1654,9 +1655,9 @@ display_free_space()
     _free_space_auto="$(convert_bytes_to_human_readable_format "${2:?}")"
 
     if test "${_free_space_auto?}" != "${_free_space_mb?} MB"; then
-      ui_msg "Free space on ${1?}: ${_free_space_mb?} MB (${_free_space_auto?}) - usable: ${3?}"
+      ui_msg "Free space on ${1?}: ${_free_space_mb?} MB (${_free_space_auto?}) - writable: ${3?}"
     else
-      ui_msg "Free space on ${1?}: ${_free_space_mb?} MB - usable: ${3?}"
+      ui_msg "Free space on ${1?}: ${_free_space_mb?} MB - writable: ${3?}"
     fi
     return 0
   fi
@@ -1734,10 +1735,10 @@ verify_disk_space()
   _free_space_bytes="$(get_free_disk_space_of_partition "${1:?}")" || _free_space_bytes='-1'
   display_free_space "${1:?}" "${_free_space_bytes?}" 'true'
 
-  if test -n "${PRODUCT_PATH?}"; then display_free_space "${PRODUCT_PATH:?}" "$(get_free_disk_space_of_partition "${PRODUCT_PATH:?}" || :)" "${PRODUCT_USABLE:?}"; fi
-  if test -n "${VENDOR_PATH?}"; then display_free_space "${VENDOR_PATH:?}" "$(get_free_disk_space_of_partition "${VENDOR_PATH:?}" || :)" "${VENDOR_USABLE:?}"; fi
-  if test -n "${SYS_EXT_PATH?}"; then display_free_space "${SYS_EXT_PATH:?}" "$(get_free_disk_space_of_partition "${SYS_EXT_PATH:?}" || :)" "${SYS_EXT_USABLE:?}"; fi
-  if test -n "${ODM_PATH?}"; then display_free_space "${ODM_PATH:?}" "$(get_free_disk_space_of_partition "${ODM_PATH:?}" || :)" 'false'; fi
+  if test -n "${PRODUCT_PATH?}"; then display_free_space "${PRODUCT_PATH:?}" "$(get_free_disk_space_of_partition "${PRODUCT_PATH:?}" || :)" "${PRODUCT_RW:?}"; fi
+  if test -n "${VENDOR_PATH?}"; then display_free_space "${VENDOR_PATH:?}" "$(get_free_disk_space_of_partition "${VENDOR_PATH:?}" || :)" "${VENDOR_RW:?}"; fi
+  if test -n "${SYS_EXT_PATH?}"; then display_free_space "${SYS_EXT_PATH:?}" "$(get_free_disk_space_of_partition "${SYS_EXT_PATH:?}" || :)" "${SYS_EXT_RW:?}"; fi
+  if test -n "${ODM_PATH?}"; then display_free_space "${ODM_PATH:?}" "$(get_free_disk_space_of_partition "${ODM_PATH:?}" || :)" "${ODM_RW:?}"; fi
 
   if test "${_needed_space_bytes:?}" -ge 0 && test "${_free_space_bytes:?}" -ge 0; then
     : # OK
