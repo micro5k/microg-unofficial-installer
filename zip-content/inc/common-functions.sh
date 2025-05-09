@@ -396,7 +396,10 @@ is_mounted_read_write()
   local _mount_info
   _mount_info="$(_get_mount_info "${1:?}")" || ui_error "is_mounted_read_write has failed for '${1?}'"
 
-  if printf '%s' "${_mount_info:?}" | grep -q -e '[(,[:blank:]]rw[[:blank:],)]'; then
+  # To avoid "write: Broken pipe" with "grep -q" / "grep -m 1" use "echo" instead of "printf" and ignore its exit code
+  if {
+    echo "${_mount_info:?}" || :
+  } | grep -q -e '[[:blank:],(]rw[),[:blank:]]'; then
     return 0
   fi
 
@@ -1251,7 +1254,7 @@ initialize()
   readonly PRODUCT_PATH VENDOR_PATH SYS_EXT_PATH ODM_PATH
   export PRODUCT_PATH VENDOR_PATH SYS_EXT_PATH ODM_PATH
   readonly PRODUCT_RW VENDOR_RW SYS_EXT_RW
-  export PRODUCT_RW VENDOR_RW SYS_EXT_RW
+  export PRODUCT_RW VENDOR_RW SYS_EXT_RW ODM_RW
 
   _additional_data_mountpoint=''
   if test -n "${ANDROID_DATA-}" && test "${ANDROID_DATA:?}" != '/data'; then _additional_data_mountpoint="${ANDROID_DATA:?}"; fi
