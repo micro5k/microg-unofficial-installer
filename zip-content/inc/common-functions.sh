@@ -298,10 +298,11 @@ _detect_battery_level()
 
 _mount_helper()
 {
-  {
-    test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null "${@}"
-  } ||
+  if test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null "${@}"; then
+    :
+  else
     mount "${@}" || return "${?}"
+  fi
 
   return 0
 }
@@ -377,15 +378,6 @@ _get_mount_info()
 
   ui_warning "_get_mount_info has failed"
   return 3
-}
-
-mount_partition()
-{
-  local _path
-  _path="$(_canonicalize "${1:?}")"
-
-  _mount_helper '-o' 'rw' "${_path:?}" || ui_warning "Failed to mount '${_path:-}'"
-  return 0 # Never fail
 }
 
 is_mounted()
@@ -523,7 +515,7 @@ _manual_partition_mount()
       if test "${RECOVERY_FAKE_SYSTEM:?}" = 'true' && test "${_path:?}" = '/system'; then continue; fi
       _prepare_mountpoint "${_path:?}" || continue
 
-      if _mount_helper "${_block:?}" "${_path:?}"; then
+      if _mount_helper '-o' 'ro' "${_block:?}" "${_path:?}"; then
         IFS="${_backup_ifs:-}"
         LAST_MOUNTPOINT="${_path:?}"
         return 0
@@ -665,7 +657,7 @@ mount_partition_if_possible()
       *) ;;
     esac
 
-    if _mount_helper 2> /dev/null "${_mp:?}"; then
+    if _mount_helper 2> /dev/null '-o' 'ro' "${_mp:?}"; then
       LAST_MOUNTPOINT="${_mp:?}"
       LAST_PARTITION_MUST_BE_UNMOUNTED=1
       ui_debug "Mounted (2): ${LAST_MOUNTPOINT?}"
@@ -674,7 +666,7 @@ mount_partition_if_possible()
   done
 
   # In some cases there is no real partition but it is just a folder inside the system partition.
-  # In these cases no warnings are shown when the partition is not found.
+  # In these cases no warnings are shown when the real partition is not found.
   if test "${_partition_name:?}" != 'system' && test "${_partition_name:?}" != 'data'; then
     if test -n "${SYS_PATH-}" && test ! -L "${SYS_PATH:?}/${_partition_name:?}" && test -d "${SYS_PATH:?}/${_partition_name:?}"; then # Example: /system_root/system/product
       _skip_warnings='true'
