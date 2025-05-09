@@ -1260,12 +1260,12 @@ initialize()
   if mount_partition_if_possible 'odm' "${SLOT_SUFFIX:+odm}${SLOT_SUFFIX-}${NL:?}odm${NL:?}"; then
     ODM_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && ODM_RW='true'
+    #remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && ODM_RW='true'
   fi
   readonly PRODUCT_PATH VENDOR_PATH SYS_EXT_PATH ODM_PATH
   export PRODUCT_PATH VENDOR_PATH SYS_EXT_PATH ODM_PATH
-  readonly PRODUCT_RW VENDOR_RW SYS_EXT_RW ODM_RW
-  export PRODUCT_RW VENDOR_RW SYS_EXT_RW ODM_RW
+  readonly PRODUCT_RW VENDOR_RW SYS_EXT_RW
+  export PRODUCT_RW VENDOR_RW SYS_EXT_RW
 
   _additional_data_mountpoint=''
   if test -n "${ANDROID_DATA-}" && test "${ANDROID_DATA:?}" != '/data'; then _additional_data_mountpoint="${ANDROID_DATA:?}"; fi
