@@ -391,12 +391,12 @@ is_mounted()
   return 1                                                    # NOT mounted
 }
 
-is_mounted_read_only()
+is_mounted_read_write()
 {
   local _mount_info
-  _mount_info="$(_get_mount_info "${1:?}")" || ui_error "is_mounted_read_only has failed for '${1:-}'"
+  _mount_info="$(_get_mount_info "${1:?}")" || ui_error "is_mounted_read_write has failed for '${1?}'"
 
-  if printf '%s' "${_mount_info:?}" | grep -q -e '[(,[:blank:]]ro[[:blank:],)]'; then
+  if printf '%s' "${_mount_info:?}" | grep -q -e '[(,[:blank:]]rw[[:blank:],)]'; then
     return 0
   fi
 
@@ -407,15 +407,15 @@ _remount_read_write_helper()
 {
   test "${DRY_RUN:?}" -lt 2 || return 2
 
-  {
-    test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}"
-  } ||
-    {
-      test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}" "${1:?}"
-    } ||
+  if test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}"; then
+    :
+  elif test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}" "${1:?}"; then
+    :
+  else
     mount -o 'remount,rw' "${1:?}" || return "${?}"
+  fi
 
-  if is_mounted_read_only "${1:?}"; then return 1; fi
+  is_mounted_read_write "${1:?}" || return 1
 
   return 0
 }
@@ -747,19 +747,17 @@ parse_setting()
 
 remount_read_write()
 {
-  if is_mounted_read_only "${1:?}"; then
-    test "${DRY_RUN:?}" -lt 2 || {
-      ui_msg "INFO: The '${1?}' mountpoint is read-only"
-      return 0
-    }
-
+  if is_mounted_read_write "${1:?}"; then
+    return 0
+  elif test "${DRY_RUN:?}" -ge 2; then
+    ui_msg "INFO: The '${1?}' mountpoint is read-only"
+    return 0
+  else
     ui_msg "INFO: The '${1?}' mountpoint is read-only, it will be remounted"
-    _remount_read_write_helper "${1:?}" || {
-      return 1
-    }
+    if _remount_read_write_helper "${1:?}"; then return 0; fi
   fi
 
-  return 0
+  return 1
 }
 
 remount_read_write_if_possible()
@@ -767,28 +765,24 @@ remount_read_write_if_possible()
   local _required
   _required="${2:-true}"
 
-  if is_mounted_read_only "${1:?}"; then
-    test "${DRY_RUN:?}" -lt 2 || {
-      ui_msg "INFO: The '${1?}' mountpoint is read-only"
-      case "${_required:?}" in
-        'true') return 0 ;;
-        *) return 2 ;;
-      esac
-    }
-
+  if is_mounted_read_write "${1:?}"; then
+    return 0
+  elif test "${DRY_RUN:?}" -ge 2; then
+    ui_msg "INFO: The '${1?}' mountpoint is read-only"
+    case "${_required:?}" in 'true') return 0 ;; *) ;; esac
+    return 2
+  else
     ui_msg "INFO: The '${1?}' mountpoint is read-only, it will be remounted"
-    _remount_read_write_helper "${1:?}" || {
-      if test "${_required:?}" = 'true'; then
-        ui_error "Remounting of '${1?}' failed"
-      else
-        ui_warning "Remounting of '${1?}' failed"
-        ui_msg_empty_line
-        return 1
-      fi
-    }
+    if _remount_read_write_helper "${1:?}"; then return 0; fi
   fi
 
-  return 0
+  if test "${_required:?}" = 'true'; then
+    ui_error "Remounting of '${1?}' failed"
+  else
+    ui_warning "Remounting of '${1?}' failed"
+    ui_msg_empty_line
+  fi
+  return 1
 }
 
 is_string_starting_with()
