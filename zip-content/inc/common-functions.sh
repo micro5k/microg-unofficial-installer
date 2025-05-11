@@ -802,9 +802,10 @@ install_survival_script()
   if test -d "${SYS_PATH:?}/addon.d"; then
     ui_msg 'Installing survival script...'
     write_file_list "${TMP_PATH:?}/files" "${TMP_PATH:?}/files/" "${TMP_PATH:?}/backup-filelist.lst"
-    replace_line_in_file_with_file "${TMP_PATH:?}/addon.d/${1:?}.sh" '%PLACEHOLDER-1%' "${TMP_PATH:?}/backup-filelist.lst"
+    replace_line_in_file_with_file "${TMP_PATH:?}/origin/addon.d/${1:?}.sh" '%PLACEHOLDER-1%' "${TMP_PATH:?}/backup-filelist.lst"
+    set_perm 0 0 0755 "${TMP_PATH:?}/origin/addon.d/${1:?}.sh"
     test "${DRY_RUN:?}" -eq 0 || return
-    copy_file "${TMP_PATH:?}/addon.d/${1:?}.sh" "${SYS_PATH:?}/addon.d"
+    copy_file "${TMP_PATH:?}/origin/addon.d/${1:?}.sh" "${SYS_PATH:?}/addon.d"
   else
     ui_warning 'addon.d scripts are not supported by your ROM'
     ui_msg_empty_line
@@ -1505,11 +1506,6 @@ prepare_installation()
       if test ! -f "${entry:?}"; then continue; fi
       set_perm 0 2000 0755 "${entry:?}"
     done
-  fi
-
-  if test -d "${TMP_PATH:?}/addon.d"; then
-    set_std_perm_recursive "${TMP_PATH:?}/addon.d"
-    find "${TMP_PATH:?}/addon.d" -type f -name '*.sh' -exec chmod 0755 '{}' '+' || ui_error 'Failed to chmod addon.d scripts'
   fi
 }
 

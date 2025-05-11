@@ -60,7 +60,6 @@ if test "${SETUP_TYPE:?}" = 'install'; then
   ui_msg 'Extracting...'
   custom_package_extract_dir 'origin' "${TMP_PATH:?}"
   custom_package_extract_dir 'files' "${TMP_PATH:?}"
-  custom_package_extract_dir 'addon.d' "${TMP_PATH:?}"
   create_dir "${TMP_PATH:?}/files/etc"
 
   ui_msg 'Configuring...'
