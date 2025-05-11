@@ -166,15 +166,6 @@ if test "${SETUP_TYPE:?}" = 'uninstall'; then
   exit 0
 fi
 
-# Preparing remaining files
-if test "${API}" -lt 23; then
-  delete_recursive "${TMP_PATH}/files/etc/default-permissions"
-fi
-if test "${API:?}" -lt 21; then
-  delete_recursive "${TMP_PATH:?}/files/etc/sysconfig"
-fi
-ui_debug ''
-
 # Prepare installation
 prepare_installation
 printf '%s\n' "USE_MICROG_BY_ALE5000=${USE_MICROG_BY_ALE5000:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"

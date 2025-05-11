@@ -1053,6 +1053,7 @@ initialize()
 
   if test "${DRY_RUN:?}" -gt 0; then
     ui_warning "DRY RUN mode ${DRY_RUN?} enabled. No files on your device will be modified!!!"
+    sleep 2> /dev/null '0.02' || : # Wait some time otherwise ui_debug may appear before the previous ui_warning
     ui_debug ''
   fi
 
@@ -1115,7 +1116,9 @@ initialize()
   fi
 
   _find_and_mount_system
+  ui_debug ''
   _timeout_check
+
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
 
   PREV_INSTALL_FAILED='false'
@@ -1335,7 +1338,10 @@ clean_previous_installations()
     ui_msg 'Uninstalling...'
   fi
 
-  test "${DRY_RUN:?}" -eq 0 || return
+  test "${DRY_RUN:?}" -eq 0 || {
+    ui_debug ''
+    return
+  }
 
   if _write_test "${SYS_PATH:?}/etc"; then
     : # Really writable
@@ -1389,7 +1395,6 @@ prepare_installation()
 
   ui_msg 'Preparing installation...'
   _need_newline='false'
-  sleep 2> /dev/null '0.05' || : # Wait some time otherwise ui_debug may appear before the previous ui_msg
 
   if test "${API:?}" -ge 29; then # Android 10+
     ui_debug '  Processing ACCESS_BACKGROUND_LOCATION...'
@@ -1407,6 +1412,13 @@ prepare_installation()
   fi
 
   test "${_need_newline:?}" = 'false' || ui_debug ''
+
+  if test "${API}" -lt 23; then
+    delete_temp "files/etc/default-permissions"
+  fi
+  if test "${API:?}" -lt 21; then
+    delete_temp "files/etc/sysconfig"
+  fi
 
   if test "${PRIVAPP_DIRNAME:?}" != 'priv-app' && test -e "${TMP_PATH:?}/files/priv-app"; then
     ui_debug "  Merging priv-app folder with ${PRIVAPP_DIRNAME?} folder..."
@@ -2153,27 +2165,7 @@ delete()
   for filename in "${@}"; do
     if test -e "${filename?}"; then
       ui_debug "Deleting '${filename?}'..."
-      rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders' 103
-    fi
-  done
-}
-
-delete_recursive()
-{
-  for filename in "${@}"; do
-    if test -e "${filename?}"; then
-      ui_debug "Deleting '${filename?}'..."
-      rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders' 103
-    fi
-  done
-}
-
-delete_recursive_wildcard()
-{
-  for filename in "${@}"; do
-    if test -e "${filename?}"; then
-      ui_debug "Deleting '${filename?}'..."
-      rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders' 103
+      rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders in delete()' 103
     fi
   done
 }
@@ -2182,8 +2174,8 @@ delete_temp()
 {
   for filename in "${@}"; do
     if test -e "${TMP_PATH:?}/${filename?}"; then
-      # ui_debug "Deleting '${TMP_PATH?}/${filename?}'..."
-      rm -rf -- "${TMP_PATH:?}/${filename:?}" || ui_error 'Failed to delete temp files/folders in delete_temp()' 103
+      #ui_debug "Deleting '${TMP_PATH?}/${filename?}'..."
+      rm -rf -- "${TMP_PATH:?}/${filename:?}" || ui_error 'Failed to delete files/folders in delete_temp()' 103
     fi
   done
 }
@@ -2199,7 +2191,7 @@ delete_if_sha256_match()
     for _hash in "${@}"; do
       if test "${_hash:?}" = "${_filehash:?}"; then
         ui_debug "Deleting '${_filename:?}'..."
-        rm -f -- "${_filename:?}" || ui_error 'Failed to delete file in delete_if_sha256_match()' 103
+        rm -f -- "${_filename:?}" || ui_error 'Failed to delete a file in delete_if_sha256_match()' 103
         return
       fi
     done
@@ -2901,7 +2893,10 @@ _timeout_check()
   readonly TIMEOUT_CMD_IS_LEGACY_BUSYBOX
   export TIMEOUT_CMD_IS_LEGACY_BUSYBOX
 
-  if test "${DEBUG_LOG_ENABLED:?}" -eq 1 || test "${RECOVERY_OUTPUT:?}" = 'true'; then ui_debug "Timeout is legacy BusyBox: ${TIMEOUT_CMD_IS_LEGACY_BUSYBOX:-}"; fi
+  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then
+    ui_debug "Timeout is legacy BusyBox: ${TIMEOUT_CMD_IS_LEGACY_BUSYBOX:-}"
+    ui_debug ''
+  fi
 }
 
 _timeout_compat()
@@ -3300,7 +3295,6 @@ _live_setup_initialize()
     fi
   fi
 
-  ui_msg_empty_line
   ui_msg "Using: ${INPUT_TYPE?}"
   ui_msg_empty_line
 
