@@ -1336,12 +1336,11 @@ clean_previous_installations()
 
   if test "${SETUP_TYPE?}" = 'uninstall'; then
     ui_msg 'Uninstalling...'
+  else
+    ui_msg_empty_line
   fi
 
-  test "${DRY_RUN:?}" -eq 0 || {
-    ui_debug ''
-    return
-  }
+  test "${DRY_RUN:?}" -eq 0 || return
 
   if _write_test "${SYS_PATH:?}/etc"; then
     : # Really writable
@@ -1349,7 +1348,9 @@ clean_previous_installations()
     ui_error "Something is wrong because '${SYS_PATH?}' is NOT really writable!!!" 30
   fi
 
-  _initial_free_space="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" || _initial_free_space='-1'
+  if test "${SETUP_TYPE?}" != 'uninstall'; then
+    _initial_free_space="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" || _initial_free_space='-1'
+  fi
 
   rm -f -- "${SYS_PATH:?}/etc/write-test-file.dat" || ui_error 'Failed to delete the test file'
 
@@ -1361,7 +1362,6 @@ clean_previous_installations()
   delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
 
   if test "${SETUP_TYPE?}" != 'uninstall'; then
-    ui_debug ''
     _wait_free_space_changes 5 "${_initial_free_space:?}" # Reclaiming free space may take some time
     ui_debug ''
   fi
