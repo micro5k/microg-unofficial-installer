@@ -184,29 +184,14 @@ clear_and_enable_app 'com.android.vending'
 # Install survival script
 install_survival_script '00-1-microg'
 
-if test "${DRY_RUN:?}" -eq 0; then
-  # Resetting Android runtime permissions
-  if test "${API:?}" -ge 23; then
-    if test -e "${DATA_PATH:?}/system/users/0/runtime-permissions.xml"; then
-      if ! grep -q 'com.google.android.gms' "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml; then
-        # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
-        ui_msg "Resetting legacy Android runtime permissions..."
-        delete "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml
-      fi
-    fi
-    if test -e "${DATA_PATH:?}/misc_de/0/apexdata/com.android.permission/runtime-permissions.xml"; then
-      if ! grep -q 'com.google.android.gms' "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml; then
-        # Purge the runtime permissions to prevent issues when the user flash this on a dirty install
-        ui_msg "Resetting Android runtime permissions..."
-        delete "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml
-      fi
-    fi
-  fi
+# Resetting Android runtime permissions
+reset_runtime_permissions_if_needed 'com.google.android.gms'
 
-  #if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_AM?}"; then
-  #  PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null broadcast -a 'org.microg.gms.gcm.FORCE_TRY_RECONNECT' -n 'com.google.android.gms/org.microg.gms.gcm.TriggerReceiver' || true
-  #fi
-fi
+#if test "${DRY_RUN:?}" -eq 0; then
+#  if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_AM?}"; then
+#    PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null broadcast -a 'org.microg.gms.gcm.FORCE_TRY_RECONNECT' -n 'com.google.android.gms/org.microg.gms.gcm.TriggerReceiver' || :
+#  fi
+#fi
 
 # Reset GMS data of all apps
 if test "${RESET_GMS_DATA_OF_ALL_APPS:?}" != '0'; then

@@ -546,6 +546,7 @@ flash_zips()
     STATUS="${?}"
     set -e
     echo "custom_flash_end ${STATUS:?}" 1>&"${recovery_fd:?}"
+    sleep 2> /dev/null '0.02' || : # Wait some time otherwise the following "echo" may appear before the previous "echo"
     echo ''
 
     restore_env || return "${?}"

@@ -811,6 +811,25 @@ install_survival_script()
   fi
 }
 
+reset_runtime_permissions_if_needed()
+{
+  # Reset the runtime permissions to prevent issues on dirty flashing
+  if test "${API:?}" -ge 23; then
+    if test -e "${DATA_PATH:?}/system/users/0/runtime-permissions.xml"; then
+      if test "${FIRST_INSTALLATION:?}" = 'true' || ! grep -q -F -e "${1:?}" -- "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml; then
+        ui_msg "Resetting Android runtime permissions..."
+        test "${DRY_RUN:?}" -ne 0 || delete "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml
+      fi
+    fi
+    if test -e "${DATA_PATH:?}/misc_de/0/apexdata/com.android.permission/runtime-permissions.xml"; then
+      if test "${FIRST_INSTALLATION:?}" = 'true' || ! grep -q -F -e "${1:?}" -- "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml; then
+        ui_msg "Resetting Android runtime permissions..."
+        test "${DRY_RUN:?}" -ne 0 || delete "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml
+      fi
+    fi
+  fi
+}
+
 _write_test()
 {
   if test ! -d "${1:?}"; then
