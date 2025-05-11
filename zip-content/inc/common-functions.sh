@@ -797,6 +797,20 @@ is_string_starting_with()
   return 1 # NOT found
 }
 
+install_survival_script()
+{
+  if test -d "${SYS_PATH:?}/addon.d"; then
+    ui_msg 'Installing survival script...'
+    write_file_list "${TMP_PATH:?}/files" "${TMP_PATH:?}/files/" "${TMP_PATH:?}/backup-filelist.lst"
+    replace_line_in_file_with_file "${TMP_PATH:?}/addon.d/${1:?}.sh" '%PLACEHOLDER-1%' "${TMP_PATH:?}/backup-filelist.lst"
+    test "${DRY_RUN:?}" -eq 0 || return
+    copy_file "${TMP_PATH:?}/addon.d/${1:?}.sh" "${SYS_PATH:?}/addon.d"
+  else
+    ui_warning 'addon.d scripts are not supported by your ROM'
+    ui_msg_empty_line
+  fi
+}
+
 _write_test()
 {
   if test ! -d "${1:?}"; then

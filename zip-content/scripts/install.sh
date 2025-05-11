@@ -181,6 +181,9 @@ fi
 clear_and_enable_app 'com.google.android.gsf'
 clear_and_enable_app 'com.android.vending'
 
+# Install survival script
+install_survival_script '00-1-microg'
+
 if test "${DRY_RUN:?}" -eq 0; then
   # Resetting Android runtime permissions
   if test "${API:?}" -ge 23; then
@@ -203,16 +206,6 @@ if test "${DRY_RUN:?}" -eq 0; then
   #if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_AM?}"; then
   #  PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null broadcast -a 'org.microg.gms.gcm.FORCE_TRY_RECONNECT' -n 'com.google.android.gms/org.microg.gms.gcm.TriggerReceiver' || true
   #fi
-
-  # Install survival script
-  if test -d "${SYS_PATH:?}/addon.d"; then
-    ui_msg 'Installing survival script...'
-    write_file_list "${TMP_PATH}/files" "${TMP_PATH}/files/" "${TMP_PATH}/backup-filelist.lst"
-    replace_line_in_file_with_file "${TMP_PATH}/addon.d/00-1-microg.sh" '%PLACEHOLDER-1%' "${TMP_PATH}/backup-filelist.lst"
-    copy_file "${TMP_PATH}/addon.d/00-1-microg.sh" "${SYS_PATH}/addon.d"
-  else
-    ui_warning 'addon.d scripts are not supported by your ROM'
-  fi
 fi
 
 # Reset GMS data of all apps
