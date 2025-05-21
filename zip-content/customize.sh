@@ -9,7 +9,6 @@
 
 umask 022 || :
 set -u 2> /dev/null || :
-export POSIXLY_CORRECT='y'
 
 # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
 {
@@ -29,7 +28,7 @@ if test -z "${ZIPFILE-}"; then
   abort 2> /dev/null 'Missing ZIPFILE variable'
   exit 1
 fi
-if test -z "${TMPDIR-}" || test ! -e "${TMPDIR:?}"; then
+if test -z "${TMPDIR-}" || test ! -w "${TMPDIR:?}"; then
   printf 1>&2 '%s\n' 'The temp folder is missing (2)'
   abort 2> /dev/null 'The temp folder is missing (2)'
   exit 1

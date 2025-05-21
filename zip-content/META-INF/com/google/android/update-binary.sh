@@ -5,13 +5,12 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined #
 
-echo 'PRE-LOADER'
+echo 'PRE-LOADER' || :
 
 ### INIT OPTIONS ###
 
 umask 022 || :
 set -u 2> /dev/null || :
-export POSIXLY_CORRECT='y'
 
 # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
 {
@@ -27,6 +26,22 @@ export ZIPFILE="${3:?}"
 unset RANDOM_IS_SEEDED
 
 ### PREVENTIVE CHECKS ###
+
+command 1> /dev/null -v 'echo' || {
+  echo || :
+  exit 100
+}
+
+command 1> /dev/null -v 'test' || {
+  echo 1>&2 'ERROR: Missing => test'
+  exit 100
+}
+
+case "$(:)" in '') ;; *)
+  echo 1>&2 'ERROR: Command substitution NOT supported by your shell'
+  exit 100
+  ;;
+esac
 
 _redirect_command()
 {
@@ -88,7 +103,7 @@ command 1> /dev/null -v 'unzip' || {
   if command 1> /dev/null -v busybox; then
     _redirect_command 'unzip'
   else
-    printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: Missing => unzip"
+    printf 1>&2 '\033[1;31m%s\033[0m\n' 'ERROR: Missing => unzip'
     exit 100
   fi
 }
@@ -213,7 +228,7 @@ _ub_we_mounted_tmp=false
     return 1 # NOT mounted
   }
 
-  if test -n "${TMPDIR:-}" && test -w "${TMPDIR:?}"; then
+  if test -n "${TMPDIR-}" && test -w "${TMPDIR:?}"; then
     : # Already ready
   elif test -w '/tmp' && _ub_is_mounted '/tmp'; then
     TMPDIR='/tmp'

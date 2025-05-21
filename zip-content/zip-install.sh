@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # @name ZIP install
-# @brief It can execute a flashable ZIP directly without the need of a Recovery.
+# @brief It can execute a flashable ZIP directly without the need of a recovery.
 # @author ale5000
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/blob/HEAD/zip-content/zip-install.sh
 
@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.3.9'
+readonly ZIPINSTALL_VERSION='1.3.10'
 
 END_OF_SCRIPT=0
 PATH="${PATH:-/system/bin}:."
@@ -21,16 +21,16 @@ command 1> /dev/null -v 'echo' || {
   exit 100
 }
 
+command 1> /dev/null -v 'test' || {
+  echo 1>&2 'ERROR: Missing => test'
+  exit 100
+}
+
 case "$(:)" in '') ;; *)
   echo 1>&2 'ERROR: Command substitution NOT supported by your shell'
   exit 100
   ;;
 esac
-
-command 1> /dev/null -v 'test' || {
-  echo 1>&2 'ERROR: "test" is missing'
-  exit 100
-}
 
 _is_busybox_available()
 {
