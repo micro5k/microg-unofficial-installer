@@ -2588,6 +2588,8 @@ inputevent_initialize()
 
     _parse_keylayout "${_device:?}"
   done
+
+  test -n "${INPUT_DEVICE_LIST?}" || return 1
 }
 
 input_device_listener_start()
@@ -2605,7 +2607,7 @@ input_device_listener_start()
   IFS="${NL:?}"
   set -f
   # shellcheck disable=SC2086 # Word splitting is intended
-  set -- ${INPUT_DEVICE_LIST:?} || ui_error "Failed expanding \$INPUT_DEVICE_LIST inside input_device_listener_start()"
+  set -- ${INPUT_DEVICE_LIST:?} || ui_error "Failed expanding \${INPUT_DEVICE_LIST} inside input_device_listener_start()"
   set +f
   IFS="${_backup_ifs?}"
 
@@ -3165,11 +3167,11 @@ choose_inputevent()
 {
   local _key _status _last_key_pressed _key_desc _ret
 
-  test "${#}" -le 1 || ui_error "Key detection failed (input event) - invalid number of arguments"
+  test "${#}" -le 1 || ui_error "Key detection (input event) - too many arguments"
 
   input_device_listener_start || {
     ui_msg_empty_line
-    ui_warning "Key detection failed (input event)"
+    ui_warning "Key detection (input event) - listener startup failed"
     ui_msg_empty_line
     return 1
   }
@@ -3188,7 +3190,7 @@ choose_inputevent()
         return 0
       fi
 
-      ui_warning "Key detection failed (input event) - get, status code: ${_status?}"
+      ui_warning "Key detection (input event) - event get failed, status code: ${_status?}"
       return 1
     }
 
@@ -3196,7 +3198,7 @@ choose_inputevent()
       INPUT_EVENT_SIZE="$(_detect_input_event_size "${INPUT_EVENT_CURRENT?}")" || {
         _status="${?}"
         input_device_listener_stop
-        ui_error "Key detection failed (input event) - size check, status code: ${_status?}"
+        ui_error "Key detection (input event) - size check failed, status code: ${_status?}"
       }
       if test "${INPUT_EVENT_SIZE:?}" -ne 24; then INPUT_EVENT_START_OFFSET="$((INPUT_EVENT_START_OFFSET - 24 + INPUT_EVENT_SIZE))"; fi
     fi
@@ -3210,7 +3212,7 @@ choose_inputevent()
       115) continue ;; # We got an unsupported event type or action (ignored)
       *)               # Event parsing failed (fail)
         input_device_listener_stop
-        ui_error "Key detection failed (input event) - parse, status code: ${_status?}"
+        ui_error "Key detection (input event) - event parse failed, status code: ${_status?}"
         ;;
     esac
 
@@ -3271,7 +3273,7 @@ choose_inputevent()
   case "${_key_desc?}" in
     '+') _ret=3 ;;
     '-') _ret=2 ;;
-    *) test "${KEY_TEST_ONLY:?}" -eq 1 || ui_error "Key detection failed (input event) - key, key code: ${_key?}" ;;
+    *) test "${KEY_TEST_ONLY:?}" -eq 1 || ui_error "Key detection (input event) - wrong key received, key code: ${_key?}" ;;
   esac
 
   ui_msg_empty_line
@@ -3328,7 +3330,7 @@ _live_setup_initialize()
   ui_msg_empty_line
 
   case "${INPUT_TYPE?}" in
-    'input event') inputevent_initialize ;;
+    'input event') inputevent_initialize || ui_warning "Key detection (input event) - initialization failed" ;;
     'keycheck') _keycheck_initialize || ui_error 'Failed to initialize keycheck' ;;
     'read') ;;
     *) ui_error "Invalid input handling selected: ${INPUT_TYPE?}" ;;
