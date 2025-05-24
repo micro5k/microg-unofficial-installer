@@ -112,9 +112,9 @@ if test "${SETUP_TYPE:?}" = 'install'; then
   fi
 
   if test "${SELECTED_MARKET:?}" = 'FakeStore'; then
-    move_rename_file "${TMP_PATH:?}/origin/etc/microg.xml" "${TMP_PATH:?}/files/etc/microg.xml"
+    move_rename_file "${TMP_PATH:?}/origin/etc/microg-base.xml" "${TMP_PATH:?}/files/etc/microg.xml"
   else
-    move_rename_file "${TMP_PATH:?}/origin/etc/microg-gcm.xml" "${TMP_PATH:?}/files/etc/microg.xml"
+    move_rename_file "${TMP_PATH:?}/origin/etc/microg-PlayStore.xml" "${TMP_PATH:?}/files/etc/microg.xml"
   fi
 
   setup_app "${APP_FDROIDPRIVEXT:?}" 'APP_FDROIDPRIVEXT' 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
