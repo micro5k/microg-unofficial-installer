@@ -2,10 +2,35 @@
 <!--
     SPDX-FileCopyrightText: none
     SPDX-License-Identifier: CC0-1.0
-    SPDX-FileType: SOURCE
 -->
 
 <map>
-    <boolean name="wifi_learning" value="true" />
-    <boolean name="cell_learning" value="true" />
+    <!-- Check-in / GCM -->
+    <boolean name="checkin_enable_service" value="false" />
+    <boolean name="gcm_enable_mcs_service" value="false" />
+
+    <!-- Account -->
+    <boolean name="auth_manager_trust_google" value="true" />
+    <boolean name="auth_manager_visible" value="true" />
+
+    <!-- Location -->
+    <boolean name="location_wifi_mls" value="false" />
+    <boolean name="location_wifi_moving" value="false" />
+    <boolean name="location_wifi_learning" value="true" />
+    <boolean name="location_wifi_caching" value="true" />
+    <boolean name="location_cell_mls" value="false" />
+    <boolean name="location_cell_learning" value="true" />
+    <boolean name="location_cell_caching" value="true" />
+    <boolean name="location_geocoder_nominatim" value="true" />
+
+    <!-- Vending -->
+    <boolean name="vending_licensing" value="true" />
+    <boolean name="vending_licensing_purchase_free_apps" value="true" />
+    <boolean name="vending_billing" value="true" />
+    <boolean name="vending_split_install" value="true" />
+    <boolean name="vending_asset_delivery" value="true" />
+    <boolean name="vending_device_sync" value="false" />
+
+    <!-- Work profile -->
+    <boolean name="workprofile_allow_create_work_account" value="true" />
 </map>
