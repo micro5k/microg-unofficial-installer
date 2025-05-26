@@ -7,7 +7,7 @@
 
 all: buildota buildotaoss ;
 
-.PHONY: all build clean test cmdline
+.PHONY: all clean test check build cmdline
 
 buildota:
 	BUILD_TYPE=full "$(CURDIR)/build.sh" --no-default-build-type --no-pause $(ARGS)
@@ -15,6 +15,10 @@ buildota:
 buildotaoss:
 	BUILD_TYPE=oss "$(CURDIR)/build.sh" --no-default-build-type --no-pause $(ARGS)
 build: buildotaoss ;
+
+test:
+	"$(CURDIR)/recovery-simulator/recovery.sh" "$(CURDIR)"/output/*.zip
+check: test ;
 
 clean:
 	rm -f "$(CURDIR)/output/"*.zip
