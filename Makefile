@@ -7,7 +7,7 @@
 
 all: buildota buildotaoss ;
 
-.PHONY: all clean test check build cmdline
+.PHONY: all clean test check distcheck build cmdline
 
 buildota:
 	BUILD_TYPE=full "$(CURDIR)/build.sh" --no-default-build-type --no-pause $(ARGS)
@@ -19,10 +19,11 @@ build: buildotaoss ;
 test:
 	"$(CURDIR)/recovery-simulator/recovery.sh" "$(CURDIR)"/output/*.zip
 check: test ;
+distcheck: check ;
 
 clean:
-	rm -f "$(CURDIR)/output/"*.zip
-	rm -f "$(CURDIR)/output/"*.zip.md5
-	rm -f "$(CURDIR)/output/"*.zip.sha256
+	rm -f "$(CURDIR)"/output/*.zip
+	rm -f "$(CURDIR)"/output/*.zip.md5
+	rm -f "$(CURDIR)"/output/*.zip.sha256
 
 cmdline: ;
