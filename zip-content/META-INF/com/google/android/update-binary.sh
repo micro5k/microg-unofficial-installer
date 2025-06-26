@@ -210,7 +210,7 @@ generate_random()
 }
 
 _ub_detect_bootmode
-_ub_we_mounted_tmp=false
+UNMOUNT_TMP=0
 
 # Workaround: Create (if needed) and mount the temp folder if it isn't already mounted
 {
@@ -218,7 +218,7 @@ _ub_we_mounted_tmp=false
   {
     local _mount_result
     {
-      test -e '/proc/mounts' && _mount_result="$(cat /proc/mounts)"
+      test -f '/proc/mounts' && _mount_result="$(cat /proc/mounts)"
     } || _mount_result="$(mount 2> /dev/null)" || ui_error '_ub_is_mounted has failed'
 
     case "${_mount_result:?}" in
@@ -228,37 +228,40 @@ _ub_we_mounted_tmp=false
     return 1 # NOT mounted
   }
 
-  if test -n "${TMPDIR-}" && test -w "${TMPDIR:?}"; then
+  if test -n "${TMPDIR-}" && test "${TMPDIR:?}" != '/data/local' && test -d "${TMPDIR:?}" && test -w "${TMPDIR:?}"; then
     : # Already ready
-  elif test -w '/tmp' && _ub_is_mounted '/tmp'; then
+  elif test -d '/tmp'; then
     TMPDIR='/tmp'
-  elif test -e '/dev' && _ub_is_mounted '/dev'; then
-    mkdir -p '/dev/tmp' || ui_error 'Failed to create the temp folder'
+  elif test -d '/dev' && _ub_is_mounted '/dev'; then
+    mkdir -p '/dev/tmp' || ui_error 'Failed to create the temp folder => /dev/tmp'
     set_perm 0 2000 01775 '/dev/tmp'
+
     TMPDIR='/dev/tmp'
   else
-    _ub_we_mounted_tmp=true
-
-    _send_text_to_recovery 'WARNING: Creating (if needed) and mounting the temp folder...'
-    printf 1>&2 '\033[0;33m%s\033[0m\n' 'WARNING: Creating (if needed) and mounting the temp folder...'
-    if test ! -e '/tmp'; then
-      mkdir -p '/tmp' || ui_error 'Failed to create the temp folder'
-      set_perm 0 0 0755 '/tmp'
-    fi
-
-    mount -t 'tmpfs' -o 'rw' tmpfs '/tmp' || ui_error 'Failed to mount the temp folder'
-    if ! _ub_is_mounted '/tmp'; then ui_error 'The temp folder CANNOT be mounted'; fi
-    set_perm 0 2000 01775 '/tmp'
+    _send_text_to_recovery 'WARNING: Creating the temp folder...'
+    printf 1>&2 '\033[0;33m%s\033[0m\n' 'WARNING: Creating the temp folder...'
+    mkdir -p '/tmp' || ui_error 'Failed to create the temp folder => /tmp'
+    set_perm 0 0 0755 '/tmp'
 
     TMPDIR='/tmp'
+  fi
+
+  if test "${TMPDIR:?}" = '/tmp'; then
+    _ub_is_mounted '/tmp' || {
+      _send_text_to_recovery 'WARNING: Mounting the temp folder...'
+      printf 1>&2 '\033[0;33m%s\033[0m\n' 'WARNING: Mounting the temp folder...'
+
+      mount -t 'tmpfs' -o 'rw' tmpfs '/tmp' || ui_error 'Failed to mount the temp folder => /tmp'
+      UNMOUNT_TMP=1
+      if ! _ub_is_mounted '/tmp'; then ui_error 'The temp folder CANNOT be mounted => /tmp'; fi
+      set_perm 0 2000 01775 '/tmp'
+    }
   fi
   unset -f _ub_is_mounted || ui_error 'Failed to unset _ub_is_mounted'
 
-  if test -z "${TMPDIR:-}" || test ! -w "${TMPDIR:?}"; then
-    ui_error 'The temp folder is missing or not writable'
-  fi
-  export TMPDIR
+  test -w "${TMPDIR:?}" || ui_error "The temp folder is NOT writable => ${TMPDIR?}"
 }
+export TMPDIR
 
 generate_random
 _ub_our_main_script="${TMPDIR:?}/${LAST_RANDOM:?}-customize.sh"
@@ -277,9 +280,7 @@ if test -f "${_ub_our_main_script:?}"; then
 fi
 unset _ub_our_main_script
 
-if test "${_ub_we_mounted_tmp:?}" = true; then
-  umount '/tmp' || ui_error 'Failed to unmount the temp folder'
-fi
+if test "${UNMOUNT_TMP:?}" = '1'; then umount '/tmp' || ui_error 'Failed to unmount the temp folder => /tmp'; fi
 
 case "${STATUS?}" in
   '0') # Success
