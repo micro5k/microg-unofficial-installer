@@ -219,9 +219,10 @@ __is_mounted()
     test -f '/proc/mounts' && _mount_result="$(cat /proc/mounts)"
   } || _mount_result="$(mount 2> /dev/null)" || ui_error '__is_mounted has failed'
 
+  # IMPORTANT: Some limited shells does NOT support character classes like [[:blank:]], so avoid using them in "case"
   case "${_mount_result:?}" in
-    *[[:blank:]]"${1:?}"[[:blank:]]*) return 0 ;; # Mounted
-    *) ;;                                         # NOT mounted
+    *\ "${1:?}"\ *) return 0 ;; # Mounted
+    *) ;;                       # NOT mounted
   esac
   return 1 # NOT mounted
 }
