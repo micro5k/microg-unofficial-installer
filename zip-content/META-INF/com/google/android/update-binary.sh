@@ -210,6 +210,7 @@ generate_random()
 }
 
 _ub_detect_bootmode
+DELETE_TMP=0
 UNMOUNT_TMP=0
 
 __is_mounted()
@@ -242,6 +243,7 @@ else
   _send_text_to_recovery 'WARNING: Creating the temp folder...'
   printf 1>&2 '\033[0;33m%s\033[0m\n' 'WARNING: Creating the temp folder...'
   mkdir -p '/tmp' || ui_error 'Failed to create the temp folder => /tmp'
+  DELETE_TMP=1
   set_perm 0 0 0755 '/tmp'
 
   TMPDIR='/tmp'
@@ -279,7 +281,11 @@ if test -f "${_ub_our_main_script:?}"; then
 fi
 unset _ub_our_main_script
 
-if test "${UNMOUNT_TMP:?}" = '1'; then umount '/tmp' || ui_error 'Failed to unmount the temp folder => /tmp'; fi
+if test -d '/tmp'; then
+  if test "${UNMOUNT_TMP:?}" = '1'; then umount '/tmp' || ui_error 'Failed to unmount the temp folder => /tmp'; fi
+  # NOTE: Legacy versions of rmdir don't accept any parameter (not even --)
+  if test "${DELETE_TMP:?}" = '1'; then rmdir '/tmp' || ui_error 'Failed to delete the temp folder => /tmp'; fi
+fi
 
 case "${STATUS?}" in
   '0') # Success
