@@ -408,7 +408,7 @@ is_mounted_read_write()
 
 _disable_write_locks()
 {
-  if test -f '/sys/kernel/security/sony_ric/enable'; then
+  if test -d '/sys/kernel/security/sony_ric'; then
     ui_msg 'Disabling Sony RIC...' # Sony RIC may prevent you to remount the system partition as read-write
     printf '%s\n' '0' 1> '/sys/kernel/security/sony_ric/enable' || ui_warning 'Failed to disable Sony RIC'
   fi
