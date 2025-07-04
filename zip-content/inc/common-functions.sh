@@ -843,10 +843,13 @@ reset_runtime_permissions_if_needed()
 
 _write_test()
 {
-  if test ! -d "${1:?}"; then
-    mkdir -p "${1:?}" || return 1
+  test "${DRY_RUN:?}" -lt 2 || return 0
+
+  test -d "${1:?}" || {
+    ui_warning "Missing folder => ${1?}"
+    mkdir -p "${1:?}" || return 2
     set_perm 0 0 0755 "${1:?}"
-  fi
+  }
 
   touch 2> /dev/null "${1:?}/write-test-file.dat" || return 1
 
@@ -854,8 +857,16 @@ _write_test()
     printf '%5120s' '' 1> "${1:?}/write-test-file.dat" || return 1
   fi
 
-  test -e "${1:?}/write-test-file.dat" || return 1
+  sleep '0.2'
+  test -f "${1:?}/write-test-file.dat" || return 1
+  return 0
+}
 
+_write_test_cleaning()
+{
+  test "${DRY_RUN:?}" -lt 2 || return 0
+
+  rm -f -- "${1:?}/write-test-file.dat" || return 1
   return 0
 }
 
@@ -1387,19 +1398,18 @@ clean_previous_installations()
     ui_msg_empty_line
   fi
 
-  test "${DRY_RUN:?}" -eq 0 || return
-
-  if _write_test "${SYS_PATH:?}/etc"; then
-    : # Really writable
-  else
+  # Is it really writable???
+  _write_test "${SYS_PATH:?}/etc" ||
     ui_error "Something is wrong because '${SYS_PATH?}' is NOT really writable!!!" 30
-  fi
 
   if test "${SETUP_TYPE?}" != 'uninstall'; then
     _initial_free_space="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" || _initial_free_space='-1'
   fi
 
-  rm -f -- "${SYS_PATH:?}/etc/write-test-file.dat" || ui_error 'Failed to delete the test file'
+  _write_test_cleaning "${SYS_PATH:?}/etc" ||
+    ui_error 'Failed to delete the test file'
+
+  test "${DRY_RUN:?}" -eq 0 || return
 
   readonly IS_INCLUDED='true'
   export IS_INCLUDED
