@@ -408,6 +408,8 @@ is_mounted_read_write()
 
 _disable_write_locks()
 {
+  test "${DRY_RUN:?}" -lt 2 || return 1
+
   if test -d '/sys/kernel/security/sony_ric'; then
     ui_msg 'Disabling Sony RIC...' # Sony RIC may prevent you to remount the system partition as read-write
     printf '%s\n' '0' 1> '/sys/kernel/security/sony_ric/enable' || ui_warning 'Failed to disable Sony RIC'
@@ -1029,6 +1031,8 @@ display_info()
   ui_msg "System path: ${SYS_PATH?}"
   ui_msg "Priv-app dir name: ${PRIVAPP_DIRNAME?}"
   #ui_msg "Android root ENV: ${ANDROID_ROOT-}"
+  ui_msg_empty_line
+  ui_msg "Input devices: $(_list_input_devices || :)"
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
 }
 
@@ -2569,6 +2573,12 @@ _find_input_device()
   done
   if test "${?}" -eq 4; then return 0; fi # Found
   return 1                                # NOT found
+}
+
+_list_input_devices()
+{
+  test -r '/proc/bus/input/devices' || return 1
+  grep -e '^N:' -- '/proc/bus/input/devices' | cut -d '=' -f '2-' -s | tr -- '\n' ' '
 }
 
 inputevent_initialize()
