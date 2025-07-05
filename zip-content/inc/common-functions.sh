@@ -1699,6 +1699,11 @@ get_free_disk_space_of_partition()
   return 1
 }
 
+get_file_system()
+{
+  df -T -P -- "${1:?}" | tail -n 1 | tr -s ' ' | cut -d ' ' -f '2' -s
+}
+
 display_free_space()
 {
   local _free_space_mb _free_space_auto
@@ -1708,9 +1713,9 @@ display_free_space()
     _free_space_auto="$(convert_bytes_to_human_readable_format "${2:?}")"
 
     if test "${_free_space_auto?}" != "${_free_space_mb?} MB"; then
-      ui_msg "Free space on ${1?}: ${_free_space_mb?} MB (${_free_space_auto?}) - writable: ${3?}"
+      ui_msg "Free space on ${1?}: ${_free_space_mb?} MB (${_free_space_auto?}) - FS: $(get_file_system "${1?}" || :) - writable: ${3?}"
     else
-      ui_msg "Free space on ${1?}: ${_free_space_mb?} MB - writable: ${3?}"
+      ui_msg "Free space on ${1?}: ${_free_space_mb?} MB - FS: $(get_file_system "${1?}" || :) - writable: ${3?}"
     fi
     return 0
   fi
