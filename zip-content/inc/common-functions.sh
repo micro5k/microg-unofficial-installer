@@ -847,18 +847,14 @@ _write_test()
 
   test -d "${1:?}" || {
     ui_warning "Missing folder => ${1?}"
-    mkdir -p "${1:?}" || return 2
+    mkdir -p "${1:?}" || return 4
     set_perm 0 0 0755 "${1:?}"
   }
 
-  touch 2> /dev/null "${1:?}/write-test-file.dat" || return 1
-
-  if test "${FIRST_INSTALLATION:?}" = 'true'; then
-    printf '%5120s' '' 1> "${1:?}/write-test-file.dat" || return 1
-  fi
-
-  sleep '0.2'
-  test -f "${1:?}/write-test-file.dat" || return 1
+  touch -- "${1:?}/write-test-file.dat" || return 1
+  printf '%3072s' '' 1> "${1:?}/write-test-file.dat" || return 2
+  sleep '0.1'
+  test -f "${1:?}/write-test-file.dat" || return 3
   return 0
 }
 
@@ -1400,7 +1396,7 @@ clean_previous_installations()
 
   # Is it really writable???
   _write_test "${SYS_PATH:?}/etc" ||
-    ui_error "Something is wrong because '${SYS_PATH?}' is NOT really writable!!!" 30
+    ui_error "Something is wrong because '${SYS_PATH?}' ($(get_file_system "${SYS_PATH?}" || :)) is NOT really writable!!! Return code: ${?}" 30
 
   if test "${SETUP_TYPE?}" != 'uninstall'; then
     _initial_free_space="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" || _initial_free_space='-1'
