@@ -18,7 +18,8 @@ on:
       - "includes/*.sh"
       - "cmdline.sh"
   schedule:
-    - cron: "0 0 * * 2"
+    # At 02:00 AM, every 6 days (UTC)
+    - cron: "0 2 */6 * *"
   workflow_dispatch:
 
 jobs:
@@ -44,7 +45,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: "cache/shells"
-          key: "${{ runner.os }}-${{ env.cache-key }}"
+          key: "${{ env.cache-key }}-${{ runner.os }}"
       - name: "Prepare shells"
         id: prepare-shells
         if: "${{ steps.cache-action.outcome != 'skipped' }}"
@@ -97,7 +98,7 @@ jobs:
         run: |
           # Deleting outdated cache...
           gh extension install 'actions/gh-actions-cache' || exit "${?}"
-          gh actions-cache delete '${{ runner.os }}-${{ env.cache-key }}' --confirm || exit "${?}"
+          gh actions-cache delete '${{ env.cache-key }}-${{ runner.os }}' --confirm || exit "${?}"
           printf '%s\n' 'Cache deleted.'
         env:
           GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
