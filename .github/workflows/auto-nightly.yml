@@ -125,4 +125,5 @@ jobs:
           name: "${{ github.event.repository.name }}-${{ steps.build.outputs.ZIP_VERSION }}-${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}-${{ steps.build.outputs.ZIP_BUILD_TYPE }} archive (extract it)"
           path: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*"
           if-no-files-found: "error"
-          retention-days: 7
+          retention-days: 10
+          compression-level: 0
