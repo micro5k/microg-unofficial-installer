@@ -852,7 +852,9 @@ _write_test()
   }
 
   touch -- "${1:?}/write-test-file.dat" || return 1
-  printf '%3072s' '' 1> "${1:?}/write-test-file.dat" || return 2
+  if test "${FIRST_INSTALLATION:?}" = 'true'; then
+    printf '%512s' '' 1> "${1:?}/write-test-file.dat" || return 2
+  fi
   sleep '0.1'
   test -f "${1:?}/write-test-file.dat" || return 3
   return 0
