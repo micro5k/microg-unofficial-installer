@@ -216,6 +216,12 @@ UNMOUNT_TMP=0
 __is_mounted()
 {
   local _mount_result
+
+  if test "${TEST_INSTALL:-false}" = 'false' && command 1> /dev/null -v 'mountpoint'; then
+    mountpoint 1> /dev/null 2>&1 "${1:?}" || return 1
+    return 0
+  fi
+
   {
     test -f '/proc/mounts' && _mount_result="$(cat /proc/mounts)"
   } || _mount_result="$(mount 2> /dev/null)" || ui_error '__is_mounted has failed'
@@ -283,7 +289,7 @@ unset _ub_our_main_script
 
 if test -d '/tmp'; then
   if test "${UNMOUNT_TMP:?}" = '1'; then umount '/tmp' || ui_error 'Failed to unmount the temp folder => /tmp'; fi
-  # NOTE: Legacy versions of rmdir don't accept any parameter (not even --)
+  # IMPORTANT: Legacy versions of rmdir don't accept any parameter (not even --)
   if test "${DELETE_TMP:?}" = '1'; then rmdir '/tmp' || ui_error 'Failed to delete the temp folder => /tmp'; fi
 fi
 
