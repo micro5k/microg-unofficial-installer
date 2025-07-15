@@ -90,7 +90,7 @@ jobs:
               console.log('Previous nightly release deleted: ' + response.data.name + ' (' + response.data.id + ')');
             } else {
               if(response && response.message) console.error('::error::' + response.message);
-              throw new Error('getReleaseByTag failed.');
+              throw new Error('getReleaseByTag failed: response is undefined or missing data.');
             }
             await github.rest.git.updateRef({
               owner: context.repo.owner,
