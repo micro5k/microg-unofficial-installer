@@ -55,17 +55,16 @@ jobs:
           printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
           : "${ZIP_FOLDER:?}" || exit "${?}"
-      - name: "Do we need to release the nightly?"
+      - name: "Do we need to publish the nightly build?"
         id: "nightly-logic"
         shell: bash
         run: |
-          # Do we need to release the nightly?
-          tag_count="$(git ls-remote --tags -- '${{ github.server_url }}/${{ github.repository }}.git' | wc -l)" || tag_count=0
+          # Do we need to publish the nightly build?
           CREATE_RELEASE='false'
-          if test "${tag_count?}" != 0 && '${{ github.run_attempt == '1' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}'; then
+          if '${{ github.run_attempt == '1' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}'; then
             CREATE_RELEASE='true'
           fi
-          printf 'CREATE_RELEASE=%s\n' "${CREATE_RELEASE:?}" >> "${GITHUB_OUTPUT?}"
+          printf 'CREATE_RELEASE=%s\n' "${CREATE_RELEASE:?}" 1>> "${GITHUB_OUTPUT?}"
           printf '%s\n' "${CREATE_RELEASE:?}"
       - name: "Delete previous nightly release"
         uses: actions/github-script@v7
