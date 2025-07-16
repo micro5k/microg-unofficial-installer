@@ -9,6 +9,10 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "codacy/codacy-analysis-cli-action"
+        versions:
+        - "=4.4.6"
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
