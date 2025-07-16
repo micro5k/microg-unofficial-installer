@@ -23,7 +23,7 @@ jobs:
       - name: "Checkout sources"
         uses: actions/checkout@v4
       - name: "Codacy analysis"
-        uses: codacy/codacy-analysis-cli-action@v4.4.5
+        uses: codacy/codacy-analysis-cli-action@v4.4.6
         with:
           project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
           #verbose: true
