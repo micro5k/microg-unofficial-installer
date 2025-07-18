@@ -1,13 +1,14 @@
 ---
 # SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
-# SPDX-FileType: SOURCE
-image: "openjdk:17-jdk-alpine"
+
+image: "eclipse-temurin:17-jdk-alpine"
 
 variables:
   GIT_DEPTH: "1"
   FAST_BUILD: "true"
 
+# Cache expiration: 14 days
 cache:
   key:
     files:
