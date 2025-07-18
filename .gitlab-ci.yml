@@ -35,22 +35,23 @@ stages:
   - build
   - test
 
-build-ota-oss:
+job-build-oss:
   stage: build
-  script: "./gradlew buildOtaOSS"
   rules:
-    - if: $CI_PIPELINE_SOURCE == "web"
-    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG != "nightly"
+  script: "./gradlew buildOtaOSS"
+
+job-build:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG != "nightly"
+  script: "./gradlew buildOta"
   artifacts:
     paths:
-    #   - output/*.zip*
-    expire_in: 1 day
-
-build-ota:
-  stage: build
-  script: "./gradlew buildOta"
-  only:
-    - main
+      - output/*.zip*
+    expire_in: 3 days
 
 # license_scanning:
 #   stage: test
@@ -60,6 +61,8 @@ build-ota:
 
 sast:
   stage: test
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   artifacts:
     paths:
       - gl-sast-report.json
