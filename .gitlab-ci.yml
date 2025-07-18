@@ -6,7 +6,6 @@ image: "eclipse-temurin:17-jdk-alpine"
 
 variables:
   GIT_DEPTH: "1"
-  FAST_BUILD: "true"
 
 # Cache expiration: 14 days
 cache:
@@ -24,7 +23,7 @@ cache:
 before_script: |
   # Install dependencies
   export GRADLE_USER_HOME="${PWD:?}/.gradle"
-  apk add bash grep wget zip~=3.0 || exit "${?}"
+  apk add bash grep wget zip~=3.0 git || exit "${?}"
 
 include:
   # - template: Security/Dependency-Scanning.gitlab-ci.yml
