@@ -21,9 +21,9 @@ cache:
     - .gradle/wrapper/
   when: "always"
 
-before_script:
-  - export GRADLE_USER_HOME="${PWD:?}/.gradle"
-  - apk add bash grep wget zip~=3.0
+before_script: |
+  export GRADLE_USER_HOME="${PWD:?}/.gradle"
+  if test "${CI_JOB_NAME-}" = 'job-build-oss' || test "${CI_JOB_NAME-}" = 'job-build'; then apk add bash grep wget zip~=3.0 || exit "${?}"; fi
 
 include:
   # - template: Security/Dependency-Scanning.gitlab-ci.yml
