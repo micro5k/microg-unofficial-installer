@@ -24,7 +24,7 @@ cache:
 before_script: |
   # Install dependencies
   export GRADLE_USER_HOME="${PWD:?}/.gradle"
-  if test "${CI_JOB_NAME-}" = 'job-build-oss' || test "${CI_JOB_NAME-}" = 'job-build'; then apk add bash grep wget zip~=3.0 || exit "${?}"; fi
+  apk add bash grep wget zip~=3.0 || exit "${?}"
 
 include:
   # - template: Security/Dependency-Scanning.gitlab-ci.yml
@@ -51,7 +51,7 @@ job-build:
   artifacts:
     paths:
       - output/*.zip*
-    expire_in: 2 days
+    expire_in: 1 day
 
 # license_scanning:
 #   stage: test
@@ -62,10 +62,7 @@ job-build:
 sast:
   stage: test
   cache: []
-  artifacts:
-    paths:
-    #  - gl-sast-report.json
-    expire_in: 1 day
+  before_script: []
 
 after_script:
   - rm -f  "$GRADLE_USER_HOME/caches/modules-2/modules-2.lock"
