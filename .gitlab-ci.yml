@@ -60,6 +60,7 @@ job-build:
 
 sast:
   stage: test
+  cache: []
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   artifacts:
