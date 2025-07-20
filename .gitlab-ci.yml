@@ -9,20 +9,13 @@ variables:
 
 # Cache expiration: 14 days
 cache:
-  key:
-    files:
-      - gradle/wrapper/gradle-wrapper.properties
-    prefix: "$CI_JOB_NAME"
+  key: "build-cache"
   paths:
     - cache/
-    - .gradle/caches/
-    - .gradle/notifications/
-    - .gradle/wrapper/
   when: "always"
 
 before_script: |
   # Install dependencies
-  export GRADLE_USER_HOME="${PWD:?}/.gradle"
   apk add bash grep wget zip~=3.0 || exit "${?}"
 
 include:
@@ -40,13 +33,14 @@ job-build-oss:
   rules:
     - if: $CI_COMMIT_BRANCH
     - if: $CI_COMMIT_TAG != "nightly"
-  script: "./gradlew buildOtaOSS"
+  cache: []
+  script: "BUILD_TYPE='oss' './build.sh'"
 
 job-build:
   stage: build
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  script: "./gradlew buildOta"
+  script: "BUILD_TYPE='full' './build.sh'"
   artifacts:
     paths:
       - output/*.zip*
@@ -62,7 +56,3 @@ sast:
   stage: test
   cache: []
   before_script: []
-
-after_script:
-  - rm -f  "$GRADLE_USER_HOME/caches/modules-2/modules-2.lock"
-  - rm -fr "$GRADLE_USER_HOME/caches/*/plugin-resolution/"
