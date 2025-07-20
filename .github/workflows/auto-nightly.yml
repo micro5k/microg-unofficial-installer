@@ -8,6 +8,9 @@ on:
   push:
     branches:
       - "main"
+  schedule:
+    # At 03:00 AM, every 6 days (UTC)
+    - cron: "0 3 */6 * *"
 concurrency:
   group: "${{ github.repository_id }}-${{ github.workflow }}"
   cancel-in-progress: true
@@ -133,3 +136,18 @@ jobs:
           if-no-files-found: "error"
           retention-days: 10
           compression-level: 0
+
+  keep-cache:
+    name: "Keep cache alive"
+    runs-on: ubuntu-latest
+    if: "${{ github.event_name == 'schedule' }}"
+
+    steps:
+      - name: "Checkout sources"
+        uses: actions/checkout@v4
+      - name: "Read cache"
+        uses: actions/cache@v4
+        with:
+          path: "cache"
+          key: "build-${{ hashFiles('conf-2.sh') }}"
+          enableCrossOsArchive: true
