@@ -27,6 +27,13 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "17"
+      - name: "Prepare cache"
+        uses: actions/cache@v4
+        with:
+          path: "cache"
+          key: "build-${{ hashFiles('conf-2.sh') }}"
+          restore-keys: "build-"
+          enableCrossOsArchive: true
       - name: "Build nightly"
         id: "build"
         shell: bash
@@ -66,7 +73,7 @@ jobs:
           fi
           printf 'CREATE_RELEASE=%s\n' "${CREATE_RELEASE:?}" 1>> "${GITHUB_OUTPUT?}"
           printf '%s\n' "${CREATE_RELEASE:?}"
-      - name: "Delete previous nightly release"
+      - name: "Delete previous nightly release and update nightly tag"
         uses: actions/github-script@v7
         if: "${{ steps.nightly-logic.outputs.CREATE_RELEASE == 'true' }}"
         with:
