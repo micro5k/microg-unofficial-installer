@@ -17,6 +17,6 @@
         <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
 
         <!-- Notifications -->
-        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false" />
+        <!-- %POST_NOTIFICATIONS% -->
     </exception>
 </exceptions>

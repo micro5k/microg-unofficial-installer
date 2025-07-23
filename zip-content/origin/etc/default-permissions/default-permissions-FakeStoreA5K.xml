@@ -16,7 +16,7 @@
         <permission name="android.permission.GET_ACCOUNTS" fixed="false" />
 
         <!-- Notifications -->
-        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false" />
+        <!-- %POST_NOTIFICATIONS% -->
 
         <!-- Signature spoofing -->
         <!-- %FAKE_PACKAGE_SIGNATURE% -->

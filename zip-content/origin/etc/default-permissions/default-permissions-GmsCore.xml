@@ -33,7 +33,7 @@
         <permission name="android.permission.CAMERA" fixed="false" />
 
         <!-- Notifications -->
-        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false" />
+        <!-- %POST_NOTIFICATIONS% -->
         <!-- Draw over other apps -->
         <permission name="android.permission.SYSTEM_ALERT_WINDOW" fixed="false" />
         <!-- Signature spoofing -->
