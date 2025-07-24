@@ -413,10 +413,13 @@ _parse_webpage_and_get_url()
   {
     _parsed_code="$("${WGET_CMD:?}" -q -S -O '-' "${@}" -- "${_url:?}")" 2> "${_headers_file:?}" || _status="${?}"
 
-    # IMPORTANT: We have to avoid "write error: Broken pipe" when a string is piped to "grep -q" or "grep -m 1"
-    test "${USING_PIPEFAIL:-false}" = 'false' || set +o pipefail
-    _parsed_code="$(printf '%s\n' "${_parsed_code?}" | grep -o -m 1 -e "${_search_pattern:?}")" || _status="${?}"
-    test "${USING_PIPEFAIL:-false}" = 'false' || set -o pipefail
+    # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
+    {
+      # IMPORTANT: We have to avoid "write error: Broken pipe" when a string is piped to "grep -q" or "grep -m 1"
+      test "${USING_PIPEFAIL:-false}" = 'false' || set +o pipefail
+      _parsed_code="$(printf '%s\n' "${_parsed_code?}" | grep -o -m 1 -e "${_search_pattern:?}")" || _status="${?}"
+      test "${USING_PIPEFAIL:-false}" = 'false' || set -o pipefail
+    }
 
     if test "${_status:?}" -eq 0; then
       test -n "${_parsed_code?}" || return 3
