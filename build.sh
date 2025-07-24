@@ -8,9 +8,9 @@ set -e
 # shellcheck disable=SC3040,SC3041,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / In POSIX sh, set flag -X is undefined. / C may run when A is true.
 {
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-  (set 2> /dev/null -o posix) && set -o posix || true
-  (set 2> /dev/null +H) && set +H || true
-  (set 2> /dev/null -o pipefail) && set -o pipefail || true
+  (set 2> /dev/null -o posix) && set -o posix || :
+  (set 2> /dev/null +H) && set +H || :
+  case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) if set -o pipefail; then export USING_PIPEFAIL='true'; else echo 1>&2 'Failed: pipefail'; fi ;; *) ;; esac
 }
 
 cat << 'LICENSE'
@@ -114,7 +114,7 @@ else
   ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse HEAD)" || ZIP_SHORT_COMMIT_ID=''
 fi
 if test -n "${ZIP_SHORT_COMMIT_ID?}"; then
-  ZIP_SHORT_COMMIT_ID="$(printf '%s\n' "${ZIP_SHORT_COMMIT_ID:?}" | cut -b '-8' || :)"
+  ZIP_SHORT_COMMIT_ID="$(printf '%s' "${ZIP_SHORT_COMMIT_ID:?}" | cut -b '-8' || :)"
 fi
 
 if test "${OPENSOURCE_ONLY:?}" != 'false'; then
