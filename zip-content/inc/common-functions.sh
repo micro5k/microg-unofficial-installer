@@ -396,7 +396,7 @@ is_mounted_read_write()
   local _mount_info
   _mount_info="$(_get_mount_info "${1:?}")" || ui_error "is_mounted_read_write has failed for '${1?}'"
 
-  # To avoid "write: Broken pipe" with "grep -q" / "grep -m 1" use "echo" instead of "printf" and ignore its exit code
+  # To avoid "write error: Broken pipe" when a string is piped to "grep -q" or "grep -m 1" we use "echo" instead of "printf" and we ignore the exit code of echo
   if {
     echo "${_mount_info:?}" || :
   } | grep -q -e '[[:blank:],(]rw[),[:blank:]]'; then

@@ -412,11 +412,15 @@ _parse_webpage_and_get_url()
 
   {
     _parsed_code="$("${WGET_CMD:?}" -q -S -O '-' "${@}" -- "${_url:?}")" 2> "${_headers_file:?}" || _status="${?}"
+
+    # To avoid "write error: Broken pipe" when a string is piped to "grep -q" or "grep -m 1" we use "echo" instead of "printf" and we ignore the exit code of echo
     _parsed_code="$({
-      printf '%s\n' "${_parsed_code?}" &
+      echo "${_parsed_code?}" || :
     } | grep -o -m 1 -e "${_search_pattern:?}")" || _status="${?}"
-    if test "${_status:?}" -eq 0; then
-      _parsed_url="$(printf '%s\n' "${_parsed_code?}" | grep -o -m 1 -e 'href=".*' | cut -d '"' -f '2' | sed 's/\&amp;/\&/g')" || _status="${?}"
+    if test "${_status:?}" -eq 0 || test "${_status:?}" -eq 141; then
+      test -n "${_parsed_code?}" || return 3
+      _status=0
+      _parsed_url="$(printf '%s\n' "${_parsed_code:?}" | grep -o -e 'href=".*' | cut -d '"' -f '2' -s | sed 's|&amp;|\&|g')" || _status="${?}"
       if test "${DL_DEBUG:?}" = 'true'; then
         ui_debug "Parsed url: ${_parsed_url?}"
         ui_debug "Status: ${_status?}"
