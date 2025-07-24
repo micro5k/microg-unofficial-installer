@@ -413,14 +413,13 @@ _parse_webpage_and_get_url()
   {
     _parsed_code="$("${WGET_CMD:?}" -q -S -O '-' "${@}" -- "${_url:?}")" 2> "${_headers_file:?}" || _status="${?}"
 
-    # To avoid "write error: Broken pipe" when a string is piped to "grep -q" or "grep -m 1" we use "echo" instead of "printf" and we ignore the exit code of echo
+    # IMPORTANT: We have to avoid "write error: Broken pipe" when a string is piped to "grep -q" or "grep -m 1"
     _parsed_code="$({
-      echo "${_parsed_code?}" || :
+      (printf '%s\n' "${_parsed_code?}") || :
     } | grep -o -m 1 -e "${_search_pattern:?}")" || _status="${?}"
-    if test "${_status:?}" -eq 0 || test "${_status:?}" -eq 141; then
+    if test "${_status:?}" -eq 0; then
       test -n "${_parsed_code?}" || return 3
-      _status=0
-      _parsed_url="$(printf '%s\n' "${_parsed_code:?}" | grep -o -e 'href=".*' | cut -d '"' -f '2' -s | sed 's|&amp;|\&|g')" || _status="${?}"
+      _parsed_url="$(printf '%s\n' "${_parsed_code:?}" | grep -o -e 'href=".*' | cut -d '"' -f '2' -s | sed -e 's|&amp;|\&|g')" || _status="${?}"
       if test "${DL_DEBUG:?}" = 'true'; then
         ui_debug "Parsed url: ${_parsed_url?}"
         ui_debug "Status: ${_status?}"
@@ -731,7 +730,7 @@ dl_type_one()
     _referrer="${2:?}"
     _url="${1:?}"
   }
-  _result="$(_parse_webpage_and_get_url "${_url:?}" "${_referrer:?}" 'downloadButton[^"]*\"\s*href=\"[^"]*\"')" || {
+  _result="$(_parse_webpage_and_get_url "${_url:?}" "${_referrer:?}" 'downloadButton[^"]*"\s*href="[^"]*"')" || {
     report_failure_one "${?}" 'get link 1' "${_result:-}" || return "${?}"
   }
 
@@ -740,7 +739,7 @@ dl_type_one()
     _referrer="${_url:?}"
     _url="${_base_url:?}${_result:?}"
   }
-  _result="$(_parse_webpage_and_get_url "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart\s.*href=\"[^"]*\"')" || {
+  _result="$(_parse_webpage_and_get_url "${_url:?}" "${_referrer:?}" 'Your\sdownload\swill\sstart.*href="[^"]*"')" || {
     report_failure_one "${?}" 'get link 2' "${_result:-}" || return "${?}"
   }
 
