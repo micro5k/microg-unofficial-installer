@@ -131,7 +131,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         with:
-          name: "${{ github.event.repository.name }}-g${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}-${{ steps.build.outputs.ZIP_BUILD_TYPE }} (extract it)"
+          name: "${{ github.event.repository.name }}-${{ github.ref_name }}-g${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}-${{ steps.build.outputs.ZIP_BUILD_TYPE }} (extract it)"
           path: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*"
           if-no-files-found: "error"
           retention-days: 10

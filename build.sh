@@ -179,10 +179,10 @@ FILENAME_END="-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
 
 if test "${CI:-false}" != 'false'; then
   if test -n "${CI_COMMIT_BRANCH-}" && test "${CI_COMMIT_BRANCH:?}" != "${CI_DEFAULT_BRANCH:-unknown}"; then
-    FILENAME_MIDDLE="${FILENAME_MIDDLE:?}-${CI_COMMIT_BRANCH:?}" # GitLab
+    FILENAME_MIDDLE="${FILENAME_MIDDLE:?}-[${CI_COMMIT_BRANCH:?}]" # GitLab
   fi
   if test "${GITHUB_REF_TYPE-}" = 'branch' && test -n "${GITHUB_REF_NAME-}" && test "${GITHUB_REF_NAME:?}" != "main" && test "${GITHUB_REF_NAME:?}" != "master"; then
-    FILENAME_MIDDLE="${FILENAME_MIDDLE:?}-${GITHUB_REF_NAME:?}" # GitHub
+    FILENAME_MIDDLE="${FILENAME_MIDDLE:?}-[${GITHUB_REF_NAME:?}]" # GitHub
   fi
   if test "${CI_PROJECT_NAMESPACE:-${GITHUB_REPOSITORY_OWNER:-unknown}}" != 'micro''5k'; then
     FILENAME_MIDDLE="${FILENAME_MIDDLE:?}-fork" # GitLab / GitHub
