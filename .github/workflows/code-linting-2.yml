@@ -7,7 +7,10 @@ permissions: {}
 on:
   push:
     branches:
-      - main
+      - "main"
+  schedule:
+    # At 05:00 AM, every 365 days (UTC)
+    - cron: "0 5 */365 * *"
 jobs:
   codacy:
     name: "Codacy"

@@ -144,8 +144,15 @@ if test "${OPENSOURCE_ONLY:?}" != 'false'; then
 fi
 
 # Check dependencies
-command -v 'zip' 1> /dev/null || ui_error 'Zip is missing'
-command -v 'java' 1> /dev/null || ui_error 'Java is missing'
+command 1> /dev/null 2>&1 -v 'printf' || ui_error 'Missing: printf'
+command 1> /dev/null 2>&1 -v 'zip' || ui_error 'Missing: zip'
+command 1> /dev/null 2>&1 -v 'java' || ui_error 'Missing: java'
+command 1> /dev/null 2>&1 -v 'grep' || ui_error 'Missing: grep'
+
+command 1> /dev/null 2>&1 -v 'wget' || ui_error 'Missing: wget'
+command 1> /dev/null 2>&1 -v 'cut' || ui_error 'Missing: cut'
+command 1> /dev/null 2>&1 -v 'sed' || ui_error 'Missing: sed'
+command 1> /dev/null 2>&1 -v 'rev' || ui_error 'Missing: rev'
 
 # Create the output dir
 mkdir -p "${OUT_DIR:?}" || ui_error 'Failed to create the output dir'
