@@ -1284,11 +1284,7 @@ initialize()
     ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM?}"
     ui_msg_empty_line
 
-    if is_verity_enabled; then
-      ui_error "Remounting '${SYS_MOUNTPOINT?}' failed, it is possible that Verity is enabled. If this is the case you should DISABLE it!!!" 30
-    else
-      ui_error "Remounting '${SYS_MOUNTPOINT?}' failed!!!" 30
-    fi
+    ui_error "Remounting '${SYS_MOUNTPOINT?}' failed!!!" 30
   }
 
   if mount_partition_if_possible 'vendor' "${SLOT_SUFFIX:+vendor}${SLOT_SUFFIX-}${NL:?}vendor${NL:?}"; then
