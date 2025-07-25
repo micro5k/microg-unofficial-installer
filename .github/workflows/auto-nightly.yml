@@ -7,7 +7,7 @@ permissions: {}
 on:
   push:
     branches:
-      - "main"
+      - "**"
   schedule:
     # At 03:00 AM, every 6 days (UTC)
     - cron: "0 3 */6 * *"
@@ -71,7 +71,7 @@ jobs:
         run: |
           # Do we need to publish the nightly build?
           CREATE_RELEASE='false'
-          if '${{ github.run_attempt == '1' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}'; then
+          if '${{ github.ref_name == 'main' && github.run_attempt == '1' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}'; then
             CREATE_RELEASE='true'
           fi
           printf 'CREATE_RELEASE=%s\n' "${CREATE_RELEASE:?}" 1>> "${GITHUB_OUTPUT?}"

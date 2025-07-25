@@ -82,6 +82,9 @@ ui_debug()
 export DL_DEBUG="${DL_DEBUG:-false}"
 export http_proxy="${http_proxy-}"
 export ftp_proxy="${ftp_proxy-}"
+
+if test "${CI:-false}" != 'false' && test "${CI_DEBUG_TRACE:-${RUNNER_DEBUG:-false}}" != 'false'; then DL_DEBUG='true'; fi # GitLab / GitHub
+
 # shellcheck disable=SC2034
 {
   readonly WGET_CMD='wget'
