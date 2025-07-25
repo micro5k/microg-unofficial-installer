@@ -33,7 +33,7 @@ jobs:
       - name: "Prepare cache"
         uses: actions/cache@v4
         with:
-          path: "cache"
+          path: "cache/build"
           key: "build-${{ hashFiles('conf-2.sh') }}"
           restore-keys: "build-"
           enableCrossOsArchive: true
@@ -148,6 +148,6 @@ jobs:
       - name: "Read cache"
         uses: actions/cache@v4
         with:
-          path: "cache"
+          path: "cache/build"
           key: "build-${{ hashFiles('conf-2.sh') }}"
           enableCrossOsArchive: true

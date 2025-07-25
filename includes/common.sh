@@ -870,7 +870,7 @@ dl_type_two()
 
 dl_file()
 {
-  if test -e "${MAIN_DIR:?}/cache/$1/$2"; then verify_sha1 "${MAIN_DIR:?}/cache/$1/$2" "$3" || rm -f "${MAIN_DIR:?}/cache/$1/$2"; fi # Preventive check to silently remove corrupted/invalid files
+  if test -e "${BUILD_CACHE_DIR:?}/$1/$2"; then verify_sha1 "${BUILD_CACHE_DIR:?}/$1/$2" "$3" || rm -f "${BUILD_CACHE_DIR:?}/$1/$2"; fi # Preventive check to silently remove corrupted/invalid files
 
   printf '%s ' "Checking ${2?}..."
   local _status _url _domain
@@ -880,22 +880,22 @@ dl_file()
 
   _clear_cookies || return "${?}"
 
-  if ! test -e "${MAIN_DIR:?}/cache/${1:?}/${2:?}"; then
-    mkdir -p "${MAIN_DIR:?}/cache/${1:?}"
+  if ! test -e "${BUILD_CACHE_DIR:?}/${1:?}/${2:?}"; then
+    mkdir -p "${BUILD_CACHE_DIR:?}/${1:?}" || ui_error "Failed to create the ${1?} folder inside the cache dir"
 
     if test "${CI:-false}" = 'false'; then sleep 0.5; else sleep 3; fi
     case "${_domain:?}" in
       *\.'go''file''.io' | 'go''file''.io')
         printf '\n %s: ' 'DL type 2'
-        dl_type_two "${_url:?}" "${MAIN_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+        dl_type_two "${_url:?}" "${BUILD_CACHE_DIR:?}/${1:?}/${2:?}" || _status="${?}"
         ;;
       *\.'apk''mirror''.com')
         printf '\n %s: ' 'DL type 1'
-        dl_type_one "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${MAIN_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+        dl_type_one "${_url:?}" "${DL_PROT:?}${_domain:?}/" "${BUILD_CACHE_DIR:?}/${1:?}/${2:?}" || _status="${?}"
         ;;
       ????*)
         printf '\n %s: ' 'DL type 0'
-        dl_type_zero "${_url:?}" "${MAIN_DIR:?}/cache/${1:?}/${2:?}" || _status="${?}"
+        dl_type_zero "${_url:?}" "${BUILD_CACHE_DIR:?}/${1:?}/${2:?}" || _status="${?}"
         ;;
       *)
         ui_error "Invalid download URL => '${_url?}'"
@@ -905,7 +905,7 @@ dl_file()
     _clear_cookies || return "${?}"
 
     if test "${_status:?}" -ne 0; then
-      if test -n "${5:-}"; then
+      if test -n "${5-}"; then
         if test "${_status:?}" -eq 128; then
           printf '%s\n' 'Download skipped, trying a mirror...'
         else
@@ -914,13 +914,13 @@ dl_file()
         dl_file "${1:?}" "${2:?}" "${3:?}" "${5:?}"
         return "${?}"
       else
-        printf '%s\n' 'Download failed'
-        ui_error "Failed to download the file => 'cache/${1?}/${2?}'"
+        printf '%s\n' "Download failed, error code: ${_status:?}"
+        ui_error "Failed to download the file => '${1?}/${2?}'"
       fi
     fi
   fi
 
-  verify_sha1 "${MAIN_DIR:?}/cache/$1/$2" "$3" || corrupted_file "${MAIN_DIR:?}/cache/$1/$2"
+  verify_sha1 "${BUILD_CACHE_DIR:?}/$1/$2" "$3" || corrupted_file "${BUILD_CACHE_DIR:?}/$1/$2"
   printf '%s\n' 'OK'
 }
 

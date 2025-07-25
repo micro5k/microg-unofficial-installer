@@ -61,9 +61,11 @@ detect_script_dir()
 }
 detect_script_dir || return 1 2>&- || exit 1
 
+export BUILD_CACHE_DIR="${MAIN_DIR:?}/cache/build"
+
 unset DO_INIT_CMDLINE
 # shellcheck source=SCRIPTDIR/includes/common.sh
-if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR}/includes/common.sh"; fi
+if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR:?}/includes/common.sh"; fi
 
 if test -n "${OPENSOURCE_ONLY-}"; then
   ui_error 'You must set BUILD_TYPE instead of OPENSOURCE_ONLY'
@@ -203,8 +205,6 @@ fi
 
 # Download files if they are missing
 {
-  mkdir -p "${MAIN_DIR:?}/cache" || ui_error 'Failed to create "cache" dir'
-
   current_dl_list="$(oss_files_to_download)" || ui_error 'Missing download list'
   dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files'
 
@@ -249,7 +249,7 @@ printf '%s\n%s\n%s\n\n%s\n' '# -*- coding: utf-8; mode: conf-unix -*-' '# SPDX-F
 if test "${OPENSOURCE_ONLY:?}" = 'false'; then
   files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH MIN_API MAX_API FINAL_FILENAME INTERNAL_NAME FILE_HASH _; do
     mkdir -p -- "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}"
-    cp -f -- "${MAIN_DIR:?}/cache/${LOCAL_PATH:?}/${LOCAL_FILENAME:?}.apk" "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}.apk'"
+    cp -f -- "${BUILD_CACHE_DIR:?}/${LOCAL_PATH:?}/${LOCAL_FILENAME:?}.apk" "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}.apk'"
 
     _extract_libs=''
     if test "${LOCAL_FILENAME:?}" = 'PlayStore' || test "${LOCAL_FILENAME:?}" = 'PlayStoreARM64'; then _extract_libs='libs'; fi
@@ -260,7 +260,7 @@ if test "${OPENSOURCE_ONLY:?}" = 'false'; then
   if test "${STATUS:?}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
   mkdir -p "${TEMP_DIR}/zip-content/misc/keycheck"
-  cp -f "${MAIN_DIR}/cache/misc/keycheck/keycheck-arm.bin" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
+  cp -f "${BUILD_CACHE_DIR:?}/misc/keycheck/keycheck-arm.bin" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
 fi
 
 printf '%s\n' 'Setting name;Visibility;Type' 1> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (1)'
@@ -277,7 +277,7 @@ done 0< "${TEMP_DIR:?}/zip-content/settings.conf" 1>> "${TEMP_DIR:?}/zip-content
 printf '\n'
 
 # Remove the cache folder only if it is empty
-rmdir --ignore-fail-on-non-empty "${MAIN_DIR}/cache" || ui_error 'Failed to remove the empty cache folder'
+rmdir --ignore-fail-on-non-empty "${BUILD_CACHE_DIR:?}" || ui_error 'Failed to remove the empty build cache folder'
 
 # Prepare the data before compression (also uniform attributes - useful for reproducible builds)
 BASE_TMP_SCRIPT_DIR="${TEMP_DIR}/zip-content/META-INF/com/google/android"

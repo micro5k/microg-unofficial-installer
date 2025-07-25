@@ -9,9 +9,9 @@ variables:
 
 # Cache expiration: 14 days
 cache:
-  key: "build-cache"
+  key: "cache-build"
   paths:
-    - cache/
+    - cache/build/
   when: "always"
 
 before_script: |
