@@ -276,8 +276,8 @@ done 0< "${TEMP_DIR:?}/zip-content/settings.conf" 1>> "${TEMP_DIR:?}/zip-content
 
 printf '\n'
 
-# Remove the cache folder only if it is empty
-rmdir --ignore-fail-on-non-empty "${BUILD_CACHE_DIR:?}" || ui_error 'Failed to remove the empty build cache folder'
+# Remove the build cache folder only if it is empty
+test ! -d "${BUILD_CACHE_DIR:?}" || rmdir --ignore-fail-on-non-empty "${BUILD_CACHE_DIR:?}" || ui_error 'Failed to remove the empty build cache folder'
 
 # Prepare the data before compression (also uniform attributes - useful for reproducible builds)
 BASE_TMP_SCRIPT_DIR="${TEMP_DIR}/zip-content/META-INF/com/google/android"
