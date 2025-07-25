@@ -371,11 +371,18 @@ _get_byte_length()
   printf '%s\n' "${#1}"
 }
 
+_dl_validate_exit_code()
+{
+  test "${DL_DEBUG:?}" = 'false' || ui_debug "${1?} exit code: ${2?}"
+  return "${2:?}"
+}
+
 _parse_webpage_and_get_url()
 {
   local _url _referrer _search_pattern
   local _domain _cookies _parsed_code _parsed_url _status
   local _headers_file
+  local _status_code
 
   _url="${1:?}"
   _referrer="${2?}"
@@ -408,10 +415,15 @@ _parse_webpage_and_get_url()
   fi
 
   _headers_file="${MAIN_DIR:?}/cache/temp/headers/${_domain:?}.dat"
-  if test ! -e "${MAIN_DIR:?}/cache/temp/headers"; then mkdir -p "${MAIN_DIR:?}/cache/temp/headers" || return "${?}"; fi
+  test -d "${MAIN_DIR:?}/cache/temp/headers" || mkdir -p "${MAIN_DIR:?}/cache/temp/headers" || return 10
 
   {
     _parsed_code="$("${WGET_CMD:?}" -q -S -O '-' "${@}" -- "${_url:?}" 2> "${_headers_file:?}")" || _status="${?}"
+    _status_code="$(head -n 1 -- "${_headers_file:?}" | grep -o -e 'HTTP/[0-9].*' | cut -d ' ' -f '2' -s)" || _status_code=0
+    if test "${DL_DEBUG:?}" = 'true'; then ui_debug "Status code: ${_status_code?}"; fi
+    _dl_validate_exit_code 'Wget' "${_status:?}" || return 11
+    test -s "${_headers_file:?}" || return 12
+    test -n "${_parsed_code?}" || return 13
 
     # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
     {
@@ -420,30 +432,28 @@ _parse_webpage_and_get_url()
       _parsed_code="$(printf 2> /dev/null '%s\n' "${_parsed_code?}" | grep -o -m 1 -e "${_search_pattern:?}")" || _status="${?}"
       test "${USING_PIPEFAIL:-false}" = 'false' || set -o pipefail
     }
+    _dl_validate_exit_code 'Grep' "${_status:?}" || return 14
+    test -n "${_parsed_code?}" || return 15
 
-    if test "${_status:?}" -eq 0; then
-      test -n "${_parsed_code?}" || return 10
-      _parsed_url="$(printf '%s\n' "${_parsed_code:?}" | grep -o -e 'href=".*' | cut -d '"' -f '2' -s | sed -e 's|&amp;|\&|g')" || _status="${?}"
-      if test "${DL_DEBUG:?}" = 'true'; then
-        ui_debug "Parsed url: ${_parsed_url?}"
-        ui_debug "Status: ${_status?}"
-      fi
+    _parsed_url="$(printf '%s\n' "${_parsed_code:?}" | grep -o -e 'href=".*' | cut -d '"' -f '2' -s | sed -e 's|&amp;|\&|g')" || _status="${?}"
+    if test "${DL_DEBUG:?}" = 'true'; then
+      ui_debug "Parsed url: ${_parsed_url?}"
+      ui_debug "Status: ${_status?}"
     fi
 
     if test "${_status:?}" -ne 0 || test -z "${_parsed_url?}"; then
       if test "${DL_DEBUG:?}" = 'true'; then
         ui_error_msg "Webpage parsing failed, error code => ${_status?}"
       fi
-      return 11
+      return 16
     fi
   }
 
-  test -s "${_headers_file:?}" || rm -f "${_headers_file:?}" || return "${?}" # Delete if empty
   _parse_and_store_all_cookies "${_domain:?}" 0< "${_headers_file:?}" || {
     ui_error_msg "Header parsing failed, error code => ${?}"
-    return 12
+    return 17
   }
-  rm -f "${_headers_file:?}" || return "${?}"
+  rm -f "${_headers_file:?}" || return 18
 
   printf '%s\n' "${_parsed_url?}"
 }
@@ -611,7 +621,7 @@ send_web_request_and_output_headers()
 
 parse_headers_and_get_status_code()
 {
-  printf '%s\n' "${1?}" | head -n 1 | grep -o -m 1 -e 'HTTP/.*' | cut -d ' ' -f '2' -s
+  printf '%s\n' "${1?}" | head -n 1 | grep -o -e 'HTTP/.*' | cut -d ' ' -f '2' -s
 }
 
 parse_headers_and_get_location_url()
@@ -909,12 +919,12 @@ dl_file()
         if test "${_status:?}" -eq 128; then
           printf '%s\n' 'Download skipped, trying a mirror...'
         else
-          printf '%s\n' 'Download failed, trying a mirror...'
+          printf '%s\n' "Download failed with error code ${_status?}, trying a mirror..."
         fi
         dl_file "${1:?}" "${2:?}" "${3:?}" "${5:?}"
         return "${?}"
       else
-        printf '%s\n' "Download failed, error code: ${_status:?}"
+        printf '%s\n' "Download failed with error code ${_status?}"
         ui_error "Failed to download the file => '${1?}/${2?}'"
       fi
     fi
