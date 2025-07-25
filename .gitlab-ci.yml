@@ -16,7 +16,7 @@ cache:
 
 before_script: |
   # Install dependencies
-  apk add bash grep wget zip~=3.0 || exit "${?}"
+  apk add bash wget zip~=3.0 || exit "${?}"
 
 include:
   # - template: Security/Dependency-Scanning.gitlab-ci.yml
