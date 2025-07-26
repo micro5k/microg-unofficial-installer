@@ -33,5 +33,5 @@ You can find the stable releases here:
 
 Instead if you want to try the nightly builds you can find them here:
 
-- `Full version <https://github.com/micro5k/microg-unofficial-installer/releases/tag/nightly>`__
-- `OSS version <https://gitlab.com/micro5k/microg-unofficial-installer/-/jobs/artifacts/main/browse/output?job=build-job>`__
+- `Full version <https://gitlab.com/micro5k/microg-unofficial-installer/-/jobs/artifacts/main/browse/output?job=build-job>`__
+- `OSS version <https://github.com/micro5k/microg-unofficial-installer/releases/tag/nightly>`__
