@@ -152,7 +152,7 @@ jobs:
           sparse-checkout: |
             conf-2.sh
           sparse-checkout-cone-mode: false
-      - name: "Ping cache"
+      - name: "Ping cache" # Cache expiration: 7 days
         uses: actions/cache@v4
         with:
           key: "build-${{ hashFiles('conf-2.sh') }}"

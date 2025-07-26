@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: (c) 2021 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-name: "Base"
+name: "Coverage and testing"
 permissions: {}
 on:
   push:
@@ -10,8 +10,11 @@ on:
   workflow_dispatch:
 jobs:
   base-job:
-    name: "Coverage and testing"
+    name: "Base"
     runs-on: ubuntu-latest
+    concurrency:
+      group: "${{ github.repository_id }}-${{ github.workflow }}-base"
+      cancel-in-progress: false
 
     steps:
       - name: "Checkout sources"
@@ -60,6 +63,11 @@ jobs:
           if test -e '${{ github.workspace }}/recovery-simulator/output/installed-files.log'; then
             cat '${{ github.workspace }}/recovery-simulator/output/installed-files.log'
           fi
+      - name: "Verify Codecov token"
+        shell: bash
+        run: |
+          # Verifying token...
+          test -n '${{ secrets.CODECOV_TOKEN }}' || exit 3
       - name: "Upload coverage reports to Codecov"
         if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
         uses: codecov/codecov-action@v5
