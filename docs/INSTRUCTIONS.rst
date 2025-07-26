@@ -28,10 +28,10 @@ Download
 
 You can find the stable releases here:
 
-- `Full version <https://xdaforums.com/t/3432360/>`__
-- `OSS version <https://github.com/micro5k/microg-unofficial-installer/releases/latest>`__
+- `Stable - Full flavour <https://xdaforums.com/t/3432360/>`_
+- `Stable - OSS flavour <https://github.com/micro5k/microg-unofficial-installer/releases/latest>`_
 
 Instead if you want to try the nightly builds you can find them here:
 
-- `Full version <https://gitlab.com/micro5k/microg-unofficial-installer/-/jobs/artifacts/main/browse/output?job=build-job>`__
-- `OSS version <https://github.com/micro5k/microg-unofficial-installer/releases/tag/nightly>`__
+- `Nightly - Full flavour <https://gitlab.com/micro5k/microg-unofficial-installer/-/jobs/artifacts/main/browse/output?job=build-job>`_
+- `Nightly - OSS flavour <https://github.com/micro5k/microg-unofficial-installer/releases/tag/nightly>`_
