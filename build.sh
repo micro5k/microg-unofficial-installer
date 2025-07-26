@@ -185,7 +185,7 @@ if test "${CI:-false}" != 'false'; then
     FILENAME_MIDDLE="${FILENAME_MIDDLE:?}-[${GITHUB_REF_NAME:?}]" # GitHub
   fi
   if test "${CI_PROJECT_NAMESPACE:-${GITHUB_REPOSITORY_OWNER:-unknown}}" != 'micro''5k'; then
-    FILENAME_MIDDLE="${FILENAME_MIDDLE:?}-fork" # GitLab / GitHub
+    FILENAME_MIDDLE="${FILENAME_MIDDLE:?}-[fork]" # GitLab / GitHub
   fi
 fi
 
