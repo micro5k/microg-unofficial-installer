@@ -45,9 +45,7 @@ Release
    :alt: Total OSS downloads
    :target: `Release`_
 
-Download `releases <docs/INSTRUCTIONS.rst>`_
-
-Download `nightly builds <https://github.com/micro5k/microg-unofficial-installer/releases/tag/nightly>`_
+`Download instructions <docs/INSTRUCTIONS.rst>`_
 
 
 Copyright

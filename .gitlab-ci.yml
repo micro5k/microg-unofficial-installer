@@ -28,7 +28,7 @@ stages:
   - build
   - test
 
-job-build-oss:
+build-oss-job:
   stage: build
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -36,7 +36,7 @@ job-build-oss:
   cache: []
   script: "BUILD_TYPE='oss' './build.sh'"
 
-job-build:
+build-job:
   stage: build
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

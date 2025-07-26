@@ -26,4 +26,12 @@ or
 Download
 --------
 
-You can get the complete package in the `XDA thread <https://xdaforums.com/t/3432360/>`_, instead the open-source only version in the `release page <https://github.com/micro5k/microg-unofficial-installer/releases/latest>`_.
+You can find the stable releases here:
+
+- `Full version <https://xdaforums.com/t/3432360/>`__
+- `OSS version <https://github.com/micro5k/microg-unofficial-installer/releases/latest>`__
+
+Instead if you want to try the nightly builds you can find them here:
+
+- `Full version <https://github.com/micro5k/microg-unofficial-installer/releases/tag/nightly>`__
+- `OSS version <https://gitlab.com/micro5k/microg-unofficial-installer/-/jobs/artifacts/main/browse/output?job=build-job>`__
