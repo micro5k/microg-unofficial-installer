@@ -27,8 +27,8 @@ This project is available on GitHub_, on GitLab_ as well as on XDA_.
    :target: https://liberapay.com/microg-unofficial-by-ale5000/donate
 
 
-Release
--------
+Download
+--------
 .. image:: https://img.shields.io/github/v/release/micro5k/microg-unofficial-installer.svg?cacheSeconds=3600
    :alt: GitHub latest release
    :target: `Release`_
