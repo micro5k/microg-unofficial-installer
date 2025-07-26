@@ -23,7 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     if: "${{ github.event_name == 'push' && github.ref_type == 'branch' }}"
     permissions:
-      contents: write # Needed to create a tag
+      contents: write # Needed to delete a release and to modify a tag
+      id-token: write # Needed to attest build provenance
+      attestations: write # Needed to attest build provenance
 
     steps:
       - name: "Checkout sources"
@@ -40,12 +42,19 @@ jobs:
           restore-keys: "build-"
           path: "cache/build"
           enableCrossOsArchive: true
-      - name: "Build nightly"
+      - name: "Build the flashable OTA zip"
         id: "build"
         shell: bash
         run: |
-          # Building nightly...
+          # Building...
           BUILD_TYPE='oss' '${{ github.workspace }}/build.sh'
+      - name: "Attest build provenance"
+        id: "attest"
+        uses: actions/attest-build-provenance@v2
+        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
+        with:
+          subject-path: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip"
+          show-summary: false
       - name: "ZIP info"
         run: |
           # Retrieve informations...
@@ -58,6 +67,7 @@ jobs:
           ZIP_IS_ALPHA='${{ steps.build.outputs.ZIP_IS_ALPHA }}'
           ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
           ZIP_MD5='${{ steps.build.outputs.ZIP_MD5 }}'
+          ZIP_ATTESTATION='${{ steps.attest.outputs.attestation-url }}'
           # Displaying informations...
           printf '%s\n' "::notice::Filename: ${ZIP_FILENAME:-Missing}"
           printf '%s\n' "::notice::Version: ${ZIP_VERSION:-Missing}"
@@ -67,6 +77,7 @@ jobs:
           printf '%s\n' "::notice::Is alpha: ${ZIP_IS_ALPHA:-Missing}"
           printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
+          printf '%s\n' "::notice::Attestation: ${ZIP_ATTESTATION:-Missing}"
           : "${ZIP_FOLDER:?}" || exit "${?}"
       - name: "Do we need to publish the nightly build?"
         id: "nightly-logic"
@@ -122,7 +133,7 @@ jobs:
           name: "${{ steps.build.outputs.ZIP_VERSION }} nightly"
           tag_name: "nightly"
           target_commitish: "${{ github.sha }}"
-          body: "Latest automatically built ZIP (unstable development snapshot)\n\nSHA-256: ${{ steps.build.outputs.ZIP_SHA256 }}"
+          body: "Latest automatically built ZIP (unstable development snapshot).\nAttestation: ${{ steps.attest.outputs.attestation-url }}\n\nSHA-256: ${{ steps.build.outputs.ZIP_SHA256 }}"
           append_body: false
           generate_release_notes: false
           make_latest: false
