@@ -41,8 +41,8 @@ jobs:
           #sudo apt-get -qq -y install moreutils 1>/dev/null
           bashcov '${{ github.workspace }}/build.sh' # To timestamp the output pipe it to: TZ=UTC ts '[%H:%M:%S]'
       - name: "Testing (with coverage)"
-        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         shell: bash
+        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         run: |
           # Testing of zip installation...
           echo '==========================='
@@ -64,18 +64,27 @@ jobs:
             cat '${{ github.workspace }}/recovery-simulator/output/installed-files.log'
           fi
       - name: "Verify Codecov token"
+        id: "codecov-token"
         shell: bash
+        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         run: |
           # Verifying token...
           test -n '${{ secrets.CODECOV_TOKEN }}' || exit 3
       - name: "Upload coverage reports to Codecov"
-        if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
+        if: "${{ steps.codecov-token.outcome == 'success' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}"
         uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
           token: "${{ secrets.CODECOV_TOKEN }}"
+      - name: "Verify Codacy token"
+        id: "codacy-token"
+        shell: bash
+        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
+        run: |
+          # Verifying token...
+          test -n '${{ secrets.CODACY_PROJECT_TOKEN }}' || exit 3
       - name: "Upload coverage reports to Codacy"
-        if: "${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'micro5k' }}"
+        if: "${{ steps.codacy-token.outcome == 'success' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}"
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
