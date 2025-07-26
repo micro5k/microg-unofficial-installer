@@ -9,8 +9,8 @@ on:
     branches:
       - "main"
   schedule:
-    # At 05:00 AM, every 365 days (UTC)
-    - cron: "0 5 */365 * *"
+    # At 05:00 AM, every 365 days, only in January (UTC)
+    - cron: "0 5 */365 1 *"
 jobs:
   codacy:
     name: "Codacy"
