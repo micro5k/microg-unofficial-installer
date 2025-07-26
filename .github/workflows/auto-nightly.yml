@@ -51,7 +51,7 @@ jobs:
       - name: "Attest build provenance"
         id: "attest"
         uses: actions/attest-build-provenance@v2
-        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
+        if: "${{ vars.ATTESTATION == 'true' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         with:
           subject-path: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip"
           show-summary: false
@@ -139,7 +139,9 @@ jobs:
           make_latest: false
           draft: false
           prerelease: true
-          files: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*"
+          files: |
+            ${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*
+            ${{ steps.attest.outputs.bundle-path }}
           fail_on_unmatched_files: true
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v4
