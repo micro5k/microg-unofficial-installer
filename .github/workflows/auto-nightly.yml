@@ -14,6 +14,9 @@ on:
 concurrency:
   group: "${{ github.repository_id }}-${{ github.workflow }}"
   cancel-in-progress: true
+env:
+  GITHUB_REPOSITORY_DEFAULT_BRANCH: "${{ github.event.repository.default_branch }}"
+
 jobs:
   nightly:
     name: "Nightly"
