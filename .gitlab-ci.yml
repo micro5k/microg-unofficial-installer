@@ -44,7 +44,7 @@ build-job:
   artifacts:
     paths:
       - output/*.zip*
-    expire_in: 1 hour
+    expire_in: 30 minutes
 
 # license_scanning:
 #   stage: test

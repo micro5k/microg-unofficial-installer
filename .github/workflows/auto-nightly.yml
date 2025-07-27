@@ -51,7 +51,7 @@ jobs:
       - name: "Attest build provenance"
         id: "attest"
         uses: actions/attest-build-provenance@v2
-        if: "${{ vars.ATTESTATION == 'true' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
+        if: "${{ vars.NIGHTLY_ATTESTATION == 'true' && github.run_attempt == '1' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         with:
           subject-path: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip"
           show-summary: false
