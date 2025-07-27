@@ -35,7 +35,7 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "17"
-      - name: "Prepare cache"
+      - name: "Use cache"
         uses: actions/cache@v4
         with:
           key: "build-${{ hashFiles('conf-2.sh') }}"
