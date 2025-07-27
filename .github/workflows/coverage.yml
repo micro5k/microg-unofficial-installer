@@ -69,9 +69,11 @@ jobs:
         if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         run: |
           # Verifying token...
-          test -n '${{ secrets.CODECOV_TOKEN }}' || exit 3
+          token_set='true'
+          test -n '${{ secrets.CODECOV_TOKEN }}' || token_set='false'
+          printf 'TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
       - name: "Upload coverage reports to Codecov"
-        if: "${{ steps.codecov-token.outcome == 'success' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}"
+        if: "${{ steps.codecov-token.outputs.TOKEN_SET == 'true' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}"
         uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
@@ -82,9 +84,11 @@ jobs:
         if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         run: |
           # Verifying token...
-          test -n '${{ secrets.CODACY_PROJECT_TOKEN }}' || exit 3
+          token_set='true'
+          test -n '${{ secrets.CODACY_PROJECT_TOKEN }}' || token_set='false'
+          printf 'TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
       - name: "Upload coverage reports to Codacy"
-        if: "${{ steps.codacy-token.outcome == 'success' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}"
+        if: "${{ steps.codacy-token.outputs.TOKEN_SET == 'true' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}"
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
