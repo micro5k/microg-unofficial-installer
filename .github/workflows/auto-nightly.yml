@@ -11,15 +11,15 @@ on:
   schedule:
     # At 03:00 AM, every 6 days (UTC)
     - cron: "0 3 */6 * *"
-concurrency:
-  group: "${{ github.repository_id }}-${{ github.workflow }}"
-  cancel-in-progress: true
 
 jobs:
   nightly:
     name: "Nightly"
     runs-on: ubuntu-latest
     if: "${{ github.event_name == 'push' && github.ref_type == 'branch' }}"
+    concurrency:
+      group: "${{ github.repository_id }}-${{ github.workflow }}-nightly"
+      cancel-in-progress: true
     permissions:
       contents: write # Needed to delete a release and to modify a tag
       id-token: write # Needed to attest build provenance
@@ -182,7 +182,7 @@ jobs:
           retries: 3
           script: |
             /* jshint esversion: 6 */
-            const workflow_filename = process.env.WORKFLOW_REF.split('@', 1)[0].split('/').slice(2).join('/');
+            const workflow_filename = process.env.WORKFLOW_REF.split('@', 1).at(0).split('/').slice(2).join('/');
             const response = await github.rest.actions.enableWorkflow({
               owner: context.repo.owner,
               repo: context.repo.repo,
