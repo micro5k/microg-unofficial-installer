@@ -108,6 +108,15 @@ _init_dir="$(pwd)" || ui_error 'Failed to read the current dir'
 # Set output dir
 OUT_DIR="${MAIN_DIR:?}/output"
 
+# Set module info
+MODULE_ID="$(simple_get_prop 'id' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module id string'
+MODULE_VER="$(simple_get_prop 'version' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module version string'
+MODULE_AUTHOR="$(simple_get_prop 'author' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module author string'
+case "${MODULE_VER:?}" in
+  *'-alpha') MODULE_IS_ALPHA='true' ;;
+  *) MODULE_IS_ALPHA='false' ;;
+esac
+
 # Set short commit ID
 ZIP_SHORT_COMMIT_ID=''
 if test "${CI:-false}" != 'false'; then
@@ -133,7 +142,7 @@ if test "${OPENSOURCE_ONLY:?}" != 'false'; then
         printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
         printf 'ZIP_BUILD_TYPE=%s\n' "${BUILD_TYPE?}"
         printf 'ZIP_BUILD_TYPE_SUPPORTED=%s\n' 'false'
-        printf 'ZIP_IS_ALPHA=\n'
+        printf 'ZIP_IS_ALPHA=%s\n' "${MODULE_IS_ALPHA?}"
         printf 'ZIP_SHA256=\n'
         printf 'ZIP_MD5=\n'
       } >> "${GITHUB_OUTPUT?}"
@@ -166,11 +175,7 @@ if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
 # Empty our temp dir (should be already empty, but we must be sure)
 rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
 
-# Set filename and version
-MODULE_ID="$(simple_get_prop 'id' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module id string'
-MODULE_VER="$(simple_get_prop 'version' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module version string'
-MODULE_AUTHOR="$(simple_get_prop 'author' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module author string'
-
+# Set filename
 FILENAME_COMMIT_ID="g${ZIP_SHORT_COMMIT_ID?}"
 test "${FILENAME_COMMIT_ID:?}" != 'g' || FILENAME_COMMIT_ID='NOGIT'
 FILENAME_START="${MODULE_ID:?}-${MODULE_VER:?}-"
@@ -191,11 +196,6 @@ fi
 
 FILENAME="${FILENAME_START:?}${FILENAME_MIDDLE:?}${FILENAME_END:?}"
 FILENAME_EXT='.zip'
-
-case "${MODULE_VER:?}" in
-  *'-alpha') MODULE_IS_ALPHA='true' ;;
-  *) MODULE_IS_ALPHA='false' ;;
-esac
 
 # shellcheck source=SCRIPTDIR/addition.sh
 . "${MAIN_DIR}/addition.sh"
