@@ -79,18 +79,24 @@ jobs:
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
           printf '%s\n' "::notice::Attestation: ${ZIP_ATTESTATION:-Missing}"
           : "${ZIP_FOLDER:?}" || exit "${?}"
-      - name: "Do we need to publish the nightly build?"
+      - name: "Nightly logic"
         id: "nightly-logic"
         shell: bash
         run: |
-          # Do we need to publish the nightly build?
+          # Nightly logic...
+          UPDATE_TAG='false'
           CREATE_RELEASE='false'
-          if '${{ github.ref_name == github.event.repository.default_branch && github.run_attempt == '1' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}'; then
+          if '${{ github.ref_name == github.event.repository.default_branch && github.run_attempt == '1' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}'; then
+            UPDATE_TAG='true'
+          fi
+          if '${{ github.ref_name == github.event.repository.default_branch && github.run_attempt == '1' && steps.build.outputs.ZIP_IS_ALPHA == 'true' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}'; then
             CREATE_RELEASE='true'
           fi
+          printf 'UPDATE_TAG=%s\n' "${UPDATE_TAG:?}" 1>> "${GITHUB_OUTPUT?}"
           printf 'CREATE_RELEASE=%s\n' "${CREATE_RELEASE:?}" 1>> "${GITHUB_OUTPUT?}"
-          printf '%s\n' "${CREATE_RELEASE:?}"
-      - name: "Delete previous nightly release and update nightly tag"
+          printf 'Update tag? %s\n' "${UPDATE_TAG:?}"
+          printf 'Create release? %s\n' "${CREATE_RELEASE:?}"
+      - name: "Delete previous nightly release"
         uses: actions/github-script@v7
         if: "${{ steps.nightly-logic.outputs.CREATE_RELEASE == 'true' }}"
         with:
@@ -115,17 +121,41 @@ jobs:
               if(response && response.message) console.error('::error::' + response.message);
               throw new Error('getReleaseByTag failed: response is undefined or missing data.');
             }
-            await github.rest.git.updateRef({
+      - name: "Update nightly tag"
+        uses: actions/github-script@v7
+        if: "${{ steps.nightly-logic.outputs.UPDATE_TAG == 'true' }}"
+        with:
+          retries: 3
+          script: |
+            /* jshint esversion: 6 */
+            const response = await github.rest.git.updateRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: 'tags/nightly',
               sha: context.sha,
               force: true
-            }).then(response => {
-              console.log('Previous nightly tag updated.');
-            }).catch(error => {
-              if(error.status !== 422 || error.message !== 'Reference does not exist') throw error;
-            });
+            }).catch(response => response);
+            if(response && response.status === 200) {
+              console.log('Nightly tag updated.');
+            } else if(response && response.status === 422 && response.message === 'Reference does not exist') {
+              const responseCreate = await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'refs/tags/nightly',
+                sha: context.sha
+              }).catch(responseCreate => responseCreate);
+              if(responseCreate && responseCreate.status === 201) {
+                console.log('Nightly tag created.');
+              } else  {
+                let errorMsg = 'createRef failed';
+                if(responseCreate && responseCreate.status && responseCreate.message) errorMsg += ' with error ' + responseCreate.status + ' (' + responseCreate.message + ')';
+                throw new Error(errorMsg);
+              }
+            } else {
+              let errorMsg = 'updateRef failed';
+              if(response && response.status && response.message) errorMsg += ' with error ' + response.status + ' (' + response.message + ')';
+              throw new Error(errorMsg);
+            }
       - name: "Create nightly release"
         uses: softprops/action-gh-release@v2
         if: "${{ steps.nightly-logic.outputs.CREATE_RELEASE == 'true' }}"
