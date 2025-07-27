@@ -14,8 +14,6 @@ on:
 concurrency:
   group: "${{ github.repository_id }}-${{ github.workflow }}"
   cancel-in-progress: true
-env:
-  GITHUB_REPOSITORY_DEFAULT_BRANCH: "${{ github.event.repository.default_branch }}"
 
 jobs:
   nightly:
@@ -26,6 +24,8 @@ jobs:
       contents: write # Needed to delete a release and to modify a tag
       id-token: write # Needed to attest build provenance
       attestations: write # Needed to attest build provenance
+    env:
+      GITHUB_REPOSITORY_DEFAULT_BRANCH: "${{ github.event.repository.default_branch }}"
 
     steps:
       - name: "Checkout sources"
@@ -153,13 +153,15 @@ jobs:
           retention-days: 10
           compression-level: 0
 
-  keep-cache:
-    name: "Keep cache alive"
+  keep-alive:
+    name: "Keep alive"
     runs-on: ubuntu-latest
     if: "${{ github.event_name == 'schedule' }}"
+    permissions:
+      actions: write # Needed to keep alive the workflow
 
     steps:
-      - name: "Checkout sources"
+      - name: "Checkout file"
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
@@ -172,3 +174,24 @@ jobs:
           path: "cache/build"
           enableCrossOsArchive: true
           lookup-only: true
+      - name: "Keep workflow alive"
+        uses: actions/github-script@v7
+        env:
+          WORKFLOW_REF: "${{ github.workflow_ref }}"
+        with:
+          retries: 3
+          script: |
+            /* jshint esversion: 6 */
+            const workflow_filename = process.env.WORKFLOW_REF.split('@', 1)[0].split('/').slice(2).join('/');
+            const response = await github.rest.actions.enableWorkflow({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: workflow_filename
+            }).catch(response => response);
+            if(response && response.status === 204) {
+              // OK
+            } else {
+              let errorMsg = 'enableWorkflow failed';
+              if(response && response.status && response.message) errorMsg += ' with error ' + response.status + ' (' + response.message + ')';
+              throw new Error(errorMsg);
+            }
