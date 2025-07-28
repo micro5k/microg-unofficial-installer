@@ -5,11 +5,11 @@
 -->
 
 <map>
-    <!-- Check-in / GCM -->
+    <!-- Check-In / GCM -->
     <boolean name="checkin_enable_service" value="false" />
     <boolean name="gcm_enable_mcs_service" value="false" />
 
-    <!-- Account -->
+    <!-- Auth -->
     <boolean name="auth_manager_trust_google" value="true" />
     <boolean name="auth_manager_visible" value="true" />
     <boolean name="auth_two_step_verification" value="true" />
@@ -34,4 +34,7 @@
 
     <!-- Work profile -->
     <boolean name="workprofile_allow_create_work_account" value="true" />
+
+    <!-- Game profile -->
+    <boolean name="game_allow_create_player" value="true" />
 </map>
