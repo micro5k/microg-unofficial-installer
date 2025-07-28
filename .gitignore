@@ -3,11 +3,13 @@
 
 # Files to always ignore
 /coverage/
+/dependency-graph-reports/
 /.ssh/
 /.ash_history
 /.bash_history
 /.wget-hsts
 /.lesshst
+desktop.ini
 *.log
 *.sarif
 *.dex
@@ -17,7 +19,6 @@
 /.git/
 __pycache__/
 .DS_Store
-desktop.ini
 Thumbs.db
 
 # VS Code files
