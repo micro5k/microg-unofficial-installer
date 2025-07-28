@@ -138,7 +138,7 @@ if test "${OPENSOURCE_ONLY:?}" != 'false'; then
       {
         printf 'ZIP_FOLDER=%s\n' "${OUT_DIR?}"
         printf 'ZIP_FILENAME=\n'
-        printf 'ZIP_VERSION=\n'
+        printf 'ZIP_VERSION=%s\n' "${MODULE_VER?}"
         printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
         printf 'ZIP_BUILD_TYPE=%s\n' "${BUILD_TYPE?}"
         printf 'ZIP_BUILD_TYPE_SUPPORTED=%s\n' 'false'
@@ -191,6 +191,11 @@ if test "${CI:-false}" != 'false'; then
   fi
   if test "${CI_PROJECT_NAMESPACE:-${GITHUB_REPOSITORY_OWNER:-unknown}}" != 'micro''5k'; then
     FILENAME_MIDDLE="fork-${FILENAME_MIDDLE:?}" # GitLab / GitHub
+  fi
+else
+  branch_name="$(git 2> /dev/null branch --show-current)" || branch_name="$(git 2> /dev/null rev-parse --abbrev-ref HEAD)" || branch_name=''
+  if test -n "${branch_name?}" && test "${branch_name:?}" != 'main'; then
+    FILENAME_MIDDLE="${branch_name:?}-${FILENAME_MIDDLE:?}"
   fi
 fi
 
