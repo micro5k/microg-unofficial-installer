@@ -15,6 +15,7 @@ jobs:
   codacy:
     name: "Codacy"
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     if: "${{ github.event_name == 'push' }}"
     concurrency:
       group: "${{ github.repository_id }}-${{ github.workflow }}-codacy"
@@ -57,6 +58,7 @@ jobs:
   sonarqube:
     name: "SonarQube"
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     if: "${{ github.event_name == 'push' }}"
 
     steps:

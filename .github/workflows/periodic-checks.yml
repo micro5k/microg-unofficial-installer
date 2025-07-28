@@ -65,6 +65,7 @@ jobs:
   dep5-validation:
     name: "Validate dep5"
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: "Checkout sources"

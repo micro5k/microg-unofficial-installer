@@ -12,6 +12,7 @@ jobs:
   base-job:
     name: "Base"
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     concurrency:
       group: "${{ github.repository_id }}-${{ github.workflow }}-base"
       cancel-in-progress: false
