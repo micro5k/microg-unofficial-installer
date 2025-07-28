@@ -12,6 +12,7 @@
     <!-- Account -->
     <boolean name="auth_manager_trust_google" value="true" />
     <boolean name="auth_manager_visible" value="true" />
+    <boolean name="auth_two_step_verification" value="true" />
 
     <!-- Location -->
     <boolean name="location_wifi_mls" value="false" />
