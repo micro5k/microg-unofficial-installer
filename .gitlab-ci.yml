@@ -30,8 +30,18 @@ stages:
 .build-oss-job:
   stage: build
   interruptible: true
+  timeout: "5 minutes"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - "LICENSES/**"
+        - "includes/**"
+        - "tools/**"
+        - "zip-content/**"
+        - "CHANGELOG.rst"
+        - "LICENSE.rst"
+        - "build.sh"
+        - "conf-*.sh"
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TAG && $CI_COMMIT_TAG != "nightly"
   cache: []
   script: "BUILD_TYPE='oss' './build.sh'"
@@ -39,6 +49,7 @@ stages:
 build-job:
   stage: build
   interruptible: true
+  timeout: "5 minutes"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
@@ -54,11 +65,12 @@ build-job:
   artifacts:
     paths:
       - "output/*.zip*"
-    expire_in: "20 minutes"
+    expire_in: "15 minutes"
 
 # Cache expiration: 14 days
 ping-cache:
   stage: build
+  timeout: "5 minutes"
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: always
