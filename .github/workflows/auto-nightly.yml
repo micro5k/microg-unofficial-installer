@@ -8,6 +8,15 @@ on:
   push:
     branches:
       - "**"
+    paths:
+      - "LICENSES/**"
+      - "includes/**"
+      - "tools/**"
+      - "zip-content/**"
+      - "CHANGELOG.rst"
+      - "LICENSE.rst"
+      - "build.sh"
+      - "conf-*.sh"
   schedule:
     # At 03:00 AM, every 6 days (UTC)
     - cron: "0 3 */6 * *"

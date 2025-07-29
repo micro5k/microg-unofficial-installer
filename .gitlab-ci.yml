@@ -43,10 +43,11 @@ build-job:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         - "LICENSES/**"
-        - "includes/common.sh"
+        - "includes/**"
         - "tools/**"
         - "zip-content/**"
-        - ".gitlab-ci.yml"
+        - "CHANGELOG.rst"
+        - "LICENSE.rst"
         - "build.sh"
         - "conf-*.sh"
   script: "BUILD_TYPE='full' './build.sh'"
