@@ -12,6 +12,7 @@ jobs:
   shellchecker:
     name: "ShellChecker"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: "Checkout sources"
@@ -22,6 +23,7 @@ jobs:
   json-yaml-validate:
     name: "JSON and YAML"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: "Checkout sources"

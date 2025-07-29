@@ -16,6 +16,7 @@ jobs:
   release:
     name: "Release"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: "${{ startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request' }}"
     permissions:
       contents: write
@@ -32,6 +33,7 @@ jobs:
       - name: "Build"
         id: "build"
         shell: bash
+        timeout-minutes: 10
         run: |
           ### Building...
           '${{ github.workspace }}/gradlew' clean buildOtaOSS

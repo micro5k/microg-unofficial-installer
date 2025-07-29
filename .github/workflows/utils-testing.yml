@@ -18,19 +18,19 @@ on:
 jobs:
   deviceinfo:
     strategy:
+      fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
+        os: [ubuntu-latest, windows-latest, macos-latest]
     name: "DeviceInfo (${{ matrix.os }})"
     runs-on: "${{ matrix.os }}"
+    timeout-minutes: 20
 
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v4
       - name: "Test script on Bash"
         shell: bash
+        timeout-minutes: 10
         run: |
           # Testing script...
           bash --version | head -n 1

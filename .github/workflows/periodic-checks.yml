@@ -24,9 +24,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  base:
-    name: "Base job"
+  base-job:
+    name: "Base"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: "Checkout sources"
@@ -53,6 +54,7 @@ jobs:
   makefile-validation:
     name: "Validate makefile"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: "Checkout sources"

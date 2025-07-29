@@ -23,13 +23,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  base:
+  base-job:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-      fail-fast: false
     name: "${{ matrix.os }}"
     runs-on: "${{ matrix.os }}"
+    timeout-minutes: 20
     env:
       cache-key: "shells"
 

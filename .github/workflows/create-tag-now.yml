@@ -13,6 +13,7 @@ jobs:
   tag-creation:
     name: "Tag creation"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: "${{ ! startsWith(github.ref, 'refs/tags/') }}"
     permissions:
       contents: write # Needed to create a tag
