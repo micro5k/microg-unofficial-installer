@@ -7,7 +7,6 @@ image: "eclipse-temurin:17-jdk-alpine"
 variables:
   GIT_DEPTH: "1"
 
-# Cache expiration: 14 days
 cache:
   key: "cache-build"
   paths:
@@ -28,23 +27,41 @@ stages:
   - build
   - test
 
-build-oss-job:
+# Disabled for now
+.build-oss-job:
   stage: build
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG != "nightly"
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TAG && $CI_COMMIT_TAG != "nightly"
   cache: []
   script: "BUILD_TYPE='oss' './build.sh'"
 
 build-job:
   stage: build
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - "LICENSES/**/*"
+        - "includes/common.sh"
+        - "tools/**/*"
+        - "zip-content/**/*"
+        - ".gitlab-ci.yml"
+        - "build.sh"
+        - "conf-*.sh"
   script: "BUILD_TYPE='full' './build.sh'"
   artifacts:
     paths:
       - output/*.zip*
     expire_in: 30 minutes
+
+# Cache expiration: 14 days
+ping-cache:
+  stage: build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  before_script: []
+  script: ":"
 
 # license_scanning:
 #   stage: test
@@ -52,7 +69,10 @@ build-job:
 #     paths:
 #       - gl-license-scanning-report.json
 
+# Disabled for now
 sast:
   stage: test
+  rules:
+    - when: never
   cache: []
   before_script: []
