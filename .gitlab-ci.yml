@@ -18,9 +18,8 @@ before_script: |
   apk add bash zip~=3.0 wget || exit "${?}"
 
 include:
-  # - template: Security/Dependency-Scanning.gitlab-ci.yml
+  # - template: Security/SAST.gitlab-ci.yml # Disabled for now
   # - template: Security/License-Scanning.gitlab-ci.yml
-  - template: Security/SAST.gitlab-ci.yml
   # - template: Security/Secret-Detection.gitlab-ci.yml
 
 stages:
@@ -63,16 +62,11 @@ ping-cache:
   before_script: []
   script: ":"
 
-# license_scanning:
-#   stage: test
-#   artifacts:
-#     paths:
-#       - gl-license-scanning-report.json
-
 # Disabled for now
-sast:
+.sast:
   stage: test
-  rules:
-    - when: never
   cache: []
   before_script: []
+
+# license_scanning:
+#   stage: test
