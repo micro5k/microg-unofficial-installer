@@ -5,7 +5,7 @@
 image: "eclipse-temurin:17-jdk-alpine"
 
 variables:
-  GIT_DEPTH: "1"
+  GIT_DEPTH: 1
 
 cache:
   key: "cache-build"
@@ -16,11 +16,6 @@ cache:
 before_script: |
   # Install dependencies
   apk add bash zip~=3.0 wget || exit "${?}"
-
-include:
-  # - template: Security/SAST.gitlab-ci.yml # Disabled for now
-  # - template: Security/License-Scanning.gitlab-ci.yml
-  # - template: Security/Secret-Detection.gitlab-ci.yml
 
 stages:
   - build
@@ -51,7 +46,7 @@ build-job:
   artifacts:
     paths:
       - output/*.zip*
-    expire_in: 30 minutes
+    expire_in: "30 minutes"
 
 # Cache expiration: 14 days
 ping-cache:
@@ -62,11 +57,4 @@ ping-cache:
   before_script: []
   script: ":"
 
-# Disabled for now
-.sast:
-  stage: test
-  cache: []
-  before_script: []
-
-# license_scanning:
-#   stage: test
+include: ".gitlab/security-scans.yml"
