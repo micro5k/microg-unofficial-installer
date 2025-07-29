@@ -122,7 +122,7 @@ jobs:
           if test "${current_os:?}" = 'Linux'; then PATH="${PATH:-/usr/bin}:${workspace_dir:?}/cache/shells/extracted/bosh/opt/schily/bin" || exit "${?}"; fi
           if diff 1> /dev/null 2>&1 -- "$(command -v 'sh' || :)" "$(command -v 'bash' || :)"; then SH_IS_BASH='true'; fi
           if test "${current_os:?}" = 'Linux'; then
-            sudo DEBIAN_FRONTEND='noninteractive' apt-get -y -qq --no-upgrade install 'mksh' 'yash' 'posh' 1> /dev/null 2>&1 || exit "${?}"
+            sudo DEBIAN_FRONTEND='noninteractive' apt-get -y -qq --no-install-recommends --no-upgrade install 'mksh' 'yash' 'posh' 1> /dev/null 2>&1 || exit "${?}"
           elif test "${current_os:?}" = 'macOS'; then
             brew 2> /dev/null update --quiet || exit "${?}"
             brew 1> /dev/null install --quiet 'mksh' 'oksh' 'ksh93' 'yash' || exit "${?}"

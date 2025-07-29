@@ -4,11 +4,15 @@
 
 include:
   - template: Security/SAST.gitlab-ci.yml
-  # - template: Security/License-Scanning.gitlab-ci.yml
-  # - template: Security/Secret-Detection.gitlab-ci.yml
+  #- template: Security/License-Scanning.gitlab-ci.yml
+  #- template: Security/Secret-Detection.gitlab-ci.yml
 
 sast:
   cache: []
-  before_script: []
+  inherit:
+    default: false
 
-# license_scanning:
+#license_scanning:
+#  cache: []
+#  inherit:
+#    default: false
