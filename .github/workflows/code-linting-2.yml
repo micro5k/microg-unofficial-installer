@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
 
-name: "Code linting 2"
+name: "Code scan"
 permissions: {}
 on:
   push:
@@ -13,6 +13,26 @@ on:
     - cron: "0 5 */365 1 *"
 
 jobs:
+  dependency-submission:
+    name: "Dependency submission"
+    runs-on: ubuntu-latest
+    if: "${{ github.repository_owner == 'micro5k' && github.event_name == 'push' }}"
+    permissions:
+      contents: write
+
+    steps:
+      - name: "Checkout sources"
+        uses: actions/checkout@v4
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+      - name: "Generate and submit dependency graph"
+        uses: gradle/actions/dependency-submission@v4
+        with:
+          artifact-retention-days: 1
+
   verify-tokens:
     name: "Verify tokens"
     runs-on: ubuntu-latest
@@ -21,6 +41,7 @@ jobs:
     outputs:
       codacy-token-set: "${{ steps.check-tokens.outputs.CODACY_TOKEN_SET }}"
       sonar-token-set: "${{ steps.check-tokens.outputs.SONAR_TOKEN_SET }}"
+
     steps:
       - name: "Verify tokens"
         id: check-tokens
