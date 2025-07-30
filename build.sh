@@ -194,7 +194,7 @@ if test "${CI:-false}" != 'false'; then
   fi
 else
   branch_name="$(git 2> /dev/null branch --show-current)" || branch_name="$(git 2> /dev/null rev-parse --abbrev-ref HEAD)" || branch_name=''
-  if test -n "${branch_name?}" && test "${branch_name:?}" != 'main'; then
+  if test -n "${branch_name?}" && test "${branch_name:?}" != 'main' && test "${branch_name:?}" != 'master' && test "${branch_name:?}" != 'HEAD'; then
     FILENAME_MIDDLE="${branch_name:?}-${FILENAME_MIDDLE:?}"
   fi
 fi

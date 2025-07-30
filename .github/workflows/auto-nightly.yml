@@ -97,20 +97,20 @@ jobs:
         run: |
           # Nightly logic...
           UPDATE_TAG='false'
-          CREATE_RELEASE='false'
+          UPDATE_RELEASE='false'
           if '${{ github.ref_name == github.event.repository.default_branch && github.run_attempt == '1' && steps.build.outputs.ZIP_IS_ALPHA == 'true' }}'; then
             UPDATE_TAG='true'
           fi
-          if '${{ github.ref_name == github.event.repository.default_branch && github.run_attempt == '1' && steps.build.outputs.ZIP_IS_ALPHA == 'true' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}'; then
-            CREATE_RELEASE='true'
+          if test "${UPDATE_TAG:?}" = 'true' && '${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}'; then
+            UPDATE_RELEASE='true'
           fi
           printf 'UPDATE_TAG=%s\n' "${UPDATE_TAG:?}" 1>> "${GITHUB_OUTPUT?}"
-          printf 'CREATE_RELEASE=%s\n' "${CREATE_RELEASE:?}" 1>> "${GITHUB_OUTPUT?}"
+          printf 'UPDATE_RELEASE=%s\n' "${UPDATE_RELEASE:?}" 1>> "${GITHUB_OUTPUT?}"
           printf 'Update tag? %s\n' "${UPDATE_TAG:?}"
-          printf 'Create release? %s\n' "${CREATE_RELEASE:?}"
+          printf 'Update release? %s\n' "${UPDATE_RELEASE:?}"
       - name: "Delete previous nightly release"
         uses: actions/github-script@v7
-        if: "${{ steps.nightly-logic.outputs.CREATE_RELEASE == 'true' }}"
+        if: "${{ steps.nightly-logic.outputs.UPDATE_RELEASE == 'true' }}"
         with:
           retries: 3
           script: |
@@ -170,7 +170,7 @@ jobs:
             }
       - name: "Create nightly release"
         uses: softprops/action-gh-release@v2
-        if: "${{ steps.nightly-logic.outputs.CREATE_RELEASE == 'true' }}"
+        if: "${{ steps.nightly-logic.outputs.UPDATE_RELEASE == 'true' }}"
         with:
           name: "${{ steps.build.outputs.ZIP_VERSION }} nightly"
           tag_name: "nightly"
