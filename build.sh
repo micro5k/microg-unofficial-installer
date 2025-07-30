@@ -241,12 +241,12 @@ fi
 }
 
 # Copy data
-cp -rf "${MAIN_DIR}/zip-content" "${TEMP_DIR}/" || ui_error 'Failed to copy data to the temp dir'
-cp -rf "${MAIN_DIR}/"LICENSES* "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the licenses folder to the temp dir'
-cp -f "${MAIN_DIR}/LICENSE.rst" "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
-cp -f "${MAIN_DIR}/LIC-ADDITION.rst" "${TEMP_DIR}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
-mkdir -p "${TEMP_DIR}/zip-content/docs"
-cp -f "${MAIN_DIR}/CHANGELOG.rst" "${TEMP_DIR}/zip-content/docs/" || ui_error 'Failed to copy the changelog to the temp dir'
+cp -rf "${MAIN_DIR:?}/zip-content" "${TEMP_DIR:?}/" || ui_error 'Failed to copy data to the temp dir'
+cp -rf "${MAIN_DIR:?}/"LICENSES* "${TEMP_DIR:?}/zip-content/" || ui_error 'Failed to copy the licenses folder to the temp dir'
+cp -f "${MAIN_DIR:?}/LICENSE.rst" "${TEMP_DIR:?}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
+cp -f "${MAIN_DIR:?}/LICENSE-ADDITION.rst" "${TEMP_DIR:?}/zip-content/" || ui_error 'Failed to copy the license to the temp dir'
+mkdir -p "${TEMP_DIR:?}/zip-content/docs"
+cp -f "${MAIN_DIR:?}/CHANGELOG.rst" "${TEMP_DIR:?}/zip-content/docs/" || ui_error 'Failed to copy the changelog to the temp dir'
 
 if test "${OPENSOURCE_ONLY:?}" != 'false'; then
   mv -f "${TEMP_DIR}/zip-content/settings-oss.conf" "${TEMP_DIR}/zip-content/settings.conf" || ui_error 'Failed to choose the settings file'

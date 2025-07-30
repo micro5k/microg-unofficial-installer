@@ -14,7 +14,7 @@ on:
       - "tools/**"
       - "zip-content/**"
       - "CHANGELOG.rst"
-      - "LICENSE.rst"
+      - "LICENSE*.rst"
       - "build.sh"
       - "conf-*.sh"
   schedule:
