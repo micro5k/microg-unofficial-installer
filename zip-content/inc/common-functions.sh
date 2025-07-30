@@ -396,10 +396,12 @@ is_mounted_read_write()
   local _mount_info
   _mount_info="$(_get_mount_info "${1:?}")" || ui_error "is_mounted_read_write has failed for '${1?}'"
 
-  # To avoid "write error: Broken pipe" when a string is piped to "grep -q" or "grep -m 1" we use "echo" instead of "printf" and we ignore the exit code of echo
-  if {
-    echo "${_mount_info:?}" || :
-  } | grep -q -e '[[:blank:],(]rw[),[:blank:]]'; then
+  # IMPORTANT: We have to avoid "printf: write error: Broken pipe" when a string is piped to "grep -q" or "grep -m1"
+  if
+    {
+      (printf 2> /dev/null '%s\n' "${_mount_info:?}") || :
+    } | grep -q -e '[[:blank:],(]rw[),[:blank:]]'
+  then
     return 0
   fi
 
@@ -1319,7 +1321,7 @@ initialize()
     UNMOUNT_DATA="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     remount_read_write_if_possible "${LAST_MOUNTPOINT:?}"
   else
-    ui_warning "The data partition cannot be mounted, so updates of installed / removed apps cannot be automatically deleted and their Dalvik cache cannot be automatically cleaned. I suggest to manually do a factory reset after flashing this ZIP."
+    ui_warning "The data partition cannot be mounted; I suggest to manually performing a factory reset after flashing this ZIP."
   fi
   readonly DATA_PATH
   export DATA_PATH
@@ -1386,22 +1388,17 @@ clean_previous_installations()
 {
   local _initial_free_space
 
-  if test "${SETUP_TYPE?}" = 'uninstall'; then
-    ui_msg 'Uninstalling...'
-  else
-    ui_msg_empty_line
-  fi
-
-  # Is it really writable???
-  _write_test "${SYS_PATH:?}/etc" ||
-    ui_error "Something is wrong because '${SYS_PATH?}' ($(get_file_system "${SYS_PATH?}" || :)) is NOT really writable!!! Return code: ${?}" 30
-
   if test "${SETUP_TYPE?}" != 'uninstall'; then
-    _initial_free_space="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" || _initial_free_space='-1'
-  fi
+    ui_msg_empty_line
 
-  _write_test_cleaning "${SYS_PATH:?}/etc" ||
-    ui_error 'Failed to delete the test file'
+    _initial_free_space="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" || _initial_free_space='-1'
+    test "${_initial_free_space:?}" != 0 || ui_error "There is NO free space on '${SYS_PATH?}' ($(get_file_system "${SYS_PATH?}" || :))" 31
+
+    _write_test "${SYS_PATH:?}/etc" || ui_error "Something is wrong because '${SYS_PATH?}' ($(get_file_system "${SYS_PATH?}" || :)) is NOT really writable!!! Return code: ${?}" 30
+    _write_test_cleaning "${SYS_PATH:?}/etc" || ui_error 'Failed to delete the test file'
+  else
+    ui_msg 'Uninstalling...'
+  fi
 
   test "${DRY_RUN:?}" -eq 0 || return
 
@@ -1413,7 +1410,7 @@ clean_previous_installations()
   delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
 
   if test "${SETUP_TYPE?}" != 'uninstall'; then
-    _wait_free_space_changes 5 "${_initial_free_space:?}" # Reclaiming free space may take some time
+    _wait_free_space_changes 3 "${_initial_free_space:?}" # Reclaiming free space may take some time
     ui_debug ''
   fi
 }
