@@ -37,4 +37,5 @@
 
     <!-- Game profile -->
     <boolean name="game_allow_create_player" value="true" />
+    <boolean name="allow_upload_game_played" value="false" />
 </map>
