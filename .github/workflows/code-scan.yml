@@ -17,7 +17,7 @@ jobs:
     name: "Dependency submission"
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: "${{ github.repository_owner == 'micro5k' && github.event_name == 'push' }}"
+    if: "${{ github.event_name == 'push' }}"
     permissions:
       contents: write
 
@@ -32,7 +32,9 @@ jobs:
       - name: "Generate and submit dependency graph"
         uses: gradle/actions/dependency-submission@v4
         with:
-          artifact-retention-days: 1
+          cache-read-only: true
+          dependency-graph: "generate-and-submit"
+          validate-wrappers: true
 
   verify-tokens:
     name: "Verify tokens"
