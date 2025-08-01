@@ -8,11 +8,12 @@ include:
   #- template: Security/Secret-Detection.gitlab-ci.yml
 
 sast:
-  cache: []
   inherit:
+    variables: false
     default: false
 
 #license_scanning:
 #  cache: []
 #  inherit:
+#    variables: false
 #    default: false
