@@ -60,6 +60,7 @@ build-job:
         - "LICENSE*.rst"
         - "build.sh"
         - "conf-*.sh"
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script: "BUILD_TYPE='full' './build.sh'"
   artifacts:
     paths:
