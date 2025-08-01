@@ -2,25 +2,23 @@
 # SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
 
-image: "eclipse-temurin:17-jdk-alpine"
-
 variables:
   GIT_DEPTH: 1
-
-cache:
-  key: "cache-build"
-  paths:
-    - cache/build
-  when: "always"
-
-default:
-  before_script: |
-    # Install dependencies
-    apk add bash zip~=3.0 wget || exit "${?}"
 
 workflow:
   auto_cancel:
     on_new_commit: "interruptible"
+
+default:
+  image: "eclipse-temurin:17-jdk-alpine"
+  interruptible: true
+  cache:
+    key: "cache-build"
+    paths: [cache/build]
+    when: "always"
+  before_script: |
+    # Install dependencies
+    apk add bash zip~=3.0 wget || exit "${?}"
 
 stages:
   - build
@@ -29,7 +27,6 @@ stages:
 # Temporarily disabled
 .build-oss-job:
   stage: build
-  interruptible: true
   timeout: "5 minutes"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -48,7 +45,6 @@ stages:
 
 build-job:
   stage: build
-  interruptible: true
   timeout: "5 minutes"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -70,12 +66,12 @@ build-job:
 # Cache expiration: 14 days
 ping-cache:
   stage: build
+  interruptible: false
   timeout: "5 minutes"
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: always
-  inherit:
-    default: false
+  before_script: []
   script: ":"
 
 # Temporarily disabled
