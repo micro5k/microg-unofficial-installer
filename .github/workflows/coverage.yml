@@ -6,8 +6,13 @@ name: "Coverage"
 permissions: {}
 on:
   push:
+    paths:
+      - "**"
+    branches:
+      - "**"
+    tags:
+      - "v*"
   pull_request:
-  workflow_dispatch:
 jobs:
   base-job:
     name: "Base"
@@ -78,7 +83,7 @@ jobs:
           test -n '${{ secrets.CODECOV_TOKEN }}' || token_set='false'
           printf 'TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
       - name: "Upload coverage reports to Codecov"
-        if: "${{ steps.codecov-token.outputs.TOKEN_SET == 'true' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}"
+        if: "${{ steps.codecov-token.outputs.TOKEN_SET == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
         uses: codecov/codecov-action@v5
         timeout-minutes: 10
         with:
@@ -93,7 +98,7 @@ jobs:
           test -n '${{ secrets.CODACY_PROJECT_TOKEN }}' || token_set='false'
           printf 'TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
       - name: "Upload coverage reports to Codacy"
-        if: "${{ steps.codacy-token.outputs.TOKEN_SET == 'true' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}"
+        if: "${{ steps.codacy-token.outputs.TOKEN_SET == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
         uses: codacy/codacy-coverage-reporter-action@v1
         timeout-minutes: 10
         with:

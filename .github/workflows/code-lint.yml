@@ -6,8 +6,13 @@ name: "Code lint"
 permissions: {}
 on:
   push:
+    paths:
+      - "**"
+    branches:
+      - "**"
+    tags:
+      - "v*"
   pull_request:
-  workflow_dispatch:
 jobs:
   shellchecker:
     name: "ShellChecker"
