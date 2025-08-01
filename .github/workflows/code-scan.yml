@@ -13,6 +13,27 @@ on:
     - cron: "0 5 */365 1 *"
 
 jobs:
+  pre-requisites:
+    name: "Pre-requisites"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: "${{ github.event_name == 'push' }}"
+    outputs:
+      codacy-token-set: "${{ steps.check-tokens.outputs.CODACY_TOKEN_SET }}"
+      sonar-token-set: "${{ steps.check-tokens.outputs.SONAR_TOKEN_SET }}"
+
+    steps:
+      - name: "Verify tokens"
+        id: check-tokens
+        run: |
+          # Verifying tokens...
+          # Codacy
+          if test -n '${{ secrets.CODACY_PROJECT_TOKEN }}'; then token_set='true'; else token_set='false'; fi
+          printf 'CODACY_TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
+          # SonarQube
+          if test -n '${{ secrets.SONAR_TOKEN }}'; then token_set='true'; else token_set='false'; fi
+          printf 'SONAR_TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
+
   dependency-submission:
     name: "Dependency submission"
     runs-on: ubuntu-latest
@@ -36,33 +57,12 @@ jobs:
           dependency-graph: "generate-and-submit"
           validate-wrappers: true
 
-  verify-tokens:
-    name: "Verify tokens"
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    if: "${{ github.event_name == 'push' }}"
-    outputs:
-      codacy-token-set: "${{ steps.check-tokens.outputs.CODACY_TOKEN_SET }}"
-      sonar-token-set: "${{ steps.check-tokens.outputs.SONAR_TOKEN_SET }}"
-
-    steps:
-      - name: "Verify tokens"
-        id: check-tokens
-        run: |
-          # Verifying tokens...
-          # Codacy
-          if test -n '${{ secrets.CODACY_PROJECT_TOKEN }}'; then token_set='true'; else token_set='false'; fi
-          printf 'CODACY_TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
-          # SonarQube
-          if test -n '${{ secrets.SONAR_TOKEN }}'; then token_set='true'; else token_set='false'; fi
-          printf 'SONAR_TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
-
   codacy:
     name: "Codacy"
-    needs: [verify-tokens]
+    needs: [pre-requisites]
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: "${{ github.event_name == 'push' && needs.verify-tokens.outputs.codacy-token-set == 'true' }}"
+    if: "${{ github.event_name == 'push' && needs.pre-requisites.outputs.codacy-token-set == 'true' }}"
     concurrency:
       group: "${{ github.repository_id }}-${{ github.workflow }}-codacy"
       cancel-in-progress: false
@@ -98,10 +98,10 @@ jobs:
 
   sonarqube:
     name: "SonarQube"
-    needs: [verify-tokens]
+    needs: [pre-requisites]
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: "${{ github.event_name == 'push' && needs.verify-tokens.outputs.sonar-token-set == 'true' }}"
+    if: "${{ github.event_name == 'push' && needs.pre-requisites.outputs.sonar-token-set == 'true' }}"
 
     steps:
       - name: "Checkout sources"
