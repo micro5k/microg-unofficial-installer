@@ -40,7 +40,7 @@ jobs:
         timeout-minutes: 10
         run: |
           # Building...
-          BUILD_TYPE='oss' '${{ github.workspace }}/build.sh'
+          make clean buildotaoss
       - name: "Attest build provenance"
         id: "attest"
         uses: actions/attest-build-provenance@v2
