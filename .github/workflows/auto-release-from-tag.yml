@@ -9,15 +9,16 @@ on:
     tags:
       - "v[0-9]+.[0-9]+*"
   workflow_dispatch:
-concurrency:
-  group: "${{ github.repository_id }}-${{ github.workflow }}"
-  cancel-in-progress: false
+
 jobs:
   release:
     name: "Release"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     if: "${{ startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request' }}"
+    concurrency:
+      group: "${{ github.repository_id }}-${{ github.workflow }}-release"
+      cancel-in-progress: false
     permissions:
       contents: write
 
@@ -29,14 +30,21 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "17"
-          #cache: "gradle"
-      - name: "Build"
+      - name: "Build the flashable OTA zip"
         id: "build"
         shell: bash
         timeout-minutes: 10
         run: |
-          ### Building...
-          '${{ github.workspace }}/gradlew' clean buildOtaOSS
+          # Building...
+          BUILD_TYPE='oss' '${{ github.workspace }}/build.sh'
+      - name: "Attest build provenance"
+        id: "attest"
+        uses: actions/attest-build-provenance@v2
+        timeout-minutes: 10
+        if: "${{ vars.ATTESTATION == 'true' && github.run_attempt == '1' && steps.build.outputs.ZIP_IS_ALPHA == 'false' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
+        with:
+          subject-path: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip"
+          show-summary: false
       - name: "ZIP info"
         run: |
           # Retrieve informations...
@@ -49,6 +57,7 @@ jobs:
           ZIP_IS_ALPHA='${{ steps.build.outputs.ZIP_IS_ALPHA }}'
           ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
           ZIP_MD5='${{ steps.build.outputs.ZIP_MD5 }}'
+          ZIP_ATTESTATION='${{ steps.attest.outputs.attestation-url }}'
           # Displaying informations...
           printf '%s\n' "::notice::Filename: ${ZIP_FILENAME:-Missing}"
           printf '%s\n' "::notice::Version: ${ZIP_VERSION:-Missing}"
@@ -58,14 +67,17 @@ jobs:
           printf '%s\n' "::notice::Is alpha: ${ZIP_IS_ALPHA:-Missing}"
           printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
+          printf '%s\n' "::notice::Attestation: ${ZIP_ATTESTATION:-Missing}"
           : "${ZIP_FOLDER:?}" || exit "${?}"
       - name: "Create release"
         uses: softprops/action-gh-release@v2
-        if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' && steps.build.outputs.ZIP_IS_ALPHA == 'false' }}"
+        if: "${{ github.run_attempt == '1' && steps.build.outputs.ZIP_IS_ALPHA == 'false' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         with:
           body: "SHA-256: ${{ steps.build.outputs.ZIP_SHA256 }}\n\nSee the complete [**changelog**](./CHANGELOG.rst)."
           append_body: true
           generate_release_notes: true
           draft: false
-          files: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*"
+          files: |
+            ${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*
+            ${{ steps.attest.outputs.bundle-path }}
           fail_on_unmatched_files: true
