@@ -42,7 +42,6 @@ stages:
         - "LICENSE*.rst"
         - "build.sh"
         - "conf-*.sh"
-    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TAG && $CI_COMMIT_TAG != "nightly"
   cache: []
   script: "BUILD_TYPE='oss' './build.sh'"
 
@@ -60,7 +59,7 @@ build-job:
         - "LICENSE*.rst"
         - "build.sh"
         - "conf-*.sh"
-    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_TAG == "nightly"
   script: "BUILD_TYPE='full' './build.sh'"
   artifacts:
     paths:
@@ -73,7 +72,7 @@ ping-cache:
   interruptible: false
   timeout: "5 minutes"
   rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_TAG == "nightly"
       when: always
   before_script: []
   script: ":"
