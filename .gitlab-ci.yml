@@ -70,7 +70,7 @@ build-job:
     expire_in: "15 minutes"
 
 # Cache expiration: 14 days
-ping-cache:
+.ping-cache:
   stage: build
   interruptible: false
   timeout: "5 minutes"
