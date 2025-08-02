@@ -8,19 +8,23 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+*"
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      tag-name:
+        required: true
+        type: "string"
 
 jobs:
   release:
     name: "Release"
     runs-on: ubuntu-latest
-    timeout-minutes: 40
-    if: "${{ startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request' }}"
+    timeout-minutes: 30
+    if: "${{ startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' }}"
     concurrency:
       group: "${{ github.repository_id }}-${{ github.workflow }}-release"
       cancel-in-progress: false
     permissions:
-      contents: write
+      contents: write # Needed to create a release
 
     steps:
       - name: "Checkout sources"
@@ -73,6 +77,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: "${{ github.run_attempt == '1' && steps.build.outputs.ZIP_IS_ALPHA == 'false' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         with:
+          tag_name: "${{ inputs.tag-name || github.ref_name }}"
+          target_commitish: "${{ github.sha }}"
           body: "SHA-256: ${{ steps.build.outputs.ZIP_SHA256 }}\n\nSee the complete [**changelog**](./CHANGELOG.rst)."
           append_body: true
           generate_release_notes: true
