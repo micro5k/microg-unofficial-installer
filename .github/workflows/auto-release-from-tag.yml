@@ -19,7 +19,7 @@ jobs:
     name: "Release"
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: "${{ startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' }}"
+    if: "${{ startsWith(inputs.tag-name, 'v') || startsWith(github.ref, 'refs/tags/v') }}"
     concurrency:
       group: "${{ github.repository_id }}-${{ github.workflow }}-release"
       cancel-in-progress: false
