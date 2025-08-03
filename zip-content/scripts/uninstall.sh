@@ -37,6 +37,7 @@ PrebuiltGmsCoreSc|
 GmsCoreSetupPrebuilt|
 GmsCore_update|
 gmscore_debug|
+MicroG|
 MicroGGMSCore|
 MicroGGSFProxy|
 GsfProxy|
