@@ -14,12 +14,12 @@ on:
       - "v*.*"
   pull_request:
 jobs:
-  base-job:
-    name: "Base"
+  coverage:
+    name: "Coverage"
     runs-on: ubuntu-latest
     timeout-minutes: 20
     concurrency:
-      group: "${{ github.repository_id }}-${{ github.workflow }}-base"
+      group: "${{ github.repository_id }}-${{ github.workflow }}-coverage"
       cancel-in-progress: false
 
     steps:
