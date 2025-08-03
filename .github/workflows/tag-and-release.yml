@@ -74,3 +74,5 @@ jobs:
       tag-name: "${{ needs.create-tag.outputs.tag-name }}"
     permissions:
       contents: write # Needed to create a release
+      id-token: write # Needed to attest build provenance
+      attestations: write # Needed to attest build provenance
