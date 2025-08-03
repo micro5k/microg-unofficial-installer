@@ -77,6 +77,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: "${{ github.run_attempt == '1' && steps.build.outputs.ZIP_IS_ALPHA == 'false' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         with:
+          name: "${{ inputs.tag-name || github.ref_name }}"
           tag_name: "${{ inputs.tag-name || github.ref_name }}"
           target_commitish: "${{ github.sha }}"
           body: "SHA-256: ${{ steps.build.outputs.ZIP_SHA256 }}\n\nSee the complete [**changelog**](./CHANGELOG.rst)."
@@ -84,6 +85,7 @@ jobs:
           generate_release_notes: true
           draft: false
           overwrite_files: false
+          preserve_order: true
           files: |
             ${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*
             ${{ steps.attest.outputs.bundle-path }}

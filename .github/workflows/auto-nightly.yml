@@ -183,6 +183,7 @@ jobs:
           prerelease: true
           make_latest: false
           overwrite_files: false
+          preserve_order: true
           files: |
             ${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*
             ${{ steps.attest.outputs.bundle-path }}
