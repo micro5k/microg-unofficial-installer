@@ -83,6 +83,7 @@ jobs:
           append_body: true
           generate_release_notes: true
           draft: false
+          overwrite_files: false
           files: |
             ${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*
             ${{ steps.attest.outputs.bundle-path }}
