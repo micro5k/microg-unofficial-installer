@@ -54,8 +54,9 @@ jobs:
       - name: "ZIP info"
         id: "info"
         run: |
-          # Retrieve informations...
+          # Retrieving informations...
           ZIP_FOLDER='${{ steps.build.outputs.ZIP_FOLDER }}'
+          : "${ZIP_FOLDER:?}" || exit "${?}"
           ZIP_FILENAME='${{ steps.build.outputs.ZIP_FILENAME }}'
           ZIP_VERSION='${{ steps.build.outputs.ZIP_VERSION }}'
           ZIP_SHORT_COMMIT_ID='${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}'
@@ -64,7 +65,7 @@ jobs:
           ZIP_IS_ALPHA='${{ steps.build.outputs.ZIP_IS_ALPHA }}'
           ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
           ZIP_MD5='${{ steps.build.outputs.ZIP_MD5 }}'
-          ZIP_ATTESTATION='${{ steps.attest.outputs.attestation-url }}'
+          ZIP_ATTESTATION_URL='${{ steps.attest.outputs.attestation-url }}'
           # Displaying informations...
           printf '%s\n' "::notice::Filename: ${ZIP_FILENAME:-Missing}"
           printf '%s\n' "::notice::Version: ${ZIP_VERSION:-Missing}"
@@ -74,13 +75,37 @@ jobs:
           printf '%s\n' "::notice::Is alpha: ${ZIP_IS_ALPHA:-Missing}"
           printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
-          printf '%s\n' "::notice::Attestation: ${ZIP_ATTESTATION:-Missing}"
-          : "${ZIP_FOLDER:?}" || exit "${?}"
+          printf '%s\n' "::notice::Attestation: ${ZIP_ATTESTATION_URL:-Missing}"
+          # Preparing temp folder...
+          export TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" || exit "${?}"
+          our_tmp_dir="$(mktemp -d -t -- "RELEASE-${ZIP_IS_ALPHA:?}-XXXXXX")" || exit "${?}"
+          test -n "${our_tmp_dir?}" || exit "${?}"
+          rm -r -f -- "${our_tmp_dir:?}"/* || exit "${?}" # Empty our temp dir (should be already empty, but we must be sure)
+          # Preparing release notes...
+          release_type='release'
+          repo_url='${{ github.server_url }}/${{ github.repository }}'
+          {
+            printf '%s' '**If you want to help me you can donate to me using the `Sponsor` button at the top of '
+            printf '%s\n' "[this repository](${repo_url:?})."
+            printf '%s\n' 'Donations are appreciated and will always remain optional.**'
+            printf '\n'
+            if test "${release_type:?}" != 'release'; then
+              printf '%s\n\n' "Latest automatically built ZIP ($(date -u -- '+%Y/%m/%d' || :))."
+            fi
+            printf '%s\n\n' '## Verification'
+            printf '%s\n' "SHA-256: ${ZIP_SHA256:?}"
+            if test -n "${ZIP_ATTESTATION_URL?}"; then printf '\n%s\n' "Attestation: ${ZIP_ATTESTATION_URL:?}"; fi
+            if test "${release_type:?}" = 'release'; then
+              printf '\n'
+              printf '%s\n\n' '## Changelog'
+              printf '\n%s\n' '[**Changelog**](./CHANGELOG.rst).'
+            fi
+          } 1> "${our_tmp_dir:?}/release-notes.md" || exit "${?}"
+          printf 'ZIP_RELEASE_NOTES=%s\n' "${our_tmp_dir:?}/release-notes.md" 1>> "${GITHUB_OUTPUT?}"
           # Preparing attestation file...
           old_attest_file='${{ steps.attest.outputs.bundle-path }}'
           if test -n "${old_attest_file?}"; then
-            new_attest_file="./.tmp/release-$(basename -- "${old_attest_file:?}")" || exit "${?}"
-            mkdir -p -- './.tmp' || exit "${?}"
+            new_attest_file="${our_tmp_dir:?}/${release_type:?}-$(basename -- "${old_attest_file:?}")" || exit "${?}"
             cp -f -T -- "${old_attest_file:?}" "${new_attest_file:?}" || exit "${?}"
             printf 'ZIP_ATTESTATION_FILE=%s\n' "${new_attest_file:?}" 1>> "${GITHUB_OUTPUT?}"
           fi
@@ -91,7 +116,7 @@ jobs:
           name: "${{ inputs.tag-name || github.ref_name }}"
           tag_name: "${{ inputs.tag-name || github.ref_name }}"
           target_commitish: "${{ github.sha }}"
-          body: "SHA-256: ${{ steps.build.outputs.ZIP_SHA256 }}\n\nSee the complete [**changelog**](./CHANGELOG.rst)."
+          body_path: "${{ steps.info.outputs.ZIP_RELEASE_NOTES }}"
           append_body: true
           generate_release_notes: true
           draft: false

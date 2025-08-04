@@ -56,11 +56,13 @@ jobs:
               //console.warn('::warning::Tag already exist!!!');
               throw new Error('Tag already exist!!!');
             } else {
-              //if(response && response.name) console.warn('response.name: ' + response.name);
-              //if(response && response.statusText) console.warn('response.statusText: ' + response.statusText);
-              if(response && response.response && response.response.headers && response.response.headers['x-ratelimit-remaining']) console.warn('::warning::Remaining rate limit: ' + response.response.headers['x-ratelimit-remaining']);
               let errorMsg = 'createRef failed';
-              if(response && response.status && response.message) errorMsg += ' with error ' + response.status + ' (' + response.message + ')';
+              if(response) {
+                //if(response.name) console.warn('response.name: ' + response.name);
+                //if(response.statusText) console.warn('response.statusText: ' + response.statusText);
+                if(response.response && response.response.headers && response.response.headers['x-ratelimit-remaining']) console.warn('Remaining rate limit: ' + response.response.headers['x-ratelimit-remaining']);
+                if(response.status && response.message) errorMsg += ' with error ' + response.status + ' (' + response.message + ')';
+              }
               throw new Error(errorMsg);
             }
             return false;
