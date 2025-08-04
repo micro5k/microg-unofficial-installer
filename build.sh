@@ -386,7 +386,7 @@ set +e
 # Ring bell
 beep
 
-#wait "${pid?}" || :
+test -z "${pid?}" || wait "${pid:?}" || :
 
 pause_if_needed
 restore_saved_title_if_exist
