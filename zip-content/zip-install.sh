@@ -70,6 +70,7 @@ command 1> /dev/null -v 'printf' || {
   else
     NO_COLOR=1
 
+    # shellcheck disable=SC2329 # IGNORE: Detection bug
     printf()
     {
       case "${1-unset}" in

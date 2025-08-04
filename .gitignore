@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
 
-# Files to always ignore
+# Always ignore
 /coverage/
 /dependency-graph-reports/
 /.ssh/

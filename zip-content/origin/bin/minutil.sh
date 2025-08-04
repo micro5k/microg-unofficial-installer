@@ -31,6 +31,7 @@ case "${0-}" in
   *) ;;
 esac
 
+# shellcheck disable=SC2329 # IGNORE: Detection bug
 _is_head_functional()
 {
   command 1> /dev/null -v 'head' || return 1
@@ -45,6 +46,7 @@ command 1> /dev/null -v printf || {
     EMULATED_PRINTF=1
     NO_COLOR=1
 
+    # shellcheck disable=SC2329 # IGNORE: Detection bug
     printf()
     {
       case "${1-unset}" in

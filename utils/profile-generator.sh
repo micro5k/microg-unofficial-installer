@@ -277,6 +277,7 @@ detect_status_and_wait_connection()
   adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE:?}"
   return "${?}"
 }
+if false; then detect_status_and_wait_connection; fi # ToDO: use it
 
 adb_get_serial()
 {
@@ -334,10 +335,10 @@ lc_text()
   printf '%s' "${1?}" | LC_ALL=C tr '[:upper:]' '[:lower:]'
 }
 
-uc_text()
-{
-  printf '%s' "${1?}" | LC_ALL=C tr '[:lower:]' '[:upper:]'
-}
+#uc_text()
+#{
+#  printf '%s' "${1?}" | LC_ALL=C tr '[:lower:]' '[:upper:]'
+#}
 
 uc_first_char()
 {
