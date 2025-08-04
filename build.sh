@@ -125,7 +125,7 @@ else
   ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse HEAD)" || ZIP_SHORT_COMMIT_ID=''
 fi
 if test -n "${ZIP_SHORT_COMMIT_ID?}"; then
-  ZIP_SHORT_COMMIT_ID="$(printf '%s' "${ZIP_SHORT_COMMIT_ID:?}" | cut -b '-8' || :)"
+  ZIP_SHORT_COMMIT_ID="$(printf '%s' "${ZIP_SHORT_COMMIT_ID:?}" | cut -b '-8')" || ZIP_SHORT_COMMIT_ID=''
 fi
 
 if test "${OPENSOURCE_ONLY:?}" != 'false'; then
@@ -333,10 +333,12 @@ cp -f "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" "${OUT_DIR:?}/${FILENAME:?}
 
 cd "${OUT_DIR:?}" || ui_error 'Failed to change the folder'
 
-# Cleanup remnants
-rm -rf -- "${TEMP_DIR:?}" &
-#pid="${!}"
-
+# Cleanup remnants (skip on CI)
+pid=''
+if test "${CI:-false}" = 'false'; then
+  rm -r -f -- "${TEMP_DIR:?}" &
+  #pid="${!}"
+fi
 echo ''
 
 # Generate info
@@ -384,7 +386,7 @@ set +e
 # Ring bell
 beep
 
-#wait "${pid:?}" || :
+#wait "${pid?}" || :
 
 pause_if_needed
 restore_saved_title_if_exist
