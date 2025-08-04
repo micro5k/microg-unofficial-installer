@@ -93,8 +93,8 @@ jobs:
               printf '%s\n\n' "Latest automatically built ZIP ($(date -u -- '+%Y/%m/%d' || :))."
             fi
             printf '%s\n\n' '## Verification'
-            printf '%s\n' "SHA-256: ${ZIP_SHA256:?}"
-            if test -n "${ZIP_ATTESTATION_URL?}"; then printf '\n%s\n' "Attestation: ${ZIP_ATTESTATION_URL:?}"; fi
+            test -z "${ZIP_SHA256?}" || printf '%s\n' "SHA-256: ${ZIP_SHA256:?}"
+            test -z "${ZIP_ATTESTATION_URL?}" || printf '\n%s\n' "Attestation: ${ZIP_ATTESTATION_URL:?}"
             if test "${release_type:?}" = 'release'; then
               printf '\n'
               printf '%s\n\n' '## Changelog'
