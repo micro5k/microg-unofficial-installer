@@ -121,13 +121,18 @@ jobs:
           printf 'CREATE_RELEASE=%s\n' "${CREATE_RELEASE:?}" 1>> "${GITHUB_OUTPUT?}"
           printf 'Create release? %s\n' "${CREATE_RELEASE:?}"
           # Verifying tag name...
-          if '${{ github.event_name == 'workflow_dispatch' && startsWith(inputs.tag-name, 'v') }}'; then # The "workflow_call" event still pass as "workflow_dispatch"
-            TAG_NAME='${{ inputs.tag-name }}'
+          if '${{ github.event_name == 'workflow_dispatch' && inputs.tag-name }}'; then # The "workflow_call" event still pass as "workflow_dispatch"
+            if '${{ startsWith(inputs.tag-name, 'v') }}'; then
+              TAG_NAME='${{ inputs.tag-name }}'
+            else
+              printf '%s\n' '::error::Invalid "tag-name" parameter: ${{ inputs.tag-name }}'
+              exit 3
+            fi
           elif '${{ startsWith(github.ref, 'refs/tags/v') }}'; then
             TAG_NAME='${{ github.ref_name }}'
           else
-            printf '%s\n' '::error::Invalid "tag-name" parameter: ${{ inputs.tag-name }}'
-            exit 3
+            printf '%s\n' '::error::Invalid tag name: ${{ github.ref_name }}'
+            exit 4
           fi
           printf 'TAG_NAME=%s\n' "${TAG_NAME:?}" 1>> "${GITHUB_OUTPUT?}"
       - name: "Create release"
