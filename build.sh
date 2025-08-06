@@ -262,7 +262,7 @@ rm -f "${TEMP_DIR}/zip-content/misc/busybox/busybox-"mips* || ui_error 'Failed t
 rm -f "${TEMP_DIR}/zip-content/LICENSES/Info-ZIP.txt" || ui_error 'Failed to delete unused files in the temp dir'
 rm -f "${TEMP_DIR}/zip-content/LICENSES/Unlicense.txt" || ui_error 'Failed to delete unused files in the temp dir'
 
-printf '%s\n%s\n%s\n\n%s\n' '# -*- coding: utf-8; mode: conf-unix -*-' '# SPDX-FileCopyrightText: none' '# SPDX-License-Identifier: CC0-1.0' "buildType=${BUILD_TYPE:?}" 1> "${TEMP_DIR:?}/zip-content/info.prop" || ui_error "Failed to create the 'info.prop' file"
+printf '%s\n%s\n%s\n\n%s\n' '# -*- coding: utf-8; mode: conf-unix -*-' '# SPDX-FileCopyrightText: NONE' '# SPDX-License-Identifier: CC0-1.0' "buildType=${BUILD_TYPE:?}" 1> "${TEMP_DIR:?}/zip-content/info.prop" || ui_error "Failed to create the 'info.prop' file"
 
 if test "${OPENSOURCE_ONLY:?}" = 'false'; then
   files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH MIN_API MAX_API FINAL_FILENAME INTERNAL_NAME FILE_HASH _; do

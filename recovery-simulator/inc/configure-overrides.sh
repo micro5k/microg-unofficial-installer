@@ -1,7 +1,6 @@
 #!/sbin/sh
-# SPDX-FileCopyrightText: none
+# SPDX-FileCopyrightText: NONE
 # SPDX-License-Identifier: CC0-1.0
-# SPDX-FileType: SOURCE
 
 if test -z "${OVERRIDE_DIR:-}" || test -z "${BB_OVERRIDE_APPLETS:-}"; then
   echo 'Failed to configure overrides!!!'

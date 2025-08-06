@@ -1,7 +1,6 @@
 // -*- coding: utf-8; mode: conf-javaprop -*-
-// SPDX-FileCopyrightText: none
+// SPDX-FileCopyrightText: NONE
 // SPDX-License-Identifier: CC0-1.0
-// SPDX-FileType: SOURCE
 
 buildscript {
     apply from: 'dependencies.gradle'

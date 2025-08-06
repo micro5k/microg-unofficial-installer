@@ -1,6 +1,6 @@
 #!/sbin/sh
 # ADDOND_VERSION=3
-# SPDX-FileCopyrightText: none
+# SPDX-FileCopyrightText: NONE
 # SPDX-License-Identifier: CC0-1.0
 
 VANITY_NAME='microG unofficial installer'

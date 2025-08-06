@@ -37,7 +37,6 @@ jobs:
       - name: "REUSE compliance check"
         uses: fsfe/reuse-action@v5
 
-
   json-yaml-validate:
     name: "JSON and YAML"
     runs-on: ubuntu-latest
