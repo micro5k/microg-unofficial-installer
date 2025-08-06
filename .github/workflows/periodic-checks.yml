@@ -11,14 +11,12 @@ on:
       - "gradle/wrapper/gradle-wrapper.jar"
       - "**codecov.yml"
       - "Makefile"
-      - ".reuse/dep5"
   pull_request:
     paths:
       - ".github/workflows/periodic-checks.yml"
       - "gradle/wrapper/gradle-wrapper.jar"
       - "**codecov.yml"
       - "Makefile"
-      - ".reuse/dep5"
   schedule:
     - cron: "0 0 * * 1"
   workflow_dispatch:
