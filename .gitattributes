@@ -20,6 +20,7 @@ docs/CODEOWNERS   text eol=lf
 *.dis             text eol=lf
 
 .reuse/dep5       text eol=lf
+*.toml            text eol=lf
 *.license         text eol=lf
 *.spdx            text eol=lf
 

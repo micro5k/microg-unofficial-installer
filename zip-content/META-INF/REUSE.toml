@@ -1,0 +1,11 @@
+# -*- coding: utf-8; mode: conf-toml -*-
+version = 1
+
+[[annotations]]
+path = [
+    "CERT.RSA",
+    "CERT.SF",
+    "MANIFEST.MF"
+]
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"
