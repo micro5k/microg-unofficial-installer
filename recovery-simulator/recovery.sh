@@ -601,9 +601,10 @@ rm -f -- "${_android_sys:?}/framework/framework-res.apk" || true
 cd "${OUR_TEMP_DIR:?}" || fail_with_msg 'Failed to change dir to our temp dir'
 TZ=UTC find "${_base_simulation_path:?}" -exec touch -c -h -t '202001010000' -- '{}' '+' || true
 TZ=UTC ls -A -R -F -l -n --color='never' -- 'root-dir' 1> "${recovery_logs_dir:?}/installed-files.log" || true
+cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
+set +e
 
 # Final cleanup
-cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
 rm -rf -- "${OUR_TEMP_DIR:?}" &
-set +e
+
 if test "${STATUS:?}" -ne 0; then exit "${STATUS:?}"; fi
