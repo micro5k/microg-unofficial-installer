@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: none
+# SPDX-FileCopyrightText: NONE
 # SPDX-License-Identifier: CC0-1.0
 
 name: "Code lint"
@@ -17,13 +17,26 @@ jobs:
   shellchecker:
     name: "ShellChecker"
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v4
       - name: "ShellChecker"
         uses: a5k-actions/shellchecker@v0
+
+  reuse:
+    name: "REUSE compliance check"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: "false"
+
+    steps:
+      - name: "Checkout sources"
+        uses: actions/checkout@v4
+      - name: "REUSE compliance check"
+        uses: fsfe/reuse-action@v5
+
 
   json-yaml-validate:
     name: "JSON and YAML"
