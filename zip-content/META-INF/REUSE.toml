@@ -5,7 +5,8 @@ version = 1
 path = [
     "CERT.RSA",
     "CERT.SF",
-    "MANIFEST.MF"
+    "MANIFEST.MF",
+    "com/google/android/updater-script*"
 ]
 SPDX-FileCopyrightText = "NONE"
 SPDX-License-Identifier = "CC0-1.0"
