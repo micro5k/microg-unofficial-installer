@@ -29,8 +29,6 @@
         <!-- Storage -->
         <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false" />
         <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false" />
-        <!-- Camera -->
-        <permission name="android.permission.CAMERA" fixed="false" />
 
         <!-- Notifications -->
         <!-- %POST_NOTIFICATIONS% -->
