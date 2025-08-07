@@ -857,7 +857,6 @@ _write_test()
   if test "${FIRST_INSTALLATION:?}" = 'true'; then
     printf '%512s' '' 1> "${1:?}/write-test-file.dat" || return 2
   fi
-  sleep '0.1'
   test -f "${1:?}/write-test-file.dat" || return 3
   return 0
 }
@@ -1410,7 +1409,7 @@ clean_previous_installations()
   delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
 
   if test "${SETUP_TYPE?}" != 'uninstall'; then
-    _wait_free_space_changes 3 "${_initial_free_space:?}" # Reclaiming free space may take some time
+    _wait_free_space_changes 5 "${_initial_free_space:?}" # Reclaiming free space may take some time
     ui_debug ''
   fi
 }
