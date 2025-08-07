@@ -1469,6 +1469,7 @@ prepare_installation()
 
   ui_msg 'Preparing installation...'
   _need_newline='false'
+  sleep '0.1' # It avoid the following output to be printed interleaved with the previous output
 
   if test "${API:?}" -ge 29; then # Android 10+
     _need_newline='true'
