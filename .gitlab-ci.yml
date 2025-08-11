@@ -63,6 +63,8 @@ build-job:
       when: always
     - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_TAG == "nightly"
       when: always
+    - if: $CI_PIPELINE_SOURCE == "web" # Started manually on the GitLab website
+      when: always
   script: "BUILD_TYPE='full' './build.sh'"
   artifacts:
     paths:
