@@ -392,25 +392,28 @@ _dl_validate_status_code_from_header_file()
   test "${DL_DEBUG:?}" != 'true' || ui_debug "Status code: ${_status_code?}"
 
   case "${_status_code?}" in
-    2*) return 0 ;;  # Usually 200 => OK
-    3*) return 3 ;;  # Usually 302 => Redirect
-    404) return 4 ;; # 404 => Not Found
+    2*) return 0 ;;   # Successful responses like "200 OK" => OK
+    3*) return 30 ;;  # Various types of redirects => follow them
+    403) return 43 ;; # 403 Forbidden (the server is refusing us) => do NOT re-try to use the same server
+    404) return 44 ;; # 404 Not Found (the file was deleted) => skip it
+    5*) return 50 ;;  # Various types of server errors => do NOT re-try to use the same server
     *) ;;
   esac
 
-  return 1 # Unknown
+  return 99 # Unknown error
 }
 
 _parse_webpage_and_get_url()
 {
-  local _url _referrer _search_pattern
+  local _desc _url _referrer _search_pattern
   local _domain _cookies _parsed_code _parsed_url _status
   local _headers_file
   local _status_code
 
-  _url="${1:?}"
-  _referrer="${2?}"
-  _search_pattern="${3:?}"
+  _desc="${1?}"
+  _url="${2:?}"
+  _referrer="${3?}"
+  _search_pattern="${4:?}"
 
   _domain="$(get_domain_from_url "${_url:?}")" || return 9
   _parsed_code=''
@@ -433,7 +436,11 @@ _parse_webpage_and_get_url()
 
   _parsed_code="$("${WGET_CMD:?}" -q -O '-' "${@}" -- "${_url:?}" 2> "${_headers_file:?}")" || _status="${?}"
   test "${DL_DEBUG:?}" != 'true' || cat 1>&2 "${_headers_file:?}"
-  _dl_validate_status_code_from_header_file "${_headers_file:?}" || return 15
+  _dl_validate_status_code_from_header_file "${_headers_file:?}" || {
+    _status="${?}"
+    ui_debug "Failed at ${_desc?}"
+    return "${_status:?}"
+  }
   _dl_validate_exit_code 'wget' "${_status:?}" || return 16
   test -n "${_parsed_code?}" || return 17
 
@@ -767,13 +774,13 @@ dl_type_one()
 
   _set_url "${1:?}"
   _set_referrer "${_base_url:?}/"
-  _result="$(_parse_webpage_and_get_url "${_CURRENT_URL:?}" "${_PREVIOUS_URL?}" 'downloadButton[^"]*"\s*href="[^"]*"')" || {
+  _result="$(_parse_webpage_and_get_url 'get link 1' "${_CURRENT_URL:?}" "${_PREVIOUS_URL?}" 'downloadButton[^"]*"\s*href="[^"]*"')" || {
     report_failure_one "${?}" 'get link 1' "${_result?}" || return "${?}"
   }
 
   sleep '0.2'
   _set_url "${_base_url:?}${_result:?}"
-  _result="$(_parse_webpage_and_get_url "${_CURRENT_URL:?}" "${_PREVIOUS_URL?}" 'Your\sdownload\swill\sstart.*href="[^"]*"')" || {
+  _result="$(_parse_webpage_and_get_url 'get link 2' "${_CURRENT_URL:?}" "${_PREVIOUS_URL?}" 'Your\sdownload\swill\sstart.*href="[^"]*"')" || {
     report_failure_one "${?}" 'get link 2' "${_result?}" || return "${?}"
   }
 
