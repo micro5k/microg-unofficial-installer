@@ -55,26 +55,23 @@ jobs:
         id: "info"
         run: |
           # Retrieving informations...
-          ZIP_FOLDER='${{ steps.build.outputs.ZIP_FOLDER }}'
-          : "${ZIP_FOLDER:?}" || exit "${?}"
+          test -n '${{ steps.build.outputs.ZIP_FOLDER }}' || exit 3
           ZIP_FILENAME='${{ steps.build.outputs.ZIP_FILENAME }}'
           ZIP_VERSION='${{ steps.build.outputs.ZIP_VERSION }}'
           ZIP_SHORT_COMMIT_ID='${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }}'
+          ZIP_IS_ALPHA='${{ steps.build.outputs.ZIP_IS_ALPHA }}'
           ZIP_BUILD_TYPE='${{ steps.build.outputs.ZIP_BUILD_TYPE }}'
           ZIP_BUILD_TYPE_SUPPORTED='${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED }}'
-          ZIP_IS_ALPHA='${{ steps.build.outputs.ZIP_IS_ALPHA }}'
-          ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
           ZIP_MD5='${{ steps.build.outputs.ZIP_MD5 }}'
+          ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
           ZIP_ATTESTATION_URL='${{ steps.attest.outputs.attestation-url }}'
           # Displaying informations...
           printf '%s\n' "::notice::Filename: ${ZIP_FILENAME:-Missing}"
-          printf '%s\n' "::notice::Version: ${ZIP_VERSION:-Missing}"
-          printf '%s\n' "::notice::Short commit ID: ${ZIP_SHORT_COMMIT_ID:-Missing}"
-          printf '%s\n' "::notice::Build type: ${ZIP_BUILD_TYPE:?}"
+          printf '%s\n' "::notice::Version: ${ZIP_VERSION:?} - Short commit ID: ${ZIP_SHORT_COMMIT_ID:?} - Is alpha: ${ZIP_IS_ALPHA:?} - Build type: ${ZIP_BUILD_TYPE:?}"
           printf '%s\n' "::notice::Build type supported: ${ZIP_BUILD_TYPE_SUPPORTED:?}"
-          printf '%s\n' "::notice::Is alpha: ${ZIP_IS_ALPHA:-Missing}"
-          printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
+          printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
+          printf '%s\n' "::notice::Logs retention days: ${{ github.retention_days }}"
           printf '%s\n' "::notice::Attestation: ${ZIP_ATTESTATION_URL:-Missing}"
           # Preparing temp folder...
           export TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" || exit "${?}"
