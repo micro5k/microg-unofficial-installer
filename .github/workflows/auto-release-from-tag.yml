@@ -118,7 +118,7 @@ jobs:
           printf 'CREATE_RELEASE=%s\n' "${CREATE_RELEASE:?}" 1>> "${GITHUB_OUTPUT?}"
           printf 'Create release? %s\n' "${CREATE_RELEASE:?}"
           # Verifying tag name...
-          if '${{ github.event_name == 'workflow_dispatch' && inputs.tag-name }}'; then # The "workflow_call" event still pass as "workflow_dispatch"
+          if '${{ github.event_name == 'workflow_dispatch' && inputs.tag-name != '' }}'; then # The "workflow_call" event still pass as "workflow_dispatch"
             if '${{ startsWith(inputs.tag-name, 'v') }}'; then
               TAG_NAME='${{ inputs.tag-name }}'
             else
