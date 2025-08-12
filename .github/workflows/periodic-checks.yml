@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: "Validate Gradle Wrapper"
         uses: gradle/actions/wrapper-validation@v4
       - name: "Validate Codecov configuration"
@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: "Validation"
         uses: Uno-Takashi/checkmake-action@v2
         with:
@@ -68,7 +68,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: "Validation"
         shell: bash
         run: |

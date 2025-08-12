@@ -71,7 +71,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: "Setup Java"
         uses: actions/setup-java@v4
         with:
@@ -98,7 +98,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: "Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
         timeout-minutes: 10
@@ -132,7 +132,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: "0" # Shallow clones should be disabled for a better relevancy of analysis
       - name: "SonarQube scan"

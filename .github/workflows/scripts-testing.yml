@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: "Prepare cache"
         id: cache-action
         if: "${{ runner.os == 'Linux' }}"

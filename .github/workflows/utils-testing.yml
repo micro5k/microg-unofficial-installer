@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: "Test script on Bash"
         shell: bash
         timeout-minutes: 10
