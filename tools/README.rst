@@ -18,5 +18,5 @@ TOOLS
 .. _zipsigner: https://github.com/topjohnwu/Magisk/tree/v20.4/signing
 .. _BusyBox for Windows: https://frippery.org/busybox/
 .. _BusyBox legacy for Windows: https://frippery.org/busybox/
-.. _Zip: http://infozip.sourceforge.net/Zip.html
-.. _UnZip: http://infozip.sourceforge.net/UnZip.html
+.. _Zip: https://infozip.sourceforge.net/Zip.html
+.. _UnZip: https://infozip.sourceforge.net/UnZip.html
