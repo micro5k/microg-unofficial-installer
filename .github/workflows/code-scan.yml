@@ -6,6 +6,8 @@ name: "Code scan"
 permissions: {}
 on:
   push:
+    paths:
+      - "**"
     branches:
       - "main"
   schedule:

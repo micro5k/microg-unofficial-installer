@@ -36,7 +36,8 @@ stages:
       changes:
         - "LICENSES/**"
         - "includes/**"
-        - "tools/**"
+        - "tools/*.jar"
+        - "tools/*.sh"
         - "zip-content/**"
         - "CHANGELOG.rst"
         - "LICENSE*.rst"
@@ -54,7 +55,8 @@ build-job:
       changes:
         - "LICENSES/**"
         - "includes/**"
-        - "tools/**"
+        - "tools/*.jar"
+        - "tools/*.sh"
         - "zip-content/**"
         - "CHANGELOG.rst"
         - "LICENSE*.rst"

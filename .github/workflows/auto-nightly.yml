@@ -9,7 +9,8 @@ on:
     paths:
       - "LICENSES/**"
       - "includes/**"
-      - "tools/**"
+      - "tools/*.jar"
+      - "tools/*.sh"
       - "zip-content/**"
       - "CHANGELOG.rst"
       - "LICENSE*.rst"
@@ -18,8 +19,8 @@ on:
     branches:
       - "**"
   schedule:
-    # At 03:00 AM, every 6 days (UTC)
-    - cron: "0 3 */6 * *"
+    # At 02:00 AM, every 6 days (UTC)
+    - cron: "0 2 */6 * *"
 
 jobs:
   nightly:

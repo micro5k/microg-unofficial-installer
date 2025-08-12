@@ -7,18 +7,17 @@ permissions: {}
 on:
   push:
     paths:
-      - ".github/workflows/periodic-checks.yml"
       - "gradle/wrapper/gradle-wrapper.jar"
       - "**codecov.yml"
       - "Makefile"
   pull_request:
     paths:
-      - ".github/workflows/periodic-checks.yml"
       - "gradle/wrapper/gradle-wrapper.jar"
       - "**codecov.yml"
       - "Makefile"
   schedule:
-    - cron: "0 0 * * 1"
+    # At 03:00 AM, every 30 days (UTC)
+    - cron: "0 3 */30 * *"
   workflow_dispatch:
 
 jobs:

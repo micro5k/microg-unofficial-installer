@@ -7,19 +7,17 @@ permissions: {}
 on:
   push:
     paths:
-      - ".github/workflows/scripts-testing.yml"
+      - "includes/**"
       - "tools/*.sh"
-      - "includes/*.sh"
       - "cmdline.sh"
   pull_request:
     paths:
-      - ".github/workflows/scripts-testing.yml"
+      - "includes/**"
       - "tools/*.sh"
-      - "includes/*.sh"
       - "cmdline.sh"
   schedule:
-    # At 02:00 AM, every 6 days (UTC)
-    - cron: "0 2 */6 * *"
+    # At 04:00 AM, every 6 days (UTC)
+    - cron: "0 4 */6 * *"
   workflow_dispatch:
 
 jobs:
