@@ -381,6 +381,7 @@ _get_byte_length()
 _dl_validate_exit_code()
 {
   test "${DL_DEBUG:?}" = 'false' || ui_debug "${1?} exit code: ${2?}"
+  test "${2:?}" -lt 10 || return 10
   return "${2:?}"
 }
 
@@ -392,15 +393,15 @@ _dl_validate_status_code_from_header_file()
   test "${DL_DEBUG:?}" != 'true' || ui_debug "Status code: ${_status_code?}"
 
   case "${_status_code?}" in
-    2*) return 0 ;;   # Successful responses like "200 OK" => OK
-    3*) return 30 ;;  # Various types of redirects => follow them
-    403) return 43 ;; # 403 Forbidden (the server is refusing us) => do NOT re-try to use the same server
-    404) return 44 ;; # 404 Not Found (the file was deleted) => skip it
-    5*) return 50 ;;  # Various types of server errors => do NOT re-try to use the same server
+    2*) return 0 ;;    # Successful responses like "200 OK" => good
+    3*) return 30 ;;   # Various types of redirects => follow them
+    404) return 144 ;; # 404 Not Found (the file was deleted) => skip only current file
+    403) return 43 ;;  # 403 Forbidden (the server is refusing us) => do NOT try to use the same server again
+    5*) return 50 ;;   # Various types of server errors => do NOT try to use the same server again
     *) ;;
   esac
 
-  return 99 # Unknown error
+  return 99 # Unknown errors => do NOT try to use the same server again
 }
 
 _parse_webpage_and_get_url()
@@ -408,7 +409,7 @@ _parse_webpage_and_get_url()
   local _desc _url _referrer _search_pattern
   local _domain _cookies _parsed_code _parsed_url _status
   local _headers_file
-  local _status_code
+  local _server_status_code
 
   _desc="${1?}"
   _url="${2:?}"
@@ -437,9 +438,9 @@ _parse_webpage_and_get_url()
   _parsed_code="$("${WGET_CMD:?}" -q -O '-' "${@}" -- "${_url:?}" 2> "${_headers_file:?}")" || _status="${?}"
   test "${DL_DEBUG:?}" != 'true' || cat 1>&2 "${_headers_file:?}"
   _dl_validate_status_code_from_header_file "${_headers_file:?}" || {
-    _status="${?}"
+    _server_status_code="${?}"
     ui_debug "Failed at ${_desc?}"
-    return "${_status:?}"
+    return "${_server_status_code:?}"
   }
   _dl_validate_exit_code 'wget' "${_status:?}" || return 16
   test -n "${_parsed_code?}" || return 17
@@ -465,7 +466,7 @@ _parse_webpage_and_get_url()
   }
   rm -f "${_headers_file:?}" || return 23
 
-  printf '%s\n' "${_parsed_url:?}"
+  printf '%s\n' "${_parsed_url:?}" || return 24
 }
 
 dl_debug()
@@ -680,7 +681,10 @@ _direct_download()
   local _url _method _referrer _origin _authorization _accept
   local _is_ajax='false'
   local _cookies=''
+  local _status _domain _headers_file
+  local _server_status_code
 
+  _status=0
   _url="${1:?}"
   _output="${2:?}"
   _method="${3:-GET}"    # Optional (only GET and POST are supported, GET is default)
@@ -691,23 +695,42 @@ _direct_download()
   if test -n "${_origin?}"; then _is_ajax='true'; fi
 
   if test "${_is_ajax:?}" = 'true' || test "${_accept?}" = 'all'; then
-    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_ALL_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return 11
   else
-    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return "${?}"
+    set -- -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" || return 12
   fi
 
   if test "${_is_ajax:?}" != 'true'; then
-    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
+    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return 13; fi
   fi
 
-  if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
-  if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return "${?}"; fi
-  if test -n "${_origin?}"; then set -- "${@}" --header "Origin: ${_origin:?}" || return "${?}"; fi
-  if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return "${?}"; fi
-  if test "${_method:?}" = 'POST'; then set -- "${@}" --post-data '' || return "${?}"; fi
+  if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return 14; fi
+  if test -n "${_authorization?}"; then set -- "${@}" --header "Authorization: ${_authorization:?}" || return 15; fi
+  if test -n "${_origin?}"; then set -- "${@}" --header "Origin: ${_origin:?}" || return 16; fi
+  if test -n "${_cookies?}"; then set -- "${@}" --header "Cookie: ${_cookies:?}" || return 17; fi
+  if test "${_method:?}" = 'POST'; then set -- "${@}" --post-data '' || return 18; fi
 
-  if test "${DL_DEBUG:?}" = 'true'; then dl_debug "${_url:?}" "${_method:?}" "${@}"; fi
-  "${WGET_CMD:?}" -q -O "${_output:?}" "${@}" -- "${_url:?}"
+  _domain="$(get_domain_from_url "${_url:?}")" || return 19
+  _headers_file="${MAIN_DIR:?}/cache/temp/headers/${_domain:?}.dat"
+  test -d "${MAIN_DIR:?}/cache/temp/headers" || mkdir -p "${MAIN_DIR:?}/cache/temp/headers" || return 20
+
+  if test "${DL_DEBUG:?}" = 'true'; then
+    dl_debug "${_url:?}" "${_method:?}" "${@}"
+  fi
+
+  "${WGET_CMD:?}" -q -S -O "${_output:?}" "${@}" -- "${_url:?}" 2> "${_headers_file:?}" || _status="${?}"
+  test "${DL_DEBUG:?}" != 'true' || cat 1>&2 "${_headers_file:?}"
+  _dl_validate_status_code_from_header_file "${_headers_file:?}" || {
+    _server_status_code="${?}"
+    if test "${_server_status_code:?}" -ne 30; then
+      #ui_debug "Failed at ${_desc?}"
+      return "${_server_status_code:?}"
+    fi
+  }
+  _dl_validate_exit_code 'wget' "${_status:?}" || return "${?}"
+
+  rm -f "${_headers_file:?}" || return 21
+  return 0
 }
 
 report_failure()
@@ -720,7 +743,7 @@ report_failure()
 
 report_failure_one()
 {
-  readonly DL_TYPE_1_FAILED='true'
+  test "${1:?}" -ge 100 || readonly DL_TYPE_1_FAILED='true'
 
   #printf '%s - ' "Failed at '${2}' with ret. code ${1:?}"
   test -z "${3-}" || ui_debug "${3:?}"
@@ -770,7 +793,7 @@ dl_type_one()
   local _base_url _result
 
   _init_dl
-  _base_url="$(get_base_url "${1:?}")" || report_failure_one "${?}" || return "${?}"
+  _base_url="$(get_base_url "${1:?}")" || return 2
 
   _set_url "${1:?}"
   _set_referrer "${_base_url:?}/"
