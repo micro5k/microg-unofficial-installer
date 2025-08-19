@@ -120,9 +120,10 @@ WhisperPush|org.whispersystems.whisperpush
 Hangouts|com.google.android.talk
 
 HwAps|com.huawei.android.hwaps
-HwPowerGenieEngine3|com.huawei.powergenie
 EOF
 }
+
+#HwPowerGenieEngine3|com.huawei.powergenie # Do NOT remove PowerGenie or you will lose battery usage info on Huawei phones
 
 framework_uninstall_list()
 {
