@@ -9,7 +9,7 @@ TOOLS
 
 - zipsigner_ **3.0** => zipsigner.jar
 - zipsigner_ **3.0** (Dalvik) => zipsigner-dvk.jar
-- `BusyBox for Windows`_ **1.38.0-PRE-5618-g3ddcebe75 (2025-07-30)** => win/busybox.exe
+- `BusyBox for Windows`_ **1.38.0-PRE-5755-g5e60bd4a7 (2025-08-18)** => win/busybox.exe
 - `BusyBox legacy for Windows`_ **1.21.0-TIG-931-g7e6a84d (2012-11-29)** => win/busybox-legacy.bin
 - Zip_ **3.0** => win/zip.exe
 - UnZip_ **6.0** => win/unzip.exe
