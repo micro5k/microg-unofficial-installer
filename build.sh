@@ -199,6 +199,9 @@ else
   fi
 fi
 
+# Filter problematic characters from the filename
+FILENAME_MIDDLE="$(printf '%s\n' ${FILENAME_MIDDLE:?} | tr -- '\r\n\\/:*?"<>|\0' '_')" || ui_error 'Failed to filter chars'
+
 FILENAME="${FILENAME_START:?}${FILENAME_MIDDLE:?}${FILENAME_END:?}"
 FILENAME_EXT='.zip'
 
