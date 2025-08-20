@@ -176,6 +176,12 @@ if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
 rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
 
 # Set filename
+sanitize_filename_part()
+{
+  # The "-" character must be replaced because it is used to separate the various parts of the filename
+  printf '%s' "${1:?}" | tr -- '-\\/:*?"<>|\r\n\0' '_' || ui_error 'Failed to sanitize filename part'
+}
+
 FILENAME_COMMIT_ID="g${ZIP_SHORT_COMMIT_ID?}"
 test "${FILENAME_COMMIT_ID:?}" != 'g' || FILENAME_COMMIT_ID='NOGIT'
 FILENAME_START="${MODULE_ID:?}-${MODULE_VER:?}-"
@@ -184,23 +190,19 @@ FILENAME_END="-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
 
 if test "${CI:-false}" != 'false'; then
   if test -n "${CI_COMMIT_BRANCH-}" && test "${CI_COMMIT_BRANCH:?}" != "${CI_DEFAULT_BRANCH:-unknown}"; then
-    FILENAME_MIDDLE="${CI_COMMIT_BRANCH:?}-${FILENAME_MIDDLE:?}" # GitLab
-  fi
-  if test "${GITHUB_REF_TYPE-}" = 'branch' && test -n "${GITHUB_REF_NAME-}" && test "${GITHUB_REF_NAME:?}" != "${GITHUB_REPOSITORY_DEFAULT_BRANCH:-main}"; then
-    FILENAME_MIDDLE="${GITHUB_REF_NAME:?}-${FILENAME_MIDDLE:?}" # GitHub
+    FILENAME_MIDDLE="$(sanitize_filename_part ${CI_COMMIT_BRANCH:?} || :)-${FILENAME_MIDDLE:?}" # GitLab
+  elif test "${GITHUB_REF_TYPE-}" = 'branch' && test -n "${GITHUB_REF_NAME-}" && test "${GITHUB_REF_NAME:?}" != "${GITHUB_REPOSITORY_DEFAULT_BRANCH:-main}"; then
+    FILENAME_MIDDLE="$(sanitize_filename_part ${GITHUB_REF_NAME:?} || :)-${FILENAME_MIDDLE:?}" # GitHub
   fi
   if test "${CI_PROJECT_NAMESPACE:-${GITHUB_REPOSITORY_OWNER:-unknown}}" != 'micro''5k'; then
     FILENAME_MIDDLE="fork-${FILENAME_MIDDLE:?}" # GitLab / GitHub
   fi
 else
   branch_name="$(git 2> /dev/null branch --show-current)" || branch_name="$(git 2> /dev/null rev-parse --abbrev-ref HEAD)" || branch_name=''
-  if test -n "${branch_name?}" && test "${branch_name:?}" != 'main' && test "${branch_name:?}" != 'master' && test "${branch_name:?}" != 'HEAD'; then
-    FILENAME_MIDDLE="${branch_name:?}-${FILENAME_MIDDLE:?}"
+  if test -n "${branch_name?}" && test "${branch_name:?}" != 'main' && test "${branch_name:?}" != 'HEAD'; then
+    FILENAME_MIDDLE="$(sanitize_filename_part ${branch_name:?} || :)-${FILENAME_MIDDLE:?}"
   fi
 fi
-
-# Filter problematic characters from the filename
-FILENAME_MIDDLE="$(printf '%s\n' "${FILENAME_MIDDLE:?}" | tr -- '\r\n\\/:*?"<>|\0' '_')" || ui_error 'Failed to filter chars'
 
 FILENAME="${FILENAME_START:?}${FILENAME_MIDDLE:?}${FILENAME_END:?}"
 FILENAME_EXT='.zip'
