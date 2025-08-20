@@ -80,19 +80,20 @@ jobs:
           ZIP_IS_ALPHA='${{ steps.build.outputs.ZIP_IS_ALPHA }}'
           ZIP_BUILD_TYPE='${{ steps.build.outputs.ZIP_BUILD_TYPE }}'
           ZIP_BUILD_TYPE_SUPPORTED='${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED }}'
+          ZIP_BRANCH_NAME='${{ steps.build.outputs.ZIP_BRANCH_NAME }}'
           ZIP_MD5='${{ steps.build.outputs.ZIP_MD5 }}'
           ZIP_SHA256='${{ steps.build.outputs.ZIP_SHA256 }}'
           ZIP_ATTESTATION_URL='${{ steps.attest.outputs.attestation-url }}'
           # Displaying informations...
           printf '%s\n' "::notice::Filename: ${ZIP_FILENAME:-Missing}"
           printf '%s\n' "::notice::Version: ${ZIP_VERSION:?} - Short commit ID: ${ZIP_SHORT_COMMIT_ID:?} - Is alpha: ${ZIP_IS_ALPHA:?} - Build type: ${ZIP_BUILD_TYPE:?}"
+          printf '%s\n' "::notice::Build type supported: ${ZIP_BUILD_TYPE_SUPPORTED:?}"
           if '${{ github.ref_name && github.ref_name != github.event.repository.default_branch }}'; then
             ZIP_RETENTION_DAYS=30
             printf '%s\n' '::notice::Branch: ${{ github.ref_name }}'
           else
             ZIP_RETENTION_DAYS=10
           fi
-          printf '%s\n' "::notice::Build type supported: ${ZIP_BUILD_TYPE_SUPPORTED:?}"
           printf '%s\n' "::notice::MD5: ${ZIP_MD5:-Missing}"
           printf '%s\n' "::notice::SHA-256: ${ZIP_SHA256:-Missing}"
           printf '%s\n' "::notice::Logs retention days: ${{ github.retention_days }}"
@@ -232,7 +233,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         with:
-          name: "${{ github.event.repository.name }} ${{ github.ref_name }} g${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }} ${{ steps.build.outputs.ZIP_BUILD_TYPE }} (extract it)"
+          name: "${{ github.event.repository.name }} ${{ steps.build.outputs.ZIP_BRANCH_NAME }} g${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }} ${{ steps.build.outputs.ZIP_BUILD_TYPE }} (extract it)"
           path: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*"
           overwrite: false
           retention-days: "${{ steps.info.outputs.ZIP_RETENTION_DAYS }}"

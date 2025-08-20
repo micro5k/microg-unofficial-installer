@@ -142,6 +142,7 @@ if test "${OPENSOURCE_ONLY:?}" != 'false'; then
         printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
         printf 'ZIP_BUILD_TYPE=%s\n' "${BUILD_TYPE?}"
         printf 'ZIP_BUILD_TYPE_SUPPORTED=%s\n' 'false'
+        printf 'ZIP_BRANCH_NAME=\n'
         printf 'ZIP_IS_ALPHA=%s\n' "${MODULE_IS_ALPHA?}"
         printf 'ZIP_SHA256=\n'
         printf 'ZIP_MD5=\n'
@@ -182,6 +183,7 @@ sanitize_filename_part()
   printf '%s' "${1:?}" | tr -- '-\\/:*?"<>|\r\n\0' '_' || ui_error 'Failed to sanitize filename part'
 }
 
+BRANCH_NAME=''
 FILENAME_COMMIT_ID="g${ZIP_SHORT_COMMIT_ID?}"
 test "${FILENAME_COMMIT_ID:?}" != 'g' || FILENAME_COMMIT_ID='NOGIT'
 FILENAME_START="${MODULE_ID:?}-${MODULE_VER:?}-"
@@ -190,17 +192,18 @@ FILENAME_END="-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
 
 if test "${CI:-false}" != 'false'; then
   if test -n "${CI_COMMIT_BRANCH-}" && test "${CI_COMMIT_BRANCH:?}" != "${CI_DEFAULT_BRANCH:-unknown}"; then
-    FILENAME_MIDDLE="$(sanitize_filename_part "${CI_COMMIT_BRANCH:?}" || :)-${FILENAME_MIDDLE:?}" # GitLab
+    BRANCH_NAME="$(sanitize_filename_part "${CI_COMMIT_BRANCH:?}" || :)" # GitLab
   elif test "${GITHUB_REF_TYPE-}" = 'branch' && test -n "${GITHUB_REF_NAME-}" && test "${GITHUB_REF_NAME:?}" != "${GITHUB_REPOSITORY_DEFAULT_BRANCH:-main}"; then
-    FILENAME_MIDDLE="$(sanitize_filename_part "${GITHUB_REF_NAME:?}" || :)-${FILENAME_MIDDLE:?}" # GitHub
+    BRANCH_NAME="$(sanitize_filename_part "${GITHUB_REF_NAME:?}" || :)" # GitHub
   fi
+  test -z "${BRANCH_NAME?}" || FILENAME_MIDDLE="${BRANCH_NAME:?}-${FILENAME_MIDDLE:?}"
   if test "${CI_PROJECT_NAMESPACE:-${GITHUB_REPOSITORY_OWNER:-unknown}}" != 'micro''5k'; then
     FILENAME_MIDDLE="fork-${FILENAME_MIDDLE:?}" # GitLab / GitHub
   fi
 else
-  branch_name="$(git 2> /dev/null branch --show-current)" || branch_name="$(git 2> /dev/null rev-parse --abbrev-ref HEAD)" || branch_name=''
-  if test -n "${branch_name?}" && test "${branch_name:?}" != 'main' && test "${branch_name:?}" != 'HEAD'; then
-    FILENAME_MIDDLE="$(sanitize_filename_part "${branch_name:?}" || :)-${FILENAME_MIDDLE:?}"
+  BRANCH_NAME="$(git 2> /dev/null branch --show-current)" || BRANCH_NAME="$(git 2> /dev/null rev-parse --abbrev-ref HEAD)" || BRANCH_NAME=''
+  if test -n "${BRANCH_NAME?}" && test "${BRANCH_NAME:?}" != 'main' && test "${BRANCH_NAME:?}" != 'HEAD'; then
+    FILENAME_MIDDLE="$(sanitize_filename_part "${BRANCH_NAME:?}" || :)-${FILENAME_MIDDLE:?}"
   fi
 fi
 
@@ -374,6 +377,7 @@ if test "${GITHUB_JOB:-false}" != 'false'; then
     printf 'ZIP_SHORT_COMMIT_ID=%s\n' "${ZIP_SHORT_COMMIT_ID?}"
     printf 'ZIP_BUILD_TYPE=%s\n' "${BUILD_TYPE?}"
     printf 'ZIP_BUILD_TYPE_SUPPORTED=%s\n' 'true'
+    printf 'ZIP_BRANCH_NAME=%s\n' "${BRANCH_NAME?}"
     printf 'ZIP_IS_ALPHA=%s\n' "${MODULE_IS_ALPHA?}"
     printf 'ZIP_SHA256=%s\n' "${ZIP_SHA256?}"
     printf 'ZIP_MD5=%s\n' "${ZIP_MD5?}"
