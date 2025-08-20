@@ -233,7 +233,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         with:
-          name: "${{ github.event.repository.name }} ${{ steps.build.outputs.ZIP_BRANCH_NAME }} g${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }} ${{ steps.build.outputs.ZIP_BUILD_TYPE }} (extract it)"
+          name: "${{ github.event.repository.name }} ${{ steps.build.outputs.ZIP_BRANCH_NAME || github.ref_name }} g${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }} ${{ steps.build.outputs.ZIP_BUILD_TYPE }} (extract it)"
           path: "${{ steps.build.outputs.ZIP_FOLDER }}/*.zip*"
           overwrite: false
           retention-days: "${{ steps.info.outputs.ZIP_RETENTION_DAYS }}"
