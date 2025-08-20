@@ -190,9 +190,9 @@ FILENAME_END="-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
 
 if test "${CI:-false}" != 'false'; then
   if test -n "${CI_COMMIT_BRANCH-}" && test "${CI_COMMIT_BRANCH:?}" != "${CI_DEFAULT_BRANCH:-unknown}"; then
-    FILENAME_MIDDLE="$(sanitize_filename_part ${CI_COMMIT_BRANCH:?} || :)-${FILENAME_MIDDLE:?}" # GitLab
+    FILENAME_MIDDLE="$(sanitize_filename_part "${CI_COMMIT_BRANCH:?}" || :)-${FILENAME_MIDDLE:?}" # GitLab
   elif test "${GITHUB_REF_TYPE-}" = 'branch' && test -n "${GITHUB_REF_NAME-}" && test "${GITHUB_REF_NAME:?}" != "${GITHUB_REPOSITORY_DEFAULT_BRANCH:-main}"; then
-    FILENAME_MIDDLE="$(sanitize_filename_part ${GITHUB_REF_NAME:?} || :)-${FILENAME_MIDDLE:?}" # GitHub
+    FILENAME_MIDDLE="$(sanitize_filename_part "${GITHUB_REF_NAME:?}" || :)-${FILENAME_MIDDLE:?}" # GitHub
   fi
   if test "${CI_PROJECT_NAMESPACE:-${GITHUB_REPOSITORY_OWNER:-unknown}}" != 'micro''5k'; then
     FILENAME_MIDDLE="fork-${FILENAME_MIDDLE:?}" # GitLab / GitHub
@@ -200,7 +200,7 @@ if test "${CI:-false}" != 'false'; then
 else
   branch_name="$(git 2> /dev/null branch --show-current)" || branch_name="$(git 2> /dev/null rev-parse --abbrev-ref HEAD)" || branch_name=''
   if test -n "${branch_name?}" && test "${branch_name:?}" != 'main' && test "${branch_name:?}" != 'HEAD'; then
-    FILENAME_MIDDLE="$(sanitize_filename_part ${branch_name:?} || :)-${FILENAME_MIDDLE:?}"
+    FILENAME_MIDDLE="$(sanitize_filename_part "${branch_name:?}" || :)-${FILENAME_MIDDLE:?}"
   fi
 fi
 
