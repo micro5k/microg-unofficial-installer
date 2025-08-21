@@ -194,7 +194,7 @@ if test "${CI:-false}" != 'false'; then
   if test -n "${CI_COMMIT_BRANCH-}" && test "${CI_COMMIT_BRANCH:?}" != "${CI_DEFAULT_BRANCH:-unknown}"; then
     BRANCH_NAME="$(sanitize_filename_part "${CI_COMMIT_BRANCH:?}" || :)" # GitLab
   elif test "${GITHUB_REF_TYPE-}" = 'branch' && test -n "${GITHUB_REF_NAME-}" && test "${GITHUB_REF_NAME:?}" != "${GITHUB_REPOSITORY_DEFAULT_BRANCH:-main}"; then
-    BRANCH_NAME="$(sanitize_filename_part "${GITHUB_REF_NAME:?}" || :)" # GitHub
+    BRANCH_NAME="$(sanitize_filename_part "${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:?}}" || :)" # GitHub
   fi
   test -z "${BRANCH_NAME?}" || FILENAME_MIDDLE="${BRANCH_NAME:?}-${FILENAME_MIDDLE:?}"
   if test "${CI_PROJECT_NAMESPACE:-${GITHUB_REPOSITORY_OWNER:-unknown}}" != 'micro''5k'; then

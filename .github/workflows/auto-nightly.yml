@@ -71,6 +71,7 @@ jobs:
           show-summary: false
       - name: "ZIP info"
         id: "info"
+        shell: bash
         run: |
           # Retrieving informations...
           test -n '${{ steps.build.outputs.ZIP_FOLDER }}' || exit 3
