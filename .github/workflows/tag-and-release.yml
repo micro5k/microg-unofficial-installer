@@ -13,64 +13,117 @@ jobs:
     name: "Create tag"
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: "${{ github.ref_type == 'branch' }}"
+    if: "${{ github.ref_type == 'branch' && github.run_attempt == '1' }}"
     concurrency:
       group: "${{ github.repository_id }}-${{ github.workflow }}-tag"
-      cancel-in-progress: true
+      cancel-in-progress: false
     outputs:
       tag-name: "${{ steps.repo-info.outputs.version }}"
+      tag-creation-success: "${{ steps.tag-creation.outputs.result }}"
     permissions:
       contents: write # Needed to create a tag
 
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v5
-      - name: "Parse version"
+        with:
+          sparse-checkout: |
+            zip-content/module.prop
+          sparse-checkout-cone-mode: false
+      - name: "Parse info"
         id: "repo-info"
         shell: bash
         run: |
-          # Parsing version...
+          # Parsing info...
           version="$(grep -m 1 -e '^version=' -- './zip-content/module.prop' | cut -d '=' -f '2-' -s)" || exit "${?}"
+          now="$(date -u -Is)" || exit "${?}"
           printf 'version=%s\n' "${version:?}" 1>> "${GITHUB_OUTPUT?}" || exit "${?}"
-      - name: "Create tag"
+          printf 'now=%s\n' "${now:?}" 1>> "${GITHUB_OUTPUT?}" || exit "${?}"
+      - name: "Create annotated tag"
+        id: tag-creation
         uses: actions/github-script@v7
         timeout-minutes: 5
         env:
+          ACTOR_ID: "${{ github.actor_id }}"
           TAG_NAME: "${{ steps.repo-info.outputs.version }}"
+          TAG_DATE: "${{ steps.repo-info.outputs.now }}"
         with:
+          result-encoding: string
           retries: 3
           script: |
             /* jshint esversion: 6 */
+            function errorOut(apiName, e)
+            {
+              let errorMsg = apiName + '() failed';
+              if(e)
+              {
+                //console.warn('e.name: ' + e.name);
+                //console.warn('e.statusText: ' + e.statusText);
+                if(e.response && e.response.headers) console.warn('Rate limit - remaining: ' + e.response.headers['x-ratelimit-remaining']);
+                if(e.status || e.message) errorMsg += ' with error ' + e.status + ' (' + e.message + ')';
+              }
+              throw new Error(errorMsg);
+            }
+            const actor_id = process.env.ACTOR_ID;
             const tag_name = process.env.TAG_NAME;
-            console.log('::notice::Tag: ' + tag_name);
+            const tag_date = process.env.TAG_DATE;
+            console.log('::notice::Tag name: ' + tag_name);
+            console.log('::notice::Tag date: ' + tag_date);
+            const responseUser = await github.rest.users.getByUsername({
+              username: context.actor
+            }).catch(responseUser => responseUser);
+            if(responseUser && responseUser.status === 200 && responseUser.data && responseUser.data.name) {
+              // User data retrieved correctly
+            } else {
+              errorOut('users.getByUsername', responseUser);
+            }
+            // If public e-mail is missing, use default
+            const email = responseUser.data.email ? responseUser.data.email : actor_id + '+' + context.actor + '@users.noreply.github.com';
+            const responseTag = await github.rest.git.createTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: tag_name,
+              message: 'Release ' + tag_name,
+              object: context.sha,
+              type: 'commit',
+              tagger: {
+                name: responseUser.data.name,
+                email: email,
+                date: tag_date
+              }
+            }).catch(responseTag => responseTag);
+            if(responseTag && responseTag.status === 201 && responseTag.data && responseTag.data.sha) {
+              console.log('Tag object created correctly: ' + responseTag.data.sha);
+              if(responseTag.data.verification)
+              {
+                console.log('Tag - verified: ' + responseTag.data.verification.verified);
+                console.log('Tag - reason: ' + responseTag.data.verification.reason);
+                console.log('Tag - verification date: ' + responseTag.data.verification.verified_at);
+              }
+              //console.log(JSON.stringify(responseTag.data));
+            } else {
+              errorOut('git.createTag', responseTag);
+            }
             const response = await github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: 'refs/tags/' + tag_name,
-              sha: context.sha
+              sha: responseTag.data.sha
             }).catch(response => response);
-            if(response && response.status === 201) {
-              console.log('Tag created.');
+            if(response && response.status === 201 && response.data.ref) {
+              console.log('Tag ref created correctly: ' + response.data.ref);
               return true;
             } else if(response && response.status === 422 && response.message === 'Reference already exists') {
-              //console.warn('::warning::Tag already exist!!!');
-              throw new Error('Tag already exist!!!');
+              console.warn('::warning::Tag already exist!!!');
             } else {
-              let errorMsg = 'createRef failed';
-              if(response) {
-                //if(response.name) console.warn('response.name: ' + response.name);
-                //if(response.statusText) console.warn('response.statusText: ' + response.statusText);
-                if(response.response && response.response.headers && response.response.headers['x-ratelimit-remaining']) console.warn('Remaining rate limit: ' + response.response.headers['x-ratelimit-remaining']);
-                if(response.status && response.message) errorMsg += ' with error ' + response.status + ' (' + response.message + ')';
-              }
-              throw new Error(errorMsg);
+              errorOut('git.createRef', response);
             }
             return false;
 
   call-workflow:
     name: "Call workflow"
     needs: [create-tag]
-    if: "${{ github.ref_type == 'branch' }}"
+    if: "${{ needs.create-tag.outputs.tag-creation-success == 'true' }}"
     uses: "./.github/workflows/auto-release-from-tag.yml"
     with:
       tag-name: "${{ needs.create-tag.outputs.tag-name }}"
