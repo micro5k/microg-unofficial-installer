@@ -2,17 +2,18 @@
 # SPDX-License-Identifier: CC0-1.0
 
 # Always ignore
+/.gnupg/
+/.ssh/
 /coverage/
 /dependency-graph-reports/
-/.ssh/
 /.ash_history
 /.bash_history
-/.wget-hsts
 /.lesshst
+/.wget-hsts
 desktop.ini
+*.dex
 *.log
 *.sarif
-*.dex
 
 # Caches
 /.cache/

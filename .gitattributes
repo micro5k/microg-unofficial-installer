@@ -9,6 +9,7 @@ docs/CODEOWNERS   text eol=lf
 .gitmodules       text eol=lf
 
 .editorconfig     text eol=lf
+.mailmap          text eol=lf
 .semgrepignore    text eol=lf
 .shellcheckrc     text eol=lf
 .simplecov        text eol=lf
