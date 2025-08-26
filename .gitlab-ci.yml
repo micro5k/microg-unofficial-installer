@@ -82,7 +82,7 @@ ping-cache:
     - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_TAG == "nightly"
       when: always
   before_script: []
-  script: ":"
+  script: "test ! -d './cache/build' || date -u -- '+%s' 1> './cache/build/last-ping.dat'"
 
 # Temporarily disabled
 #include: ".gitlab/security-scans.yml"
