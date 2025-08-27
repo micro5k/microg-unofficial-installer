@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.3.5'
+readonly SCRIPT_VERSION='1.3.6'
 
 ### CONFIGURATION ###
 
@@ -502,7 +502,7 @@ _minutil_is_perm_granted()
 _minutil_is_system_perm()
 {
   case "${1:?}" in
-    'android.permission.'* | 'com.android.permission.'*) return 0 ;;
+    'android.permission.'* | 'com.android.'*) return 0 ;;
     *) ;;
   esac
   return 1
