@@ -57,7 +57,7 @@ get_cert_sha256()
   elif : "${KEYTOOL_PATH:="$(command -v 'keytool' || :)"}" && test -n "${KEYTOOL_PATH-}"; then
     _cert_sha256="$("${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' ')" || return 5
   else
-    show_error "Neither apksigner nor keytool were found. You must set either APKSIGNER_PATH or KEYTOOL_PATH!"
+    show_error "Neither apksigner nor keytool were found. You must set either APKSIGNER_PATH or KEYTOOL_PATH"
     return 255
   fi
 
