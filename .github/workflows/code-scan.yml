@@ -11,8 +11,8 @@ on:
     branches:
       - "main"
   schedule:
-    # At 12:00 AM, every 31 days, and on Sunday, only in January (UTC)
-    - cron: "0 0 */31 1 0"
+    # At 12:00 AM, every 31 days, only in January (UTC)
+    - cron: "0 0 */31 1 *"
 
 jobs:
   pre-requisites:
