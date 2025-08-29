@@ -12,7 +12,7 @@
 
 readonly SCRIPT_NAME='Generate perm XML files'
 readonly SCRIPT_SHORTNAME='GenPermXml'
-readonly SCRIPT_VERSION='0.0.2'
+readonly SCRIPT_VERSION='0.1.0'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -188,7 +188,7 @@ append_perm_to_xml()
 parse_perms_and_generate_xml_files()
 {
   local _backup_ifs _filename _base_name _pkg_name _cert_sha256 _input _perm _api
-  local _perm_decl _perm_prot_level _perm_flags _perm_whitelist _perm_group _perm_after _perm_min_api
+  local _perm_decl_all _perm_decl _perm_prot_level _perm_flags _perm_whitelist _perm_group _perm_after _perm_min_api
   local _perm_is_privileged _perm_is_dangerous _perm_type_found _perm_fake_sign
   local _privileged_perm_list _dangerous_perm_list
 
@@ -238,8 +238,13 @@ parse_perms_and_generate_xml_files()
       *) ;;
     esac
 
+    _perm_decl_all="$(grep -r -H -m 1 -F -e "android:name=\"${_perm:?}\"" -- "${DATA_DIR:?}/perms")" || {
+      show_warn "Unknown permission: ${_perm?}" # The permission cannot be found in any API, skip it
+      continue
+    }
+
     for _api in $(seq -- 23 "${MAX_API:?}"); do
-      _perm_decl="$(get_permission_declaration "${_perm:?}" "${_api:?}")" || {
+      _perm_decl="$(printf '%s\n' "${_perm_decl_all:?}" | grep -F -e "perms/base-permissions-api-${_api:?}.xml:")" || {
         test "${SCRIPT_VERBOSE:?}" = 'false' || show_warn "The '${_perm?}' permission cannot be found on API ${_api?}"
         continue
       }
@@ -251,7 +256,7 @@ parse_perms_and_generate_xml_files()
       _perm_type_found='false'
       case "|${_perm_prot_level?}|" in *'|normal|'* | *'|preinstalled|'*) _perm_type_found='true' ;; *) ;; esac
 
-      case "|${_perm_prot_level?}|" in *'|privileged|'*)
+      case "|${_perm_prot_level?}|" in *'|privileged|'* | *'|system|'* | *'|signatureOrSystem|'*)
         _perm_type_found='true'
         # The XML files for privileged permissions only exist from API 26 onwards, so if a permission is only privileged in older versions, we exclude it.
         test "${_api:?}" -lt 26 || _perm_is_privileged='true'
@@ -272,10 +277,6 @@ parse_perms_and_generate_xml_files()
       case "${_perm_type_found?}" in 'true') ;; *) show_warn "Unknown protection level for '${_perm?}' on API ${_api?}" ;; esac
     done
 
-    test -n "${_perm_min_api?}" || {
-      show_warn "Unknown permission: ${_perm?}" # The permission cannot be found in any API, skip it
-      continue
-    }
     test "${SCRIPT_VERBOSE:?}" = 'false' || printf 1>&2 '%s\n' "Min API ${_perm_min_api?}"
 
     if test "${_perm_is_privileged?}" = 'true' && is_system_permission "${_perm:?}"; then
@@ -368,7 +369,7 @@ main()
 
   DATA_DIR="$(find_data_dir)" || return 4
   # Avoid a strange issue on Bash under Windows
-  if command 1> /dev/null -v 'cygpath' && test "$(cygpath -m -- "${PWD:?}")" = "$(cygpath -m -S)"; then cd "${DATA_DIR:?}/.." || return 5; fi
+  if command 1> /dev/null -v 'cygpath' && test "$(cygpath -m -- "${PWD:?}" || :)" = "$(cygpath -m -S || :)"; then cd "${DATA_DIR:?}/.." || return 5; fi
   BASE_DIR="$(realpath .)" || return 6
   test -d "${DATA_DIR:?}/perms" || return 7
   test -d "${BASE_DIR:?}/output" || mkdir -p -- "${BASE_DIR:?}/output" || return 8
