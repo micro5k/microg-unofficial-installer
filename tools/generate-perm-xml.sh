@@ -12,7 +12,7 @@
 
 readonly SCRIPT_NAME='Generate perm XML files'
 readonly SCRIPT_SHORTNAME='GenPermXml'
-readonly SCRIPT_VERSION='0.1.0'
+readonly SCRIPT_VERSION='0.1.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -67,6 +67,35 @@ readonly MAX_API='36'
 
 readonly NL='
 '
+
+get_custom_permission_declaration()
+{
+  grep -H -F -e "android:name=\"${1:?}\"" 0<< 'EOF'
+    # packages/providers/DownloadProvider
+    <permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" android:permissionGroup="android.permission-group.NETWORK" android:protectionLevel="normal"/>
+    # GSF
+    <permission android:name="com.google.android.c2dm.permission.RECEIVE" android:protectionLevel="normal"/>
+    <permission android:name="com.google.android.c2dm.permission.SEND" android:protectionLevel="signatureOrSystem"/>
+    <permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.mail" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" android:protectionLevel="normal"/>
+    <permission android:name="com.google.android.providers.gsf.permission.WRITE_GSERVICES" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.providers.settings.permission.READ_GSETTINGS" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.providers.settings.permission.WRITE_GSETTINGS" android:protectionLevel="signature"/>
+    # GM
+    <permission android:name="com.google.android.gm.email.permission.ACCESS_PROVIDER" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.email.permission.GET_WIDGET_UPDATE" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.email.permission.READ_ATTACHMENT" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.email.permission.UPDATE_AUTH_NOTIFICATION" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.permission.AUTO_SEND" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.permission.BROADCAST_INTERNAL" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.permission.READ_CONTENT_PROVIDER" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="dangerous"/>
+    <permission android:name="com.google.android.gm.permission.READ_GMAIL" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.permission.WRITE_GMAIL" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
+EOF
+
+  # <permission-tree android:name="com.google.android.googleapps.permission.GOOGLE_AUTH"/>
+}
 
 find_data_dir()
 {
@@ -188,7 +217,7 @@ append_perm_to_xml()
 parse_perms_and_generate_xml_files()
 {
   local _backup_ifs _filename _base_name _pkg_name _cert_sha256 _input _perm _api
-  local _perm_decl_all _perm_decl _perm_prot_level _perm_flags _perm_whitelist _perm_group _perm_after _perm_min_api
+  local _perm_decl_all _perm_decl _perm_prot_level _perm_flags _perm_whitelist _no_api_difference _perm_group _perm_after _perm_min_api
   local _perm_is_privileged _perm_is_dangerous _perm_type_found _perm_fake_sign
   local _privileged_perm_list _dangerous_perm_list
 
@@ -238,13 +267,18 @@ parse_perms_and_generate_xml_files()
       *) ;;
     esac
 
-    _perm_decl_all="$(grep -r -H -m 1 -F -e "android:name=\"${_perm:?}\"" -- "${DATA_DIR:?}/perms")" || {
+    _no_api_difference='false'
+    if _perm_decl_all="$(grep -r -H -m 1 -F -e "android:name=\"${_perm:?}\"" -- "${DATA_DIR:?}/perms")"; then
+      :
+    elif _perm_decl_all="$(get_custom_permission_declaration "${_perm:?}")"; then
+      _no_api_difference='true'
+    else
       show_warn "Unknown permission: ${_perm?}" # The permission cannot be found in any API, skip it
       continue
-    }
+    fi
 
     for _api in $(seq -- 23 "${MAX_API:?}"); do
-      _perm_decl="$(printf '%s\n' "${_perm_decl_all:?}" | grep -F -e "perms/base-permissions-api-${_api:?}.xml:")" || {
+      _perm_decl="$(printf '%s\n' "${_perm_decl_all:?}" | grep -F -e "perms/base-permissions-api-${_api:?}.xml:" -e '(standard input):')" || {
         test "${SCRIPT_VERBOSE:?}" = 'false' || show_warn "The '${_perm?}' permission cannot be found on API ${_api?}"
         continue
       }
@@ -253,13 +287,14 @@ parse_perms_and_generate_xml_files()
         show_warn "Failed to the parse protection level of '${_perm?}' on API ${_api?}"
         continue
       }
+
       _perm_type_found='false'
       case "|${_perm_prot_level?}|" in *'|normal|'* | *'|preinstalled|'*) _perm_type_found='true' ;; *) ;; esac
 
       case "|${_perm_prot_level?}|" in *'|privileged|'* | *'|system|'* | *'|signatureOrSystem|'*)
         _perm_type_found='true'
         # The XML files for privileged permissions only exist from API 26 onwards, so if a permission is only privileged in older versions, we exclude it.
-        test "${_api:?}" -lt 26 || _perm_is_privileged='true'
+        if test "${_api:?}" -ge 26 || test "${_no_api_difference:?}" = 'true'; then _perm_is_privileged='true'; fi
         ;;
       *) ;;
       esac
@@ -275,6 +310,7 @@ parse_perms_and_generate_xml_files()
       esac
 
       case "${_perm_type_found?}" in 'true') ;; *) show_warn "Unknown protection level for '${_perm?}' on API ${_api?}" ;; esac
+      test "${_no_api_difference:?}" = 'false' || break
     done
 
     test "${SCRIPT_VERBOSE:?}" = 'false' || printf 1>&2 '%s\n' "Min API ${_perm_min_api?}"
