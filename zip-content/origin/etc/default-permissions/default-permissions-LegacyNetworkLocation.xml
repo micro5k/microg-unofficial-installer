@@ -6,9 +6,8 @@
 -->
 
 <exceptions>
-    <exception package="org.fitchfamily.android.dejavu" sha256-cert-digest="60:81:D3:18:47:7A:55:5A:74:ED:65:D1:15:98:A5:2E:91:D5:FD:B7:44:6B:07:BC:2C:B8:8D:D5:C0:F9:49:44">
+    <exception package="com.google.android.location" sha256-cert-digest="E0:3B:36:DF:08:98:D3:C0:13:B8:F1:86:20:AF:44:79:15:BA:E6:68:BD:31:18:AB:1E:A6:85:9F:64:C4:08:E5">
         <!-- Location -->
         <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false" />
-        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
     </exception>
 </exceptions>

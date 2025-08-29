@@ -6,8 +6,7 @@
 -->
 
 <permissions>
-    <privapp-permissions package="com.google.android.gms" sha256-cert-digest="9B:D0:67:27:E6:27:96:C0:13:0E:B6:DA:B3:9B:73:15:74:51:58:2C:BD:13:8E:86:C4:68:AC:C3:95:D1:41:65">
+    <privapp-permissions package="com.google.android.location" sha256-cert-digest="E0:3B:36:DF:08:98:D3:C0:13:B8:F1:86:20:AF:44:79:15:BA:E6:68:BD:31:18:AB:1E:A6:85:9F:64:C4:08:E5">
         <permission name="android.permission.INSTALL_LOCATION_PROVIDER" />
-        <!-- %FAKE_PACKAGE_SIGNATURE% -->
     </privapp-permissions>
 </permissions>
