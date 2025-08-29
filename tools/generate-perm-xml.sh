@@ -12,22 +12,34 @@
 
 readonly SCRIPT_NAME='Generate perm XML files'
 readonly SCRIPT_SHORTNAME='GenPermXml'
-readonly SCRIPT_VERSION='0.0.1'
+readonly SCRIPT_VERSION='0.0.2'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
 # shellcheck disable=SC3040,SC3041,SC2015
 {
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-  (set -o posix 2> /dev/null) && set -o posix || true
   (set +H 2> /dev/null) && set +H || true
   (set -o pipefail 2> /dev/null) && set -o pipefail || true
 }
 
-readonly MAX_API='36'
-
-readonly NL='
-'
+pause_if_needed()
+{
+  # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
+  if test "${NO_PAUSE:-0}" = '0' && test "${no_pause:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-unknown}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
+    if test -n "${NO_COLOR-}"; then
+      printf 1>&2 '\n%s' 'Press any key to exit... ' || :
+    else
+      printf 1>&2 '\n\033[1;32m\r%s' 'Press any key to exit... ' || :
+    fi
+    # shellcheck disable=SC3045 # Ignore: In POSIX sh, read -s / -n is undefined
+    IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
+    printf 1>&2 '\n' || :
+    test -n "${NO_COLOR-}" || printf 1>&2 '\033[0m\r    \r' || :
+  fi
+  unset no_pause || :
+  return "${1:-0}"
+}
 
 show_status()
 {
@@ -50,6 +62,11 @@ ui_error()
   show_error "${1?}"
   exit 55
 }
+
+readonly MAX_API='36'
+
+readonly NL='
+'
 
 find_data_dir()
 {
@@ -349,10 +366,12 @@ main()
     return 3
   }
 
-  BASE_DIR="$(realpath .)" || return 4
-  DATA_DIR="$(find_data_dir)" || return 5
-  test -d "${DATA_DIR:?}/perms" || return 6
-  test -d "${BASE_DIR:?}/output" || mkdir -p -- "${BASE_DIR:?}/output" || return 7
+  DATA_DIR="$(find_data_dir)" || return 4
+  # Avoid a strange issue on Bash under Windows
+  if command 1> /dev/null -v 'cygpath' && test "$(cygpath -m -- "${PWD:?}")" = "$(cygpath -m -S)"; then cd "${DATA_DIR:?}/.." || return 5; fi
+  BASE_DIR="$(realpath .)" || return 6
+  test -d "${DATA_DIR:?}/perms" || return 7
+  test -d "${BASE_DIR:?}/output" || mkdir -p -- "${BASE_DIR:?}/output" || return 8
 
   if test -n "${AAPT_PATH-}" || AAPT_PATH="$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt')"; then
     :
@@ -370,11 +389,11 @@ main()
   fi
 
   while test "${#}" -gt 0; do
-    cmd_output="$("${AAPT_PATH:?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || return 8
-    pkg_name="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'package: ' | cut -d ':' -f '2-' -s | cut -b '2-')" || return 9
-    perm_list="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission: ' | cut -d "'" -f '2' -s | LC_ALL=C sort)" || return 10
+    cmd_output="$("${AAPT_PATH:?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || return 9
+    pkg_name="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'package: ' | cut -d ':' -f '2-' -s | cut -b '2-')" || return 10
+    perm_list="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission: ' | cut -d "'" -f '2' -s | LC_ALL=C sort)" || return 11
     cmd_output=''
-    cert_sha256="$(get_cert_sha256 "${1:?}")" || return 11
+    cert_sha256="$(get_cert_sha256 "${1:?}")" || return 12
 
     printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${1:?}" "${pkg_name:?}" "${cert_sha256:?}" || return "${?}"
 
@@ -429,4 +448,5 @@ if test "${execute_script:?}" = 'true'; then
   main "${@}" || STATUS="${?}"
 fi
 
-exit "${STATUS:?}"
+pause_if_needed "${STATUS:?}"
+exit "${?}"
