@@ -12,7 +12,7 @@
 
 readonly SCRIPT_NAME='Generate perm XML files'
 readonly SCRIPT_SHORTNAME='GenPermXml'
-readonly SCRIPT_VERSION='0.1.1'
+readonly SCRIPT_VERSION='0.1.2'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -222,6 +222,8 @@ parse_perms_and_generate_xml_files()
   local _privileged_perm_list _dangerous_perm_list
 
   _base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
+  printf 1>&2 '%s\n' "${_base_name?}"
+
   _base_name="${_base_name%".apk"}"
   _pkg_name="${2:?}"
   _cert_sha256="${3:?}"
@@ -366,6 +368,7 @@ parse_perms_and_generate_xml_files()
       terminate_xml 'default-permissions'
     } 1> "${BASE_DIR:?}/output/${_filename:?}"
   fi
+  printf 1>&2 '\n'
 }
 
 get_cert_sha256()
