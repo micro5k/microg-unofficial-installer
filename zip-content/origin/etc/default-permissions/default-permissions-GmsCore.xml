@@ -19,9 +19,9 @@
         <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
         <!-- %ACCESS_BACKGROUND_LOCATION% --> <!-- MinApi: 29 -->
         <!-- Nearby devices -->
-        <permission name="android.permission.BLUETOOTH_ADVERTISE" fixed="false" /> <!-- MinApi: 31 -->
-        <permission name="android.permission.BLUETOOTH_CONNECT" fixed="false" /> <!-- MinApi: 31 -->
-        <permission name="android.permission.BLUETOOTH_SCAN" fixed="false" /> <!-- MinApi: 31 -->
+        <!-- %BLUETOOTH_ADVERTISE% --> <!-- MinApi: 31 -->
+        <!-- %BLUETOOTH_CONNECT% --> <!-- MinApi: 31 -->
+        <!-- %BLUETOOTH_SCAN% --> <!-- MinApi: 31 -->
         <!-- Notifications -->
         <!-- %POST_NOTIFICATIONS% --> <!-- MinApi: 33 -->
         <!-- Phone -->

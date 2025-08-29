@@ -1475,8 +1475,14 @@ prepare_installation()
     _need_newline='true'
     replace_permission_placeholders 'ACCESS_BACKGROUND_LOCATION' 'true'
 
-    if test "${API:?}" -ge 33; then # Android 13+
-      replace_permission_placeholders 'POST_NOTIFICATIONS'
+    if test "${API:?}" -ge 31; then # Android 12+
+      replace_permission_placeholders 'BLUETOOTH_ADVERTISE'
+      replace_permission_placeholders 'BLUETOOTH_CONNECT'
+      replace_permission_placeholders 'BLUETOOTH_SCAN'
+
+      if test "${API:?}" -ge 33; then # Android 13+
+        replace_permission_placeholders 'POST_NOTIFICATIONS'
+      fi
     fi
   fi
 
