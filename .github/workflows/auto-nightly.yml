@@ -63,7 +63,7 @@ jobs:
           BUILD_TYPE='oss' '${{ github.workspace }}/build.sh'
       - name: "Attest build provenance"
         id: "attest"
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         timeout-minutes: 10
         if: "${{ vars.NIGHTLY_ATTESTATION == 'true' && github.run_attempt == '1' && steps.build.outputs.ZIP_IS_ALPHA == 'true' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         with:
