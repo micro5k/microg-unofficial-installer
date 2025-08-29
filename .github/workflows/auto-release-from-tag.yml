@@ -45,7 +45,7 @@ jobs:
           make clean buildotaoss
       - name: "Attest build provenance"
         id: "attest"
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         timeout-minutes: 10
         if: "${{ vars.ATTESTATION == 'true' && github.run_attempt == '1' && steps.build.outputs.ZIP_IS_ALPHA == 'false' && steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         with:
