@@ -12,7 +12,7 @@
 
 readonly SCRIPT_NAME='Generate perm XML files'
 readonly SCRIPT_SHORTNAME='GenPermXml'
-readonly SCRIPT_VERSION='0.1.2'
+readonly SCRIPT_VERSION='0.2.0'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -395,11 +395,23 @@ find_android_build_tool()
 
 main()
 {
-  local base_name cmd_output pkg_name perm_list cert_sha256
+  local backup_ifs base_name cmd_output pkg_name perm_list cert_sha256
 
   test -n "${1-}" || {
     show_error "You must pass the filename of the file to be processed."
     return 3
+  }
+
+  test "${1:?}" != '-' || {
+    backup_ifs="${IFS-}"
+    IFS="${NL:?}"
+
+    set -f || :
+    # shellcheck disable=SC2086 # Word splitting is intended
+    set -- $(cat) || ui_error "Failed expanding stdin inside main()"
+    set +f || :
+
+    IFS="${backup_ifs?}"
   }
 
   DATA_DIR="$(find_data_dir)" || return 4
@@ -427,11 +439,11 @@ main()
   while test "${#}" -gt 0; do
     base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
     printf 1>&2 '%s\n' "${base_name?}"
+    printf 1>&2 '\033[1;31m\r'
     cmd_output="$("${AAPT_PATH:?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || return 9
     pkg_name="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'package: ' | cut -d ':' -f '2-' -s | cut -b '2-')" || return 10
     perm_list="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission: ' | cut -d "'" -f '2' -s | LC_ALL=C sort)" || return 11
     cmd_output=''
-    printf 1>&2 '\033[1;31m\r'
     cert_sha256="$(get_cert_sha256 "${1:?}")" || return 12
     printf 1>&2 '\033[0m\r'
 
@@ -457,6 +469,8 @@ while test "${#}" -gt 0; do
 
     -v) SCRIPT_VERBOSE='true' ;;
 
+    -) break ;;
+
     --)
       shift
       break
@@ -474,9 +488,7 @@ while test "${#}" -gt 0; do
       STATUS=2
       ;;
 
-    *)
-      break
-      ;;
+    *) break ;;
   esac
 
   shift
@@ -487,6 +499,7 @@ if test "${execute_script:?}" = 'true'; then
 
   if test "${#}" -eq 0; then set -- ''; fi
   main "${@}" || STATUS="${?}"
+  printf 1>&2 '\033[0m\r' # Reset color (useful in case of premature exit)
 fi
 
 pause_if_needed "${STATUS:?}"
