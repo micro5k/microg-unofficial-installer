@@ -407,8 +407,8 @@ main()
     IFS="${NL:?}"
 
     set -f || :
-    # shellcheck disable=SC2086 # Word splitting is intended
-    set -- $(cat) || ui_error "Failed expanding stdin inside main()"
+    # shellcheck disable=SC2046 # Word splitting is intended
+    set -- $(cat || :) || ui_error "Failed expanding stdin inside main()"
     set +f || :
 
     IFS="${backup_ifs?}"
