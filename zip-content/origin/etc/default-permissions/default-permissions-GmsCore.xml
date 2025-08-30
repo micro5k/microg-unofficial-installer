@@ -22,8 +22,6 @@
         <!-- %BLUETOOTH_ADVERTISE% --> <!-- MinApi: 31 -->
         <!-- %BLUETOOTH_CONNECT% --> <!-- MinApi: 31 -->
         <!-- %BLUETOOTH_SCAN% --> <!-- MinApi: 31 -->
-        <!-- Notifications -->
-        <!-- %POST_NOTIFICATIONS% --> <!-- MinApi: 33 -->
         <!-- Phone -->
         <permission name="android.permission.READ_PHONE_STATE" fixed="false" />
         <!-- SMS -->
@@ -31,6 +29,8 @@
         <!-- Storage / Files -->
         <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false" whitelisted="true" />
         <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false" whitelisted="true" />
+        <!-- Notifications -->
+        <!-- %POST_NOTIFICATIONS% --> <!-- MinApi: 33 -->
         <!-- Signature spoofing -->
         <!-- %FAKE_PACKAGE_SIGNATURE% -->
     </exception>

@@ -181,7 +181,7 @@ map_permission_group_to_label()
     'android.permission-group.LOCATION') printf '%s\n' 'Location' ;;
     'android.permission-group.MICROPHONE') printf '%s\n' 'Microphone' ;;
     'android.permission-group.NEARBY_DEVICES') printf '%s\n' 'Nearby devices' ;;
-    'android.permission-group.NOTIFICATIONS') printf '%s\n' 'Notifications' ;;
+    'android.permission-group.NOTIFICATIONS') printf '%s\n' 'z)Notifications' ;;
     'android.permission-group.PHONE') printf '%s\n' 'Phone' ;;
     'android.permission-group.SENSORS') printf '%s\n' 'Body sensors' ;;
     'android.permission-group.SMS') printf '%s\n' 'SMS' ;;
