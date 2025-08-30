@@ -221,10 +221,7 @@ parse_perms_and_generate_xml_files()
   local _perm_is_privileged _perm_is_dangerous _perm_type_found _perm_fake_sign
   local _privileged_perm_list _dangerous_perm_list
 
-  _base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
-  printf 1>&2 '%s\n' "${_base_name?}"
-
-  _base_name="${_base_name%".apk"}"
+  _base_name="${1%".apk"}"
   _pkg_name="${2:?}"
   _cert_sha256="${3:?}"
 
@@ -368,7 +365,6 @@ parse_perms_and_generate_xml_files()
       terminate_xml 'default-permissions'
     } 1> "${BASE_DIR:?}/output/${_filename:?}"
   fi
-  printf 1>&2 '\n'
 }
 
 get_cert_sha256()
@@ -399,7 +395,7 @@ find_android_build_tool()
 
 main()
 {
-  local cmd_output pkg_name perm_list cert_sha256
+  local base_name cmd_output pkg_name perm_list cert_sha256
 
   test -n "${1-}" || {
     show_error "You must pass the filename of the file to be processed."
@@ -429,13 +425,18 @@ main()
   fi
 
   while test "${#}" -gt 0; do
+    base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
+    printf 1>&2 '%s\n' "${base_name?}"
     cmd_output="$("${AAPT_PATH:?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || return 9
     pkg_name="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'package: ' | cut -d ':' -f '2-' -s | cut -b '2-')" || return 10
     perm_list="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission: ' | cut -d "'" -f '2' -s | LC_ALL=C sort)" || return 11
     cmd_output=''
+    printf 1>&2 '\033[1;31m\r'
     cert_sha256="$(get_cert_sha256 "${1:?}")" || return 12
+    printf 1>&2 '\033[0m\r'
 
-    printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${1:?}" "${pkg_name:?}" "${cert_sha256:?}" || return "${?}"
+    printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name:?}" "${pkg_name:?}" "${cert_sha256:?}" || return "${?}"
+    printf 1>&2 '\n'
 
     shift
   done
