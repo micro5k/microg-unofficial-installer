@@ -46,3 +46,5 @@ user.gradle
 /recovery-simulator/output/
 /tools/data/
 /utils/data/
+/tools/output/
+/utils/output/
