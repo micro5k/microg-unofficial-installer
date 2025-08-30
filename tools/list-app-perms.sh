@@ -84,7 +84,7 @@ while test "${#}" -gt 0; do
   case "${1?}" in
     -V | --version)
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' "Copyright (c) 2025 ${SCRIPT_AUTHOR:?}"
+      printf '%s\n' "Copy""right (c) 2025 ${SCRIPT_AUTHOR:?}"
       printf '%s\n' 'License GPLv3+'
       execute_script='false'
       ;;

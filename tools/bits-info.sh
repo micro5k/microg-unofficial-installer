@@ -1453,7 +1453,7 @@ while test "${#}" -gt 0; do
       execute_script='false'
       no_pause=1
       printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
-      printf '%s\n' 'Copyright (c) 2024 ale5000'
+      printf '%s\n' "Copy""right (c) 2024 ale5000"
       printf '%s\n' 'License GPLv3+'
       ;;
     -h | --help | '-?')

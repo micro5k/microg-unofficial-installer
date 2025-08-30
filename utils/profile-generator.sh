@@ -840,8 +840,8 @@ generate_profile()
   printf 1>&2 '\n'
   printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 ${xml_comment_start:?}
-    SPDX-FileCopyrightText: none
-    SPDX-License-Identifier: CC0-1.0
+    SPDX-FileCopy""rightText: NONE
+    SPDX-License""-Identifier: CC0-1.0
 ${xml_comment_end:?}
 
 <profile name=\"${DEVICE_INFO?} (${ROM_INFO:?})\" product=\"${BUILD_PRODUCT:?}\" sdk=\"${BUILD_VERSION_SDK:?}\" id=\"${XML_ID:?}\" auto=\"true\">
@@ -943,7 +943,7 @@ while test "${#}" -gt 0; do
   case "${1?}" in
     -V | --version)
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' 'Copyright (c) 2023 ale5000'
+      printf '%s\n' "Copy""right (c) 2023 ale5000"
       printf '%s\n' 'License GPLv3+'
       execute_script='false'
       ;;
