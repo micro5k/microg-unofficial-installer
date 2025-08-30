@@ -12,7 +12,7 @@
 
 readonly SCRIPT_NAME='Generate perm XML files'
 readonly SCRIPT_SHORTNAME='GenPermXml'
-readonly SCRIPT_VERSION='0.2.0'
+readonly SCRIPT_VERSION='0.2.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -204,7 +204,9 @@ append_perm_to_xml()
   if test "${3:?}" = 'privapp-permissions'; then
     printf '%s\n' "        <permission name=\"${1:?}\" />${_xml_compat_info?}"
   elif test "${3:?}" = 'default-permissions'; then
-    if test "${5?}" = 'true'; then
+    if test -n "${_xml_compat_info?}" && test "${PLACEHOLDERS:?}" = 'true'; then
+      printf '%s\n' "        <!-- %${1#"android.permission."}% -->${_xml_compat_info?}"
+    elif test "${5?}" = 'true'; then
       printf '%s\n' "        <permission name=\"${1:?}\" fixed=\"false\" whitelisted=\"true\" />${_xml_compat_info?}"
     else
       printf '%s\n' "        <permission name=\"${1:?}\" fixed=\"false\" />${_xml_compat_info?}"
@@ -456,6 +458,7 @@ main()
 
 STATUS=0
 SCRIPT_VERBOSE='false'
+PLACEHOLDERS='false'
 execute_script='true'
 
 while test "${#}" -gt 0; do
@@ -466,22 +469,20 @@ while test "${#}" -gt 0; do
       printf '%s\n' 'License GPLv3+'
       execute_script='false'
       ;;
-
     -v) SCRIPT_VERBOSE='true' ;;
 
+    --use-placeholders) PLACEHOLDERS='true' ;;
     -) break ;;
 
     --)
       shift
       break
       ;;
-
     --*)
       printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
       execute_script='false'
       STATUS=2
       ;;
-
     -*)
       printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
       execute_script='false'
