@@ -54,6 +54,11 @@ show_status()
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
 }
 
+show_error()
+{
+  printf 1>&2 '\n\033[1;31m%s\033[0m\n\n' "ERROR: ${1?}"
+}
+
 find_data_dir()
 {
   local _path
@@ -71,7 +76,7 @@ find_data_dir()
     return 1
   fi
 
-  _path="$(realpath "${_path:?}")" || return 1
+  _path="$(realpath 2> /dev/null "${_path:?}" || readlink -f "${_path:?}")" || return 1
   printf '%s\n' "${_path:?}"
 }
 
@@ -94,7 +99,7 @@ create_and_return_data_dir()
 
   test -d "${_path:?}" || mkdir -p -- "${_path:?}" || return 1
 
-  _path="$(realpath "${_path:?}")" || return 1
+  _path="$(realpath 2> /dev/null "${_path:?}" || readlink -f "${_path:?}")" || return 1
   printf '%s\n' "${_path:?}"
 }
 
@@ -119,6 +124,8 @@ download_and_parse_permissions()
 main()
 {
   local api tag
+
+  command 1> /dev/null -v "${WGET_CMD:?}" || show_error 'Missing: wget'
 
   DATA_DIR="$(find_data_dir || create_and_return_data_dir)" || return 1
   test -d "${DATA_DIR:?}/perms" || mkdir -p -- "${DATA_DIR:?}/perms" || return 1

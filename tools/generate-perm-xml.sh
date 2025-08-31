@@ -114,7 +114,7 @@ find_data_dir()
     return 1
   fi
 
-  _path="$(realpath "${_path:?}")" || return 1
+  _path="$(realpath 2> /dev/null "${_path:?}" || readlink -f "${_path:?}")" || return 1
 
   printf '%s\n' "${_path:?}"
 }
@@ -434,7 +434,7 @@ main()
   # Avoid a strange issue on Bash under Windows
   if command 1> /dev/null -v 'cygpath' && test "$(cygpath -m -- "${PWD:?}" || :)" = "$(cygpath -m -S || :)"; then cd "${DATA_DIR:?}/.." || return 6; fi
 
-  BASE_DIR="$(realpath .)" || return 7
+  BASE_DIR="$(realpath 2> /dev/null . || readlink -f .)" || return 7
   test -d "${BASE_DIR:?}/output" || mkdir -p -- "${BASE_DIR:?}/output" || return 8
 
   # Set the path of Android SDK if not already set
