@@ -315,7 +315,10 @@ parse_perms_and_generate_xml_files()
       *) ;;
       esac
 
-      case "${_perm_type_found?}" in 'true') ;; *) show_warn "Unknown protection level for '${_perm?}' on API ${_api?}" ;; esac
+      case "${_perm_type_found?}" in
+        'true') ;;
+        *) show_warn "Unknown protection level for '${_perm?}'$(test "${_no_api_difference:?}" = 'true' || printf '%s\n' " on API ${_api?}" || :)" ;;
+      esac
       test "${_no_api_difference:?}" = 'false' || break
     done
 
