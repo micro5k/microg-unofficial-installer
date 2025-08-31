@@ -442,6 +442,8 @@ main()
       ANDROID_SDK_ROOT="${HOME:?}/Android/Sdk" # Linux
     elif test -n "${HOME-}" && test -d "${HOME:?}/Library/Android/sdk"; then
       ANDROID_SDK_ROOT="${HOME:?}/Library/Android/sdk" # macOS
+    elif test -d '/usr/lib/android-sdk'; then
+      ANDROID_SDK_ROOT='/usr/lib/android-sdk' # Linux (apt)
     fi
   fi
 
