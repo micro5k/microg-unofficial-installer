@@ -5,14 +5,14 @@
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/tools
 
 # SPDX-FileCopyrightText: (c) 2025 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later OR Apache-2.0
 
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 readonly SCRIPT_NAME='Android permissions retriever'
 readonly SCRIPT_SHORTNAME='DlPermList'
-readonly SCRIPT_VERSION='0.2.1'
+readonly SCRIPT_VERSION='0.3.0'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
