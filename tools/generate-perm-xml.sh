@@ -196,24 +196,29 @@ append_perm_to_xml()
   local _xml_compat_info
 
   case "${2:?}" in '23') _xml_compat_info='' ;; *) _xml_compat_info=" <!-- MinApi: ${2:?} -->" ;; esac
+  if test -n "${4?}" && test "${4:?}" != "${LAST_PERM_GROUP?}" && LAST_PERM_GROUP="${4:?}"; then printf '%s\n' "        <!-- ${4#"z)"} -->"; fi
 
-  if test -n "${4?}"; then
-    if test "${4:?}" != "${LAST_PERM_GROUP?}" && LAST_PERM_GROUP="${4:?}"; then printf '%s\n' "        <!-- ${4#"z)"} -->"; fi
-  fi
-
-  if test "${3:?}" = 'privapp-permissions'; then
-    printf '%s\n' "        <permission name=\"${1:?}\" />${_xml_compat_info?}"
-  elif test "${3:?}" = 'default-permissions'; then
-    if test -n "${_xml_compat_info?}" && test "${PLACEHOLDERS:?}" = 'true'; then
-      printf '%s\n' "        <!-- %${1#"android.permission."}% -->${_xml_compat_info?}"
-    elif test "${5?}" = 'true'; then
-      printf '%s\n' "        <permission name=\"${1:?}\" fixed=\"false\" whitelisted=\"true\" />${_xml_compat_info?}"
-    else
-      printf '%s\n' "        <permission name=\"${1:?}\" fixed=\"false\" />${_xml_compat_info?}"
-    fi
-  else
-    return 1
-  fi
+  case "${3:?}" in
+    'privapp-permissions')
+      if test "${1:?}" = 'android.permission.FAKE_PACKAGE_SIGNATURE' && test "${PLACEHOLDERS:?}" = 'true'; then
+        printf '%s\n' "        <!-- %${1#"android.permission."}% -->${_xml_compat_info?}"
+      else
+        printf '%s\n' "        <permission name=\"${1:?}\" />${_xml_compat_info?}"
+      fi
+      ;;
+    'default-permissions')
+      if {
+        test -n "${_xml_compat_info?}" || test "${1:?}" = 'android.permission.FAKE_PACKAGE_SIGNATURE'
+      } && test "${PLACEHOLDERS:?}" = 'true'; then
+        printf '%s\n' "        <!-- %${1#"android.permission."}% -->${_xml_compat_info?}"
+      elif test "${5?}" = 'true'; then
+        printf '%s\n' "        <permission name=\"${1:?}\" fixed=\"false\" whitelisted=\"true\" />${_xml_compat_info?}"
+      else
+        printf '%s\n' "        <permission name=\"${1:?}\" fixed=\"false\" />${_xml_compat_info?}"
+      fi
+      ;;
+    *) return 1 ;;
+  esac
 }
 
 parse_perms_and_generate_xml_files()
