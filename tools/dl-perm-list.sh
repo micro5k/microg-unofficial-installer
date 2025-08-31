@@ -138,7 +138,7 @@ while test "${#}" -gt 0; do
     -V | --version)
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
       printf '%s\n' "Copy""right (c) 2025 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n' 'License GPLv3+'
+      printf '%s\n' 'License GPL-3.0+ OR Apache-2.0'
       execute_script='false'
       ;;
 
