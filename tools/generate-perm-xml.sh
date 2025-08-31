@@ -290,7 +290,7 @@ parse_perms_and_generate_xml_files()
       }
       : "${_perm_min_api:=${_api:?}}" # Set min API for this permission
       _perm_prot_level="$(printf '%s\n' "${_perm_decl:?}" | grep -o -e 'android:protectionLevel="[^"]*"' | cut -d '"' -f '2' -s)" || {
-        show_warn "Failed to the parse protection level of '${_perm?}' on API ${_api?}"
+        show_error "Failed to the parse protection level of '${_perm?}' on API ${_api?}"
         continue
       }
 
@@ -317,7 +317,7 @@ parse_perms_and_generate_xml_files()
 
       case "${_perm_type_found?}" in
         'true') ;;
-        *) show_warn "Unknown protection level for '${_perm?}'$(test "${_no_api_difference:?}" = 'true' || printf '%s\n' " on API ${_api?}" || :)" ;;
+        *) show_warn "Unknown protection level for '${_perm?}'$(test "${_no_api_difference:?}" = 'true' || printf '%s\n' " on API ${_api?}" || :)$(test "${SCRIPT_VERBOSE:?}" = 'false' || printf '%s\n' " => ${_perm_prot_level?}" || :)" ;;
       esac
       test "${_no_api_difference:?}" = 'false' || break
     done
