@@ -1,0 +1,95 @@
+---
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
+
+name: "Generate permission XML files"
+permissions: {}
+on:
+  workflow_dispatch:
+  schedule:
+    # At 02:00 AM, every 6 days (UTC)
+    - cron: "0 2 */6 * *"
+
+jobs:
+  generation:
+    name: "Generation"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: "${{ github.event_name != 'schedule' }}"
+
+    steps:
+      - name: "Checkout sources"
+        uses: actions/checkout@v5
+      - name: "Use cache"
+        id: cache-step
+        uses: actions/cache@v4
+        timeout-minutes: 5
+        with:
+          key: "perms-${{ hashFiles('tools/dl-perm-list.sh') }}"
+          restore-keys: "perms-"
+          path: "cache/tools/perms"
+          enableCrossOsArchive: true
+      - name: "Execute script"
+        shell: bash
+        timeout-minutes: 10
+        run: |
+          # Executing script...
+          export TOOLS_DATA_DIR='./cache/tools'
+          if test ! -d './cache/tools/perms' || '${{ steps.cache-step.outputs.cache-hit != 'true' }}'; then
+            './tools/dl-perm-list.sh' || exit "${?}"
+          fi
+          find './zip-content' -name '*.apk' | sort | './tools/generate-perm-xml.sh' --use-placeholders - || exit "${?}"
+      - name: "Upload artifacts"
+        uses: actions/upload-artifact@v4
+        with:
+          name: "XML permissions"
+          path: "output/*.xml"
+          overwrite: false
+          retention-days: 10
+          if-no-files-found: "error"
+
+  keep-alive:
+    name: "Keep alive"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: "${{ github.event_name == 'schedule' }}"
+    permissions:
+      actions: write # Needed to keep alive the workflow
+
+    steps:
+      - name: "Checkout file"
+        uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            tools/dl-perm-list.sh
+          sparse-checkout-cone-mode: false
+      - name: "Ping cache" # Cache expiration: 7 days
+        uses: actions/cache@v4
+        timeout-minutes: 5
+        with:
+          key: "perms-${{ hashFiles('tools/dl-perm-list.sh') }}"
+          path: "cache/tools/perms"
+          enableCrossOsArchive: true
+          lookup-only: true
+      - name: "Keep workflow alive"
+        uses: actions/github-script@v7
+        timeout-minutes: 5
+        env:
+          WORKFLOW_REF: "${{ github.workflow_ref }}"
+        with:
+          retries: 3
+          script: |
+            /* jshint esversion: 6 */
+            const workflow_filename = process.env.WORKFLOW_REF.split('@', 1).at(0).split('/').slice(2).join('/');
+            const response = await github.rest.actions.enableWorkflow({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: workflow_filename
+            }).catch(response => response);
+            if(response && response.status === 204) {
+              console.log('Workflow enabled.');
+            } else {
+              let errorMsg = 'enableWorkflow failed';
+              if(response && response.status && response.message) errorMsg += ' with error ' + response.status + ' (' + response.message + ')';
+              throw new Error(errorMsg);
+            }
