@@ -12,7 +12,7 @@
 
 readonly SCRIPT_NAME='Generate perm XML files'
 readonly SCRIPT_SHORTNAME='GenPermXml'
-readonly SCRIPT_VERSION='0.2.1'
+readonly SCRIPT_VERSION='0.2.2'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -53,7 +53,7 @@ show_warn()
 
 show_error()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
+  printf 1>&2 '\n\033[1;31m%s\033[0m\n\n' "ERROR: ${1?}"
 }
 
 ui_error()
@@ -380,8 +380,10 @@ parse_perms_and_generate_xml_files()
 get_cert_sha256()
 {
   if test -n "${APKSIGNER_PATH-}"; then
+    show_status 'Using apksigner...'
     "${APKSIGNER_PATH:?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -F -e 'certificate SHA-256 digest:' | cut -d ':' -f '2-' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g;s/:$//'
   elif test -n "${KEYTOOL_PATH-}"; then
+    show_status 'Using keytool...'
     "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' '
   else
     return 255
@@ -394,7 +396,7 @@ find_android_build_tool()
 
   if _tool_path="$(command -v "${1:?}")" && test -n "${_tool_path?}"; then
     :
-  elif test -n "${ANDROID_SDK_ROOT-}" && test -d "${ANDROID_SDK_ROOT:?}/build-tools" && _tool_path="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -maxdepth 2 -iname "${1:?}*" | LC_ALL=C sort -V -r | head -n 1)" && test -n "${_tool_path?}"; then
+  elif test -n "${ANDROID_SDK_ROOT-}" && test -d "${ANDROID_SDK_ROOT:?}/build-tools" && _tool_path="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${_tool_path?}"; then
     :
   else
     return 1
@@ -405,7 +407,7 @@ find_android_build_tool()
 
 main()
 {
-  local backup_ifs base_name cmd_output pkg_name perm_list cert_sha256
+  local status backup_ifs base_name cmd_output pkg_name perm_list cert_sha256
 
   test -n "${1-}" || {
     show_error "You must pass the filename of the file to be processed."
@@ -431,37 +433,63 @@ main()
   test -d "${DATA_DIR:?}/perms" || return 7
   test -d "${BASE_DIR:?}/output" || mkdir -p -- "${BASE_DIR:?}/output" || return 8
 
+  # Set the path of Android SDK if not already set
+  export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME-}}"
+  if test -z "${ANDROID_SDK_ROOT?}"; then
+    if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA:?}/Android/Sdk"; then
+      ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk" # Windows
+    elif test -n "${HOME-}" && test -d "${HOME:?}/Android/Sdk"; then
+      ANDROID_SDK_ROOT="${HOME:?}/Android/Sdk" # Linux
+    elif test -n "${HOME-}" && test -d "${HOME:?}/Library/Android/sdk"; then
+      ANDROID_SDK_ROOT="${HOME:?}/Library/Android/sdk" # macOS
+    fi
+  fi
+
   if test -n "${AAPT_PATH-}" || AAPT_PATH="$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt')"; then
     :
   else
+    show_error "Neither aapt2 nor aapt were found. You need to set AAPT_PATH"
     return 255
   fi
 
-  if test -n "${APKSIGNER_PATH-}" || APKSIGNER_PATH="$(command -v 'apksigner' || command -v 'apksigner.bat')"; then
+  if test -n "${APKSIGNER_PATH-}" || APKSIGNER_PATH="$(find_android_build_tool 'apksigner' || command -v 'apksigner.bat')"; then
     :
   elif test -n "${KEYTOOL_PATH-}" || KEYTOOL_PATH="$(command -v 'keytool')"; then
     :
   else
-    show_error "Neither apksigner nor keytool were found. You must set either APKSIGNER_PATH or KEYTOOL_PATH"
+    show_error "Neither apksigner nor keytool were found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH"
     return 255
   fi
 
+  status=0
   while test "${#}" -gt 0; do
     base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
     printf 1>&2 '%s\n' "${base_name?}"
+    show_status 'Using aapt...'
     printf 1>&2 '\033[1;31m\r'
     cmd_output="$("${AAPT_PATH:?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || return 9
     pkg_name="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'package: ' | cut -d ':' -f '2-' -s | cut -b '2-')" || return 10
     perm_list="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission: ' | cut -d "'" -f '2' -s | LC_ALL=C sort)" || return 11
     cmd_output=''
-    cert_sha256="$(get_cert_sha256 "${1:?}")" || return 12
+    cert_sha256="$(get_cert_sha256 "${1:?}")" || {
+      status=12
+      show_error "get_cert_sha256() failed"
+      shift || return 254
+      continue
+    }
     printf 1>&2 '\033[0m\r'
 
-    printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name:?}" "${pkg_name:?}" "${cert_sha256:?}" || return "${?}"
+    show_status 'Parsing...'
+    printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name:?}" "${pkg_name:?}" "${cert_sha256:?}" || {
+      status="${?}"
+      show_error "Parsing failed"
+    }
     printf 1>&2 '\n'
 
-    shift
+    shift || return 254
   done
+
+  return "${status:?}"
 }
 
 STATUS=0
