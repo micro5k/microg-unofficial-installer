@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# @name XML permission generator
+# @name XML permissions generator
 # @brief Generate XML files for Android default and privileged permissions
 # @author ale5000
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/tools
@@ -10,7 +10,7 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
-readonly SCRIPT_NAME='XML permission generator'
+readonly SCRIPT_NAME='XML permissions generator'
 readonly SCRIPT_SHORTNAME='GenPermXml'
 readonly SCRIPT_VERSION='0.3.1'
 readonly SCRIPT_AUTHOR='ale5000'
@@ -410,12 +410,12 @@ main()
   local status backup_ifs base_name cmd_output pkg_name perm_list cert_sha256
 
   DATA_DIR="$(find_data_dir)" && test -d "${DATA_DIR:?}/perms" || {
-    show_error "You must execute dl-perm-list.sh before using this script"
+    show_error 'You must execute dl-perm-list.sh before using this script'
     return 4
   }
 
   test -n "${1-}" || {
-    show_error "You must pass the filename of the file to be processed."
+    show_error 'You must pass the filename of the file to be processed'
     return 5
   }
 
@@ -425,7 +425,7 @@ main()
 
     set -f || :
     # shellcheck disable=SC2046 # Word splitting is intended
-    set -- $(cat || :) || ui_error "Failed expanding stdin inside main()"
+    set -- $(cat || :) || ui_error 'Failed expanding stdin inside main()'
     set +f || :
 
     IFS="${backup_ifs?}"
