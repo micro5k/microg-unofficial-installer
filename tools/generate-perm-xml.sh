@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# @name Generate perm XML files
+# @name XML permission generator
 # @brief Generate XML files for Android default and privileged permissions
 # @author ale5000
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/tools
@@ -12,7 +12,7 @@
 
 readonly SCRIPT_NAME='XML permission generator'
 readonly SCRIPT_SHORTNAME='GenPermXml'
-readonly SCRIPT_VERSION='0.3.0'
+readonly SCRIPT_VERSION='0.3.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -409,9 +409,14 @@ main()
 {
   local status backup_ifs base_name cmd_output pkg_name perm_list cert_sha256
 
+  DATA_DIR="$(find_data_dir)" && test -d "${DATA_DIR:?}/perms" || {
+    show_error "You must execute dl-perm-list.sh before using this script"
+    return 4
+  }
+
   test -n "${1-}" || {
     show_error "You must pass the filename of the file to be processed."
-    return 3
+    return 5
   }
 
   test "${1:?}" != '-' || {
@@ -426,11 +431,10 @@ main()
     IFS="${backup_ifs?}"
   }
 
-  DATA_DIR="$(find_data_dir)" || return 4
   # Avoid a strange issue on Bash under Windows
-  if command 1> /dev/null -v 'cygpath' && test "$(cygpath -m -- "${PWD:?}" || :)" = "$(cygpath -m -S || :)"; then cd "${DATA_DIR:?}/.." || return 5; fi
-  BASE_DIR="$(realpath .)" || return 6
-  test -d "${DATA_DIR:?}/perms" || return 7
+  if command 1> /dev/null -v 'cygpath' && test "$(cygpath -m -- "${PWD:?}" || :)" = "$(cygpath -m -S || :)"; then cd "${DATA_DIR:?}/.." || return 6; fi
+
+  BASE_DIR="$(realpath .)" || return 7
   test -d "${BASE_DIR:?}/output" || mkdir -p -- "${BASE_DIR:?}/output" || return 8
 
   # Set the path of Android SDK if not already set
