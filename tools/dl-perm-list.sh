@@ -12,7 +12,7 @@
 
 readonly SCRIPT_NAME='Android permissions retriever'
 readonly SCRIPT_SHORTNAME='DlPermList'
-readonly SCRIPT_VERSION='0.2.0'
+readonly SCRIPT_VERSION='0.2.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -73,7 +73,6 @@ find_data_dir()
   fi
 
   _path="$(realpath "${_path:?}")" || return 1
-
   printf '%s\n' "${_path:?}"
 }
 
@@ -94,9 +93,9 @@ create_and_return_data_dir()
     return 1
   fi
 
-  _path="$(realpath "${_path:?}")" || return 1
   test -d "${_path:?}" || mkdir -p -- "${_path:?}" || return 1
 
+  _path="$(realpath "${_path:?}")" || return 1
   printf '%s\n' "${_path:?}"
 }
 
