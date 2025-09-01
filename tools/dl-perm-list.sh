@@ -125,15 +125,24 @@ main()
 {
   local api tag
 
-  command 1> /dev/null -v "${WGET_CMD:?}" || show_error 'Missing: wget'
+  command 1> /dev/null -v "${WGET_CMD:?}" || {
+    show_error 'Missing: wget'
+    return 255
+  }
 
   DATA_DIR="$(find_data_dir || create_and_return_data_dir)" || return 1
   test -d "${DATA_DIR:?}/perms" || mkdir -p -- "${DATA_DIR:?}/perms" || return 1
 
   for api in $(seq -- 23 "${MAX_API:?}"); do
-    tag="$(eval " printf '%s\n' \"\${TAG_API_${api:?}:?}\" ")" || printf '%s\n' "Failed to get tag for API ${api?}"
+    tag="$(eval " printf '%s\n' \"\${TAG_API_${api:?}:?}\" ")" || {
+      printf '%s\n' "Failed to get tag for API ${api?}"
+      return 4
+    }
     printf '%s\n' "API ${api:?}: ${tag:?}"
-    download_and_parse_permissions "${api:?}" "${tag:?}" || printf '%s\n' "Failed to download/parse XML for API ${api?}"
+    download_and_parse_permissions "${api:?}" "${tag:?}" || {
+      printf '%s\n' "Failed to download/parse XML for API ${api?}"
+      return 5
+    }
   done
 }
 
