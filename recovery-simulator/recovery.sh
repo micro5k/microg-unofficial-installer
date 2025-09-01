@@ -258,13 +258,14 @@ if test "${ENV_RESETTED:-false}" = 'false'; then
   SHELL="${BASH:-${SHELL-}}"
   if test -z "${SHELL?}"; then SHELL="$(command -v 'bash')" || fail_with_msg 'Unable to find current shell path'; fi
   THIS_SCRIPT="$(realpath 2> /dev/null "${0:?}")" || fail_with_msg 'Unable to resolve current script name'
+  TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}"
 
   reset_env_and_rerun_myself()
   {
     if test "${COVERAGE:-false}" = 'false'; then
-      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${SHELL:?}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" DRY_RUN="${DRY_RUN-}" KEY_TEST_ONLY="${KEY_TEST_ONLY-}" INPUT_TYPE="${INPUT_TYPE-}" FORCE_HW_KEYS="${FORCE_HW_KEYS-}" CI="${CI-}" "${SHELL:?}" -- "${THIS_SCRIPT:?}" "${@}"
+      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${SHELL:?}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:?}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" DRY_RUN="${DRY_RUN-}" KEY_TEST_ONLY="${KEY_TEST_ONLY-}" BYPASS_LOCK_CHECK="${BYPASS_LOCK_CHECK-}" INPUT_TYPE="${INPUT_TYPE-}" FORCE_HW_KEYS="${FORCE_HW_KEYS-}" CI="${CI-}" "${SHELL:?}" -- "${THIS_SCRIPT:?}" "${@}"
     else
-      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${SHELL:?}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" DRY_RUN="${DRY_RUN-}" KEY_TEST_ONLY="${KEY_TEST_ONLY-}" INPUT_TYPE="${INPUT_TYPE-}" FORCE_HW_KEYS="${FORCE_HW_KEYS-}" CI="${CI-}" BASH_XTRACEFD="${BASH_XTRACEFD-}" BASH_ENV="${BASH_ENV-}" OLDPWD="${OLDPWD-}" SHELLOPTS="${SHELLOPTS-}" PS4="${PS4-}" "${SHELL:?}" -x -- "${THIS_SCRIPT:?}" "${@}"
+      exec env -i -- ENV_RESETTED=true PATH="${PATH:?}" BB_GLOBBING='0' SHELL="${SHELL:?}" THIS_SCRIPT="${THIS_SCRIPT:?}" TMPDIR="${TMPDIR:?}" DEBUG_LOG="${DEBUG_LOG-}" LIVE_SETUP_ALLOWED="${LIVE_SETUP_ALLOWED-}" DRY_RUN="${DRY_RUN-}" KEY_TEST_ONLY="${KEY_TEST_ONLY-}" BYPASS_LOCK_CHECK="${BYPASS_LOCK_CHECK-}" INPUT_TYPE="${INPUT_TYPE-}" FORCE_HW_KEYS="${FORCE_HW_KEYS-}" CI="${CI-}" BASH_XTRACEFD="${BASH_XTRACEFD-}" BASH_ENV="${BASH_ENV-}" OLDPWD="${OLDPWD-}" SHELLOPTS="${SHELLOPTS-}" PS4="${PS4-}" "${SHELL:?}" -x -- "${THIS_SCRIPT:?}" "${@}"
     fi
   }
 
@@ -277,6 +278,8 @@ if test -z "${LIVE_SETUP_ALLOWED-}"; then unset LIVE_SETUP_ALLOWED; fi
 
 test -n "${DRY_RUN-unset}" || unset DRY_RUN
 test -n "${KEY_TEST_ONLY-unset}" || unset KEY_TEST_ONLY
+test -n "${BYPASS_LOCK_CHECK-unset}" || unset BYPASS_LOCK_CHECK
+
 test -n "${INPUT_TYPE-unset}" || unset INPUT_TYPE
 test -n "${FORCE_HW_KEYS-unset}" || unset FORCE_HW_KEYS
 

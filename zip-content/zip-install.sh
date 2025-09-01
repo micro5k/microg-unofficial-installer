@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.3.10'
+readonly ZIPINSTALL_VERSION='1.3.11'
 
 END_OF_SCRIPT=0
 PATH="${PATH:-/system/bin}:."
@@ -209,7 +209,7 @@ if ! is_root; then
       ui_error_msg 'Unable to find myself'
       exit 3
     }
-    exec su 0 sh -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG-}' DRY_RUN='${DRY_RUN-}' KEY_TEST_ONLY='${KEY_TEST_ONLY-}' INPUT_TYPE='${INPUT_TYPE-}' FORCE_HW_KEYS='${FORCE_HW_KEYS-}' CI='${CI:-false}' TMPDIR='${TMPDIR:-}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_error_msg 'failed: exec'
+    exec su 0 sh -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG-}' DRY_RUN='${DRY_RUN-}' KEY_TEST_ONLY='${KEY_TEST_ONLY-}' BYPASS_LOCK_CHECK='${BYPASS_LOCK_CHECK-}' INPUT_TYPE='${INPUT_TYPE-}' FORCE_HW_KEYS='${FORCE_HW_KEYS-}' CI='${CI:-false}' TMPDIR='${TMPDIR:-}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_error_msg 'failed: exec'
     exit "${?}"
   fi
 
@@ -220,6 +220,8 @@ fi
 test -n "${DEBUG_LOG-unset}" || unset DEBUG_LOG
 test -n "${DRY_RUN-unset}" || unset DRY_RUN
 test -n "${KEY_TEST_ONLY-unset}" || unset KEY_TEST_ONLY
+test -n "${BYPASS_LOCK_CHECK-unset}" || unset BYPASS_LOCK_CHECK
+
 test -n "${INPUT_TYPE-unset}" || unset INPUT_TYPE
 test -n "${FORCE_HW_KEYS-unset}" || unset FORCE_HW_KEYS
 

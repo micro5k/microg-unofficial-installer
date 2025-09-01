@@ -22,8 +22,9 @@ unset CDPATH
 
 export DRY_RUN="${DRY_RUN:-0}"
 export KEY_TEST_ONLY="${KEY_TEST_ONLY:-0}"
-export INPUT_TYPE="${INPUT_TYPE:-auto}"
+export BYPASS_LOCK_CHECK="${BYPASS_LOCK_CHECK:-0}"
 
+export INPUT_TYPE="${INPUT_TYPE:-auto}"
 readonly ROLLBACK_TEST='false'
 
 # shellcheck disable=SC3040,SC2015
@@ -1164,11 +1165,19 @@ initialize()
   fi
 
   if is_device_locked; then
-    ui_error 'The device is locked!!!' 37
+    if test "${BYPASS_LOCK_CHECK:?}" != 0; then
+      ui_warning 'The device is locked!!!'
+    else
+      ui_error 'The device is locked!!!' 37
+    fi
   fi
 
   if is_bootloader_locked; then
-    ui_error "The boot loader is locked!!! Verified boot state: ${VERIFIED_BOOT_STATE?}" 37
+    if test "${BYPASS_LOCK_CHECK:?}" != 0; then
+      ui_warning "The boot loader is locked!!! Verified boot state: ${VERIFIED_BOOT_STATE?}" 37
+    else
+      ui_error "The boot loader is locked!!! Verified boot state: ${VERIFIED_BOOT_STATE?}" 37
+    fi
   fi
 
   _find_and_mount_system
