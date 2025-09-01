@@ -49,6 +49,24 @@ readonly DL_UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/201001
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
 readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
 
+pause_if_needed()
+{
+  # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
+  if test "${NO_PAUSE:-0}" = '0' && test "${no_pause:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-unknown}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
+    if test -n "${NO_COLOR-}"; then
+      printf 1>&2 '\n%s' 'Press any key to exit... ' || :
+    else
+      printf 1>&2 '\n\033[1;32m\r%s' 'Press any key to exit... ' || :
+    fi
+    # shellcheck disable=SC3045 # Ignore: In POSIX sh, read -s / -n is undefined
+    IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
+    printf 1>&2 '\n' || :
+    test -n "${NO_COLOR-}" || printf 1>&2 '\033[0m\r    \r' || :
+  fi
+  unset no_pause || :
+  return "${1:-0}"
+}
+
 show_status()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
@@ -56,7 +74,7 @@ show_status()
 
 show_error()
 {
-  printf 1>&2 '\n\033[1;31m%s\033[0m\n\n' "ERROR: ${1?}"
+  printf 1>&2 '\n\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
 }
 
 find_data_dir()
@@ -190,4 +208,5 @@ if test "${execute_script:?}" = 'true'; then
   main "${@}" || STATUS="${?}"
 fi
 
-exit "${STATUS:?}"
+pause_if_needed "${STATUS:?}"
+exit "${?}"

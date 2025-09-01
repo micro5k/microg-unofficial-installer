@@ -125,7 +125,6 @@ find_data_dir()
   fi
 
   _path="$(realpath 2> /dev/null "${_path:?}" || readlink -f "${_path:?}")" || return 1
-
   printf '%s\n' "${_path:?}"
 }
 
