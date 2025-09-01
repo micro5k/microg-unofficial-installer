@@ -53,7 +53,7 @@ show_warn()
 
 show_error()
 {
-  printf 1>&2 '\n\033[1;31m%s\033[0m\n\n' "ERROR: ${1?}"
+  printf 1>&2 '\n\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
 }
 
 ui_error()
@@ -61,6 +61,16 @@ ui_error()
   # ToDO: Remove this function
   show_error "${1?}"
   exit 55
+}
+
+set_red_color()
+{
+  printf 1>&2 '\033[1;31m\r'
+}
+
+reset_color()
+{
+  printf 1>&2 '\033[0m\r'
 }
 
 readonly MAX_API='36'
@@ -381,9 +391,11 @@ get_cert_sha256()
 {
   if test -n "${APKSIGNER_PATH-}"; then
     show_status 'Using apksigner...'
+    set_red_color
     "${APKSIGNER_PATH:?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -F -e 'certificate SHA-256 digest:' | cut -d ':' -f '2-' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g;s/:$//'
   elif test -n "${KEYTOOL_PATH-}"; then
     show_status 'Using keytool...'
+    set_red_color
     "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' '
   else
     return 255
@@ -470,27 +482,28 @@ main()
   status=0
   while test "${#}" -gt 0; do
     base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
-    printf 1>&2 '%s\n' "${base_name?}"
+    printf 1>&2 '\n%s\n' "${base_name?}"
+
     show_status 'Using aapt...'
-    printf 1>&2 '\033[1;31m\r'
+    set_red_color
     cmd_output="$("${AAPT_PATH:?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || return 9
+
     pkg_name="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'package: ' | cut -d ':' -f '2-' -s | cut -b '2-')" || return 10
     perm_list="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission: ' | cut -d "'" -f '2' -s | LC_ALL=C sort)" || return 11
     cmd_output=''
+
     cert_sha256="$(get_cert_sha256 "${1:?}")" || {
       status=12
       show_error "get_cert_sha256() failed"
       shift || return 254
       continue
     }
-    printf 1>&2 '\033[0m\r'
 
     show_status 'Parsing...'
     printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name:?}" "${pkg_name:?}" "${cert_sha256:?}" || {
       status="${?}"
       show_error "Parsing failed"
     }
-    printf 1>&2 '\n'
 
     shift || return 254
   done
@@ -542,7 +555,7 @@ if test "${execute_script:?}" = 'true'; then
 
   if test "${#}" -eq 0; then set -- ''; fi
   main "${@}" || STATUS="${?}"
-  printf 1>&2 '\033[0m\r' # Reset color (useful in case of premature exit)
+  reset_color
 fi
 
 pause_if_needed "${STATUS:?}"

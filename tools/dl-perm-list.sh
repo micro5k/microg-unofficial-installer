@@ -187,8 +187,7 @@ if test "${execute_script:?}" = 'true'; then
   show_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   if test "${#}" -eq 0; then set -- ''; fi
-  main "${@}"
-  STATUS="${?}"
+  main "${@}" || STATUS="${?}"
 fi
 
 exit "${STATUS:?}"
