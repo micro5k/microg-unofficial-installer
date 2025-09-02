@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
+
+# An hook script to check the commit log message.
+# Called by "git commit" with one argument, the name of the file
+# that has the commit message.  The hook should exit with non-zero
+# status after issuing an appropriate message if it wants to stop the
+# commit.  The hook is allowed to edit the commit message file.
+
+grep -m 1 -e '^Signed-off-by: ' -- "${1}" || {
+  echo 1>&2 "Missing Signed-off-by line."
+  exit 46
+}
