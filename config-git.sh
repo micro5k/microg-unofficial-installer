@@ -29,7 +29,7 @@ config_var()
     return 44
   fi
 
-  if git config set --local "${1:?}" "${2:?}"; then
+  if HOME="${USER_HOME:-${HOME:?}}" git config set --local "${1:?}" "${2:?}"; then
     printf '%s\n' 'OK'
   else
     _status="${?}"
@@ -47,7 +47,7 @@ import_gpg_keys()
     return 44
   fi
 
-  if gpg 2> /dev/null --import -- "${2:?}"; then
+  if HOME="${USER_HOME:-${HOME:?}}" gpg 2> /dev/null --import -- "${2:?}"; then
     printf '%s\n' 'OK'
   else
     _status="${?}"
