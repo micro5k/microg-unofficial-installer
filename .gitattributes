@@ -16,6 +16,7 @@ docs/CODEOWNERS   text eol=lf
 .shellcheckrc     text eol=lf
 .simplecov        text eol=lf
 
+*.gpg             text eol=lf
 *.yml             text eol=lf
 *.xml             text eol=lf
 *.json            text eol=lf

@@ -38,12 +38,39 @@ config_var()
   fi
 }
 
+import_gpg_keys()
+{
+  printf '%s' "Importing ${1:?} public keys: "
+
+  if test -n "${3-}" && test "${3:?}" != 0; then
+    printf '%s\n' 'Missing'
+    return 44
+  fi
+
+  if gpg 2> /dev/null --import -- "${2:?}"; then
+    printf '%s\n' 'OK'
+  else
+    _status="${?}"
+    printf '%s\n' 'Error'
+    return "${_status:?}"
+  fi
+}
+
 STATUS=0
+
+# GitHub => https://github.com/web-flow.gpg
 
 printf '%s\n' "Repo dir: ${PWD?}" || STATUS="${?}"
 
-test -f "${PWD:?}/allowed_signers"; config_var gpg.ssh.allowedSignersFile 'allowed_signers' "${?}" || STATUS="${?}"
-test -d "${PWD:?}/.git-hooks"; config_var core.hooksPath '.git-hooks' "${?}" || STATUS="${?}"
+test -f "${PWD:?}/allowed_signers"
+config_var gpg.ssh.allowedSignersFile 'allowed_signers' "${?}" || STATUS="${?}"
+
+test -f "${PWD:?}/.public-keys/github.gpg"
+import_gpg_keys 'GitHub' "${PWD:?}/.public-keys/github.gpg" "${?}" || STATUS="${?}"
+
+test -d "${PWD:?}/.git-hooks"
+config_var core.hooksPath '.git-hooks' "${?}" || STATUS="${?}"
+
 config_var format.signOff "true" || STATUS="${?}"
 config_var alias.cm 'commit -s' || STATUS="${?}"
 
