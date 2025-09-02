@@ -68,7 +68,7 @@ config_var gpg.ssh.allowedSignersFile 'allowed_signers' "${?}" || STATUS="${?}"
 test -f "${PWD:?}/.public-keys/github.gpg"
 import_gpg_keys 'GitHub' "${PWD:?}/.public-keys/github.gpg" "${?}" || STATUS="${?}"
 
-printf '%s\n' '968479A1AFF927E37D1A566BB5690EEEBB952194:6:' | HOME="${USER_HOME:-${HOME:?}}" gpg --import-ownertrust # GitHub
+printf '%s\n' '968479A1AFF927E37D1A566BB5690EEEBB952194:6:' | HOME="${USER_HOME:-${HOME:?}}" gpg --import-ownertrust || STATUS="${?}" # GitHub
 
 test -d "${PWD:?}/.git-hooks"
 config_var core.hooksPath '.git-hooks' "${?}" || STATUS="${?}"
