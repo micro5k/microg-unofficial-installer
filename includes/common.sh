@@ -1452,6 +1452,11 @@ init_cmdline()
     HOME="${USER_HOME:-${HOME:?}}" command -- git "${@}"
   }
 
+  gpg()
+  {
+    HOME="${USER_HOME:-${HOME:?}}" command -- gpg "${@}"
+  }
+
   if test "${CI:-false}" = 'false'; then
     PS1="${__DEFAULT_PS1:?}"
     PROMPT_COMMAND='__update_title_and_ps1 "${@}" || true'
