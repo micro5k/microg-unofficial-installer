@@ -42,9 +42,8 @@ STATUS=0
 
 printf '%s\n' "Repo dir: ${PWD?}" || STATUS="${?}"
 
-# shellcheck disable=SC2319
-config_var gpg.ssh.allowedSignersFile 'allowed_signers' "$(test -f "${PWD:?}/allowed_signers"; printf '%s\n' "${?}")" || STATUS="${?}"
-config_var core.hooksPath '.git-hooks' "$(test -d "${PWD:?}/.git-hooks"; printf '%s\n' "${?}")" || STATUS="${?}"
+test -f "${PWD:?}/allowed_signers"; config_var gpg.ssh.allowedSignersFile 'allowed_signers' "${?}" || STATUS="${?}"
+test -d "${PWD:?}/.git-hooks"; config_var core.hooksPath '.git-hooks' "${?}" || STATUS="${?}"
 config_var format.signOff "true" || STATUS="${?}"
 config_var alias.cm 'commit -s' || STATUS="${?}"
 
