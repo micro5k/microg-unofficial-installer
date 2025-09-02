@@ -1447,6 +1447,11 @@ init_cmdline()
     readonly __DEFAULT_PS1_AS_ROOT=''
   fi
 
+  git()
+  {
+    HOME="${USER_HOME:-${HOME:?}}" command -- git "${@}"
+  }
+
   if test "${CI:-false}" = 'false'; then
     PS1="${__DEFAULT_PS1:?}"
     PROMPT_COMMAND='__update_title_and_ps1 "${@}" || true'
