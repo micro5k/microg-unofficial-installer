@@ -1504,7 +1504,7 @@ export PATH
 if test -n "${ANDROID_SDK_ROOT:-}" && test -e "${ANDROID_SDK_ROOT:?}/emulator/emulator.exe"; then
   # shellcheck disable=SC2139
   {
-    alias 'emu'="'${ANDROID_SDK_ROOT:?}/emulator/emulator.exe'"
-    alias 'emu-w'="'${ANDROID_SDK_ROOT:?}/emulator/emulator.exe' -writable-system"
+    alias 'emu'="'${ANDROID_SDK_ROOT:?}/emulator/emulator.exe' -no-boot-anim"
+    alias 'emu-w'="'${ANDROID_SDK_ROOT:?}/emulator/emulator.exe' -writable-system -no-snapshot-load -no-boot-anim"
   }
 fi
