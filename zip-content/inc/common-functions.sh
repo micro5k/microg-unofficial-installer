@@ -843,20 +843,35 @@ install_survival_script()
 
 reset_runtime_permissions_if_needed()
 {
+  test "${FIRST_INSTALLATION:?}" = 'true' || return 0
+
   # Reset the runtime permissions to prevent issues on dirty flashing
   if test "${API:?}" -ge 23; then
-    if test -e "${DATA_PATH:?}/system/users/0/runtime-permissions.xml"; then
-      if test "${FIRST_INSTALLATION:?}" = 'true' || ! grep -q -F -e "${1:?}" -- "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml; then
-        ui_msg "Resetting Android runtime permissions..."
-        test "${DRY_RUN:?}" -ne 0 || delete "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml
-      fi
+    if _something_exists "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml; then
+      ui_msg "Resetting Android runtime permissions..."
+      test "${DRY_RUN:?}" -ne 0 || delete "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml
     fi
-    if test -e "${DATA_PATH:?}/misc_de/0/apexdata/com.android.permission/runtime-permissions.xml"; then
-      if test "${FIRST_INSTALLATION:?}" = 'true' || ! grep -q -F -e "${1:?}" -- "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml; then
-        ui_msg "Resetting Android runtime permissions..."
-        test "${DRY_RUN:?}" -ne 0 || delete "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml
-      fi
+    if _something_exists "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml*; then
+      ui_msg "Resetting Android runtime permissions..."
+      test "${DRY_RUN:?}" -ne 0 || delete "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml*
     fi
+  fi
+}
+
+reset_appops_if_needed()
+{
+  test "${FIRST_INSTALLATION:?}" = 'true' || return 0
+
+  if test -n "${DATA_PATH?}" && test -f "${DATA_PATH:?}/system/appops.xml"; then
+    rm -f -- "${DATA_PATH:?}/system/appops.xml" || ui_warning 'Failed to reset App Ops'
+    if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_APPOPS?}"; then
+      PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" 1> /dev/null read-settings || ui_warning 'Failed to refresh App Ops'
+    fi
+  fi
+
+  if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_APPOPS?}"; then
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" reset || ui_warning 'Failed to reset App Ops'
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" 1> /dev/null write-settings || ui_warning 'Failed to write pending changes of App Ops'
   fi
 }
 

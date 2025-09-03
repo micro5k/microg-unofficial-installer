@@ -184,7 +184,10 @@ clear_and_enable_app 'com.android.vending'
 install_survival_script '00-1-microg'
 
 # Resetting Android runtime permissions
-reset_runtime_permissions_if_needed 'com.google.android.gms'
+reset_runtime_permissions_if_needed
+
+# Resetting App Ops
+reset_appops_if_needed
 
 #if test "${DRY_RUN:?}" -eq 0; then
 #  if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_AM?}"; then
