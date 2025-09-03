@@ -843,7 +843,7 @@ install_survival_script()
 
 reset_runtime_permissions_if_needed()
 {
-  test "${FIRST_INSTALLATION:?}" = 'true' || return 0
+  test "${FIRST_INSTALLATION:?}" = 'true' || return
 
   # Reset the runtime permissions to prevent issues on dirty flashing
   if test "${API:?}" -ge 23; then
@@ -860,10 +860,11 @@ reset_runtime_permissions_if_needed()
 
 reset_appops_if_needed()
 {
-  test "${FIRST_INSTALLATION:?}" = 'true' || return 0
+  test "${FIRST_INSTALLATION:?}" = 'true' || return
+  test "${DRY_RUN:?}" -eq 0 || return
 
   if test -n "${DATA_PATH?}" && test -f "${DATA_PATH:?}/system/appops.xml"; then
-    rm -f -- "${DATA_PATH:?}/system/appops.xml" || ui_warning 'Failed to reset App Ops'
+    delete "${DATA_PATH:?}/system/appops.xml"
     if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_APPOPS?}"; then
       PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" 1> /dev/null read-settings || ui_warning 'Failed to refresh App Ops'
     fi
