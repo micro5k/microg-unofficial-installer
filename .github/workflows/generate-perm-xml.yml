@@ -38,7 +38,7 @@ jobs:
           if test ! -d './cache/tools/perms' || '${{ steps.cache-step.outputs.cache-hit != 'true' }}'; then
             './tools/dl-perm-list.sh' || exit "${?}"
           fi
-          find './zip-content' -name '*.apk' | sort | './tools/generate-perm-xml.sh' --use-placeholders - || exit "${?}"
+          find './zip-content' -name '*.apk' | './tools/generate-perm-xml.sh' --use-placeholders - || exit "${?}"
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v4
         with:

@@ -12,7 +12,7 @@
 
 readonly SCRIPT_NAME='XML permissions generator'
 readonly SCRIPT_SHORTNAME='GenPermXml'
-readonly SCRIPT_VERSION='0.3.2'
+readonly SCRIPT_VERSION='0.3.3'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -436,7 +436,7 @@ main()
 
     set -f || :
     # shellcheck disable=SC2046 # Word splitting is intended
-    set -- $(cat || :) || ui_error 'Failed expanding stdin inside main()'
+    set -- $(cat | sort || :) || ui_error 'Failed expanding stdin inside main()'
     set +f || :
 
     IFS="${backup_ifs?}"
@@ -485,7 +485,12 @@ main()
 
     show_status 'Using aapt...'
     set_red_color
-    cmd_output="$("${AAPT_PATH:?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || return 9
+    cmd_output="$("${AAPT_PATH:?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || {
+      status=9
+      show_error "aapt failed"
+      shift || return 254
+      continue
+    }
 
     pkg_name="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'package: ' | cut -d ':' -f '2-' -s | cut -b '2-')" || return 10
     perm_list="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission: ' | cut -d "'" -f '2' -s | LC_ALL=C sort)" || return 11
