@@ -703,6 +703,9 @@ mount_partition_if_possible()
     elif test -n "${SYS_MOUNTPOINT-}" && test ! -L "${SYS_MOUNTPOINT:?}/${_partition_name:?}" && test -d "${SYS_MOUNTPOINT:?}/${_partition_name:?}"; then # Example: /system_root/odm
       _skip_warnings='true'
       ui_debug "Found ${_partition_name?} folder: ${SYS_MOUNTPOINT?}/${_partition_name?}"
+    elif test ! -L "/${_partition_name:?}" && test -d "/${_partition_name:?}"; then # Example: /odm
+      _skip_warnings='true'
+      ui_debug "Found ${_partition_name?} folder: /${_partition_name?}"
     fi
   fi
 
