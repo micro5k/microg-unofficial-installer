@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.3.8'
+readonly SCRIPT_VERSION='1.3.9'
 
 ### CONFIGURATION ###
 
@@ -541,7 +541,7 @@ _minutil_grant_perms()
 
     _result="$(pm 2>&1 grant "${1:?}" "${_perm:?}")" || {
       case "${_result?}" in
-        *"Unknown permission: ${_perm:?}"*)
+        *"Unknown permission: ${_perm:?}"* | *"Unknown permission ${_perm:?}"*)
           # Unknown permission
           if test "${SCRIPT_VERBOSE:?}" != 'false'; then
             # ${CACHE_USABLE_PERMS} does NOT always list all permissions so it can't be used to filter permissions earlier in the code
@@ -556,19 +556,19 @@ _minutil_grant_perms()
           # Permission has NOT been requested by the app (probably it is an old version of microG)
           test "${SCRIPT_VERBOSE:?}" = 'false' || warn_msg "Permission has NOT been requested by the app => ${_perm?}"
           ;;
-        *"Permission ${_perm:?} is not a changeable permission type"* | *"Permission ${_perm:?} requested by ${1:?} is not a changeable permission type"*)
-          # Permission CANNOT be granted manually
-          test "${SCRIPT_VERBOSE:?}" = 'false' || warn_msg "NOT a changeable permission => ${_perm?}"
+        *"Permission ${_perm:?}"*"is not a changeable permission type"*)
+          _grant_appops "${1:?}" "${_perm:?}" || {
+            # Permission CANNOT be granted manually
+            test "${SCRIPT_VERBOSE:?}" = 'false' || warn_msg "NOT a changeable permission => ${_perm?}"
+          }
           ;;
         *"Permission ${_perm:?} is managed by role"*)
           # Permission CANNOT be granted manually
           warn_msg "Permission is managed by role => ${_perm?}"
           ;;
         *)
-          _grant_appops "${1:?}" "${_perm:?}" || {
-            _status=255
-            warn_msg "Failed to grant '${_perm?}' to '${1?}'"
-          }
+          _status=255
+          warn_msg "Failed to grant '${_perm?}' to '${1?}'"
           ;;
       esac
       continue
