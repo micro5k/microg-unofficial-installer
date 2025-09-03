@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.3.6'
+readonly SCRIPT_VERSION='1.3.7'
 
 ### CONFIGURATION ###
 
@@ -508,6 +508,27 @@ _minutil_is_system_perm()
   return 1
 }
 
+_grant_appops()
+{
+  local _appops
+  command 1> /dev/null -v 'appops' || return 1
+
+  _appops="${2#"android.permission."}"
+
+  case "$(appops 2> /dev/null get "${1:?}" "${_appops:?}")" in
+    "${_appops:?}: allow") return 0 ;;
+    "${_appops:?}: default")
+      if appops set "${1:?}" "${_appops:?}" 'allow'; then
+        printf '%s\n' "    Granted '${2?}' to '${1?}'"
+        return 0
+      fi
+      ;;
+    *) ;;
+  esac
+
+  return 2
+}
+
 _minutil_grant_perms()
 {
   local _status _result
@@ -544,8 +565,10 @@ _minutil_grant_perms()
           warn_msg "Permission is managed by role => ${_perm?}"
           ;;
         *)
-          _status=255
-          warn_msg "Failed to grant '${_perm?}' to '${1?}'"
+          _grant_appops "${1:?}" "${_perm:?}" || {
+            _status=255
+            warn_msg "Failed to grant '${_perm?}' to '${1?}'"
+          }
           ;;
       esac
       continue
@@ -560,6 +583,7 @@ _minutil_grant_perms()
   return "${_status:?}"
 }
 
+# shellcheck disable=SC2329
 _minutil_set_installer()
 {
   test -n "{2?}" || return 2
@@ -578,12 +602,12 @@ minutil_fix_microg()
   printf '%s\n\n' 'Granting permissions to microG...'
   if _minutil_package_is_microg 'com.google.android.gms' 'microG Services'; then
     _gms_list_perms | _minutil_grant_perms 'com.google.android.gms' || set_status_if_error "${?}"
-    _minutil_set_installer 1> /dev/null 2>&1 'com.google.android.gms' "${_store_uid?}" || :
+    #_minutil_set_installer 1> /dev/null 2>&1 'com.google.android.gms' "${_store_uid?}" || :
     printf '\n'
   fi
   if _minutil_package_is_microg 'com.android.vending' 'microG Companion'; then
     _store_list_perms | _minutil_grant_perms 'com.android.vending' || set_status_if_error "${?}"
-    _minutil_set_installer 1> /dev/null 2>&1 'com.android.vending' "${_store_uid?}" || :
+    #_minutil_set_installer 1> /dev/null 2>&1 'com.android.vending' "${_store_uid?}" || :
     printf '\n'
   fi
 
