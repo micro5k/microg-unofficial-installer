@@ -419,6 +419,17 @@ _disable_write_locks()
   fi
 }
 
+_execute_system_remount()
+{
+  test "${DRY_RUN:?}" -lt 2 || return 1
+
+  # Use the system remount binary if available (this will save us many problems)
+  if test -f "${SYS_PATH:?}/bin/remount"; then
+    ui_msg 'Executing the remount binary...'
+    "${SYS_PATH:?}/bin/remount" || ui_warning 'Failed to execute the remount binary'
+  fi
+}
+
 _remount_read_write_helper()
 {
   test "${DRY_RUN:?}" -lt 2 || return 2
@@ -1279,6 +1290,7 @@ initialize()
   export SETUP_TYPE
 
   _disable_write_locks
+  _execute_system_remount
 
   remount_read_write "${SYS_MOUNTPOINT:?}" || {
     deinitialize
