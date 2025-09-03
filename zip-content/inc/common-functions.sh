@@ -364,8 +364,8 @@ _get_mount_info()
 {
   if test ! -e "${1:?}"; then return 2; fi
 
-  if test "${TEST_INSTALL:-false}" = 'false' && test -e '/proc/mounts'; then
-    grep -m 1 -e '[[:blank:]]'"${1:?}"'[[:blank:]]' '/proc/mounts' 2> /dev/null || return 1
+  if test "${TEST_INSTALL:-false}" = 'false' && test -f '/proc/mounts'; then
+    grep -e '[[:blank:]]'"${1:?}"'[[:blank:]]' -- '/proc/mounts' 2> /dev/null || return 1
     return 0
   fi
 
@@ -373,7 +373,7 @@ _get_mount_info()
   if _mount_result="$(mount 2> /dev/null)" || {
     test -n "${DEVICE_MOUNT:-}" && _mount_result="$("${DEVICE_MOUNT:?}")"
   }; then
-    if printf '%s' "${_mount_result:?}" | grep -m 1 -e '[[:blank:]]'"${1:?}"'[[:blank:]]'; then return 0; fi
+    if printf '%s\n' "${_mount_result:?}" | grep -e '[[:blank:]]'"${1:?}"'[[:blank:]]'; then return 0; fi
     return 1
   fi
 
@@ -397,15 +397,16 @@ is_mounted_read_write()
   local _mount_info
   _mount_info="$(_get_mount_info "${1:?}")" || ui_error "is_mounted_read_write has failed for '${1?}'"
 
-  # IMPORTANT: We have to avoid "printf: write error: Broken pipe" when a string is piped to "grep -q" or "grep -m1"
-  if
-    {
-      (printf 2> /dev/null '%s\n' "${_mount_info:?}") || :
-    } | grep -q -e '[[:blank:],(]rw[),[:blank:]]'
-  then
-    return 0
-  fi
+  # With an "overlay" there may be multiple entries, example:
+  # /dev/block/dm-3 on /product type ext4 (ro,seclabel,relatime)
+  # overlay on /product type overlay (rw,seclabel,noatime,lowerdir=/product,upperdir=/mnt/scratch/overlay/product/upper,workdir=/mnt/scratch/overlay/product/work,redirect_dir=nofollow,userxattr)
+  #
+  # or
+  #
+  # /dev/block/dm-3 /product ext4 ro,seclabel,relatime 0 0
+  # overlay /product overlay rw,seclabel,noatime,lowerdir=/product,upperdir=/mnt/scratch/overlay/product/upper,workdir=/mnt/scratch/overlay/product/work,redirect_dir=nofollow,userxattr 0 0
 
+  if printf '%s\n' "${_mount_info:?}" | grep 1> /dev/null -e '[[:blank:],(]rw[),[:blank:]]'; then return 0; fi
   return 1
 }
 
@@ -427,6 +428,7 @@ _execute_system_remount()
   if test -f "${SYS_PATH:?}/bin/remount"; then
     ui_msg 'Executing the remount binary...'
     "${SYS_PATH:?}/bin/remount" || ui_warning 'Failed to execute the remount binary'
+    ui_debug ''
   fi
 }
 
