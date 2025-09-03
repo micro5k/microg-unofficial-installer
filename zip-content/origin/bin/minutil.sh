@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.3.7'
+readonly SCRIPT_VERSION='1.3.8'
 
 ### CONFIGURATION ###
 
@@ -516,8 +516,8 @@ _grant_appops()
   _appops="${2#"android.permission."}"
 
   case "$(appops 2> /dev/null get "${1:?}" "${_appops:?}")" in
-    "${_appops:?}: allow") return 0 ;;
-    "${_appops:?}: default")
+    *"${_appops:?}: allow"*) return 0 ;;
+    *'Default mode: default'* | *"${_appops:?}: default"* | *"${_appops:?}: ignore"*)
       if appops set "${1:?}" "${_appops:?}" 'allow'; then
         printf '%s\n' "    Granted '${2?}' to '${1?}'"
         return 0
