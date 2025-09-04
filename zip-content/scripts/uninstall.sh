@@ -25,7 +25,7 @@ EOF
 
 uninstall_list()
 {
-  cat < < 'EOF'
+  cat << 'EOF'
 GmsCore|com.google.android.gms
 GoogleServicesFramework|com.google.android.gsf
 GoogleLoginService|com.google.android.gsf.login
