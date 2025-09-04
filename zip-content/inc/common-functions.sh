@@ -870,20 +870,21 @@ reset_runtime_permissions_if_needed()
 reset_appops_if_needed()
 {
   test "${FIRST_INSTALLATION:?}" = 'true' || return
+  test "${API:?}" -ge 23 || return
+
+  ui_msg "Resetting App Ops..."
   test "${DRY_RUN:?}" -eq 0 || return
 
-  if test "${API:?}" -ge 23; then
-    if test -n "${DATA_PATH?}" && test -f "${DATA_PATH:?}/system/appops.xml"; then
-      delete "${DATA_PATH:?}/system/appops.xml"
-      if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_APPOPS?}"; then
-        PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" 1> /dev/null read-settings || ui_warning 'Failed to refresh App Ops'
-      fi
-    fi
-
+  if test -n "${DATA_PATH?}" && test -f "${DATA_PATH:?}/system/appops.xml"; then
+    delete "${DATA_PATH:?}/system/appops.xml"
     if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_APPOPS?}"; then
-      PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" reset || ui_warning 'Failed to reset App Ops'
-      PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" 1> /dev/null write-settings || ui_warning 'Failed to write pending changes of App Ops'
+      PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" 1> /dev/null read-settings || ui_warning 'Failed to refresh App Ops'
     fi
+  fi
+
+  if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_APPOPS?}"; then
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" reset || ui_warning 'Failed to reset App Ops'
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" 1> /dev/null write-settings || ui_warning 'Failed to write pending changes of App Ops'
   fi
 }
 
