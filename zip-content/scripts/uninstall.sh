@@ -27,6 +27,7 @@ uninstall_list()
 {
   cat << 'EOF'
 GmsCore|com.google.android.gms
+|com.google.android.gms.supervision
 GoogleServicesFramework|com.google.android.gsf
 GoogleLoginService|com.google.android.gsf.login
 
@@ -341,12 +342,12 @@ if test "${API:?}" -lt 21; then
   delete_if_sha256_match "${SYS_PATH:?}/lib/libconscrypt_jni.so" 'fc5b8c73f162b88eddd68a05ff0e2e3dbe08b50cd662a9f40f45367edc65cc9d' '6ba4cddde377ea7dca1fce6c6253655e448e8f32e8b9ff1d7446f46b696a972d'
 fi
 
-list_app_data_to_remove | while IFS='|' read -r FILENAME; do
-  if test -z "${FILENAME}"; then continue; fi
-  delete "${DATA_PATH:?}/data/${FILENAME}"
-  delete "${DATA_PATH:?}"/user/*/"${FILENAME}"
-  delete "${DATA_PATH:?}"/user_de/*/"${FILENAME}"
-  delete "${INTERNAL_MEMORY_PATH}/Android/data/${FILENAME}"
+list_app_data_to_remove | while IFS='|' read -r INTERNAL_NAME; do
+  if test -z "${INTERNAL_NAME?}"; then continue; fi
+  delete "${DATA_PATH:?}/data/${INTERNAL_NAME:?}"
+  delete "${DATA_PATH:?}"/user/*/"${INTERNAL_NAME:?}"
+  delete "${DATA_PATH:?}"/user_de/*/"${INTERNAL_NAME:?}"
+  delete "${INTERNAL_MEMORY_PATH}/Android/data/${INTERNAL_NAME:?}"
 done
 
 delete "${DATA_PATH:?}"/backup/com.google.android.gms.backup.BackupTransportService
