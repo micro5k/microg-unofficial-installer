@@ -25,7 +25,7 @@ EOF
 
 uninstall_list()
 {
-  cat << 'EOF'
+  cat < < 'EOF'
 GmsCore|com.google.android.gms
 GoogleServicesFramework|com.google.android.gsf
 GoogleLoginService|com.google.android.gsf.login
@@ -54,6 +54,7 @@ PlayAutoInstallConfig|android.autoinstalls.config.google.nexus
 |android.autoinstalls.config.sony.xperia
 
 Velvet|com.google.android.googlequicksearchbox
+|com.google.android.apps.searchlite
 GoogleQuickSearchBox|
 PrebuiltGmail|com.google.android.gm
 Gmail|
@@ -264,15 +265,16 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete "${SYS_PATH:?}/etc/default-permissions/${FILENAME:?}-permissions.xml"
   fi
 
-  if test -n "${INTERNAL_NAME}"; then
+  if test -n "${INTERNAL_NAME?}"; then
     # Only delete app updates during uninstallation or first-time installation
     if test "${SETUP_TYPE:?}" = 'uninstall' || test "${FIRST_INSTALLATION:?}" = 'true'; then
-      delete "${DATA_PATH:?}/app/${INTERNAL_NAME}"
-      delete "${DATA_PATH:?}/app/${INTERNAL_NAME}.apk"
-      delete "${DATA_PATH:?}/app/${INTERNAL_NAME}"-*
-      delete "/mnt/asec/${INTERNAL_NAME}"
-      delete "/mnt/asec/${INTERNAL_NAME}.apk"
-      delete "/mnt/asec/${INTERNAL_NAME}"-*
+      delete "${DATA_PATH:?}/app/${INTERNAL_NAME:?}.apk"
+      delete "${DATA_PATH:?}/app/${INTERNAL_NAME:?}"
+      delete "${DATA_PATH:?}/app/${INTERNAL_NAME:?}"-*
+      delete "${DATA_PATH:?}"/app/*/"${INTERNAL_NAME:?}"-* # Recent Android
+      delete "/mnt/asec/${INTERNAL_NAME:?}.apk"
+      delete "/mnt/asec/${INTERNAL_NAME:?}"
+      delete "/mnt/asec/${INTERNAL_NAME:?}"-*
       # ToDO => Check also /data/app-private /data/app-asec /data/preload
 
       # App libs
