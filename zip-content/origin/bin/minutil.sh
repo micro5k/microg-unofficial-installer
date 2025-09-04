@@ -511,7 +511,7 @@ _minutil_is_system_perm()
 _grant_all_appops()
 {
   local _appops_list _appops _previous_val
-  command 1> /dev/null -v 'appops' || return 1
+  command 1> /dev/null -v 'appops' || return 0
 
   _appops_list="$(appops get "${1:?}")" || return 2
 
