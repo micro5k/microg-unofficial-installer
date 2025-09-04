@@ -13,4 +13,4 @@ applicationId=net.ale5000.microg_unofficial_installer.ota
 support=https://github.com/micro5k/microg-unofficial-installer/issues
 donate=https://liberapay.com/microg-unofficial-by-ale5000/donate
 minApi=8
-maxApi=35
+maxApi=36
