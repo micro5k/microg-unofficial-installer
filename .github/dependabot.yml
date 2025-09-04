@@ -9,7 +9,7 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "build"
+      prefix: "update"
       include: "scope"
     open-pull-requests-limit: 1
   - package-ecosystem: "gradle"
@@ -17,7 +17,7 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "build"
+      prefix: "update"
       include: "scope"
     open-pull-requests-limit: 1
     ignore:
