@@ -851,12 +851,12 @@ reset_runtime_permissions_if_needed()
   if test "${API:?}" -ge 23; then
     _found='false'
     if _something_exists "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml; then
-      ui_msg "Resetting Android runtime permissions..."
+      ui_msg "Resetting runtime permissions..."
       _found='true'
       test "${DRY_RUN:?}" -ne 0 || delete "${DATA_PATH:?}"/system/users/*/runtime-permissions.xml
     fi
     if _something_exists "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml*; then
-      ui_msg "Resetting Android runtime permissions..."
+      ui_msg "Resetting runtime permissions..."
       _found='true'
       test "${DRY_RUN:?}" -ne 0 || delete "${DATA_PATH:?}"/misc_de/*/apexdata/com.android.permission/runtime-permissions.xml*
     fi
