@@ -41,7 +41,7 @@ jobs:
           printf 'now=%s\n' "${now:?}" 1>> "${GITHUB_OUTPUT?}" || exit "${?}"
       - name: "Create annotated tag"
         id: tag-creation
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         timeout-minutes: 5
         env:
           ACTOR_ID: "${{ github.actor_id }}"
