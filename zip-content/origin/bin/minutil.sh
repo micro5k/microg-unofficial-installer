@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.3.10'
+readonly SCRIPT_VERSION='1.4.0'
 
 ### CONFIGURATION ###
 
@@ -508,6 +508,30 @@ _minutil_is_system_perm()
   return 1
 }
 
+_grant_all_appops()
+{
+  local _appops_list _appops _previous_val
+  command 1> /dev/null -v 'appops' || return 1
+
+  _appops_list="$(appops get "${1:?}")" || return 2
+
+  printf '%s\n' "${_appops_list?}" | while IFS=': ' read -r _appops _previous_val; do
+    test -n "${_appops?}" || continue
+    case "${_previous_val?}" in
+      "default"*) _previous_val='default' ;;
+      "foreground"*) _previous_val='foreground' ;;
+      "ignore"*) _previous_val='ignore' ;;
+      "deny"*) _previous_val='deny' ;;
+      *) _previous_val='' ;;
+    esac
+    if test -n "${_previous_val?}" && appops set "${1:?}" "${_appops:?}" 'allow'; then
+      printf '%s\n' "    App Ops ${_appops?} of '${1?}' changed from '${_previous_val?}' to 'allow'"
+    fi
+  done || return 3
+
+  return 0
+}
+
 _grant_appops()
 {
   local _appops
@@ -516,8 +540,8 @@ _grant_appops()
   _appops="${2#"android.permission."}"
 
   case "$(appops 2> /dev/null get "${1:?}" "${_appops:?}")" in
-    *"${_appops:?}: allow"*) return 0 ;;
-    *'Default mode: default'* | *"${_appops:?}: default"* | *"${_appops:?}: foreground"* | *"${_appops:?}: ignore"*)
+    "${_appops:?}: allow"*) return 0 ;;
+    *'Default mode: default'* | "${_appops:?}: default"* | "${_appops:?}: foreground"* | "${_appops:?}: ignore"* | "${_appops:?}: deny"*)
       if appops set "${1:?}" "${_appops:?}" 'allow'; then
         printf '%s\n' "    Granted '${2?}' to '${1?}'"
         return 0
@@ -602,11 +626,13 @@ minutil_fix_microg()
   printf '%s\n\n' 'Granting permissions to microG...'
   if _minutil_package_is_microg 'com.google.android.gms' 'microG Services'; then
     _gms_list_perms | _minutil_grant_perms 'com.google.android.gms' || set_status_if_error "${?}"
+    _grant_all_appops 'com.google.android.gms' || set_status_if_error "${?}"
     #_minutil_set_installer 1> /dev/null 2>&1 'com.google.android.gms' "${_store_uid?}" || :
     printf '\n'
   fi
   if _minutil_package_is_microg 'com.android.vending' 'microG Companion'; then
     _store_list_perms | _minutil_grant_perms 'com.android.vending' || set_status_if_error "${?}"
+    _grant_all_appops 'com.android.vending' || set_status_if_error "${?}"
     #_minutil_set_installer 1> /dev/null 2>&1 'com.android.vending' "${_store_uid?}" || :
     printf '\n'
   fi
