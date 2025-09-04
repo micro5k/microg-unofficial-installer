@@ -8,9 +8,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.3.11'
+readonly ZIPINSTALL_VERSION='1.4.0'
 
-END_OF_SCRIPT=0
 PATH="${PATH:-/system/bin}:."
 umask 022 || :
 
@@ -324,21 +323,18 @@ else
   }
   "${SCRIPT_NAME:?}" 3 2 "${ZIPFILE:?}" 'zip-install' "${ZIPINSTALL_VERSION:?}" || STATUS="${?}"
 fi
-END_OF_SCRIPT=1
 
 _clean_at_exit
 trap - 0 2 3 6 15 || : # Already cleaned, so unset traps
 
-if test "${STATUS:-20}" != '0'; then
-  ui_error_msg "ZIP installation failed with error ${STATUS:-20}"
-  exit "${STATUS:-20}"
-fi
+case "${STATUS?}" in
+  '0')
+    ui_info_msg 'The ZIP installation has been successfully completed. Please restart your device now!!!'
+    exit 0
+    ;;
+  '251') ui_info_msg 'To continue, restart the device and flash this again!!!' ;;
+  '252') ui_info_msg 'To continue, restart the emulator and flash this again!!!' ;;
+  *) ui_error_msg "ZIP installation failed with error ${STATUS?}" ;;
+esac
 
-# This should theoretically never happen, but it's just to protect against unknown shell bugs
-if test "${END_OF_SCRIPT:-0}" != '1'; then
-  ui_error_msg "ZIP installation failed with an unknown error"
-  exit 120
-fi
-
-ui_info_msg 'The ZIP installation is completed, now restart your device!!!'
-exit 0
+exit "${STATUS:-254}"

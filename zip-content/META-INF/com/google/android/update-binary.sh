@@ -274,13 +274,13 @@ generate_random
 _ub_our_main_script="${TMPDIR:?}/${LAST_RANDOM:?}-customize.sh"
 
 STATUS=1
-UNKNOWN_ERROR=1
 
 package_extract_file 'customize.sh' "${_ub_our_main_script:?}"
 
 echo "Loading ${LAST_RANDOM:?}-customize.sh..."
 # shellcheck source=SCRIPTDIR/../../../../customize.sh
 command . "${_ub_our_main_script:?}" || ui_error "Failed to source '${_ub_our_main_script?}'"
+if test "${UNKNOWN_ERROR:-1}" != '0' && test "${STATUS?}" = '0'; then STATUS=253; fi
 
 if test -f "${_ub_our_main_script:?}"; then
   rm "${_ub_our_main_script:?}" || ui_error "Failed to delete '${_ub_our_main_script?}'"
@@ -294,10 +294,9 @@ if test -d '/tmp'; then
 fi
 
 case "${STATUS?}" in
-  '0') # Success
-    test "${UNKNOWN_ERROR:?}" -eq 0 || ui_error 'Installation failed with an unknown error' ;;
-  '250') # TEST mode
-    ui_msg 'TEST mode completed!' ;;
-  *) # Failure
-    ui_error "Installation script failed" "${STATUS:?}" ;;
+  '0') ;; # Success
+  '250') ui_msg 'TEST mode completed' ;;
+  '251') ui_error 'Restart the device and flash this again!' "${STATUS:?}" ;;
+  '252') ui_error 'Restart the emulator and flash this again!' "${STATUS:?}" ;;
+  *) ui_error "Installation script failed" "${STATUS?}" ;; # Failure
 esac

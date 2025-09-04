@@ -422,12 +422,18 @@ _disable_write_locks()
 
 _execute_system_remount()
 {
+  local _remount_output
   test "${DRY_RUN:?}" -lt 2 || return 1
 
   # Use the system remount binary if available (this will save us many problems)
   if test -f "${SYS_PATH:?}/bin/remount"; then
     ui_msg 'Executing the remount binary...'
-    "${SYS_PATH:?}/bin/remount" || ui_warning 'Failed to execute the remount binary'
+    _remount_output="$("${SYS_PATH:?}/bin/remount" 2>&1)" || ui_warning 'Failed to execute the remount binary'
+    ui_debug "${_remount_output?}"
+    case "${_remount_output?}" in
+      *'reboot your device'*) if test "${IS_EMU:?}" = 'true'; then exit 252; else exit 251; fi ;;
+      *) ;;
+    esac
     ui_debug ''
   fi
 }
