@@ -14,7 +14,10 @@ docs/CODEOWNERS   text eol=lf
 .mailmap          text eol=lf
 .semgrepignore    text eol=lf
 .shellcheckrc     text eol=lf
+
+# Ruby
 .simplecov        text eol=lf
+Gemfile*          text eol=lf
 
 *.gpg             text eol=lf
 *.yml             text eol=lf
