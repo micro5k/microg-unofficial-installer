@@ -4,5 +4,7 @@
 
 source 'https://rubygems.org'
 
+ruby ">=3.0"
+
 gem 'bashcov', '>=3.2'
 gem 'simplecov-lcov'
