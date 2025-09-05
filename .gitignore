@@ -1,8 +1,12 @@
 # SPDX-FileCopyrightText: NONE
 # SPDX-License-Identifier: CC0-1.0
 
-# Always ignore
+# Files to ignore in all cases
+/.bundle/
+/.cache/
+/.git/
 /.gnupg/
+/.licenses/
 /.ssh/
 /coverage/
 /dependency-graph-reports/
@@ -10,17 +14,13 @@
 /.bash_history
 /.lesshst
 /.wget-hsts
+__pycache__/
+.DS_Store
+Thumbs.db
 desktop.ini
 *.dex
 *.log
 *.sarif
-
-# Caches
-/.cache/
-/.git/
-__pycache__/
-.DS_Store
-Thumbs.db
 
 # VS Code files
 /.vscode/launch.json
