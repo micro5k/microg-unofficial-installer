@@ -352,10 +352,14 @@ fi
 
 list_app_data_to_remove | while IFS='|' read -r INTERNAL_NAME; do
   if test -z "${INTERNAL_NAME?}"; then continue; fi
-  delete "${DATA_PATH:?}/data/${INTERNAL_NAME:?}"
-  delete "${DATA_PATH:?}"/user/*/"${INTERNAL_NAME:?}"
+  delete "${DATA_PATH:?}"/misc/profiles/ref/"${INTERNAL_NAME:?}"
+  delete "${DATA_PATH:?}"/misc/profiles/cur/*/"${INTERNAL_NAME:?}"
   delete "${DATA_PATH:?}"/user_de/*/"${INTERNAL_NAME:?}"
-  delete "${INTERNAL_MEMORY_PATH}/Android/data/${INTERNAL_NAME:?}"
+  delete "${DATA_PATH:?}"/user/*/"${INTERNAL_NAME:?}"
+
+  delete "${DATA_PATH:?}"/data/"${INTERNAL_NAME:?}"
+  delete "${DATA_PATH:?}"/media/*/Android/data/"${INTERNAL_NAME:?}"
+  delete "${INTERNAL_MEMORY_PATH}"/Android/data/"${INTERNAL_NAME:?}"
 done
 
 delete "${DATA_PATH:?}"/backup/com.google.android.gms.backup.BackupTransportService
