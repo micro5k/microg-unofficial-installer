@@ -3565,8 +3565,8 @@ clear_and_enable_app()
   test "${DRY_RUN:?}" -eq 0 || return
 
   if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_PM?}"; then
-    PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" 1> /dev/null clear "${1:?}" || :
-    PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" enable "${1:?}" || :
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" 2> /dev/null 1>&2 clear "${1:?}" || :
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_PM:?}" 2> /dev/null enable "${1:?}" || :
   fi
 }
 
