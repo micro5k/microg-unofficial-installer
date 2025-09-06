@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.4.0'
+readonly SCRIPT_VERSION='1.4.1'
 
 ### CONFIGURATION ###
 
@@ -508,6 +508,12 @@ _minutil_is_system_perm()
   return 1
 }
 
+_minutil_find_app_uid()
+{
+  pm 2> /dev/null list packages -U -- "${1:?}" | grep -F -e "${1:?} " | cut -d ':' -f '3' -s
+  # dumpsys 2> /dev/null package "${1:?}" | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2' -s
+}
+
 _grant_all_appops()
 {
   local _appops_list _appops _previous_val
@@ -517,9 +523,8 @@ _grant_all_appops()
 
   printf '%s\n' "${_appops_list?}" | while IFS=': ' read -r _appops _previous_val; do
     test -n "${_appops?}" || continue
+    test "${_appops:?}" != 'AUTO_REVOKE_PERMISSIONS_IF_UNUSED' || continue
     case "${_previous_val?}" in
-      "default"*) _previous_val='default' ;;
-      "foreground"*) _previous_val='foreground' ;;
       "ignore"*) _previous_val='ignore' ;;
       "deny"*) _previous_val='deny' ;;
       *) _previous_val='' ;;
@@ -529,10 +534,12 @@ _grant_all_appops()
     fi
   done || return 3
 
+  appops write-settings
+
   return 0
 }
 
-_grant_appops()
+_minutil_grant_perm_via_appops()
 {
   local _appops
   command 1> /dev/null -v 'appops' || return 1
@@ -543,7 +550,7 @@ _grant_appops()
     "${_appops:?}: allow"*) return 0 ;;
     *'Default mode: default'* | "${_appops:?}: default"* | "${_appops:?}: foreground"* | "${_appops:?}: ignore"* | "${_appops:?}: deny"*)
       if appops set "${1:?}" "${_appops:?}" 'allow'; then
-        printf '%s\n' "    Granted '${2?}' to '${1?}'"
+        printf '%s\n' "    Granted '${2?}' to '${1?}' via App Ops"
         return 0
       fi
       ;;
@@ -551,6 +558,19 @@ _grant_appops()
   esac
 
   return 2
+}
+
+_minutil_disable_permissions_auto_revocation()
+{
+  local _uid
+  command 1> /dev/null -v 'appops' || return 0
+
+  _uid="$(_minutil_find_app_uid "${1:?}")" || return 2
+  if test -n "${_uid?}"; then
+    appops set "${_uid:?}" 'AUTO_REVOKE_PERMISSIONS_IF_UNUSED' 'ignore' || return 3
+  fi
+
+  return 4
 }
 
 _minutil_grant_perms()
@@ -581,7 +601,7 @@ _minutil_grant_perms()
           test "${SCRIPT_VERBOSE:?}" = 'false' || warn_msg "Permission has NOT been requested by the app => ${_perm?}"
           ;;
         *"Permission ${_perm:?}"*"is not a changeable permission type"*)
-          _grant_appops "${1:?}" "${_perm:?}" || {
+          _minutil_grant_perm_via_appops "${1:?}" "${_perm:?}" || {
             # Permission CANNOT be granted manually
             test "${SCRIPT_VERBOSE:?}" = 'false' || warn_msg "NOT a changeable permission => ${_perm?}"
           }
@@ -621,17 +641,19 @@ minutil_fix_microg()
   _minutil_fix_tmpdir
 
   CACHE_USABLE_PERMS="$(pm list permissions | grep -F -e 'permission:' | cut -d ':' -f '2-' -s)" || return 2
-  _store_uid="$(dumpsys 2> /dev/null package 'com.android.vending' | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2-' -s || :)" # Get store uid
+  _store_uid="$(_minutil_find_app_uid 'com.android.vending' || :)" # Get store uid
 
   printf '%s\n\n' 'Granting permissions to microG...'
   if _minutil_package_is_microg 'com.google.android.gms' 'microG Services'; then
     _gms_list_perms | _minutil_grant_perms 'com.google.android.gms' || set_status_if_error "${?}"
+    _minutil_disable_permissions_auto_revocation 'com.google.android.gms' || :
     _grant_all_appops 'com.google.android.gms' || set_status_if_error "${?}"
     #_minutil_set_installer 1> /dev/null 2>&1 'com.google.android.gms' "${_store_uid?}" || :
     printf '\n'
   fi
   if _minutil_package_is_microg 'com.android.vending' 'microG Companion'; then
     _store_list_perms | _minutil_grant_perms 'com.android.vending' || set_status_if_error "${?}"
+    _minutil_disable_permissions_auto_revocation 'com.android.vending' || :
     _grant_all_appops 'com.android.vending' || set_status_if_error "${?}"
     #_minutil_set_installer 1> /dev/null 2>&1 'com.android.vending' "${_store_uid?}" || :
     printf '\n'
