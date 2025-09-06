@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.4.2'
+readonly SCRIPT_VERSION='1.4.3'
 
 ### CONFIGURATION ###
 
@@ -550,7 +550,7 @@ _grant_all_appops()
 
   _appops_list="$(appops get "${1:?}")" || return 2
 
-  printf '%s\n' "${_appops_list?}" | while IFS=': ' read -r _appops _cur_val; do
+  printf '%s\n' "${_appops_list#"Uid mode:"}" | while IFS=': ' read -r _appops _cur_val; do
     test -n "${_appops?}" || continue
     test "${_appops:?}" != 'AUTO_REVOKE_PERMISSIONS_IF_UNUSED' || continue
     case "${_cur_val?}" in
@@ -560,6 +560,19 @@ _grant_all_appops()
   done || return 3
 
   return 0
+}
+
+_minutil_disable_permissions_auto_revocation()
+{
+  local _uid
+  command 1> /dev/null -v 'appops' || return 0
+
+  _uid="$(_minutil_find_app_uid "${1:?}")" || return 2
+  if test -n "${_uid?}"; then
+    appops set "${_uid:?}" 'AUTO_REVOKE_PERMISSIONS_IF_UNUSED' 'ignore' || return 3
+  fi
+
+  return 4
 }
 
 _minutil_grant_perm_via_appops()
@@ -581,19 +594,6 @@ _minutil_grant_perm_via_appops()
   esac
 
   return 2
-}
-
-_minutil_disable_permissions_auto_revocation()
-{
-  local _uid
-  command 1> /dev/null -v 'appops' || return 0
-
-  _uid="$(_minutil_find_app_uid "${1:?}")" || return 2
-  if test -n "${_uid?}"; then
-    appops set "${_uid:?}" 'AUTO_REVOKE_PERMISSIONS_IF_UNUSED' 'ignore' || return 3
-  fi
-
-  return 4
 }
 
 _minutil_grant_perms()
