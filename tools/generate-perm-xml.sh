@@ -12,7 +12,7 @@
 
 readonly SCRIPT_NAME='XML permissions generator'
 readonly SCRIPT_SHORTNAME='GenPermXml'
-readonly SCRIPT_VERSION='0.3.3'
+readonly SCRIPT_VERSION='0.3.4'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -478,10 +478,12 @@ main()
     return 255
   fi
 
+  printf 1>&2 '%s\n' "Output dir: ${BASE_DIR:?}/output"
+
   status=0
   while test "${#}" -gt 0; do
     base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
-    printf 1>&2 '\n%s\n' "${base_name?}"
+    printf 1>&2 '\n%s\n' "Filename: ${base_name:?}"
 
     show_status 'Using aapt...'
     set_red_color
