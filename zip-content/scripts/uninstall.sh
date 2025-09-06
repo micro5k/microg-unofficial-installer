@@ -27,11 +27,22 @@ EOF
 uninstall_list()
 {
   cat << 'EOF'
+GoogleFeedback|com.google.android.feedback
+BetaFeedback|com.google.android.apps.betterbug
+
+MarketUpdater|com.android.vending.updater
+Phonesky|com.android.vending
+BlankStore|
+FakeStore|
+LicenseChecker|
+PlayStore|
+Vending|
+
+GoogleLoginService|com.google.android.gsf.login
+GoogleServicesFramework|com.google.android.gsf
+
 GmsCore|com.google.android.gms
 |com.google.android.gms.supervision
-GoogleServicesFramework|com.google.android.gsf
-GoogleLoginService|com.google.android.gsf.login
-
 PrebuiltGmsCore|
 PrebuiltGmsCorePi|
 PrebuiltGmsCorePix|
@@ -49,8 +60,6 @@ PartnerSetupPrebuilt|com.google.android.partnersetup
 GooglePartnerSetup|
 PartnerBookmarksProvider|com.android.providers.partnerbookmarks
 ChromeHomePage|com.android.partnerbrowsercustomizations.tmobile
-GoogleFeedback|com.google.android.feedback
-BetaFeedback|com.google.android.apps.betterbug
 
 PlayAutoInstallConfig|android.autoinstalls.config.google.nexus
 |android.autoinstalls.config.sony.xperia
@@ -61,15 +70,6 @@ GoogleQuickSearchBox|
 PrebuiltGmail|com.google.android.gm
 Gmail|
 PlayGames|com.google.android.play.games
-
-Phonesky|com.android.vending
-Vending|
-LicenseChecker|
-MarketUpdater|com.android.vending.updater
-
-BlankStore|
-FakeStore|
-PlayStore|
 
 DroidGuard|org.microg.gms.droidguard
 GmsDroidGuard|
@@ -247,10 +247,13 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete "${SYS_PATH:?}/system_ext/app/${FILENAME}"
 
     # Dalvik cache
-    delete "${DATA_PATH:?}"/dalvik-cache/system@priv-app@"${FILENAME}"[@\.]*@classes*
-    delete "${DATA_PATH:?}"/dalvik-cache/system@app@"${FILENAME}"[@\.]*@classes*
-    delete "${DATA_PATH:?}"/dalvik-cache/*/system@priv-app@"${FILENAME}"[@\.]*@classes*
-    delete "${DATA_PATH:?}"/dalvik-cache/*/system@app@"${FILENAME}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/system@priv-app@"${FILENAME:?}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/system@app@"${FILENAME:?}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/system@priv-app@"${FILENAME:?}"[@\.]*@classes*
+    delete "${DATA_PATH:?}"/dalvik-cache/*/system@app@"${FILENAME:?}"[@\.]*@classes*
+
+    # Package caches
+    delete "${DATA_PATH:?}"/system/package_cache/*/"${FILENAME:?}"-*
 
     # Delete legacy libs (very unlikely to be present but possible)
     delete "${SYS_PATH:?}/lib64/${FILENAME:?}"
@@ -289,6 +292,10 @@ uninstall_list | while IFS='|' read -r FILENAME INTERNAL_NAME _; do
     delete "${DATA_PATH:?}"/dalvik-cache/data@app@"${INTERNAL_NAME:?}"-*@classes*
     delete "${DATA_PATH:?}"/dalvik-cache/*/data@app@"${INTERNAL_NAME:?}"-*@classes*
     delete "${DATA_PATH:?}"/dalvik-cache/profiles/"${INTERNAL_NAME:?}"
+
+    # Package caches
+    delete "${DATA_PATH:?}"/system/package_cache/*/"${INTERNAL_NAME:?}"-*
+    delete "${DATA_PATH:?}"/system_ce/*/shortcut_service/packages/"${INTERNAL_NAME:?}"*
 
     # Caches
     delete_folder_content_silent "${DATA_PATH:?}/data/${INTERNAL_NAME:?}/code_cache"

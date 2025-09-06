@@ -143,12 +143,11 @@ if test "${SETUP_TYPE:?}" = 'install'; then
 fi
 
 if test "${SETUP_TYPE:?}" = 'install'; then
-  disable_app 'com.android.vending'
+  test "${FIRST_INSTALLATION:?}" != 'true' || kill_app 'com.android.vending'
   kill_app 'com.google.android.gsf.login'
+  disable_app 'com.android.vending'
   disable_app 'com.google.android.gsf'
-  if test "${FIRST_INSTALLATION:?}" = 'true'; then
-    disable_app 'com.google.android.gms'
-  fi
+  test "${FIRST_INSTALLATION:?}" != 'true' || disable_app 'com.google.android.gms'
 fi
 
 # Clean previous installations
