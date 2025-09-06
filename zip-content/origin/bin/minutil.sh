@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.4.1'
+readonly SCRIPT_VERSION='1.4.2'
 
 ### CONFIGURATION ###
 
@@ -514,27 +514,50 @@ _minutil_find_app_uid()
   # dumpsys 2> /dev/null package "${1:?}" | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2' -s
 }
 
+_minutil_grant_specific_appops()
+{
+  local _val1 _val2 _val3 _uid _init_val
+  command 1> /dev/null -v 'appops' || return 1
+
+  appops 2> /dev/null get "${1:?}" "${2:?}" | while IFS=':' read -r _val1 _val2 _val3 _; do
+    if test "${_val1?}" = 'Uid mode'; then
+      _uid="$(_minutil_find_app_uid "${1:?}")" || return 2
+      _init_val="${_val3#" "}"
+    else
+      _uid=''
+      _init_val="${_val2#" "}"
+    fi
+    case "${_init_val?}" in
+      'default'* | 'foreground'* | 'ignore'* | 'deny'*)
+        _init_val="$(printf '%s\n' "${_init_val:?}" | cut -d ';' -f '1')" || return 3
+        if test -n "${_uid?}"; then
+          if appops set "${_uid:?}" "${2:?}" 'allow'; then printf '%s\n' "    App Ops ${2?} (uid mode) of '${1?}' changed from '${_init_val?}' to 'allow'"; fi
+        else
+          if appops set "${1:?}" "${2:?}" 'allow'; then printf '%s\n' "    App Ops ${2?} of '${1?}' changed from '${_init_val?}' to 'allow'"; fi
+        fi
+        ;;
+      *) ;;
+    esac
+  done || return 4
+
+  return 5
+}
+
 _grant_all_appops()
 {
-  local _appops_list _appops _previous_val
-  command 1> /dev/null -v 'appops' || return 0
+  local _appops_list _appops _cur_val
+  command 1> /dev/null -v 'appops' || return 1
 
   _appops_list="$(appops get "${1:?}")" || return 2
 
-  printf '%s\n' "${_appops_list?}" | while IFS=': ' read -r _appops _previous_val; do
+  printf '%s\n' "${_appops_list?}" | while IFS=': ' read -r _appops _cur_val; do
     test -n "${_appops?}" || continue
     test "${_appops:?}" != 'AUTO_REVOKE_PERMISSIONS_IF_UNUSED' || continue
-    case "${_previous_val?}" in
-      "ignore"*) _previous_val='ignore' ;;
-      "deny"*) _previous_val='deny' ;;
-      *) _previous_val='' ;;
+    case "${_cur_val?}" in
+      "ignore"* | "deny"*) _minutil_grant_specific_appops "${1:?}" "${_appops:?}" || : ;;
+      *) ;;
     esac
-    if test -n "${_previous_val?}" && appops set "${1:?}" "${_appops:?}" 'allow'; then
-      printf '%s\n' "    App Ops ${_appops?} of '${1?}' changed from '${_previous_val?}' to 'allow'"
-    fi
   done || return 3
-
-  appops write-settings
 
   return 0
 }
@@ -658,6 +681,7 @@ minutil_fix_microg()
     #_minutil_set_installer 1> /dev/null 2>&1 'com.android.vending' "${_store_uid?}" || :
     printf '\n'
   fi
+  appops 2> /dev/null write-settings || :
 
   unset CACHE_USABLE_PERMS
   printf '%s\n' 'Done'
