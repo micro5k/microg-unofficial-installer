@@ -171,6 +171,8 @@ printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET:?}" 1>> "${TMP_PATH:?}/files/et
 
 # Install
 perform_installation
+reset_runtime_permissions_if_needed
+reset_appops_if_needed
 reset_authenticator_and_sync_adapter_caches
 
 if test "${FIRST_INSTALLATION:?}" = 'true'; then
@@ -179,13 +181,6 @@ fi
 clear_and_enable_app 'com.google.android.gsf'
 clear_and_enable_app 'com.android.vending'
 
-# Resetting Android runtime permissions
-reset_runtime_permissions_if_needed
-
-# Resetting App Ops
-reset_appops_if_needed
-
-# Install survival script
 install_survival_script '00-1-microg'
 
 #if test "${DRY_RUN:?}" -eq 0; then
