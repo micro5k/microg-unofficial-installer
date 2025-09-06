@@ -9,7 +9,7 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "update"
+      prefix: "build"
       include: "scope"
     open-pull-requests-limit: 1
   - package-ecosystem: "gradle"
@@ -17,9 +17,6 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "update"
+      prefix: "build"
       include: "scope"
     open-pull-requests-limit: 1
-    ignore:
-      - dependency-name: "com.github.hierynomus.license-report"
-      - dependency-name: "com.github.spotbugs"
