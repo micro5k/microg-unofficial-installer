@@ -410,6 +410,6 @@ if test -d "${SYS_PATH:?}/etc/org.fdroid.fdroid"; then rmdir --ignore-fail-on-no
 # Legacy file
 delete "${SYS_PATH:?}/etc/zips/ug.prop"
 
-if test -z "${IS_INCLUDED:?}"; then
+if test "${IS_INCLUDED:-false}" = 'false'; then
   ui_debug 'Done.'
 fi

@@ -876,19 +876,18 @@ reset_runtime_permissions_if_needed()
 reset_appops_if_needed()
 {
   test "${FIRST_INSTALLATION:?}" = 'true' || return
+  test -n "${DATA_PATH?}" || return
   test "${API:?}" -ge 23 || return
 
   ui_msg "Resetting App Ops..."
   test "${DRY_RUN:?}" -eq 0 || return
 
-  if test -n "${DATA_PATH?}"; then
-    delete "${DATA_PATH:?}"/system/appops.xml
-    delete "${DATA_PATH:?}"/system/appops_accesses.xml
-    delete "${DATA_PATH:?}"/system/appops/discrete/*
-    delete "${DATA_PATH:?}"/system/appops/history/*
-    if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_APPOPS?}"; then
-      PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" 1> /dev/null read-settings || ui_warning 'Failed to refresh App Ops'
-    fi
+  delete "${DATA_PATH:?}"/system/appops.xml
+  delete "${DATA_PATH:?}"/system/appops_accesses.xml
+  delete "${DATA_PATH:?}"/system/appops/discrete/*
+  delete "${DATA_PATH:?}"/system/appops/history/*
+  if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_APPOPS?}"; then
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_APPOPS:?}" 1> /dev/null read-settings || ui_warning 'Failed to refresh App Ops'
   fi
 }
 
