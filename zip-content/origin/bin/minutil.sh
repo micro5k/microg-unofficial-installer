@@ -521,6 +521,7 @@ _minutil_grant_specific_appops()
   appops 2> /dev/null get "${1:?}" "${2:?}" | while IFS=':' read -r _val1 _val2 _val3 _; do
     if test "${_val1?}" = 'Uid mode'; then
       _uid="$(_minutil_find_app_uid "${1:?}")" || return 2
+      test -n "${_uid?}" || return 2
       _init_val="${_val3#" "}"
     else
       _uid=''
