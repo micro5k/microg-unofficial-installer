@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.4.3'
+readonly SCRIPT_VERSION='1.4.4'
 
 ### CONFIGURATION ###
 
@@ -517,7 +517,6 @@ _minutil_find_app_uid()
 _minutil_grant_specific_appops()
 {
   local _val1 _val2 _val3 _uid _init_val
-  command 1> /dev/null -v 'appops' || return 1
 
   appops 2> /dev/null get "${1:?}" "${2:?}" | while IFS=':' read -r _val1 _val2 _val3 _; do
     if test "${_val1?}" = 'Uid mode'; then
@@ -538,9 +537,7 @@ _minutil_grant_specific_appops()
         ;;
       *) ;;
     esac
-  done || return 4
-
-  return 5
+  done || return "${?}"
 }
 
 _grant_all_appops()
@@ -558,21 +555,16 @@ _grant_all_appops()
       *) ;;
     esac
   done || return 3
-
-  return 0
 }
 
 _minutil_disable_permissions_auto_revocation()
 {
   local _uid
-  command 1> /dev/null -v 'appops' || return 0
+  command 1> /dev/null -v 'appops' || return 1
 
   _uid="$(_minutil_find_app_uid "${1:?}")" || return 2
-  if test -n "${_uid?}"; then
-    appops set "${_uid:?}" 'AUTO_REVOKE_PERMISSIONS_IF_UNUSED' 'ignore' || return 3
-  fi
-
-  return 4
+  test -n "${_uid?}" || return 3
+  appops set "${_uid:?}" 'AUTO_REVOKE_PERMISSIONS_IF_UNUSED' 'ignore' || return 4
 }
 
 _minutil_grant_perm_via_appops()
@@ -583,13 +575,14 @@ _minutil_grant_perm_via_appops()
   _appops="${2#"android.permission."}"
 
   case "$(appops 2> /dev/null get "${1:?}" "${_appops:?}")" in
-    "${_appops:?}: allow"*) return 0 ;;
-    *'Default mode: default'* | "${_appops:?}: default"* | "${_appops:?}: foreground"* | "${_appops:?}: ignore"* | "${_appops:?}: deny"*)
+    *'Default mode: default'* | *"${_appops:?}: default"* | *"${_appops:?}: foreground"* | *"${_appops:?}: ignore"* | *"${_appops:?}: deny"*)
       if appops set "${1:?}" "${_appops:?}" 'allow'; then
         printf '%s\n' "    Granted '${2?}' to '${1?}' via App Ops"
+        _minutil_grant_specific_appops "${1:?}" "${_appops:?}" || :
         return 0
       fi
       ;;
+    *"${_appops:?}: allow"*) return 0 ;;
     *) ;;
   esac
 
