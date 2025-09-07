@@ -15,23 +15,24 @@ docs/CODEOWNERS   text eol=lf
 .semgrepignore    text eol=lf
 .shellcheckrc     text eol=lf
 
-# Ruby
-.simplecov        text eol=lf
-Gemfile*          text eol=lf
-
 *.gpg             text eol=lf
 *.yml             text eol=lf
 *.xml             text eol=lf
 *.json            text eol=lf
 *.dis             text eol=lf
 
+# Reuse
 .reuse/dep5       text eol=lf
 *.toml            text eol=lf
 *.license         text eol=lf
 *.spdx            text eol=lf
 
+# Ruby
+.simplecov        text eol=lf
+Gemfile*          text eol=lf
+
+# Make
 Makefile          text eol=lf
-etc/profile       text eol=lf
 
 # Batch scripts
 *.bat             text eol=crlf
@@ -60,6 +61,7 @@ gradlew           text eol=lf
 
 # Our custom files
 recovery-simulator/override/* text eol=lf
+tools/win/etc/profile         text eol=lf
 
 # Uncompressed text manuals
 *.1               text eol=lf

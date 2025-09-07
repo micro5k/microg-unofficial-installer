@@ -56,19 +56,27 @@ import_gpg_keys()
   fi
 }
 
-STATUS=0
+setup_gpg()
+{
+  command 1> /dev/null -v 'gpg' || {
+    printf '%s\n' 'WARNING: gpg is missing'
+    return 255
+  }
 
-# GitHub => https://github.com/web-flow.gpg
+  # GitHub => https://github.com/web-flow.gpg
+  test -f "${PWD:?}/.public-keys/github.gpg"
+  import_gpg_keys 'GitHub' "${PWD:?}/.public-keys/github.gpg" "${?}" || return "${?}"
+  printf '%s\n' '968479A1AFF927E37D1A566BB5690EEEBB952194:6:' | HOME="${USER_HOME:-${HOME:?}}" gpg --import-ownertrust || return "${?}"
+}
+
+STATUS=0
 
 printf '%s\n' "Repo dir: ${PWD?}" || STATUS="${?}"
 
 test -f "${PWD:?}/allowed_signers"
 config_var gpg.ssh.allowedSignersFile 'allowed_signers' "${?}" || STATUS="${?}"
 
-test -f "${PWD:?}/.public-keys/github.gpg"
-import_gpg_keys 'GitHub' "${PWD:?}/.public-keys/github.gpg" "${?}" || STATUS="${?}"
-
-printf '%s\n' '968479A1AFF927E37D1A566BB5690EEEBB952194:6:' | HOME="${USER_HOME:-${HOME:?}}" gpg --import-ownertrust || STATUS="${?}" # GitHub
+setup_gpg || STATUS="${?}"
 
 test -d "${PWD:?}/.git-hooks"
 config_var core.hooksPath '.git-hooks' "${?}" || STATUS="${?}"
