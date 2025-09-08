@@ -59,6 +59,7 @@ GsfProxy|
 PartnerSetupPrebuilt|com.google.android.partnersetup
 GooglePartnerSetup|
 PartnerBookmarksProvider|com.android.providers.partnerbookmarks
+ChromeCustomizations|com.sec.android.app.chromecustomizations
 ChromeHomePage|com.android.partnerbrowsercustomizations.tmobile
 
 PlayAutoInstallConfig|android.autoinstalls.config.google.nexus
@@ -69,6 +70,7 @@ Velvet|com.google.android.googlequicksearchbox
 GoogleQuickSearchBox|
 PrebuiltGmail|com.google.android.gm
 Gmail|
+Gmail2|
 PlayGames|com.google.android.play.games
 
 DroidGuard|org.microg.gms.droidguard
