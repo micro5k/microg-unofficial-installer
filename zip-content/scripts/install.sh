@@ -143,8 +143,12 @@ if test "${SETUP_TYPE:?}" = 'install'; then
 fi
 
 if test "${SETUP_TYPE:?}" = 'install'; then
-  test "${FIRST_INSTALLATION:?}" != 'true' || kill_app 'com.android.vending'
-  kill_app 'com.google.android.gsf.login'
+  if test "${FIRST_INSTALLATION:?}" = 'true'; then
+    kill_app 'com.android.vending'
+    kill_app 'com.google.android.gsf.login'
+    kill_app 'com.google.android.gsf'
+    kill_app 'com.google.android.gms'
+  fi
   disable_app 'com.android.vending'
   disable_app 'com.google.android.gsf'
   test "${FIRST_INSTALLATION:?}" != 'true' || disable_app 'com.google.android.gms'
@@ -175,9 +179,7 @@ reset_runtime_permissions_if_needed
 reset_appops_if_needed
 reset_authenticator_and_sync_adapter_caches
 
-if test "${FIRST_INSTALLATION:?}" = 'true'; then
-  clear_and_enable_app 'com.google.android.gms'
-fi
+test "${FIRST_INSTALLATION:?}" != 'true' || clear_and_enable_app 'com.google.android.gms'
 clear_and_enable_app 'com.google.android.gsf'
 clear_and_enable_app 'com.android.vending'
 
