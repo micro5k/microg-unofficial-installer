@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.4.4'
+readonly SCRIPT_VERSION='1.4.5'
 
 ### CONFIGURATION ###
 
@@ -510,8 +510,8 @@ _minutil_is_system_perm()
 
 _minutil_find_app_uid()
 {
-  pm 2> /dev/null list packages -U -- "${1:?}" | grep -F -e "${1:?} " | cut -d ':' -f '3' -s
-  # dumpsys 2> /dev/null package "${1:?}" | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2' -s
+  pm 2> /dev/null list packages -U -- "${1:?}" | grep -m 1 -F -e "${1:?} " | cut -d ':' -f '3' -s ||
+    dumpsys 2> /dev/null package -- "${1:?}" | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2' -s
 }
 
 _minutil_grant_specific_appops()
