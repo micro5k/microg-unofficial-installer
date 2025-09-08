@@ -654,6 +654,10 @@ minutil_set_installer()
   _store_uid="$(_minutil_find_app_uid 'com.android.vending')" || return 4
   test -n "${_store_uid?}" || return 5
 
+  su "${_store_uid:?}" sh -c 'command' || {
+    error_msg 'The su binary is missing or disabled'
+    return 6
+  }
   su "${_store_uid:?}" pm set-installer "${1:?}" 'com.android.vending'
 }
 
