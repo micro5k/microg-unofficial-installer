@@ -3547,7 +3547,7 @@ kill_app()
   test "${DRY_RUN:?}" -eq 0 || return
 
   if test "${BOOTMODE:?}" = 'true' && test -n "${DEVICE_AM?}"; then
-    PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" force-stop "${1:?}" || PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" kill "${1:?}" || :
+    PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" 2> /dev/null force-stop "${1:?}" || PATH="${PREVIOUS_PATH?}" "${DEVICE_AM:?}" kill "${1:?}" || :
   fi
 }
 
