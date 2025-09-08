@@ -107,7 +107,6 @@ Notes
 .. _NewPipeLegacyRevo: origin/app/NewPipeLegacyRevo.apk
 .. |MyLocation| replace:: |dl|
 .. _MyLocation: origin/app/MyLocation.apk
-.. [#] <origin/priv-app/PlayStoreARM64.apk>
 .. [#] <origin/priv-app/PlayStore.apk>
 .. [#] <origin/priv-app/AndroidAuto.apk>
 .. [#] <origin/app/Gmail.apk>
