@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.4.7'
+readonly SCRIPT_VERSION='1.4.8'
 
 ### CONFIGURATION ###
 
@@ -510,8 +510,13 @@ _minutil_is_system_perm()
 
 _minutil_find_app_uid()
 {
-  pm 2> /dev/null list packages -U -- "${1:?}" | grep -m 1 -F -e "${1:?} " | cut -d ':' -f '3' -s ||
-    dumpsys 2> /dev/null package -- "${1:?}" | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2' -s
+  local _app_uid
+
+  if _app_uid="$(pm 2> /dev/null list packages -U -- "${1:?}" | grep -m 1 -F -e "${1:?} " | cut -d ':' -f '3' -s)" && test -n "${_app_uid?}"; then
+    printf "%s\n" "${_app_uid:?}"
+  else
+    dumpsys 2> /dev/null package -- "${1:?}" | grep -m 1 -F -e 'userId=' | cut -d '=' -f '2' -s | cut -d ' ' -f '1'
+  fi
 }
 
 _minutil_grant_specific_appops()
@@ -561,7 +566,9 @@ _grant_all_appops()
 _minutil_disable_permissions_auto_revocation()
 {
   local _uid
-  test "${SYSTEM_API:?}" -ge 30 || return 0 # Added in Android 11 (API 30)
+
+  # Added in Android 11 (API 30)
+  test "${SYSTEM_API:?}" -ge 30 || return 0
   command 1> /dev/null -v 'appops' || return 1
 
   _uid="$(_minutil_find_app_uid "${1:?}")" || return 2
@@ -648,9 +655,18 @@ _minutil_grant_perms()
 minutil_set_installer()
 {
   local _store_uid
-  test -n "${1?}" || return 3
 
-  # Get store uid
+  # Added in Android 5 (API 21)
+  test "${SYSTEM_API:?}" -ge 21 || {
+    error_msg 'NOT SUPPORTED, use --reinstall-package PACKAGE'
+    return 99
+  }
+  test -n "${1?}" || {
+    error_msg 'Empty argument'
+    return 3
+  }
+
+  # Find store uid
   _store_uid="$(_minutil_find_app_uid 'com.android.vending')" || return 4
   test -n "${_store_uid?}" || return 5
 
