@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.4.5'
+readonly SCRIPT_VERSION='1.4.6'
 
 ### CONFIGURATION ###
 
@@ -528,7 +528,7 @@ _minutil_grant_specific_appops()
       _init_val="${_val2#" "}"
     fi
     case "${_init_val?}" in
-      'default'* | 'foreground'* | 'ignore'* | 'deny'*)
+      'default'* | 'foreground'* | 'ask'* | 'ignore'* | 'deny'*)
         _init_val="$(printf '%s\n' "${_init_val:?}" | cut -d ';' -f '1')" || return 3
         if test -n "${_uid?}"; then
           if appops set "${_uid:?}" "${2:?}" 'allow'; then printf '%s\n' "    App Ops ${2?} (uid mode) of '${1?}' changed from '${_init_val?}' to 'allow'"; fi
@@ -561,6 +561,7 @@ _grant_all_appops()
 _minutil_disable_permissions_auto_revocation()
 {
   local _uid
+  test "${SYSTEM_API:?}" -ge 30 || return 0 # Added in Android 11 (API 30)
   command 1> /dev/null -v 'appops' || return 1
 
   _uid="$(_minutil_find_app_uid "${1:?}")" || return 2
@@ -576,7 +577,7 @@ _minutil_grant_perm_via_appops()
   _appops="${2#"android.permission."}"
 
   case "$(appops 2> /dev/null get "${1:?}" "${_appops:?}")" in
-    *'Default mode: default'* | *"${_appops:?}: default"* | *"${_appops:?}: foreground"* | *"${_appops:?}: ignore"* | *"${_appops:?}: deny"*)
+    *'Default mode: default'* | *"${_appops:?}: default"* | *"${_appops:?}: foreground"* | *"${_appops:?}: ask"* | *"${_appops:?}: ignore"* | *"${_appops:?}: deny"*)
       if appops set "${1:?}" "${_appops:?}" 'allow'; then
         printf '%s\n' "    Granted '${2?}' to '${1?}' via App Ops"
         _minutil_grant_specific_appops "${1:?}" "${_appops:?}" || :
