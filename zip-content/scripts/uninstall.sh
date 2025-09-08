@@ -38,9 +38,6 @@ LicenseChecker|
 PlayStore|
 Vending|
 
-GoogleLoginService|com.google.android.gsf.login
-GoogleServicesFramework|com.google.android.gsf
-
 GmsCore|com.google.android.gms
 |com.google.android.gms.supervision
 PrebuiltGmsCore|
@@ -55,6 +52,9 @@ MicroGGMSCore|
 MicroGGSFProxy|
 GsfProxy|
 |com.mgoogle.android.gms
+
+GoogleLoginService|com.google.android.gsf.login
+GoogleServicesFramework|com.google.android.gsf
 
 PartnerSetupPrebuilt|com.google.android.partnersetup
 GooglePartnerSetup|

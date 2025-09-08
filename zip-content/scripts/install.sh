@@ -143,13 +143,13 @@ fi
 if test "${SETUP_TYPE:?}" = 'install'; then
   if test "${FIRST_INSTALLATION:?}" = 'true'; then
     kill_app 'com.android.vending'
+    kill_app 'com.google.android.gms'
     kill_app 'com.google.android.gsf.login'
     kill_app 'com.google.android.gsf'
-    kill_app 'com.google.android.gms'
   fi
   disable_app 'com.android.vending'
-  disable_app 'com.google.android.gsf'
   test "${FIRST_INSTALLATION:?}" != 'true' || disable_app 'com.google.android.gms'
+  disable_app 'com.google.android.gsf'
 fi
 
 # Clean previous installations
@@ -157,9 +157,9 @@ clean_previous_installations
 
 if test "${SETUP_TYPE:?}" = 'uninstall'; then
   clear_app 'com.android.vending'
+  clear_app 'com.google.android.gms'
   clear_app 'com.google.android.gsf.login'
   clear_app 'com.google.android.gsf'
-  clear_app 'com.google.android.gms'
   reset_gms_data_of_all_apps
 
   finalize_correctly
