@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.4.6'
+readonly SCRIPT_VERSION='1.4.7'
 
 ### CONFIGURATION ###
 
@@ -155,7 +155,7 @@ _minutil_fix_tmpdir()
 _minutil_aligned_print()
 {
   if test "${EMULATED_PRINTF-}" != '1'; then
-    printf '\t%-37s %s\n' "${@}"
+    printf '\t%-31s %s\n' "${@}"
   else
     echo "${@}"
   fi
@@ -252,7 +252,7 @@ if _minutil_check_getopt; then
   test -n "${NO_COLOR-}" || printf 1>&2 '\033[1;31m\r       \r' || :
 
   if minutil_args="$(
-    getopt -o '+vVhsmri:' -l 'version,help,rescan-storage,fix-microg,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n "${SCRIPT_SHORTNAME:?}" -- "${@}"
+    getopt -o '+vVhsmri:' -l 'version,help,rescan-storage,set-installer:,fix-microg,reset-battery,remove-all-accounts,force-gcm-reconnection,reset-gms-data,reinstall-package:' -n "${SCRIPT_SHORTNAME:?}" -- "${@}"
   )"; then
     eval ' \set' '--' "${minutil_args?}" || exit 126
   else
@@ -645,35 +645,35 @@ _minutil_grant_perms()
   return "${_status:?}"
 }
 
-# shellcheck disable=SC2329
-_minutil_set_installer()
+minutil_set_installer()
 {
-  test -n "{2?}" || return 2
-  su "${2:?}" pm set-installer "${1:?}" 'com.android.vending'
+  local _store_uid
+  test -n "${1?}" || return 3
+
+  # Get store uid
+  _store_uid="$(_minutil_find_app_uid 'com.android.vending')" || return 4
+  test -n "${_store_uid?}" || return 5
+
+  su "${_store_uid:?}" pm set-installer "${1:?}" 'com.android.vending'
 }
 
 minutil_fix_microg()
 {
-  local _store_uid
-
   _minutil_fix_tmpdir
 
   CACHE_USABLE_PERMS="$(pm list permissions | grep -F -e 'permission:' | cut -d ':' -f '2-' -s)" || return 2
-  _store_uid="$(_minutil_find_app_uid 'com.android.vending' || :)" # Get store uid
 
   printf '%s\n\n' 'Granting permissions to microG...'
   if _minutil_package_is_microg 'com.google.android.gms' 'microG Services'; then
     _gms_list_perms | _minutil_grant_perms 'com.google.android.gms' || set_status_if_error "${?}"
     _minutil_disable_permissions_auto_revocation 'com.google.android.gms' || :
     _grant_all_appops 'com.google.android.gms' || set_status_if_error "${?}"
-    #_minutil_set_installer 1> /dev/null 2>&1 'com.google.android.gms' "${_store_uid?}" || :
     printf '\n'
   fi
   if _minutil_package_is_microg 'com.android.vending' 'microG Companion'; then
     _store_list_perms | _minutil_grant_perms 'com.android.vending' || set_status_if_error "${?}"
     _minutil_disable_permissions_auto_revocation 'com.android.vending' || :
     _grant_all_appops 'com.android.vending' || set_status_if_error "${?}"
-    #_minutil_set_installer 1> /dev/null 2>&1 'com.android.vending' "${_store_uid?}" || :
     printf '\n'
   fi
   appops 2> /dev/null write-settings || :
@@ -875,6 +875,13 @@ while test "${#}" -gt 0; do
       fi
       ;;
 
+    --set-installer)
+      if validate_param_argument "${1?}" "${2-unset}"; then
+        minutil_set_installer "${2?}" || set_status_if_error "${?}"
+        shift
+      fi
+      ;;
+
     -m | --fix-microg)
       if test "${SYSTEM_API:?}" -ge 24; then
         minutil_fix_microg
@@ -932,7 +939,7 @@ if test "${DISPLAY_HELP:?}" = 'true'; then
   _minutil_aligned_print '--remove-all-accounts' 'Remove all accounts from the device (need root)'
   _minutil_aligned_print '--reset-battery' 'Reset battery stats and, if possible, also reset battery fuel gauge chip (need root)'
   _minutil_aligned_print '-r,--reset-gms-data' 'Reset GMS data of all apps (need root)'
-  _minutil_aligned_print '-i,--reinstall-package PACKAGE_NAME' 'Reinstall PACKAGE_NAME as if it were installed from Play Store and grant it all permissions'
+  _minutil_aligned_print '-i,--reinstall-package PACKAGE' 'Reinstall PACKAGE as if it were installed from PlayStore and grant it all permissions'
 
   printf '%s\n' "
 Examples:
