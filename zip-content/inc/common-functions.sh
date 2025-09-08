@@ -1031,6 +1031,15 @@ _generate_architectures_list()
   export ARCH_LIST
 }
 
+is_new_architecture()
+{
+  case "${1:?}" in
+    'arm64-v8a' | 'armeabi-v7a' | 'x86_64' | 'x86') return 0 ;;
+    *) ;;
+  esac
+  return 1
+}
+
 display_basic_info()
 {
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
