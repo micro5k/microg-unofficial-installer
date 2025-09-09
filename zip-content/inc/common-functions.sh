@@ -1598,7 +1598,7 @@ prepare_installation()
   delete_temp "files/etc/zips"
   create_dir "${TMP_PATH:?}/files/etc/zips"
   {
-    echo '# SPDX-FileCopyrightText: none'
+    echo '# SPDX-FileCopyrightText: NONE'
     echo '# SPDX-License-Identifier: CC0-1.0'
     echo ''
     echo 'install.destination=system'
