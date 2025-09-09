@@ -8,5 +8,6 @@
 [format]
 	signOff = true
 [tgit]
+	projectlanguage = 1033
 	warnnosignedoffby = true
 	logminsize = 1
