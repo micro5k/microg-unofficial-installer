@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
+
+[core]
+	hooksPath = .git-hooks
+[gpg "ssh"]
+	allowedSignersFile = allowed_signers
+[format]
+	signOff = true
+[tgit]
+	warnnosignedoffby = true
+	logminsize = 1

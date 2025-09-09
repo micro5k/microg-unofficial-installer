@@ -73,15 +73,15 @@ STATUS=0
 
 printf '%s\n' "Repo dir: ${PWD?}" || STATUS="${?}"
 
+test -d "${PWD:?}/.git-hooks"
+config_var core.hooksPath '.git-hooks' "${?}" || STATUS="${?}"
+
 test -f "${PWD:?}/allowed_signers"
 config_var gpg.ssh.allowedSignersFile 'allowed_signers' "${?}" || STATUS="${?}"
 
 setup_gpg || STATUS="${?}"
 
-test -d "${PWD:?}/.git-hooks"
-config_var core.hooksPath '.git-hooks' "${?}" || STATUS="${?}"
-
-config_var format.signOff "true" || STATUS="${?}"
+config_var format.signOff 'true' || STATUS="${?}"
 config_var alias.cm 'commit -s' || STATUS="${?}"
 
 test "${STATUS:?}" = 0 || printf '%s\n' "Error code: ${STATUS:?}"
