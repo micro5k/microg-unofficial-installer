@@ -4,6 +4,7 @@ version = 1
 path = [
     ".public-keys/*.gpg",
     "fastlane/metadata/android/en-US/*.txt",
+    "gradle/wrapper/gradle-wrapper.properties",
     "allowed_signers",
     "Gemfile.lock"
 ]
