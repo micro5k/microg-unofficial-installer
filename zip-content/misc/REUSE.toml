@@ -1,0 +1,9 @@
+version = 1
+
+[[annotations]]
+path = [
+    "busybox/busybox-*.bin",
+]
+SPDX-FileCopyrightText = "Copyright (C) tons of folks. <https://github.com/yashdsaraf/busybox/raw/master/AUTHORS>"
+SPDX-License-Identifier = "GPL-2.0-only"
+SPDX-FileType = "APPLICATION"
