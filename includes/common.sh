@@ -1459,6 +1459,11 @@ init_cmdline()
     HOME="${USER_HOME:-${HOME:?}}" command -- gpg "${@}"
   }
 
+  gem()
+  {
+    HOME="${USER_HOME:-${HOME:?}}" command -- gem "${@}"
+  }
+
   bundle()
   {
     HOME="${USER_HOME:-${HOME:?}}" command -- bundle "${@}"
