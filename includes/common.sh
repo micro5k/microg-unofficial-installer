@@ -1214,6 +1214,13 @@ init_path()
   if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
 
   if test "${PLATFORM:?}" = 'win'; then
+    # Make some GNU tools available
+    local _program_dir_32
+    _program_dir_32="$(get_32bit_programfiles)"
+    if test -n "${_program_dir_32?}"; then
+      add_to_path_env "${_program_dir_32:?}/GnuWin32/bin"
+    fi
+
     # On Bash under Windows (for example the one included inside Git for Windows) we need to have '/usr/bin'
     # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
     # ADDITIONAL NOTE: We have to do this even under BusyBox otherwise every external bash/make executed as subshell of BusyBox will be broken.
@@ -1222,13 +1229,6 @@ init_path()
       PATH='/usr/bin'
     else
       PATH="/usr/bin${PATHSEP:?}${PATH:?}"
-    fi
-
-    # Make some GNU tools available
-    local _program_dir_32
-    _program_dir_32="$(get_32bit_programfiles)"
-    if test -n "${_program_dir_32?}"; then
-      add_to_path_env "${_program_dir_32:?}/GnuWin32/bin"
     fi
   fi
 
@@ -1322,11 +1322,6 @@ init_cmdline()
   unset KILL_PPID
 
   if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
-
-  # Clean useless directories from the $PATH env
-  if test "${PLATFORM?}" = 'win'; then
-    remove_from_path_env "${LOCALAPPDATA-}/Microsoft/WindowsApps"
-  fi
 
   # Set environment variables
   readonly UTILS_DIR="${MAIN_DIR:?}/utils"
