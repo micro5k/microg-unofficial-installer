@@ -10,6 +10,7 @@
 /.ssh/
 /coverage/
 /dependency-graph-reports/
+/vendor/
 /.ash_history
 /.bash_history
 /.lesshst
