@@ -13,11 +13,18 @@ GEM
     simplecov_json_formatter (0.1.4)
 
 PLATFORMS
+  arm64-darwin
   ruby
+  x64-mingw-ucrt
+  x86_64-darwin
+  x86_64-linux-gnu
 
 DEPENDENCIES
   bashcov (>= 3.2)
   simplecov-lcov
 
+RUBY VERSION
+   ruby 3.4.5p51
+
 BUNDLED WITH
-   2.5.23
+   2.7.2
