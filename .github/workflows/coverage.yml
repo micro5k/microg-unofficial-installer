@@ -38,6 +38,7 @@ jobs:
         timeout-minutes: 10
         with:
           ruby-version: "3.4"
+          bundler-cache: "true"
       - name: "Install Bashcov and simplecov-lcov"
         shell: bash
         timeout-minutes: 10
