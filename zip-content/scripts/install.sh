@@ -102,6 +102,8 @@ if test "${SETUP_TYPE:?}" = 'install'; then
   SELECTED_MARKET='FakeStore'
   if is_new_architecture "${MAIN_ABI:?}" && setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
+  elif setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store (legacy)' 'PlayStore7' 'priv-app' true; then
+    SELECTED_MARKET='PlayStore'
   elif setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
   else
