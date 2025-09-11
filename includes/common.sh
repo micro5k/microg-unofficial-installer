@@ -1010,6 +1010,33 @@ dl_list()
   done
 }
 
+ruby_update_all()
+{
+  is_root || {
+    ui_error_msg 'You must execute this as root'
+    return 1
+  }
+
+  ui_debug 'Installing / updating rubygems-update...'
+  if gem 1> /dev/null list -i '^rubygems-update$'; then
+    gem update rubygems-update || ui_warning 'Failed to update rubygems-update'
+  else
+    gem install rubygems-update || ui_warning 'Failed to install rubygems-update'
+  fi
+  ui_debug ''
+
+  ui_debug 'Running update_rubygems...'
+  update_rubygems 1> /dev/null || ui_warning 'Failed to execute => update_rubygems'
+  ui_debug 'Running gem update --system...'
+  gem update --system || ui_warning 'Failed to execute => gem update --system'
+  ui_debug ''
+  ui_debug 'Running gem update...'
+  gem update || ui_warning 'Failed to execute => gem update'
+  ui_debug ''
+  ui_debug 'Running gem cleanup...'
+  gem cleanup || ui_warning 'Failed to execute => gem cleanup'
+}
+
 get_32bit_programfiles()
 {
   local _dir
