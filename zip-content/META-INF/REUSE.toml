@@ -2,10 +2,10 @@ version = 1
 
 [[annotations]]
 path = [
-    "com/google/android/updater-script*",
-    "CERT.RSA",
-    "CERT.SF",
-    "MANIFEST.MF"
+  "com/google/android/updater-script*",
+  "CERT.RSA",
+  "CERT.SF",
+  "MANIFEST.MF"
 ]
 SPDX-FileCopyrightText = "NONE"
 SPDX-License-Identifier = "CC0-1.0"
