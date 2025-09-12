@@ -396,7 +396,7 @@ EOF
 
 _minutil_find_package()
 {
-  pm path "${1:?}" 2> /dev/null | cut -d ':' -f 2 -s || return 1
+  pm 2> /dev/null path "${1:?}" | cut -d ':' -f 2 -s || return 1
 }
 
 _minutil_reinstall_split_package()
