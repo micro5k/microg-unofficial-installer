@@ -428,7 +428,7 @@ _execute_system_remount()
   # Use the system remount binary if available (this will save us many problems)
   if test -f "${SYS_PATH:?}/bin/remount"; then
     ui_msg 'Executing the remount binary...'
-    _remount_output="$("${SYS_PATH:?}/bin/remount" 2>&1)" || ui_warning 'Failed to execute the remount binary'
+    _remount_output="$(PATH="${PREVIOUS_PATH:?}:${PATH:?}" "${SYS_PATH:?}/bin/remount" 2>&1)" || ui_warning 'Failed to execute the remount binary'
     ui_debug "${_remount_output?}"
     case "${_remount_output?}" in
       *'reboot your device'*) if test "${IS_EMU:?}" = 'true'; then exit 252; else exit 251; fi ;;
