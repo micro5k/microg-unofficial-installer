@@ -1241,7 +1241,6 @@ initialize()
   _timeout_check
 
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
-  LD_LIBRARY_PATH="{LD_LIBRARY_PATH:?}:/vendor/lib64:${SYS_PATH:?}/lib64:/vendor/lib:${SYS_PATH:?}/lib"
 
   PREV_INSTALL_FAILED='false'
   if test -f "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed"; then
@@ -1335,6 +1334,24 @@ initialize()
   readonly SETUP_TYPE
   export SETUP_TYPE
 
+  if mount_partition_if_possible 'vendor' "${SLOT_SUFFIX:+vendor}${SLOT_SUFFIX-}${NL:?}vendor${NL:?}"; then
+    VENDOR_PATH="${LAST_MOUNTPOINT:?}"
+    UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+  fi
+  if mount_partition_if_possible 'product' "${SLOT_SUFFIX:+product}${SLOT_SUFFIX-}${NL:?}product${NL:?}"; then
+    PRODUCT_PATH="${LAST_MOUNTPOINT:?}"
+    UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+  fi
+  if mount_partition_if_possible 'system_ext' "${SLOT_SUFFIX:+system_ext}${SLOT_SUFFIX-}${NL:?}system_ext${NL:?}"; then
+    SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
+    UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+  fi
+  if mount_partition_if_possible 'odm' "${SLOT_SUFFIX:+odm}${SLOT_SUFFIX-}${NL:?}odm${NL:?}"; then
+    ODM_PATH="${LAST_MOUNTPOINT:?}"
+    UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+  fi
+
+  LD_LIBRARY_PATH="{LD_LIBRARY_PATH:?}:{VENDOR_PATH:-/vendor}/lib64:${SYS_PATH:?}/lib64:{VENDOR_PATH:-/vendor}/lib:${SYS_PATH:?}/lib"
   _disable_write_locks
   _execute_system_remount
 
@@ -1355,25 +1372,17 @@ initialize()
     ui_error "Remounting '${SYS_MOUNTPOINT?}' failed!!!" 30
   }
 
-  if mount_partition_if_possible 'vendor' "${SLOT_SUFFIX:+vendor}${SLOT_SUFFIX-}${NL:?}vendor${NL:?}"; then
-    VENDOR_PATH="${LAST_MOUNTPOINT:?}"
-    UNMOUNT_VENDOR="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && VENDOR_RW='true'
+  if test -n "${VENDOR_PATH?}"; then
+    remount_read_write_if_possible "${VENDOR_PATH:?}" false && VENDOR_RW='true'
   fi
-  if mount_partition_if_possible 'product' "${SLOT_SUFFIX:+product}${SLOT_SUFFIX-}${NL:?}product${NL:?}"; then
-    PRODUCT_PATH="${LAST_MOUNTPOINT:?}"
-    UNMOUNT_PRODUCT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && PRODUCT_RW='true'
+  if test -n "${PRODUCT_PATH?}"; then
+    remount_read_write_if_possible "${PRODUCT_PATH:?}" false && PRODUCT_RW='true'
   fi
-  if mount_partition_if_possible 'system_ext' "${SLOT_SUFFIX:+system_ext}${SLOT_SUFFIX-}${NL:?}system_ext${NL:?}"; then
-    SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
-    UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && SYS_EXT_RW='true'
+  if test -n "${SYS_EXT_PATH?}"; then
+    remount_read_write_if_possible "${SYS_EXT_PATH:?}" false && SYS_EXT_RW='true'
   fi
-  if mount_partition_if_possible 'odm' "${SLOT_SUFFIX:+odm}${SLOT_SUFFIX-}${NL:?}odm${NL:?}"; then
-    ODM_PATH="${LAST_MOUNTPOINT:?}"
-    UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    #remount_read_write_if_possible "${LAST_MOUNTPOINT:?}" false && ODM_RW='true'
+  if test -n "${ODM_PATH?}"; then
+    : #remount_read_write_if_possible "${ODM_PATH:?}" false && ODM_RW='true'
   fi
   readonly VENDOR_PATH PRODUCT_PATH SYS_EXT_PATH ODM_PATH
   export VENDOR_PATH PRODUCT_PATH SYS_EXT_PATH ODM_PATH
