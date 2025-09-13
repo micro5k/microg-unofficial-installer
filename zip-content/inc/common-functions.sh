@@ -1241,6 +1241,7 @@ initialize()
   _timeout_check
 
   cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
+  LD_LIBRARY_PATH="{LD_LIBRARY_PATH:?}:/vendor/lib64:${SYS_PATH:?}/lib64:/vendor/lib:${SYS_PATH:?}/lib"
 
   PREV_INSTALL_FAILED='false'
   if test -f "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed"; then
