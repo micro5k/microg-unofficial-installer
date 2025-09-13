@@ -415,8 +415,14 @@ _disable_write_locks()
   test "${DRY_RUN:?}" -lt 2 || return 1
 
   if test -d '/sys/kernel/security/sony_ric'; then
-    ui_msg 'Disabling Sony RIC...' # Sony RIC may prevent you to remount the system partition as read-write
+    # Sony RIC may prevent you to remount the system partition as read-write
+    ui_msg 'Disabling Sony RIC...'
     printf '%s\n' '0' 1> '/sys/kernel/security/sony_ric/enable' || ui_warning 'Failed to disable Sony RIC'
+  fi
+  if test -n "${VENDOR_PATH?}" && test -f "${VENDOR_PATH:?}/bin/write_protect"; then
+    # Alcatel TCL Flip 2
+    ui_msg 'Disabling write protect...'
+    PATH="${PREVIOUS_PATH:?}:${PATH:?}" "${VENDOR_PATH:?}/bin/write_protect" 0 || ui_warning 'Failed to disable write protect'
   fi
 }
 
