@@ -1358,6 +1358,8 @@ initialize()
   fi
 
   LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}${LD_LIBRARY_PATH:+:}${VENDOR_PATH:-/vendor}/lib64:${SYS_PATH:?}/lib64:${VENDOR_PATH:-/vendor}/lib:${SYS_PATH:?}/lib"
+  export LD_LIBRARY_PATH
+
   _disable_write_locks
   _execute_system_remount
 

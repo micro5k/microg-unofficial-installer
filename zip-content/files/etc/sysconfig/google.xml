@@ -11,6 +11,9 @@
     <allow-in-power-save package="com.google.android.volta" />
     <allow-in-power-save package="com.mirfatif.mylocation" />
 
+    <!-- These are the packages that are white-listed to be able to run in the background while in power save mode (but not whitelisted from device idle modes) -->
+    <allow-in-power-save-except-idle package="com.android.vending" />
+
     <!-- These are the packages that are white-listed to be able to run in the background while in data-usage save mode -->
     <allow-in-data-usage-save package="com.google.android.gms" />
     <allow-in-data-usage-save package="com.google.android.ims" />
@@ -20,9 +23,6 @@
 
     <!-- These are the packages that are white-listed to be able to retrieve location even when user location settings are off, for emergency purposes -->
     <allow-ignore-location-settings package="com.google.android.gms" />
-
-    <!-- These are the packages that are white-listed to be able to run in the background while in power save mode (but not whitelisted from device idle modes) -->
-    <allow-in-power-save-except-idle package="com.android.vending" />
 
     <!-- These are the action strings of broadcasts which are whitelisted to be delivered anonymously even to apps which target O+ -->
     <allow-implicit-broadcast action="com.google.android.checkin.CHECKIN_COMPLETE" />
@@ -35,18 +35,19 @@
     <!-- %CUSTOM_APP_LINKS-START% -->
     <!-- %CUSTOM_APP_LINKS-END% -->
 
-    <!-- Specify the explicit set of other applications whose app data directories are accessible by other applications -->
-    <app-data-isolation-whitelisted-app package="com.google.android.gms" />
-
-    <!-- These are the packages that are exempted from private API blacklisting -->
-    <hidden-api-whitelisted-app package="com.google.android.gms" />
-
     <!-- These are the packages that are white-listed to be able to run as system user -->
     <system-user-whitelisted-app package="com.google.android.gms" />
     <system-user-whitelisted-app package="com.android.vending" />
     <system-user-whitelisted-app package="org.fdroid.fdroid.privileged" />
 
     <system-user-blacklisted-app package="com.google.android.googlequicksearchbox" />
+    <system-user-blacklisted-app package="com.google.android.launcher" />
+
+    <!-- Specify the explicit set of other applications whose app data directories are accessible by other applications -->
+    <app-data-isolation-whitelisted-app package="com.google.android.gms" />
+
+    <!-- These are the packages that are exempted from private API blacklisting -->
+    <hidden-api-whitelisted-app package="com.google.android.gms" />
 
     <!-- Whitelist of packages that are eligible for rollback -->
     <rollback-whitelisted-app package="com.android.vending" />
