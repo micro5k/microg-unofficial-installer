@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.4.0'
+readonly ZIPINSTALL_VERSION='1.4.1'
 
 PATH="${PATH:-/system/bin}:."
 umask 022 || :
@@ -208,15 +208,19 @@ if ! is_root; then
       ui_error_msg 'Unable to find myself'
       exit 3
     }
-    exec su 0 sh -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG-}' DRY_RUN='${DRY_RUN-}' KEY_TEST_ONLY='${KEY_TEST_ONLY-}' BYPASS_LOCK_CHECK='${BYPASS_LOCK_CHECK-}' INPUT_TYPE='${INPUT_TYPE-}' FORCE_HW_KEYS='${FORCE_HW_KEYS-}' CI='${CI:-false}' TMPDIR='${TMPDIR:-}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_error_msg 'failed: exec'
+    exec su 0 sh -c "AUTO_ELEVATED=true DEBUG_LOG='${DEBUG_LOG-}' TMPDIR='${TMPDIR-}' LD_LIBRARY_PATH='${LD_LIBRARY_PATH-}' DRY_RUN='${DRY_RUN-}' KEY_TEST_ONLY='${KEY_TEST_ONLY-}' BYPASS_LOCK_CHECK='${BYPASS_LOCK_CHECK-}' INPUT_TYPE='${INPUT_TYPE-}' FORCE_HW_KEYS='${FORCE_HW_KEYS-}' CI='${CI:-false}' sh -- '${ZIP_INSTALL_SCRIPT:?}' \"\${@}\"" '[su]zip-install.sh' "${@}" || ui_error_msg 'failed: exec'
     exit "${?}"
   fi
 
   ui_error_msg 'You must execute this as root!!!'
   exit 4
 fi
+export LD_LIBRARY_PATH
 
 test -n "${DEBUG_LOG-unset}" || unset DEBUG_LOG
+test -n "${TMPDIR-unset}" || unset TMPDIR
+test -n "${LD_LIBRARY_PATH-unset}" || unset LD_LIBRARY_PATH
+
 test -n "${DRY_RUN-unset}" || unset DRY_RUN
 test -n "${KEY_TEST_ONLY-unset}" || unset KEY_TEST_ONLY
 test -n "${BYPASS_LOCK_CHECK-unset}" || unset BYPASS_LOCK_CHECK
