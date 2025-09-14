@@ -99,6 +99,8 @@ LegacyNetworkLocation|
 MediaTekLocationProvider|com.mediatek.android.location
 NetworkLocation|com.google.android.location
 UnifiedNlp|org.microg.nlp
+UnifiedNLP|
+unifiednlp|
 |org.microg.unifiednlp
 
 DejaVuBackend|org.fitchfamily.android.dejavu
@@ -368,6 +370,8 @@ delete "${DATA_PATH:?}"/backup/com.google.android.gms.backup.BackupTransportServ
 
 delete "${SYS_PATH:?}"/addon.d/*-microg-*.sh
 delete "${SYS_PATH:?}"/addon.d/*-unifiednlp.sh
+delete "${SYS_PATH:?}"/addon.d/*-UnifiedNlp.sh
+delete "${SYS_PATH:?}"/addon.d/*-UnifiedNLP.sh
 delete "${SYS_PATH:?}"/addon.d/*-mapsapi.sh
 delete "${SYS_PATH:?}"/addon.d/*-gapps.sh
 delete "${SYS_PATH:?}"/addon.d/80-fdroid.sh
