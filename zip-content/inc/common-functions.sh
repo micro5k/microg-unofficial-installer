@@ -1357,7 +1357,7 @@ initialize()
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
   fi
 
-  LD_LIBRARY_PATH="{LD_LIBRARY_PATH:?}:{VENDOR_PATH:-/vendor}/lib64:${SYS_PATH:?}/lib64:{VENDOR_PATH:-/vendor}/lib:${SYS_PATH:?}/lib"
+  LD_LIBRARY_PATH="${LD_LIBRARY_PATH:?}:${VENDOR_PATH:-/vendor}/lib64:${SYS_PATH:?}/lib64:${VENDOR_PATH:-/vendor}/lib:${SYS_PATH:?}/lib"
   _disable_write_locks
   _execute_system_remount
 
