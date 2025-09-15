@@ -114,8 +114,9 @@ ui_msg_empty_line()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _send_text_to_recovery ' '
+    test "${TEST_INSTALL:-false}" = 'false' || sleep 2> /dev/null '0.01'
   else
-    _print_text '%s' ''
+    _print_text 1>&2 '%s' ''
   fi
 }
 
@@ -2285,9 +2286,9 @@ verify_sha1_hash()
 # File / folder related functions
 create_dir()
 { # Ensure dir exists
-  test -d "$1" && return
-  mkdir -p "$1" || ui_error "Failed to create the dir '$1'" 97
-  set_perm 0 0 0755 "$1"
+  test ! -d "${1:?}" || return 0
+  mkdir -p -- "${1:?}" || ui_error "Failed to create the dir '${1?}'" 97
+  set_perm 0 0 0755 "${1:?}"
 }
 
 copy_dir_content()
@@ -2625,8 +2626,24 @@ setup_util()
 {
   ui_msg "Enabling utility: ${2?}"
 
-  mkdir -p "${TMP_PATH:?}/files/bin" || ui_error "Failed to create the folder for '${2?}'"
+  create_dir "${TMP_PATH:?}/files/bin" || ui_error "Failed to create the folder for '${2?}'"
   move_rename_file "${TMP_PATH:?}/origin/bin/${1:?}.sh" "${TMP_PATH:?}/files/bin/${1:?}" || ui_error "Failed to setup the util => '${2?}'"
+}
+
+setup_sysconfig()
+{
+  ui_debug "Enabling sysconfig: ${1:?}.xml"
+
+  create_dir "${TMP_PATH:?}/files/etc/sysconfig" || ui_error "Failed to create the sysconfig folder"
+  move_rename_file "${TMP_PATH:?}/origin/etc/sysconfig/${1:?}.xml" "${TMP_PATH:?}/files/etc/sysconfig/${1:?}.xml" || ui_error "Failed to setup the sysconfig => '${1?}.xml'"
+}
+
+setup_xml()
+{
+  ui_debug "Enabling xml: ${2:?}/${1:?}.xml"
+
+  create_dir "${TMP_PATH:?}/files/etc/${2:?}" || ui_error "Failed to create the folder => '${2?}'"
+  move_rename_file "${TMP_PATH:?}/origin/etc/${2:?}/${1:?}.xml" "${TMP_PATH:?}/files/etc/${2:?}/${1:?}.xml" || ui_error "Failed to setup the xml => '${2?}/${1?}.xml'"
 }
 
 list_files()

@@ -59,12 +59,12 @@ APP_ANDROIDAUTO="$(parse_setting 'app' 'ANDROIDAUTO' "${APP_ANDROIDAUTO-}")"
 if test "${SETUP_TYPE:?}" = 'install'; then
   ui_msg 'Extracting...'
   custom_package_extract_dir 'origin' "${TMP_PATH:?}"
-  custom_package_extract_dir 'files' "${TMP_PATH:?}"
   create_dir "${TMP_PATH:?}/files/etc"
 
   ui_msg 'Configuring...'
   ui_msg_empty_line
 
+  setup_sysconfig 'google'
   set_filename_of_base_sysconfig_xml 'google.xml'
 
   setup_lib 1 '' 'microG Maps v1 API' 'com.google.android.maps' false
@@ -127,6 +127,9 @@ if test "${SETUP_TYPE:?}" = 'install'; then
 
   setup_app "${APP_GMAIL_FOR_ANDROID_5_TO_7?}" 'APP_GMAIL_FOR_ANDROID_5_TO_7' 'Gmail' 'Gmail' 'app' true
   setup_app "${APP_ANDROIDAUTO?}" 'APP_ANDROIDAUTO' 'Android Auto stub' 'AndroidAuto' 'priv-app' true
+
+  setup_sysconfig 'features'
+  setup_xml 'additional_repos' 'org.fdroid.fdroid'
 
   if test "${API:?}" -ge 19; then
     setup_util 'minutil' 'MinUtil'
