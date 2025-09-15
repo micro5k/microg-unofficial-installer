@@ -43,6 +43,7 @@ else
 fi
 
 USE_MICROG_BY_ALE5000="$(parse_setting 'general' 'USE_MICROG_BY_ALE5000' "${USE_MICROG_BY_ALE5000:?}")"
+SELECTED_MARKET=''
 
 APP_DEJAVUBACKEND="$(parse_setting 'app' 'DEJAVUBACKEND' "${APP_DEJAVUBACKEND:?}")"
 APP_NOMINATIMBACKEND="$(parse_setting 'app' 'NOMINATIMBACKEND' "${APP_NOMINATIMBACKEND:?}")"
@@ -57,10 +58,6 @@ APP_GMAIL_FOR_ANDROID_5_TO_7="$(parse_setting 'app' 'GMAIL_FOR_ANDROID_5_TO_7' "
 APP_ANDROIDAUTO="$(parse_setting 'app' 'ANDROIDAUTO' "${APP_ANDROIDAUTO-}")"
 
 if test "${SETUP_TYPE:?}" = 'install'; then
-  ui_msg 'Extracting...'
-  custom_package_extract_dir 'origin' "${TMP_PATH:?}"
-  create_dir "${TMP_PATH:?}/files/etc"
-
   ui_msg 'Configuring...'
   ui_msg_empty_line
 
@@ -174,7 +171,7 @@ fi
 # Prepare installation
 prepare_installation
 printf '%s\n' "USE_MICROG_BY_ALE5000=${USE_MICROG_BY_ALE5000:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
-printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 
 # Install
 perform_installation
