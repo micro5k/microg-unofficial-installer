@@ -1554,35 +1554,34 @@ prepare_installation()
 
   ui_msg 'Preparing installation...'
   _need_newline='false'
-  sleep '0.1' # It avoid the following output to be printed interleaved with the previous output
+  sleep 2> /dev/null '0.01' # It avoid the following output to be printed interleaved with the previous output
 
-  if test "${API:?}" -ge 29; then # Android 10+
-    _need_newline='true'
-    replace_permission_placeholders 'ACCESS_BACKGROUND_LOCATION' 'true'
+  if test "${API:?}" -ge 23; then
+    if test "${API:?}" -ge 29; then # Android 10+
+      _need_newline='true'
+      replace_permission_placeholders 'ACCESS_BACKGROUND_LOCATION' 'true'
 
-    if test "${API:?}" -ge 31; then # Android 12+
-      replace_permission_placeholders 'BLUETOOTH_ADVERTISE'
-      replace_permission_placeholders 'BLUETOOTH_CONNECT'
-      replace_permission_placeholders 'BLUETOOTH_SCAN'
+      if test "${API:?}" -ge 31; then # Android 12+
+        replace_permission_placeholders 'BLUETOOTH_ADVERTISE'
+        replace_permission_placeholders 'BLUETOOTH_CONNECT'
+        replace_permission_placeholders 'BLUETOOTH_SCAN'
 
-      if test "${API:?}" -ge 33; then # Android 13+
-        replace_permission_placeholders 'POST_NOTIFICATIONS'
+        if test "${API:?}" -ge 33; then # Android 13+
+          replace_permission_placeholders 'POST_NOTIFICATIONS'
+        fi
       fi
     fi
-  fi
 
-  if test "${FAKE_SIGN_PERMISSION:?}" = 'true'; then
-    _need_newline='true'
-    replace_permission_placeholders 'FAKE_PACKAGE_SIGNATURE'
+    if test "${FAKE_SIGN_PERMISSION:?}" = 'true'; then
+      _need_newline='true'
+      replace_permission_placeholders 'FAKE_PACKAGE_SIGNATURE'
+    fi
   fi
 
   test "${_need_newline:?}" = 'false' || ui_debug ''
 
   if test "${API}" -lt 23; then
     delete_temp "files/etc/default-permissions"
-  fi
-  if test "${API:?}" -lt 21; then
-    delete_temp "files/etc/sysconfig"
   fi
 
   if test "${PRIVAPP_DIRNAME:?}" != 'priv-app' && test -e "${TMP_PATH:?}/files/priv-app"; then
@@ -2461,10 +2460,20 @@ string_split()
   printf '%s' "${1:?}" | cut -d '|' -sf "${2:?}" || return "${?}"
 }
 
-set_filename_of_base_sysconfig_xml()
+setup_sysconfig()
 {
-  BASE_SYSCONFIG_XML="etc/sysconfig/${1:?}"
-  test -e "${TMP_PATH:?}/files/${BASE_SYSCONFIG_XML:?}" || ui_error "You have set the wrong filename for the base sysconfig XML => ${BASE_SYSCONFIG_XML?}"
+  test "${API:?}" -ge 21 || return
+
+  ui_debug "Enabling sysconfig: ${1:?}.xml"
+  create_dir "${TMP_PATH:?}/files/etc/sysconfig" || ui_error "Failed to create the sysconfig folder"
+  move_rename_file "${TMP_PATH:?}/origin/etc/sysconfig/${1:?}.xml" "${TMP_PATH:?}/files/etc/sysconfig/${1:?}.xml" || ui_error "Failed to setup the sysconfig => '${1?}.xml'"
+}
+
+set_base_sysconfig()
+{
+  test "${API:?}" -ge 21 || return
+  BASE_SYSCONFIG_XML="etc/sysconfig/${1:?}.xml"
+  test -f "${TMP_PATH:?}/files/${BASE_SYSCONFIG_XML:?}" || ui_error "You have set the wrong filename for the base sysconfig XML => ${BASE_SYSCONFIG_XML?}"
 }
 
 # @description Configure an app for later installation.
@@ -2536,7 +2545,7 @@ setup_app()
         move_rename_file "${TMP_PATH:?}/origin/etc/default-permissions/default-permissions-${_filename:?}.xml" "${TMP_PATH:?}/files/etc/default-permissions/default-permissions-${_output_name:?}.xml" || ui_error "Failed to setup the default permissions xml of '${_vanity_name?}'"
         _installed_file_list="${_installed_file_list?}|etc/default-permissions/default-permissions-${_output_name:?}.xml"
       fi
-      if test "${_url_handling:?}" != 'false' && test "${CURRENTLY_ROLLING_BACK:-false}" != 'true'; then
+      if test "${API:?}" -ge 21 && test "${_url_handling:?}" != 'false' && test "${CURRENTLY_ROLLING_BACK:-false}" != 'true'; then
         test -n "${BASE_SYSCONFIG_XML?}" || ui_error 'You have NOT set the filename of the base sysconfig XML'
         add_line_in_file_after_string "${TMP_PATH:?}/files/${BASE_SYSCONFIG_XML:?}" '<!-- %CUSTOM_APP_LINKS-START% -->' "    <app-link package=\"${_internal_name:?}\" />" || ui_error "Failed to auto-enable URL handling for '${_vanity_name?}'"
       fi
@@ -2628,14 +2637,6 @@ setup_util()
 
   create_dir "${TMP_PATH:?}/files/bin" || ui_error "Failed to create the folder for '${2?}'"
   move_rename_file "${TMP_PATH:?}/origin/bin/${1:?}.sh" "${TMP_PATH:?}/files/bin/${1:?}" || ui_error "Failed to setup the util => '${2?}'"
-}
-
-setup_sysconfig()
-{
-  ui_debug "Enabling sysconfig: ${1:?}.xml"
-
-  create_dir "${TMP_PATH:?}/files/etc/sysconfig" || ui_error "Failed to create the sysconfig folder"
-  move_rename_file "${TMP_PATH:?}/origin/etc/sysconfig/${1:?}.xml" "${TMP_PATH:?}/files/etc/sysconfig/${1:?}.xml" || ui_error "Failed to setup the sysconfig => '${1?}.xml'"
 }
 
 setup_xml()

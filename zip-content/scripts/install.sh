@@ -65,7 +65,7 @@ if test "${SETUP_TYPE:?}" = 'install'; then
   ui_msg_empty_line
 
   setup_sysconfig 'google'
-  set_filename_of_base_sysconfig_xml 'google.xml'
+  set_base_sysconfig 'google'
 
   setup_lib 1 '' 'microG Maps v1 API' 'com.google.android.maps' false
 
