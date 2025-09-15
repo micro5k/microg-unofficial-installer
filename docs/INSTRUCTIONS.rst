@@ -35,3 +35,5 @@ Instead if you want to try the nightly builds you can find them here:
 
 - `Nightly - Full flavour <https://gitlab.com/micro5k/microg-unofficial-installer/-/jobs/artifacts/main/browse/output?job=build-job>`_
 - `Nightly - OSS flavour <https://github.com/micro5k/microg-unofficial-installer/releases/tag/nightly>`_
+
+**NOTE:** If you get the error "No space left on device", you can find a workaround here: `#138 <../../../issues/138>`_
