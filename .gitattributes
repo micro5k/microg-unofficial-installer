@@ -15,6 +15,7 @@ docs/CODEOWNERS   text eol=lf
 .mailmap          text eol=lf
 .semgrepignore    text eol=lf
 .shellcheckrc     text eol=lf
+.tool-version     text eol=lf
 
 *.gpg             text eol=lf
 *.yml             text eol=lf
