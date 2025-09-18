@@ -89,7 +89,18 @@ ui_error()
     _print_text 1>&2 '\033[1;31m%s\033[0m' "ERROR ${_error_code:?}: ${1:?}"
   fi
 
+  deinitialize
   exit "${_error_code:?}"
+}
+
+ui_error_from_deinit()
+{
+  if test "${RECOVERY_OUTPUT:?}" = 'true'; then
+    _send_text_to_recovery "ERROR: ${1:?}"
+  else
+    _print_text 1>&2 '\033[1;31m%s\033[0m' "ERROR: ${1:?}"
+  fi
+  exit 91
 }
 
 ui_recovered_error()
@@ -436,9 +447,20 @@ _execute_system_remount()
   if test -f "${SYS_PATH:?}/bin/remount"; then
     ui_msg 'Executing the remount binary...'
     _remount_output="$(PATH="${PREVIOUS_PATH:?}:${PATH:?}" "${SYS_PATH:?}/bin/remount" 2>&1)" || ui_warning 'Failed to execute the remount binary'
+    ui_debug 'Output:'
     ui_debug "${_remount_output?}"
     case "${_remount_output?}" in
-      *'reboot your device'*) if test "${IS_EMU:?}" = 'true'; then exit 252; else exit 251; fi ;;
+      *'reboot your device'*)
+        if test "${IS_EMU:?}" = 'true'; then exit 252; else exit 251; fi
+        ;;
+      *'must be bootloader unlocked'*)
+        ui_debug ''
+        if test "${BYPASS_LOCK_CHECK:?}" != 0; then
+          ui_warning 'The boot loader is locked!!!'
+        else
+          ui_error 'The boot loader is locked!!!' 37
+        fi
+        ;;
       *) ;;
     esac
     ui_debug ''
@@ -508,6 +530,84 @@ _prepare_mountpoint()
   return 0
 }
 
+_mount_single_apex()
+{
+  local _val _block _found
+  unset LAST_APEX_MOUNTPOINT
+
+  _found='false'
+  _val="${1:?}"
+  if test -e "/dev/block/mapper/${_val:?}"; then
+    _block="$(_canonicalize "/dev/block/mapper/${_val:?}")"
+    ui_msg "Found 'mapper/${_val?}' block at: ${_block?}"
+    _found='true'
+  fi
+
+  _val="${2:?}"
+  if test "${_found:?}" != 'false' && mkdir -p -- "${_val:?}" && _mount_helper -o 'ro,nodev,noatime' "${_block:?}" "${_val:?}"; then
+    LAST_APEX_MOUNTPOINT="${_val:?}"
+    return 0
+  fi
+
+  ui_debug "Block not found for: ${1?}"
+  return 1
+}
+
+mount_apex_if_possible()
+{
+  local _partition_name _mp _block_search
+  unset LAST_MOUNTPOINT
+  LAST_PARTITION_MUST_BE_UNMOUNTED=0
+
+  _partition_name="apex"
+  _mp='/apex'
+
+  ui_debug "Checking ${_partition_name?}..."
+
+  if is_mounted "${_mp:?}"; then
+    LAST_MOUNTPOINT="${_mp:?}"
+    ui_debug "Already mounted: ${LAST_MOUNTPOINT?}"
+    return 0 # Already mounted
+  fi
+
+  test -e "${_mp:?}" || {
+    ui_warning "Mounting of ${_partition_name?} failed (missing mountpoint)"
+    return 2
+  }
+
+  if _mount_helper -o 'rw,nosuid,nodev,noexec,mode=755' -t 'tmpfs' 'tmpfs' "${_mp:?}"; then
+    LAST_MOUNTPOINT="${_mp:?}"
+    LAST_PARTITION_MUST_BE_UNMOUNTED=1
+    ui_debug "Mounted: ${LAST_MOUNTPOINT?}"
+  else
+    ui_warning "Mounting of ${_partition_name?} failed"
+    return 2
+  fi
+
+  for _block_search in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
+    if _mount_single_apex "${_block_search:?}" "${_mp:?}/${_block_search:?}"; then
+      ui_debug "Mounted: ${LAST_APEX_MOUNTPOINT?}" # Successfully mounted
+    fi
+  done
+  unset LAST_APEX_MOUNTPOINT
+
+  ui_debug 'Done'
+  return 0
+}
+
+unmount_apex_if_needed()
+{
+  local _mp _name
+  test "${UNMOUNT_APEX:?}" = '1' || return
+
+  _mp='/apex'
+  for _name in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
+    test -e "${_mp:?}/${_name:?}" || continue
+    unmount_partition "${_mp:?}/${_name:?}"
+  done
+  unmount_partition "${_mp:?}"
+}
+
 _manual_partition_mount()
 {
   local _backup_ifs _path _block _found
@@ -557,7 +657,7 @@ _manual_partition_mount()
       if test "${RECOVERY_FAKE_SYSTEM:?}" = 'true' && test "${_path:?}" = '/system'; then continue; fi
       _prepare_mountpoint "${_path:?}" || continue
 
-      if _mount_helper '-o' 'ro' "${_block:?}" "${_path:?}"; then
+      if _mount_helper -o 'ro' "${_block:?}" "${_path:?}"; then
         IFS="${_backup_ifs:-}"
         LAST_MOUNTPOINT="${_path:?}"
         return 0
@@ -1125,17 +1225,23 @@ display_info()
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
 }
 
-initialize()
+reset_unmount_vars()
 {
-  local _raw_arch_list _additional_data_mountpoint
-
   UNMOUNT_SYSTEM=0
   UNMOUNT_VENDOR=0
   UNMOUNT_PRODUCT=0
   UNMOUNT_SYS_EXT=0
   UNMOUNT_ODM=0
   UNMOUNT_SYS_DLKM=0
+  UNMOUNT_APEX=0
   UNMOUNT_DATA=0
+}
+
+initialize()
+{
+  local _raw_arch_list _additional_data_mountpoint
+
+  reset_unmount_vars
 
   VENDOR_PATH=''
   PRODUCT_PATH=''
@@ -1379,6 +1485,13 @@ initialize()
     UNMOUNT_SYS_DLKM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
   fi
 
+  if test -d "${SYS_PATH:?}/apex"; then
+    ui_debug ''
+    if mount_apex_if_possible; then
+      UNMOUNT_APEX="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+    fi
+  fi
+
   ui_debug ''
   unset LD_PRELOAD
   export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}"
@@ -1388,6 +1501,7 @@ initialize()
   ui_debug "LD_LIBRARY_PATH='${LD_LIBRARY_PATH-}'"
   ui_debug ''
 
+  sleep 2> /dev/null '0.01' || :
   _disable_write_locks
   _execute_system_remount
 
@@ -1486,6 +1600,8 @@ deinitialize()
 {
   if test "${UNMOUNT_DATA:?}" = '1' && test -n "${DATA_PATH?}"; then unmount_partition "${DATA_PATH:?}"; fi
 
+  unmount_apex_if_needed
+
   if test "${UNMOUNT_SYS_DLKM:?}" = '1' && test -n "${SYS_DLKM_PATH?}"; then unmount_partition "${SYS_DLKM_PATH:?}"; fi
   if test "${UNMOUNT_ODM:?}" = '1' && test -n "${ODM_PATH?}"; then unmount_partition "${ODM_PATH:?}"; fi
 
@@ -1495,8 +1611,10 @@ deinitialize()
 
   if test "${UNMOUNT_SYSTEM:?}" = '1' && test -n "${SYS_MOUNTPOINT-}"; then unmount_partition "${SYS_MOUNTPOINT:?}"; fi
 
+  reset_unmount_vars
+
   if test -e "${TMP_PATH:?}/system_mountpoint"; then
-    rmdir -- "${TMP_PATH:?}/system_mountpoint" || ui_error 'Failed to delete the temp system mountpoint'
+    rmdir -- "${TMP_PATH:?}/system_mountpoint" || ui_error_from_deinit 'Failed to delete the temp system mountpoint'
   fi
 }
 
