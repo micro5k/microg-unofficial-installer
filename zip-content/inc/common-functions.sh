@@ -1116,24 +1116,25 @@ initialize()
   UNMOUNT_PRODUCT=0
   UNMOUNT_SYS_EXT=0
   UNMOUNT_ODM=0
+  UNMOUNT_SYS_DLKM=0
   UNMOUNT_DATA=0
+
+  VENDOR_PATH=''
+  PRODUCT_PATH=''
+  SYS_EXT_PATH=''
+  ODM_PATH=''
+  SYS_DLKM_PATH=''
+  DATA_PATH='/data'
+
+  VENDOR_RW='false'
+  PRODUCT_RW='false'
+  SYS_EXT_RW='false'
 
   # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
   if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
     # shellcheck source=SCRIPTDIR/../../recovery-simulator/inc/configure-overrides.sh
     command . "${RS_OVERRIDE_SCRIPT:?}" || ui_error "Sourcing override script failed with error: ${?}"
   fi
-
-  VENDOR_PATH=''
-  PRODUCT_PATH=''
-  SYS_EXT_PATH=''
-  ODM_PATH=''
-  DATA_PATH='/data'
-
-  VENDOR_RW='false'
-  PRODUCT_RW='false'
-  SYS_EXT_RW='false'
-  ODM_RW='false'
 
   BASE_SYSCONFIG_XML=''
 
@@ -1350,9 +1351,14 @@ initialize()
     SYS_EXT_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_SYS_EXT="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
   fi
+
   if mount_partition_if_possible 'odm' "${SLOT_SUFFIX:+odm}${SLOT_SUFFIX-}${NL:?}odm${NL:?}"; then
     ODM_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_ODM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
+  fi
+  if mount_partition_if_possible 'system_dlkm' "${SLOT_SUFFIX:+system_dlkm}${SLOT_SUFFIX-}${NL:?}system_dlkm${NL:?}"; then
+    SYS_DLKM_PATH="${LAST_MOUNTPOINT:?}"
+    UNMOUNT_SYS_DLKM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
   fi
 
   LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}${LD_LIBRARY_PATH:+:}${VENDOR_PATH:-/vendor}/lib64:${SYS_PATH:?}/lib64:${VENDOR_PATH:-/vendor}/lib:${SYS_PATH:?}/lib"
@@ -1387,12 +1393,9 @@ initialize()
   if test -n "${SYS_EXT_PATH?}"; then
     remount_read_write_if_possible "${SYS_EXT_PATH:?}" false && SYS_EXT_RW='true'
   fi
-  if test -n "${ODM_PATH?}"; then
-    : #remount_read_write_if_possible "${ODM_PATH:?}" false && ODM_RW='true'
-  fi
-  readonly VENDOR_PATH PRODUCT_PATH SYS_EXT_PATH ODM_PATH
-  export VENDOR_PATH PRODUCT_PATH SYS_EXT_PATH ODM_PATH
-  export VENDOR_RW PRODUCT_RW SYS_EXT_RW ODM_RW
+  readonly VENDOR_PATH PRODUCT_PATH SYS_EXT_PATH ODM_PATH SYS_DLKM_PATH
+  export VENDOR_PATH PRODUCT_PATH SYS_EXT_PATH ODM_PATH SYS_DLKM_PATH
+  export VENDOR_RW PRODUCT_RW SYS_EXT_RW
 
   _additional_data_mountpoint=''
   if test -n "${ANDROID_DATA-}" && test "${ANDROID_DATA:?}" != '/data'; then _additional_data_mountpoint="${ANDROID_DATA:?}"; fi
@@ -1459,7 +1462,9 @@ deinitialize()
 {
   if test "${UNMOUNT_DATA:?}" = '1' && test -n "${DATA_PATH?}"; then unmount_partition "${DATA_PATH:?}"; fi
 
+  if test "${UNMOUNT_SYS_DLKM:?}" = '1' && test -n "${SYS_DLKM_PATH?}"; then unmount_partition "${SYS_DLKM_PATH:?}"; fi
   if test "${UNMOUNT_ODM:?}" = '1' && test -n "${ODM_PATH?}"; then unmount_partition "${ODM_PATH:?}"; fi
+
   if test "${UNMOUNT_SYS_EXT:?}" = '1' && test -n "${SYS_EXT_PATH?}"; then unmount_partition "${SYS_EXT_PATH:?}"; fi
   if test "${UNMOUNT_PRODUCT:?}" = '1' && test -n "${PRODUCT_PATH?}"; then unmount_partition "${PRODUCT_PATH:?}"; fi
   if test "${UNMOUNT_VENDOR:?}" = '1' && test -n "${VENDOR_PATH?}"; then unmount_partition "${VENDOR_PATH:?}"; fi
@@ -1909,7 +1914,7 @@ verify_disk_space()
   if test -n "${VENDOR_PATH?}"; then display_free_space "${VENDOR_PATH:?}" "$(get_free_disk_space_of_partition "${VENDOR_PATH:?}" || :)" "${VENDOR_RW:?}"; fi
   if test -n "${PRODUCT_PATH?}"; then display_free_space "${PRODUCT_PATH:?}" "$(get_free_disk_space_of_partition "${PRODUCT_PATH:?}" || :)" "${PRODUCT_RW:?}"; fi
   if test -n "${SYS_EXT_PATH?}"; then display_free_space "${SYS_EXT_PATH:?}" "$(get_free_disk_space_of_partition "${SYS_EXT_PATH:?}" || :)" "${SYS_EXT_RW:?}"; fi
-  if test -n "${ODM_PATH?}"; then display_free_space "${ODM_PATH:?}" "$(get_free_disk_space_of_partition "${ODM_PATH:?}" || :)" "${ODM_RW:?}"; fi
+  if test -n "${ODM_PATH?}"; then display_free_space "${ODM_PATH:?}" "$(get_free_disk_space_of_partition "${ODM_PATH:?}" || :)" 'false'; fi
 
   if test "${_needed_space_bytes:?}" -ge 0 && test "${_free_space_bytes:?}" -ge 0; then
     : # OK
