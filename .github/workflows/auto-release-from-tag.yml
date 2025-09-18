@@ -35,7 +35,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: "17"
+          java-version-file: ".tool-versions"
       - name: "Build the flashable OTA zip"
         id: "build"
         shell: bash

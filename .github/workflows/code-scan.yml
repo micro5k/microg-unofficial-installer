@@ -76,7 +76,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: "17"
+          java-version-file: ".tool-versions"
       - name: "Generate and submit dependency graph"
         uses: gradle/actions/dependency-submission@v4
         with:
