@@ -713,7 +713,7 @@ mount_partition_if_possible()
     if test -n "${SYS_PATH-}" && test ! -L "${SYS_PATH:?}/${_partition_name:?}" && test -d "${SYS_PATH:?}/${_partition_name:?}"; then # Example: /system_root/system/product
       _skip_warnings='true'
       ui_debug "Found ${_partition_name?} folder: ${SYS_PATH?}/${_partition_name?}"
-    elif test -n "${SYS_MOUNTPOINT-}" && test ! -L "${SYS_MOUNTPOINT:?}/${_partition_name:?}" && test -d "${SYS_MOUNTPOINT:?}/${_partition_name:?}"; then # Example: /system_root/odm
+    elif test -n "${SYS_MOUNTPOINT-}" && test "${SYS_MOUNTPOINT:?}" != '/' && test ! -L "${SYS_MOUNTPOINT:?}/${_partition_name:?}" && test -d "${SYS_MOUNTPOINT:?}/${_partition_name:?}"; then # Example: /system_root/odm
       _skip_warnings='true'
       ui_debug "Found ${_partition_name?} folder: ${SYS_MOUNTPOINT?}/${_partition_name?}"
     elif test ! -L "/${_partition_name:?}" && test -d "/${_partition_name:?}"; then # Example: /odm
@@ -1044,6 +1044,23 @@ is_new_architecture()
   return 1
 }
 
+append_to_ld_library_path()
+{
+  if test -d "${1:?}"; then
+    LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}${LD_LIBRARY_PATH:+:}${1:?}"
+  fi
+}
+
+append_dir_from_all_partitions_to_ld_library_path()
+{
+  append_to_ld_library_path "${VENDOR_PATH:-/vendor}/${1:?}"
+  append_to_ld_library_path "${SYS_PATH:?}/${1:?}"
+  append_to_ld_library_path "${PRODUCT_PATH:-/product}/${1:?}"
+  append_to_ld_library_path "/apex/com.android.runtime/${1:?}"
+  append_to_ld_library_path "/apex/com.android.art/${1:?}"
+  append_to_ld_library_path "/apex/com.android.i18n/${1:?}"
+}
+
 display_basic_info()
 {
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
@@ -1361,8 +1378,13 @@ initialize()
     UNMOUNT_SYS_DLKM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
   fi
 
-  LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}${LD_LIBRARY_PATH:+:}${VENDOR_PATH:-/vendor}/lib64:${SYS_PATH:?}/lib64:${VENDOR_PATH:-/vendor}/lib:${SYS_PATH:?}/lib"
-  export LD_LIBRARY_PATH
+  ui_debug ''
+  export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}"
+  append_dir_from_all_partitions_to_ld_library_path 'lib64'
+  append_dir_from_all_partitions_to_ld_library_path 'lib'
+  append_dir_from_all_partitions_to_ld_library_path 'lib/arm'
+  ui_debug "LD_LIBRARY_PATH='${LD_LIBRARY_PATH-}'"
+  ui_debug ''
 
   _disable_write_locks
   _execute_system_remount
