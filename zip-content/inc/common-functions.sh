@@ -1059,6 +1059,7 @@ append_dir_from_all_partitions_to_ld_library_path()
   append_to_ld_library_path "/apex/com.android.runtime/${1:?}"
   append_to_ld_library_path "/apex/com.android.art/${1:?}"
   append_to_ld_library_path "/apex/com.android.i18n/${1:?}"
+  append_to_ld_library_path "/apex/sharedlibs/${1:?}"
 }
 
 display_basic_info()
@@ -1379,6 +1380,7 @@ initialize()
   fi
 
   ui_debug ''
+  unset LD_PRELOAD
   export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}"
   append_dir_from_all_partitions_to_ld_library_path 'lib64'
   append_dir_from_all_partitions_to_ld_library_path 'lib'
