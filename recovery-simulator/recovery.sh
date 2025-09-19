@@ -360,9 +360,9 @@ _android_ext_stor="${_base_simulation_path:?}/sdcard0"
 _android_sec_stor="${_base_simulation_path:?}/sdcard1"
 if test -n "${CYGPATH?}"; then
   # Only on Bash under Windows
-  _android_lib_path="$("${CYGPATH:?}" -p -u ".;${_base_simulation_path:?}/sbin")" || fail_with_msg 'Unable to convert the Android lib path env'
+  _android_lib_path="$("${CYGPATH:?}" -p -u "${_base_simulation_path:?}/sbin")" || fail_with_msg 'Unable to convert the Android lib path env'
 else
-  _android_lib_path=".${PATHSEP:?}${_base_simulation_path:?}/sbin"
+  _android_lib_path="${_base_simulation_path:?}/sbin"
 fi
 _android_data="${_base_simulation_path:?}/data"
 _android_sys="${_base_simulation_path:?}/system"
@@ -383,11 +383,13 @@ mkdir -p "${_base_simulation_path:?}"
 cd "${_base_simulation_path:?}" || fail_with_msg 'Failed to change dir to the base simulation path'
 mkdir -p "${_android_tmp:?}"
 mkdir -p "${_android_sys:?}"
-mkdir -p "${_android_sys:?}/addon.d"
+mkdir -p "${_android_sys:?}/lib64"
+mkdir -p "${_android_sys:?}/lib"
 mkdir -p "${_android_sys:?}/etc"
 mkdir -p "${_android_sys:?}/priv-app"
 mkdir -p "${_android_sys:?}/app"
 mkdir -p "${_android_sys:?}/bin"
+mkdir -p "${_android_sys:?}/addon.d"
 mkdir -p "${_android_data:?}"
 mkdir -p "${_android_ext_stor:?}"
 mkdir -p "${_android_sec_stor:?}"
