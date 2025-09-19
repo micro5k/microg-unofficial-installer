@@ -553,6 +553,17 @@ _mount_single_apex()
   return 1
 }
 
+_mount_apex_children()
+{
+  for _block_search in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
+    if _mount_single_apex "${_block_search:?}" "${_mp:?}/${_block_search:?}"; then
+      ui_debug "Mounted: ${LAST_APEX_MOUNTPOINT?}"
+    fi
+  done
+
+  unset LAST_APEX_MOUNTPOINT
+}
+
 mount_apex_if_possible()
 {
   local _partition_name _mp _block_search
@@ -584,12 +595,7 @@ mount_apex_if_possible()
     return 2
   fi
 
-  for _block_search in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
-    if _mount_single_apex "${_block_search:?}" "${_mp:?}/${_block_search:?}"; then
-      ui_debug "Mounted: ${LAST_APEX_MOUNTPOINT?}"
-    fi
-  done
-  unset LAST_APEX_MOUNTPOINT
+  _mount_apex_children
 
   ui_debug 'Done'
   return 0
