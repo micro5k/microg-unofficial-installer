@@ -322,7 +322,7 @@ _mount_helper()
 
 _losetup_helper()
 {
-  if test -n "${DEVICE_LOSETUP-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_LOSETUP:?}" 2> /dev/null "${@}"; then
+  if test -n "${DEVICE_LOSETUP-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_LOSETUP:?}" "${@}"; then
     :
   else
     losetup "${@}" || return "${?}"
@@ -563,15 +563,26 @@ _mount_single_apex()
       ui_msg "  Found loop of '${1?}' at: ${_block?}" # Reuse existing
       _found='true'
     fi
+
+    if test "${_found:?}" = 'false' && mkdir -p -- '/apex/extracted' && unzip -oq "${_apex_file:?}" 'apex_payload.img' -d '/apex/extracted'; then
+      if _val="$(_losetup_helper -r -f)" && test -n "${_val?}" && test -b "${_val:?}" && _losetup_helper -r -- "${_val:?}" '/apex/extracted/apex_payload.img'; then
+        _block="${_val:?}"
+        ASSOCIATED_LOOP_DEVICES="${ASSOCIATED_LOOP_DEVICES?}${_block:?}${NL:?}"
+        ui_msg "  Associated loop device: ${_block?}" # Create new assoctiation
+        _found='true'
+      fi
+    fi
   fi
 
   if test "${_found:?}" != 'false' && mkdir -p -- "${2:?}"; then
     if _mount_helper -o 'ro,nodev,noatime' "${_block:?}" "${2:?}"; then
+      rm -f -- '/apex/extracted/apex_payload.img' || :
       LAST_APEX_MOUNTPOINT="${2:?}"
       return 0
     fi
     rmdir -- "${2:?}" || :
   fi
+  rm -f -- '/apex/extracted/apex_payload.img' || :
 
   ui_debug "  Block not found for: ${1?}"
   return 1
@@ -590,6 +601,7 @@ _mount_apex_children()
     fi
   done
 
+  rmdir -- '/apex/extracted' || :
   unset LAST_APEX_MOUNTPOINT
 }
 
@@ -634,7 +646,7 @@ mount_apex_if_possible()
 
 unmount_apex_if_needed()
 {
-  local _mp _name
+  local _mp _name _loop
   test "${UNMOUNT_APEX:?}" = '1' || return
 
   _mp='/apex'
@@ -644,6 +656,20 @@ unmount_apex_if_needed()
     unmount_partition "${_mp:?}/${_name:?}"
   done
   unmount_partition "${_mp:?}"
+
+  _backup_ifs="${IFS-}"
+  IFS="${NL:?}"
+  set -f || :
+  # shellcheck disable=SC2086 # Word splitting is intended
+  set -- ${ASSOCIATED_LOOP_DEVICES?} || ui_warning "Failed expanding \${ASSOCIATED_LOOP_DEVICES} inside unmount_apex_if_needed()"
+  set +f || :
+  IFS="${_backup_ifs?}"
+
+  for _loop in "${@}"; do
+    _losetup_helper -d "${_loop:?}"
+  done
+
+  ASSOCIATED_LOOP_DEVICES=''
 }
 
 _manual_partition_mount()
@@ -1298,6 +1324,7 @@ initialize()
     command . "${RS_OVERRIDE_SCRIPT:?}" || ui_error "Sourcing override script failed with error: ${?}"
   fi
 
+  ASSOCIATED_LOOP_DEVICES=''
   BASE_SYSCONFIG_XML=''
 
   package_extract_file 'module.prop' "${TMP_PATH:?}/module.prop"
