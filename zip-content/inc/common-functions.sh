@@ -320,6 +320,17 @@ _mount_helper()
   return 0
 }
 
+_losetup_helper()
+{
+  if test -n "${DEVICE_LOSETUP-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_LOSETUP:?}" 2> /dev/null "${@}"; then
+    :
+  else
+    losetup "${@}" || return "${?}"
+  fi
+
+  return 0
+}
+
 _verify_system_partition()
 {
   local _backup_ifs _path
@@ -532,32 +543,50 @@ _prepare_mountpoint()
 
 _mount_single_apex()
 {
-  local _val _block _found
-  unset LAST_APEX_MOUNTPOINT
+  local _val _apex_file _block _found
 
+  unset LAST_APEX_MOUNTPOINT
   _found='false'
-  _val="${1:?}"
-  if test -e "/dev/block/mapper/${_val:?}"; then
-    _block="$(_canonicalize "/dev/block/mapper/${_val:?}")"
-    ui_msg "Found 'mapper/${_val?}' block at: ${_block?}"
+
+  if test -e "/dev/block/mapper/${1:?}"; then
+    _block="$(_canonicalize "/dev/block/mapper/${1:?}")"
+    ui_msg "  Found 'mapper/${1?}' block at: ${_block?}" # Reuse existing
     _found='true'
   fi
 
-  _val="${2:?}"
-  if test "${_found:?}" != 'false' && mkdir -p -- "${_val:?}" && _mount_helper -o 'ro,nodev,noatime' "${_block:?}" "${_val:?}"; then
-    LAST_APEX_MOUNTPOINT="${_val:?}"
-    return 0
+  if test "${_found:?}" = 'false'; then
+    _apex_file="${SYS_PATH:?}/apex/${1:?}.apex"
+    test -f "${_apex_file:?}" || return 2
+
+    if _val="$(_losetup_helper 2> /dev/null -j "${_apex_file:?}" | tail -n 1 | cut -d ':' -f '1')" && test -n "${_val?}" && test -b "${_val:?}"; then
+      _block="${_val:?}"
+      ui_msg "  Found loop of '${1?}' at: ${_block?}" # Reuse existing
+      _found='true'
+    fi
   fi
 
-  ui_debug "Block not found for: ${1?}"
+  if test "${_found:?}" != 'false' && mkdir -p -- "${2:?}"; then
+    if _mount_helper -o 'ro,nodev,noatime' "${_block:?}" "${2:?}"; then
+      LAST_APEX_MOUNTPOINT="${2:?}"
+      return 0
+    fi
+    rmdir -- "${2:?}" || :
+  fi
+
+  ui_debug "  Block not found for: ${1?}"
   return 1
 }
 
 _mount_apex_children()
 {
-  for _block_search in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
-    if _mount_single_apex "${_block_search:?}" "${_mp:?}/${_block_search:?}"; then
-      ui_debug "Mounted: ${LAST_APEX_MOUNTPOINT?}"
+  local _child
+
+  for _child in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
+    test ! -e "${1:?}/${_child:?}" || continue # Already exist
+
+    ui_debug "  Checking ${1?}/${_child?}..."
+    if _mount_single_apex "${_child:?}" "${1:?}/${_child:?}"; then
+      ui_debug "  Mounted: ${LAST_APEX_MOUNTPOINT?}"
     fi
   done
 
@@ -566,7 +595,7 @@ _mount_apex_children()
 
 mount_apex_if_possible()
 {
-  local _partition_name _mp _block_search
+  local _partition_name _mp
   unset LAST_MOUNTPOINT
   LAST_PARTITION_MUST_BE_UNMOUNTED=0
 
@@ -576,6 +605,8 @@ mount_apex_if_possible()
   ui_debug "Checking ${_partition_name?}..."
 
   if is_mounted "${_mp:?}"; then
+    _mount_apex_children "${_mp:?}"
+
     LAST_MOUNTPOINT="${_mp:?}"
     ui_debug "Already mounted: ${LAST_MOUNTPOINT?}"
     return 0 # Already mounted
@@ -589,13 +620,13 @@ mount_apex_if_possible()
   if _mount_helper -o 'rw,nosuid,nodev,noexec,mode=755' -t 'tmpfs' 'tmpfs' "${_mp:?}"; then
     LAST_MOUNTPOINT="${_mp:?}"
     LAST_PARTITION_MUST_BE_UNMOUNTED=1
-    ui_debug "Mounted: ${LAST_MOUNTPOINT?}" # Successfully mounted
+    ui_debug "  Mounted: ${LAST_MOUNTPOINT?}" # Successfully mounted
   else
     ui_warning "Mounting of ${_partition_name?} failed"
     return 2
   fi
 
-  _mount_apex_children
+  _mount_apex_children "${_mp:?}"
 
   ui_debug 'Done'
   return 0
@@ -607,6 +638,7 @@ unmount_apex_if_needed()
   test "${UNMOUNT_APEX:?}" = '1' || return
 
   _mp='/apex'
+
   for _name in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
     test -e "${_mp:?}/${_name:?}" || continue
     unmount_partition "${_mp:?}/${_name:?}"
@@ -805,7 +837,7 @@ mount_partition_if_possible()
       *) ;;
     esac
 
-    if _mount_helper 2> /dev/null '-o' 'ro' "${_mp:?}"; then
+    if _mount_helper 2> /dev/null -o 'ro' "${_mp:?}"; then
       LAST_MOUNTPOINT="${_mp:?}"
       LAST_PARTITION_MUST_BE_UNMOUNTED=1
       ui_debug "Mounted (2): ${LAST_MOUNTPOINT?}"
