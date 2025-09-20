@@ -601,7 +601,7 @@ _mount_apex_children()
     fi
   done
 
-  rmdir -- '/apex/extracted' || :
+  if test -d '/apex/extracted'; then rmdir -- '/apex/extracted' || :; fi
   unset LAST_APEX_MOUNTPOINT
 }
 
@@ -646,7 +646,7 @@ mount_apex_if_possible()
 
 unmount_apex_if_needed()
 {
-  local _mp _name _loop
+  local _mp _name _loop _backup_ifs
   test "${UNMOUNT_APEX:?}" = '1' || return
 
   _mp='/apex'
