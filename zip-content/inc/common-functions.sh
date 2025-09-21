@@ -93,14 +93,13 @@ ui_error()
   exit "${_error_code:?}"
 }
 
-ui_error_from_deinit()
+ui_error_msg()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _send_text_to_recovery "ERROR: ${1:?}"
   else
     _print_text 1>&2 '\033[1;31m%s\033[0m' "ERROR: ${1:?}"
   fi
-  exit 91
 }
 
 ui_recovered_error()
@@ -462,15 +461,12 @@ _execute_system_remount()
     ui_debug "${_remount_output?}"
     case "${_remount_output?}" in
       *'reboot your device'*)
+        deinitialize
         if test "${IS_EMU:?}" = 'true'; then exit 252; else exit 251; fi
         ;;
       *'must be bootloader unlocked'*)
         ui_debug ''
-        if test "${BYPASS_LOCK_CHECK:?}" != 0; then
-          ui_warning 'The boot loader is locked!!!'
-        else
-          ui_error 'The boot loader is locked!!!' 37
-        fi
+        if test "${BYPASS_LOCK_CHECK:?}" != 0; then ui_warning 'The boot loader is locked!!!'; else ui_error 'The boot loader is locked!!!' 37; fi
         ;;
       *) ;;
     esac
@@ -568,7 +564,7 @@ _mount_single_apex()
       if _val="$(_losetup_helper -r -f)" && test -n "${_val?}" && test -b "${_val:?}" && _losetup_helper -r -- "${_val:?}" '/apex/extracted/apex_payload.img'; then
         _block="${_val:?}"
         ASSOCIATED_LOOP_DEVICES="${ASSOCIATED_LOOP_DEVICES?}${_block:?}${NL:?}"
-        ui_msg "  Associated loop device: ${_block?}" # Create new assoctiation
+        ui_msg "  Associated loop device: ${_block?}" # Create new association
         _found='true'
       fi
     fi
@@ -1679,7 +1675,10 @@ deinitialize()
   reset_unmount_vars
 
   if test -e "${TMP_PATH:?}/system_mountpoint"; then
-    rmdir -- "${TMP_PATH:?}/system_mountpoint" || ui_error_from_deinit 'Failed to delete the temp system mountpoint'
+    rmdir -- "${TMP_PATH:?}/system_mountpoint" || {
+      ui_error_msg 'Failed to delete the temp system mountpoint'
+      exit 91
+    }
   fi
 }
 
