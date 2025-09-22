@@ -52,7 +52,7 @@ readonly NL='
 ### FUNCTIONS ###
 
 # Message related functions
-_send_text_to_recovery()
+_show_msg_in_recovery()
 {
   if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
 
@@ -68,10 +68,10 @@ _send_text_to_recovery()
 _print_text()
 {
   if test -n "${NO_COLOR-}"; then
-    printf '%s\n' "${2?}"
+    printf 1>&2 '%s\n' "${2?}"
   else
     # shellcheck disable=SC2059
-    printf "${1:?}\n" "${2?}"
+    printf 1>&2 "${1:?}\n" "${2?}"
   fi
 
   if test "${DEBUG_LOG_ENABLED:?}" = '1' && test -n "${ORIGINAL_STDERR_FD_PATH?}"; then printf '%s\n' "${2?}" 1>> "${ORIGINAL_STDERR_FD_PATH:?}"; fi
@@ -84,9 +84,9 @@ ui_error()
   test -z "${2-}" || _error_code="${2:?}"
 
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "ERROR ${_error_code:?}: ${1:?}"
+    _show_msg_in_recovery "ERROR ${_error_code:?}: ${1:?}"
   else
-    _print_text 1>&2 '\033[1;31m%s\033[0m' "ERROR ${_error_code:?}: ${1:?}"
+    _print_text '\033[1;31m%s\033[0m' "ERROR ${_error_code:?}: ${1:?}"
   fi
 
   deinitialize
@@ -96,44 +96,44 @@ ui_error()
 ui_error_msg()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "ERROR: ${1:?}"
+    _show_msg_in_recovery "ERROR: ${1:?}"
   else
-    _print_text 1>&2 '\033[1;31m%s\033[0m' "ERROR: ${1:?}"
+    _print_text '\033[1;31m%s\033[0m' "ERROR: ${1:?}"
   fi
 }
 
 ui_recovered_error()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "RECOVERED ERROR: ${1:?}"
+    _show_msg_in_recovery "RECOVERED ERROR: ${1:?}"
   else
-    _print_text 1>&2 '\033[1;31;103m%s\033[0m' "RECOVERED ERROR: ${1:?}"
+    _print_text '\033[1;31;103m%s\033[0m' "RECOVERED ERROR: ${1:?}"
   fi
 }
 
 ui_warning()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "WARNING: ${1:?}"
+    _show_msg_in_recovery "WARNING: ${1:?}"
   else
-    _print_text 1>&2 '\033[0;33m%s\033[0m' "WARNING: ${1:?}"
+    _print_text '\033[0;33m%s\033[0m' "WARNING: ${1:?}"
   fi
 }
 
 ui_msg_empty_line()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery ' '
-    test "${TEST_INSTALL:-false}" = 'false' || sleep 2> /dev/null '0.01'
+    _show_msg_in_recovery ' '
+    test "${TEST_INSTALL:-false}" = 'false' || sleep 2> /dev/null '0.01' || :
   else
-    _print_text 1>&2 '%s' ''
+    _print_text '%s' ''
   fi
 }
 
 ui_msg()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "${1:?}"
+    _show_msg_in_recovery "${1:?}"
   else
     _print_text '%s' "${1:?}"
   fi
@@ -141,7 +141,7 @@ ui_msg()
 
 ui_debug()
 {
-  _print_text 1>&2 '%s' "${1?}"
+  _print_text '%s' "${1?}"
 }
 
 # Other
@@ -613,10 +613,12 @@ mount_apex_if_possible()
   _partition_name="apex"
   _mp='/apex'
 
+  test -d "${SYS_PATH:?}/apex" || return 3
+  ui_debug ''
   ui_debug "Checking ${_partition_name?}..."
 
   if is_mounted "${_mp:?}"; then
-    _mount_apex_children "${_mp:?}"
+    test "${BOOTMODE:?}" = 'true' || _mount_apex_children "${_mp:?}"
 
     LAST_MOUNTPOINT="${_mp:?}"
     ui_debug "Already mounted: ${LAST_MOUNTPOINT?}"
@@ -1359,7 +1361,6 @@ initialize()
 
   if test "${DRY_RUN:?}" -gt 0; then
     ui_warning "DRY RUN mode ${DRY_RUN?} enabled. No files on your device will be modified!!!"
-    sleep 2> /dev/null '0.01' || : # Wait some time otherwise ui_debug may appear before the previous ui_warning
     ui_debug ''
   fi
 
@@ -1549,11 +1550,8 @@ initialize()
     UNMOUNT_SYS_DLKM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
   fi
 
-  if test -d "${SYS_PATH:?}/apex"; then
-    ui_debug ''
-    if mount_apex_if_possible; then
-      UNMOUNT_APEX="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
-    fi
+  if mount_apex_if_possible; then
+    UNMOUNT_APEX="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
   fi
 
   ui_debug ''
@@ -1565,7 +1563,6 @@ initialize()
   ui_debug "LD_LIBRARY_PATH='${LD_LIBRARY_PATH-}'"
   ui_debug ''
 
-  sleep 2> /dev/null '0.01' || :
   _disable_write_locks
   _execute_system_remount
 
@@ -1770,7 +1767,6 @@ prepare_installation()
 
   ui_msg 'Preparing installation...'
   _need_newline='false'
-  sleep 2> /dev/null '0.01' # It avoid the following output to be printed interleaved with the previous output
 
   if test "${API:?}" -ge 23; then
     if test "${API:?}" -ge 29; then # Android 10+
@@ -3721,7 +3717,6 @@ _live_setup_key_test()
   test "${DEBUG_LOG_ENABLED:?}" -ne 1 || display_info
 
   _live_setup_initialize
-  sleep '0.05'
 
   _count=0
   while test "${_count:?}" -lt 8 && _count="$((_count + 1))"; do
