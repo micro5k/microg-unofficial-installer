@@ -25,6 +25,12 @@ export KEY_TEST_ONLY="${KEY_TEST_ONLY:-0}"
 export BYPASS_LOCK_CHECK="${BYPASS_LOCK_CHECK:-0}"
 
 export INPUT_TYPE="${INPUT_TYPE:-auto}"
+
+export BASIC_INFO_READY=''
+export MOST_INFO_READY=''
+export BASIC_INFO_DISPLAYED=''
+export ADVANCED_INFO_DISPLAYED=''
+export ASSOCIATED_LOOP_DEVICES=''
 readonly ROLLBACK_TEST='false'
 
 # shellcheck disable=SC3040,SC2015
@@ -82,6 +88,13 @@ ui_error()
   local _error_code
   _error_code=91
   test -z "${2-}" || _error_code="${2:?}"
+
+  if test "${BASIC_INFO_DISPLAYED-}" != 'true' && test "${BASIC_INFO_READY-}" = 'true'; then
+    display_basic_info
+  fi
+  if test "${ADVANCED_INFO_DISPLAYED-}" != 'true' && test "${MOST_INFO_READY-}" = 'true'; then
+    display_info 'error'
+  fi
 
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _show_msg_in_recovery "ERROR ${_error_code:?}: ${1:?}"
@@ -763,17 +776,6 @@ _find_and_mount_system()
       SYS_MOUNTPOINT="${LAST_MOUNTPOINT:?}"
       UNMOUNT_SYSTEM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
     else
-      deinitialize
-
-      ui_msg_empty_line
-      ui_msg "Current slot: ${SLOT?}"
-      ui_msg "Device locked state: ${DEVICE_STATE?}"
-      ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
-      ui_msg "Verity mode: ${VERITY_MODE?} (detection is unreliable)"
-      ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS?}"
-      ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM?}"
-      ui_msg_empty_line
-
       ui_error "The ROM cannot be found!!!" 123
     fi
   fi
@@ -1229,6 +1231,7 @@ append_dir_from_all_partitions_to_ld_library_path()
 
 display_basic_info()
 {
+  BASIC_INFO_DISPLAYED='true'
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
   ui_msg "${MODULE_NAME:?}"
   ui_msg "${MODULE_VERSION:?}"
@@ -1239,18 +1242,28 @@ display_basic_info()
 
 display_info()
 {
-  ui_msg "Brand: ${BUILD_BRAND?}"
-  ui_msg "Manufacturer: ${BUILD_MANUFACTURER?}"
-  ui_msg "Model: ${BUILD_MODEL?}"
-  ui_msg "Device: ${BUILD_DEVICE?}"
-  ui_msg "Product: ${BUILD_PRODUCT?}"
-  ui_msg "Emulator: ${IS_EMU:?}"
-  ui_msg "Fake signature permission: ${FAKE_SIGN_PERMISSION?}"
-  ui_msg_empty_line
-  ui_msg "Recovery: ${RECOVERY_NAME?}"
-  ui_msg "Recovery API version: ${RECOVERY_API_VER-}"
-  ui_msg_empty_line
-  ui_msg "First installation: ${FIRST_INSTALLATION:?}"
+  ADVANCED_INFO_DISPLAYED='true'
+  if test "${1-}" != 'error'; then
+    ui_msg "First installation: ${FIRST_INSTALLATION:?}"
+    ui_msg "Android API: ${API:?}"
+    if test -n "${CPU-}" && test -n "${CPU64-}"; then
+      ui_msg "64-bit CPU arch: ${CPU64:?}"
+      ui_msg "32-bit CPU arch: ${CPU:?}"
+    fi
+    if test -n "${ARCH_LIST-}"; then
+      ui_msg "ABI list: ${ARCH_LIST?}"
+    fi
+    ui_msg_empty_line
+    ui_msg "Brand: ${BUILD_BRAND?}"
+    ui_msg "Manufacturer: ${BUILD_MANUFACTURER?}"
+    ui_msg "Model: ${BUILD_MODEL?}"
+    ui_msg "Device: ${BUILD_DEVICE?}"
+    ui_msg "Product: ${BUILD_PRODUCT?}"
+    ui_msg "Emulator: ${IS_EMU:?}"
+    ui_msg "Fake signature permission: ${FAKE_SIGN_PERMISSION?}"
+    ui_msg_empty_line
+  fi
+
   ui_msg "Boot mode: ${BOOTMODE:?}"
   ui_msg "Sideload: ${SIDELOAD:?}"
   if test -n "${ZIPINSTALL_VERSION?}"; then
@@ -1258,17 +1271,8 @@ display_info()
   else
     ui_msg "Zip install: ${ZIP_INSTALL?}"
   fi
+  ui_msg_empty_line
   ui_msg "Battery level: ${BATTERY_LEVEL:?}"
-  ui_msg_empty_line
-  ui_msg "Android API: ${API:?}"
-  if test -n "${CPU-}" && test -n "${CPU64-}"; then
-    ui_msg "64-bit CPU arch: ${CPU64:?}"
-    ui_msg "32-bit CPU arch: ${CPU:?}"
-  fi
-  if test -n "${ARCH_LIST-}"; then
-    ui_msg "ABI list: ${ARCH_LIST?}"
-  fi
-  ui_msg_empty_line
   ui_msg "Boot reason: ${BOOT_REASON?}"
   ui_msg "Current slot: ${SLOT?}$(test "${VIRTUAL_AB?}" != 'true' || printf '%s\n' ' (Virtual A/B)' || :)"
   ui_msg "Device locked state: ${DEVICE_STATE?}"
@@ -1277,15 +1281,20 @@ display_info()
   ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS?}"
   ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM?}"
   ui_msg_empty_line
+  ui_msg "Recovery: ${RECOVERY_NAME?}"
+  ui_msg "Recovery API version: ${RECOVERY_API_VER-}"
+  ui_msg_empty_line
   ui_msg "Encryption state: ${ENCRYPTION_STATE?}"
   ui_msg "Encryption type: ${ENCRYPTION_TYPE?}"
   ui_msg "Encryption options: ${ENCRYPTION_OPTIONS?}"
   ui_msg_empty_line
-  ui_msg "System mountpoint: ${SYS_MOUNTPOINT?}"
-  ui_msg "System path: ${SYS_PATH?}"
-  ui_msg "Priv-app dir name: ${PRIVAPP_DIRNAME?}"
-  #ui_msg "Android root ENV: ${ANDROID_ROOT-}"
-  ui_msg_empty_line
+  if test "${1-}" != 'error'; then
+    ui_msg "System mountpoint: ${SYS_MOUNTPOINT?}"
+    ui_msg "System path: ${SYS_PATH?}"
+    ui_msg "Priv-app dir name: ${PRIVAPP_DIRNAME?}"
+    #ui_msg "Android root ENV: ${ANDROID_ROOT-}"
+    ui_msg_empty_line
+  fi
   ui_msg "Input devices: $(_list_input_devices || :)"
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
 }
@@ -1325,7 +1334,6 @@ initialize()
     command . "${RS_OVERRIDE_SCRIPT:?}" || ui_error "Sourcing override script failed with error: ${?}"
   fi
 
-  ASSOCIATED_LOOP_DEVICES=''
   BASE_SYSCONFIG_XML=''
 
   package_extract_file 'module.prop' "${TMP_PATH:?}/module.prop"
@@ -1341,6 +1349,8 @@ initialize()
   BUILD_TYPE="$(simple_file_getprop 'buildType' "${TMP_PATH:?}/info.prop")" || ui_error 'Failed to parse build type'
   readonly BUILD_TYPE
   export BUILD_TYPE
+
+  BASIC_INFO_READY='true'
 
   _get_local_settings
 
@@ -1413,6 +1423,8 @@ initialize()
   if test "${BATTERY_LEVEL:?}" != 'unknown' && test "${BATTERY_LEVEL:?}" -lt 15; then
     ui_error "The battery is too low. Current level: ${BATTERY_LEVEL?}%" 108
   fi
+
+  MOST_INFO_READY='true'
 
   if is_device_locked; then
     if test "${BYPASS_LOCK_CHECK:?}" != 0; then
@@ -1566,22 +1578,7 @@ initialize()
   _disable_write_locks
   _execute_system_remount
 
-  remount_read_write "${SYS_MOUNTPOINT:?}" || {
-    deinitialize
-
-    ui_msg_empty_line
-    ui_msg "Device: ${BUILD_DEVICE?}"
-    ui_msg_empty_line
-    ui_msg "Current slot: ${SLOT?}"
-    ui_msg "Device locked state: ${DEVICE_STATE?}"
-    ui_msg "Verified boot state: ${VERIFIED_BOOT_STATE?}"
-    ui_msg "Verity mode: ${VERITY_MODE?} (detection is unreliable)"
-    ui_msg "Dynamic partitions: ${DYNAMIC_PARTITIONS?}"
-    ui_msg "Recovery fake system: ${RECOVERY_FAKE_SYSTEM?}"
-    ui_msg_empty_line
-
-    ui_error "Remounting '${SYS_MOUNTPOINT?}' failed!!!" 30
-  }
+  remount_read_write "${SYS_MOUNTPOINT:?}" || ui_error "Remounting '${SYS_MOUNTPOINT?}' failed!!!" 30
 
   if test -n "${VENDOR_PATH?}"; then
     remount_read_write_if_possible "${VENDOR_PATH:?}" false && VENDOR_RW='true'
@@ -2244,10 +2241,7 @@ finalize_correctly()
       delete_dir_if_empty "${SYS_PATH:?}/etc/zips"
       ui_msg 'Uninstallation finished.'
       ;;
-    *)
-      deinitialize
-      ui_error 'Invalid setup type'
-      ;;
+    *) ui_error 'Invalid setup type' ;;
   esac
 
   deinitialize
