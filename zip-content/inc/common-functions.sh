@@ -545,27 +545,31 @@ _mount_single_apex()
   _found='false'
 
   if test -e "/dev/block/mapper/${1:?}"; then
+    ui_debug "  Checking ${1?}..."
+
     _block="$(_canonicalize "/dev/block/mapper/${1:?}")"
-    ui_msg "  Found 'mapper/${1?}' block at: ${_block?}" # Reuse existing
     _found='true'
+    ui_msg "  Found 'mapper/${1?}' block at: ${_block?}" # Reuse existing
   fi
 
   if test "${_found:?}" = 'false'; then
     _apex_file="${SYS_PATH:?}/apex/${1:?}.apex"
     test -f "${_apex_file:?}" || return 2
 
+    ui_debug "  Checking ${1?}..."
+
     if _val="$(_losetup_helper 2> /dev/null -j "${_apex_file:?}" | tail -n 1 | cut -d ':' -f '1')" && test -n "${_val?}" && test -b "${_val:?}"; then
       _block="${_val:?}"
-      ui_msg "  Found loop of '${1?}' at: ${_block?}" # Reuse existing
       _found='true'
+      ui_msg "  Found loop of '${1?}' at: ${_block?}" # Reuse existing
     fi
 
     if test "${_found:?}" = 'false' && mkdir -p -- '/apex/extracted' && unzip -oq "${_apex_file:?}" 'apex_payload.img' -d '/apex/extracted'; then
       if _val="$(_losetup_helper -r -f)" && test -n "${_val?}" && test -b "${_val:?}" && _losetup_helper -r -- "${_val:?}" '/apex/extracted/apex_payload.img'; then
         _block="${_val:?}"
+        _found='true'
         ASSOCIATED_LOOP_DEVICES="${ASSOCIATED_LOOP_DEVICES?}${_block:?}${NL:?}"
         ui_msg "  Associated loop device: ${_block?}" # Create new association
-        _found='true'
       fi
     fi
   fi
@@ -591,7 +595,6 @@ _mount_apex_children()
   for _child in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
     test ! -e "${1:?}/${_child:?}" || continue # Already exist
 
-    ui_debug "  Checking ${1?}/${_child?}..."
     if _mount_single_apex "${_child:?}" "${1:?}/${_child:?}"; then
       ui_debug "  Mounted: ${LAST_APEX_MOUNTPOINT?}"
     fi
