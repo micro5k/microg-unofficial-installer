@@ -420,10 +420,12 @@ main()
 {
   local status backup_ifs base_name cmd_output pkg_name perm_list cert_sha256
 
-  DATA_DIR="$(find_data_dir)" && test -d "${DATA_DIR:?}/perms" || {
+  if DATA_DIR="$(find_data_dir)" && test -d "${DATA_DIR:?}/perms"; then
+    :
+  else
     show_error 'You must execute dl-perm-list.sh before using this script'
     return 4
-  }
+  fi
 
   test -n "${1-}" || {
     show_error 'You must pass the filename of the file to be processed'

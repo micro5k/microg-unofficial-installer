@@ -28,13 +28,17 @@ jobs:
     steps:
       - name: "Verify tokens"
         id: check-tokens
+        shell: bash
+        env:
+          CODACY_TOKEN: "${{ secrets.CODACY_PROJECT_TOKEN }}"
+          SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
         run: |
           # Verifying tokens...
           # Codacy
-          if test -n '${{ secrets.CODACY_PROJECT_TOKEN }}'; then token_set='true'; else token_set='false'; fi
+          if test -n "${CODACY_TOKEN?}"; then token_set='true'; else token_set='false'; fi
           printf 'CODACY_TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
           # SonarQube
-          if test -n '${{ secrets.SONAR_TOKEN }}'; then token_set='true'; else token_set='false'; fi
+          if test -n "${SONAR_TOKEN?}"; then token_set='true'; else token_set='false'; fi
           printf 'SONAR_TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
       - name: "Verify the dependency graph"
         id: dependency-graph

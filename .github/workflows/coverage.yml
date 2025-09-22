@@ -81,10 +81,11 @@ jobs:
       - name: "Verify Codecov token"
         id: "codecov-token"
         shell: bash
+        env:
+          CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
         run: |
           # Verifying token...
-          token_set='true'
-          test -n '${{ secrets.CODECOV_TOKEN }}' || token_set='false'
+          if test -n "${CODECOV_TOKEN?}"; then token_set='true'; else token_set='false'; fi
           printf 'TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
       - name: "Upload coverage reports to Codecov"
         if: "${{ steps.codecov-token.outputs.TOKEN_SET == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
@@ -96,10 +97,11 @@ jobs:
       - name: "Verify Codacy token"
         id: "codacy-token"
         shell: bash
+        env:
+          CODACY_TOKEN: "${{ secrets.CODACY_PROJECT_TOKEN }}"
         run: |
           # Verifying token...
-          token_set='true'
-          test -n '${{ secrets.CODACY_PROJECT_TOKEN }}' || token_set='false'
+          if test -n "${CODACY_TOKEN?}"; then token_set='true'; else token_set='false'; fi
           printf 'TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
       - name: "Upload coverage reports to Codacy"
         if: "${{ steps.codacy-token.outputs.TOKEN_SET == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
