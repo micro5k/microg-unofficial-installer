@@ -577,11 +577,11 @@ _mount_single_apex()
       ui_msg "  Found loop of '${1?}' at: ${_block?}" # Reuse existing
     fi
 
-    if test "${_found:?}" = 'false' && mkdir -p -- '/apex/extracted' && unzip -oq "${_apex_file:?}" 'apex_payload.img' -d '/apex/extracted'; then
-      if _val="$(_losetup_helper -r -f)" && test -n "${_val?}" && test -b "${_val:?}" && _losetup_helper -r -- "${_val:?}" '/apex/extracted/apex_payload.img'; then
+    if test "${_found:?}" = 'false' && mkdir -p -- "${TMP_PATH:?}/apex/${1:?}" && unzip -oq "${_apex_file:?}" 'apex_payload.img' -d "${TMP_PATH:?}/apex/${1:?}"; then
+      if _val="$(_losetup_helper -r -f)" && test -n "${_val?}" && test -b "${_val:?}" && _losetup_helper -r -- "${_val:?}" "${TMP_PATH:?}/apex/${1:?}/apex_payload.img"; then
         _block="${_val:?}"
         _found='true'
-        ASSOCIATED_LOOP_DEVICES="${ASSOCIATED_LOOP_DEVICES?}${_block:?}${NL:?}"
+        ASSOCIATED_LOOP_DEVICES="${_block:?}${NL:?}${ASSOCIATED_LOOP_DEVICES?}"
         ui_msg "  Associated loop device: ${_block?}" # Create new association
       fi
     fi
@@ -589,13 +589,13 @@ _mount_single_apex()
 
   if test "${_found:?}" != 'false' && mkdir -p -- "${2:?}"; then
     if _mount_helper -o 'ro,nodev,noatime' "${_block:?}" "${2:?}"; then
-      rm -f -- '/apex/extracted/apex_payload.img' || :
+      rm -f -- "${TMP_PATH:?}/apex/${1:?}/apex_payload.img" || :
       LAST_APEX_MOUNTPOINT="${2:?}"
       return 0
     fi
     rmdir -- "${2:?}" || :
   fi
-  rm -f -- '/apex/extracted/apex_payload.img' || :
+  rm -f -- "${TMP_PATH:?}/apex/${1:?}/apex_payload.img" || :
 
   ui_debug "  Block not found for: ${1?}"
   return 1
@@ -613,7 +613,6 @@ _mount_apex_children()
     fi
   done
 
-  if test -d '/apex/extracted'; then rmdir -- '/apex/extracted' || :; fi
   unset LAST_APEX_MOUNTPOINT
 }
 
