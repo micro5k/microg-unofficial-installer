@@ -31,6 +31,7 @@ export MOST_INFO_READY=''
 export BASIC_INFO_DISPLAYED=''
 export ADVANCED_INFO_DISPLAYED=''
 export ASSOCIATED_LOOP_DEVICES=''
+export MOUNTED_APEX_CHILDREN=''
 readonly ROLLBACK_TEST='false'
 
 # shellcheck disable=SC3040,SC2015
@@ -590,6 +591,7 @@ _mount_single_apex()
   if test "${_found:?}" != 'false' && mkdir -p -- "${2:?}"; then
     if _mount_helper -o 'ro,nodev,noatime' "${_block:?}" "${2:?}"; then
       rm -f -- "${TMP_PATH:?}/apex/${1:?}/apex_payload.img" || :
+      MOUNTED_APEX_CHILDREN="${2:?}${NL:?}${MOUNTED_APEX_CHILDREN?}"
       LAST_APEX_MOUNTPOINT="${2:?}"
       return 0
     fi
@@ -659,16 +661,22 @@ mount_apex_if_possible()
 
 unmount_apex_if_needed()
 {
-  local _mp _name _loop _backup_ifs
-  test "${UNMOUNT_APEX:?}" = '1' || return
+  local _mp _name _backup_ifs
 
   _mp='/apex'
 
-  for _name in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
-    test -e "${_mp:?}/${_name:?}" || continue
-    unmount_partition "${_mp:?}/${_name:?}"
+  _backup_ifs="${IFS-}"
+  IFS="${NL:?}"
+  set -f || :
+  # shellcheck disable=SC2086 # Word splitting is intended
+  set -- ${MOUNTED_APEX_CHILDREN?} || ui_warning "Failed expanding \${MOUNTED_APEX_CHILDREN} inside unmount_apex_if_needed()"
+  set +f || :
+  IFS="${_backup_ifs?}"
+  for _name in "${@}"; do
+    unmount_partition "${_name:?}"
+    rmdir -- "${_name:?}" || ui_warning "Failed to remove => ${_name?}"
   done
-  unmount_partition "${_mp:?}"
+  MOUNTED_APEX_CHILDREN=''
 
   _backup_ifs="${IFS-}"
   IFS="${NL:?}"
@@ -677,12 +685,18 @@ unmount_apex_if_needed()
   set -- ${ASSOCIATED_LOOP_DEVICES?} || ui_warning "Failed expanding \${ASSOCIATED_LOOP_DEVICES} inside unmount_apex_if_needed()"
   set +f || :
   IFS="${_backup_ifs?}"
-
-  for _loop in "${@}"; do
-    _losetup_helper -d "${_loop:?}"
+  for _name in "${@}"; do
+    _losetup_helper -d "${_name:?}"
   done
-
   ASSOCIATED_LOOP_DEVICES=''
+
+  test "${UNMOUNT_APEX:?}" = '1' || return 0
+
+  for _name in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
+    test -e "${_mp:?}/${_name:?}" || continue
+    unmount_partition "${_mp:?}/${_name:?}"
+  done
+  unmount_partition "${_mp:?}"
 }
 
 _manual_partition_mount()
