@@ -144,13 +144,13 @@ _send_text_to_recovery()
 _print_text()
 {
   if test -n "${NO_COLOR-}"; then
-    printf '%s\n' "${2?}"
+    printf 1>&2 '%s\n' "${2?}"
   else
     # shellcheck disable=SC2059
-    printf "${1:?}\n" "${2?}"
+    printf 1>&2 "${1:?}\n" "${2?}"
   fi
 
-  if test "${DEBUG_LOG_ENABLED:?}" = '1' && test -n "${ORIGINAL_STDERR_FD_PATH?}"; then printf '%s\n' "${2?}" 1>> "${ORIGINAL_STDERR_FD_PATH:?}"; fi
+  if test "${DEBUG_LOG_ENABLED:?}" = '1'; then printf 1>&"${BACKUP_STDERR:?}" '%s\n' "${2?}"; fi
 }
 
 ui_error()
@@ -162,7 +162,7 @@ ui_error()
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _send_text_to_recovery "ERROR ${_error_code:?}: ${1:?}"
   else
-    _print_text 1>&2 '\033[1;31m%s\033[0m' "ERROR ${_error_code:?}: ${1:?}"
+    _print_text '\033[1;31m%s\033[0m' "ERROR ${_error_code:?}: ${1:?}"
   fi
 
   exit "${_error_code:?}"
@@ -173,7 +173,7 @@ ui_warning()
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _send_text_to_recovery "WARNING: ${1:?}"
   else
-    _print_text 1>&2 '\033[0;33m%s\033[0m' "WARNING: ${1:?}"
+    _print_text '\033[0;33m%s\033[0m' "WARNING: ${1:?}"
   fi
 }
 
@@ -188,7 +188,7 @@ ui_msg()
 
 ui_debug()
 {
-  _print_text 1>&2 '%s' "${1?}"
+  _print_text '%s' "${1?}"
 }
 
 does_fd_already_exist()
@@ -284,8 +284,8 @@ enable_debug_log()
   # Redirect STDOUT/STDERR to log file
   exec 1>> "${LOG_PATH:?}" 2>&1
 
+  export BACKUP_STDERR
   export NO_COLOR=1
-  if test -e "/proc/$$/fd/${BACKUP_STDERR:?}"; then export ORIGINAL_STDERR_FD_PATH="/proc/$$/fd/${BACKUP_STDERR:?}"; else export ORIGINAL_STDERR_FD_PATH=''; fi
   export DEBUG_LOG_ENABLED=1
 }
 
@@ -294,7 +294,6 @@ disable_debug_log()
   if test "${DEBUG_LOG_ENABLED:?}" -ne 1; then return 0; fi
 
   export DEBUG_LOG_ENABLED=0
-  unset ORIGINAL_STDERR_FD_PATH
   unset NO_COLOR
 
   # Restore STDOUT/STDERR

@@ -81,7 +81,7 @@ _print_text()
     printf 1>&2 "${1:?}\n" "${2?}"
   fi
 
-  if test "${DEBUG_LOG_ENABLED:?}" = '1' && test -n "${ORIGINAL_STDERR_FD_PATH?}"; then printf '%s\n' "${2?}" 1>> "${ORIGINAL_STDERR_FD_PATH:?}"; fi
+  if test "${DEBUG_LOG_ENABLED:?}" = '1' && test -n "${STDERR_FD_PATH?}"; then printf '%s\n' "${2?}" 1>> "${STDERR_FD_PATH:?}"; fi
 }
 
 ui_error()
@@ -3885,6 +3885,23 @@ find_test()
   find "$1" -type d -exec echo 'FOLDER:' '{}' ';' -o -type f -exec echo 'FILE:' '{}' ';' | while read -r x; do echo "${x}"; done
 }
 
+stderr_init()
+{
+  test "${DEBUG_LOG_ENABLED:-0}" = '1' || return
+
+  if test -n "${BACKUP_STDERR-}" && STDERR_FD_PATH="/proc/${PPID:?}/fd/${BACKUP_STDERR:?}" && test -c "${STDERR_FD_PATH:?}"; then
+    :
+  elif command 1> /dev/null -v 'tty' && STDERR_FD_PATH="$(tty)" && test -c "${STDERR_FD_PATH:?}"; then
+    ui_warning "Fallback to tty: ${STDERR_FD_PATH?}"
+  else
+    STDERR_FD_PATH=''
+    ui_warning "Cannot write to STDERR"
+  fi
+
+  export STDERR_FD_PATH
+}
+
 ### INITIALIZATION ###
 
+stderr_init
 initialize || exit "${?}"
