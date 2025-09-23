@@ -191,61 +191,136 @@ ui_debug()
   _print_text 1>&2 '%s' "${1?}"
 }
 
+does_fd_already_exist()
+{
+  {
+    command 1>&"${1:?}"
+  } 2> /dev/null
+}
+
+set_stderr_backup_if_fd_is_not_already_in_use()
+{
+  if test "${1:?}" = "${BACKUP_STDOUT-}" || does_fd_already_exist "${1:?}"; then return 1; fi
+  BACKUP_STDERR="${1:?}"
+}
+
+set_stdout_backup_if_fd_is_not_already_in_use()
+{
+  if test "${1:?}" = "${BACKUP_STDERR-}" || does_fd_already_exist "${1:?}"; then return 1; fi
+  BACKUP_STDOUT="${1:?}"
+}
+
+# shellcheck disable=SC3023 # Ignore: In POSIX sh, FDs outside 0-9 are undefined
 enable_debug_log()
 {
-  if test "${DEBUG_LOG_ENABLED}" -eq 1; then return; fi
-  local _backup_stderr
+  if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then return 0; fi
 
-  ui_debug "Creating log: ${LOG_PATH:?}"
-  _send_text_to_recovery "Creating log: ${LOG_PATH:?}"
+  ui_debug "Creating log: ${LOG_PATH?}"
+  _send_text_to_recovery "Creating log: ${LOG_PATH?}"
 
   touch "${LOG_PATH:?}" || {
-    export DEBUG_LOG_ENABLED=0
-    ui_warning "Unable to write the log file at: ${LOG_PATH:-}"
-    return
+    ui_warning "Unable to write the log file at '${LOG_PATH?}'"
+    return 1
   }
 
-  # If they are already in use, then use alternatives
-  if {
-    command 1>&6 || command 1>&7
-  } 2> /dev/null; then
-    export ALTERNATIVE_FDS=1
-    # shellcheck disable=SC3023
-    exec 88>&1 89>&2 # Backup stdout and stderr
-    _backup_stderr=89
+  if set_stderr_backup_if_fd_is_not_already_in_use 9 && command 9>&1 2> /dev/null; then
+    :
+  elif set_stderr_backup_if_fd_is_not_already_in_use 8 && command 8>&1 2> /dev/null; then
+    :
+  elif set_stderr_backup_if_fd_is_not_already_in_use 7 && command 7>&1 2> /dev/null; then
+    :
+  elif set_stderr_backup_if_fd_is_not_already_in_use 6 && command 6>&1 2> /dev/null; then
+    :
+  elif set_stderr_backup_if_fd_is_not_already_in_use 89 && command 89>&1 2> /dev/null; then
+    : # TWRP recovery with BusyBox does support also fd over 9 but in other cases the support is uncertain so use it only as last resort
   else
-    export ALTERNATIVE_FDS=0
-    exec 6>&1 7>&2 # Backup stdout and stderr
-    _backup_stderr=7
+    BACKUP_STDERR=''
   fi
 
+  if set_stdout_backup_if_fd_is_not_already_in_use 8 && command 8>&1 2> /dev/null; then
+    :
+  elif set_stdout_backup_if_fd_is_not_already_in_use 7 && command 7>&1 2> /dev/null; then
+    :
+  elif set_stdout_backup_if_fd_is_not_already_in_use 6 && command 6>&1 2> /dev/null; then
+    :
+  elif set_stdout_backup_if_fd_is_not_already_in_use 5 && command 5>&1 2> /dev/null; then
+    :
+  elif set_stdout_backup_if_fd_is_not_already_in_use 88 && command 88>&1 2> /dev/null; then
+    : # TWRP recovery with BusyBox does support also fd over 9 but in other cases the support is uncertain so use it only as last resort
+  else
+    BACKUP_STDOUT=''
+  fi
+
+  ui_debug "Backup STDERR: ${BACKUP_STDERR?}"
+  ui_debug "Backup STDOUT: ${BACKUP_STDOUT?}"
+
+  if test -z "${BACKUP_STDERR?}" || test -z "${BACKUP_STDOUT?}"; then
+    ui_warning 'Unable to find free file descriptors to backup STDOUT/STDERR'
+    unset BACKUP_STDERR
+    unset BACKUP_STDOUT
+    return 2
+  fi
+
+  # Does backup STDERR
+  case "${BACKUP_STDERR?}" in
+    '9') exec 9>&2 ;;
+    '8') exec 8>&2 ;;
+    '7') exec 7>&2 ;;
+    '6') exec 6>&2 ;;
+    '89') exec 89>&2 ;;
+    *) ui_error 'Unknown error in enable_debug_log()' ;;
+  esac
+
+  # Does backup STDOUT
+  case "${BACKUP_STDOUT?}" in
+    '8') exec 8>&1 ;;
+    '7') exec 7>&1 ;;
+    '6') exec 6>&1 ;;
+    '5') exec 5>&1 ;;
+    '88') exec 88>&1 ;;
+    *) ui_error 'Unknown error in enable_debug_log()' ;;
+  esac
+
+  # Redirect STDOUT/STDERR to log file
   exec 1>> "${LOG_PATH:?}" 2>&1
 
   export NO_COLOR=1
-  if test -e "/proc/$$/fd/${_backup_stderr:?}"; then
-    export ORIGINAL_STDERR_FD_PATH="/proc/$$/fd/${_backup_stderr:?}"
-  else
-    export ORIGINAL_STDERR_FD_PATH=''
-  fi
+  if test -e "/proc/$$/fd/${BACKUP_STDERR:?}"; then export ORIGINAL_STDERR_FD_PATH="/proc/$$/fd/${BACKUP_STDERR:?}"; else export ORIGINAL_STDERR_FD_PATH=''; fi
   export DEBUG_LOG_ENABLED=1
 }
 
 disable_debug_log()
 {
-  if test "${DEBUG_LOG_ENABLED}" -ne 1; then return; fi
+  if test "${DEBUG_LOG_ENABLED:?}" -ne 1; then return 0; fi
 
   export DEBUG_LOG_ENABLED=0
   unset ORIGINAL_STDERR_FD_PATH
   unset NO_COLOR
 
-  if test "${ALTERNATIVE_FDS:?}" -eq 0; then
-    exec 1>&6 2>&7 # Restore stdout and stderr
-    exec 6>&- 7>&-
-  else
-    exec 1>&88 2>&89 # Restore stdout and stderr
-    # shellcheck disable=SC3023
-    exec 88>&- 89>&-
-  fi
+  # Restore STDOUT/STDERR
+  exec 1>&"${BACKUP_STDOUT:?}" 2>&"${BACKUP_STDERR:?}"
+
+  # Close backup STDERR
+  case "${BACKUP_STDERR?}" in
+    '9') exec 9>&- ;;
+    '8') exec 8>&- ;;
+    '7') exec 7>&- ;;
+    '6') exec 6>&- ;;
+    '89') exec 89>&- ;;
+    *) ui_warning 'Unable to close backup STDERR' ;;
+  esac
+  unset BACKUP_STDERR
+
+  # Close backup STDOUT
+  case "${BACKUP_STDOUT?}" in
+    '8') exec 8>&- ;;
+    '7') exec 7>&- ;;
+    '6') exec 6>&- ;;
+    '5') exec 5>&- ;;
+    '88') exec 88>&- ;;
+    *) ui_warning 'Unable to close backup STDOUT' ;;
+  esac
+  unset BACKUP_STDOUT
 }
 
 set_perm()
