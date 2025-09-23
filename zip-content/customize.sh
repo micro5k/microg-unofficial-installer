@@ -301,6 +301,7 @@ disable_debug_log()
   exec 1>&"${BACKUP_STDOUT:?}" 2>&"${BACKUP_STDERR:?}"
 
   # Close backup STDERR
+  # shellcheck disable=SC3023 # Ignore: In POSIX sh, FDs outside 0-9 are undefined
   case "${BACKUP_STDERR?}" in
     '9') exec 9>&- ;;
     '8') exec 8>&- ;;
@@ -312,6 +313,7 @@ disable_debug_log()
   unset BACKUP_STDERR
 
   # Close backup STDOUT
+  # shellcheck disable=SC3023 # Ignore: In POSIX sh, FDs outside 0-9 are undefined
   case "${BACKUP_STDOUT?}" in
     '8') exec 8>&- ;;
     '7') exec 7>&- ;;
