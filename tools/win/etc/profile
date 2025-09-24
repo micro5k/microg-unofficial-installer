@@ -1,8 +1,24 @@
 #!/usr/bin/env sh
-
 # SPDX-FileCopyrightText: (c) 2024 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-# shellcheck disable=SC3045 # Ignore: In POSIX sh, export -n is undefined
-export -n PS1 || true
+__git_ps1()
+{
+  local __prev_exit="${?}"
+  local __git_branch=''
+
+  __git_branch="$(git 2> /dev/null symbolic-ref HEAD || :)"
+  __git_branch="${__git_branch##"refs/heads/"}"
+  if test -n "${__git_branch}"; then
+    printf -- '%s\n' " (${__git_branch})"
+  fi
+
+  return "${__prev_exit}"
+}
+
+if test -n "${PS1-}"; then
+  # shellcheck disable=SC3045 # Ignore: In POSIX sh, export -n is undefined
+  export -n PS1 || :
+  export PS1
+fi
