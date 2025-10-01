@@ -82,7 +82,7 @@ jobs:
           distribution: "temurin"
           java-version-file: ".tool-versions"
       - name: "Generate and submit dependency graph"
-        uses: gradle/actions/dependency-submission@v4
+        uses: gradle/actions/dependency-submission@v5
         with:
           cache-read-only: true
           dependency-graph: "generate-and-submit"
