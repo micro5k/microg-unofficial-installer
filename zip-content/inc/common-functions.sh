@@ -333,6 +333,21 @@ _mount_helper()
   return 0
 }
 
+_mount_ext4_helper()
+{
+  if test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" -t 'ext4' "${@}"; then
+    :
+  elif test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" "${@}"; then
+    :
+  elif mount -t 'ext4' "${@}"; then
+    :
+  else
+    mount "${@}" || return "${?}"
+  fi
+
+  return 0
+}
+
 _losetup_helper()
 {
   if test -n "${DEVICE_LOSETUP-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_LOSETUP:?}" "${@}"; then
@@ -589,7 +604,7 @@ _mount_single_apex()
   fi
 
   if test "${_found:?}" != 'false' && mkdir -p -- "${2:?}"; then
-    if _mount_helper -o 'ro,nodev,noatime' "${_block:?}" "${2:?}"; then
+    if _mount_ext4_helper -o 'ro,nodev,noatime,norecovery' "${_block:?}" "${2:?}"; then
       rm -f -- "${TMP_PATH:?}/apex/${1:?}/apex_payload.img" || :
       MOUNTED_APEX_CHILDREN="${2:?}${NL:?}${MOUNTED_APEX_CHILDREN?}"
       LAST_APEX_MOUNTPOINT="${2:?}"
@@ -632,7 +647,9 @@ mount_apex_if_possible()
   ui_debug "Checking ${_partition_name?}..."
 
   if is_mounted "${_mp:?}"; then
-    test "${BOOTMODE:?}" = 'true' || _mount_apex_children "${_mp:?}"
+    if test "${BOOTMODE:?}" != 'true'; then
+      if remount_read_write_if_possible "${_mp:?}" false; then _mount_apex_children "${_mp:?}"; fi
+    fi
 
     LAST_MOUNTPOINT="${_mp:?}"
     ui_debug "Already mounted: ${LAST_MOUNTPOINT?}"
@@ -661,9 +678,8 @@ mount_apex_if_possible()
 
 unmount_apex_if_needed()
 {
-  local _mp _name _backup_ifs
-
-  _mp='/apex'
+  local _name _backup_ifs
+  test -n "${APEX_PATH?}" || return
 
   _backup_ifs="${IFS-}"
   IFS="${NL:?}"
@@ -690,13 +706,13 @@ unmount_apex_if_needed()
   done
   ASSOCIATED_LOOP_DEVICES=''
 
-  test "${UNMOUNT_APEX:?}" = '1' || return 0
+  test "${UNMOUNT_APEX:?}" = '1' || return
 
-  for _name in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
-    test -e "${_mp:?}/${_name:?}" || continue
-    unmount_partition "${_mp:?}/${_name:?}"
+  for _name in "${APEX_PATH:?}"/*; do
+    test -e "${_name:?}" || continue
+    unmount_partition "${_name:?}"
   done
-  unmount_partition "${_mp:?}"
+  unmount_partition "${APEX_PATH:?}"
 }
 
 _manual_partition_mount()
@@ -1236,10 +1252,12 @@ append_dir_from_all_partitions_to_ld_library_path()
   append_to_ld_library_path "${VENDOR_PATH:-/vendor}/${1:?}"
   append_to_ld_library_path "${SYS_PATH:?}/${1:?}"
   append_to_ld_library_path "${PRODUCT_PATH:-/product}/${1:?}"
-  append_to_ld_library_path "/apex/com.android.runtime/${1:?}"
-  append_to_ld_library_path "/apex/com.android.art/${1:?}"
-  append_to_ld_library_path "/apex/com.android.i18n/${1:?}"
-  append_to_ld_library_path "/apex/sharedlibs/${1:?}"
+  if test -n "${APEX_PATH?}"; then
+    append_to_ld_library_path "${APEX_PATH:?}/com.android.runtime/${1:?}"
+    append_to_ld_library_path "${APEX_PATH:?}/com.android.art/${1:?}"
+    append_to_ld_library_path "${APEX_PATH:?}/com.android.i18n/${1:?}"
+    append_to_ld_library_path "${APEX_PATH:?}/sharedlibs/${1:?}"
+  fi
 }
 
 display_basic_info()
@@ -1335,6 +1353,7 @@ initialize()
   SYS_EXT_PATH=''
   ODM_PATH=''
   SYS_DLKM_PATH=''
+  APEX_PATH=''
   DATA_PATH='/data'
 
   VENDOR_RW='false'
@@ -1574,8 +1593,8 @@ initialize()
     SYS_DLKM_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_SYS_DLKM="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
   fi
-
   if mount_apex_if_possible; then
+    APEX_PATH="${LAST_MOUNTPOINT:?}"
     UNMOUNT_APEX="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
   fi
 
@@ -1602,8 +1621,8 @@ initialize()
   if test -n "${SYS_EXT_PATH?}"; then
     remount_read_write_if_possible "${SYS_EXT_PATH:?}" false && SYS_EXT_RW='true'
   fi
-  readonly VENDOR_PATH PRODUCT_PATH SYS_EXT_PATH ODM_PATH SYS_DLKM_PATH
-  export VENDOR_PATH PRODUCT_PATH SYS_EXT_PATH ODM_PATH SYS_DLKM_PATH
+  readonly VENDOR_PATH PRODUCT_PATH SYS_EXT_PATH ODM_PATH SYS_DLKM_PATH APEX_PATH
+  export VENDOR_PATH PRODUCT_PATH SYS_EXT_PATH ODM_PATH SYS_DLKM_PATH APEX_PATH
   export VENDOR_RW PRODUCT_RW SYS_EXT_RW
 
   _additional_data_mountpoint=''
