@@ -566,6 +566,23 @@ _prepare_mountpoint()
   return 0
 }
 
+_find_apex_on_system()
+{
+  local _apex_found
+
+  if _apex_found="${SYS_PATH:?}/apex/${1:?}.apex" && test -f "${_apex_found:?}"; then
+    :
+  elif _apex_found="${SYS_PATH:?}/apex/com.google.${1#"com."}.apex" && test -f "${_apex_found:?}"; then
+    :
+  elif test "${1:?}" = 'com.android.tzdata' && _apex_found="${SYS_PATH:?}/apex/com.google.${1#"com."}6.apex" && test -f "${_apex_found:?}"; then
+    :
+  else
+    return 1
+  fi
+
+  printf '%s\n' "${_apex_found:?}"
+}
+
 _mount_single_apex()
 {
   local _val _apex_file _block _found
@@ -582,9 +599,7 @@ _mount_single_apex()
   fi
 
   if test "${_found:?}" = 'false'; then
-    _apex_file="${SYS_PATH:?}/apex/${1:?}.apex"
-    test -f "${_apex_file:?}" || return 2
-
+    _apex_file="$(_find_apex_on_system "${1:?}")" || return 2
     ui_debug "  Checking ${1?}..."
 
     if _val="$(_losetup_helper 2> /dev/null -j "${_apex_file:?}" | tail -n 1 | cut -d ':' -f '1')" && test -n "${_val?}" && test -b "${_val:?}"; then
@@ -593,7 +608,12 @@ _mount_single_apex()
       ui_msg "  Found loop of '${1?}' at: ${_block?}" # Reuse existing
     fi
 
-    if test "${_found:?}" = 'false' && mkdir -p -- "${TMP_PATH:?}/apex/${1:?}" && unzip -oq "${_apex_file:?}" 'apex_payload.img' -d "${TMP_PATH:?}/apex/${1:?}"; then
+    if
+      test "${_found:?}" = 'false' &&
+        mkdir -p -- "${TMP_PATH:?}/apex/${1:?}" &&
+        unzip -oq "${_apex_file:?}" 'apex_payload.img' -d "${TMP_PATH:?}/apex/${1:?}" &&
+        test -f "${TMP_PATH:?}/apex/${1:?}/apex_payload.img"
+    then
       if _val="$(_losetup_helper -r -f)" && test -n "${_val?}" && test -b "${_val:?}" && _losetup_helper -r -- "${_val:?}" "${TMP_PATH:?}/apex/${1:?}/apex_payload.img"; then
         _block="${_val:?}"
         _found='true'
@@ -622,7 +642,7 @@ _mount_apex_children()
 {
   local _child
 
-  for _child in 'com.android.runtime' 'com.android.art' 'com.android.i18n'; do
+  for _child in 'com.android.runtime' 'com.android.art' 'com.android.i18n' 'com.android.tzdata'; do
     test ! -e "${1:?}/${_child:?}" || continue # Already exist
 
     if _mount_single_apex "${_child:?}" "${1:?}/${_child:?}"; then
@@ -1247,16 +1267,33 @@ append_to_ld_library_path()
   fi
 }
 
+append_apex_dirs_to_ld_library_path()
+{
+  if test -d "${APEX_PATH:?}/${1:?}"; then
+    append_to_ld_library_path "${APEX_PATH:?}/${1:?}/${2:?}"
+    append_to_ld_library_path "${APEX_PATH:?}/${1:?}/${2:?}/bionic"
+  elif test -d "${APEX_PATH:?}/${1:?}.release"; then
+    append_to_ld_library_path "${APEX_PATH:?}/${1:?}.release/${2:?}"
+    append_to_ld_library_path "${APEX_PATH:?}/${1:?}.release/${2:?}/bionic"
+  elif test -d "${APEX_PATH:?}/${1:?}.debug"; then
+    append_to_ld_library_path "${APEX_PATH:?}/${1:?}.debug/${2:?}"
+    append_to_ld_library_path "${APEX_PATH:?}/${1:?}.debug/${2:?}/bionic"
+  fi
+}
+
 append_dir_from_all_partitions_to_ld_library_path()
 {
-  append_to_ld_library_path "${VENDOR_PATH:-/vendor}/${1:?}"
   append_to_ld_library_path "${SYS_PATH:?}/${1:?}"
-  append_to_ld_library_path "${PRODUCT_PATH:-/product}/${1:?}"
+  append_to_ld_library_path "${SYS_EXT_PATH:-%empty}/${1:?}"
+  append_to_ld_library_path "${VENDOR_PATH:-%empty}/${1:?}"
+  append_to_ld_library_path "${SYS_PATH:?}/vendor/${1:?}"
+  append_to_ld_library_path "${PRODUCT_PATH:-%empty}/${1:?}"
   if test -n "${APEX_PATH?}"; then
-    append_to_ld_library_path "${APEX_PATH:?}/com.android.runtime/${1:?}"
-    append_to_ld_library_path "${APEX_PATH:?}/com.android.art/${1:?}"
-    append_to_ld_library_path "${APEX_PATH:?}/com.android.i18n/${1:?}"
-    append_to_ld_library_path "${APEX_PATH:?}/sharedlibs/${1:?}"
+    append_apex_dirs_to_ld_library_path 'com.android.runtime' "${1:?}"
+    append_apex_dirs_to_ld_library_path 'com.android.art' "${1:?}"
+    append_apex_dirs_to_ld_library_path 'com.android.i18n' "${1:?}"
+    append_apex_dirs_to_ld_library_path 'com.android.tzdata' "${1:?}"
+    append_apex_dirs_to_ld_library_path 'sharedlibs' "${1:?}"
   fi
 }
 
