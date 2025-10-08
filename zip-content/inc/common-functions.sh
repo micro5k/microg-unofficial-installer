@@ -709,7 +709,6 @@ mount_apex_if_possible()
 unmount_apex_if_needed()
 {
   local _name _backup_ifs
-  test -n "${APEX_PATH?}" || return
 
   _backup_ifs="${IFS-}"
   IFS="${NL:?}"
@@ -737,6 +736,7 @@ unmount_apex_if_needed()
   ASSOCIATED_LOOP_DEVICES=''
 
   test "${UNMOUNT_APEX:?}" = '1' || return
+  test -n "${APEX_PATH?}" || return
 
   for _name in "${APEX_PATH:?}"/*; do
     test -e "${_name:?}" || continue
