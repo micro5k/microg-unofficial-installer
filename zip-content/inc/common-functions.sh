@@ -596,7 +596,7 @@ _mount_single_apex()
   _block=''
 
   if test -e "/dev/block/mapper/${_name:?}"; then
-    ui_debug "  Checking ${1?}..."
+    ui_debug "  Checking ${1?} apex..."
 
     _block="$(_canonicalize "/dev/block/mapper/${_name:?}")"
     _found='true'
@@ -605,7 +605,7 @@ _mount_single_apex()
 
   if test "${_found:?}" = 'false'; then
     _apex_origin="$(_find_apex_on_system "${1:?}")" || return 2
-    ui_debug "  Checking ${1?}..."
+    ui_debug "  Checking ${1?} apex..."
 
     if _val="$(_losetup_helper 2> /dev/null -j "${_apex_origin:?}" | tail -n 1 | cut -d ':' -f '1')" && test -n "${_val?}" && test -b "${_val:?}"; then
       _block="${_val:?}"
@@ -624,7 +624,7 @@ _mount_single_apex()
         _block="${_val:?}"
         _found='true'
         ASSOCIATED_LOOP_DEVICES="${_block:?}${NL:?}${ASSOCIATED_LOOP_DEVICES?}"
-        ui_msg "  Associated loop device: ${_block?}" # Create new association
+        ui_msg "  Associated '${_apex_origin?}' to loop device: ${_block?}" # Create new association
       fi
     fi
   fi
@@ -632,20 +632,20 @@ _mount_single_apex()
   if mkdir -p -- "${2:?}/${_name:?}"; then
     if test -z "${_block?}" && test -n "${_apex_origin?}" && test -d "${_apex_origin:?}" && _mount_helper -o 'bind,ro' "${_apex_origin:?}" "${2:?}/${_name:?}"; then
       # Flattened APEX
-      MOUNTED_APEX_CHILDREN="${2:?}/${_name:?}${NL:?}${MOUNTED_APEX_CHILDREN?}"
       LAST_APEX_MOUNTPOINT="${2:?}/${_name:?}"
+      MOUNTED_APEX_CHILDREN="${LAST_APEX_MOUNTPOINT:?}${NL:?}${MOUNTED_APEX_CHILDREN?}"
       return 0
     elif test -n "${_block?}" && _mount_ext4_helper -o 'ro,nodev,noatime,norecovery' "${_block:?}" "${2:?}/${_name:?}"; then
       rm -f -- "${TMP_PATH:?}/apex/${_name:?}/apex_payload.img" || :
-      MOUNTED_APEX_CHILDREN="${2:?}/${_name:?}${NL:?}${MOUNTED_APEX_CHILDREN?}"
       LAST_APEX_MOUNTPOINT="${2:?}/${_name:?}"
+      MOUNTED_APEX_CHILDREN="${LAST_APEX_MOUNTPOINT:?}${NL:?}${MOUNTED_APEX_CHILDREN?}"
       return 0
     fi
     rmdir -- "${2:?}/${_name:?}" || :
   fi
   rm -f -- "${TMP_PATH:?}/apex/${_name:?}/apex_payload.img" || :
 
-  ui_debug "  Loop or block not found for: ${1?}"
+  ui_warning "Loop or block not found for: ${1?}"
   return 1
 }
 
