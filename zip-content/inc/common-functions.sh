@@ -1790,16 +1790,6 @@ clean_previous_installations()
   fi
 }
 
-_move_app_into_subfolder()
-{
-  local _path_without_ext
-  _path_without_ext="$(remove_ext "${1:?}")"
-
-  test ! -e "${_path_without_ext:?}" || ui_error "Folder already exists => '${_path_without_ext?}'"
-  mkdir -p -- "${_path_without_ext:?}" || ui_error "Failed to create the folder '${_path_without_ext?}'"
-  mv -f -- "${1:?}" "${_path_without_ext:?}/" || ui_error "Failed to move the file '${1?}' to folder '${_path_without_ext?}/'"
-}
-
 _replace_perm_placeholders_in_file()
 {
   local _repl
@@ -1850,61 +1840,33 @@ prepare_installation()
   # which may cause unordered text in the recovery log, where all outputs are merged together
   sleep 2> /dev/null '0.01' || :
 
-  if test "${API:?}" -ge 23; then
-    if test "${API:?}" -ge 29; then # Android 10+
-      _need_newline='true'
-      replace_permission_placeholders 'ACCESS_BACKGROUND_LOCATION' 'true'
+  if test "${API:?}" -ge 29; then # Android 10+
+    _need_newline='true'
+    replace_permission_placeholders 'ACCESS_BACKGROUND_LOCATION' 'true'
 
-      if test "${API:?}" -ge 31; then # Android 12+
-        replace_permission_placeholders 'BLUETOOTH_ADVERTISE'
-        replace_permission_placeholders 'BLUETOOTH_CONNECT'
-        replace_permission_placeholders 'BLUETOOTH_SCAN'
+    if test "${API:?}" -ge 31; then # Android 12+
+      replace_permission_placeholders 'BLUETOOTH_ADVERTISE'
+      replace_permission_placeholders 'BLUETOOTH_CONNECT'
+      replace_permission_placeholders 'BLUETOOTH_SCAN'
 
-        if test "${API:?}" -ge 33; then # Android 13+
-          replace_permission_placeholders 'POST_NOTIFICATIONS'
-        fi
+      if test "${API:?}" -ge 33; then # Android 13+
+        replace_permission_placeholders 'POST_NOTIFICATIONS'
       fi
     fi
+  fi
 
-    if test "${FAKE_SIGN_PERMISSION:?}" = 'true'; then
-      _need_newline='true'
-      replace_permission_placeholders 'FAKE_PACKAGE_SIGNATURE'
-    fi
+  if test "${API:?}" -ge 23 && test "${FAKE_SIGN_PERMISSION:?}" = 'true'; then
+    _need_newline='true'
+    replace_permission_placeholders 'FAKE_PACKAGE_SIGNATURE'
   fi
 
   test "${_need_newline:?}" = 'false' || ui_debug ''
-
-  if test "${API}" -lt 23; then
-    delete_temp "files/etc/default-permissions"
-  fi
 
   if test "${PRIVAPP_DIRNAME:?}" != 'priv-app' && test -e "${TMP_PATH:?}/files/priv-app"; then
     ui_debug "  Merging priv-app folder with ${PRIVAPP_DIRNAME?} folder..."
     mkdir -p -- "${TMP_PATH:?}/files/${PRIVAPP_DIRNAME:?}" || ui_error "Failed to create the dir '${TMP_PATH?}/files/${PRIVAPP_DIRNAME?}'"
     copy_dir_content "${TMP_PATH:?}/files/priv-app" "${TMP_PATH:?}/files/${PRIVAPP_DIRNAME:?}"
     delete_temp "files/priv-app"
-  fi
-
-  if test "${API:?}" -ge 21; then
-    _backup_ifs="${IFS:-}"
-    IFS=''
-
-    # Move apps into subfolders
-    ui_debug '  Moving apps into subfolders...'
-    if test -e "${TMP_PATH:?}/files/priv-app"; then
-      for entry in "${TMP_PATH:?}/files/priv-app"/*; do
-        if test ! -f "${entry:?}"; then continue; fi
-        _move_app_into_subfolder "${entry:?}"
-      done
-    fi
-    if test -e "${TMP_PATH:?}/files/app"; then
-      for entry in "${TMP_PATH:?}/files/app"/*; do
-        if test ! -f "${entry:?}"; then continue; fi
-        _move_app_into_subfolder "${entry:?}"
-      done
-    fi
-
-    IFS="${_backup_ifs:-}"
   fi
 
   delete_temp "files/etc/zips"
