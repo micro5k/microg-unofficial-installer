@@ -128,7 +128,7 @@ export LOG_PATH
 
 ### FUNCTIONS ###
 
-_send_text_to_recovery()
+_show_msg_in_recovery()
 {
   if test "${RECOVERY_OUTPUT:?}" != 'true'; then return; fi # Nothing to do here
 
@@ -160,7 +160,7 @@ ui_error()
   test -z "${2-}" || _error_code="${2:?}"
 
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "ERROR ${_error_code:?}: ${1:?}"
+    _show_msg_in_recovery "ERROR ${_error_code:?}: ${1:?}"
   else
     _print_text '\033[1;31m%s\033[0m' "ERROR ${_error_code:?}: ${1:?}"
   fi
@@ -171,7 +171,7 @@ ui_error()
 ui_warning()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "WARNING: ${1:?}"
+    _show_msg_in_recovery "WARNING: ${1:?}"
   else
     _print_text '\033[0;33m%s\033[0m' "WARNING: ${1:?}"
   fi
@@ -180,7 +180,7 @@ ui_warning()
 ui_msg()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
-    _send_text_to_recovery "${1:?}"
+    _show_msg_in_recovery "${1:?}"
   else
     _print_text '%s' "${1:?}"
   fi
@@ -216,7 +216,7 @@ enable_debug_log()
   if test "${DEBUG_LOG_ENABLED:?}" -eq 1; then return 0; fi
 
   ui_debug "Creating log: ${LOG_PATH?}"
-  _send_text_to_recovery "Creating log: ${LOG_PATH?}"
+  _show_msg_in_recovery "Creating log: ${LOG_PATH?}"
 
   touch "${LOG_PATH:?}" || {
     ui_warning "Unable to write the log file at '${LOG_PATH?}'"

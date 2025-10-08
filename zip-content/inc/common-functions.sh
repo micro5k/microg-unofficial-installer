@@ -138,7 +138,9 @@ ui_msg_empty_line()
 {
   if test "${RECOVERY_OUTPUT:?}" = 'true'; then
     _show_msg_in_recovery ' '
-    test "${TEST_INSTALL:-false}" = 'false' || sleep 2> /dev/null '0.01' || :
+    # Recovery messages may appear with a slight delay compared to messages written to STDOUT/STDERR,
+    # which may cause unordered text in the recovery log, where all outputs are merged together
+    sleep 2> /dev/null '0.01' || :
   else
     _print_text '%s' ''
   fi
@@ -612,7 +614,7 @@ _mount_single_apex()
 
     if
       test "${_found:?}" = 'false' &&
-        test -f "${_apex_origin:?}" &&
+        test -f "${_apex_origin:?}" && # Only needed for APEX files, not for APEX folders (flattened APEX)
         mkdir -p -- "${TMP_PATH:?}/apex/${1:?}" &&
         unzip -oq "${_apex_origin:?}" 'apex_payload.img' -d "${TMP_PATH:?}/apex/${1:?}" &&
         test -f "${TMP_PATH:?}/apex/${1:?}/apex_payload.img"
@@ -1844,6 +1846,10 @@ prepare_installation()
   ui_msg 'Preparing installation...'
   _need_newline='false'
 
+  # Recovery messages may appear with a slight delay compared to messages written to STDOUT/STDERR,
+  # which may cause unordered text in the recovery log, where all outputs are merged together
+  sleep 2> /dev/null '0.01' || :
+
   if test "${API:?}" -ge 23; then
     if test "${API:?}" -ge 29; then # Android 10+
       _need_newline='true'
@@ -2241,17 +2247,13 @@ perform_secure_copy_to_device()
   touch 2> /dev/null "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || :
 
   ui_debug ''
-  df 2> /dev/null -B1 -P -- "${SYS_MOUNTPOINT:?}" || :
-  ui_debug ''
-  df 2> /dev/null -h -T -- "${SYS_MOUNTPOINT:?}" || df -h -- "${SYS_MOUNTPOINT:?}" || :
-  ui_debug ''
-
   display_free_space "${DEST_PATH:?}" "$(get_free_disk_space_of_partition "${DEST_PATH:?}" || :)" 'true'
 
   local _ret_code
   _ret_code=5
   ! _is_free_space_error "${_error_text?}" || _ret_code=122
 
+  ui_debug ''
   if test -n "${_error_text?}"; then
     ui_error "Failed to copy '${1?}' to the device due to => $(printf '%s\n' "${_error_text?}" | head -n 1 || :)" "${_ret_code?}"
   fi
