@@ -572,11 +572,11 @@ _find_apex_on_system()
 {
   local _apex_found
 
-  if _apex_found="${SYS_PATH:?}/apex/${1:?}.apex" && test -e "${_apex_found:?}"; then
+  if _apex_found="${SYS_PATH:?}/apex/com.android.${1:?}.apex" && test -e "${_apex_found:?}"; then
     :
-  elif _apex_found="${SYS_PATH:?}/apex/com.google.${1#"com."}.apex" && test -e "${_apex_found:?}"; then
+  elif _apex_found="${SYS_PATH:?}/apex/com.google.android.${1:?}.apex" && test -e "${_apex_found:?}"; then
     :
-  elif test "${1:?}" = 'com.android.tzdata' && _apex_found="${SYS_PATH:?}/apex/com.google.${1#"com."}6.apex" && test -e "${_apex_found:?}"; then
+  elif test "${1:?}" = 'tzdata' && _apex_found="${SYS_PATH:?}/apex/com.google.android.${1:?}6.apex" && test -e "${_apex_found:?}"; then
     :
   else
     return 1
@@ -587,19 +587,20 @@ _find_apex_on_system()
 
 _mount_single_apex()
 {
-  local _val _apex_origin _block _found
+  local _name _apex_origin _block _found _val
 
   unset LAST_APEX_MOUNTPOINT
+  _name="com.android.${1:?}"
   _found='false'
   _apex_origin=''
   _block=''
 
-  if test -e "/dev/block/mapper/${1:?}"; then
+  if test -e "/dev/block/mapper/${_name:?}"; then
     ui_debug "  Checking ${1?}..."
 
-    _block="$(_canonicalize "/dev/block/mapper/${1:?}")"
+    _block="$(_canonicalize "/dev/block/mapper/${_name:?}")"
     _found='true'
-    ui_msg "  Found 'mapper/${1?}' block at: ${_block?}" # Reuse existing
+    ui_msg "  Found 'mapper/${_name?}' block at: ${_block?}" # Reuse existing
   fi
 
   if test "${_found:?}" = 'false'; then
@@ -615,11 +616,11 @@ _mount_single_apex()
     if
       test "${_found:?}" = 'false' &&
         test -f "${_apex_origin:?}" && # Only needed for APEX files, not for APEX folders (flattened APEX)
-        mkdir -p -- "${TMP_PATH:?}/apex/${1:?}" &&
-        unzip -oq "${_apex_origin:?}" 'apex_payload.img' -d "${TMP_PATH:?}/apex/${1:?}" &&
-        test -f "${TMP_PATH:?}/apex/${1:?}/apex_payload.img"
+        mkdir -p -- "${TMP_PATH:?}/apex/${_name:?}" &&
+        unzip -oq "${_apex_origin:?}" 'apex_payload.img' -d "${TMP_PATH:?}/apex/${_name:?}" &&
+        test -f "${TMP_PATH:?}/apex/${_name:?}/apex_payload.img"
     then
-      if _val="$(_losetup_helper -r -f)" && test -n "${_val?}" && test -b "${_val:?}" && _losetup_helper -r -- "${_val:?}" "${TMP_PATH:?}/apex/${1:?}/apex_payload.img"; then
+      if _val="$(_losetup_helper -r -f)" && test -n "${_val?}" && test -b "${_val:?}" && _losetup_helper -r -- "${_val:?}" "${TMP_PATH:?}/apex/${_name:?}/apex_payload.img"; then
         _block="${_val:?}"
         _found='true'
         ASSOCIATED_LOOP_DEVICES="${_block:?}${NL:?}${ASSOCIATED_LOOP_DEVICES?}"
@@ -628,25 +629,23 @@ _mount_single_apex()
     fi
   fi
 
-  if test "${_found:?}" != 'false' && mkdir -p -- "${2:?}"; then
-    if test -n "${_apex_origin?}" && test -z "${_block?}" && test -d "${_apex_origin:?}"; then
+  if mkdir -p -- "${2:?}/${_name:?}"; then
+    if test -z "${_block?}" && test -n "${_apex_origin?}" && test -d "${_apex_origin:?}" && _mount_helper -o 'bind,ro' "${_apex_origin:?}" "${2:?}/${_name:?}"; then
       # Flattened APEX
-      if _mount_helper -o 'bind,ro' "${_apex_origin:?}" "${2:?}"; then
-        MOUNTED_APEX_CHILDREN="${2:?}${NL:?}${MOUNTED_APEX_CHILDREN?}"
-        LAST_APEX_MOUNTPOINT="${2:?}"
-        return 0
-      fi
-    elif _mount_ext4_helper -o 'ro,nodev,noatime,norecovery' "${_block:?}" "${2:?}"; then
-      rm -f -- "${TMP_PATH:?}/apex/${1:?}/apex_payload.img" || :
-      MOUNTED_APEX_CHILDREN="${2:?}${NL:?}${MOUNTED_APEX_CHILDREN?}"
-      LAST_APEX_MOUNTPOINT="${2:?}"
+      MOUNTED_APEX_CHILDREN="${2:?}/${_name:?}${NL:?}${MOUNTED_APEX_CHILDREN?}"
+      LAST_APEX_MOUNTPOINT="${2:?}/${_name:?}"
+      return 0
+    elif test -n "${_block?}" && _mount_ext4_helper -o 'ro,nodev,noatime,norecovery' "${_block:?}" "${2:?}/${_name:?}"; then
+      rm -f -- "${TMP_PATH:?}/apex/${_name:?}/apex_payload.img" || :
+      MOUNTED_APEX_CHILDREN="${2:?}/${_name:?}${NL:?}${MOUNTED_APEX_CHILDREN?}"
+      LAST_APEX_MOUNTPOINT="${2:?}/${_name:?}"
       return 0
     fi
-    rmdir -- "${2:?}" || :
+    rmdir -- "${2:?}/${_name:?}" || :
   fi
-  rm -f -- "${TMP_PATH:?}/apex/${1:?}/apex_payload.img" || :
+  rm -f -- "${TMP_PATH:?}/apex/${_name:?}/apex_payload.img" || :
 
-  ui_debug "  Block not found for: ${1?}"
+  ui_debug "  Loop or block not found for: ${1?}"
   return 1
 }
 
@@ -654,10 +653,10 @@ _mount_apex_children()
 {
   local _child
 
-  for _child in 'com.android.runtime' 'com.android.art' 'com.android.i18n' 'com.android.tzdata'; do
-    test ! -e "${1:?}/${_child:?}" || continue # Already exist
+  for _child in 'runtime' 'art' 'i18n' 'tzdata'; do
+    test ! -e "${1:?}/com.android.${_child:?}" || continue # Already exist
 
-    if _mount_single_apex "${_child:?}" "${1:?}/${_child:?}"; then
+    if _mount_single_apex "${_child:?}" "${1:?}"; then
       ui_debug "  Mounted: ${LAST_APEX_MOUNTPOINT?}"
     fi
   done
@@ -667,16 +666,15 @@ _mount_apex_children()
 
 mount_apex_if_possible()
 {
-  local _partition_name _mp
+  local _mp
+
   unset LAST_MOUNTPOINT
   LAST_PARTITION_MUST_BE_UNMOUNTED=0
-
-  _partition_name="apex"
   _mp='/apex'
 
   test -d "${SYS_PATH:?}/apex" || return 3
   ui_debug ''
-  ui_debug "Checking ${_partition_name?}..."
+  ui_debug "Checking apex..."
 
   if is_mounted "${_mp:?}"; then
     if test "${BOOTMODE:?}" != 'true'; then
@@ -689,7 +687,7 @@ mount_apex_if_possible()
   fi
 
   test -e "${_mp:?}" || {
-    ui_warning "Mounting of ${_partition_name?} failed (missing mountpoint)"
+    ui_warning "Mounting of apex failed (missing mountpoint)"
     return 2
   }
 
@@ -698,7 +696,7 @@ mount_apex_if_possible()
     LAST_PARTITION_MUST_BE_UNMOUNTED=1
     ui_debug "  Mounted: ${LAST_MOUNTPOINT?}" # Successfully mounted
   else
-    ui_warning "Mounting of ${_partition_name?} failed"
+    ui_warning "Mounting of apex failed"
     return 2
   fi
 
