@@ -1404,11 +1404,31 @@ display_info()
     ui_msg "System mountpoint: ${SYS_MOUNTPOINT?}"
     ui_msg "System path: ${SYS_PATH?}"
     ui_msg "Priv-app dir name: ${PRIVAPP_DIRNAME?}"
-    #ui_msg "Android root ENV: ${ANDROID_ROOT-}"
     ui_msg_empty_line
   fi
   ui_msg "Input devices: $(_list_input_devices || :)"
   ui_msg "$(write_separator_line "${#MODULE_NAME}" '-' || :)"
+}
+
+_set_android_env_vars()
+{
+  export ANDROID_ROOT="${SYS_PATH:?}"
+
+  if test -n "${APEX_PATH?}"; then
+    if ANDROID_RUNTIME_ROOT="$(_find_apex 'com.android.runtime' "${APEX_PATH:?}")"; then export ANDROID_RUNTIME_ROOT; else unset ANDROID_RUNTIME_ROOT; fi
+    if ANDROID_ART_ROOT="$(_find_apex 'com.android.art' "${APEX_PATH:?}")"; then export ANDROID_ART_ROOT; else unset ANDROID_ART_ROOT; fi
+    if ANDROID_I18N_ROOT="$(_find_apex 'com.android.i18n' "${APEX_PATH:?}")"; then export ANDROID_I18N_ROOT; else unset ANDROID_I18N_ROOT; fi
+    if ANDROID_TZDATA_ROOT="$(_find_apex 'com.android.tzdata' "${APEX_PATH:?}")"; then export ANDROID_TZDATA_ROOT; else unset ANDROID_TZDATA_ROOT; fi
+  fi
+
+  unset LD_PRELOAD
+
+  export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}"
+  append_dir_from_all_partitions_to_ld_library_path 'lib64'
+  append_dir_from_all_partitions_to_ld_library_path 'lib'
+  append_dir_from_all_partitions_to_ld_library_path 'lib/arm'
+
+  export DYLD_LIBRARY_PATH="${LD_LIBRARY_PATH?}"
 }
 
 reset_unmount_vars()
@@ -1679,12 +1699,9 @@ initialize()
     UNMOUNT_APEX="${LAST_PARTITION_MUST_BE_UNMOUNTED:?}"
   fi
 
+  _set_android_env_vars
+
   ui_debug ''
-  unset LD_PRELOAD
-  export LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}"
-  append_dir_from_all_partitions_to_ld_library_path 'lib64'
-  append_dir_from_all_partitions_to_ld_library_path 'lib'
-  append_dir_from_all_partitions_to_ld_library_path 'lib/arm'
   ui_debug "LD_LIBRARY_PATH='${LD_LIBRARY_PATH-}'"
   ui_debug ''
 
