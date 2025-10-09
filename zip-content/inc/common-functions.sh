@@ -568,6 +568,19 @@ _prepare_mountpoint()
   return 0
 }
 
+_find_apex()
+{
+  if test -d "${2:?}/${1:?}"; then
+    printf '%s\n' "${2:?}/${1:?}"
+  elif test -d "${2:?}/${1:?}.release"; then
+    printf '%s\n' "${2:?}/${1:?}.release"
+  elif test -d "${2:?}/${1:?}.debug"; then
+    printf '%s\n' "${2:?}/${1:?}.debug"
+  else
+    return 1
+  fi
+}
+
 _find_apex_on_system()
 {
   local _apex_found
@@ -595,9 +608,14 @@ _mount_single_apex()
   _apex_origin=''
   _block=''
 
+  if LAST_APEX_MOUNTPOINT="$(_find_apex "${_name:?}" "${2:?}")"; then
+    ui_debug "  Checking ${1?} apex..."
+    ui_debug "  Already mounted: ${LAST_APEX_MOUNTPOINT?}"
+    return 3 # Already mounted
+  fi
+
   if test -e "/dev/block/mapper/${_name:?}"; then
     ui_debug "  Checking ${1?} apex..."
-
     _block="$(_canonicalize "/dev/block/mapper/${_name:?}")"
     _found='true'
     ui_msg "  Found 'mapper/${_name?}' block at: ${_block?}" # Reuse existing
@@ -624,7 +642,7 @@ _mount_single_apex()
         _block="${_val:?}"
         _found='true'
         ASSOCIATED_LOOP_DEVICES="${_block:?}${NL:?}${ASSOCIATED_LOOP_DEVICES?}"
-        ui_msg "  Associated '${_apex_origin?}' to loop device: ${_block?}" # Create new association
+        ui_msg "  Associated '${_apex_origin?}' to loop device: ${_block?}" # Associated a loop
       fi
     fi
   fi
@@ -654,8 +672,6 @@ _mount_apex_children()
   local _child
 
   for _child in 'runtime' 'art' 'i18n' 'tzdata'; do
-    test ! -e "${1:?}/com.android.${_child:?}" || continue # Already exist
-
     if _mount_single_apex "${_child:?}" "${1:?}"; then
       ui_debug "  Mounted: ${LAST_APEX_MOUNTPOINT?}"
     fi
@@ -1279,15 +1295,11 @@ append_to_ld_library_path()
 
 append_apex_dirs_to_ld_library_path()
 {
-  if test -d "${APEX_PATH:?}/${1:?}"; then
-    append_to_ld_library_path "${APEX_PATH:?}/${1:?}/${2:?}"
-    append_to_ld_library_path "${APEX_PATH:?}/${1:?}/${2:?}/bionic"
-  elif test -d "${APEX_PATH:?}/${1:?}.release"; then
-    append_to_ld_library_path "${APEX_PATH:?}/${1:?}.release/${2:?}"
-    append_to_ld_library_path "${APEX_PATH:?}/${1:?}.release/${2:?}/bionic"
-  elif test -d "${APEX_PATH:?}/${1:?}.debug"; then
-    append_to_ld_library_path "${APEX_PATH:?}/${1:?}.debug/${2:?}"
-    append_to_ld_library_path "${APEX_PATH:?}/${1:?}.debug/${2:?}/bionic"
+  local _cur_apex_dir
+
+  if _cur_apex_dir="$(_find_apex "${1:?}" "${APEX_PATH:?}")"; then
+    append_to_ld_library_path "${_cur_apex_dir:?}/${2:?}"
+    append_to_ld_library_path "${_cur_apex_dir:?}/${2:?}/bionic"
   fi
 }
 
