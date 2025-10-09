@@ -1569,7 +1569,7 @@ initialize()
 
   if is_bootloader_locked; then
     if test "${BYPASS_LOCK_CHECK:?}" != 0; then
-      ui_warning "The boot loader is locked!!! Verified boot state: ${VERIFIED_BOOT_STATE?}" 37
+      ui_warning "The boot loader is locked!!! Verified boot state: ${VERIFIED_BOOT_STATE?}"
     else
       ui_error "The boot loader is locked!!! Verified boot state: ${VERIFIED_BOOT_STATE?}" 37
     fi
