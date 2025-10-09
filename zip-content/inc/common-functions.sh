@@ -581,21 +581,43 @@ _find_apex()
   fi
 }
 
+# Cases to consider:
+# - /system/apex/com.android.[name].apex
+# - /system/apex/com.android.[name].release.apex
+# - /system/apex/com.android.[name].debug.apex
+# - /system/apex/com.android.[name]
+# - /system/apex/com.android.[name].release
+# - /system/apex/com.android.[name].debug
+# - /system/apex/com.google.android.[name].apex
+# - /system/apex/com.google.android.[name].release.apex
+# - /system/apex/com.google.android.[name].debug.apex
+# - /system/apex/com.google.android.[name]
+# - /system/apex/com.google.android.[name].release
+# - /system/apex/com.google.android.[name].debug
+
 _find_apex_on_system()
 {
-  local _apex_found
+  local _search _apex_path
 
-  if _apex_found="${SYS_PATH:?}/apex/com.android.${1:?}.apex" && test -e "${_apex_found:?}"; then
-    :
-  elif _apex_found="${SYS_PATH:?}/apex/com.google.android.${1:?}.apex" && test -e "${_apex_found:?}"; then
-    :
-  elif test "${1:?}" = 'tzdata' && _apex_found="${SYS_PATH:?}/apex/com.google.android.${1:?}6.apex" && test -e "${_apex_found:?}"; then
-    :
-  else
-    return 1
+  _search="${1:?}"
+  set -- "${SYS_PATH:?}/apex/com.android.${1:?}."* "${SYS_PATH:?}/apex/com.android.${1:?}" "${SYS_PATH:?}/apex/com.google.android.${1:?}."* "${SYS_PATH:?}/apex/com.google.android.${1:?}" || {
+    ui_warning 'Failed expanding inside _find_apex_on_system()'
+    return 2
+  }
+
+  for _apex_path in "${@}"; do
+    if test -e "${_apex_path:?}"; then
+      printf '%s\n' "${_apex_path:?}"
+      return 0
+    fi
+  done
+
+  if test "${_search:?}" = 'tzdata' && _apex_path="${SYS_PATH:?}/apex/com.google.android.${_search:?}6.apex" && test -e "${_apex_path:?}"; then
+    printf '%s\n' "${_apex_path:?}"
+    return 0
   fi
 
-  printf '%s\n' "${_apex_found:?}"
+  return 1
 }
 
 _mount_single_apex()
