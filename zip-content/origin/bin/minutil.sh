@@ -677,15 +677,17 @@ minutil_set_installer()
     return 6
   }
 
-  _output="$(su 2>&1 "${_store_uid:?}" pm set-installer "${1:?}" 'com.android.vending')" || _exit_code="${?}"
+  _output="$(su 2>&1 "${_store_uid:?}" pm set-installer "${1:?}" 'com.android.vending')" || {
+    _exit_code="${?}"
 
-  case "${_output?}" in
-    *'SecurityException'*)
-      error_msg "Failed to set installer => $(printf '%s\n' "${_output?}" | grep -F -e 'SecurityException' || printf '%s\n' "Failed to set installer => ${_output?}" || :)"
-      return 70
-      ;;
-    *) error_msg "Failed to set installer => ${_output?}" ;;
-  esac
+    case "${_output?}" in
+      *'SecurityException'*)
+        error_msg "Failed to set installer => $(printf '%s\n' "${_output?}" | grep -F -e 'SecurityException' || printf '%s\n' "Failed to set installer => ${_output?}" || :)"
+        return 70
+        ;;
+      *) error_msg "Failed to set installer => ${_output?}" ;;
+    esac
+  }
 
   return "${_exit_code:?}"
 }
