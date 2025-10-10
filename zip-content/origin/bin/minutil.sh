@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.4.9'
+readonly SCRIPT_VERSION='1.5.0'
 
 ### CONFIGURATION ###
 
@@ -975,12 +975,25 @@ if test "${DISPLAY_HELP:?}" = 'true'; then
   _minutil_aligned_print '--reset-battery' 'Reset battery stats and, if possible, also reset battery fuel gauge chip (need root)'
   _minutil_aligned_print '-r,--reset-gms-data' 'Reset GMS data of all apps (need root)'
   _minutil_aligned_print '-i,--reinstall-package PACKAGE' 'Reinstall PACKAGE as if it were installed from PlayStore and grant it all permissions'
+  _minutil_aligned_print '--set-installer PACKAGE' 'Set the installation source of PACKAGE to PlayStore (need root)'
 
   printf '%s\n' "
 Examples:
 
 ${_minutil_script_name:?} -i org.schabi.newpipe
 ${_minutil_script_name:?} --rescan-storage
+
+
+IMPORTANT:
+
+There are two ways to change the installation source of an app:
+1) --reinstall-package
+2) --set-installer
+
+The first sets 'installer' and 'installerUid' to match PlayStore, but unfortunately also sets 'packageSource' to '1' and 'installInitiator' to 'com.android.shell'.
+The second, on the other hand, only sets 'installer' and 'installerUid' to match PlayStore and leaves 'packageSource' and 'installInitiator' unchanged (so if they were correct before, they will remain correct, and if they were incorrect, they will remain incorrect).
+
+If the app does NOT check these additional values or if you have an older version of Android, it will still work perfectly, otherwise you may encounter problems.
 "
 elif test "${STATUS:?}" -ne 0; then
   printf 1>&2 '%s\n' "Try '$(basename "${0-script}" || echo "${0-script}" || :) --help' for more information."
