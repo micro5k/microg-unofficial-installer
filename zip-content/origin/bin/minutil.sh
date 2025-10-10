@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.4.8'
+readonly SCRIPT_VERSION='1.4.9'
 
 ### CONFIGURATION ###
 
@@ -654,7 +654,9 @@ _minutil_grant_perms()
 
 minutil_set_installer()
 {
-  local _store_uid
+  local _store_uid _output _exit_code
+
+  _exit_code=0
 
   # Added in Android 5 (API 21)
   test "${SYSTEM_API:?}" -ge 21 || {
@@ -674,7 +676,18 @@ minutil_set_installer()
     error_msg 'The su binary is missing or disabled'
     return 6
   }
-  su "${_store_uid:?}" pm set-installer "${1:?}" 'com.android.vending'
+
+  _output="$(su 2>&1 "${_store_uid:?}" pm set-installer "${1:?}" 'com.android.vending')" || _exit_code="${?}"
+
+  case "${_output?}" in
+    *'SecurityException'*)
+      error_msg "Failed to set installer => $(printf '%s\n' "${_output?}" | grep -F -e 'SecurityException' || printf '%s\n' "Failed to set installer => ${_output?}" || :)"
+      return 70
+      ;;
+    *) error_msg "Failed to set installer => ${_output?}" ;;
+  esac
+
+  return "${_exit_code:?}"
 }
 
 minutil_fix_microg()
