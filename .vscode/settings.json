@@ -1,0 +1,16 @@
+{
+    "shellcheck.enable": true,
+    "shellcheck.enableQuickFix": true,
+    "shellcheck.logLevel": "trace",
+    "shellcheck.run": "onType",
+
+    "codecov.coverage.enabled": true,
+
+    "java.import.gradle.enabled": false,
+    "java.import.maven.enabled": false,
+    "java.autobuild.enabled": false,
+    "java.showBuildStatusOnStart.enabled": "off",
+
+    "task.autoDetect": "off",
+    "gradle.autoDetect": "off"
+}

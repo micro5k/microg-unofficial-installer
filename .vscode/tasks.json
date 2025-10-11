@@ -43,7 +43,7 @@
             "problemMatcher": []
         },
         {
-            "label": "installTest",
+            "label": "test",
             "detail": "Emulate an Android recovery on your PC and inside it execute the flashable zip to see the result.",
             "type": "shell",
             "command": "${workspaceFolder}/recovery-simulator/recovery.sh",
@@ -70,20 +70,6 @@
                 "panel": "dedicated"
             },
             "problemMatcher": []
-        },
-        {
-            "label": "dummy (do not use)",
-            "detail": " ",
-            "type": "java (build)",
-            "paths": [
-                "${workspace}"
-            ],
-            "isFullBuild": true,
-            "presentation": {
-                "reveal": "never",
-                "panel": "dedicated",
-                "close": true
-            }
         }
     ]
 }

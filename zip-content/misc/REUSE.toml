@@ -2,7 +2,7 @@ version = 1
 
 [[annotations]]
 path = [
-  "busybox/busybox-*.bin",
+  "busybox/busybox-*.bin"
 ]
 SPDX-FileCopyrightText = "Copyright (C) tons of folks. <https://github.com/yashdsaraf/busybox/raw/master/AUTHORS>"
 SPDX-License-Identifier = "GPL-2.0-only"
@@ -14,7 +14,7 @@ SPDX-FileComment = [
 
 [[annotations]]
 path = [
-  "aapt/aapt-*.bin",
+  "aapt/aapt-*.bin"
 ]
 SPDX-FileCopyrightText = "(c) 2005-2008 The Android Open Source Project"
 SPDX-License-Identifier = "Apache-2.0"
