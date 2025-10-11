@@ -10,6 +10,7 @@
     "java.import.maven.enabled": false,
     "java.autobuild.enabled": false,
     "java.showBuildStatusOnStart.enabled": "off",
+    "java.server.launchMode": "LightWeight",
 
     "task.autoDetect": "off",
     "gradle.autoDetect": "off"
