@@ -31,6 +31,7 @@ private void initialize() {
 
     description = String.valueOf(props.getProperty('description'))
     version = String.valueOf(props.getProperty('version')).toLowerCase(Locale.ENGLISH).trim()
+    group = String.valueOf(props.getProperty('group'))
     ext.ourArchivesBaseName = String.valueOf(props.getProperty('id')).trim()
 
     //ext.isBeta = version.endsWith('-beta')
@@ -168,7 +169,7 @@ tasks.register('install')
 
 tasks.named('wrapper').configure {
     println 'Gradle: ' + gradleVersionTarget
-    gradleVersion gradleVersionTarget
-    //distributionType Wrapper.DistributionType.ALL
-    distributionSha256Sum gradleSha256Sum
+    gradleVersion = gradleVersionTarget
+    //distributionType = Wrapper.DistributionType.ALL
+    distributionSha256Sum = gradleSha256Sum
 }

@@ -33,7 +33,7 @@ indent_style = tab
 [*.bat]
 end_of_line = crlf
 
-[*.{xml,json}]
+[*.{xml,json,gradle}]
 indent_size = 4
 
 [*.{yml,yaml,rst,md,json}]
