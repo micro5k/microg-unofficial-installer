@@ -1,0 +1,7 @@
+{
+    "recommendations": [
+        "timonwong.shellcheck",
+        "marcovr.actions-shell-scripts",
+        "codecov.codecov"
+    ]
+}

@@ -5,6 +5,8 @@
     "shellcheck.run": "onType",
 
     "codecov.coverage.enabled": true,
+    "codacy.guardrails.analyzeGeneratedCode": "disabled",
+    "codacy.guardrails.instructionsFile": "manual",
 
     "java.import.gradle.enabled": false,
     "java.import.maven.enabled": false,
