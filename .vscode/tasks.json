@@ -44,7 +44,7 @@
         },
         {
             "label": "test",
-            "detail": "Emulate an Android recovery on your PC and inside it execute the flashable zip to see the result.",
+            "detail": "Emulate an Android recovery on your PC and run the flashable zip file inside it to see the result.",
             "type": "shell",
             "command": "${workspaceFolder}/recovery-simulator/recovery.sh",
             "args": [
@@ -58,7 +58,6 @@
             },
             "options": {
                 "env": {
-                    "LIVE_SETUP_ALLOWED": "false",
                     "BB_GLOBBING": "1"
                 }
             },
