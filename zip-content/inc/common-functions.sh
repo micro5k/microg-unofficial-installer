@@ -1164,8 +1164,10 @@ reset_appops_if_needed()
 
 _write_test_helper()
 {
+  local _free_space
+
   touch -- "${1:?}/write-test-file.dat" || return 1
-  if test "${FIRST_INSTALLATION:?}" = 'true'; then
+  if test "${FIRST_INSTALLATION:?}" = 'true' && _free_space="$(get_free_disk_space_of_partition "${1:?}")" && test "${_free_space:?}" -ge 512; then
     printf '%512s' '' 1> "${1:?}/write-test-file.dat" || return 2
   fi
   test -f "${1:?}/write-test-file.dat" || return 3
@@ -1815,10 +1817,7 @@ clean_previous_installations()
 
   if test "${SETUP_TYPE?}" != 'uninstall'; then
     ui_msg_empty_line
-
     _initial_free_space="$(get_free_disk_space_of_partition "${SYS_PATH:?}")" || _initial_free_space='-1'
-    test "${_initial_free_space:?}" != 0 || ui_error "There is NO free space on '${SYS_PATH?}' ($(get_file_system "${SYS_PATH?}" || :))" 31
-
     _write_test "${SYS_PATH:?}" || ui_error "Something is wrong because '${SYS_PATH?}' ($(get_file_system "${SYS_PATH?}" || :)) is NOT really writable!!! Return code: ${?}" 30
   else
     ui_msg 'Uninstalling...'
