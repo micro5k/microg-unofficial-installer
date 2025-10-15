@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
+
+# An hook script to prepare the commit log message.
+# Called by "git commit" with the name of the file that has the
+# commit message, followed by the description of the commit
+# message's source.  The hook's purpose is to edit the commit
+# message file.  If the hook fails with a non-zero status,
+# the commit is aborted.
+
+COMMIT_MSG_FILE="${1:?}"
+#COMMIT_TYPE="${2?}"
+#AMENDED_COMMIT_SHA1="${3-}"
+
+COMMIT_MSG="$(cat "${COMMIT_MSG_FILE:?}")" || exit 2
+GIT_REVERT_REGEX='^Revert\s".*"'
+
+if [[ -n "${COMMIT_MSG?}" && "${COMMIT_MSG?}" =~ ${GIT_REVERT_REGEX:?} ]]; then
+  COMMIT_MSG="${COMMIT_MSG/#Revert/revert:}"
+  COMMIT_MSG="${COMMIT_MSG/This reverts commit/Refs:}"
+  printf '%s' "${COMMIT_MSG?}" 1> "${COMMIT_MSG_FILE:?}"
+fi
+
+exit 0
