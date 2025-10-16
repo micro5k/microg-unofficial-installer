@@ -46,4 +46,4 @@ jobs:
       - name: "Checkout sources"
         uses: actions/checkout@v5
       - name: "JSON and YAML - Validator"
-        uses: GrantBirki/json-yaml-validate@v3
+        uses: GrantBirki/json-yaml-validate@v4
