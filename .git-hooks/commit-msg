@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # SPDX-FileCopyrightText: NONE
 # SPDX-License-Identifier: CC0-1.0
 
@@ -8,7 +8,46 @@
 # status after issuing an appropriate message if it wants to stop the
 # commit.  The hook is allowed to edit the commit message file.
 
-grep -m 1 -e '^Signed-off-by: ' -- "${1}" || {
+COMMIT_MSG_FILE="${1:?}"
+
+COMMIT_MSG="$(cat "${COMMIT_MSG_FILE:?}")" || exit 2
+CONVENTIONAL_COMMIT_REGEX='^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\([a-zA-Z0-9_.-]+\))?(!)?:\s.*$'
+
+# Check if the commit message matches the regex.
+if ! [[ "${COMMIT_MSG?}" =~ ${CONVENTIONAL_COMMIT_REGEX:?} ]]; then
+  {
+    echo "ERROR: Commit message does not follow Conventional Commits format."
+    echo ""
+    echo "The commit message should be structured as follows:"
+    echo "<type>(<optional scope>): <description>"
+    echo "[optional body]"
+    echo "[optional footer(s)]"
+    echo ""
+    echo "Valid types are:"
+    echo "  feat:     A new feature."
+    echo "  fix:      A bug fix."
+    echo "  docs:     Documentation changes."
+    echo "  style:    Code style changes (formatting, missing semicolons, etc.)."
+    echo "  refactor: Code refactoring (neither fixes a bug nor adds a feature)."
+    echo "  test:     Adding or updating tests."
+    echo "  chore:    Routine tasks like updating dependencies or build tools."
+    echo "  build:    Changes affecting the build system or external dependencies."
+    echo "  ci:       Changes to CI configuration files or scripts."
+    echo "  perf:     Performance improvements."
+    echo "  revert:   Reverting a previous commit."
+    echo ""
+    echo "Examples:"
+    echo "  feat(auth): add login functionality"
+    echo "  fix(api)!: resolve timeout issue"
+    echo "  docs(readme): update installation instructions"
+    echo ""
+  } 1>&2
+  exit 1
+fi
+
+grep -m 1 -e '^Signed-off-by: ' -- "${COMMIT_MSG_FILE:?}" || {
   echo 1>&2 "Missing Signed-off-by line."
   exit 46
 }
+
+exit 0

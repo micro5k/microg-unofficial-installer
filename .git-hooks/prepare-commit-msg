@@ -16,7 +16,7 @@ COMMIT_MSG_FILE="${1:?}"
 COMMIT_MSG="$(cat "${COMMIT_MSG_FILE:?}")" || exit 2
 GIT_REVERT_REGEX='^Revert\s".*"'
 
-if [[ -n "${COMMIT_MSG?}" && "${COMMIT_MSG?}" =~ ${GIT_REVERT_REGEX:?} ]]; then
+if [[ -n "${COMMIT_MSG?}" && "${COMMIT_MSG:?}" =~ ${GIT_REVERT_REGEX:?} ]]; then
   COMMIT_MSG="${COMMIT_MSG/#Revert/revert:}"
   COMMIT_MSG="${COMMIT_MSG/This reverts commit/Refs:}"
   printf '%s' "${COMMIT_MSG?}" 1> "${COMMIT_MSG_FILE:?}"
