@@ -26,6 +26,12 @@ desktop.ini
 # VS Code files
 /.vscode/launch.json
 
+# Git hooks
+/.git-hooks/post-checkout
+/.git-hooks/post-commit
+/.git-hooks/post-merge
+/.git-hooks/pre-push
+
 # Gradle files
 /.gradle/
 /build/
