@@ -83,7 +83,7 @@ printf '\n'
 
 test -d "${PWD:?}/.git-hooks"
 config_var core.hooksPath '.git-hooks' "${?}" || STATUS="${?}"
-HOME="${USER_HOME:-${HOME:?}}" git lfs install || STATUS="${?}"
+HOME="${USER_HOME:-${HOME:?}}" git lfs install --local || STATUS="${?}"
 
 printf '\n'
 
