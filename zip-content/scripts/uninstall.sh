@@ -45,6 +45,7 @@ PrebuiltGmsCorePi|
 PrebuiltGmsCorePix|
 PrebuiltGmsCoreSc|
 GmsCoreSetupPrebuilt|
+GmsCoreGo|
 GmsCore_update|
 gmscore_debug|
 MicroG|
