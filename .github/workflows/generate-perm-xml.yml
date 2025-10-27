@@ -42,7 +42,7 @@ jobs:
           fi
           find './zip-content' -name '*.apk' | './tools/generate-perm-xml.sh' --use-placeholders - || exit "${?}"
       - name: "Upload artifacts"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: "XML permissions"
           path: "output/*.xml"
