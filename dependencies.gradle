@@ -8,5 +8,5 @@ ext {
     gradleSha256Sum = 'f397b287023acdba1e9f6fc5ea72d22dd63669d59ed4a289a29b1a76eee151c6'
 
     // -- DEPENDENCIES --
-    gradleDevelocityVersion = '4.2.2'
+    gradleDevelocityVersion = '4.3'
 }
