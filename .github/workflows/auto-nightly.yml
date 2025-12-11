@@ -215,7 +215,7 @@ jobs:
               throw new Error(errorMsg);
             }
       - name: "Create nightly release"
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.4.2
         if: "${{ steps.nightly-logic.outputs.UPDATE_RELEASE == 'true' }}"
         with:
           name: "${{ steps.build.outputs.ZIP_VERSION }} nightly"
