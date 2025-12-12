@@ -49,7 +49,7 @@ jobs:
           distribution: "temurin"
           java-version-file: ".tool-versions"
       - name: "Use cache"
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         timeout-minutes: 10
         with:
           key: "build-${{ hashFiles('conf-2.sh') }}"
@@ -259,7 +259,7 @@ jobs:
             conf-2.sh
           sparse-checkout-cone-mode: false
       - name: "Ping cache" # Cache expiration: 7 days
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         timeout-minutes: 5
         with:
           key: "build-${{ hashFiles('conf-2.sh') }}"

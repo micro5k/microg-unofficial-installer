@@ -24,7 +24,7 @@ jobs:
           lfs: true
       - name: "Use cache"
         id: cache-step
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         timeout-minutes: 5
         with:
           key: "perms-${{ hashFiles('tools/dl-perm-list.sh') }}"
@@ -66,7 +66,7 @@ jobs:
             tools/dl-perm-list.sh
           sparse-checkout-cone-mode: false
       - name: "Ping cache" # Cache expiration: 7 days
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         timeout-minutes: 5
         with:
           key: "perms-${{ hashFiles('tools/dl-perm-list.sh') }}"
