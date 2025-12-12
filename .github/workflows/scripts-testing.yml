@@ -41,7 +41,7 @@ jobs:
       - name: "Prepare cache"
         id: cache-action
         if: "${{ runner.os == 'Linux' }}"
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: "cache/shells"
           key: "${{ env.cache-key }}-${{ runner.os }}"
