@@ -233,7 +233,7 @@ jobs:
             ${{ steps.info.outputs.ZIP_ATTESTATION_FILE }}
           fail_on_unmatched_files: true
       - name: "Upload artifacts"
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: "${{ steps.build.outputs.ZIP_BUILD_TYPE_SUPPORTED == 'true' }}"
         with:
           name: "${{ github.event.repository.name }} ${{ steps.build.outputs.ZIP_BRANCH_NAME || github.ref_name }} g${{ steps.build.outputs.ZIP_SHORT_COMMIT_ID }} ${{ steps.build.outputs.ZIP_BUILD_TYPE }} (extract it)"
