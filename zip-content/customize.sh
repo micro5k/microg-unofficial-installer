@@ -16,6 +16,16 @@ set -u 2> /dev/null || :
   (set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
 }
 
+### MAGISK / KERNELSU VARIABLES ###
+
+SKIPUNZIP=1
+ASH_STANDALONE=1
+readonly SKIPUNZIP ASH_STANDALONE
+export SKIPUNZIP ASH_STANDALONE
+
+readonly KSU="${KSU:-false}"
+export KSU
+
 ### PREVENTIVE CHECKS ###
 
 if test -z "${BOOTMODE-}"; then
@@ -49,13 +59,6 @@ export RECOVERY_PIPE
 export ANDROID_ROOT
 export ANDROID_DATA
 unset REPLACE
-
-### MAGISK VARIABLES ###
-
-SKIPUNZIP=1
-ASH_STANDALONE=1
-readonly SKIPUNZIP ASH_STANDALONE
-export SKIPUNZIP ASH_STANDALONE
 
 ### GLOBAL VARIABLES ###
 
