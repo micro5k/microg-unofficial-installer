@@ -25,8 +25,11 @@ export SKIPUNZIP ASH_STANDALONE
 KSU="${KSU:-false}"
 export KSU
 
-REPLACE=''
-REMOVE=''
+# shellcheck disable=SC2034
+{
+  REPLACE=''
+  REMOVE=''
+}
 
 if test "${KSU:?}" != 'false'; then
   INSTALL_MODE='KernelSU'
