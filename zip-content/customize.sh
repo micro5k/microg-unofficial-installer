@@ -20,9 +20,13 @@ set -u 2> /dev/null || :
 
 SKIPUNZIP=1
 ASH_STANDALONE=1
+readonly SKIPUNZIP ASH_STANDALONE
+export SKIPUNZIP ASH_STANDALONE
 KSU="${KSU:-false}"
-readonly SKIPUNZIP ASH_STANDALONE KSU
-export SKIPUNZIP ASH_STANDALONE KSU
+export KSU
+
+REPLACE=''
+REMOVE=''
 
 if test "${KSU:?}" != 'false'; then
   INSTALL_MODE='KernelSU'
@@ -67,7 +71,6 @@ export TMPDIR
 export RECOVERY_PIPE
 export ANDROID_ROOT
 export ANDROID_DATA
-unset REPLACE
 
 ### GLOBAL VARIABLES ###
 
