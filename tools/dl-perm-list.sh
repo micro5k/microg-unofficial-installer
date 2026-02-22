@@ -12,7 +12,7 @@
 
 readonly SCRIPT_NAME='Android permissions retriever'
 readonly SCRIPT_SHORTNAME='DlPermList'
-readonly SCRIPT_VERSION='0.3.0'
+readonly SCRIPT_VERSION='0.3.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -41,7 +41,7 @@ readonly MAX_API='36'
   readonly TAG_API_33='android-13.0.0_r84' # Android 13
   readonly TAG_API_34='android-14.0.0_r75' # Android 14
   readonly TAG_API_35='android-15.0.0_r36' # Android 15
-  readonly TAG_API_36='android-16.0.0_r2'  # Android 16
+  readonly TAG_API_36='android-16.0.0_r4'  # Android 16
 }
 
 readonly WGET_CMD='wget'
