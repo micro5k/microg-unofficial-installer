@@ -20,11 +20,19 @@ set -u 2> /dev/null || :
 
 SKIPUNZIP=1
 ASH_STANDALONE=1
-readonly SKIPUNZIP ASH_STANDALONE
-export SKIPUNZIP ASH_STANDALONE
+KSU="${KSU:-false}"
+readonly SKIPUNZIP ASH_STANDALONE KSU
+export SKIPUNZIP ASH_STANDALONE KSU
 
-readonly KSU="${KSU:-false}"
-export KSU
+if test "${KSU:?}" != 'false'; then
+  INSTALL_MODE='KernelSU'
+elif test -n "${MAGISK_VER_CODE-}"; then
+  INSTALL_MODE='Magisk'
+else
+  INSTALL_MODE='Pure'
+fi
+readonly INSTALL_MODE
+export INSTALL_MODE
 
 ### PREVENTIVE CHECKS ###
 
@@ -400,10 +408,14 @@ detect_recovery_arch()
     armv6* | armv5*)                    RECOVERY_ARCH='armeabi' ;;
     #mips64)                             RECOVERY_ARCH='mips64' ;;
     #mips)                               RECOVERY_ARCH='mips' ;;
-    *) ui_error "Unsupported architecture: $(uname -m || true)" ;;
+    *) ui_error "Unsupported architecture: $(uname -m || :)" ;;
   esac
 }
 detect_recovery_arch
+
+if test "${INSTALL_MODE:?}" != 'Pure'; then
+  ui_error "This ZIP currently cannot be installed as ${INSTALL_MODE:?} module"
+fi
 
 OUR_BB="${BASE_TMP_PATH:?}/busybox"
 if test -n "${CUSTOM_BUSYBOX-}" && test -x "${CUSTOM_BUSYBOX:?}"; then
