@@ -13,7 +13,9 @@ command . "${TMP_PATH:?}/inc/common-functions.sh" || exit "${?}"
 
 setup_fakestore()
 {
-  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && setup_app 1 '' 'microG Companion' 'FakeStore' 'priv-app' true false; then
+  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && test "${LOW_FREE_SPACE:?}" = 0 && setup_app 1 '' 'microG Companion' 'FakeStore' 'priv-app' true false; then
+    :
+  elif test "${USE_MICROG_BY_ALE5000:?}" = 0 && setup_app 1 '' 'microG Companion' 'FakeStore-0.3.6' 'priv-app' true false; then
     :
   elif setup_app 1 '' 'microG Companion - signed by ale5000' 'FakeStoreA5K' 'priv-app' true false; then
     :
@@ -43,6 +45,7 @@ else
 fi
 
 USE_MICROG_BY_ALE5000="$(parse_setting 'general' 'USE_MICROG_BY_ALE5000' "${USE_MICROG_BY_ALE5000:?}")"
+LOW_FREE_SPACE="$(parse_setting 'general' 'LOW_FREE_SPACE' "${LOW_FREE_SPACE:?}")"
 SELECTED_MARKET=''
 
 APP_DEJAVUBACKEND="$(parse_setting 'app' 'DEJAVUBACKEND' "${APP_DEJAVUBACKEND:?}")"
@@ -78,7 +81,9 @@ if test "${SETUP_TYPE:?}" = 'install'; then
   readonly SUPPORTED_ARCH
 
   install_backends='false'
-  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && test "${SUPPORTED_ARCH:?}" = 'true' && setup_app 1 '' 'microG Services' 'GmsCore' 'priv-app' true false; then
+  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && test "${LOW_FREE_SPACE:?}" = 0 && test "${SUPPORTED_ARCH:?}" = 'true' && setup_app 1 '' 'microG Services' 'GmsCore' 'priv-app' true false; then
+    :
+  elif test "${USE_MICROG_BY_ALE5000:?}" = 0 && test "${SUPPORTED_ARCH:?}" = 'true' && setup_app 1 '' 'microG Services' 'GmsCore-0.3.6' 'priv-app' true false; then
     :
   elif test "${SUPPORTED_ARCH:?}" = 'true' && setup_app 1 '' 'microG Services - signed by ale5000' 'GmsCoreA5K' 'priv-app' true false; then
     USE_MICROG_BY_ALE5000=1
@@ -175,6 +180,7 @@ fi
 # Prepare installation
 prepare_installation
 printf '%s\n' "USE_MICROG_BY_ALE5000=${USE_MICROG_BY_ALE5000:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+printf '%s\n' "LOW_FREE_SPACE=${LOW_FREE_SPACE:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 
 # Install
