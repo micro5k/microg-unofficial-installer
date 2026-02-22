@@ -36,6 +36,8 @@ export INSTALL_MODE
 
 ### PREVENTIVE CHECKS ###
 
+export OUTFD="${OUTFD:-2}"
+
 if test -z "${BOOTMODE-}"; then
   printf 1>&2 '%s\n' 'Missing BOOTMODE variable'
   abort 2> /dev/null 'Missing BOOTMODE variable'
@@ -51,9 +53,9 @@ if test -z "${TMPDIR-}" || test ! -w "${TMPDIR:?}"; then
   abort 2> /dev/null 'The temp folder is missing (2)'
   exit 1
 fi
-if test -z "${OUTFD-}" || test "${OUTFD:?}" -lt 1; then
-  printf 1>&2 '%s\n' 'Missing or invalid OUTFD variable'
-  abort 2> /dev/null  'Missing or invalid OUTFD variable'
+if test "${OUTFD:?}" -lt 1; then
+  printf 1>&2 '%s\n' 'Invalid OUTFD variable'
+  abort 2> /dev/null  'Invalid OUTFD variable'
   exit 1
 fi
 RECOVERY_PIPE="/proc/self/fd/${OUTFD:?}"
@@ -62,7 +64,6 @@ test -e "${RECOVERY_PIPE:?}" || RECOVERY_PIPE=''
 export BOOTMODE
 export ZIPFILE
 export TMPDIR
-export OUTFD
 export RECOVERY_PIPE
 export ANDROID_ROOT
 export ANDROID_DATA
@@ -414,7 +415,7 @@ detect_recovery_arch()
 detect_recovery_arch
 
 if test "${INSTALL_MODE:?}" != 'Pure'; then
-  ui_error "This ZIP currently cannot be installed as ${INSTALL_MODE:?} module"
+  ui_error "This ZIP currently cannot be installed as ${INSTALL_MODE?} module"
 fi
 
 OUR_BB="${BASE_TMP_PATH:?}/busybox"
