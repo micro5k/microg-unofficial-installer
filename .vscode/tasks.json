@@ -43,7 +43,7 @@
             "problemMatcher": []
         },
         {
-            "label": "test",
+            "label": "installTest",
             "detail": "Emulate an Android recovery on your PC and run the flashable zip file inside it to see the result.",
             "type": "shell",
             "command": "${workspaceFolder}/recovery-simulator/recovery.sh",

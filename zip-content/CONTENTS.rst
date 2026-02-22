@@ -49,6 +49,12 @@ CONTENTS
 +---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
 | [#]_ Gmail 2020.05.31.316831277.release (62209002)                                          | X    |     | 5.0  | 7.1.2 | |no|     | |no|       |         | |fire| |         |
 +---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
+| **Option LOW_FREE_SPACE**                                                                                                                                                    |
++---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
+| |GmsCore-0.3.6|_ microG Services 0.3.6.244735                                               | X    | X   | 4.4  |       | |yes|    | |no|       |         | |fire| |         |
++---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
+| |FakeStore-0.3.6|_ microG Companion 0.3.6.40226                                             | X    | X   | 4.4  |       | |yes|    | |no|       |         | |fire| |         |
++---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
 | **Framework libraries**                                                                                                                                                      |
 +---------------------------------------------------------------------------------------------+------+-----+------+-------+----------+------------+---------+--------+---------+
 | |MapsV1API|_ microG Maps v1 API 0.1.0                                                       | X    | X   | 2.3  |       | |no|     | |no|       |         | |fire| |         |
@@ -87,36 +93,43 @@ Notes
 .. _GmsCoreMod: origin/priv-app/GmsCoreA5K.apk
 .. |GmsCoreVtm| replace:: |dl|
 .. _GmsCoreVtm: origin/priv-app/GmsCoreVtm.apk
-.. |GmsCoreVtmLegacy| replace:: |dl|
-.. _GmsCoreVtmLegacy: origin/priv-app/GmsCoreVtmLegacy.apk
-.. |GsfProxy| replace:: |dl|
-.. _GsfProxy: origin/priv-app/GsfProxyA5K.apk
 .. |FakeStore| replace:: |dl|
 .. _FakeStore: origin/priv-app/FakeStore.apk
 .. |FakeStoreMod| replace:: |dl|
 .. _FakeStoreMod: origin/priv-app/FakeStoreA5K.apk
-.. |FakeStoreModLegacy| replace:: |dl|
-.. _FakeStoreModLegacy: origin/priv-app/FakeStoreLegacy.apk
+.. |GsfProxy| replace:: |dl|
+.. _GsfProxy: origin/priv-app/GsfProxyA5K.apk
 .. |FDroidPrivilegedExtension| replace:: |dl|
 .. _FDroidPrivilegedExtension: origin/priv-app/FDroidPrivilegedExtension.apk
 .. |AuroraServices| replace:: |dl|
 .. _AuroraServices: origin/priv-app/AuroraServices.apk
-.. |LegacyNetworkLocation| replace:: |dl|
-.. _LegacyNetworkLocation: origin/app/LegacyNetworkLocation.apk
 .. |NewPipe| replace:: |dl|
 .. _NewPipe: origin/app/NewPipe.apk
-.. |NewPipeLegacyRevo| replace:: |dl|
-.. _NewPipeLegacyRevo: origin/app/NewPipeLegacyRevo.apk
 .. |MyLocation| replace:: |dl|
 .. _MyLocation: origin/app/MyLocation.apk
+
+.. |GmsCore-0.3.6| replace:: |dl|
+.. _GmsCore-0.3.6: origin/priv-app/GmsCore-0.3.6.apk
+.. |FakeStore-0.3.6| replace:: |dl|
+.. _FakeStore-0.3.6: origin/priv-app/FakeStore-0.3.6.apk
+
+.. |MapsV1API| replace:: |dl|
+.. _MapsV1API: origin/framework/com.google.android.maps.jar
+
+.. |GmsCoreVtmLegacy| replace:: |dl|
+.. _GmsCoreVtmLegacy: origin/priv-app/GmsCoreVtmLegacy.apk
+.. |FakeStoreModLegacy| replace:: |dl|
+.. _FakeStoreModLegacy: origin/priv-app/FakeStoreLegacy.apk
+.. |LegacyNetworkLocation| replace:: |dl|
+.. _LegacyNetworkLocation: origin/app/LegacyNetworkLocation.apk
+.. |NewPipeLegacyRevo| replace:: |dl|
+.. _NewPipeLegacyRevo: origin/app/NewPipeLegacyRevo.apk
+
 .. [#] <origin/priv-app/PlayStore.apk>
 .. [#] <origin/priv-app/AndroidAuto.apk>
 .. [#] <origin/app/Gmail.apk>
 .. [#] <origin/priv-app/PlayStore7.apk>
 .. [#] <origin/priv-app/PlayStoreLegacy.apk>
-
-.. |MapsV1API| replace:: |dl|
-.. _MapsV1API: origin/framework/com.google.android.maps.jar
 
 ..
    https://microg.org/dl/core-nightly.apk
