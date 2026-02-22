@@ -93,11 +93,9 @@ if test "${SETUP_TYPE:?}" = 'install'; then
     install_backends='true'
   fi
 
-  setup_app 1 '' 'microG Services Framework Proxy' 'GsfProxyA5K' 'priv-app' false false
+  if setup_app 1 '' 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false; then install_backends='true'; fi
 
-  if setup_app 1 '' 'UnifiedNlp (legacy)' 'LegacyNetworkLocation' 'app' false false; then
-    install_backends='true'
-  fi
+  setup_app 1 '' 'microG Services Framework Proxy' 'GsfProxyA5K' 'priv-app' false false
 
   if test "${install_backends:?}" = 'true'; then
     setup_app "${APP_DEJAVUBACKEND:?}" 'APP_DEJAVUBACKEND' 'Déjà Vu Location Service' 'DejaVuBackend' 'app'
@@ -179,9 +177,11 @@ fi
 
 # Prepare installation
 prepare_installation
-printf '%s\n' "USE_MICROG_BY_ALE5000=${USE_MICROG_BY_ALE5000:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
-printf '%s\n' "LOW_FREE_SPACE=${LOW_FREE_SPACE:?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
-printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET?}" 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+{
+  printf '%s\n' "USE_MICROG_BY_ALE5000=${USE_MICROG_BY_ALE5000:?}"
+  printf '%s\n' "LOW_FREE_SPACE=${LOW_FREE_SPACE:?}"
+  printf '%s\n' "SELECTED_MARKET=${SELECTED_MARKET?}"
+} 1>> "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
 
 # Install
 perform_installation
