@@ -20,3 +20,5 @@ updates:
       prefix: "build"
       include: "scope"
     open-pull-requests-limit: 1
+    ignore:
+      - dependency-name: "gradle-wrapper"
