@@ -1301,7 +1301,7 @@ _generate_architectures_list()
   export ARCH_LIST
 }
 
-is_new_architecture()
+is_architecture_still_supported_by_Android()
 {
   case "${1:?}" in
     'arm64-v8a' | 'armeabi-v7a' | 'x86_64' | 'x86') return 0 ;;

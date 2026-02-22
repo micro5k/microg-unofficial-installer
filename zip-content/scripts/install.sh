@@ -73,10 +73,14 @@ if test "${SETUP_TYPE:?}" = 'install'; then
     move_rename_file "${TMP_PATH:?}/origin/profiles/lenovo_yoga_tab_3_pro_10_inches_23.xml" "${TMP_PATH:?}/files/etc/microg_device_profile.xml"
   fi
 
+  SUPPORTED_ARCH='false'
+  if is_architecture_still_supported_by_Android "${MAIN_ABI:?}"; then SUPPORTED_ARCH='true'; fi
+  readonly SUPPORTED_ARCH
+
   install_backends='false'
-  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' 'microG Services' 'GmsCore' 'priv-app' true false; then
+  if test "${USE_MICROG_BY_ALE5000:?}" = 0 && test "${SUPPORTED_ARCH:?}" = 'true' && setup_app 1 '' 'microG Services' 'GmsCore' 'priv-app' true false; then
     :
-  elif test "${MAIN_ABI:?}" != 'armeabi' && setup_app 1 '' 'microG Services - signed by ale5000' 'GmsCoreA5K' 'priv-app' true false; then
+  elif test "${SUPPORTED_ARCH:?}" = 'true' && setup_app 1 '' 'microG Services - signed by ale5000' 'GmsCoreA5K' 'priv-app' true false; then
     USE_MICROG_BY_ALE5000=1
   elif setup_app 1 '' 'microG Services (vtm)' 'GmsCoreVtm' 'priv-app' false false; then
     install_backends='true'
@@ -97,7 +101,7 @@ if test "${SETUP_TYPE:?}" = 'install'; then
 
   # Store selection
   SELECTED_MARKET='FakeStore'
-  if is_new_architecture "${MAIN_ABI:?}" && setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
+  if test "${SUPPORTED_ARCH:?}" = 'true' && setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
   elif setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store (legacy)' 'PlayStore7' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
