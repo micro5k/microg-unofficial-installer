@@ -350,12 +350,12 @@ fi
 echo ''
 
 # Generate info
-sha256sum "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.sha256" || ui_error 'Failed to compute the SHA-256 hash'
+sha256sum -b -- "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.sha256" || ui_error 'Failed to compute the SHA-256 hash'
 ZIP_SHA256="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.sha256")" || ui_error 'Failed to read the SHA-256 hash'
 
 ZIP_MD5=''
 if test "${FAST_BUILD:-false}" = 'false'; then
-  md5sum "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5" || ui_error 'Failed to compute the MD5 hash'
+  md5sum -b -- "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5" || ui_error 'Failed to compute the MD5 hash'
   ZIP_MD5="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5")" || ui_error 'Failed to read the MD5 hash'
 fi
 
