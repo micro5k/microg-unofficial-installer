@@ -316,8 +316,12 @@ _backup_tmpdir="${TMPDIR:?}"
 readonly _backup_path _backup_tmpdir
 
 # Check dependencies
-_our_busybox="$(env -- which -- busybox)" || fail_with_msg 'BusyBox is missing'
 _tee_cmd="$(command -v tee)" || fail_with_msg 'tee is missing'
+_our_busybox="$(command -v busybox)" || _our_busybox=''
+if test -z "${_our_busybox?}" || test "${_our_busybox:?}" = 'busybox'; then
+  _our_busybox="$(env -- which -- busybox)" || _our_busybox=''
+  if test -z "${_our_busybox?}" || test "${_our_busybox:?}" = 'busybox'; then fail_with_msg 'BusyBox is missing'; fi
+fi
 if test -n "${CYGPATH?}"; then
   # Only on Bash under Windows
   _our_busybox="$("${CYGPATH:?}" -m -a -l -- "${_our_busybox:?}")" || fail_with_msg 'Unable to convert our busybox path'
