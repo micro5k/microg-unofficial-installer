@@ -3,7 +3,13 @@
 
 root = true
 
-[{cache,output,gradlew,gradlew.bat,.git,.gradle,.ash_history}]
+[{cache,output,gradlew,gradlew.bat}]
+ignore = true
+
+[{.git,.gradle,.local,.ash_history,.bash_history}]
+ignore = true
+
+[{.git-hooks/post-checkout,.git-hooks/post-commit,.git-hooks/post-merge,.git-hooks/pre-push}]
 ignore = true
 
 [*.{jar,apk,bin,exe}]
