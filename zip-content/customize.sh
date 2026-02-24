@@ -23,7 +23,8 @@ ASH_STANDALONE=1
 readonly SKIPUNZIP ASH_STANDALONE
 export SKIPUNZIP ASH_STANDALONE
 KSU="${KSU:-false}"
-export KSU
+APATCH="${APATCH:-false}"
+export KSU APATCH
 
 # shellcheck disable=SC2034
 {
@@ -33,6 +34,8 @@ export KSU
 
 if test "${KSU:?}" != 'false'; then
   INSTALL_MODE='KernelSU'
+elif test "${APATCH:?}" != 'false'; then
+  INSTALL_MODE='APatch'
 elif test -n "${MAGISK_VER_CODE-}"; then
   INSTALL_MODE='Magisk'
 else
