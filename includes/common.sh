@@ -360,7 +360,7 @@ verify_sha1()
   local file_hash
 
   if test ! -f "${file_name}"; then return 1; fi # Failed
-  file_hash="$(sha1sum "${file_name}" | cut -d ' ' -f 1)"
+  file_hash="$(sha1sum -b -- "${file_name}" | cut -d ' ' -f 1)"
   if test -z "${file_hash}" || test "${hash}" != "${file_hash}"; then return 1; fi # Failed
   return 0                                                                         # Success
 }
