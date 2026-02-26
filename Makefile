@@ -7,7 +7,7 @@
 
 all: buildota buildotaoss ;
 
-.PHONY: all clean test check distcheck build cmdline
+.PHONY: all clean test check distcheck build
 
 buildota:
 	BUILD_TYPE=full "$(CURDIR)/build.sh" --no-default-build-type --no-pause $(ARGS)
@@ -26,4 +26,6 @@ clean:
 	rm -f "$(CURDIR)"/output/*.zip.md5
 	rm -f "$(CURDIR)"/output/*.zip.sha256
 
-cmdline: ;
+# Disable the default inference rule for .sh files
+.sh:
+	@:
