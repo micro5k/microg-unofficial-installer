@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    bashcov (3.2.0)
+    bashcov (3.3.0)
       simplecov (~> 0.21)
     docile (1.4.1)
     simplecov (0.22.0)
@@ -20,7 +20,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  bashcov (>= 3.2)
+  bashcov (>= 3.3)
   simplecov-lcov
 
 RUBY VERSION

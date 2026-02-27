@@ -46,7 +46,7 @@ jobs:
         timeout-minutes: 10
         run: |
           # Installing Bashcov and simplecov-lcov...
-          gem install bashcov:3.2.0 simplecov-lcov
+          gem install bashcov:3.3.0 simplecov-lcov
       - name: "Build (with coverage)"
         id: "build"
         shell: bash
