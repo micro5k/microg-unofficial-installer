@@ -507,17 +507,21 @@ _execute_system_remount()
 
 _remount_read_write_helper()
 {
+  local _mount_rw_output
   test "${DRY_RUN:?}" -lt 2 || return 2
 
-  if test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}"; then
+  _mount_rw_output=''
+  if test -n "${DEVICE_MOUNT-}" && _mount_rw_output="$(PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2>&1 -o 'remount,rw' "${1:?}")" && is_mounted_read_write "${1:?}"; then
     :
-  elif test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}" "${1:?}"; then
+  elif test -n "${DEVICE_MOUNT-}" && PATH="${PREVIOUS_PATH:?}" "${DEVICE_MOUNT:?}" 2> /dev/null -o 'remount,rw' "${1:?}" "${1:?}" && is_mounted_read_write "${1:?}"; then
+    :
+  elif mount -o 'remount,rw' "${1:?}" && is_mounted_read_write "${1:?}"; then
     :
   else
-    mount -o 'remount,rw' "${1:?}" || return "${?}"
+    ui_debug 'Output:'
+    ui_debug "${_mount_rw_output?}"
+    return 1
   fi
-
-  is_mounted_read_write "${1:?}" || return 1
 
   return 0
 }
