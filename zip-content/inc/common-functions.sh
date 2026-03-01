@@ -1775,17 +1775,22 @@ initialize()
   fi
 
   DEST_PATH="${SYS_PATH:?}"
-  _req_b="$(get_disk_space_usage_of_file_or_folder "${TMP_PATH:?}/origin" 2>/dev/null || echo 0)"
+  # shellcheck disable=SC2312
+  _req_b="$(get_disk_space_usage_of_file_or_folder "${TMP_PATH:?}/origin" 2> /dev/null || echo 0)"
   
   for _p in "${SYS_PATH:-}" "${PRODUCT_PATH:-}" "${SYS_EXT_PATH:-}" "${VENDOR_PATH:-}"; do
-      if test -n "${_p}" && test -w "${_p}" && test "$(get_free_disk_space_of_partition "${_p}" 2>/dev/null || echo 0)" -ge "${_req_b}"; then
-      DEST_PATH="${_p}"
-      break
+    if test -n "${_p}" && test -w "${_p}"; then
+      # shellcheck disable=SC2312
+      _free_b="$(get_free_disk_space_of_partition "${_p}" 2> /dev/null || echo 0)"
+      if test "${_free_b}" -ge "${_req_b}"; then
+        DEST_PATH="${_p}"
+        break
       fi
+    fi
   done
   
   if test ! -w "${DEST_PATH}"; then
-     ui_error "The '${DEST_PATH}' folder is NOT writable"
+    ui_error "The '${DEST_PATH}' folder is NOT writable"
   fi
   readonly DEST_PATH
 
