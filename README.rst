@@ -17,6 +17,10 @@ Description
 -----------
 microG unofficial installer is a flashable zip created by ale5000 for a simple installation of microG on Android from 2.2 to 16.
 
+**IMPORTANT:** In addition to the normal installation as a pure flashable zip, there are plans for the future (but not in the short term) to also support the installation as a *Magisk* module.
+
+Although you may find various references to *Magisk* in the code, support is **NOT** yet ready.
+
 This project is available on GitHub_, on GitLab_ as well as on XDA_.
 
 .. _GitHub: https://github.com/micro5k/microg-unofficial-installer
