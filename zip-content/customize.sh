@@ -421,7 +421,7 @@ detect_recovery_arch()
 detect_recovery_arch
 
 if test "${INSTALL_MODE:?}" != 'Pure'; then
-  ui_error "This ZIP currently cannot be installed as ${INSTALL_MODE?} module"
+  ui_error "This ZIP currently canNOT be installed as ${INSTALL_MODE?} module, although it is planned for the future"
 fi
 
 OUR_BB="${BASE_TMP_PATH:?}/busybox"
