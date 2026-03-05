@@ -27,9 +27,26 @@ This project is available on GitHub_, on GitLab_ as well as on XDA_.
 .. _GitLab: https://gitlab.com/micro5k/microg-unofficial-installer
 .. _XDA: https://xdaforums.com/t/3432360/
 
+
+Donations
+---------
+I maintain this project on my own in my spare time.
+If it's been helpful to you, please consider supporting its development!
+
+Want to help out? You can find all the details in our `donation guide <docs/DONATE.rst>`_.
+
 .. image:: https://liberapay.com/assets/widgets/donate.svg
    :alt: Donate using Liberapay
    :target: https://liberapay.com/microg-unofficial-by-ale5000/donate
+
+
+Contributing
+------------
+If you want to improve the project, please review our `contributing guidelines <docs/CONTRIBUTING.rst>`_.
+
+We are grateful for all our contributors! 
+
+Please check the `contributors list <docs/CONTRIBUTORS.md>`_ for more details.
 
 
 Download

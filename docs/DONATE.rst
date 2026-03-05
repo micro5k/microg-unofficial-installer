@@ -1,3 +1,8 @@
+..
+   SPDX-FileCopyrightText: (c) 2026 ale5000
+   SPDX-License-Identifier: GPL-3.0-or-later
+   SPDX-FileType: DOCUMENTATION
+
 ============================
 Support the project |rocket|
 ============================
@@ -17,7 +22,7 @@ Choose Your Impact |coffee|
 * **☕ Coffee break (€ 1.5):** A small gesture that keeps the code flowing during late-night sessions.
 * **🍕 Bug squashing Pizza (€ 15):** Fuel for a full weekend of intensive coding and optimization.
 * **🛠️ Debug Hero (€ 50):** Directly funds the "Device Lab" to help me buy hardware for specialized testing.
-* **🌟 Custom amount:** Every bit helps! Choose your own contribution to support the project’s growth at your own pace.
+* **🌟 Custom amount:** Every bit helps! Choose your own contribution to support the project's growth at your own pace.
 
 
 .. |rocket| replace:: 🚀
