@@ -3,80 +3,81 @@
 
 * text=auto
 
-.git-hooks/*      text eol=lf
-.gitattributes    text eol=lf
-.gitignore        text eol=lf
-.gitmodules       text eol=lf
-.tgitconfig       text eol=lf
-allowed_signers   text eol=lf
+.git-hooks/*        text eol=lf
+.gitattributes      text eol=lf
+.gitignore          text eol=lf
+.gitmodules         text eol=lf
+.tgitconfig         text eol=lf
+allowed_signers     text eol=lf
 
-docs/CODEOWNERS   text eol=lf
-.editorconfig     text eol=lf
-.mailmap          text eol=lf
-.semgrepignore    text eol=lf
-.shellcheckrc     text eol=lf
-.tool-versions    text eol=lf
+docs/CODEOWNERS     text eol=lf
+.all-contributorsrc text eol=lf
+.editorconfig       text eol=lf
+.mailmap            text eol=lf
+.semgrepignore      text eol=lf
+.shellcheckrc       text eol=lf
+.tool-versions      text eol=lf
 
-*.gpg             text eol=lf
-*.yml             text eol=lf
-*.xml             text eol=lf
-*.json            text eol=lf
-*.dis             text eol=lf
+*.gpg               text eol=lf
+*.yml               text eol=lf
+*.xml               text eol=lf
+*.json              text eol=lf
+*.dis               text eol=lf
 
 # Reuse
-.reuse/dep5       text eol=lf
-*.toml            text eol=lf
-*.license         text eol=lf
-*.spdx            text eol=lf
+.reuse/dep5         text eol=lf
+*.toml              text eol=lf
+*.license           text eol=lf
+*.spdx              text eol=lf
 
 # Ruby
-.simplecov        text eol=lf
-Gemfile*          text eol=lf
+.simplecov          text eol=lf
+Gemfile*            text eol=lf
 
 # Make
-Makefile          text eol=lf
+Makefile            text eol=lf
 
 # Batch scripts
-*.bat             text eol=crlf
+*.bat               text eol=crlf
 
 # Gradle files
-gradlew           text eol=lf
-*.gradle          text eol=lf
+gradlew             text eol=lf
+*.gradle            text eol=lf
 
 # Textual formats
-*.properties      text eol=lf
-*.rst             text eol=lf
-*.md              text eol=lf
-*.txt             text eol=lf
+*.properties        text eol=lf
+*.rst               text eol=lf
+*.md                text eol=lf
+*.txt               text eol=lf
 
 # Textual data
-*.dat             text eol=lf
+*.dat               text eol=lf
 
 # Our files
-*.prop            text eol=lf
-*.conf            text eol=lf
-*.bats            text eol=lf
-*.sh              text eol=lf
-*.ash             text eol=lf
-*.bash            text eol=lf
-*.py              text eol=lf
+*.prop              text eol=lf
+*.conf              text eol=lf
+*.bats              text eol=lf
+*.sh                text eol=lf
+*.ash               text eol=lf
+*.bash              text eol=lf
+*.py                text eol=lf
 
 # Our custom files
 recovery-simulator/override/* text eol=lf
 tools/win/etc/profile         text eol=lf
 
 # Uncompressed text manuals
-*.1               text eol=lf
+*.1                 text eol=lf
 
 # Binaries
-*.exe             binary
-*.bin             binary
-*.apk             binary
-*.zip             binary
-*.jar             binary
-*.gz              binary
-*.png             binary
-*.jpg             binary
+*.exe               binary
+*.bin               binary
+*.apk               binary
+*.zip               binary
+*.jar               binary
+*.gz                binary
+*.png               binary
+*.jpg               binary
 
 # Git LFS
 /zip-content/origin/priv-app/GmsCore.apk filter=lfs diff=lfs merge=lfs -text

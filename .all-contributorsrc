@@ -1,0 +1,16 @@
+{
+  "projectName": "microg-unofficial-installer",
+  "projectOwner": "micro5k",
+  "files": [
+    "docs/CONTRIBUTORS.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "angular",
+  "commitType": "docs",
+  "contributorsPerLine": 7,
+  "contributorsSortAlphabetically": true,
+  "linkToUsage": false,
+  "skipCi": true,
+  "contributors": []
+}
