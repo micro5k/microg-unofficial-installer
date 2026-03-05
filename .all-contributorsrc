@@ -12,5 +12,15 @@
   "contributorsSortAlphabetically": true,
   "linkToUsage": false,
   "skipCi": true,
-  "contributors": []
+  "contributors": [
+    {
+      "login": "storm1ng",
+      "name": "Manuel Jenny",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4191545?v=4",
+      "profile": "https://www.manueljenny.ch",
+      "contributions": [
+        "code"
+      ]
+    }
+  ]
 }
