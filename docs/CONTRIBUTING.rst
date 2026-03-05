@@ -1,19 +1,45 @@
+###########################
+Contributing to the project
+###########################
 ..
    SPDX-FileCopyrightText: (c) 2016 ale5000
    SPDX-License-Identifier: GPL-3.0-or-later
    SPDX-FileType: DOCUMENTATION
 
-**Want to contribute?**
+Love the project? We'd love your help!
+Whether you're fixing a bug, improving documentation, or suggesting a new feature, your contribution is welcome.
 
-If you have a bug or an idea, browse the open issues before opening a new one.
-You can also take a look at the `Open Source Guides <https://opensource.guide/>`_.
+How to get started
+==================
 
-**Working on your first Pull request?**
+1. **Search first:** Before opening a new issue, please browse the open issues to see if it has already been discussed.
+2. **Follow the guides:** If you are new to open source, check out the `Open Source Guides <https://opensource.guide/>`_ for best practices.
 
-You can learn how from this `guide <https://github.com/firstcontributions/first-contributions#readme>`_.
+Your first Pull Request?
+========================
 
-Once your PR is merged, feel free to add yourself to our contributors list by commenting on the PR with:
+No worries! You can learn the ropes with this `step-by-step guide <https://github.com/firstcontributions/first-contributions#readme>`_. 
+
+Linting
+=======
+
+To maintain a high standard of code quality, we use automated tools to check for errors and formatting.
+
+Recognition
+===========
+
+We value every contribution.
+Once your PR is merged, our bot can officially recognize you in our contributors list.
+
+Just add a comment to your PR:
 
 .. code-block:: text
 
    @all-contributors please add @your-username for code
+
+Support the project
+===================
+
+If you find this project useful and want to support its ongoing development, please consider making a `donation <DONATE.rst>`_.
+
+Thank you for helping us grow!
