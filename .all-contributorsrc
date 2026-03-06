@@ -8,7 +8,7 @@
   "commit": true,
   "commitConvention": "angular",
   "commitType": "docs",
-  "contributorsPerLine": 7,
+  "contributorsPerLine": 6,
   "contributorsSortAlphabetically": true,
   "linkToUsage": false,
   "skipCi": true,
