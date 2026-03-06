@@ -113,9 +113,9 @@ jobs:
           release_type='nightly'
           repo_url='${{ github.server_url }}/${{ github.repository }}'
           {
-            printf '%s' '**If you want to help me you can donate to me using the `Sponsor` button at the top of '
-            printf '%s\n' "[this repository](${repo_url:?})."
-            printf '%s\n' 'Donations are appreciated and will always remain optional.**'
+            printf '%s' "**If you'd like to support my work, you can find donation details on "
+            printf '%s\n' "[this page](${repo_url:?}/blob/main/docs/DONATE.rst)."
+            printf '%s\n' 'Contributions are greatly appreciated but always optional.**'
             printf '\n'
             if test "${release_type:?}" != 'release'; then
               printf '%s\n\n' "Latest automatically built ZIP ($(date -u -- '+%Y/%m/%d' || :))."
