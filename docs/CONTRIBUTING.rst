@@ -25,6 +25,17 @@ Linting
 
 To maintain a high standard of code quality, we use automated tools to check for errors and formatting.
 
+- `ShellCheck <https://www.shellcheck.net/>`_: Validates shell scripts for common errors and pitfalls.
+- `REUSE <https://reuse.software/>`_: Checks that all files have proper license and copyright headers.
+
+These checks run automatically on every pull request via CI.
+
+To run ShellCheck locally:
+
+.. code-block:: sh
+
+   shellcheck <path/to/script.sh>
+
 Recognition
 ===========
 
@@ -35,7 +46,7 @@ Just add a comment to your PR:
 
 .. code-block:: text
 
-   @all-contributors please add @your-username for code
+   @all-contributors please add @<your-username> for <contributions>
 
 Support the project
 ===================
