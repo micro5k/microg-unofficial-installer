@@ -41,7 +41,7 @@ We use different platforms depending on how you prefer to support us:
 
 2. IssueHunt: Bounty-based support
 ----------------------------------
-`Fund specific issues on IssueHunt <https://issuehunt.io/r/micro5k>`_
+`Fund specific issues on IssueHunt <https://oss.issuehunt.io/r/micro5k>`_
 
 *   **Best for:** Directing development toward specific features or bugs.
 *   **How it works:** You can put a **bounty on a specific GitHub issue**. The funds are distributed to the developer who successfully solves that issue. It's a great way to "vote with your wallet" for the improvements you want to see most.

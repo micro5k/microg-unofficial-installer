@@ -22,4 +22,4 @@ Supported versions
 Reporting a vulnerability
 =========================
 
-Since this is a flashable ZIP requiring manual installation, we encourage you to report any security vulnerabilities directly through the **GitHub Issues** page.
+Since this is a flashable ZIP requiring manual installation, we encourage you to submit any security-related feedback by opening an **issue**.

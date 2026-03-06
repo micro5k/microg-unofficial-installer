@@ -131,9 +131,6 @@ Notes
 .. [#] <origin/priv-app/PlayStore7.apk>
 .. [#] <origin/priv-app/PlayStoreLegacy.apk>
 
-..
-   https://microg.org/dl/core-nightly.apk
-
 
 UnifiedNlp backends (only installed on Android < 4.4)
 -----------------------------------------------------
