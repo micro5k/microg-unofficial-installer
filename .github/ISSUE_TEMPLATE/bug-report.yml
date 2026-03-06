@@ -22,9 +22,17 @@ body:
   - type: input
     id: version
     attributes:
-      label: Version
+      label: Installer version
       description: What version of our software are you running?
-      placeholder: "e.g. 1.2.0-beta"
+      placeholder: "e.g., 1.3.1-beta"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      description: What is the brand and model of your device?
+      placeholder: "e.g., Google Pixel 9a"
     validations:
       required: true
   - type: input
@@ -32,7 +40,7 @@ body:
     attributes:
       label: Android version
       description: What version of Android do you use?
-      placeholder: "e.g. 10"
+      placeholder: "e.g., 15"
     validations:
       required: true
   - type: input
@@ -40,7 +48,7 @@ body:
     attributes:
       label: Custom ROM
       description: What ROM are you using?
-      placeholder: "e.g. LineageOS 17.1"
+      placeholder: "e.g., LineageOS 22.2"
     validations:
       required: true
   - type: textarea
