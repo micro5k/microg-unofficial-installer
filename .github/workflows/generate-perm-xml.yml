@@ -81,7 +81,7 @@ jobs:
         with:
           retries: 3
           script: |
-            /* jshint esversion: 6 */
+            /* jshint esversion: 11 */
             const workflow_filename = process.env.WORKFLOW_REF.split('@', 1).at(0).split('/').slice(2).join('/');
             const response = await github.rest.actions.enableWorkflow({
               owner: context.repo.owner,

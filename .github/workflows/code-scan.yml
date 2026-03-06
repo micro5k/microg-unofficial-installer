@@ -47,7 +47,7 @@ jobs:
         with:
           retries: 3
           script: |
-            /* jshint esversion: 6 */
+            /* jshint esversion: 11 */
             const response = await github.rest.dependencyGraph.exportSbom({
               owner: context.repo.owner,
               repo: context.repo.repo,

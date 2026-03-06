@@ -51,7 +51,7 @@ jobs:
           result-encoding: string
           retries: 3
           script: |
-            /* jshint esversion: 6 */
+            /* jshint esversion: 11 */
             function errorOut(apiName, e)
             {
               let errorMsg = apiName + '() failed';
