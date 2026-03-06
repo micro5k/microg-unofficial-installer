@@ -1,6 +1,7 @@
 {
   "projectName": "microg-unofficial-installer",
   "projectOwner": "micro5k",
+  "repoType": "github",
   "files": [
     "docs/CONTRIBUTORS.md"
   ],
