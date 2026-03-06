@@ -40,6 +40,6 @@ Just add a comment to your PR:
 Support the project
 ===================
 
-If you find this project useful and want to support its ongoing development, please consider making a `donation <DONATE.rst>`_.
+If you find this project useful and want to support its ongoing development, please consider making a `donation <./DONATE.rst>`_.
 
 Thank you for helping us grow!

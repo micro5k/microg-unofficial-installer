@@ -35,9 +35,9 @@ If it's been helpful to you, please consider supporting its development!
 
 Want to help out? You can find all the details in our `donation guide <docs/DONATE.rst>`_.
 
-.. image:: https://liberapay.com/assets/widgets/donate.svg
-   :alt: Donate using Liberapay
-   :target: https://liberapay.com/microg-unofficial-by-ale5000/donate
+.. image:: https://img.shields.io/badge/Donate-FFF000?logo=ko-fi&logoSize=auto&logoColor=black&cacheSeconds=21600
+   :alt: Donate
+   :target: ./docs/DONATE.rst
 
 
 Contributing
