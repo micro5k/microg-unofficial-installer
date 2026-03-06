@@ -10,7 +10,7 @@
   "commitType": "docs",
   "contributorsPerLine": 6,
   "contributorsSortAlphabetically": true,
-  "linkToUsage": false,
+  "linkToUsage": true,
   "skipCi": true,
   "contributors": [
     {
