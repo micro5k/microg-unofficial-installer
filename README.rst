@@ -21,7 +21,7 @@ microG unofficial installer is a flashable zip created by ale5000 for a simple i
 
 Although you may find various references to *Magisk* in the code, support is **NOT** yet ready.
 
-This project is available on GitHub_, on GitLab_ as well as on XDA_.
+This project is available on GitHub_, on GitLab_, as well as on XDA_.
 
 .. _GitHub: https://github.com/micro5k/microg-unofficial-installer
 .. _GitLab: https://gitlab.com/micro5k/microg-unofficial-installer
