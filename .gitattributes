@@ -12,6 +12,7 @@ allowed_signers     text eol=lf
 
 docs/CODEOWNERS     text eol=lf
 .all-contributorsrc text eol=lf
+.copilotignore      text eol=lf
 .editorconfig       text eol=lf
 .mailmap            text eol=lf
 .semgrepignore      text eol=lf
