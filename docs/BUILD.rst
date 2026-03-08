@@ -9,6 +9,7 @@ Build the flashable OTA zip
 .. contents:: Build methods:
    :local:
    :depth: 1
+   :backlinks: none
 
 
 make / pdpmake

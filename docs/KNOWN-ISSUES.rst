@@ -6,12 +6,27 @@ Known issues
    SPDX-License-Identifier: GPL-3.0-or-later
    SPDX-FileType: DOCUMENTATION
 
-ERROR: No space left on device
-==============================
+This document lists the currently identified bugs, limitations, and performance issues within the project.
+We are actively working on fixes; please check here before reporting a new issue.
+
+.. contents:: Contents
+   :local:
+   :depth: 2
+   :backlinks: none
+
+
+Errors
+======
+
+No space left on device
+-----------------------
 
 Many devices do not have enough free space on the system partition to flash the ZIP.
 
-**Workaround:** Enable the ``LOW_FREE_SPACE`` option before flashing.
+Workaround
+^^^^^^^^^^
+
+Enable the ``LOW_FREE_SPACE`` option before flashing.
 This installs an older (smaller) version of microG that fits on space-constrained devices.
 
 .. code-block:: sh
