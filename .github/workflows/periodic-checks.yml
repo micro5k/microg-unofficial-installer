@@ -3,8 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 name: "Periodic checks"
-permissions:
-  contents: read # Needed to checkout the repository (only required for private repositories)
+permissions: {}
 on:
   push:
     paths:
@@ -26,6 +25,8 @@ jobs:
     name: "Base"
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
 
     steps:
       - name: "Checkout sources"
@@ -53,6 +54,8 @@ jobs:
     name: "Validate makefile"
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
 
     steps:
       - name: "Checkout sources"
@@ -66,6 +69,8 @@ jobs:
     name: "Validate dep5"
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
 
     steps:
       - name: "Checkout sources"

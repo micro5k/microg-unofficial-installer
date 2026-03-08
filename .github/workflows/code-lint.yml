@@ -3,8 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 name: "Code lint"
-permissions:
-  contents: read # Needed to checkout the repository (only required for private repositories)
+permissions: {}
 on:
   push:
     paths:
@@ -19,6 +18,8 @@ jobs:
     name: "ShellChecker"
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
 
     steps:
       - name: "Checkout sources"
@@ -31,6 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     if: "${{ false }}"
+    permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
 
     steps:
       - name: "Checkout sources"
@@ -42,6 +45,8 @@ jobs:
     name: "JSON and YAML"
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
 
     steps:
       - name: "Checkout sources"
