@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: CC0-1.0
 
 name: "Periodic checks"
-permissions: {}
+permissions:
+  contents: read # Needed to checkout the repository (only required for private repositories)
 on:
   push:
     paths:

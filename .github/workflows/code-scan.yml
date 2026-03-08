@@ -98,6 +98,7 @@ jobs:
       group: "${{ github.repository_id }}-${{ github.workflow }}-codacy"
       cancel-in-progress: false
     permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
       security-events: write
 
     steps:
@@ -133,6 +134,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: "${{ github.event_name == 'push' && needs.pre-requisites.outputs.sonar-token-set == 'true' }}"
+    permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
 
     steps:
       - name: "Checkout sources"

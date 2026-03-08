@@ -33,6 +33,7 @@ jobs:
       cache-key: "shells"
 
     permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
       actions: write # Needed to delete a cache
 
     steps:
@@ -121,7 +122,20 @@ jobs:
           if test "${current_os:?}" = 'Linux'; then PATH="${PATH:-/usr/bin}:${workspace_dir:?}/cache/shells/extracted/bosh/opt/schily/bin" || exit "${?}"; fi
           if diff 1> /dev/null 2>&1 -- "$(command -v 'sh' || :)" "$(command -v 'bash' || :)"; then SH_IS_BASH='true'; fi
           if test "${current_os:?}" = 'Linux'; then
-            sudo DEBIAN_FRONTEND='noninteractive' apt-get -y -qq --no-install-recommends --no-upgrade install 'mksh' 'yash' 'posh' 1> /dev/null 2>&1 || exit "${?}"
+            # DEBIAN_FRONTEND=noninteractive: Prevents debconf from asking interactive questions during install; uses built-in default answers
+            # NEEDRESTART_SUSPEND=1:          Suspends needrestart so it does not check and prompt about services or the kernel needing a restart after install
+            # -y:                             Automatically answer yes to all apt-get confirmation prompts
+            # -qq:                            Suppress all output except errors (double-quiet; equivalent to -q -q)
+            # --no-install-recommends:        Skip packages listed as Recommends and only install packages required by Depends
+            # --no-upgrade:                   Do not upgrade the package if it is already installed; only installs if not yet present
+            # Dpkg::Use-Pty=0:                Prevent dpkg from allocating a pseudo-terminal, which would emit ANSI escape codes in CI logs
+            # Dpkg::Progress-Fancy=0:         Disable dpkg's animated progress bar, reducing noise in CI log output
+            sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_SUSPEND=1 apt-get install -y -qq \
+              --no-install-recommends \
+              --no-upgrade \
+              -o Dpkg::Use-Pty=0 \
+              -o Dpkg::Progress-Fancy=0 \
+              'mksh' 'yash' 'posh' 1> /dev/null || exit "${?}"
           elif test "${current_os:?}" = 'macOS'; then
             brew 2> /dev/null update --quiet || exit "${?}"
             brew 1> /dev/null install --quiet 'mksh' 'oksh' 'ksh93' 'yash' || exit "${?}"

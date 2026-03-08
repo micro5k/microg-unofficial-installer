@@ -34,10 +34,10 @@ stages:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
-        - "LICENSES/**"
-        - "includes/**"
+        - "LICENSES/*"
+        - "docs/*.rst"
+        - "includes/*"
         - "tools/*.jar"
-        - "tools/*.sh"
         - "zip-content/**"
         - "CHANGELOG.rst"
         - "LICENSE*.rst"
@@ -53,10 +53,10 @@ build-job:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
-        - "LICENSES/**"
-        - "includes/**"
+        - "LICENSES/*"
+        - "docs/*.rst"
+        - "includes/*"
         - "tools/*.jar"
-        - "tools/*.sh"
         - "zip-content/**"
         - "CHANGELOG.rst"
         - "LICENSE*.rst"

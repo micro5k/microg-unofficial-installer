@@ -7,10 +7,10 @@ permissions: {}
 on:
   push:
     paths:
-      - "LICENSES/**"
-      - "includes/**"
+      - "LICENSES/*"
+      - "docs/*.rst"
+      - "includes/*"
       - "tools/*.jar"
-      - "tools/*.sh"
       - "zip-content/**"
       - "CHANGELOG.rst"
       - "LICENSE*.rst"
@@ -250,6 +250,7 @@ jobs:
     timeout-minutes: 10
     if: "${{ github.event_name == 'schedule' }}"
     permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
       actions: write # Needed to keep alive the workflow
 
     steps:

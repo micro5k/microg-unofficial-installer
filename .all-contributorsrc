@@ -5,7 +5,7 @@
   "files": [
     "docs/CONTRIBUTORS.md"
   ],
-  "imageSize": 70,
+  "imageSize": 100,
   "commit": true,
   "commitConvention": "angular",
   "commitType": "docs",

@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: "${{ github.event_name != 'schedule' }}"
+    permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
 
     steps:
       - name: "Checkout sources"
@@ -56,6 +58,7 @@ jobs:
     timeout-minutes: 10
     if: "${{ github.event_name == 'schedule' }}"
     permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
       actions: write # Needed to keep alive the workflow
 
     steps:

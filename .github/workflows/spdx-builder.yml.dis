@@ -3,10 +3,12 @@
 # SPDX-License-Identifier: CC0-1.0
 
 name: "SPDX license overview"
+permissions:
+  contents: read # Needed to checkout the repository (only required for private repositories)
 on: [push, pull_request]
 
 jobs:
-  lint:
+  spdx:
     runs-on: ubuntu-latest
 
     steps:

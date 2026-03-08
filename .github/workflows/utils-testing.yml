@@ -24,6 +24,8 @@ jobs:
     name: "DeviceInfo (${{ matrix.os }})"
     runs-on: "${{ matrix.os }}"
     timeout-minutes: 20
+    permissions:
+      contents: read # Needed to checkout the repository (only required for private repositories)
 
     steps:
       - name: "Checkout sources"
