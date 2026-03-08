@@ -23,15 +23,16 @@ No space left on device
 
 Many devices do not have enough free space on the system partition to flash the ZIP.
 
-Workaround
-^^^^^^^^^^
+   **Workaround**
 
-Enable the ``LOW_FREE_SPACE`` option before flashing.
-This installs an older (smaller) version of microG that fits on space-constrained devices.
+   | Enable the ``LOW_FREE_SPACE`` option before flashing.
+   | This installs an older (smaller) version of microG that fits on space-constrained devices.
 
-.. code-block:: sh
+   It can be enabled with:
 
-   adb shell "setprop zip.microg-unofficial-installer.LOW_FREE_SPACE 1"
+   .. code-block:: sh
+
+      adb shell "setprop zip.microg-unofficial-installer.LOW_FREE_SPACE 1"
 
 Then flash the ZIP as usual.
 
