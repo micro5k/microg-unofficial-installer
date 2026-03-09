@@ -8,6 +8,7 @@ Support
 
 The most efficient way to receive support is to open an issue_ on GitHub or post in the `official support thread`_ on the XDA forum.
 
+
 Pre-support checklist
 =====================
 
@@ -16,6 +17,7 @@ To save time, please complete these steps before reaching out:
 1. **Read the docs:** Review the `installation instructions <./INSTRUCTIONS.rst>`_ thoroughly.
 2. **Search issues:** Check `existing issues <issue_>`_ to see if your problem has already been addressed.
 3. **Browse XDA:** Search the `official support thread`_ for known workarounds or similar cases.
+
 
 Reporting a bug
 ===============

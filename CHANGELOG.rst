@@ -1,21 +1,20 @@
+#########
+Changelog
+#########
 ..
    SPDX-FileCopyrightText: (c) 2016 ale5000
    SPDX-License-Identifier: GPL-3.0-or-later
    SPDX-FileType: DOCUMENTATION
 
-=========
-Changelog
-=========
-
 All notable changes to this project will be documented in this file.
 
 
 `Unreleased`_
--------------
+=============
 - Click above to see all the changes.
 
 `1.3.2-beta`_ - 2025-03-22
---------------------------
+==========================
 - The zip now include :code:`setprop-settings-list.csv` that contains all settings that can be changed via setprop
 - Improved the input event parsing code, now it check for a pair of key press / key release events before accepting the action
 - Added 64-bit support in the input event parsing code
@@ -62,7 +61,7 @@ All notable changes to this project will be documented in this file.
 - Increased default timeout for live setup to 4 seconds
 
 `1.3.1-beta`_ - 2023-05-01
---------------------------
+==========================
 - Improve compatibility of the MinUtil script with old Android versions
 - The MinUtil script is now installed under KitKat and higher
 - Add FORCE_HW_BUTTONS env variable to force using hardware buttons even when using :code:`zip-install.sh`
@@ -78,7 +77,7 @@ All notable changes to this project will be documented in this file.
 - Remount all extra partitions as read-write if necessary
 
 `1.3.0-beta`_ - 2023-02-19
---------------------------
+==========================
 - Add support for mounting system partition at /mnt/system (`@mjenny <https://github.com/mjenny>`_)
 - Improve compatibility with legacy shells
 - Fix remounting system as read-write
@@ -95,7 +94,7 @@ All notable changes to this project will be documented in this file.
 - Support and enable live setup on all devices
 
 `1.2.0-beta`_ - 2022-12-30
---------------------------
+==========================
 - Update Mozilla UnifiedNlp Backend to 1.5.0
 - Grant the ACCESS_BACKGROUND_LOCATION permission to Mozilla UnifiedNlp Backend by default
 - Improve temp folder handling
@@ -126,7 +125,7 @@ All notable changes to this project will be documented in this file.
 - Add support for addon.d also on legacy Android versions
 
 `1.1.0-beta`_ - 2022-04-28
---------------------------
+==========================
 - Improve Dalvik cache cleaning
 - Fix the detection of system partition on some devices
 - Rewritten architecture detection to improve compatibility
@@ -150,7 +149,7 @@ All notable changes to this project will be documented in this file.
 - Added support for Android up to 13
 
 `1.0.34-beta`_ - 2019-07-07
----------------------------
+===========================
 - Rewritten the uninstaller
 - Improved microG / GApps removal
 - Only insert the fake signature permission in priv-app permissions whitelist if the ROM support it
@@ -167,7 +166,7 @@ All notable changes to this project will be documented in this file.
 - Add NewPipe Legacy for legacy devices
 
 `1.0.33-beta`_ - 2018-12-04
----------------------------
+===========================
 - Fixed architecture detection error on some recoveries
 - Fixed empty ABI list on some recoveries
 - Allow building through Gradle
@@ -175,7 +174,7 @@ All notable changes to this project will be documented in this file.
 - Test the integrity of the generated zip after build
 
 `1.0.32-beta`_ - 2018-11-01
----------------------------
+===========================
 - Updated microG Service Core to 0.2.6.13280
 - Updated Déjà Vu Location Service to 1.1.9
 - Switched to a custom build of microG DroidGuard Helper to fix SafetyNet Attestation
@@ -185,7 +184,7 @@ All notable changes to this project will be documented in this file.
 - Install priv-app permissions whitelist on Android 8 and higher
 
 `1.0.31-beta`_ - 2018-08-28
----------------------------
+===========================
 - Initial work regarding reproducible builds of the installer zip file
 - Updated BusyBox for Android to 1.29.1-YDS-201807291348
 - Added an option to skip the installation of NewPipe, ref #8
@@ -196,7 +195,7 @@ All notable changes to this project will be documented in this file.
 - Updated microG Service Core to 0.2.5.12879
 
 `1.0.30-alpha`_ - Unreleased
-----------------------------
+============================
 - Add support for building the installer under macOS (untested)
 - Auto-grant signature spoofing permission to microG, thanks to @lazerl0rd
 - Auto-grant signature spoofing permission also to FakeStore
@@ -209,7 +208,7 @@ All notable changes to this project will be documented in this file.
 - Updated Déjà Vu Location Service to 1.1.8
 
 1.0.29-beta - 2018-04-11
-------------------------
+========================
 - Switched signing tool to zipsigner (thanks to `@topjohnwu <https://github.com/topjohnwu>`_)
 - Highly improved debug logging
 - Improved compatibility of the build script
@@ -221,7 +220,7 @@ All notable changes to this project will be documented in this file.
 - Removed F-Droid Privileged Extension, it will be in a separate package in the future
 
 1.0.28-alpha - Unreleased
--------------------------
+=========================
 - Improved debug logging
 - Updated BusyBox for Android to 1.28.0-YDS-201801031253
 - Updated BusyBox for Windows to 1.29.0-FRP-2001-gd9c5d3c61 (2018-03-27)
@@ -232,7 +231,7 @@ All notable changes to this project will be documented in this file.
 - Updated NewPipe to 0.11.6
 
 1.0.27-beta
------------
+===========
 - Updated microG Service Core to 0.2.4-108
 - Updated Déjà Vu Location Service to 1.0.7
 - Updated NewPipe to 0.11.4
@@ -243,7 +242,7 @@ All notable changes to this project will be documented in this file.
 - Automatically create folders on the device if missing
 
 1.0.26-alpha
-------------
+============
 - Added NewPipe 0.11.1 (as replacement for YouTube)
 - Automatically disable battery optimizations for microG GmsCore
 - Updated Mozilla UnifiedNlp Backend to 1.3.3
@@ -253,17 +252,17 @@ All notable changes to this project will be documented in this file.
 - Now it also clean app updates
 
 1.0.24-alpha
-------------
+============
 - Updated microG Service Core to 0.2.4-107
 
 1.0.23-alpha
-------------
+============
 - Added Déjà Vu Location Service 1.0.2
 - Now the list of files to backup for the survival script are generated dynamically so all files are preserved in all cases
 - Refactored code
 
 1.0.22-beta
------------
+===========
 - Updated microG Service Core to 0.2.4-105
 - Updated F-Droid Privileged Extension to 0.2.7
 - Install recent market app on Android 5+
@@ -272,26 +271,26 @@ All notable changes to this project will be documented in this file.
 - Allow to configure the version of the market app to install
 
 1.0.21-beta
------------
+===========
 - Added FakeStore 0.0.2
 - Added support for live setup (currently limited to ARM phones)
 - Added selection of the market app to install in the live setup
 - Improved robustness
 
 1.0.20-alpha
-------------
+============
 - Added default permissions
 - Reset permissions on dirty installations
 - Remove conflicting location providers
 
 1.0.19-alpha
-------------
+============
 - Released sources on GitHub
 - Changed signing process to fix a problem with Dingdong Recovery and maybe other old recoveries
 - More consistency checks and improved error handling
 
 1.0.18-alpha
-------------
+============
 - Updated microG Service Core to 0.2.4-103
 - Updated Nominatim Geocoder Backend to 1.2.2
 - Switched BusyBox binaries to the `ones <https://xdaforums.com/t/3348543/>`_ compiled by @YashdSaraf (BusyBox is used only during the installation, nothing on the device is altered)
@@ -300,32 +299,32 @@ All notable changes to this project will be documented in this file.
 - GApps remover now also remove MIUI specific files
 
 1.0.17-beta
------------
+===========
 - Downgraded microG Service Core to 0.2.4-81 on Android < 5 (workaround for bug `#379 <https://github.com/microg/GmsCore/issues/379>`_)
 - Added a workaround for recoveries without /tmp
 - Updated microG DroidGuard Helper to 0.1.0-10
 - Updated F-Droid Privileged Extension to 0.2.5
 
 1.0.16-alpha
-------------
+============
 - Updated microG Service Core to 0.2.4-92
 - Validate some return codes and show proper error if needed
 - The lib folder is now created automatically if missing
 
 1.0.15-pre-alpha
-----------------
+================
 - Rewritten the update-binary as shell script to improve compatibility with all devices
 - Updated F-Droid Privileged Extension to 0.2.4
 
 1.0.14-alpha
-------------
+============
 - Updated microG Service Core to 0.2.4-81
 - file_getprop is no longer used
 - Fixed support for system root image
 - Minor changes
 
 1.0.13-alpha
-------------
+============
 - Added support for devices with system root image (untested)
 - Updated F-Droid Privileged Extension to 0.2.2
 - Switch the apk name of F-Droid Privileged Extension to the official one
@@ -333,74 +332,74 @@ All notable changes to this project will be documented in this file.
 - Minor changes
 
 1.0.12-alpha
-------------
+============
 - Added microG DroidGuard Helper 0.1.0-4
 - Added more components to the survival script, not yet complete (only Android 5+)
 
 1.0.11-alpha
-------------
+============
 - Added a survival script (not complete)
 - Updated microG Service Core to 0.2.4-79
 - Updated Nominatim Geocoder Backend to 1.2.1
 
 1.0.10-beta
------------
+===========
 - Reverted blocking of Play Store self update on Android 5+ since it is not reliable
 - Updated microG Service Core to 0.2.4-64
 - Updated Nominatim Geocoder Backend to 1.2.0
 - Added F-Droid Privileged Extension 0.2 (only Android < 5)
 
 1.0.9-beta
-----------
+==========
 - Play Store self update is now blocked on all Android versions
 - Avoid possible problems that could happen if the Play Store was already updated before flashing the zip
 
 1.0.8-beta
-----------
+==========
 - Play Store self update is now blocked (only Android 5+)
 
 1.0.7-beta
-----------
+==========
 - Downgraded Play Store to 5.1.11 (this fix the crash when searching)
 
 1.0.6-beta
-----------
+==========
 - Updated microG Service Core to 0.2.4-50
 - Updated UnifiedNlp (legacy) to 1.6.8
 - Added support for devices with x86_64 CPU (untested)
 
 1.0.5-beta
-----------
+==========
 - Verify hash of extracted files before installing them
 - Fixed installation of 64-bit libraries on old Android versions
 
 1.0.4-alpha
------------
+===========
 - Total rewrite of the code for installing libraries
 - Added support for 64-bit ARM
 - Added UnifiedNlp (legacy) 1.6.7 (only for Android < 4.4)
 
 1.0.3-alpha
------------
+===========
 - Major rewrite of the installation script to add support for newer Android versions (big thanks to `@JanJabko <https://xdaforums.com/m/janjabko.7275198/>`_ for the phone)
 - Updated microG Service Core to 0.2.4-39
 - Updated Play Store to 5.4.12
 - Minimum API version back to 9
 
 1.0.2-beta
-----------
+==========
 - Updated microG Service Core to 0.2.4-20
 - Minimum API version bumped to 10
 
 1.0.1-beta
-----------
+==========
 - Added support for x86
 - Improved CPU detection
 - Improved Android version checking
 - Improved error reporting
 
 1.0.0-alpha
------------
+===========
 - Initial release
 
 

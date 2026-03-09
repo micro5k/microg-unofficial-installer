@@ -1,12 +1,12 @@
+###########################
+microG unofficial installer
+###########################
 ..
    SPDX-License-Identifier: GPL-3.0-or-later
    SPDX-FileType: DOCUMENTATION
 
-===========================
-microG unofficial installer
-===========================
 :Author: `ale5000 <https://github.com/ale5000-git>`_
-:License: `GPLv3.0 or later <LICENSE.rst>`_
+:License: `GPLv3.0 or later <./LICENSE.rst>`_
 
 .. image:: https://codecov.io/gh/micro5k/microg-unofficial-installer/branch/main/graph/badge.svg
    :alt: Coverage
@@ -14,7 +14,7 @@ microG unofficial installer
 
 
 Description
------------
+===========
 microG unofficial installer is a flashable zip created by ale5000 for a simple installation of microG on Android from 2.2 to 16.
 
 **IMPORTANT:** In addition to the normal installation as a pure flashable zip, there are plans for the future (but not in the short term) to also support the installation as a *Magisk* module.
@@ -29,7 +29,7 @@ This project is available on GitHub_, on GitLab_, as well as on XDA_.
 
 
 Donations
----------
+=========
 I maintain this project on my own in my spare time.
 If it's been helpful to you, please consider supporting its development!
 
@@ -41,7 +41,7 @@ Want to help out? You can find all the details in our `donation guide <./docs/DO
 
 
 Contributing
-------------
+============
 If you want to improve the project, please review our `contributing guidelines <docs/CONTRIBUTING.rst>`_.
 
 We are grateful for all our contributors! 
@@ -50,7 +50,7 @@ Please check the `contributors list <docs/CONTRIBUTORS.md>`_ for more details.
 
 
 Download
---------
+========
 .. image:: https://img.shields.io/github/v/release/micro5k/microg-unofficial-installer.svg?cacheSeconds=3600
    :alt: GitHub latest release
    :target: `download`_
@@ -71,12 +71,12 @@ Download
 
 
 Copyright
----------
+=========
 © 2016-2019, 2021-2026 ale5000
 
 
 Code analysis
--------------
+=============
 .. image:: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-lint.yml/badge.svg
    :alt: Code lint workflow
    :target: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-lint.yml
