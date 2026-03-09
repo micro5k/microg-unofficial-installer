@@ -8,7 +8,6 @@ Changelog
 
 All notable changes to this project will be documented in this file.
 
-
 `Unreleased`_
 =============
 - Click above to see all the changes.
@@ -400,8 +399,7 @@ All notable changes to this project will be documented in this file.
 
 1.0.0-alpha
 ===========
-- Initial release
-
+- Initial alpha release.
 
 .. _Unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.2-beta...HEAD
 .. _1.3.2-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.1-beta...v1.3.2-beta
