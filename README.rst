@@ -53,19 +53,19 @@ Download
 --------
 .. image:: https://img.shields.io/github/v/release/micro5k/microg-unofficial-installer.svg?cacheSeconds=3600
    :alt: GitHub latest release
-   :target: `Download`_
+   :target: `download`_
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/latest/total.svg?cacheSeconds=3600
    :alt: Downloads of the latest OSS release
-   :target: `Download`_
+   :target: `download`_
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/nightly/total.svg?cacheSeconds=600
    :alt: Downloads of the latest OSS nightly
-   :target: `Download`_
+   :target: `download`_
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/total.svg?cacheSeconds=3600
    :alt: Total OSS downloads
-   :target: `Download`_
+   :target: `download`_
 
 `Download instructions <docs/INSTRUCTIONS.rst>`_
 

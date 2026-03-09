@@ -38,5 +38,5 @@ Then flash the ZIP as usual.
 
 .. note::
    - This option is currently only available in **nightly builds**.
-     Download the latest nightly from the `Download section <./INSTRUCTIONS.rst>`_.
+     Download the latest nightly from the `Download section <./INSTRUCTIONS.rst#download>`_.
    - microG can be updated to a newer version manually afterwards using **F-Droid**.
