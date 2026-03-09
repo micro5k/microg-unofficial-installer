@@ -37,6 +37,5 @@ Many devices do not have enough free space on the system partition to flash the 
 Then flash the ZIP as usual.
 
 .. note::
-   - This option is currently only available in **nightly builds**.
-     Download the latest nightly from the `Download section <./INSTRUCTIONS.rst#download>`_.
-   - microG can be updated to a newer version manually afterwards using **F-Droid**.
+   - This option is currently only available in **nightly builds**, you can download the latest nightly from the `download section <./INSTRUCTIONS.rst#download>`_.
+   - **microG** can be updated to a newer version manually afterwards using **F-Droid**.

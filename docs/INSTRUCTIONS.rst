@@ -49,14 +49,15 @@ Instead if you want to try the nightly builds you can find them here:
 - `Nightly - Full flavour <https://gitlab.com/micro5k/microg-unofficial-installer/-/jobs/artifacts/main/browse/output?job=build-job>`_
 - `Nightly - OSS flavour <https://github.com/micro5k/microg-unofficial-installer/releases/tag/nightly>`_
 
-**NOTE:** If you get the error "No space left on device", you can find a workaround in `Known issues <./KNOWN-ISSUES.rst>`_.
+.. note::
+   If you get the error "No space left on device", you can find a workaround in `Known issues <./KNOWN-ISSUES.rst#no-space-left-on-device>`_.
 
 
 Installation
 ============
 
 .. note::
-   The methods below are **mutually exclusive** — choose **one** that matches your setup and follow only those steps.
+   The methods below are **mutually exclusive**, choose **one** that matches your setup and follow only those steps.
 
 .. tip::
    Regardless of which installation method you choose, you can pre-configure options before flashing by setting system properties on the device.
