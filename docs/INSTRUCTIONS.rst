@@ -16,6 +16,7 @@ You can `build it yourself <./BUILD.rst>`_ or download the prebuilt version.
 .. contents:: Contents:
    :local:
    :depth: 2
+   :backlinks: none
 
 
 Prerequisites
