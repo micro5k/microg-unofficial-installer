@@ -9,7 +9,7 @@ Known issues
 This document lists the currently identified bugs, limitations, and performance issues within the project.
 We are actively working on fixes; please check here before reporting a new issue.
 
-.. contents:: Contents
+.. contents:: Contents:
    :local:
    :depth: 2
    :backlinks: none

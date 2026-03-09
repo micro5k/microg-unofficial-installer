@@ -13,12 +13,16 @@ This package comes in 2 flavours:
 
 You can `build it yourself <./BUILD.rst>`_ or download the prebuilt version.
 
+.. contents:: Contents:
+   :local:
+   :depth: 2
+
 
 Prerequisites
 =============
 
-- An Android device or emulator running Android **2.2 or later**.
-- A custom recovery (see `Supported recoveries`_ below) **or** root access.
+- An Android device or emulator running **Android 2.2 or later**.
+- A custom recovery (see `Supported recoveries`_ below) or root access.
 - At least **100 MB** of free space on the system partition (actual requirements vary by device and selected options).
 
 Supported recoveries
@@ -66,8 +70,8 @@ The methods below are **mutually exclusive**, choose **one** that matches your s
 
       adb shell "setprop zip.microg-unofficial-installer.LIVE_SETUP_TIMEOUT 8"
 
-Via custom recovery (TWRP, OrangeFox, ...)
-------------------------------------------
+Via custom recovery
+-------------------
 
 1. Transfer the flashable zip to your device's internal storage or microSD card.
 2. Reboot into recovery (hold **Power + Volume Down** — exact key combination depends on your device).
