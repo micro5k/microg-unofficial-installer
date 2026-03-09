@@ -8,13 +8,17 @@ microG unofficial installer
 :Author: `ale5000 <https://github.com/ale5000-git>`_
 :License: `GPLv3.0 or later <./LICENSE.rst>`_
 
-.. image:: https://api.reuse.software/badge/github.com/micro5k/microg-unofficial-installer
-   :alt: REUSE status
-   :target: https://api.reuse.software/info/github.com/micro5k/microg-unofficial-installer
+.. image:: https://img.shields.io/badge/Donate-FFF000?logo=ko-fi&logoSize=auto&logoColor=black&cacheSeconds=21600
+   :alt: Donate
+   :target: ./docs/DONATE.rst
 
 .. image:: https://codecov.io/gh/micro5k/microg-unofficial-installer/branch/main/graph/badge.svg
    :alt: Coverage
    :target: https://codecov.io/gh/micro5k/microg-unofficial-installer
+
+.. image:: https://api.reuse.software/badge/github.com/micro5k/microg-unofficial-installer
+   :alt: REUSE status
+   :target: https://api.reuse.software/info/github.com/micro5k/microg-unofficial-installer
 
 
 Description
@@ -38,10 +42,6 @@ I maintain this project on my own in my spare time.
 If it's been helpful to you, please consider supporting its development!
 
 Want to help out? You can find all the details in our `donation guide <./docs/DONATE.rst>`_.
-
-.. image:: https://img.shields.io/badge/Donate-FFF000?logo=ko-fi&logoSize=auto&logoColor=black&cacheSeconds=21600
-   :alt: Donate
-   :target: ./docs/DONATE.rst
 
 
 Contributing
