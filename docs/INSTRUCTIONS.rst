@@ -102,7 +102,7 @@ This method installs the zip from a running Android system using ``zip-install.s
 
    .. code-block:: sh
 
-      cd /path/to/my_folder/
+      cd <path/to/my_folder/>
       unzip ./microg-unofficial-installer-*.zip zip-install.sh
       sh ./zip-install.sh ./microg-unofficial-installer-*.zip
 
