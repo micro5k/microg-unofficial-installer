@@ -31,7 +31,6 @@ jobs:
     name: "REUSE compliance check"
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: "${{ false }}"
     permissions:
       contents: read # Needed to checkout the repository (only required for private repositories)
 

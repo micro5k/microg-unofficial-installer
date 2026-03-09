@@ -1,0 +1,50 @@
+version = 1
+
+[[annotations]]
+path = "app/DejaVuBackend.apk"
+SPDX-FileCopyrightText = "(c) 2017 Tod Fitch"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = [
+  "app/LegacyNetworkLocation.apk",
+  "app/NominatimGeocoderBackend.apk",
+  "framework/com.google.android.maps.jar",
+  "priv-app/FakeStore-0.3.6.apk",
+  "priv-app/FakeStore.apk",
+  "priv-app/FakeStoreA5K.apk",
+  "priv-app/FakeStoreLegacy.apk",
+  "priv-app/GmsCore-0.3.6.apk",
+  "priv-app/GmsCore.apk",
+  "priv-app/GmsCoreA5K.apk",
+  "priv-app/GmsCoreVtm.apk",
+  "priv-app/GmsCoreVtmLegacy.apk",
+  "priv-app/GsfProxyA5K.apk"
+]
+SPDX-FileCopyrightText = "(c) 2013 microG Project Team"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "app/MyLocation.apk"
+SPDX-FileCopyrightText = "(c) 2021 Irfan Latif"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "app/NewPipe.apk"
+SPDX-FileCopyrightText = "(c) 2015 NewPipe Team"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "app/NewPipeLegacyRevo.apk"
+SPDX-FileCopyrightText = "(c) 2015 NewPipe Team"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "priv-app/AuroraServices.apk"
+SPDX-FileCopyrightText = "(c) 2018 Rahul Kumar Patel"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "priv-app/FDroidPrivilegedExtension.apk"
+SPDX-FileCopyrightText = "(c) 2016 F-Droid Project"
+SPDX-License-Identifier = "Apache-2.0"
