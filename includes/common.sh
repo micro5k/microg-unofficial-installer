@@ -939,6 +939,7 @@ dl_file()
   local _status _url _domain
 
   _output_file="${BUILD_CACHE_DIR:?}/${1:?}/${2:?}"
+
   # Preventive check to remove corrupted files
   verify_sha1_or_delete "${_output_file:?}" "${3:?}" || :
 
@@ -950,7 +951,7 @@ dl_file()
 
   _clear_cookies || return "${?}"
 
-  if ! test -e "${_output_file:?}"; then
+  if test ! -e "${_output_file:?}"; then
     mkdir -p "${BUILD_CACHE_DIR:?}/${1:?}" || ui_error "Failed to create the ${1?} folder inside the cache dir"
 
     if test "${CI:-false}" = 'false'; then sleep '0.5'; else sleep 3; fi
