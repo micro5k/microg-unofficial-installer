@@ -154,6 +154,7 @@ tasks.register('installTest', Exec) {
 
     doFirst {
         environment LIVE_SETUP_ALLOWED: 'false' /* Live setup doesn't work when executed through Gradle */
+        environment NO_PAUSE: '1'
         environment BB_GLOBBING: '1'
         executable "${projectDir}/recovery-simulator/recovery" + getScriptExt()
         args "${projectDir}/output/*.zip"
