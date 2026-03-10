@@ -1,20 +1,21 @@
 {
+    "explorer.excludeGitIgnore": true,
+
     "shellcheck.enable": true,
     "shellcheck.enableQuickFix": true,
     "shellcheck.logLevel": "trace",
     "shellcheck.run": "onType",
 
     "codecov.coverage.enabled": true,
-
     "codacy.guardrails.analyzeGeneratedCode": "disabled",
     "codacy.guardrails.instructionsFile": "manual",
 
+    "task.autoDetect": "off",
+    "gradle.autoDetect": "off",
+
+    "java.autobuild.enabled": false,
     "java.import.gradle.enabled": false,
     "java.import.maven.enabled": false,
-    "java.autobuild.enabled": false,
-    "java.showBuildStatusOnStart.enabled": "off",
     "java.server.launchMode": "LightWeight",
-
-    "task.autoDetect": "off",
-    "gradle.autoDetect": "off"
+    "java.showBuildStatusOnStart.enabled": "off"
 }
