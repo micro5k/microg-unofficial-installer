@@ -354,20 +354,28 @@ _load_cookies()
 
 verify_sha1()
 {
-  local file_name="$1"
-  local hash="$2"
-  local file_hash
+  local _computed_hash
 
-  if test ! -f "${file_name}"; then return 1; fi # Failed
-  file_hash="$(sha1sum -b -- "${file_name}" | cut -d ' ' -f 1)"
-  if test -z "${file_hash}" || test "${hash}" != "${file_hash}"; then return 1; fi # Failed
-  return 0                                                                         # Success
+  test -f "${1:?}" || return 2                                                # Missing file
+  _computed_hash="$(sha1sum -b -- "${1:?}" | cut -d ' ' -f 1 -s)" || return 3 # Hashing failed
+  test "${2:?}" = "${_computed_hash:?}" || return 4                           # Wrong hash (corrupted file)
+
+  return 0 # Success
 }
 
-corrupted_file()
+verify_sha1_or_delete()
 {
-  rm -f -- "$1" || echo 'Failed to remove the corrupted file.'
-  ui_error "The file '$1' is corrupted."
+  local _ret_code
+
+  _ret_code=0
+  verify_sha1 "${@}" || _ret_code="${?}"
+
+  if test "${_ret_code:?}" -eq 4; then
+    ui_error_msg "Corrupted file => '${1?}'"
+    rm -f -- "${1:?}" || ui_error_msg "Failed to remove the corrupted file => '${1?}'"
+  fi
+
+  return "${_ret_code:?}"
 }
 
 _get_byte_length()
@@ -927,32 +935,37 @@ dl_type_two()
 
 dl_file()
 {
-  if test -e "${BUILD_CACHE_DIR:?}/$1/$2"; then verify_sha1 "${BUILD_CACHE_DIR:?}/$1/$2" "$3" || rm -f "${BUILD_CACHE_DIR:?}/$1/$2"; fi # Preventive check to silently remove corrupted/invalid files
+  local _output_file
+  local _status _url _domain
+
+  _output_file="${BUILD_CACHE_DIR:?}/${1:?}/${2:?}"
+  # Preventive check to remove corrupted files
+  verify_sha1_or_delete "${_output_file:?}" "${3:?}" || :
 
   printf '%s ' "Checking ${2?}..."
-  local _status _url _domain
+
   _status=0
   _url="${DL_PROT:?}${4:?}" || return "${?}"
   _domain="$(get_domain_from_url "${_url:?}")" || return "${?}"
 
   _clear_cookies || return "${?}"
 
-  if ! test -e "${BUILD_CACHE_DIR:?}/${1:?}/${2:?}"; then
+  if ! test -e "${_output_file:?}"; then
     mkdir -p "${BUILD_CACHE_DIR:?}/${1:?}" || ui_error "Failed to create the ${1?} folder inside the cache dir"
 
     if test "${CI:-false}" = 'false'; then sleep '0.5'; else sleep 3; fi
     case "${_domain:?}" in
       *\.'go''file''.io' | 'go''file''.io')
         printf '\n %s: ' 'DL type 2'
-        dl_type_two "${_url:?}" "${BUILD_CACHE_DIR:?}/${1:?}/${2:?}" || _status="${?}"
+        dl_type_two "${_url:?}" "${_output_file:?}" || _status="${?}"
         ;;
       *\.'apk''mirror''.com')
         printf '\n %s: ' 'DL type 1'
-        dl_type_one "${_url:?}" "${BUILD_CACHE_DIR:?}/${1:?}/${2:?}" || _status="${?}"
+        dl_type_one "${_url:?}" "${_output_file:?}" || _status="${?}"
         ;;
       ????*)
         printf '\n %s: ' 'DL type 0'
-        dl_type_zero "${_url:?}" "${BUILD_CACHE_DIR:?}/${1:?}/${2:?}" || _status="${?}"
+        dl_type_zero "${_url:?}" "${_output_file:?}" || _status="${?}"
         ;;
       *)
         ui_error "Invalid download URL => '${_url?}'"
@@ -977,7 +990,7 @@ dl_file()
     fi
   fi
 
-  verify_sha1 "${BUILD_CACHE_DIR:?}/$1/$2" "$3" || corrupted_file "${BUILD_CACHE_DIR:?}/$1/$2"
+  verify_sha1_or_delete "${_output_file:?}" "${3:?}" || ui_error "This file CANNOT be downloaded => '${2:?}'"
   printf '%s\n' 'OK'
 }
 
