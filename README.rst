@@ -12,14 +12,6 @@ microG unofficial installer
    :alt: Donate
    :target: ./docs/DONATE.rst
 
-.. image:: https://codecov.io/gh/micro5k/microg-unofficial-installer/branch/main/graph/badge.svg
-   :alt: Coverage
-   :target: https://codecov.io/gh/micro5k/microg-unofficial-installer
-
-.. image:: https://api.reuse.software/badge/github.com/micro5k/microg-unofficial-installer
-   :alt: REUSE status
-   :target: https://api.reuse.software/info/github.com/micro5k/microg-unofficial-installer
-
 
 Description
 ===========
@@ -34,6 +26,14 @@ This project is available on GitHub_, on GitLab_, as well as on XDA_.
 .. _GitHub: https://github.com/micro5k/microg-unofficial-installer
 .. _GitLab: https://gitlab.com/micro5k/microg-unofficial-installer
 .. _XDA: https://xdaforums.com/t/3432360/
+
+.. image:: https://api.reuse.software/badge/github.com/micro5k/microg-unofficial-installer
+   :alt: REUSE status
+   :target: https://api.reuse.software/info/github.com/micro5k/microg-unofficial-installer
+
+.. image:: https://codecov.io/gh/micro5k/microg-unofficial-installer/branch/main/graph/badge.svg
+   :alt: Coverage
+   :target: https://codecov.io/gh/micro5k/microg-unofficial-installer
 
 
 Donations
