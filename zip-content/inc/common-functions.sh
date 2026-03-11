@@ -34,8 +34,12 @@ export ASSOCIATED_LOOP_DEVICES=''
 export MOUNTED_APEX_CHILDREN=''
 readonly ROLLBACK_TEST='false'
 
-# Minimum size threshold (in bytes) for app rollback eligibility
-readonly APP_MIN_SIZE_FOR_ROLLING_BACK='102400' # 100 KiB
+# Default maximum API level used when an upper bound is not specified in configuration.
+# 999 is intentionally higher than any realistic Android API level and effectively means "no upper limit"
+readonly DEFAULT_MAX_API_LEVEL='999'
+
+# Minimum size threshold (in bytes) for app rollback eligibility => 100 KiB
+readonly APP_MIN_SIZE_FOR_ROLLING_BACK='102400'
 
 # shellcheck disable=SC3040,SC2015
 {
@@ -2317,10 +2321,10 @@ perform_installation()
   done
 
   if test "${API:?}" -lt 21; then
-    if test "${CPU64}" != false; then
+    if test "${CPU64:?}" != 'false'; then
       perform_secure_copy_to_device 'lib64'
     fi
-    if test "${CPU}" != false; then
+    if test "${CPU:?}" != 'false'; then
       perform_secure_copy_to_device 'lib'
     fi
   fi
@@ -2821,7 +2825,7 @@ setup_app()
   _output_dir=''
   _installed_file_list=''
 
-  if test "${API:?}" -ge "${_min_api:?}" && test "${API:?}" -le "${_max_api:-999}"; then
+  if test "${API:?}" -ge "${_min_api:?}" && test "${API:?}" -le "${_max_api:-"${DEFAULT_MAX_API_LEVEL:?}"}"; then
     if test "${_optional:?}" = 'true' && test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
       choose "Do you want to install ${_vanity_name:?}?" '+) Yes' '-) No'
       if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
@@ -3420,6 +3424,7 @@ _timeout_compat()
 }
 
 _esc_keycode="$(printf '\033')"
+readonly _esc_keycode
 _choose_remapper()
 {
   local _key
