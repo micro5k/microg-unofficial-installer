@@ -567,7 +567,7 @@ send_web_request_and_output_response()
   fi
 
   if test "${_is_ajax:?}" != 'true'; then
-    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
+    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%"; "}"; else return "${?}"; fi
   fi
 
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
@@ -624,7 +624,7 @@ send_web_request_and_output_headers()
   fi
 
   if test "${_is_ajax:?}" != 'true'; then
-    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
+    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%"; "}"; else return "${?}"; fi
   fi
 
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
@@ -669,7 +669,7 @@ send_web_request_and_no_output()
   fi
 
   if test "${_is_ajax:?}" != 'true'; then
-    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return "${?}"; fi
+    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%"; "}"; else return "${?}"; fi
   fi
 
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return "${?}"; fi
@@ -708,7 +708,7 @@ _direct_download()
   fi
 
   if test "${_is_ajax:?}" != 'true'; then
-    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%; }"; else return 13; fi
+    if _cookies="$(_load_cookies "${_url:?}")"; then _cookies="${_cookies%"; "}"; else return 13; fi
   fi
 
   if test -n "${_referrer?}"; then set -- "${@}" --header "Referer: ${_referrer:?}" || return 14; fi
