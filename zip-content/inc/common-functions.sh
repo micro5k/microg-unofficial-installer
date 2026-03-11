@@ -34,6 +34,9 @@ export ASSOCIATED_LOOP_DEVICES=''
 export MOUNTED_APEX_CHILDREN=''
 readonly ROLLBACK_TEST='false'
 
+# Minimum size threshold (in bytes) for app rollback eligibility
+readonly APP_MIN_SIZE_FOR_ROLLING_BACK='102400' # 100 KiB
+
 # shellcheck disable=SC3040,SC2015
 {
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
@@ -574,6 +577,7 @@ _prepare_mountpoint()
 
 _find_apex()
 {
+  # Prefer base APEX directory, then ".release", then ".debug"
   if test -d "${2:?}/${1:?}"; then
     printf '%s\n' "${2:?}/${1:?}"
   elif test -d "${2:?}/${1:?}.release"; then
@@ -1034,6 +1038,7 @@ parse_setting()
   _get_local_settings
 
   if test "${_sett_type:?}" = 'app'; then
+    # For app settings, first prefer the "APP_" key name; fall back to the deprecated "INSTALL_" key for backward compatibility
     if _parse_setting_helper "zip.${MODULE_ID:?}.APP_${_sett_name:?}" || _parse_setting_helper "zip.${MODULE_ID:?}.INSTALL_${_sett_name:?}"; then
       return
     fi
@@ -2853,7 +2858,7 @@ setup_app()
       fi
       move_rename_file "${TMP_PATH:?}/origin/${_dir:?}/${_filename:?}.apk" "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.apk" || ui_error "Failed to setup the app => '${_vanity_name?}'"
 
-      if test "${CURRENTLY_ROLLING_BACK:-false}" != 'true' && test "${_optional:?}" = 'true' && test "$(get_size_of_file "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.apk" || printf '0' || :)" -gt 102400; then
+      if test "${CURRENTLY_ROLLING_BACK:-false}" != 'true' && test "${_optional:?}" = 'true' && test "$(get_size_of_file "${TMP_PATH:?}/files/${_output_dir:?}/${_output_name:?}.apk" || printf '0' || :)" -ge "${APP_MIN_SIZE_FOR_ROLLING_BACK:?}"; then
         _installed_file_list="${_installed_file_list#|}"
         printf '%s\n' "${_vanity_name:?}|${_output_dir:?}/${_output_name:?}.apk|${_installed_file_list?}" 1>> "${TMP_PATH:?}/processed-${_dir:?}s.log" || ui_error "Failed to update processed-${_dir?}s.log"
       fi
@@ -3295,7 +3300,8 @@ _parse_input_event()
       return 115
     fi
 
-    if test "${key_code:?}" = '014a' || test "${key_code:?}" = '0145'; then # BTN_TOUCH => 0x014a (330), BTN_TOOL_FINGER => 0x0145 (325)
+    # Touch screen related key codes: BTN_TOUCH => 0x014a (330), BTN_TOOL_FINGER => 0x0145 (325)
+    if test "${key_code:?}" = '014a' || test "${key_code:?}" = '0145'; then
       ui_warning "Touch screen event ignored, key: 0x${key_code?}"
       return 115
     fi

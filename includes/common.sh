@@ -356,9 +356,9 @@ verify_sha256()
 {
   local _computed_hash
 
-  test -f "${1:?}" || return 2                                                # Missing file
+  test -f "${1:?}" || return 2                                                  # Missing file
   _computed_hash="$(sha256sum -b -- "${1:?}" | cut -d ' ' -f 1 -s)" || return 3 # Hashing failed
-  test "${2:?}" = "${_computed_hash:?}" || return 4                           # Wrong hash (corrupted file)
+  test "${2:?}" = "${_computed_hash:?}" || return 4                             # Wrong hash (corrupted file)
 
   return 0 # Success
 }
