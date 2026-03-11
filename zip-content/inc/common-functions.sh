@@ -2579,7 +2579,7 @@ verify_sha256_hash()
   _v_filename="${2:?}/${1:?}"
   test -f "${_v_filename:?}" || ui_error "The file to verify is missing => '${_v_filename?}'"
 
-  _v_file_hash="$(sha256sum -- "${_v_filename:?}" | cut -d ' ' -f '1' -s)" || ui_error "Failed to calculate SHA1 hash of '${_v_filename?}'"
+  _v_file_hash="$(sha256sum -- "${_v_filename:?}" | cut -d ' ' -f '1' -s)" || ui_error "Failed to calculate the SHA-256 hash of '${_v_filename?}'"
   if test -z "${_v_file_hash?}" || test "${_v_file_hash:?}" != "${3?}"; then
     ui_msg "  Verifying ${1?}... ERROR"
     return 1
