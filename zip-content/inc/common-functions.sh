@@ -2907,7 +2907,7 @@ setup_lib()
 
   _output_dir="${_dir:?}"
 
-  if test "${API:?}" -ge "${_min_api:?}" && test "${API:?}" -le "${_max_api:-999}"; then
+  if test "${API:?}" -ge "${_min_api:?}" && test "${API:?}" -le "${_max_api:-"${DEFAULT_MAX_API_LEVEL:?}"}"; then
     if test "${_optional:?}" = 'true' && test "${LIVE_SETUP_ENABLED:?}" = 'true'; then
       choose "Do you want to install ${_vanity_name:?}?" '+) Yes' '-) No'
       if test "${?}" -eq 3; then _install='1'; else _install='0'; fi
