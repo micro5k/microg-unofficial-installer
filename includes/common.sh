@@ -933,12 +933,42 @@ dl_type_two()
     report_failure 2 "${?}" 'dl' || return "${?}"
 }
 
+is_lfs_pointers()
+{
+  local _file_size
+  _file_size="$(stat -c '%s' -- "${1:?}")" || ui_error "Failed to get the file size of '${1?}'"
+
+  if test "${_file_size:?}" -lt 1024 && grep -m 1 -q -e '^version https://git-lfs.github.com/spec/v1$' -- "${1:?}"; then return 0; fi
+  return 1
+}
+
+download_cached_if_lfs_pointer()
+{
+  if is_lfs_pointers "${2:?}/${1:?}"; then
+    local _expected_sha256 _mirror_url
+
+    # shellcheck source=/dev/null
+    command 1> /dev/null -v 'get_mirror_by_sha1' || command . "${MAIN_DIR:?}/conf-lfs.sh" || ui_error "Failed to source 'conf-lfs.sh'"
+    _mirror_url="$(get_mirror_by_sha1 "${3:?}")" || ui_error "Failed to get the mirror"
+
+    _expected_sha256=$(grep -m 1 -e '^oid sha256:' -- "${2:?}/${1:?}" | cut -d ':' -f 2 -s) || ui_error "Failed to extract the SHA256 hash from the LFS pointer"
+    dl_file 'LFS' "${_expected_sha256:?}" "${3:?}" "${_mirror_url:?}" ''
+    cp -f -- "${LFS_CACHE_DIR:?}/${_expected_sha256:?}" "${2:?}/${1:?}" || ui_error "Failed to copy the LFS file from cache"
+  fi
+}
+
 dl_file()
 {
   local _output_file
   local _status _url _domain
 
-  _output_file="${BUILD_CACHE_DIR:?}/${1:?}/${2:?}"
+  # ToDO: Improve this mess
+  if test "${1:?}" = 'LFS'; then
+    mkdir -p "${LFS_CACHE_DIR:?}" || ui_error "Failed to create the LFS cache folder"
+    _output_file="${LFS_CACHE_DIR:?}/${2:?}"
+  else
+    _output_file="${BUILD_CACHE_DIR:?}/${1:?}/${2:?}"
+  fi
 
   # Preventive check to remove corrupted files
   verify_sha1_or_delete "${_output_file:?}" "${3:?}" || :
@@ -952,7 +982,7 @@ dl_file()
   _clear_cookies || return "${?}"
 
   if test ! -e "${_output_file:?}"; then
-    mkdir -p "${BUILD_CACHE_DIR:?}/${1:?}" || ui_error "Failed to create the ${1?} folder inside the cache dir"
+    test "${1:?}" = 'LFS' || mkdir -p "${BUILD_CACHE_DIR:?}/${1:?}" || ui_error "Failed to create the ${1?} folder inside the cache dir"
 
     if test "${CI:-false}" = 'false'; then sleep '0.5'; else sleep 3; fi
     case "${_domain:?}" in
@@ -991,7 +1021,7 @@ dl_file()
     fi
   fi
 
-  verify_sha1_or_delete "${_output_file:?}" "${3:?}" || ui_error "This file CANNOT be downloaded => '${2:?}'"
+  verify_sha1_or_delete "${_output_file:?}" "${3:?}" || ui_error "This file CANNOT be downloaded => '${2?}'"
   printf '%s\n' 'OK'
 }
 

@@ -41,8 +41,6 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v6
-        with:
-          lfs: true
       - name: "Setup Java"
         uses: actions/setup-java@v5
         with:
@@ -55,6 +53,14 @@ jobs:
           key: "build-${{ hashFiles('conf-2.sh') }}"
           restore-keys: "build-"
           path: "cache/build"
+          enableCrossOsArchive: true
+      - name: "Use LFS cache"
+        uses: actions/cache@v5
+        timeout-minutes: 10
+        with:
+          key: "lfs-${{ hashFiles('conf-lfs.sh') }}"
+          restore-keys: "lfs-"
+          path: "cache/lfs"
           enableCrossOsArchive: true
       - name: "Build the flashable OTA zip"
         id: "build"

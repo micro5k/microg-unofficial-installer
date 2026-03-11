@@ -65,6 +65,7 @@ detect_script_dir()
 detect_script_dir || return 1 2>&- || exit 1
 
 export BUILD_CACHE_DIR="${MAIN_DIR:?}/cache/build"
+export LFS_CACHE_DIR="${MAIN_DIR:?}/cache/lfs"
 
 unset DO_INIT_CMDLINE
 # shellcheck source=SCRIPTDIR/includes/common.sh
@@ -261,9 +262,11 @@ if test -e "${TEMP_DIR:?}/zip-content/origin/file-list.dat"; then
     printf '%s' '.'
 
     full_filename="${TEMP_DIR:?}/zip-content/origin/${LOCAL_FILENAME:?}"
-    if test -f "${full_filename:?}.apk"; then full_filename="${full_filename:?}.apk"; else full_filename="${full_filename:?}.jar"; fi
+    if test -f "${full_filename:?}.apk"; then ext='.apk'; else ext='.jar'; fi
 
-    verify_sha1 "${full_filename:?}" "${FILE_HASH:?}" || {
+    download_cached_if_lfs_pointer "${LOCAL_FILENAME:?}${ext:?}" "${TEMP_DIR:?}/zip-content/origin" "${FILE_HASH:?}"
+
+    verify_sha1 "${full_filename:?}${ext:?}" "${FILE_HASH:?}" || {
       printf '\n'
       ui_error "Verification of '${LOCAL_FILENAME:-}' failed"
     }
