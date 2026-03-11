@@ -223,7 +223,7 @@ FILENAME_EXT='.zip'
     current_dl_list="$(files_to_download)" || ui_error 'Missing download list'
     dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files'
 
-    dl_file 'misc/keycheck' 'keycheck-arm.bin' '77d47e9fb79bf4403fddab0130f0b4237f6acdf0' 'github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
+    dl_file 'misc/keycheck' 'keycheck-arm.bin' '2e348074961b78c2cf9e8728910ce7c9596f195a6344ead35e536ccebe18df76' 'github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
   else
     echo 'Skipped not OSS files!'
   fi
@@ -266,7 +266,7 @@ if test -e "${TEMP_DIR:?}/zip-content/origin/file-list.dat"; then
 
     download_cached_if_lfs_pointer "${LOCAL_FILENAME:?}${ext:?}" "${TEMP_DIR:?}/zip-content/origin" "${FILE_HASH:?}"
 
-    verify_sha1 "${full_filename:?}${ext:?}" "${FILE_HASH:?}" || {
+    verify_sha256 "${full_filename:?}${ext:?}" "${FILE_HASH:?}" || {
       printf '\n'
       ui_error "Verification of '${LOCAL_FILENAME:-}' failed"
     }

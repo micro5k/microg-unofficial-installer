@@ -352,23 +352,23 @@ _load_cookies()
   return 0
 }
 
-verify_sha1()
+verify_sha256()
 {
   local _computed_hash
 
   test -f "${1:?}" || return 2                                                # Missing file
-  _computed_hash="$(sha1sum -b -- "${1:?}" | cut -d ' ' -f 1 -s)" || return 3 # Hashing failed
+  _computed_hash="$(sha256sum -b -- "${1:?}" | cut -d ' ' -f 1 -s)" || return 3 # Hashing failed
   test "${2:?}" = "${_computed_hash:?}" || return 4                           # Wrong hash (corrupted file)
 
   return 0 # Success
 }
 
-verify_sha1_or_delete()
+verify_sha256_or_delete()
 {
   local _ret_code
 
   _ret_code=0
-  verify_sha1 "${@}" || _ret_code="${?}"
+  verify_sha256 "${@}" || _ret_code="${?}"
 
   if test "${_ret_code:?}" -eq 4; then
     ui_error_msg "Corrupted file => '${1?}'"
@@ -948,8 +948,8 @@ download_cached_if_lfs_pointer()
     local _expected_sha256 _mirror_url
 
     # shellcheck source=/dev/null
-    command 1> /dev/null -v 'get_mirror_by_sha1' || command . "${MAIN_DIR:?}/conf-lfs.sh" || ui_error "Failed to source 'conf-lfs.sh'"
-    _mirror_url="$(get_mirror_by_sha1 "${3:?}")" || ui_error "Failed to get the mirror"
+    command 1> /dev/null -v 'get_mirror_by_sha256' || command . "${MAIN_DIR:?}/conf-lfs.sh" || ui_error "Failed to source 'conf-lfs.sh'"
+    _mirror_url="$(get_mirror_by_sha256 "${3:?}")" || ui_error "Failed to get the mirror"
 
     _expected_sha256=$(grep -m 1 -e '^oid sha256:' -- "${2:?}/${1:?}" | cut -d ':' -f 2 -s) || ui_error "Failed to extract the SHA256 hash from the LFS pointer"
     dl_file 'LFS' "${_expected_sha256:?}" "${3:?}" "${_mirror_url:?}" ''
@@ -971,7 +971,7 @@ dl_file()
   fi
 
   # Preventive check to remove corrupted files
-  verify_sha1_or_delete "${_output_file:?}" "${3:?}" || :
+  verify_sha256_or_delete "${_output_file:?}" "${3:?}" || :
 
   printf '%s ' "Checking ${2?}..."
 
@@ -1021,7 +1021,7 @@ dl_file()
     fi
   fi
 
-  verify_sha1_or_delete "${_output_file:?}" "${3:?}" || ui_error "This file CANNOT be downloaded => '${2?}'"
+  verify_sha256_or_delete "${_output_file:?}" "${3:?}" || ui_error "This file CANNOT be downloaded => '${2?}'"
   printf '%s\n' 'OK'
 }
 

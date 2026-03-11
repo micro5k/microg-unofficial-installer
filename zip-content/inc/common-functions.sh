@@ -2567,14 +2567,14 @@ reset_gms_data_of_all_apps()
 }
 
 # Hash related functions
-verify_sha1_hash()
+verify_sha256_hash()
 {
   local _v_filename _v_file_hash
 
   _v_filename="${2:?}/${1:?}"
   test -f "${_v_filename:?}" || ui_error "The file to verify is missing => '${_v_filename?}'"
 
-  _v_file_hash="$(sha1sum -- "${_v_filename:?}" | cut -d ' ' -f '1' -s)" || ui_error "Failed to calculate SHA1 hash of '${_v_filename?}'"
+  _v_file_hash="$(sha256sum -- "${_v_filename:?}" | cut -d ' ' -f '1' -s)" || ui_error "Failed to calculate SHA1 hash of '${_v_filename?}'"
   if test -z "${_v_file_hash?}" || test "${_v_file_hash:?}" != "${3?}"; then
     ui_msg "  Verifying ${1?}... ERROR"
     return 1
@@ -2828,7 +2828,7 @@ setup_app()
 
     if test "${_install:?}" -ne 0 || test "${_optional:?}" != 'true'; then
       ui_msg "Enabling: ${_vanity_name:?}"
-      verify_sha1_hash "${_filename:?}.apk" "${TMP_PATH:?}/origin/${_dir:?}" "${_file_hash:?}" || ui_error "Failed hash verification of '${_vanity_name?}'"
+      verify_sha256_hash "${_filename:?}.apk" "${TMP_PATH:?}/origin/${_dir:?}" "${_file_hash:?}" || ui_error "Failed hash verification of '${_vanity_name?}'"
 
       if test "${API:?}" -ge 21; then
         _output_dir="${_dir:?}/${_output_name:?}"
@@ -2910,7 +2910,7 @@ setup_lib()
 
     if test "${_install:?}" -ne 0 || test "${_optional:?}" != 'true'; then
       ui_msg "Enabling: ${_vanity_name:?}"
-      verify_sha1_hash "${_filename:?}.jar" "${TMP_PATH:?}/origin/${_dir:?}" "${_file_hash:?}" || ui_error "Failed hash verification of '${_vanity_name?}'"
+      verify_sha256_hash "${_filename:?}.jar" "${TMP_PATH:?}/origin/${_dir:?}" "${_file_hash:?}" || ui_error "Failed hash verification of '${_vanity_name?}'"
 
       mkdir -p "${TMP_PATH:?}/files/${_output_dir:?}" || ui_error "Failed to create the folder for '${_vanity_name?}'"
 
