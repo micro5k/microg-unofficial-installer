@@ -7,10 +7,16 @@
 
 version: 2
 
+# Set the OS, Python version and other tools you might need
 build:
   os: "ubuntu-lts-latest"
   tools:
-    python: "3"
+    python: "3.14"
 
+# Build documentation in the "docs/" directory with Sphinx
 sphinx:
   configuration: "docs/conf.py"
+
+# Optionally build your docs in additional formats such as PDF and ePub
+formats:
+  - pdf
