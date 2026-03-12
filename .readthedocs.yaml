@@ -12,6 +12,9 @@ build:
   os: "ubuntu-lts-latest"
   tools:
     python: "3"
+  jobs:
+    post_install:
+      - pip install sphinx-rtd-theme
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
