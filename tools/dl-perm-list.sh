@@ -128,7 +128,7 @@ dl()
 
 download_and_parse_permissions()
 {
-  printf '%s\n' '<manifest xmlns:android="http://schemas.android.com/apk/res/android">' 1> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" || return "${?}"
+  printf '%s\n' '<manifest xmlns:android="http://schemas.android.com/apk/res/android">' 1> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" || return "${?}" # NOSONAR
 
   dl "${BASE_URL:?}+/refs/tags/${2:?}/core/res/AndroidManifest.xml?format=text" '-' |
     base64 -d |
