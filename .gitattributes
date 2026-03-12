@@ -24,6 +24,7 @@ docs/CODEOWNERS     text eol=lf
 *.json              text eol=lf
 *.mjs               text eol=lf
 *.xml               text eol=lf
+*.yaml              text eol=lf
 *.yml               text eol=lf
 *.dis               text eol=lf
 
