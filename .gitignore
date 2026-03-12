@@ -49,6 +49,8 @@ user.gradle
 /build
 /cmdline
 
+/docs/_build/
+
 # Custom project folders
 /cache/
 /output/

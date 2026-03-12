@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
+
+# Configuration file for the Sphinx documentation builder
+# For the full list of built-in configuration values, see the documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
+
+import os
+
+# Functions
+def get_version():
+    props_path = os.path.join(os.path.dirname(__file__), '..', 'zip-content', 'module.prop')
+
+    if os.path.exists(props_path):
+        with open(props_path, 'r') as f:
+            for line in f:
+                if line.startswith('version='):
+                    return line.replace('version=', '').lstrip('v').strip()
+    return '0.0.0-unknown'
+
+# Project information
+project = 'microG unofficial installer'
+author = 'ale5000'
+copyright = '2016-2019, 2021-%Y ale5000'
+release = get_version()
+version = release
+
+# General configuration
+needs_sphinx = '8.1'
+extensions = []
+
+# Options for markup
+rst_epilog = f"""
+.. |release| replace:: v{release}
+"""
+
+# Options for source files
+master_doc = 'index'
+source_suffix = {
+    '.rst': 'restructuredtext'
+}
