@@ -28,7 +28,9 @@ version = release
 
 # General configuration
 needs_sphinx = '8.1'
-extensions = []
+extensions = [
+    'sphinx_rtd_theme'
+]
 
 # Options for highlighting
 highlight_language = 'sh'
@@ -43,3 +45,6 @@ master_doc = 'index'
 source_suffix = {
     '.rst': 'restructuredtext'
 }
+
+# Options for HTML output
+html_theme = 'sphinx_rtd_theme'
