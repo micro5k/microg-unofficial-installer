@@ -48,3 +48,10 @@ source_suffix = {
 
 # Options for HTML output
 html_theme = 'sphinx_rtd_theme'
+html_context = {
+    "display_github": True,
+    "github_user": "micro5k",
+    "github_repo": "microg-unofficial-installer",
+    "github_version": "main",
+    "conf_py_path": "/docs/"
+}
