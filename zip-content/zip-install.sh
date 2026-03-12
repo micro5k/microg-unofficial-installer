@@ -278,7 +278,7 @@ elif test -d '/dev'; then
     ui_error_msg 'Failed to create a temp folder'
     exit 9
   }
-  chmod 01775 '/dev/tmp' || {
+  chmod 01775 '/dev/tmp' || { # NOSONAR
     ui_error_msg "chmod failed on '/dev/tmp'"
     rmdir 2> /dev/null '/dev/tmp' || :
     exit 10
