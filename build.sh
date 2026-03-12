@@ -357,7 +357,8 @@ ZIP_SHA256="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:
 
 ZIP_MD5=''
 if test "${FAST_BUILD:-false}" = 'false'; then
-  md5sum -b -- "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5" || ui_error 'Failed to compute the MD5 hash'
+  # Weak hash used only as a secondary verification (on legacy Android custom recoveries); no security impact
+  md5sum -b -- "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5" || ui_error 'Failed to compute the MD5 hash' # NOSONAR
   ZIP_MD5="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5")" || ui_error 'Failed to read the MD5 hash'
 fi
 
