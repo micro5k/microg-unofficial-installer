@@ -30,6 +30,9 @@ version = release
 needs_sphinx = '8.1'
 extensions = []
 
+# Options for highlighting
+highlight_language = 'sh'
+
 # Options for markup
 rst_epilog = f"""
 .. |release| replace:: v{release}
