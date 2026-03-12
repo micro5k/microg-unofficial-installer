@@ -40,13 +40,17 @@ jobs:
           codecovyml_path='${{ github.workspace }}/.codecov.yml'
           if test -f "${codecovyml_path}"; then
             status='0'
-            wget -qO- --post-file "${codecovyml_path:?}" https://codecov.io/validate || status="${?}" # NOSONAR
+            # NOSONAR_BEGIN
+            wget -qO- --post-file "${codecovyml_path:?}" https://codecov.io/validate || status="${?}"
+            # NOSONAR_END
             if test "${status:?}" -eq 0; then echo 'Result: pass'; else echo 'Result: fail'; exit "${status:?}"; fi
           fi
           codecovyml_path='${{ github.workspace }}/codecov.yml'
           if test -f "${codecovyml_path}"; then
             status='0'
-            wget -qO- --post-file "${codecovyml_path:?}" https://codecov.io/validate || status="${?}" # NOSONAR
+            # NOSONAR_BEGIN
+            wget -qO- --post-file "${codecovyml_path:?}" https://codecov.io/validate || status="${?}"
+            # NOSONAR_END
             if test "${status:?}" -eq 0; then echo 'Result: pass'; else echo 'Result: fail'; exit "${status:?}"; fi
           fi
 
