@@ -91,13 +91,13 @@ logger = logging.getLogger(__name__)
 # Project information
 project = 'microG unofficial installer'
 author = 'ale5000'
-copyright = '2016-2019, 2021-%Y ale5000'
+project_copyright = '2016-2019, 2021-%Y ale5000'
 release = get_version()
 version = release
 
 revision = get_revision()
 if revision:
-    copyright += f" | Revision: {revision}"
+    project_copyright += f" | Revision: {revision}"
 
 # General configuration
 needs_sphinx = '8.1'
