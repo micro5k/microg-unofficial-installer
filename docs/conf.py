@@ -7,6 +7,7 @@
 # For the full list of built-in configuration values, see the documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import os
+import re
 import subprocess
 
 # Functions
@@ -35,6 +36,15 @@ def get_revision():
         ).decode('utf-8').strip()
     except Exception:
         return None
+
+def fix_html_links(app, pagename, templatename, context, doctree):
+    """Fixes links in HTML output."""
+    if 'body' in context:
+        context['body'] = re.sub(r'href="([^"]+)\.rst(#[^"]*)?"', r'href="\1.html\2"', context['body'])
+
+def setup(app):
+    # Fix for 'make html'
+    app.connect('html-page-context', fix_html_links)
 
 # Project information
 project = 'microG unofficial installer'
