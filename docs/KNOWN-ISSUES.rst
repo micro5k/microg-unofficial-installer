@@ -18,6 +18,8 @@ We are actively working on fixes; please check here before reporting a new issue
 Errors
 ======
 
+.. _no-space-left-on-device:
+
 No space left on device
 -----------------------
 
