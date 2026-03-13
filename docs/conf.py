@@ -47,6 +47,8 @@ def transform_rst_links(app, doctree):
     Automatically converts internal .rst file links to Sphinx cross-references
     (:doc: or :ref:), enabling validation and proper path resolution.
     """
+
+    docname = app.env.docname
     # Traverse only reference nodes that have a 'refuri' attribute
     for node in doctree.findall(nodes.reference):
         uri = node.get('refuri', '')
@@ -65,6 +67,7 @@ def transform_rst_links(app, doctree):
             reftype=reftype,
             refdomain='std',
             reftarget=reftarget,
+            refdoc=docname,
             refwarn=True,
             refexplicit=True
         )
