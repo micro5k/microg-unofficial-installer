@@ -9,8 +9,8 @@
 import os
 import re
 import subprocess
+from docutils import nodes
 
-# Functions
 def get_version():
     props_path = os.path.join(os.path.dirname(__file__), '..', 'zip-content', 'module.prop')
 
@@ -37,14 +37,23 @@ def get_revision():
     except Exception:
         return None
 
-def fix_html_links(app, pagename, templatename, context, doctree):
-    """Fixes links in HTML output."""
-    if 'body' in context:
-        context['body'] = re.sub(r'href="([^"]+)\.rst(#[^"]*)?"', r'href="\1.html\2"', context['body'])
+def transform_doc_links(app, docname, source):
+    """Phase 1: Convert local .rst links (no anchor) to :doc: roles."""
+    source[0] = re.sub(r'`([^`<]+)\s*<((?!http|mailto)[^>]+)\.rst>`_', r':doc:`\1 <\2>`', source[0])
+
+def fix_anchors_in_tree(app, doctree, docname):
+    """Phase 2: Fix local .rst#anchor links in the resolved tree."""
+    ext = '.pdf' if app.builder.name == 'latex' else '.html'
+    for node in doctree.traverse(nodes.reference):
+        uri = node.get('refuri')
+        if uri and '.rst#' in uri and not uri.startswith(('http', 'mailto')):
+            node['refuri'] = uri.replace('.rst#', f'{ext}#')
 
 def setup(app):
-    # Fix for 'make html'
-    app.connect('html-page-context', fix_html_links)
+    # Process text before parsing
+    app.connect('source-read', transform_doc_links)
+    # Process nodes after tree is built
+    app.connect('doctree-resolved', fix_anchors_in_tree)
 
 # Project information
 project = 'microG unofficial installer'
