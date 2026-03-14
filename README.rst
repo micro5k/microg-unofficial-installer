@@ -103,7 +103,7 @@ Please check the `contributors list <./docs/CONTRIBUTORS.md>`_ for more details.
 
 Donations
 =========
-.. image:: https://img.shields.io/badge/Donate-FFF000?style=for-the-badge&logo=ko-fi&logoColor=black&cacheSeconds=21600
+.. image:: https://img.shields.io/badge/Donate-FFF000?style=for-the-badge&logo=ko-fi&logoSize=auto&logoColor=black&cacheSeconds=21600
    :alt: Support this project
    :target: ./docs/DONATE.rst
 
