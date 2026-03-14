@@ -57,7 +57,7 @@ Instead if you want to try the nightly builds you can find them here:
 - `Nightly - OSS flavour <https://github.com/micro5k/microg-unofficial-installer/releases/tag/nightly>`_
 
 .. note::
-   If you get the error "No space left on device", you can find a workaround in `Known issues <./KNOWN-ISSUES.rst#no-space-left-on-device>`_.
+   If you get the error "No space left on device", you can find a workaround in `Known issues <./KNOWN-ISSUES.rst#no-space-left-on-device>`__.
 
 Verifying the download
 ----------------------
@@ -83,11 +83,12 @@ file bundled inside the zip.
 Extract it and open it in any spreadsheet app or text editor to see everything that can be tuned.
 *(There are more knobs than you'd expect. We're not sorry.)*
 
-For example, to set a longer live setup timeout:
+For example, to activate the key recognition test mode — useful when
+the volume keys are not being detected correctly during live setup:
 
 .. code-block:: sh
 
-   adb shell "setprop zip.microg-unofficial-installer.LIVE_SETUP_TIMEOUT 8"
+   adb shell "setprop zip.microg-unofficial-installer.KEY_TEST_ONLY 1"
 
 .. warning::
    Properties set via ``adb shell setprop`` are **temporary** and are lost on every reboot.
@@ -152,3 +153,38 @@ Uninstallation
 ==============
 
 To uninstall re-flash the zip, enable live setup and select **Uninstall**.
+
+
+Troubleshooting
+===============
+
+Installation fails or device does not boot
+------------------------------------------
+
+1. If ``DEBUG_LOG`` was active during the failed installation, check the debug log
+   (``debug-a5k.log``), which is written to the microSD card or internal storage.
+2. Review the `Known issues <./KNOWN-ISSUES.rst>`_ page before reporting a new bug.
+3. If the issue is not listed, open an issue on GitHub with as much detail as possible — see `Support <./SUPPORT.rst>`_ for what information to include.
+
+.. tip::
+   To flash without making any changes use the DRY_RUN mode (useful for testing):
+
+   .. code-block:: sh
+
+      adb shell "setprop zip.microg-unofficial-installer.DRY_RUN 1"
+
+   | Then flash **immediately** without rebooting.
+   | The installer will run through all steps but will not write anything to the device.
+
+   *(Remember: ``setprop`` values are lost on reboot — see the `Configure`_ section.)*
+
+Live setup timeout is too short
+-------------------------------
+
+Extend the timeout before flashing, then flash **immediately** without rebooting:
+
+.. code-block:: sh
+
+   adb shell "setprop zip.microg-unofficial-installer.LIVE_SETUP_TIMEOUT 8"
+
+The value is in seconds. The default is 4 seconds.

@@ -111,7 +111,7 @@ Donations
 
 I maintain this project on my own in my spare time — the finite, precious kind that competes with sleep, meals eaten while staring at a terminal, and the occasional social obligation.
 
-If it's saved you time, frustration, or a trip to the Google ecosystem, please consider supporting its development!
+If it's saved you time, or frustration, please consider supporting its development!
 
 Wondering how? Check out all the ways to `fuel this project <./docs/DONATE.rst>`_ — coffee, kind words, or cold hard crypto, it's all welcome.
 *(No pressure. But the coffee does make the bugs fix themselves slightly faster.)*
