@@ -60,18 +60,31 @@ Instead if you want to try the nightly builds you can find them here:
    If you get the error "No space left on device", you can find a workaround in `Known issues <./KNOWN-ISSUES.rst#no-space-left-on-device>`_.
 
 
+Configure
+=========
+
+You can pre-configure options before flashing by setting system properties on the device.
+
+All available options and their accepted values are listed in the ``setprop-settings-list.csv``
+file bundled inside the zip.
+Extract it and open it in any spreadsheet app or text editor to see everything that can be tuned.
+*(There are more knobs than you'd expect. We're not sorry.)*
+
+For example, to set a longer live setup timeout:
+
+.. code-block:: sh
+
+   adb shell "setprop zip.microg-unofficial-installer.LIVE_SETUP_TIMEOUT 8"
+
+.. tip::
+   Properties set via ``adb shell setprop`` are temporary and reset on reboot.
+   Set them just before flashing so they take effect when the installer runs.
+
+
 Installation
 ============
 
 The methods below are **mutually exclusive**, choose **one** that matches your setup and follow only those steps.
-
-.. tip::
-   Regardless of which installation method you choose, you can pre-configure options before flashing by setting system properties on the device.
-   For example, to enable a longer live setup timeout:
-
-   .. code-block:: sh
-
-      adb shell "setprop zip.microg-unofficial-installer.LIVE_SETUP_TIMEOUT 8"
 
 Via custom recovery
 -------------------

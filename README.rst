@@ -13,11 +13,11 @@ microG unofficial installer
    :target: https://microg-unofficial-installer.readthedocs.io/en/latest/
 
 .. image:: https://codecov.io/gh/micro5k/microg-unofficial-installer/branch/main/graph/badge.svg
-   :alt: Coverage
+   :alt: Code coverage on Codecov
    :target: https://codecov.io/gh/micro5k/microg-unofficial-installer
 
 .. image:: https://api.reuse.software/badge/github.com/micro5k/microg-unofficial-installer
-   :alt: REUSE status
+   :alt: REUSE compliance status
    :target: https://api.reuse.software/info/github.com/micro5k/microg-unofficial-installer
 
 
@@ -43,22 +43,22 @@ Grab the latest stable release or, if you like to live dangerously, the nightly 
 The badges below show the current version and download statistics.
 
 .. image:: https://img.shields.io/github/v/release/micro5k/microg-unofficial-installer.svg?cacheSeconds=3600
-   :alt: GitHub latest release
+   :alt: GitHub: latest release version
    :target: `download`_
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/total.svg?cacheSeconds=3600
-   :alt: Total OSS downloads
+   :alt: GitHub: total OSS downloads
    :target: `download`_
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/latest/total.svg?cacheSeconds=3600
-   :alt: Downloads of the latest OSS release
+   :alt: GitHub: downloads of the latest OSS release
    :target: `download`_
 
 .. image:: https://img.shields.io/github/downloads/micro5k/microg-unofficial-installer/nightly/total.svg?cacheSeconds=600
-   :alt: Downloads of the latest OSS nightly
+   :alt: GitHub: downloads of the latest OSS nightly
    :target: `download`_
 
-`Download instructions <./docs/INSTRUCTIONS.rst>`_ *(reading them is optional, but so is a successful installation)*
+`Read before you flash <./docs/INSTRUCTIONS.rst>`_ *(ten minutes of reading beats one hour of re-flashing)*
 
 
 Code analysis
@@ -69,23 +69,23 @@ CI pipelines run on every push to keep the build healthy — the code-lint workf
 In addition, SonarCloud, Codacy, and CodeFactor provide continuous code quality analysis from multiple angles, because one linter is never enough.
 
 .. image:: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-lint.yml/badge.svg
-   :alt: Code lint workflow
+   :alt: Code lint: CI status
    :target: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-lint.yml
 
 .. image:: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/auto-nightly.yml/badge.svg
-   :alt: Nightly workflow
+   :alt: Nightly build: CI status
    :target: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/auto-nightly.yml
 
 .. image:: https://sonarcloud.io/api/project_badges/measure?project=micro5k_microg-unofficial-installer&metric=reliability_rating
-   :alt: SonarQube badge
+   :alt: SonarQube: reliability rating
    :target: https://sonarcloud.io/summary/new_code?id=micro5k_microg-unofficial-installer
 
 .. image:: https://app.codacy.com/project/badge/Grade/e372a72b55f54bcf80966c8266e3e7fb
-   :alt: Codacy badge
+   :alt: Codacy: code quality grade
    :target: https://app.codacy.com/gh/micro5k/microg-unofficial-installer/dashboard
 
 .. image:: https://www.codefactor.io/repository/github/micro5k/microg-unofficial-installer/badge
-   :alt: CodeFactor badge
+   :alt: CodeFactor: code quality
    :target: https://www.codefactor.io/repository/github/micro5k/microg-unofficial-installer
 
 
@@ -103,7 +103,7 @@ Please check the `contributors list <./docs/CONTRIBUTORS.md>`_ for more details.
 
 Donations
 =========
-.. image:: https://img.shields.io/badge/Donate-FFF000?logo=ko-fi&logoSize=auto&logoColor=black&cacheSeconds=21600
+.. image:: https://img.shields.io/badge/Donate-FFF000?style=for-the-badge&logo=ko-fi&logoColor=black&cacheSeconds=21600
    :alt: Support this project
    :target: ./docs/DONATE.rst
 
@@ -112,6 +112,7 @@ I maintain this project on my own in my spare time — the finite, precious kind
 If it's saved you time, frustration, or a trip to the Google ecosystem, please consider supporting its development!
 
 Wondering how? Check out all the ways to `fuel this project <./docs/DONATE.rst>`_ — coffee, kind words, or cold hard crypto, it's all welcome.
+*(No pressure. But the coffee does make the bugs fix themselves slightly faster.)*
 
 
 Copyright
