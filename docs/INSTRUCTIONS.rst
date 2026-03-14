@@ -59,6 +59,19 @@ Instead if you want to try the nightly builds you can find them here:
 .. note::
    If you get the error "No space left on device", you can find a workaround in `Known issues <./KNOWN-ISSUES.rst#no-space-left-on-device>`_.
 
+Verifying the download
+----------------------
+
+Each release ships with a ``.sha256`` file alongside the zip.
+To verify the integrity of the downloaded file, run:
+
+.. code-block:: sh
+
+   sha256sum -c ./microg-unofficial-installer-*.zip.sha256
+
+An ``OK`` result confirms the file is intact and unmodified.
+The expected SHA-256 hash is also listed in the release notes for quick manual comparison.
+
 
 Configure
 =========
@@ -76,9 +89,12 @@ For example, to set a longer live setup timeout:
 
    adb shell "setprop zip.microg-unofficial-installer.LIVE_SETUP_TIMEOUT 8"
 
-.. tip::
-   Properties set via ``adb shell setprop`` are temporary and reset on reboot.
-   Set them just before flashing so they take effect when the installer runs.
+.. warning::
+   Properties set via ``adb shell setprop`` are **temporary** and are lost on every reboot.
+   If you set them and then reboot the device (e.g., to enter recovery), they will be gone
+   before the installer ever reads them — making your configuration useless.
+   Always set the properties **after** the device has booted into the state from which you
+   will flash, and flash **immediately** afterwards without rebooting.
 
 
 Installation

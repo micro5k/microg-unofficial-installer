@@ -40,7 +40,7 @@ To run ShellCheck on all shell scripts in the project at once:
 
 .. code-block:: sh
 
-   find . -path './.git' -prune -o -name '*.sh' -exec shellcheck '{}' +
+   find . -path '*/.*' -prune -o -name '*.sh' -exec shellcheck '{}' +
 
 To run REUSE locally:
 
