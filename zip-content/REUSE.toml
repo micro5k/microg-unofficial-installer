@@ -1,0 +1,20 @@
+version = 1
+
+[[annotations]]
+path = [
+  "META-INF/com/google/android/updater-script*",
+  "META-INF/CERT.RSA",
+  "META-INF/CERT.SF",
+  "META-INF/MANIFEST.MF"
+]
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"
+
+
+[[annotations]]
+path = [
+  "setprop-settings-list.csv"
+]
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileComment = "This file contains a comprehensive list of all the options configurable via adb shell setprop"
