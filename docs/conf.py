@@ -7,6 +7,7 @@
 # For the full list of built-in configuration values, see the documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import os
+import shutil
 import subprocess  # nosec B404
 
 from docutils import nodes
@@ -26,18 +27,21 @@ def get_version():
 
 
 def get_revision():
-    # Try Read the Docs env vars first
+    # Use Read the Docs environment variables if available
     git_rev = os.environ.get('READTHEDOCS_GIT_COMMIT_HASH')
     git_id = os.environ.get('READTHEDOCS_GIT_IDENTIFIER')
     if git_rev:
         git_rev = git_rev[:8]
         return f"{git_rev} ({git_id})" if git_id else git_rev
 
-    # Local Git fallback
+    # Fallback to Git CLI
+    git = shutil.which('git')
+    if not git:
+        return None
     try:
-        # Safe: arguments are hardcoded strings and it is shell=False by default
+        # Safe: uses list-based arguments (no shell) to prevent injection
         return subprocess.check_output(
-            ['git', 'rev-parse', '--short=8', 'HEAD'], stderr=subprocess.DEVNULL
+            [git, 'rev-parse', '--short=8', 'HEAD'], stderr=subprocess.DEVNULL
         ).decode('utf-8').strip()  # nosec B603
     except Exception:
         return None
