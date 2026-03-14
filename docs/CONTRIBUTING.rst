@@ -30,11 +30,24 @@ To maintain a high standard of code quality, we use automated tools to check for
 
 These checks run automatically on every pull request via CI.
 
-To run ShellCheck locally:
+To run ShellCheck locally on a single script:
 
 .. code-block:: sh
 
    shellcheck <path/to/script.sh>
+
+To run ShellCheck on all shell scripts in the project at once:
+
+.. code-block:: sh
+
+   find . -path './.git' -prune -o -name '*.sh' -exec shellcheck '{}' +
+
+To run REUSE locally:
+
+.. code-block:: sh
+
+   pip install reuse
+   reuse lint
 
 Recognition
 ===========
