@@ -7,7 +7,7 @@
 # For the full list of built-in configuration values, see the documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import os
-import subprocess
+import subprocess  # nosec B404
 
 from docutils import nodes
 from sphinx import addnodes
@@ -35,9 +35,10 @@ def get_revision():
 
     # Local Git fallback
     try:
+        # Safe: arguments are hardcoded strings and it is shell=False by default
         return subprocess.check_output(
             ['git', 'rev-parse', '--short=8', 'HEAD'], stderr=subprocess.DEVNULL
-        ).decode('utf-8').strip()
+        ).decode('utf-8').strip()  # nosec B603
     except Exception:
         return None
 
