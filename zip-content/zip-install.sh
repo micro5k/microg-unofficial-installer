@@ -278,11 +278,13 @@ elif test -d '/dev'; then
     ui_error_msg 'Failed to create a temp folder'
     exit 9
   }
+  # NOSONAR_BEGIN
   chmod 01775 '/dev/tmp' || {
     ui_error_msg "chmod failed on '/dev/tmp'"
     rmdir 2> /dev/null '/dev/tmp' || :
     exit 10
-  } # NOSONAR
+  }
+  # NOSONAR_END
   TMPDIR='/dev/tmp'
 else
   unset TMPDIR
