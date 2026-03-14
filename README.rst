@@ -66,7 +66,7 @@ Code analysis
 Yes, the code is actually linted. No, it wasn't always pretty. Yes, it's better now. 🔍
 
 CI pipelines run on every push to keep the build healthy — the code-lint workflow checks style and correctness, while the nightly workflow validates a full automated build.
-In addition, SonarCloud, Codacy, and CodeFactor provide continuous code quality analysis from multiple angles, because one linter is never enough.
+In addition, SonarQube, Codacy, and CodeFactor provide continuous code quality analysis from multiple angles, because one linter is never enough.
 
 .. image:: https://github.com/micro5k/microg-unofficial-installer/actions/workflows/code-lint.yml/badge.svg
    :alt: Code lint: CI status
