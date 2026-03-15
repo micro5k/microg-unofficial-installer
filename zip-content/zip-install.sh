@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.4.1'
+readonly ZIPINSTALL_VERSION='1.4.2'
 
 PATH="${PATH:-/system/bin}:."
 umask 022 || :
@@ -115,6 +115,9 @@ command 1> /dev/null -v 'unzip' || {
 }
 
 ### FUNCTIONS AND CODE ###
+
+# shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
+case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'Failed: pipefail' ;; *) ;; esac
 
 ui_info_msg()
 {
