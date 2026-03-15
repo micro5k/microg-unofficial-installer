@@ -177,8 +177,10 @@ Installation fails or device does not boot
 
       adb shell "setprop zip.common.DEBUG_LOG 1"
 
-   | Then flash **immediately** without rebooting (``setprop`` values are lost on reboot — see the Configure_ section).
+   | Then flash **immediately** without rebooting 
    | Logs are saved to ``debug-a5k.log`` on either the microSD card or internal storage.
+
+   **Remember:** ``setprop`` values are lost on reboot — see the Configure_ section.
 
 2. Review the `Known issues <./KNOWN-ISSUES.rst>`_ page before reporting a new bug.
 3. If the issue is not listed, open an issue on GitHub with as much detail as possible — see `Support <./SUPPORT.rst>`_ for what information to include.
@@ -193,7 +195,7 @@ Installation fails or device does not boot
    | Then flash **immediately** without rebooting.
    | The installer will run through all steps but will not write anything to the device.
 
-   Remember: ``setprop`` values are lost on reboot — see the Configure_ section.
+   **Remember:** ``setprop`` values are lost on reboot — see the Configure_ section.
 
 Live setup timeout is too short
 -------------------------------

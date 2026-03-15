@@ -31,7 +31,7 @@ Many devices do not have enough free space on the system partition to flash the 
    | Enable the ``LOW_FREE_SPACE`` option before flashing.
    | This installs an older (smaller) version of microG that fits on space-constrained devices.
 
-   It can be enabled with:
+   Enable it with:
 
    .. code-block:: sh
 
