@@ -111,7 +111,7 @@ custom input mappings.
 Installation
 ============
 
-The methods below are **mutually exclusive**, choose **one** that matches your setup and follow only those steps.
+Choose only **one** installation method below that matches your setup and follow **only** those steps — do not combine steps from different methods.
 
 Via custom recovery
 -------------------
