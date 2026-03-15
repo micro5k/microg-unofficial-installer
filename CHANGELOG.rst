@@ -77,15 +77,15 @@ All notable changes to this project will be documented in this file.
 
 `1.3.0-beta`_ - 2023-02-19
 ==========================
-- Add support for mounting system partition at /mnt/system (`@storm1ng <https://github.com/storm1ng>`_)
+- Add support for mounting system partition at /mnt/system (`@storm1ng <https://github.com/storm1ng>`__)
 - Improve compatibility with legacy shells
 - Fix remounting system as read-write
 - Rewrite system mounting code
-- Fix debug log path when sideloading (thanks `@storm1ng <https://github.com/storm1ng>`_ for the help)
+- Fix debug log path when sideloading (thanks `@storm1ng <https://github.com/storm1ng>`__ for the help)
 - Auto-root if needed in :code:`zip-install.sh`
 - Update microG Service Core to 0.2.27.223616 (now using MapLibre)
-- Add full support for automounting A/B slot partitions (thanks `@storm1ng <https://github.com/storm1ng>`_ for the help)
-- Add full support for automounting dynamic partitions (thanks `@storm1ng <https://github.com/storm1ng>`_ for the help)
+- Add full support for automounting A/B slot partitions (thanks `@storm1ng <https://github.com/storm1ng>`__ for the help)
+- Add full support for automounting dynamic partitions (thanks `@storm1ng <https://github.com/storm1ng>`__ for the help)
 - Support DEBUG_LOG and FORCE_ROOT env variables in :code:`zip-install.sh`
 - Fallback to manual parsing of key events when keycheck fails, fix `#5 <https://github.com/micro5k/microg-unofficial-installer/issues/5>`_
 - Support live setup under :code:`zip-install.sh`
