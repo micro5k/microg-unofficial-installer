@@ -90,6 +90,16 @@ the volume keys are not being detected correctly during live setup:
 
    adb shell "setprop zip.microg-unofficial-installer.KEY_TEST_ONLY 1"
 
+When ``KEY_TEST_ONLY`` is enabled, the installer **skips the actual
+installation entirely** and instead runs an interactive hardware-key
+diagnostic.
+It prompts you to press any button 8 times in a row; for every press
+it displays the raw input event (key code and action) directly on
+screen so you can see exactly which key codes your device reports.
+Use this to diagnose key-detection problems on devices with
+non-standard hardware buttons, or to find the correct key codes for
+custom input mappings.
+
 .. warning::
    Properties set via ``adb shell setprop`` are **temporary** and are lost on every reboot.
    If you set them and then reboot the device (e.g., to enter recovery), they will be gone
@@ -161,8 +171,15 @@ Troubleshooting
 Installation fails or device does not boot
 ------------------------------------------
 
-1. If ``DEBUG_LOG`` was active during the failed installation, check the debug log
-   (``debug-a5k.log``), which is written to the microSD card or internal storage.
+1. If ``DEBUG_LOG`` was not already active, enable it **before** re-flashing:
+
+   .. code-block:: sh
+
+      adb shell "setprop zip.common.DEBUG_LOG 1"
+
+   | Then flash **immediately** without rebooting (``setprop`` values are lost on reboot — see the Configure_ section).
+   | Logs are saved to ``debug-a5k.log`` on either the microSD card or internal storage.
+
 2. Review the `Known issues <./KNOWN-ISSUES.rst>`_ page before reporting a new bug.
 3. If the issue is not listed, open an issue on GitHub with as much detail as possible — see `Support <./SUPPORT.rst>`_ for what information to include.
 
@@ -176,7 +193,7 @@ Installation fails or device does not boot
    | Then flash **immediately** without rebooting.
    | The installer will run through all steps but will not write anything to the device.
 
-   *(Remember: ``setprop`` values are lost on reboot — see the `Configure`_ section.)*
+   Remember: ``setprop`` values are lost on reboot — see the Configure_ section.
 
 Live setup timeout is too short
 -------------------------------
