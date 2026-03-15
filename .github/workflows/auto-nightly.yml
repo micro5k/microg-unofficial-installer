@@ -30,7 +30,7 @@ jobs:
     if: "${{ github.event_name == 'push' }}"
     concurrency:
       group: "${{ github.repository_id }}-${{ github.workflow }}-nightly"
-      cancel-in-progress: true
+      cancel-in-progress: false
     permissions:
       contents: write # Needed to delete a release and to modify a tag
       id-token: write # Needed to attest build provenance
