@@ -35,3 +35,4 @@ and — as this very documentation hopes to prove — occasionally funny.
    CONTRIBUTING
    DONATE
    SECURITY
+   RELEASE-HASHES
