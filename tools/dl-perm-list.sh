@@ -170,9 +170,11 @@ execute_script='true'
 while test "${#}" -gt 0; do
   case "${1?}" in
     -V | --version)
+      # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' "Copy""right (c) 2025 ${SCRIPT_AUTHOR:?}"
+      printf '%s\n' "Copyright (c) 2025 ${SCRIPT_AUTHOR:?}"
       printf '%s\n' 'License GPL-3.0+ OR Apache-2.0'
+      # REUSE-IgnoreEnd
       execute_script='false'
       ;;
 

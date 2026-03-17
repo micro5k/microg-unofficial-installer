@@ -22,6 +22,7 @@ set -u
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
 readonly SCRIPT_VERSION='1.8'
+readonly SCRIPT_AUTHOR='ale5000'
 
 export LANG='en_US.UTF-8'
 CI="${CI:-false}"
@@ -936,9 +937,11 @@ STATUS=0
 while test "${#}" -gt 0; do
   case "${1?}" in
     -V | --version)
+      # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' "Copy""right (c) 2023 ale5000"
+      printf '%s\n' "Copyright (c) 2023 ${SCRIPT_AUTHOR:?}"
       printf '%s\n' 'License GPLv3+'
+      # REUSE-IgnoreEnd
       execute_script='false'
       ;;
 

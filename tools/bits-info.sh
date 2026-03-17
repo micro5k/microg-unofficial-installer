@@ -1452,9 +1452,11 @@ while test "${#}" -gt 0; do
     -V | --version)
       execute_script='false'
       no_pause=1
+      # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
-      printf '%s\n' "Copy""right (c) 2024 ale5000"
+      printf '%s\n' "Copyright (c) 2024 ale5000"
       printf '%s\n' 'License GPLv3+'
+      # REUSE-IgnoreEnd
       ;;
     -h | --help | '-?')
       execute_script='false'
