@@ -25,6 +25,8 @@ desktop.ini
 *.log
 *.sarif
 
+/.gitconfig
+
 # VS Code files
 /.vscode/launch.json
 
