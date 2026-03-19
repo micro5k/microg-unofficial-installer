@@ -169,7 +169,7 @@ jobs:
           {
             local _s_shell
             _s_shell=''
-            if test "${SH_IS_BASH:?}" = 'true'; then 
+            if test "${SH_IS_BASH:?}" = 'true'; then
               case "${2:?}" in
                 bash) return 0 ;;      # Skip
                 sh) _s_shell='bash' ;; # Evaluate as bash

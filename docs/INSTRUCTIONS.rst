@@ -177,7 +177,7 @@ Installation fails or device does not boot
 
       adb shell "setprop zip.common.DEBUG_LOG 1"
 
-   | Then flash **immediately** without rebooting 
+   | Then flash **immediately** without rebooting.
    | Logs are saved to ``debug-a5k.log`` on either the microSD card or internal storage.
 
    **Remember:** ``setprop`` values are lost on reboot — see the Configure_ section.

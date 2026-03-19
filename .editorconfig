@@ -3,18 +3,6 @@
 
 root = true
 
-[{cache,output,gradlew,gradlew.bat}]
-ignore = true
-
-[{.git,.gradle,.local,.ash_history,.bash_history}]
-ignore = true
-
-[{.git-hooks/post-checkout,.git-hooks/post-commit,.git-hooks/post-merge,.git-hooks/pre-push}]
-ignore = true
-
-[*.{jar,apk,bin,exe}]
-ignore = true
-
 [*]
 charset = utf-8
 end_of_line = lf
@@ -24,7 +12,7 @@ indent_size = 2
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-max_line_length = 80
+max_line_length = 250 # ToDO: try to reduce to 99
 quote_type = single
 curly_bracket_next_line = true
 
@@ -33,8 +21,15 @@ switch_case_indent = true
 space_redirects = true
 function_next_line = true
 
+[*.rst]
+indent_size = 3
+indent_style = unset
+
 [Makefile]
 indent_style = tab
+
+[*.gpg]
+insert_final_newline = unset
 
 [*.bat]
 end_of_line = crlf
@@ -53,3 +48,29 @@ shell_variant = bash
 
 [recovery-simulator/recovery.sh]
 shell_variant = bash
+
+[{allowed_signers,docs/CONTRIBUTORS.md}]
+max_line_length = off
+
+# Licenses
+[LICENSES/*.txt]
+indent_style = unset
+max_line_length = off
+
+# Man pages
+[tools/win/man/cat1/*.1]
+indent_style = unset
+
+# Skin binaries
+[*.{apk,bin,exe,gz,jar,zip}]
+ignore = true
+
+[{cache,output,gradlew,gradlew.bat}]
+ignore = true
+
+[{.git,.gradle,.local,.ash_history,.bash_history}]
+ignore = true
+
+[{.git-hooks/post-checkout,.git-hooks/post-commit,.git-hooks/post-merge,.git-hooks/pre-push}]
+ignore = true
+

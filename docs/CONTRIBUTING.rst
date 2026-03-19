@@ -18,7 +18,7 @@ How to get started
 Your first Pull Request?
 ========================
 
-No worries! You can learn the ropes with this `step-by-step guide <https://github.com/firstcontributions/first-contributions#readme>`_. 
+No worries! You can learn the ropes with this `step-by-step guide <https://github.com/firstcontributions/first-contributions#readme>`_.
 
 Linting
 =======
