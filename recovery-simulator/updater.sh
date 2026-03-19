@@ -21,7 +21,7 @@ unset OSTYPE
 unset OPTERR
 unset OPTIND
 
-# IFS change is intended
+# editorconfig-checker-disable
 # nosemgrep
 IFS=' 	
 '
@@ -30,6 +30,7 @@ PS2='> '
 if test "${COVERAGE:-false}" = 'false'; then
   PS4='+ '
 fi
+# editorconfig-checker-enable
 
 OSTYPE='linux-androideabi'
 

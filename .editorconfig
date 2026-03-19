@@ -12,7 +12,7 @@ indent_size = 2
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-max_line_length = 250 # ToDO: try to reduce to 99
+max_line_length = 265 # ToDO: try to reduce to 99
 quote_type = single
 curly_bracket_next_line = true
 
@@ -21,12 +21,12 @@ switch_case_indent = true
 space_redirects = true
 function_next_line = true
 
+[{Makefile,.tgitconfig}]
+indent_style = tab
+
 [*.rst]
 indent_size = 3
 indent_style = unset
-
-[Makefile]
-indent_style = tab
 
 [*.gpg]
 insert_final_newline = unset
@@ -49,7 +49,12 @@ shell_variant = bash
 [recovery-simulator/recovery.sh]
 shell_variant = bash
 
-[{allowed_signers,docs/CONTRIBUTORS.md}]
+# Long lines cannot be avoided
+[{allowed_signers,conf-2.sh,docs/CONTRIBUTORS.md}]
+max_line_length = off
+
+# Long lines cannot be avoided
+[{zip-content/origin/etc/org.fdroid.fdroid/additional_repos.xml,utils/test-files/Getprop-EMU-Pixel 4 API 33.txt}]
 max_line_length = off
 
 # Licenses
