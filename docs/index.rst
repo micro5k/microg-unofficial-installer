@@ -9,8 +9,9 @@ microG unofficial installer
 Welcome to the documentation for **microG unofficial installer** |release|. 📱
 
 `microG unofficial installer <https://github.com/micro5k/microg-unofficial-installer>`_ is a
-flashable zip that installs `microG <https://microg.org/>`_ on a wide range of Android devices —
-no special rooting knowledge required — the installer handles the complexity for you — just a compatible recovery and about ten minutes of your time.
+flashable zip that installs `microG <https://microg.org/>`_ on a wide range of Android devices.
+
+No advanced Android skills required — the installer handles the complexity for you — just a compatible recovery and about ten minutes of your time.
 
 *(The ten minutes is for reading the instructions. The installation itself is faster.
 Unless something goes wrong. But let's stay positive.)*
