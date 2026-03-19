@@ -16,7 +16,7 @@ export default defineConfig([
     languageOptions: { globals: globals.node, ecmaVersion: 2022, sourceType: 'module' },
     rules: {
       'no-unused-vars': 'warn',
-      semi: ['warn', 'always'],
+      semi: ['error', 'always'],
     },
   },
   { files: ['**/*.json'], plugins: { json }, language: 'json/json', extends: ['json/recommended'] },

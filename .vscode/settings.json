@@ -36,5 +36,9 @@
     "autoDocstring.guessTypes": true,
 
     "files.insertFinalNewline": true,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    }
 }
