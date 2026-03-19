@@ -299,3 +299,58 @@ jobs:
               if(response && response.status && response.message) errorMsg += ' with error ' + response.status + ' (' + response.message + ')';
               throw new Error(errorMsg);
             }
+
+  clean-caches:
+    name: "Clean old caches"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
+    permissions:
+      actions: write  # Needed to delete caches
+
+    steps:
+      - name: "Delete old caches"
+        uses: actions/github-script@v8
+        with:
+          retries: 3
+          script: |
+            /* jshint esversion: 11 */
+            const CACHE_PREFIXES = Object.freeze(['build-', 'lfs-']);
+
+            for (const prefix of CACHE_PREFIXES) {
+              let failed = false;
+              const caches = await github.paginate(
+                github.rest.actions.getActionsCacheList, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  key: prefix,
+                  ref: 'refs/heads/main',
+                  sort: 'created_at',
+                  direction: 'desc',
+                  per_page: 100,
+                }, (response, done) => {
+                  if (response.status !== 200) {
+                    core.error(`Failed to list caches for prefix "${prefix}": [HTTP ${response.status}] ${JSON.stringify(response.data)}`);
+                    failed = true;
+                    done();
+                    return [];
+                  }
+                  return response.data.actions_caches;
+                }
+              ).catch(e => {
+                core.error(`Failed to paginate caches for prefix "${prefix}": [HTTP ${e.status ?? 'unknown'}] ${e.message}`);
+                failed = true;
+                return [];
+              });
+              if (failed || caches.length <= 2) continue;
+              // Keep the 2 most recent caches per prefix; delete the rest
+              for (const cache of caches.slice(2)) {
+                await github.rest.actions.deleteActionsCacheById({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  cache_id: cache.id,
+                });
+                core.info(`Deleted cache "${cache.key}" (id=${cache.id})`);
+                await new Promise(r => setTimeout(r, 200));
+              }
+            }
