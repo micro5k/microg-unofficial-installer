@@ -306,7 +306,7 @@ jobs:
     timeout-minutes: 10
     if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
     permissions:
-      actions: write  # Needed to delete caches
+      actions: write # Needed to delete caches
 
     steps:
       - name: "Delete old caches"
