@@ -17,15 +17,24 @@
     "java.import.gradle.enabled": false,
     "java.import.maven.enabled": false,
     "java.server.launchMode": "LightWeight",
-    "java.showBuildStatusOnStart.enabled": "off",
-
-    "python.analysis.supportRestructuredText": true,
-    "python.analysis.supportDocstringTemplate": true,
+    "java.showBuildStatusOnStart.enabled": false,
 
     "editor.detectIndentation": true,
 
     "[restructuredtext]": {
         "editor.insertSpaces": true,
-        "editor.tabSize": 3
-    }
+        "editor.tabSize": 3,
+        "editor.wordWrap": "on"
+    },
+
+    "python.analysis.supportRestructuredText": true,
+    "python.analysis.supportDocstringTemplate": true,
+    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.inlayHints.functionReturnTypes": true,
+
+    "autoDocstring.docstringFormat": "sphinx",
+    "autoDocstring.guessTypes": true,
+
+    "files.insertFinalNewline": true,
+    "editor.formatOnSave": true
 }

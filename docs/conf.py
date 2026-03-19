@@ -135,9 +135,10 @@ html_context = {
 }
 
 # Options for LaTeX output (e.g., PDF)
-if 'latex_elements' not in locals():
-    latex_elements = {}
+latex_elements = {}
 
 # The 'openany' option allows chapters to begin on the next available page;
 # this prevents unwanted blank pages by allowing starts on even or odd pages
-latex_elements['extraclassoptions'] = (latex_elements.get('extraclassoptions', '') + ',openany').strip(',')
+latex_elements.update({
+    'extraclassoptions': 'openany'
+})
