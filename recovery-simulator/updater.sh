@@ -22,15 +22,14 @@ unset OPTERR
 unset OPTIND
 
 # editorconfig-checker-disable
-# nosemgrep
 IFS=' 	
 '
+# editorconfig-checker-enable
 PS1='\w \$ '
 PS2='> '
 if test "${COVERAGE:-false}" = 'false'; then
   PS4='+ '
 fi
-# editorconfig-checker-enable
 
 OSTYPE='linux-androideabi'
 
