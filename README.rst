@@ -30,12 +30,15 @@ Description
 microG unofficial installer is a flashable zip created by ale5000 for a simple
 installation of microG on Android from 2.2 to 16.
 
-No in-depth Android knowledge needed — the installer takes care of the hard parts. ✨
+No in-depth Android knowledge needed — the installer takes care of the hard
+parts. ✨
 
 This project is available on GitHub_, on GitLab_, as well as on XDA_.
 
 .. _github: https://github.com/micro5k/microg-unofficial-installer
+
 .. _gitlab: https://gitlab.com/micro5k/microg-unofficial-installer
+
 .. _xda: https://xdaforums.com/t/3432360/
 
 **IMPORTANT:** In addition to the normal installation as a pure flashable zip,
@@ -137,11 +140,11 @@ occasional social obligation.
 If it's saved you time, or frustration, please consider supporting its
 development!
 
-Wondering how? Check out all the ways to `fuel this project
-<./docs/DONATE.rst>`_ — coffee, kind words, or cold hard crypto, it's all
-welcome.
-
-*(No pressure. But the coffee does make the bugs fix themselves slightly faster.)*
+|  Wondering how?
+|  Check out all the ways to `fuel this project <./docs/DONATE.rst>`_ —
+   coffee, kind words, or cold hard crypto, it's all welcome.
+|  *(No pressure. But the coffee does make the bugs fix themselves slightly
+   faster.)*
 
 
 Copyright
