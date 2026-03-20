@@ -1,13 +1,15 @@
 ############
 Known issues
 ############
+
 ..
    SPDX-FileCopyrightText: (c) 2026 ale5000
    SPDX-License-Identifier: GPL-3.0-or-later
    SPDX-FileType: DOCUMENTATION
 
-This document lists the currently identified bugs, limitations, and performance issues within the project.
-We are actively working on fixes; please check here before reporting a new issue.
+This document lists the currently identified bugs, limitations, and performance
+issues within the project. We are actively working on fixes; please check here
+before reporting a new issue.
 
 .. contents:: Contents:
    :local:
@@ -23,22 +25,29 @@ Errors
 No space left on device
 -----------------------
 
-Many devices do not have enough free space on the system partition to flash the ZIP.
+Many devices do not have enough free space on the system partition to flash the
+ZIP.
 
 .. admonition:: Workaround
    :class: hint
 
-   | Enable the ``LOW_FREE_SPACE`` option before flashing.
-   | This installs an older (smaller) version of microG that fits on space-constrained devices.
+   |  Enable the ``LOW_FREE_SPACE`` option before flashing.
+   |  This installs an older (smaller) version of microG that fits on
+      space-constrained devices.
 
    Enable it with:
 
-   .. code-block:: sh
+   .. code:: sh
 
       adb shell "setprop zip.microg-unofficial-installer.LOW_FREE_SPACE 1"
 
    Then flash the ZIP as usual.
 
 .. note::
-   - This option is currently only available in **nightly builds**, you can download the latest nightly from the `download section <./INSTRUCTIONS.rst#download>`_.
-   - **microG** can be updated to a newer version manually afterwards using **F-Droid**.
+
+   -  This option is currently only available in **nightly builds**, you can
+      download the latest nightly from the `download section
+      <./INSTRUCTIONS.rst#download>`_.
+
+   -  **microG** can be updated to a newer version manually afterwards using
+      **F-Droid**.
