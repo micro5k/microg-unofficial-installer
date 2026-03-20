@@ -21,7 +21,7 @@ switch_case_indent = true
 space_redirects = true
 function_next_line = true
 
-[*.{sh,xml,toml,license,dat,txt,yml,gradle,rst}]
+[*.{sh,xml,toml,license,dat,txt,yml,gradle}]
 max_line_length = 265 # ToDO: try to reduce to 99
 
 [recovery-simulator/override/*]

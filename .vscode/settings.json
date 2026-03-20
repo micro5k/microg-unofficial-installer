@@ -19,14 +19,6 @@
     "java.server.launchMode": "LightWeight",
     "java.showBuildStatusOnStart.enabled": false,
 
-    "editor.detectIndentation": true,
-
-    "[restructuredtext]": {
-        "editor.insertSpaces": true,
-        "editor.tabSize": 3,
-        "editor.wordWrap": "on"
-    },
-
     "python.analysis.supportRestructuredText": true,
     "python.analysis.supportDocstringTemplate": true,
     "python.analysis.typeCheckingMode": "standard",
@@ -35,10 +27,27 @@
     "autoDocstring.docstringFormat": "sphinx",
     "autoDocstring.guessTypes": true,
 
-    "files.insertFinalNewline": true,
     "editor.formatOnSave": true,
+    "editor.detectIndentation": true,
+    "files.insertFinalNewline": true,
 
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
+    },
+
+    "customLocalFormatters.formatters": [
+        {
+            "command": "rstfmt --width 79 -",
+            "languages": ["restructuredtext"],
+            "editor.formatOnSave": false
+        }
+    ],
+
+    "[restructuredtext]": {
+        "editor.detectIndentation": false,
+        "editor.insertSpaces": true,
+        "editor.tabSize": 3,
+        "editor.wordWrap": "on",
+        "editor.defaultFormatter": "jkillian.custom-local-formatters"
     }
 }
