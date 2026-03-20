@@ -9,7 +9,6 @@ GNU GENERAL PUBLIC LICENSE
 Everyone is permitted to copy and distribute verbatim copies of this license
 document, but changing it is not allowed.
 
---------
 PREAMBLE
 --------
 
@@ -70,7 +69,6 @@ render the program non-free.
 The precise terms and conditions for copying, distribution and modification
 follow.
 
---------------------
 TERMS AND CONDITIONS
 --------------------
 
@@ -603,7 +601,6 @@ liability accompanies a copy of the Program in return for a fee.
 
 END OF TERMS AND CONDITIONS
 
----------------------------------------------
 How to Apply These Terms to Your New Programs
 ---------------------------------------------
 
