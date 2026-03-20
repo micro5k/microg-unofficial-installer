@@ -34,7 +34,7 @@ Choose Your Impact |coffee|
    during late-night sessions.
 -  **🍕 Bug squashing Pizza (€ 15):** Fuel for a full weekend of intensive
    coding and optimization.
--  **� ️ Debug Hero (€ 50):** Directly funds the "Device Lab" to help me
+-  **🛠️ Debug Hero (€ 50):** Directly funds the "Device Lab" to help me
    buy hardware for specialized testing.
 -  **🌟 Custom amount:** Every bit helps! Choose your own contribution to
    support the project's growth at your own pace.
