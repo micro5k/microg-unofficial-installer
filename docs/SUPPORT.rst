@@ -11,6 +11,7 @@ The most efficient way to receive support is to open an issue_ on GitHub or
 post in the `official support thread`_ on the XDA forum.
 
 .. _issue: https://github.com/micro5k/microg-unofficial-installer/issues
+
 .. _official support thread: https://xdaforums.com/t/3432360/
 
 
