@@ -25,7 +25,7 @@ Prerequisites
 
 -  An Android device or emulator running **Android 2.2 or later**.
 -  A custom recovery (see `Supported recoveries`_ below) or root access.
--  At least **100 MB** of free space on the system partition (actual
+-  At least **150 MB** of free space on the system partition (actual
    requirements vary by device and selected options).
 
 Supported recoveries
