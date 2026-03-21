@@ -91,6 +91,9 @@ def setup(app):
     }
 
 
+# Code
+logger = logging.getLogger(__name__)
+
 # Project information
 project = 'microG unofficial installer'
 author = 'ale5000'
@@ -117,9 +120,11 @@ rst_epilog = f"""
 """
 
 # Options for source files
+exclude_patterns = ['CONTRIBUTORS.md']
 master_doc = 'index'
 source_suffix = {
-    '.rst': 'restructuredtext'
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
 }
 
 # Options for HTML output
@@ -140,6 +145,3 @@ latex_elements = {}
 latex_elements.update({
     'extraclassoptions': 'openany'
 })
-
-# Code
-logger = logging.getLogger(__name__)
