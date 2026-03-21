@@ -91,8 +91,6 @@ def setup(app):
     }
 
 
-logger = logging.getLogger(__name__)
-
 # Project information
 project = 'microG unofficial installer'
 author = 'ale5000'
@@ -142,3 +140,6 @@ latex_elements = {}
 latex_elements.update({
     'extraclassoptions': 'openany'
 })
+
+# Code
+logger = logging.getLogger(__name__)
