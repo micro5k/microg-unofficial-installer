@@ -1,6 +1,7 @@
 #########
 Changelog
 #########
+
 ..
    SPDX-FileCopyrightText: (c) 2016 ale5000
    SPDX-License-Identifier: GPL-3.0-or-later
@@ -401,7 +402,7 @@ All notable changes to this project will be documented in this file.
 ===========
 - Initial alpha release.
 
-.. _Unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.2-beta...HEAD
+.. _unreleased: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.2-beta...HEAD
 .. _1.3.2-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.1-beta...v1.3.2-beta
 .. _1.3.1-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.3.0-beta...v1.3.1-beta
 .. _1.3.0-beta: https://github.com/micro5k/microg-unofficial-installer/compare/v1.2.0-beta...v1.3.0-beta
