@@ -17,6 +17,11 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
+readonly SCRIPT_NAME='Android device info extractor'
+readonly SCRIPT_SHORTNAME='DeviceInfo'
+readonly SCRIPT_VERSION='2.9'
+readonly SCRIPT_AUTHOR='ale5000'
+
 set -u
 # shellcheck disable=SC3040,SC3041,SC2015
 {
@@ -25,11 +30,6 @@ set -u
   (set +H 2> /dev/null) && set +H || true
   (set -o pipefail 2> /dev/null) && set -o pipefail || true
 }
-
-readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_SHORTNAME='DeviceInfo'
-readonly SCRIPT_VERSION='2.9'
-readonly SCRIPT_AUTHOR='ale5000'
 
 # shellcheck disable=SC2034
 {
