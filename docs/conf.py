@@ -124,7 +124,7 @@ exclude_patterns = ['CONTRIBUTORS.md']
 master_doc = 'index'
 source_suffix = {
     '.rst': 'restructuredtext',
-    '.md': 'markdown',
+    '.md': 'markdown'
 }
 
 # Options for HTML output
