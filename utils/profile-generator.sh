@@ -1,13 +1,17 @@
 #!/usr/bin/env sh
-# @name Android device profile generator
-# @brief It can automatically generate a device profile (usable by microG) from a device connected via adb.
-# @author ale5000
-# Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils
-
-# SPDX-FileCopyrightText: (c) 2023 ale5000
+# SPDX-FileCopyrightText: 2023 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
+# @name Android device profile generator
+# @brief Generate a microG device profile XML from the build properties of an Android device via ADB.
+# @description Connects to an Android device via ADB, reads its hardware and
+# software properties (model, manufacturer, build fingerprint, Android version,
+# GSF ID, and more), and generates a device profile in the format expected by
+# microG, enabling device-identity spoofing for compatibility with services
+# that rely on Google Play Services attestation.
+# @author ale5000
+
+# Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
@@ -21,7 +25,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='Device ProfGen'
-readonly SCRIPT_VERSION='1.8'
+readonly SCRIPT_VERSION='1.9'
 readonly SCRIPT_AUTHOR='ale5000'
 
 export LANG='en_US.UTF-8'
@@ -833,10 +837,11 @@ generate_profile()
   fi
 
   printf 1>&2 '\n'
+  # REUSE-IgnoreStart
   printf '%s\n' "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <!--
-    SPDX"'-FileCopyrightText: NONE
-    SPDX'"-License-Identifier: CC0-1.0
+    SPDX-FileCopyrightText: NONE
+    SPDX-License-Identifier: CC0-1.0
 -->
 
 <profile name=\"${DEVICE_INFO?} (${ROM_INFO:?})\" product=\"${BUILD_PRODUCT:?}\" sdk=\"${BUILD_VERSION_SDK:?}\" id=\"${XML_ID:?}\" auto=\"true\">
@@ -872,6 +877,7 @@ generate_profile()
 
     <serial template=\"${ANON_SERIAL_NUMBER?}\" />
 </profile>"
+  # REUSE-IgnoreEnd
 
   return 0
 }
@@ -940,7 +946,7 @@ while test "${#}" -gt 0; do
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
       printf '%s\n' "Copyright (c) 2023 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n' 'License GPLv3+'
+      printf '%s\n' 'License GPL v3+'
       # REUSE-IgnoreEnd
       execute_script='false'
       ;;

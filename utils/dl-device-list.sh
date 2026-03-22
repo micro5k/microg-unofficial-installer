@@ -1,13 +1,15 @@
 #!/usr/bin/env sh
-# @name Device list downloader
-# @brief It download the device list and convert it in the proper format
-# @author ale5000
-# Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils
-
-# SPDX-FileCopyrightText: (c) 2023 ale5000
+# SPDX-FileCopyrightText: 2023 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
+# @name Certified Android devices list downloader
+# @brief Download and re-encode the certified devices CSV.
+# @description Fetches the official certified devices CSV, converts it from
+# UTF-16LE to UTF-8 (or Windows-1252 for legacy compatibility), replaces
+# non-ASCII quotation marks, and saves the result as data/device-list.csv.
+# @author ale5000
+
+# Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 

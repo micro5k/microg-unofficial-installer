@@ -1,13 +1,19 @@
 #!/usr/bin/env sh
-# @name Android device info extractor
-# @brief It can automatically extract device information from all devices connected via adb or from a file.
-# @author ale5000
-# Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils
-
-# SPDX-FileCopyrightText: (c) 2023 ale5000
+# SPDX-FileCopyrightText: 2023 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileType: SOURCE
 
+# @name Android device info extractor
+# @brief Extract and display hardware and software properties from ADB-connected Android devices or a build.prop-style file.
+# @description Connects to every Android device detected by ADB, or reads
+# from an input file, and collects a comprehensive set of device properties
+# including model, manufacturer, Android version, SDK level, security patch
+# date, Android ID, IMEI, and additional hardware identifiers.
+#
+# Results are printed to standard output; an anonymised variant is also
+# available.
+# @author ale5000
+
+# Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
@@ -22,7 +28,8 @@ set -u
 
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DeviceInfo'
-readonly SCRIPT_VERSION='2.8'
+readonly SCRIPT_VERSION='2.9'
+readonly SCRIPT_AUTHOR='ale5000'
 
 # shellcheck disable=SC2034
 {
@@ -1590,9 +1597,11 @@ OPEN_DEVICE_STATUS_INFO_ONLY='false'
 while test "${#}" -gt 0; do
   case "${1?}" in
     -V | --version)
+      # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' 'Copyright (c) 2023 ale5000'
-      printf '%s\n' 'License GPLv3+'
+      printf '%s\n' "Copyright (c) 2023 ${SCRIPT_AUTHOR:?}"
+      printf '%s\n' 'License GPL v3+'
+      # REUSE-IgnoreEnd
       execute_script='false'
       ;;
 
