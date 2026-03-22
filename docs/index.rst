@@ -35,13 +35,19 @@ funny.
 
 .. toctree::
    :maxdepth: 2
+   :caption: User documentation
 
    INSTRUCTIONS
    KNOWN-ISSUES
    SUPPORT
-   BUILD
-   CONTRIBUTING
    SECURITY
    CHANGELOG
    RELEASE-HASHES
    DONATE
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Developer documentation
+
+   CONTRIBUTING
+   BUILD
