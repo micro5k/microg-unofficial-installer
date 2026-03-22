@@ -1,12 +1,26 @@
 #!/usr/bin/env sh
-# SPDX-FileCopyrightText: (c) 2024 ale5000
+# SPDX-FileCopyrightText: 2024 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# @name Bits info
+# @brief Report bit-widths of the shell, OS, CPU, and POSIX utilities; detect the architecture of binary files.
+# @description Probes the integer width of the current shell (arithmetic,
+# test built-in, printf signed/unsigned, $RANDOM seed) and of common POSIX
+# utilities (awk printf, cut -b, date timestamps), and reports OS and CPU
+# bitness.
+#
+# When called with file arguments, identifies the format and target
+# architecture (32-bit / 64-bit) of binary files, including ELF, PE, NE, LE,
+# LX, MZ (plain DOS), APE (Actually Portable Executables), Mach-O, FAT Mach-O,
+# and Java bytecode.
+# @author ale5000
+
+# Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/tools
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_VERSION='1.5.30'
+SCRIPT_VERSION='1.5.31'
 
 ### CONFIGURATION ###
 
@@ -1455,7 +1469,7 @@ while test "${#}" -gt 0; do
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
       printf '%s\n' "Copyright (c) 2024 ale5000"
-      printf '%s\n' 'License GPLv3+'
+      printf '%s\n' 'License GPL v3+'
       # REUSE-IgnoreEnd
       ;;
     -h | --help | '-?')

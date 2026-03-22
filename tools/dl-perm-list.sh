@@ -1,18 +1,23 @@
 #!/usr/bin/env sh
-# @name Android permissions retriever
-# @brief Retrieve the list of Android system permissions
-# @author ale5000
-# Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/tools
-
-# SPDX-FileCopyrightText: (c) 2025 ale5000
+# SPDX-FileCopyrightText: 2025 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later OR Apache-2.0
 
+# @name AOSP system permissions downloader
+# @brief Download and parse AOSP system permission declarations for each supported Android API level.
+# @description For every supported Android API level (23 to 36) fetches the
+# corresponding AndroidManifest.xml from AOSP, extracts all <permission>
+# entries, and saves one XML file per API level under data/perms/.
+#
+# The resulting files are consumed by generate-perm-xml.sh.
+# @author ale5000
+
+# Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/tools
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 readonly SCRIPT_NAME='Android permissions retriever'
 readonly SCRIPT_SHORTNAME='DlPermList'
-readonly SCRIPT_VERSION='0.3.1'
+readonly SCRIPT_VERSION='0.3.2'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -173,7 +178,7 @@ while test "${#}" -gt 0; do
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
       printf '%s\n' "Copyright (c) 2025 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n' 'License GPL-3.0+ OR Apache-2.0'
+      printf '%s\n' 'License GPL v3+ OR Apache v2'
       # REUSE-IgnoreEnd
       execute_script='false'
       ;;

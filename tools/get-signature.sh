@@ -1,18 +1,21 @@
 #!/usr/bin/env sh
-# @name Find app signature
-# @brief Find the signature of Android applications
+# SPDX-FileCopyrightText: 2025 ale5000
+# SPDX-License-Identifier: GPL-3.0-or-later OR Apache-2.0
+
+# @name Android app signing certificate extractor
+# @brief Extract and print the SHA-256 fingerprint of the signing certificate of an Android APK file.
+# @description Given an APK file path, uses apksigner (preferred) or keytool
+# as a fallback to retrieve the signing certificate's SHA-256 fingerprint
+# and prints it in the form sha256-cert-digest="<value>".
 # @author ale5000
+
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/tools
-
-# SPDX-FileCopyrightText: (c) 2025 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
-
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 readonly SCRIPT_NAME='Find app signature'
 readonly SCRIPT_SHORTNAME='FindAppSign'
-readonly SCRIPT_VERSION='0.1.0'
+readonly SCRIPT_VERSION='0.1.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
 pause_if_needed()
@@ -82,7 +85,7 @@ while test "${#}" -gt 0; do
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
       printf '%s\n' "Copyright (c) 2025 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n' 'License GPLv3+'
+      printf '%s\n' 'License GPL v3+ OR Apache v2'
       # REUSE-IgnoreEnd
       execute_script='false'
       ;;

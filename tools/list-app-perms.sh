@@ -1,18 +1,21 @@
 #!/usr/bin/env sh
-# @name List apps permissions
-# @brief List the permissions used by Android applications
+# SPDX-FileCopyrightText: 2025 ale5000
+# SPDX-License-Identifier: GPL-3.0-or-later OR Apache-2.0
+
+# @name Android app permissions lister
+# @brief Dump and list the permission names declared by Android APK files.
+# @description Uses aapt2 or aapt to dump and extract the uses-permission
+# entries declared in one or more APK files, and prints a sorted list of
+# the required permission names.
 # @author ale5000
+
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/tools
-
-# SPDX-FileCopyrightText: (c) 2025 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
-
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 readonly SCRIPT_NAME='List apps permissions'
 readonly SCRIPT_SHORTNAME='ListAppPerms'
-readonly SCRIPT_VERSION='0.1.0'
+readonly SCRIPT_VERSION='0.1.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
 # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
@@ -86,7 +89,7 @@ while test "${#}" -gt 0; do
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
       printf '%s\n' "Copyright (c) 2025 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n' 'License GPLv3+'
+      printf '%s\n' 'License GPL v3+ OR Apache v2'
       # REUSE-IgnoreEnd
       execute_script='false'
       ;;

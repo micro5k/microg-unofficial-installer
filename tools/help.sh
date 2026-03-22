@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
-
-# SPDX-FileCopyrightText: (c) 2024 ale5000
+# SPDX-FileCopyrightText: 2024 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 # shellcheck enable=all
 
 if test -z "${MODULE_NAME-}" || test -z "${MAIN_DIR-}" || test -z "${PLATFORM-}" || test -z "${IS_BUSYBOX-}"; then
