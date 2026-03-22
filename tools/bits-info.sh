@@ -20,7 +20,9 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
+SCRIPT_SHORTNAME=''
 SCRIPT_VERSION='1.5.31'
+SCRIPT_AUTHOR='ale5000'
 
 ### CONFIGURATION ###
 
@@ -1468,7 +1470,7 @@ while test "${#}" -gt 0; do
       no_pause=1
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
-      printf '%s\n' "Copyright (c) 2024 ale5000"
+      printf '%s\n' "Copyright (c) 2024 ${SCRIPT_AUTHOR}"
       printf '%s\n' 'License GPL v3+'
       # REUSE-IgnoreEnd
       ;;
