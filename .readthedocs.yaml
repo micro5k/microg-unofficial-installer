@@ -14,7 +14,8 @@ build:
     python: "3"
   jobs:
     post_install:
-      - pip install Sphinx==9.1.0 sphinx-rtd-theme
+      # Install Sphinx and other extensions
+      - pip install Sphinx==9.1.0 sphinx-rtd-theme myst-parser
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:

@@ -143,7 +143,7 @@ if revision:
 
 # General configuration
 needs_sphinx = "8.1"
-extensions = ["sphinx_rtd_theme"]
+extensions = ["sphinx_rtd_theme", "myst_parser"]
 
 # Options for highlighting
 highlight_language = "sh"
