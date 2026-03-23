@@ -4,5 +4,6 @@
 
 # shellcheck enable=all
 
+alias devprofgen='profile-generator'
 alias profgen='profile-generator'
 alias devinfo='device-info'
