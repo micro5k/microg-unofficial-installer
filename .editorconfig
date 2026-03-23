@@ -21,6 +21,9 @@ switch_case_indent = true
 space_redirects = true
 function_next_line = true
 
+[*.{yml,yaml,py,rst,md,json}]
+quote_type = double
+
 [*.{sh,xml,toml,license,dat,txt,yml,gradle}]
 max_line_length = 265 # ToDO: try to reduce to 99
 
@@ -44,9 +47,6 @@ end_of_line = crlf
 
 [*.{xml,json,gradle}]
 indent_size = 4
-
-[*.{yml,yaml,rst,md,json}]
-quote_type = double
 
 [zip-content/customize.sh]
 keep_padding = true

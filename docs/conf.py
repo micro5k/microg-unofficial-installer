@@ -61,6 +61,28 @@ def get_revision():
         return None
 
 
+def _fix_shdoc_refs(app, doctree):
+    for node in doctree.findall(addnodes.pending_xref):
+        if node.get("reftype") != "myst":
+            continue
+
+        target = node.get("reftarget", "")
+        if (
+            node.get("refexplicit")
+            and not node.get("refuri")
+            and target
+            and "/" not in target
+        ):
+
+            new_target = target.replace("_", "-")
+            if new_target != target:
+                node["reftarget"] = new_target
+                doc = node.get("refdoc", "unknown")
+                logger.info(
+                    f"[DEBUG] Fixed: {target} -> {new_target} in {doc}"
+                )
+
+
 def transform_rst_links(app, doctree):
     """
     Automatically converts internal .rst file links to Sphinx cross-references
@@ -96,7 +118,7 @@ def transform_rst_links(app, doctree):
 
 
 def setup(app):
-    # Hook to modify the document structure before rendering
+    app.connect("doctree-read", _fix_shdoc_refs)
     app.connect("doctree-read", transform_rst_links)
     return {
         "version": "0.1",
@@ -104,6 +126,9 @@ def setup(app):
         "parallel_write_safe": True,
     }
 
+
+# ToDO: Fix it
+suppress_warnings = ["myst.xref_missing"]
 
 # Project information
 project = "microG unofficial installer"
