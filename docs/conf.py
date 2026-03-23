@@ -49,9 +49,14 @@ def get_revision():
         return None
     try:
         # Safe: uses list-based arguments (no shell) to prevent injection
-        return subprocess.check_output(
-            [git, "rev-parse", "--short=8", "HEAD"], stderr=subprocess.DEVNULL
-        ).decode("utf-8").strip()  # nosec B603
+        return (
+            subprocess.check_output(
+                [git, "rev-parse", "--short=8", "HEAD"],
+                stderr=subprocess.DEVNULL,
+            )
+            .decode("utf-8")
+            .strip()
+        )  # nosec B603
     except Exception:
         return None
 
@@ -83,7 +88,7 @@ def transform_rst_links(app, doctree):
             reftarget=reftarget,
             refdoc=docname,
             refwarn=True,
-            refexplicit=True
+            refexplicit=True,
         )
         # Transfer children (the link text) and replace the original node
         new_node.extend(node.children)
@@ -96,7 +101,7 @@ def setup(app):
     return {
         "version": "0.1",
         "parallel_read_safe": True,
-        "parallel_write_safe": True
+        "parallel_write_safe": True,
     }
 
 
@@ -113,9 +118,7 @@ if revision:
 
 # General configuration
 needs_sphinx = "8.1"
-extensions = [
-    "sphinx_rtd_theme"
-]
+extensions = ["sphinx_rtd_theme"]
 
 # Options for highlighting
 highlight_language = "sh"
@@ -128,10 +131,7 @@ rst_epilog = f"""
 # Options for source files
 exclude_patterns = ["CONTRIBUTORS.md"]
 master_doc = "index"
-source_suffix = {
-    ".rst": "restructuredtext",
-    ".md": "markdown"
-}
+source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
 # Options for HTML output
 html_theme = "sphinx_rtd_theme"
@@ -140,7 +140,7 @@ html_context = {
     "github_user": "micro5k",
     "github_repo": "microg-unofficial-installer",
     "github_version": "main",
-    "conf_py_path": "/docs/"
+    "conf_py_path": "/docs/",
 }
 
 # Options for LaTeX output (e.g., PDF)
@@ -148,6 +148,4 @@ latex_elements = {}
 
 # The "openany" option allows chapters to begin on the next available page;
 # this prevents unwanted blank pages by allowing starts on even or odd pages
-latex_elements.update({
-    "extraclassoptions": "openany"
-})
+latex_elements.update({"extraclassoptions": "openany"})
