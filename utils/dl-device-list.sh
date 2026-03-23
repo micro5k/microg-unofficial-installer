@@ -18,6 +18,8 @@ readonly SCRIPT_SHORTNAME='CertDevDl'
 readonly SCRIPT_VERSION='0.0.5'
 readonly SCRIPT_AUTHOR='ale5000'
 
+: "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}" "${SCRIPT_SHORTNAME:?}" "${SCRIPT_AUTHOR:?}"
+
 set -u
 # shellcheck disable=SC3040,SC3041,SC2015
 {

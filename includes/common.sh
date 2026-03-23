@@ -1252,6 +1252,7 @@ alias_tools_and_utils()
     # Strip the .sh extension (e.g., script.sh -> script)
     _alias_name="${_basename%".sh"}"
     # Create the alias mapping the short name to the full path
+    # shellcheck disable=SC2139 # Ignore: This expands when defined, not when used
     alias "${_alias_name:?}"="'${_file:?}'"
   done
 }
@@ -1479,7 +1480,7 @@ init_cmdline()
 
     if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
       # shellcheck source=/dev/null
-      command . "${MAIN_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
+      . "${MAIN_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
     fi
 
     alias 'build'='build.sh'

@@ -1528,12 +1528,12 @@ while test "${#}" -gt 0; do
 
     --*)
       execute_script='false'
-      printf 1>&2 '%s\n' "${SCRIPT_NAME}: unrecognized option '${1}'"
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME}: unrecognized option '${1}'"
       STATUS=2
       ;;
     -*)
       execute_script='false'
-      printf 1>&2 '%s\n' "${SCRIPT_NAME}: invalid option -- '${1#-}'"
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME}: invalid option -- '${1#-}'"
       STATUS=2
       ;;
 
