@@ -212,9 +212,9 @@ set_title()
 set_default_title()
 {
   if is_root; then
-    set_title "[root] Command-line: ${__TITLE_CMD_PREFIX-}${__TITLE_CMD_0-}${__TITLE_CMD_PARAMS-}"
+    set_title "[root] CLI: ${__TITLE_CMD_PREFIX-}${__TITLE_CMD_0-}${__TITLE_CMD_PARAMS-}"
   else
-    set_title "Command-line: ${__TITLE_CMD_PREFIX-}${__TITLE_CMD_0-}${__TITLE_CMD_PARAMS-}"
+    set_title "CLI: ${__TITLE_CMD_PREFIX-}${__TITLE_CMD_0-}${__TITLE_CMD_PARAMS-}"
   fi
   A5K_TITLE_IS_DEFAULT='true'
 }
@@ -242,7 +242,7 @@ __update_title_and_ps1()
 {
   local _title
   # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
-  _title="Command-line: ${__TITLE_CMD_PREFIX-}$(basename 2> /dev/null "${0:--}" || printf '%s' "${0:--}" || :)$(test "${#}" -eq 0 || printf ' "%s"' "${@}" || :) (${SHLVL-}) - ${MODULE_NAME-}"
+  _title="CLI: ${__TITLE_CMD_PREFIX-}$(basename 2> /dev/null "${0:--}" || printf '%s' "${0:--}" || :)$(test "${#}" -eq 0 || printf ' "%s"' "${@}" || :) (${SHLVL-}) - ${MODULE_NAME-}"
   PS1="${__DEFAULT_PS1-}"
 
   if is_root; then
@@ -1240,21 +1240,25 @@ create_bb_alias_if_missing()
   if ! command 1> /dev/null -v "${1:?}"; then alias "${1:?}"="busybox '${1:?}'"; fi
 }
 
-alias_tools_and_utils()
+alias_scripts()
 {
-  local _file _basename _alias_name
+  local _file _alias_name
 
-  for _file in "${MAIN_DIR:?}"/tools/*.sh "${MAIN_DIR:?}"/utils/*.sh; do
+  test -d "${1:?}" || return
+
+  for _file in "${1:?}"/*.sh; do
     test -f "${_file:?}" || continue
 
     # Strip the directory path (e.g., dir-name/script.sh -> script.sh)
-    _basename="${_file##*/}"
+    _alias_name="${_file##*/}"
     # Strip the .sh extension (e.g., script.sh -> script)
-    _alias_name="${_basename%".sh"}"
-    # Create the alias mapping the short name to the full path
+    _alias_name="${_alias_name%".sh"}"
+
     # shellcheck disable=SC2139 # Ignore: This expands when defined, not when used
     alias "${_alias_name:?}"="'${_file:?}'"
   done
+
+  return
 }
 
 init_base()
@@ -1401,8 +1405,8 @@ init_cmdline()
   fi
 
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
-  if test -n "${KILL_PPID-}" && test -z "${NO_KILL-}" && test "${PLATFORM:?}" = 'win' && test "${SHLVL:-1}" = '1' && test -n "${PPID-}" && test "${PPID}" -gt 1; then
-    if kill 2> /dev/null "${PPID}" || kill -9 "${PPID}"; then
+  if test -n "${KILL_PPID-}" && test -z "${NO_KILL-}" && test "${PLATFORM:?}" = 'win' && test "${SHLVL:-1}" = '1' && test "${PPID:-0}" -gt 1; then
+    if kill 2> /dev/null "${PPID:?}" || kill -9 "${PPID:?}"; then
       PPID='1'
     fi
   fi
@@ -1476,7 +1480,8 @@ init_cmdline()
     fi
     alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
 
-    alias_tools_and_utils
+    alias_scripts "${MAIN_DIR:?}/tools"
+    alias_scripts "${MAIN_DIR:?}/utils"
 
     if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
       # shellcheck source=/dev/null
