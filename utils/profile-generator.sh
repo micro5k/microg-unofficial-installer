@@ -24,7 +24,7 @@ set -u
 }
 
 readonly SCRIPT_NAME='Android device profile generator'
-readonly SCRIPT_SHORTNAME='Device ProfGen'
+readonly SCRIPT_SHORTNAME='ProfGen'
 readonly SCRIPT_VERSION='1.9'
 readonly SCRIPT_AUTHOR='ale5000'
 

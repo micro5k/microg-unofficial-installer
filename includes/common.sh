@@ -1240,6 +1240,22 @@ create_bb_alias_if_missing()
   if ! command 1> /dev/null -v "${1:?}"; then alias "${1:?}"="busybox '${1:?}'"; fi
 }
 
+alias_tools_and_utils()
+{
+  local _file _basename _alias_name
+
+  for _file in "${MAIN_DIR:?}"/tools/*.sh "${MAIN_DIR:?}"/utils/*.sh; do
+    test -f "${_file:?}" || continue
+
+    # Strip the directory path (e.g., dir-name/script.sh -> script.sh)
+    _basename="${_file##*/}"
+    # Strip the .sh extension (e.g., script.sh -> script)
+    _alias_name="${_basename%".sh"}"
+    # Create the alias mapping the short name to the full path
+    alias "${_alias_name:?}"="'${_file:?}'"
+  done
+}
+
 init_base()
 {
   local _main_dir
@@ -1459,9 +1475,11 @@ init_cmdline()
     fi
     alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
 
+    alias_tools_and_utils
+
     if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
       # shellcheck source=/dev/null
-      . "${MAIN_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
+      command . "${MAIN_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
     fi
 
     alias 'build'='build.sh'
@@ -1470,9 +1488,6 @@ init_cmdline()
       alias 'gradlew'='gradlew.bat'
       alias 'start'='start.sh'
     fi
-
-    alias 'bits-info'="bits-info.sh"
-    alias 'help'='help.sh'
   fi
 
   add_to_path_env "${UTILS_DIR:?}"

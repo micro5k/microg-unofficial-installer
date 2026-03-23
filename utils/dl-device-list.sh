@@ -14,7 +14,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 readonly SCRIPT_NAME='Certified Android devices list downloader'
-readonly SCRIPT_SHORTNAME=''
+readonly SCRIPT_SHORTNAME='CertDevDl'
 readonly SCRIPT_VERSION='0.0.5'
 readonly SCRIPT_AUTHOR='ale5000'
 

@@ -20,7 +20,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 SCRIPT_NAME='Bits info'
-SCRIPT_SHORTNAME=''
+SCRIPT_SHORTNAME='BitsInfo'
 SCRIPT_VERSION='1.5.31'
 SCRIPT_AUTHOR='ale5000'
 

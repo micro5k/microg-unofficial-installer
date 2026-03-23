@@ -18,7 +18,7 @@
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
 readonly SCRIPT_NAME='Android device info extractor'
-readonly SCRIPT_SHORTNAME='DeviceInfo'
+readonly SCRIPT_SHORTNAME='DevInfo'
 readonly SCRIPT_VERSION='2.9'
 readonly SCRIPT_AUTHOR='ale5000'
 

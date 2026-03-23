@@ -13,8 +13,8 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
-readonly SCRIPT_NAME='Find app signature'
-readonly SCRIPT_SHORTNAME='FindAppSign'
+readonly SCRIPT_NAME='Android app signing certificate extractor'
+readonly SCRIPT_SHORTNAME='AppSignExt'
 readonly SCRIPT_VERSION='0.1.1'
 readonly SCRIPT_AUTHOR='ale5000'
 

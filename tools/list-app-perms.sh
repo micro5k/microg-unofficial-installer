@@ -13,8 +13,8 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
-readonly SCRIPT_NAME='List apps permissions'
-readonly SCRIPT_SHORTNAME='ListAppPerms'
+readonly SCRIPT_NAME='Android app permissions lister'
+readonly SCRIPT_SHORTNAME='AppPermList'
 readonly SCRIPT_VERSION='0.1.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
