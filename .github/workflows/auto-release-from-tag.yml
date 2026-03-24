@@ -112,6 +112,9 @@ jobs:
       - name: "Release logic"
         id: "release-logic"
         shell: bash
+        env:
+          INPUT_TAG_NAME: "${{ github.event_name == 'workflow_dispatch' && inputs.tag-name || '' }}" # The "workflow_call" event still pass as "workflow_dispatch"
+          INPUT_TAG_NAME_VALID: "${{ startsWith(inputs.tag-name, 'v') }}"
         run: |
           # Release logic...
           CREATE_RELEASE='false'
@@ -121,11 +124,11 @@ jobs:
           printf 'CREATE_RELEASE=%s\n' "${CREATE_RELEASE:?}" 1>> "${GITHUB_OUTPUT?}"
           printf 'Create release? %s\n' "${CREATE_RELEASE:?}"
           # Verifying tag name...
-          if '${{ github.event_name == 'workflow_dispatch' && inputs.tag-name != '' }}'; then # The "workflow_call" event still pass as "workflow_dispatch"
-            if '${{ startsWith(inputs.tag-name, 'v') }}'; then
-              TAG_NAME='${{ inputs.tag-name }}'
+          if test -n "${INPUT_TAG_NAME?}"; then
+            if test "${INPUT_TAG_NAME_VALID:?}" == 'true'; then
+              TAG_NAME="${INPUT_TAG_NAME:?}"
             else
-              printf '%s\n' '::error::Invalid "tag-name" parameter: ${{ inputs.tag-name }}'
+              printf '%s\n' "::error::Invalid 'tag-name' parameter: ${INPUT_TAG_NAME?}"
               exit 3
             fi
           elif '${{ startsWith(github.ref, 'refs/tags/v') }}'; then
