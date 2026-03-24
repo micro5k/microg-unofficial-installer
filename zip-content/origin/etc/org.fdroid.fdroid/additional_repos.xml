@@ -9,7 +9,7 @@
         <!-- name -->
         <item>microG F-Droid repo</item>
         <!-- address -->
-        <item>https://microg.org/fdroid/repo</item>
+        <item>https://repo.microg.org/fdroid/repo</item>
         <!-- description -->
         <item>This is a repository of microG apps to be used with F-Droid. Applications in this repository are signed official binaries built by the microG Team from the corresponding source code.</item>
         <!-- version -->
