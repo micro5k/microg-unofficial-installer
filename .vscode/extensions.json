@@ -1,5 +1,6 @@
 {
     "recommendations": [
+        "charliermarsh.ruff",
         "codecov.codecov",
         "editorconfig.editorconfig",
         "jkillian.custom-local-formatters",

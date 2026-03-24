@@ -27,7 +27,6 @@
     "autoDocstring.docstringFormat": "sphinx",
     "autoDocstring.guessTypes": true,
 
-    "editor.formatOnSave": true,
     "editor.detectIndentation": true,
     "files.insertFinalNewline": true,
 
@@ -42,12 +41,27 @@
             "editor.formatOnSave": false
         }
     ],
-
     "[restructuredtext]": {
         "editor.detectIndentation": false,
         "editor.insertSpaces": true,
         "editor.tabSize": 3,
         "editor.wordWrap": "on",
         "editor.defaultFormatter": "jkillian.custom-local-formatters"
+    },
+
+    "ruff.configuration": {
+        "target-version": "py37"
+    },
+    "ruff.lineLength": 80,
+    "ruff.lint.select": ["ALL"],
+    "ruff.lint.ignore": ["PTH", "UP009"],
+    "[python]": {
+        "editor.rulers": [80, 100, 120],
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+        }
     }
 }

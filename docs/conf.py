@@ -28,7 +28,7 @@ def get_version():
     props_path = os.path.join(_REPO_ROOT, "zip-content", "module.prop")
 
     if os.path.exists(props_path):
-        with open(props_path, "r") as f:
+        with open(props_path) as f:
             for line in f:
                 if line.startswith("version="):
                     return line.replace("version=", "").lstrip("v").strip()
@@ -48,15 +48,15 @@ def get_revision():
     if not git:
         return None
     try:
-        # Safe: uses list-based arguments (no shell) to prevent injection
         return (
-            subprocess.check_output(
+            # Safe: uses list-based arguments (no shell) to prevent injection
+            subprocess.check_output(  # nosec B603 # noqa: S603
                 [git, "rev-parse", "--short=8", "HEAD"],
                 stderr=subprocess.DEVNULL,
             )
             .decode("utf-8")
             .strip()
-        )  # nosec B603
+        )
     except Exception:
         return None
 
@@ -73,22 +73,19 @@ def _fix_shdoc_refs(app, doctree):
             and target
             and "/" not in target
         ):
-
             new_target = target.replace("_", "-")
             if new_target != target:
                 node["reftarget"] = new_target
                 doc = node.get("refdoc", "unknown")
-                logger.info(
-                    f"[DEBUG] Fixed: {target} -> {new_target} in {doc}"
-                )
+                logger.info(f"[DEBUG] Fixed: {target} -> {new_target} in {doc}")
 
 
 def transform_rst_links(app, doctree):
-    """
+    """Convert internal .rst file links to Sphinx cross-references.
+
     Automatically converts internal .rst file links to Sphinx cross-references
     (:doc: or :ref:), enabling validation and proper path resolution.
     """
-
     docname = app.env.docname
     # Traverse only reference nodes that have a "refuri" attribute
     for node in doctree.findall(nodes.reference):
@@ -127,7 +124,7 @@ def setup(app):
     }
 
 
-# ToDO: Fix it
+# TODO: Fix it
 suppress_warnings = ["myst.xref_missing"]
 
 # Project information

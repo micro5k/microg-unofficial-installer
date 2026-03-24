@@ -21,7 +21,7 @@ switch_case_indent = true
 space_redirects = true
 function_next_line = true
 
-[*.{yml,yaml,py,rst,md,json}]
+[*.{yml,yaml,rst,md,json}]
 quote_type = double
 
 [*.{sh,xml,toml,license,dat,txt,yml,gradle}]
@@ -29,6 +29,11 @@ max_line_length = 265 # ToDO: try to reduce to 99
 
 [recovery-simulator/override/*]
 max_line_length = 150 # ToDO: try to reduce to 99
+
+[*.py]
+indent_size = 4
+quote_type = double
+max_line_length = 80
 
 [*.{rst,js,mjs}]
 max_line_length = 80
