@@ -18,6 +18,9 @@ readonly SCRIPT_SHORTNAME='AppSignExt'
 readonly SCRIPT_VERSION='0.1.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
+# shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
+case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'Failed: pipefail' ;; *) ;; esac
+
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
