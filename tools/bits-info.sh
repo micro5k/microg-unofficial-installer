@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # @name Bits info
-# @brief Report bit-widths of the shell, OS, CPU, and POSIX utilities; detect the architecture of binary files.
+# @brief Report bit-widths of the shell, OS, CPU, and POSIX utilities; detect the architecture and type of binary files.
 # @description Probes the integer width of the current shell (arithmetic,
 # test built-in, printf signed/unsigned, $RANDOM seed) and of common POSIX
 # utilities (awk printf, cut -b, date timestamps), and reports OS and CPU
