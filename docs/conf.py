@@ -3,9 +3,12 @@
 # SPDX-FileCopyrightText: NONE
 # SPDX-License-Identifier: CC0-1.0
 
-# Configuration file for the Sphinx documentation builder.
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""Configuration file for the Sphinx documentation builder.
+
+This module contains the configuration settings for generating documentation
+using Sphinx. For a full list of built-in configuration values, see:
+https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""
 
 import os
 import shutil
@@ -15,16 +18,21 @@ from docutils import nodes
 from sphinx import addnodes
 from sphinx.util import logging
 
-logger = logging.getLogger(__name__)
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Any, Final  # noqa: F401
 
-# Root of the documentation directory (the directory containing this file)
-_DOCS_DIR = os.path.dirname(os.path.abspath(__file__))
+    from sphinx.application import Sphinx  # noqa: F401
 
-# Root of the repository (one level above docs/)
-_REPO_ROOT = os.path.normpath(os.path.join(_DOCS_DIR, ".."))
+logger = logging.getLogger(__name__)  # type: Final
+
+_DOCS_DIR = os.path.dirname(os.path.abspath(__file__))  # type: Final
+_REPO_ROOT = os.path.normpath(os.path.join(_DOCS_DIR, ".."))  # type: Final
 
 
 def get_version():
+    # type: () -> str
+
     props_path = os.path.join(_REPO_ROOT, "zip-content", "module.prop")
 
     if os.path.exists(props_path):
@@ -36,6 +44,8 @@ def get_version():
 
 
 def get_revision():
+    # type: () -> str | None
+
     # Use Read the Docs environment variables if available
     git_rev = os.environ.get("READTHEDOCS_GIT_COMMIT_HASH")
     git_id = os.environ.get("READTHEDOCS_GIT_IDENTIFIER")
@@ -44,7 +54,7 @@ def get_revision():
         return f"{git_rev} ({git_id})" if git_id else git_rev
 
     # Fallback to Git CLI
-    git = shutil.which("git")
+    git = shutil.which("git")  # type: Final
     if not git:
         return None
     try:
@@ -61,7 +71,9 @@ def get_revision():
         return None
 
 
-def _fix_shdoc_refs(app, doctree):
+def _fix_shdoc_refs(_app, doctree):
+    # type: (Sphinx, nodes.document) -> None
+
     for node in doctree.findall(addnodes.pending_xref):
         if node.get("reftype") != "myst":
             continue
@@ -86,12 +98,13 @@ def _fix_shdoc_refs(app, doctree):
 
 
 def transform_rst_links(app, doctree):
+    # type: (Sphinx, nodes.document) -> None
     """Convert internal .rst file links to Sphinx cross-references.
 
     Automatically converts internal .rst file links to Sphinx cross-references
     (:doc: or :ref:), enabling validation and proper path resolution.
     """
-    docname = app.env.docname
+    docname = app.env.docname  # type: Final
     # Traverse only reference nodes that have a "refuri" attribute
     for node in doctree.findall(nodes.reference):
         uri = node.get("refuri", "")
@@ -120,6 +133,12 @@ def transform_rst_links(app, doctree):
 
 
 def setup(app):
+    # type: (Sphinx) -> dict[str, Any]
+    """Connect custom logic to the Sphinx build process.
+
+    This function tells Sphinx to run specific functions (hooks)
+    at the right time during documentation generation.
+    """
     app.connect("doctree-read", _fix_shdoc_refs)
     app.connect("doctree-read", transform_rst_links)
     return {
