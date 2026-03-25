@@ -19,7 +19,7 @@ from sphinx import addnodes
 from sphinx.util import logging
 
 TYPE_CHECKING = False
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # noqa: S2583
     from typing import Any, Final  # noqa: F401
 
     from sphinx.application import Sphinx  # noqa: F401
