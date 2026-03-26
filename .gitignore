@@ -18,12 +18,16 @@
 /.lesshst
 /.wget-hsts
 __pycache__/
+.mypy_cache/
 .DS_Store
 Thumbs.db
 desktop.ini
 *.dex
 *.log
 *.sarif
+
+/package.json
+/package-lock.json
 
 /.gitconfig
 
