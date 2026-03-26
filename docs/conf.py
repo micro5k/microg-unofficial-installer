@@ -10,6 +10,7 @@ using Sphinx. For a full list of built-in configuration values, see:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
+import datetime
 import os
 import shutil
 import subprocess  # nosec B404
@@ -30,6 +31,20 @@ _DOCS_DIR = os.path.dirname(os.path.abspath(__file__))  # type: Final
 _REPO_ROOT = os.path.normpath(os.path.join(_DOCS_DIR, ".."))  # type: Final
 
 
+class UTC(datetime.tzinfo):
+    def utcoffset(self, _dt):
+        # type: (datetime.datetime | None) -> datetime.timedelta
+        return datetime.timedelta(0)
+
+    def dst(self, _dt):
+        # type: (datetime.datetime | None) -> datetime.timedelta
+        return datetime.timedelta(0)
+
+    def tzname(self, _dt):
+        # type: (datetime.datetime | None) -> str
+        return "UTC"
+
+
 def get_version():
     # type: () -> str
 
@@ -47,11 +62,10 @@ def get_revision():
     # type: () -> str | None
 
     # Use Read the Docs environment variables if available
-    git_rev = os.environ.get("READTHEDOCS_GIT_COMMIT_HASH")
+    git_rev = os.environ.get("READTHEDOCS_GIT_COMMIT_HASH", "")[:8] or None
     git_id = os.environ.get("READTHEDOCS_GIT_IDENTIFIER")
     if git_rev:
-        git_rev = git_rev[:8]
-        return f"{git_rev} ({git_id})" if git_id else git_rev
+        return "{0} ({1})".format(git_rev, git_id) if git_id else git_rev
 
     # Fallback to Git CLI
     git = shutil.which("git")  # type: Final
@@ -97,7 +111,7 @@ def _fix_shdoc_refs(_app, doctree):
                 )
 
 
-def transform_rst_links(app, doctree):
+def _transform_rst_links(app, doctree):
     # type: (Sphinx, nodes.document) -> None
     """Convert internal .rst file links to Sphinx cross-references.
 
@@ -114,8 +128,17 @@ def transform_rst_links(app, doctree):
         parts = uri.split("#", 1)
         has_anchor = len(parts) > 1
         reftype = "ref" if has_anchor else "doc"
-        reftarget = parts[1] if has_anchor else parts[0].removesuffix(".rst")
-        logger.info(f"[DEBUG] Converting {uri} -> :{reftype}:`{reftarget}`")
+        reftarget = (
+            parts[1]
+            if has_anchor
+            else (parts[0][:-4] if parts[0].endswith(".rst") else parts[0])
+        )
+        logger.info(
+            "[DEBUG] Converting %s -> :%s:`%s`",
+            uri,
+            reftype,
+            reftarget,
+        )
 
         # Create pending_xref node which Sphinx resolves during build phase
         new_node = addnodes.pending_xref(
@@ -140,7 +163,7 @@ def setup(app):
     at the right time during documentation generation.
     """
     app.connect("doctree-read", _fix_shdoc_refs)
-    app.connect("doctree-read", transform_rst_links)
+    app.connect("doctree-read", _transform_rst_links)
     return {
         "version": "0.1",
         "parallel_read_safe": True,
@@ -148,36 +171,41 @@ def setup(app):
     }
 
 
-# TODO: Fix it
-suppress_warnings = ["myst.xref_missing"]
-
 # Project information
 project = "microG unofficial installer"
 author = "ale5000"
-project_copyright = "2016-2019, 2021-%Y ale5000"
+project_copyright = "2016-2019, 2021-{0} ale5000".format(
+    datetime.datetime.now(UTC()).strftime("%Y"),
+)
+
+
 release = get_version()
 version = release
 
 revision = get_revision()
 if revision:
-    project_copyright += f" | Revision: {revision}"
+    project_copyright += " | Revision: {0}".format(revision)
 
 # General configuration
-needs_sphinx = "8.1"
+needs_sphinx = "1.8"
 extensions = ["sphinx_rtd_theme", "myst_parser"]
 
 # Options for highlighting
 highlight_language = "sh"
 
+# Options for internationalisation
+language = "en"
+
 # Options for markup
-rst_epilog = f"""
-.. |release| replace:: v{release}
-"""
+rst_epilog = "\n.. |release| replace:: v{0}\n".format(release)
 
 # Options for source files
 exclude_patterns = ["CONTRIBUTORS.md"]
 master_doc = "index"
 source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
+
+# Options for warning control
+suppress_warnings = ["myst.xref_missing"]  # TODO: Find an alternative way
 
 # Options for HTML output
 html_theme = "sphinx_rtd_theme"
