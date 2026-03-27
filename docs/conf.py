@@ -30,7 +30,10 @@ try:
 
     _DEVNULL = _SUBP_DEVNULL  # type: int | IO[Any]
 except ImportError:
+    import atexit
+
     _DEVNULL = open(os.devnull, "wb")  # noqa: SIM115
+    atexit.register(_DEVNULL.close)
 
 # Attempt to use the native shutil.which for Python 3.3+
 _shutil_which = None  # type: Callable[..., str | None] | None
