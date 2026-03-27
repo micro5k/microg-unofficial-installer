@@ -12,8 +12,8 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import datetime
 import os
-import shutil
 import subprocess  # nosec B404
+import sys
 
 from docutils import nodes
 from sphinx import addnodes
@@ -21,9 +21,23 @@ from sphinx.util import logging
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:  # noqa: S2583
-    from typing import Any, Final  # noqa: F401
+    from typing import IO, Any, Callable, Final  # noqa: F401
 
     from sphinx.application import Sphinx  # noqa: F401
+
+try:
+    from subprocess import DEVNULL as _SUBP_DEVNULL
+
+    _DEVNULL = _SUBP_DEVNULL  # type: int | IO[Any]
+except ImportError:
+    _DEVNULL = open(os.devnull, "wb")  # noqa: SIM115
+
+# Attempt to use the native shutil.which for Python 3.3+
+_shutil_which = None  # type: Callable[..., str | None] | None
+try:
+    from shutil import which as _shutil_which
+except ImportError:
+    pass
 
 logger = logging.getLogger(__name__)  # type: Final
 
@@ -43,6 +57,41 @@ class UTC(datetime.tzinfo):
     def tzname(self, _dt):
         # type: (datetime.datetime | None) -> str
         return "UTC"
+
+
+def which(cmd, mode=os.F_OK | os.X_OK, path=None):
+    # type: (str, int, str | None) -> str | None
+    """Find the full path to an executable file, mimicking shutil.which.
+
+    :param cmd: The command to search for
+    :param mode: The permission mode to check (default is exists and executable)
+    :param path: Custom search path (defaults to the PATH environment variable)
+    :return: Full path to the executable or None if not found
+    """
+    if _shutil_which:
+        return _shutil_which(cmd, mode, path)
+
+    # If cmd contains a path component, check it directly
+    if os.path.dirname(cmd):
+        if os.access(cmd, mode) and os.path.isfile(cmd):
+            return cmd
+        return None
+
+    if path is None:
+        path = os.environ.get("PATH", os.defpath)
+    if not path:
+        return None
+
+    exts = ("", ".exe") if sys.platform == "win32" else ("",)  # type: Final
+
+    for directory in path.split(os.pathsep):
+        full_prefix = os.path.join(os.path.expanduser(directory), cmd)
+        for ext in exts:
+            candidate = full_prefix + ext
+            if os.access(candidate, mode) and os.path.isfile(candidate):
+                return candidate
+
+    return None
 
 
 def get_version():
@@ -68,7 +117,7 @@ def get_revision():
         return "{0} ({1})".format(git_rev, git_id) if git_id else git_rev
 
     # Fallback to Git CLI
-    git = shutil.which("git")  # type: Final
+    git = which("git")  # type: Final
     if not git:
         return None
     try:
@@ -76,7 +125,7 @@ def get_revision():
             # Safe: uses list-based arguments (no shell) to prevent injection
             subprocess.check_output(  # nosec B603 # noqa: S603
                 [git, "rev-parse", "--short=8", "HEAD"],
-                stderr=subprocess.DEVNULL,
+                stderr=_DEVNULL,
             )
             .decode("utf-8")
             .strip()
@@ -177,8 +226,6 @@ author = "ale5000"
 project_copyright = "2016-2019, 2021-{0} ale5000".format(
     datetime.datetime.now(UTC()).strftime("%Y"),
 )
-
-
 release = get_version()
 version = release
 
