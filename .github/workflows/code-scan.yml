@@ -123,7 +123,7 @@ jobs:
         run: |
           jq '.runs |= unique_by({tool, invocations, results})' 0< './results.sarif' 1> './results-combined.sarif'
       - name: "Upload SARIF results file"
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v4.34.1
         with:
           sarif_file: "results-combined.sarif"
           category: "Codacy"
