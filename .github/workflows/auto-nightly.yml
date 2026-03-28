@@ -48,7 +48,7 @@ jobs:
         with:
           distribution: "temurin"
           java-version-file: ".tool-versions"
-      - name: "Use cache"
+      - name: "Use build cache"
         uses: actions/cache@v5
         timeout-minutes: 10
         with:
@@ -262,19 +262,28 @@ jobs:
       actions: write # Needed to keep alive the workflow
 
     steps:
-      - name: "Checkout file"
+      - name: "Checkout needed files"
         uses: actions/checkout@v6
         with:
           lfs: false
           sparse-checkout: |
             conf-2.sh
+            conf-lfs.sh
           sparse-checkout-cone-mode: false
-      - name: "Ping cache" # Cache expiration: 7 days
-        uses: actions/cache@v5
+      - name: "Ping build cache" # Cache expiration: 7 days
+        uses: actions/cache/restore@v5
         timeout-minutes: 5
         with:
           key: "build-${{ hashFiles('conf-2.sh') }}"
           path: "cache/build"
+          enableCrossOsArchive: true
+          lookup-only: true
+      - name: "Ping LFS cache" # Cache expiration: 7 days
+        uses: actions/cache/restore@v5
+        timeout-minutes: 5
+        with:
+          key: "lfs-${{ hashFiles('conf-lfs.sh') }}"
+          path: "cache/lfs"
           enableCrossOsArchive: true
           lookup-only: true
       - name: "Keep workflow alive"

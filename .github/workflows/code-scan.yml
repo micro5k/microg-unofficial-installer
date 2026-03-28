@@ -131,7 +131,7 @@ jobs:
               # Rebuild the run object by collecting data in a single pass
               $first + {
                 # Add mandatory category ID
-                "automationDetails": ($first.automationDetails + { "id": $first.tool.driver.name }),
+                "automationDetails": ($first.automationDetails + { "id": "Codacy/" + $first.tool.driver.name }),
                 # Collect all results and artifacts from the group
                 "results": ([$group[].results[]] | unique),
                 "artifacts": ([$group[].artifacts[]] | unique),
@@ -147,6 +147,7 @@ jobs:
           )' -- './results.sarif' 1> './results-combined.sarif'
       - name: "Upload SARIF results file to GitHub"
         uses: github/codeql-action/upload-sarif@v4
+        if: "${{ github.ref == 'refs/heads/main' }}"
         with:
           sarif_file: "results-combined.sarif"
           category: "Codacy"
