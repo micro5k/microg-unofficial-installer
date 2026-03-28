@@ -19,47 +19,64 @@ from docutils import nodes
 from sphinx import addnodes
 from sphinx.util import logging
 
-TYPE_CHECKING = False
-if TYPE_CHECKING:  # noqa: S2583
-    from typing import IO, Any, Callable, Final  # noqa: F401
+try:
+    from typing import TYPE_CHECKING
 
-    from sphinx.application import Sphinx  # noqa: F401
+    if TYPE_CHECKING:
+        from typing import IO, Any, Callable, Final  # noqa: F401
+
+        from sphinx.application import Sphinx  # noqa: F401
+except ImportError:
+    pass
 
 try:
-    from subprocess import DEVNULL as _SUBP_DEVNULL
+    from subprocess import DEVNULL as _TMP_DEVNULL
 
-    _DEVNULL = _SUBP_DEVNULL  # type: int | IO[Any]
+    _DEVNULL = _TMP_DEVNULL  # type: int | IO[Any]
 except ImportError:
     import atexit
 
     _DEVNULL = open(os.devnull, "wb")  # noqa: SIM115
     atexit.register(_DEVNULL.close)
 
-# Attempt to use the native shutil.which for Python 3.3+
-_shutil_which = None  # type: Callable[..., str | None] | None
 try:
-    from shutil import which as _shutil_which
+    # Attempt to use the native shutil.which for Python 3.3+
+    from shutil import which as _tmp_shutil_which
+
+    _shutil_which = _tmp_shutil_which  # type: Callable[..., str | None] | None
 except ImportError:
-    pass
+    _shutil_which = None
+
+try:
+    from datetime import timezone as _tmp_tz
+
+    _UTC = _tmp_tz.utc  # type: datetime.tzinfo
+except ImportError:
+
+    class TimezoneUTC(datetime.tzinfo):
+        """UTC implementation for compatibility with legacy Python versions.
+
+        Ensures 'aware' datetime objects can be used for UTC time.
+        """
+
+        def utcoffset(self, _dt):
+            # type: (datetime.datetime | None) -> datetime.timedelta
+            return datetime.timedelta(0)
+
+        def dst(self, _dt):
+            # type: (datetime.datetime | None) -> datetime.timedelta
+            return datetime.timedelta(0)
+
+        def tzname(self, _dt):
+            # type: (datetime.datetime | None) -> str
+            return "UTC"
+
+    _UTC = TimezoneUTC()
 
 logger = logging.getLogger(__name__)  # type: Final
 
 _DOCS_DIR = os.path.dirname(os.path.abspath(__file__))  # type: Final
 _REPO_ROOT = os.path.normpath(os.path.join(_DOCS_DIR, ".."))  # type: Final
-
-
-class UTC(datetime.tzinfo):
-    def utcoffset(self, _dt):
-        # type: (datetime.datetime | None) -> datetime.timedelta
-        return datetime.timedelta(0)
-
-    def dst(self, _dt):
-        # type: (datetime.datetime | None) -> datetime.timedelta
-        return datetime.timedelta(0)
-
-    def tzname(self, _dt):
-        # type: (datetime.datetime | None) -> str
-        return "UTC"
 
 
 def which(cmd, mode=os.F_OK | os.X_OK, path=None):
@@ -227,7 +244,7 @@ def setup(app):
 project = "microG unofficial installer"
 author = "ale5000"
 project_copyright = "2016-2019, 2021-{0} ale5000".format(
-    datetime.datetime.now(UTC()).strftime("%Y"),
+    datetime.datetime.now(_UTC).strftime("%Y"),
 )
 release = get_version()
 version = release
@@ -255,6 +272,9 @@ master_doc = "index"
 source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
 # Options for warning control
+
+# Links are working using implicit references but MyST still emit warnings
+# instead of verify
 suppress_warnings = ["myst.xref_missing"]  # TODO: Find an alternative way
 
 # Options for HTML output
