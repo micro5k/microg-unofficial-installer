@@ -3,11 +3,13 @@ microG unofficial installer
 ###########################
 
 ..
+   SPDX-FileCopyrightText: 2016 ale5000
    SPDX-License-Identifier: GPL-3.0-or-later
    SPDX-FileType: DOCUMENTATION
 
 :Author:
    `ale5000 <https://github.com/ale5000-git>`_
+
 :License:
    `GPLv3.0 or later <https://www.gnu.org/licenses/gpl-3.0.html>`_
 
@@ -119,8 +121,7 @@ If you want to improve the project, please review our `contributing guidelines
 We are grateful for all our contributors! 🎉 Seriously — every bug fix,
 improvement, or creative complaint has made this better.
 
-Please check the `contributors list <./docs/CONTRIBUTORS.md>`_ for more
-details.
+Please check the `contributors list <./docs/CONTRIBUTORS.md>`_ for more details.
 
 *(Even fixing a typo counts. Probably. We'll review it very carefully either
 way.)*
@@ -133,8 +134,8 @@ Donations
    :alt: Support this project
    :target: ./docs/DONATE.rst
 
-I maintain this project on my own in my spare time — the finite, precious
-kind that competes with sleep, meals eaten while staring at a terminal, and the
+I maintain this project on my own in my spare time — the finite, precious kind
+that competes with sleep, meals eaten while staring at a terminal, and the
 occasional social obligation.
 
 If it's saved you time, or frustration, please consider supporting its
@@ -150,4 +151,10 @@ development!
 Copyright
 =========
 
+..
+   REUSE-IgnoreStart
+
 © 2016-2019, 2021-2026 ale5000
+
+..
+   REUSE-IgnoreEnd

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-FileCopyrightText: (c) 2016 ale5000
+# SPDX-FileCopyrightText: 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # shellcheck disable=SC2310 # This function is invoked in an 'if' condition so set -e will be disabled

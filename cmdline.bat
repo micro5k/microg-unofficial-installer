@@ -1,6 +1,5 @@
-@REM SPDX-FileCopyrightText: (c) 2016 ale5000
+@REM SPDX-FileCopyrightText: 2016 ale5000
 @REM SPDX-License-Identifier: GPL-3.0-or-later
-@REM SPDX-FileType: SOURCE
 
 @echo off
 SETLOCAL 2> nul

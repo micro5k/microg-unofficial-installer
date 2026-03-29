@@ -36,7 +36,7 @@
 
     "customLocalFormatters.formatters": [
         {
-            "command": "rstfmt --width 79 -",
+            "command": "rstfmt --width 80 -",
             "languages": ["restructuredtext"],
             "editor.formatOnSave": false
         }
