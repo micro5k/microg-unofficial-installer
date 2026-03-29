@@ -85,10 +85,11 @@ jobs:
         uses: actions/cache@v5
         timeout-minutes: 5
         with:
-          key: "gradle-wrapper-${{ runner.os }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}"
+          key: "gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}"
           path: |
             ~/.gradle/wrapper
             ~/.gradle/notifications
+          enableCrossOsArchive: true
       - name: "Generate and submit dependency graph"
         uses: gradle/actions/dependency-submission@v6
         with:
