@@ -32,7 +32,7 @@ jobs:
       - name: "Checkout sources"
         uses: actions/checkout@v6
       - name: "Validate Gradle Wrapper"
-        uses: gradle/actions/wrapper-validation@v5
+        uses: gradle/actions/wrapper-validation@v6
       - name: "Validate Codecov configuration"
         shell: bash
         run: |
