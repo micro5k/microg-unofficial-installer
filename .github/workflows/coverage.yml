@@ -101,7 +101,7 @@ jobs:
           printf 'TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
       - name: "Upload coverage reports to Codecov"
         if: "${{ steps.codecov-token.outputs.TOKEN_SET == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         timeout-minutes: 10
         with:
           fail_ci_if_error: true
