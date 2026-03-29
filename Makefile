@@ -4,19 +4,19 @@
 
 .POSIX:
 
-# --- Performance optimizations ---
+# --- 1. Performance optimizations & global config ---
 # Disable the default inference rule for .sh files early to speed up parsing
 .sh:
 	@:
 
-# --- Target descriptions ---
+# --- 2. Target descriptions (for help logic) ---
 DESCRIPTION_TARGET_BUILDOTA    = Build the flashable OTA zip
 DESCRIPTION_TARGET_BUILDOTAOSS = Build the flashable OTA zip (open-source components only)
 DESCRIPTION_TARGET_INSTALLTEST = Emulate an Android recovery on your PC and run the flashable zip file inside it to see the result
 DESCRIPTION_TARGET_CLEAN       = Remove build artifacts
 DESCRIPTION_TARGET_HELP        = List available targets
 
-# --- Core targets ---
+# --- 3. Primary targets ---
 .PHONY: all buildota buildotaoss installtest clean help
 all: buildota buildotaoss ;
 
@@ -34,14 +34,14 @@ clean:
 	rm -f "$(CURDIR)"/output/*.zip.md5
 	rm -f "$(CURDIR)"/output/*.zip.sha256
 
-# --- Aliases and compatibility ---
+# --- 4. Aliases & compatibility ---
 .PHONY: build test check distcheck
 build: buildotaoss ;
 test: installtest ;
 check: test ;
 distcheck: test ;
 
-# --- Help logic ---
+# --- 5. Help system ---
 # Hide specific targets from the help list
 .hide: build test check distcheck
 
