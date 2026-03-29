@@ -50,7 +50,7 @@ jobs:
           java-version-file: ".tool-versions"
       - name: "Use build cache"
         uses: actions/cache@v5
-        timeout-minutes: 10
+        timeout-minutes: 5
         with:
           key: "build-${{ hashFiles('conf-2.sh') }}"
           restore-keys: "build-"
@@ -58,7 +58,7 @@ jobs:
           enableCrossOsArchive: true
       - name: "Use LFS cache"
         uses: actions/cache@v5
-        timeout-minutes: 10
+        timeout-minutes: 5
         with:
           key: "lfs-${{ hashFiles('conf-lfs.sh') }}"
           restore-keys: "lfs-"
@@ -275,6 +275,7 @@ jobs:
         timeout-minutes: 5
         with:
           key: "build-${{ hashFiles('conf-2.sh') }}"
+          restore-keys: "build-"
           path: "cache/build"
           enableCrossOsArchive: true
           lookup-only: true
@@ -283,6 +284,7 @@ jobs:
         timeout-minutes: 5
         with:
           key: "lfs-${{ hashFiles('conf-lfs.sh') }}"
+          restore-keys: "lfs-"
           path: "cache/lfs"
           enableCrossOsArchive: true
           lookup-only: true
@@ -324,7 +326,7 @@ jobs:
           retries: 3
           script: |
             /* jshint esversion: 11 */
-            const CACHE_PREFIXES = Object.freeze(['build-', 'lfs-']);
+            const CACHE_PREFIXES = Object.freeze(['build-', 'lfs-', 'gradle-wrapper-']);
 
             for (const prefix of CACHE_PREFIXES) {
               let failed = false;

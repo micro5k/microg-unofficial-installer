@@ -32,7 +32,7 @@ jobs:
       - name: "Checkout sources"
         uses: actions/checkout@v6
         with:
-          lfs: true
+          lfs: false
       - name: "Setup Java"
         uses: actions/setup-java@v5
         with:

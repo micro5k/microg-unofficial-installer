@@ -76,6 +76,8 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v6
+        with:
+          lfs: false
       - name: "Setup Java"
         uses: actions/setup-java@v5
         with:
@@ -113,6 +115,8 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v6
+        with:
+          lfs: false
       - name: "Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
         timeout-minutes: 10
@@ -174,6 +178,7 @@ jobs:
       - name: "Checkout sources"
         uses: actions/checkout@v6
         with:
+          lfs: false
           fetch-depth: "0" # Shallow clones should be disabled for a better relevancy of analysis
       - name: "Avoid SonarQube warning"
         shell: bash

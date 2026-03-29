@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v6
+        with:
+          lfs: false
       - name: "ShellChecker"
         uses: a5k-actions/shellchecker@v0
 
@@ -37,6 +39,8 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v6
+        with:
+          lfs: false
       - name: "REUSE compliance check"
         uses: fsfe/reuse-action@v6
 
@@ -50,5 +54,7 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v6
+        with:
+          lfs: false
       - name: "JSON and YAML - Validator"
         uses: GrantBirki/json-yaml-validate@v4

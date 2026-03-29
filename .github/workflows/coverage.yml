@@ -49,9 +49,17 @@ jobs:
         run: |
           # Installing Bashcov and simplecov-lcov...
           gem install bashcov:3.3.0 simplecov-lcov
+      - name: "Use build cache"
+        uses: actions/cache/restore@v5
+        timeout-minutes: 5
+        with:
+          key: "build-${{ hashFiles('conf-2.sh') }}"
+          restore-keys: "build-"
+          path: "cache/build"
+          enableCrossOsArchive: true
       - name: "Use LFS cache"
         uses: actions/cache/restore@v5
-        timeout-minutes: 10
+        timeout-minutes: 5
         with:
           key: "lfs-${{ hashFiles('conf-lfs.sh') }}"
           restore-keys: "lfs-"

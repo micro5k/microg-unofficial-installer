@@ -27,6 +27,7 @@ jobs:
       - name: "Checkout sources"
         uses: actions/checkout@v6
         with:
+          lfs: false
           sparse-checkout: |
             zip-content/module.prop
           sparse-checkout-cone-mode: false

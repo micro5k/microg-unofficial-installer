@@ -29,6 +29,8 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v6
+        with:
+          lfs: false
       - name: "Validate Codecov configuration"
         shell: bash
         run: |
@@ -60,6 +62,8 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v6
+        with:
+          lfs: false
       - name: "Validation"
         uses: Uno-Takashi/checkmake-action@v2
         with:
@@ -75,6 +79,8 @@ jobs:
     steps:
       - name: "Checkout sources"
         uses: actions/checkout@v6
+        with:
+          lfs: false
       - name: "Validation"
         shell: bash
         run: |
