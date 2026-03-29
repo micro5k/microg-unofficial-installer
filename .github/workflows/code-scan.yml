@@ -84,8 +84,8 @@ jobs:
       - name: "Generate and submit dependency graph"
         uses: gradle/actions/dependency-submission@v6
         with:
-          cache-read-only: true
           dependency-graph: "generate-and-submit"
+          cache-disabled: true
           validate-wrappers: true
 
   codacy:
