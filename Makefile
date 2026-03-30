@@ -9,20 +9,19 @@
 .sh:
 	@:
 
-# --- Variables ---
-PROJECT_NAME  = microg-unofficial-installer
-OUTPUT_DIR    = output
-SBOM_FILENAME = $(PROJECT_NAME).spdx
-SBOM_PATH     = $(OUTPUT_DIR)/$(SBOM_FILENAME)
-REUSE_TOOL    = reuse
+# --- Configurations && shell commands ---
+GET_PROJECT_NAME = (git 2> /dev/null rev-parse --show-toplevel | xargs 2> /dev/null basename) || basename '$(CURDIR)'
+OUTPUT_DIR       = output
+
+REUSE_TOOL       = reuse
 
 # --- Target descriptions (for help logic) ---
 DESCRIPTION_TARGET_BUILDOTA    = Build the flashable OTA zip
 DESCRIPTION_TARGET_BUILDOTAOSS = Build the flashable OTA zip (open-source components only)
 DESCRIPTION_TARGET_INSTALLTEST = Emulate an Android recovery on your PC and run the flashable zip file inside it
+DESCRIPTION_TARGET_CLEAN       = Remove build artifacts
 DESCRIPTION_TARGET_REUSE_LINT  = Verify license and copyright compliance (REUSE)
 DESCRIPTION_TARGET_SPDX        = Generate the SBOM in SPDX format
-DESCRIPTION_TARGET_CLEAN       = Remove build artifacts
 DESCRIPTION_TARGET_HELP        = Display this help
 
 # --- Primary targets ---
@@ -53,8 +52,9 @@ reuse-lint:
 
 spdx: reuse-lint
 	@echo ''
-	@echo 'Generating SPDX SBOM at $(SBOM_PATH)...'
-	@'$(REUSE_TOOL)' spdx --creator-person ale5000 --add-license-concluded -o '$(CURDIR)/$(SBOM_PATH)'
+	@PROJECT_NAME="$$( $(GET_PROJECT_NAME) )"; \
+	echo 'Generating SPDX SBOM at $(OUTPUT_DIR)/'"$${PROJECT_NAME:?}.spdx..."; \
+	'$(REUSE_TOOL)' spdx --creator-person ale5000 --add-license-concluded -o '$(CURDIR)/$(OUTPUT_DIR)/'"$${PROJECT_NAME:?}.spdx"
 	@echo 'Done.'
 
 # --- Aliases & compatibility ---
