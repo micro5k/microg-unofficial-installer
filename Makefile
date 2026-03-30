@@ -31,18 +31,18 @@ DESCRIPTION_TARGET_HELP        = Display this help
 all: buildota buildotaoss ;
 
 buildota:
-	BUILD_TYPE=full "$(CURDIR)/build.sh" --no-default-build-type --no-pause $(ARGS)
+	BUILD_TYPE=full '$(CURDIR)/build.sh' --no-default-build-type --no-pause $(ARGS)
 
 buildotaoss:
-	BUILD_TYPE=oss "$(CURDIR)/build.sh" --no-default-build-type --no-pause $(ARGS)
+	BUILD_TYPE=oss '$(CURDIR)/build.sh' --no-default-build-type --no-pause $(ARGS)
 
 installtest:
-	"$(CURDIR)/recovery-simulator/recovery.sh" "$(CURDIR)"/output/*.zip
+	@'$(CURDIR)/recovery-simulator/recovery.sh' '$(CURDIR)'/output/*.zip
 
 clean:
-	rm -f "$(CURDIR)"/output/*.zip
-	rm -f "$(CURDIR)"/output/*.zip.md5
-	rm -f "$(CURDIR)"/output/*.zip.sha256
+	rm -f '$(CURDIR)'/output/*.zip
+	rm -f '$(CURDIR)'/output/*.zip.md5
+	rm -f '$(CURDIR)'/output/*.zip.sha256
 
 # --- Compliance targets ---
 .PHONY: reuse-lint spdx
@@ -70,8 +70,8 @@ sbom: spdx ;
 .hide: build test check distcheck sbom
 
 help:
-	@"$(MAKE)" 2>/dev/null -qnrp | awk \
-		'/^DESCRIPTION_TARGET_[A-Z][A-Z0-9_]*[[:space:]]*=[[:space:]]*/{ desc[tolower(substr($$1,20))]=substr($$0,index($$0,"=")+2) } \
-		 /^\.hide:/{ n=split(substr($$0,7),a); for(i=1;i<=n;i++) hide[a[i]]=1 } \
-		 /^[a-zA-Z_][a-zA-Z0-9_-]*:/{ t=substr($$0,1,index($$0,":")-1); if(tolower(t)!="makefile") tgt[t]=1 } \
-		 END{ for(t in tgt){ if(t in hide) continue; if(t in desc) printf "%-15s %s\n",t,desc[t]|"sort"; else print t|"sort" } }'
+	@'$(MAKE)' 2>/dev/null -qnrp | awk \
+		'/^DESCRIPTION_TARGET_[A-Z0-9_]+[[:space:]]*=/{ k=tolower(substr($$1,20)); gsub(/_/,"-",k); desc[k]=substr($$0,index($$0,"=")+2) } \
+		/^\.hide:/{ n=split(substr($$0,7),a); for(i=1;i<=n;i++) hide[a[i]]=1 } \
+		/^[a-zA-Z_][a-zA-Z0-9_-]*:/{ t=substr($$0,1,index($$0,":")-1); if(tolower(t)!="makefile") tgt[t]=1 } \
+		END{ for(t in tgt){ if(t in hide) continue; if(t in desc) printf "%-15s %s\n",t,desc[t]|"sort"; else print t|"sort" } }'
