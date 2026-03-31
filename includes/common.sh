@@ -56,7 +56,8 @@ beep()
 
 ui_error()
 {
-  echo 1>&2 "ERROR: $1"
+  # Args: $1=MESSAGE, $2=LINE, $3=FUNCTION
+  printf 1>&2 '%s:%s: ERROR: [%s] %s\n' "${0##*/}" "${2:-0}" "${3:-<main>}" "${1?}"
   pause_if_needed 0
   restore_saved_title_if_exist
   test -n "${2-}" && exit "$2"

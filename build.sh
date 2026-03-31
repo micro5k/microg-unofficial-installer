@@ -2,17 +2,14 @@
 # SPDX-FileCopyrightText: 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# shellcheck disable=SC2310 # This function is invoked in an 'if' condition so set -e will be disabled
+# shellcheck enable=all
+# shellcheck disable=SC3028 # Ignore: In POSIX sh, FUNCNAME is undefined
+# shellcheck disable=SC2310 # Ignore: This function is invoked in an 'if' condition so set -e will be disabled
 last_command="${_}" # IMPORTANT: This line must be at the start of the script before any other command otherwise it will not work
 
 set -e
-# shellcheck disable=SC3040,SC3041,SC2015 # Ignore: In POSIX sh, set option xxx is undefined. / In POSIX sh, set flag -X is undefined. / C may run when A is true.
-{
-  # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-  (set 2> /dev/null -o posix) && set -o posix || :
-  (set 2> /dev/null +H) && set +H || :
-  case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) if set -o pipefail; then export USING_PIPEFAIL='true'; else echo 1>&2 'Failed: pipefail'; fi ;; *) ;; esac
-}
+# shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
+case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) if set -o pipefail; then export USING_PIPEFAIL='true'; else echo 1>&2 'Failed: pipefail'; fi ;; *) ;; esac
 
 # REUSE-IgnoreStart
 cat << 'LICENSE'
@@ -72,7 +69,7 @@ unset DO_INIT_CMDLINE
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR:?}/includes/common.sh"; fi
 
 if test -n "${OPENSOURCE_ONLY-}"; then
-  ui_error 'You must set BUILD_TYPE instead of OPENSOURCE_ONLY'
+  ui_error 'You must set BUILD_TYPE instead of OPENSOURCE_ONLY' "${LINENO-}" "${FUNCNAME-}"
 fi
 
 # Parse parameters
@@ -96,7 +93,7 @@ test "${default_build_type:?}" = 'false' || BUILD_TYPE="${BUILD_TYPE:-full}"
 case "${BUILD_TYPE-}" in
   'full') export OPENSOURCE_ONLY='false' ;;
   'oss') export OPENSOURCE_ONLY='true' ;;
-  *) ui_error "Invalid build type => '${BUILD_TYPE-}'" ;;
+  *) ui_error "Invalid build type => '${BUILD_TYPE-}'" "${LINENO-}" "${FUNCNAME-}" ;;
 esac
 
 save_last_title
@@ -107,7 +104,7 @@ set_title 'Building the flashable OTA zip...'
 # shellcheck source=SCRIPTDIR/conf-2.sh
 if test "${OPENSOURCE_ONLY:?}" = 'false'; then . "${MAIN_DIR:?}/conf-2.sh"; fi
 
-_init_dir="$(pwd)" || ui_error 'Failed to read the current dir'
+_init_dir="$(pwd)" || ui_error 'Failed to read the current dir' "${LINENO-}" "${FUNCNAME-}"
 
 # Set output dir
 OUT_DIR="${MAIN_DIR:?}/output"
@@ -156,7 +153,7 @@ if test "${OPENSOURCE_ONLY:?}" != 'false'; then
     # shellcheck disable=SC2317
     return 0 2>&- || exit 0
   fi
-  if test ! -f "${MAIN_DIR:?}/zip-content/settings-oss.conf"; then ui_error 'The settings file is missing'; fi
+  if test ! -f "${MAIN_DIR:?}/zip-content/settings-oss.conf"; then ui_error 'The settings file is missing' "${LINENO-}" "${FUNCNAME-}"; fi
 fi
 
 # Check dependencies
@@ -220,28 +217,28 @@ FILENAME_EXT='.zip'
 # Download and verify external application files to ensure package integrity; bundled files will be verified at a later stage
 {
   if test "${OPENSOURCE_ONLY:?}" = 'false'; then
-    current_dl_list="$(files_to_download)" || ui_error 'Missing download list'
-    dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files'
+    current_dl_list="$(files_to_download)" || ui_error 'Missing download list' "${LINENO-}" "${FUNCNAME-}"
+    dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files' "${LINENO-}" "${FUNCNAME-}"
 
     dl_file 'misc/keycheck' 'keycheck-arm.bin' '2e348074961b78c2cf9e8728910ce7c9596f195a6344ead35e536ccebe18df76' 'github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
   else
     echo 'Skipped not OSS files!'
   fi
 
-  current_dl_list="$(oss_files_to_download)" || ui_error 'Missing download list'
-  dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files'
+  current_dl_list="$(oss_files_to_download)" || ui_error 'Missing download list' "${LINENO-}" "${FUNCNAME-}"
+  dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files' "${LINENO-}" "${FUNCNAME-}"
 
-  clear_dl_temp_dir || ui_error 'Failed to remove the DL temp dir'
+  clear_dl_temp_dir || ui_error 'Failed to remove the DL temp dir' "${LINENO-}" "${FUNCNAME-}"
 
   unset current_dl_list
 }
 
 # Copy data and prepare
-cp -rf "${MAIN_DIR:?}"/zip-content "${TEMP_DIR:?}"/ || ui_error 'Failed to copy the zip-content'
-mv -f "${TEMP_DIR:?}"/zip-content/settings-"${BUILD_TYPE:?}".conf "${TEMP_DIR:?}"/zip-content/settings.conf || ui_error 'Failed to prepare the settings file'
+cp -rf "${MAIN_DIR:?}"/zip-content "${TEMP_DIR:?}"/ || ui_error 'Failed to copy the zip-content' "${LINENO-}" "${FUNCNAME-}"
+mv -f "${TEMP_DIR:?}"/zip-content/settings-"${BUILD_TYPE:?}".conf "${TEMP_DIR:?}"/zip-content/settings.conf || ui_error 'Failed to prepare the settings file' "${LINENO-}" "${FUNCNAME-}"
 rm -f "${TEMP_DIR:?}"/zip-content/settings-*.conf || :
 # REUSE-IgnoreStart
-printf '%s\n%s\n%s\n\n%s\n' '# -*- coding: utf-8; mode: conf-unix -*-' '# SPDX-FileCopyrightText: NONE' '# SPDX-License-Identifier: CC0-1.0' "buildType=${BUILD_TYPE:?}" 1> "${TEMP_DIR:?}"/zip-content/info.prop || ui_error "Failed to create the 'info.prop' file"
+printf '%s\n%s\n%s\n\n%s\n' '# -*- coding: utf-8; mode: conf-unix -*-' '# SPDX-FileCopyrightText: NONE' '# SPDX-License-Identifier: CC0-1.0' "buildType=${BUILD_TYPE:?}" 1> "${TEMP_DIR:?}"/zip-content/info.prop || ui_error "Failed to create the 'info.prop' file" "${LINENO-}" "${FUNCNAME-}"
 # REUSE-IgnoreEnd
 cp -rf "${MAIN_DIR:?}"/LICENSES "${TEMP_DIR:?}"/zip-content/ || ui_error 'Failed to copy the LICENSES folder'
 cp -f "${MAIN_DIR:?}"/LICENSE*.rst "${TEMP_DIR:?}"/zip-content/ || ui_error 'Failed to copy the license'
@@ -268,16 +265,16 @@ if test -e "${TEMP_DIR:?}/zip-content/origin/file-list.dat"; then
 
     verify_sha256 "${full_filename:?}${ext:?}" "${FILE_HASH:?}" || {
       printf '\n'
-      ui_error "Verification of '${LOCAL_FILENAME:-}' failed"
+      ui_error "Verification of '${LOCAL_FILENAME:-}' failed" "${LINENO-}" "${FUNCNAME-}"
     }
-  done 0< "${MAIN_DIR:?}/zip-content/origin/file-list.dat" || ui_error 'Failed to open the list of files to verify'
+  done 0< "${MAIN_DIR:?}/zip-content/origin/file-list.dat" || ui_error 'Failed to open the list of files to verify' "${LINENO-}" "${FUNCNAME-}"
   printf '\n'
 fi
 
 if test "${OPENSOURCE_ONLY:?}" = 'false'; then
   files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH MIN_API MAX_API FINAL_FILENAME INTERNAL_NAME FILE_HASH _; do
     mkdir -p -- "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}"
-    cp -f -- "${BUILD_CACHE_DIR:?}/${LOCAL_PATH:?}/${LOCAL_FILENAME:?}.apk" "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}.apk'"
+    cp -f -- "${BUILD_CACHE_DIR:?}/${LOCAL_PATH:?}/${LOCAL_FILENAME:?}.apk" "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}.apk'" "${LINENO-}" "${FUNCNAME-}"
 
     _extract_libs=''
     if test "${LOCAL_FILENAME:?}" = 'PlayStore'; then _extract_libs='libs'; fi
@@ -288,60 +285,60 @@ if test "${OPENSOURCE_ONLY:?}" = 'false'; then
   if test "${STATUS:?}" -ne 0; then return "${STATUS}" 2>&- || exit "${STATUS}"; fi
 
   mkdir -p "${TEMP_DIR}/zip-content/misc/keycheck"
-  cp -f "${BUILD_CACHE_DIR:?}/misc/keycheck/keycheck-arm.bin" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'"
+  cp -f "${BUILD_CACHE_DIR:?}/misc/keycheck/keycheck-arm.bin" "${TEMP_DIR}/zip-content/misc/keycheck/" || ui_error "Failed to copy to the temp dir the file => 'misc/keycheck/keycheck-arm'" "${LINENO-}" "${FUNCNAME-}"
 fi
 
-printf '%s\n' 'Setting name;Visibility;Type' 1> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (1)'
-printf '%s\n' 'DRY_RUN;local;integer' 1>> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (2)'
-printf '%s\n' 'KEY_TEST_ONLY;local;numeric-boolean' 1>> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (3)'
+printf '%s\n' 'Setting name;Visibility;Type' 1> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (1)' "${LINENO-}" "${FUNCNAME-}"
+printf '%s\n' 'DRY_RUN;local;integer' 1>> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (2)' "${LINENO-}" "${FUNCNAME-}"
+printf '%s\n' 'KEY_TEST_ONLY;local;numeric-boolean' 1>> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list (3)' "${LINENO-}" "${FUNCNAME-}"
 
 while IFS='#=; ' read -r _ PROP_NAME PROP_VALUE PROP PROP_VISIBILITY PROP_TYPE _; do
   if test "${PROP?}" != 'setprop'; then continue; fi
 
   : "UNUSED ${PROP_VALUE:?}"
   printf '%s\n' "${PROP_NAME:?};${PROP_VISIBILITY:?};${PROP_TYPE:?}"
-done 0< "${TEMP_DIR:?}/zip-content/settings.conf" 1>> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list'
+done 0< "${TEMP_DIR:?}/zip-content/settings.conf" 1>> "${TEMP_DIR:?}/zip-content/setprop-settings-list.csv" || ui_error 'Failed to generate setprop settings list' "${LINENO-}" "${FUNCNAME-}"
 
 printf '\n'
 
 # Remove the build cache folder only if it is empty
-test ! -d "${BUILD_CACHE_DIR:?}" || rmdir --ignore-fail-on-non-empty "${BUILD_CACHE_DIR:?}" || ui_error 'Failed to remove the empty build cache folder'
+test ! -d "${BUILD_CACHE_DIR:?}" || rmdir --ignore-fail-on-non-empty "${BUILD_CACHE_DIR:?}" || ui_error 'Failed to remove the empty build cache folder' "${LINENO-}" "${FUNCNAME-}"
 
 # Prepare the data before compression (also uniform attributes - useful for reproducible builds)
 BASE_TMP_SCRIPT_DIR="${TEMP_DIR}/zip-content/META-INF/com/google/android"
-mv -f "${BASE_TMP_SCRIPT_DIR}/update-binary.sh" "${BASE_TMP_SCRIPT_DIR}/update-binary" || ui_error 'Failed to rename a file'
-mv -f "${BASE_TMP_SCRIPT_DIR}/updater-script.dat" "${BASE_TMP_SCRIPT_DIR}/updater-script" || ui_error 'Failed to rename a file'
-find "${TEMP_DIR}/zip-content" -type d -exec chmod 0700 '{}' + -o -type f -exec chmod 0600 '{}' + || ui_error 'Failed to set permissions of files'
+mv -f "${BASE_TMP_SCRIPT_DIR}/update-binary.sh" "${BASE_TMP_SCRIPT_DIR}/update-binary" || ui_error 'Failed to rename a file' "${LINENO-}" "${FUNCNAME-}"
+mv -f "${BASE_TMP_SCRIPT_DIR}/updater-script.dat" "${BASE_TMP_SCRIPT_DIR}/updater-script" || ui_error 'Failed to rename a file' "${LINENO-}" "${FUNCNAME-}"
+find "${TEMP_DIR}/zip-content" -type d -exec chmod 0700 '{}' + -o -type f -exec chmod 0600 '{}' + || ui_error 'Failed to set permissions of files' "${LINENO-}" "${FUNCNAME-}"
 if test "${PLATFORM:?}" = 'win' && command 1> /dev/null -v 'attrib.exe'; then
   MSYS_NO_PATHCONV=1 attrib.exe -R -A -S -H "${TEMP_DIR:?}/zip-content/*" /S /D
 fi
-find "${TEMP_DIR}/zip-content" -exec touch -c -t 200802290333.46 '{}' + || ui_error 'Failed to set the modification date of files'
+find "${TEMP_DIR}/zip-content" -exec touch -c -t 200802290333.46 '{}' + || ui_error 'Failed to set the modification date of files' "${LINENO-}" "${FUNCNAME-}"
 
 # Remove the previously built files (if they exist)
-rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}" || ui_error 'Failed to remove the previously built files'
-rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}".md5 || ui_error 'Failed to remove the previously built files'
-rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}".sha256 || ui_error 'Failed to remove the previously built files'
+rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}" || ui_error 'Failed to remove the previously built files' "${LINENO-}" "${FUNCNAME-}"
+rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}".md5 || ui_error 'Failed to remove the previously built files' "${LINENO-}" "${FUNCNAME-}"
+rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}".sha256 || ui_error 'Failed to remove the previously built files' "${LINENO-}" "${FUNCNAME-}"
 
 # Compress (it ensure that the list of files to compress is in the same order under all OSes)
 # Note: Unicode filenames in the zip are disabled since we don't need them and also zipsigner.jar chokes on them
-cd "${TEMP_DIR}/zip-content" || ui_error 'Failed to change the folder'
+cd "${TEMP_DIR}/zip-content" || ui_error 'Failed to change the folder' "${LINENO-}" "${FUNCNAME-}"
 echo 'Zipping...'
-find . -type f | LC_ALL=C sort | zip -D -9 -X -UN=n -nw "${TEMP_DIR}/flashable${FILENAME_EXT:?}" -@ || ui_error 'Failed compressing'
+find . -type f | LC_ALL=C sort | zip -D -9 -X -UN=n -nw "${TEMP_DIR}/flashable${FILENAME_EXT:?}" -@ || ui_error 'Failed compressing' "${LINENO-}" "${FUNCNAME-}"
 FILENAME="${FILENAME:?}-signed"
 
 # Sign and zipalign
 echo ''
 echo 'Signing and zipaligning...'
 mkdir -p "${TEMP_DIR:?}/zipsign"
-java -Duser.timezone=UTC -Dzip.encoding=Cp437 -Djava.io.tmpdir="${TEMP_DIR:?}/zipsign" -jar "${MAIN_DIR:?}/tools/zipsigner.jar" "${TEMP_DIR:?}/flashable${FILENAME_EXT:?}" "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" || ui_error 'Failed signing and zipaligning'
+java -Duser.timezone=UTC -Dzip.encoding=Cp437 -Djava.io.tmpdir="${TEMP_DIR:?}/zipsign" -jar "${MAIN_DIR:?}/tools/zipsigner.jar" "${TEMP_DIR:?}/flashable${FILENAME_EXT:?}" "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" || ui_error 'Failed signing and zipaligning' "${LINENO-}" "${FUNCNAME-}"
 
 if test "${FAST_BUILD:-false}" = 'false'; then
   echo ''
-  zip -T "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" || ui_error 'The zip file is corrupted'
+  zip -T "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" || ui_error 'The zip file is corrupted' "${LINENO-}" "${FUNCNAME-}"
 fi
-cp -f "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" || ui_error 'Failed to copy the final file'
+cp -f "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" || ui_error 'Failed to copy the final file' "${LINENO-}" "${FUNCNAME-}"
 
-cd "${OUT_DIR:?}" || ui_error 'Failed to change the folder'
+cd "${OUT_DIR:?}" || ui_error 'Failed to change the folder' "${LINENO-}" "${FUNCNAME-}"
 
 # Cleanup remnants (skip on CI)
 pid=''
@@ -352,14 +349,14 @@ fi
 echo ''
 
 # Generate info
-sha256sum -b -- "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.sha256" || ui_error 'Failed to compute the SHA-256 hash'
-ZIP_SHA256="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.sha256")" || ui_error 'Failed to read the SHA-256 hash'
+sha256sum -b -- "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.sha256" || ui_error 'Failed to compute the SHA-256 hash' "${LINENO-}" "${FUNCNAME-}"
+ZIP_SHA256="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.sha256")" || ui_error 'Failed to read the SHA-256 hash' "${LINENO-}" "${FUNCNAME-}"
 
 ZIP_MD5=''
 if test "${FAST_BUILD:-false}" = 'false'; then
   # Weak hash used only as a secondary verification (on legacy Android custom recoveries); no security impact
-  md5sum -b -- "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5" || ui_error 'Failed to compute the MD5 hash' # NOSONAR
-  ZIP_MD5="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5")" || ui_error 'Failed to read the MD5 hash'
+  md5sum -b -- "${FILENAME:?}${FILENAME_EXT:?}" > "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5" || ui_error 'Failed to compute the MD5 hash' "${LINENO-}" "${FUNCNAME-}" # NOSONAR
+  ZIP_MD5="$(cut -d ' ' -f '1' -s 0< "${OUT_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}.md5")" || ui_error 'Failed to read the MD5 hash' "${LINENO-}" "${FUNCNAME-}"
 fi
 
 if test -n "${ZIP_SHORT_COMMIT_ID?}"; then
@@ -387,7 +384,7 @@ if test "${GITHUB_JOB:-false}" != 'false'; then
   } >> "${GITHUB_OUTPUT?}"
 fi
 
-cd "${_init_dir:?}" || ui_error 'Failed to change back the folder'
+cd "${_init_dir:?}" || ui_error 'Failed to change back the folder' "${LINENO-}" "${FUNCNAME-}"
 
 echo ''
 echo 'Done.'
