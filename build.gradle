@@ -121,10 +121,10 @@ static String getScriptExt() {
 
 tasks.register('buildOta', Exec) {
     group = '- OTA build'
-    description = 'Build the flashable OTA zip.'
+    description = 'Build the flashable zip [Full edition].'
 
     doFirst {
-        println 'Building the flashable OTA zip with Gradle...'
+        println 'Building the flashable zip with Gradle...'
         environment BUILD_TYPE: 'full'
         environment NO_PAUSE: '1'
         executable "${projectDir}/build" + getScriptExt()
@@ -133,10 +133,10 @@ tasks.register('buildOta', Exec) {
 
 tasks.register('buildOtaOSS', Exec) {
     group = '- OTA build'
-    description = 'Build the flashable OTA zip (open-source components only).'
+    description = 'Build the flashable zip [OSS edition].'
 
     doFirst {
-        println 'Building the flashable OTA zip (open-source components only) with Gradle...'
+        println 'Building the flashable zip (open-source components only) with Gradle...'
         environment BUILD_TYPE: 'oss'
         environment NO_PAUSE: '1'
         executable "${projectDir}/build" + getScriptExt()
@@ -148,7 +148,7 @@ tasks.named('build').configure {
 
 tasks.register('installTest', Exec) {
     group = 'verification'
-    description = 'Emulate an Android recovery on your PC and run the flashable zip file inside it to see the result.'
+    description = 'Test the flashable zip in a simulated Android recovery environment on your PC.'
     mustRunAfter build, buildOta, buildOtaOSS
 
     doFirst {

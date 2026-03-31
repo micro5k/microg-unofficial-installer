@@ -68,11 +68,12 @@ Includes only open-source components:
 Test the build
 --------------
 
-Emulates an Android recovery on the PC and runs the produced zip inside it:
+Run the flashable zip in a simulated Android recovery environment on your PC to
+see the results:
 
 .. code:: sh
 
-   make test
+   make installtest
 
 .. note::
 
@@ -104,7 +105,8 @@ Includes only open-source components:
 Test the build
 --------------
 
-Emulates an Android recovery on the PC and runs the produced zip inside it:
+Run the flashable zip in a simulated Android recovery environment on your PC to
+see the results:
 
 .. code:: sh
 
@@ -136,7 +138,8 @@ Open the project in VS Code and run the ``buildOtaOSS`` task.
 Test the build
 --------------
 
-Emulates an Android recovery on the PC and runs the produced zip inside it:
+Run the flashable zip in a simulated Android recovery environment on your PC to
+see the results:
 
 Open the project in VS Code and run the ``installTest`` task.
 
