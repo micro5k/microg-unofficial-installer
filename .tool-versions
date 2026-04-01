@@ -2,4 +2,3 @@
 # SPDX-License-Identifier: CC0-1.0
 
 java latest:temurin-17 system
-gradle 8.11.1 system

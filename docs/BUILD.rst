@@ -32,7 +32,7 @@ All build methods require:
    ``build.sh`` via the bundled BusyBox for Windows (no extra installation
    required).
 
-Additional requirement depending on the build method:
+Additional requirements depending on the build method:
 
 -  **make / pdpmake** — for the ``make`` build method.
 

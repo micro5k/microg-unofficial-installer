@@ -167,7 +167,9 @@ command 1> /dev/null 2>&1 -v 'sed' || ui_error 'Missing: sed'
 command 1> /dev/null 2>&1 -v 'rev' || ui_error 'Missing: rev'
 
 command 1> /dev/null 2>&1 -v 'java' || ui_error 'Missing: java'
-JAVA_VER="$(java 2>&1 -version | head -n 1 | cut -d '"' -f '2' -s | cut -d '.' -f '1' -s || :)"
+
+# NOTE: This command returns 1 for Java < 9, but it's fine since the check will fail anyway
+JAVA_VER="$(java 2>&1 -version | head -n 1 | cut -d '"' -f '2' -s | cut -d '.' -f '1' || :)"
 test "${JAVA_VER:-0}" -ge 17 || ui_error 'Java 17 or later is required' "${LINENO-}" "${FUNCNAME-}"
 
 # Create the output dir
