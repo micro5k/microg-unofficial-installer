@@ -42,7 +42,7 @@ private void initialize() {
     println 'OS: ' + System.properties['os.name']
 
     if(JavaVersion.current() < JavaVersion.VERSION_17) {
-        throw new GradleException('This require Java 17 or later')
+        throw new GradleException('Java 17 or later is required')
     }
 }
 
