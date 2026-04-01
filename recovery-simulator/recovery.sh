@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-
-# SPDX-FileCopyrightText: (c) 2022 ale5000
+# SPDX-FileCopyrightText: 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 # shellcheck disable=SC2310 # This function is invoked in an XXX condition so set -e will be disabled. Invoke separately if failures should cause the script to exit

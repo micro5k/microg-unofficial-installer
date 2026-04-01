@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# SPDX-FileCopyrightText: NONE
-# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2026 ale5000
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 """Configuration file for the Sphinx documentation builder.
 

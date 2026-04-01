@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2026 ale5000
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: NONE
+// SPDX-License-Identifier: CC0-1.0
 
 /* jshint esversion: 6 */
 import js from '@eslint/js';

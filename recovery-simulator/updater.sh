@@ -1,7 +1,7 @@
 #!/sbin/sh
-
-# SPDX-FileCopyrightText: (c) 2022 ale5000
+# SPDX-FileCopyrightText: 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 # shellcheck enable=all
 
 # Ensure that the overridden commands are preferred over BusyBox applets (and that unsafe commands aren't accessible)
