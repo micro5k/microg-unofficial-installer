@@ -968,7 +968,7 @@ download_cached_if_lfs_pointer()
     local _expected_sha256 _mirror_url
 
     # shellcheck source=/dev/null
-    command 1> /dev/null -v 'get_mirror_by_sha256' || command . "${MAIN_DIR:?}/conf-lfs.sh" || _ui_error_local "Failed to source 'conf-lfs.sh'" "${LINENO-}" "${FUNCNAME-}"
+    command 1> /dev/null -v 'get_mirror_by_sha256' || command . "${MAIN_DIR:?}/conf/lfs.inc.sh" || _ui_error_local "Failed to source 'conf/lfs.inc.sh'" "${LINENO-}" "${FUNCNAME-}"
     _mirror_url="$(get_mirror_by_sha256 "${3:?}")" || _ui_error_local "Failed to get the mirror" "${LINENO-}" "${FUNCNAME-}"
 
     _expected_sha256=$(grep -m 1 -e '^oid sha256:' -- "${2:?}/${1:?}" | cut -d ':' -f 2 -s) || _ui_error_local "Failed to extract the SHA256 hash from the LFS pointer" "${LINENO-}" "${FUNCNAME-}"

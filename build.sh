@@ -99,10 +99,10 @@ esac
 save_last_title
 set_title 'Building the flashable OTA zip...'
 
-# shellcheck source=SCRIPTDIR/conf-1.sh
-. "${MAIN_DIR:?}/conf-1.sh"
-# shellcheck source=SCRIPTDIR/conf-2.sh
-if test "${OPENSOURCE_ONLY:?}" = 'false'; then . "${MAIN_DIR:?}/conf-2.sh"; fi
+# shellcheck source=SCRIPTDIR/conf/common.inc.sh
+. "${MAIN_DIR:?}/conf/common.inc.sh"
+# shellcheck source=SCRIPTDIR/conf/full.inc.sh
+if test "${OPENSOURCE_ONLY:?}" = 'false'; then . "${MAIN_DIR:?}/conf/full.inc.sh"; fi
 
 _init_dir="$(pwd)" || ui_error 'Failed to read the current dir' "${LINENO-}" "${FUNCNAME-}"
 
