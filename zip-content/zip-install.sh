@@ -4,8 +4,9 @@
 # @author ale5000
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/blob/HEAD/zip-content/zip-install.sh
 
-# SPDX-FileCopyrightText: (c) 2022 ale5000
+# SPDX-FileCopyrightText: 2022 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 # shellcheck enable=all
 
 readonly ZIPINSTALL_VERSION='1.4.2'

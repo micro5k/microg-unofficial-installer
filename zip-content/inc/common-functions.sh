@@ -2,7 +2,7 @@
 # @file common-functions.sh
 # @brief A library with common functions used during flashable ZIP installation.
 
-# SPDX-FileCopyrightText: (c) 2016 ale5000
+# SPDX-FileCopyrightText: 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # shellcheck enable=all

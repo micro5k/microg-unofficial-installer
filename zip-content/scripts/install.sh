@@ -1,5 +1,5 @@
 #!/sbin/sh
-# SPDX-FileCopyrightText: (c) 2016 ale5000
+# SPDX-FileCopyrightText: 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ### GLOBAL VARIABLES ###
