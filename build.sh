@@ -65,8 +65,8 @@ export BUILD_CACHE_DIR="${MAIN_DIR:?}/cache/build"
 export LFS_CACHE_DIR="${MAIN_DIR:?}/cache/lfs"
 
 unset DO_INIT_CMDLINE
-# shellcheck source=SCRIPTDIR/includes/common.sh
-if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR:?}/includes/common.sh"; fi
+# shellcheck source=SCRIPTDIR/lib/common.lib.sh
+if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR:?}/lib/common.lib.sh"; fi
 
 if test -n "${OPENSOURCE_ONLY-}"; then
   ui_error 'You must set BUILD_TYPE instead of OPENSOURCE_ONLY' "${LINENO-}" "${FUNCNAME-}"
