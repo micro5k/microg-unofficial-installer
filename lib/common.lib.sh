@@ -80,7 +80,7 @@ ui_error()
 
 _ui_error_local()
 {
-  ui_error "${1:?}" "${2-}" "${3-}" 'common.sh'
+  ui_error "${1:?}" "${2-}" "${3-}" 'common.lib.sh'
 }
 
 ui_error_msg()
