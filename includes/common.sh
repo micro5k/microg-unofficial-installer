@@ -1,9 +1,10 @@
 #!/usr/bin/env sh
-
-# SPDX-FileCopyrightText: (c) 2016 ale5000
+# SPDX-FileCopyrightText: 2016 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 # shellcheck enable=all
-# shellcheck disable=SC3043 # In POSIX sh, local is undefined
+# shellcheck disable=SC3028 # Ignore: In POSIX sh, FUNCNAME is undefined
+# shellcheck disable=SC3043 # Ignore: In POSIX sh, 'local' is undefined
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTIONS_INCLUDED='true'; fi
 
@@ -54,14 +55,32 @@ beep()
   fi
 }
 
+# @description Prints a formatted error message to stderr and exits the script.
+#
+# @example
+#   ui_error 'File not found' "${LINENO-}" "${FUNCNAME-}" 'script-filename.sh'
+#
+# @arg $1 string Required. The error message to display.
+# @arg $2 int The line number where the error occurred (default: 0).
+# @arg $3 string The function name where the error occurred (default: <main>).
+# @arg $4 string The source file path (default: script basename).
+#
+# @exit 1 Always exits with code 1 after UI cleanup.
+#
+# @see pause_if_needed()
+# @see restore_saved_title_if_exist()
 ui_error()
 {
-  # Args: $1=MESSAGE, $2=LINE, $3=FUNCTION
-  printf 1>&2 '%s:%s: ERROR: [%s] %s\n' "${0##*/}" "${2:-0}" "${3:-<main>}" "${1?}"
+  printf 1>&2 '%s:%s: ERROR: [%s] %s\n' "${4:-"${0##*/}"}" "${2:-0}" "${3:-<main>}" "${1:?}"
+
   pause_if_needed 0
   restore_saved_title_if_exist
-  test -n "${2-}" && exit "$2"
   exit 1
+}
+
+_ui_error_local()
+{
+  ui_error "${1:?}" "${2-}" "${3-}" 'common.sh'
 }
 
 ui_error_msg()
@@ -159,7 +178,7 @@ detect_os_and_other_things()
           IS_BUSYBOX='true'
           ;;
         'msys' | 'cygwin') PLATFORM='win' ;;
-        *) PLATFORM="$(printf '%s\n' "${PLATFORM:?}" | tr -d ':;\\/')" || ui_error 'Failed to find platform' ;;
+        *) PLATFORM="$(printf '%s\n' "${PLATFORM:?}" | tr -d ':;\\/')" || _ui_error_local 'Failed to find platform' "${LINENO-}" "${FUNCNAME-}" ;;
       esac
       ;;
   esac
@@ -177,7 +196,7 @@ detect_os_and_other_things()
   elif SHELL_EXE="$(get_shell_exe)" && test -n "${SHELL_EXE?}"; then
     :
   else
-    ui_error 'Shell not found'
+    _ui_error_local 'Shell not found' "${LINENO-}" "${FUNCNAME-}"
   fi
   unset __SHELL_EXE
 
@@ -187,14 +206,14 @@ detect_os_and_other_things()
       SHELL_APPLET="${0:-ash}"
     else
       if CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)"; then
-        SHELL_EXE="$("${CYGPATH:?}" -m -a -l -- "${SHELL_EXE:?}")" || ui_error 'Unable to convert the path of the shell'
+        SHELL_EXE="$("${CYGPATH:?}" -m -a -l -- "${SHELL_EXE:?}")" || _ui_error_local 'Unable to convert the path of the shell' "${LINENO-}" "${FUNCNAME-}"
       else
         CYGPATH=''
       fi
     fi
   fi
 
-  if test "${SHELL_EXE:?}" = 'bash'; then ui_error 'Shell executable must have the full path'; fi
+  if test "${SHELL_EXE:?}" = 'bash'; then _ui_error_local 'Shell executable must have the full path' "${LINENO-}" "${FUNCNAME-}"; fi
 
   readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_EXE SHELL_APPLET
 }
@@ -937,7 +956,7 @@ dl_type_two()
 is_lfs_pointers()
 {
   local _file_size
-  _file_size="$(stat -c '%s' -- "${1:?}")" || ui_error "Failed to get the file size of '${1?}'"
+  _file_size="$(stat -c '%s' -- "${1:?}")" || _ui_error_local "Failed to get the file size of '${1?}'" "${LINENO-}" "${FUNCNAME-}"
 
   if test "${_file_size:?}" -lt 1024 && grep -m 1 -q -e '^version https://git-lfs.github.com/spec/v1$' -- "${1:?}"; then return 0; fi
   return 1
@@ -949,12 +968,12 @@ download_cached_if_lfs_pointer()
     local _expected_sha256 _mirror_url
 
     # shellcheck source=/dev/null
-    command 1> /dev/null -v 'get_mirror_by_sha256' || command . "${MAIN_DIR:?}/conf-lfs.sh" || ui_error "Failed to source 'conf-lfs.sh'"
-    _mirror_url="$(get_mirror_by_sha256 "${3:?}")" || ui_error "Failed to get the mirror"
+    command 1> /dev/null -v 'get_mirror_by_sha256' || command . "${MAIN_DIR:?}/conf-lfs.sh" || _ui_error_local "Failed to source 'conf-lfs.sh'" "${LINENO-}" "${FUNCNAME-}"
+    _mirror_url="$(get_mirror_by_sha256 "${3:?}")" || _ui_error_local "Failed to get the mirror" "${LINENO-}" "${FUNCNAME-}"
 
-    _expected_sha256=$(grep -m 1 -e '^oid sha256:' -- "${2:?}/${1:?}" | cut -d ':' -f 2 -s) || ui_error "Failed to extract the SHA256 hash from the LFS pointer"
+    _expected_sha256=$(grep -m 1 -e '^oid sha256:' -- "${2:?}/${1:?}" | cut -d ':' -f 2 -s) || _ui_error_local "Failed to extract the SHA256 hash from the LFS pointer" "${LINENO-}" "${FUNCNAME-}"
     dl_file 'LFS' "${_expected_sha256:?}" "${3:?}" "${_mirror_url:?}" ''
-    cp -f -- "${LFS_CACHE_DIR:?}/${_expected_sha256:?}" "${2:?}/${1:?}" || ui_error "Failed to copy the LFS file from cache"
+    cp -f -- "${LFS_CACHE_DIR:?}/${_expected_sha256:?}" "${2:?}/${1:?}" || _ui_error_local "Failed to copy the LFS file from cache" "${LINENO-}" "${FUNCNAME-}"
   fi
 }
 
@@ -965,7 +984,7 @@ dl_file()
 
   # ToDO: Improve this mess
   if test "${1:?}" = 'LFS'; then
-    mkdir -p "${LFS_CACHE_DIR:?}" || ui_error "Failed to create the LFS cache folder"
+    mkdir -p "${LFS_CACHE_DIR:?}" || _ui_error_local "Failed to create the LFS cache folder" "${LINENO-}" "${FUNCNAME-}"
     _output_file="${LFS_CACHE_DIR:?}/${2:?}"
   else
     _output_file="${BUILD_CACHE_DIR:?}/${1:?}/${2:?}"
@@ -983,7 +1002,7 @@ dl_file()
   _clear_cookies || return "${?}"
 
   if test ! -e "${_output_file:?}"; then
-    test "${1:?}" = 'LFS' || mkdir -p "${BUILD_CACHE_DIR:?}/${1:?}" || ui_error "Failed to create the ${1?} folder inside the cache dir"
+    test "${1:?}" = 'LFS' || mkdir -p "${BUILD_CACHE_DIR:?}/${1:?}" || _ui_error_local "Failed to create the ${1?} folder inside the cache dir" "${LINENO-}" "${FUNCNAME-}"
 
     if test "${CI:-false}" = 'false'; then sleep '0.5'; else sleep 3; fi
     case "${_domain:?}" in
@@ -1000,7 +1019,7 @@ dl_file()
         dl_type_zero "${_url:?}" "${_output_file:?}" || _status="${?}"
         ;;
       *)
-        ui_error "Invalid download URL => '${_url?}'"
+        _ui_error_local "Invalid download URL => '${_url?}'" "${LINENO-}" "${FUNCNAME-}"
         ;;
     esac
 
@@ -1017,12 +1036,12 @@ dl_file()
         return "${?}"
       else
         printf '%s\n' "Download failed with error code ${_status?}"
-        ui_error "Failed to download the file => '${1?}/${2?}'"
+        _ui_error_local "Failed to download the file => '${1?}/${2?}'" "${LINENO-}" "${FUNCNAME-}"
       fi
     fi
   fi
 
-  verify_sha256_or_delete "${_output_file:?}" "${3:?}" || ui_error "This file CANNOT be downloaded => '${2?}'"
+  verify_sha256_or_delete "${_output_file:?}" "${3:?}" || _ui_error_local "This file CANNOT be downloaded => '${2?}'" "${LINENO-}" "${FUNCNAME-}"
   printf '%s\n' 'OK'
 }
 
@@ -1034,14 +1053,14 @@ dl_list()
   _backup_ifs="${IFS-}"
   IFS="${NL}"
   # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
-  set -- ${1} || ui_error "Failed expanding DL info list inside dl_list()"
+  set -- ${1} || _ui_error_local "Failed expanding DL info list inside dl_list()" "${LINENO-}" "${FUNCNAME-}"
   if test -n "${_backup_ifs}"; then IFS="${_backup_ifs}"; else unset IFS; fi
 
   for _current_line in "${@}"; do
     _backup_ifs="${IFS-}"
     IFS='|'
     # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
-    set -- ${_current_line} || ui_error "Failed expanding DL info inside dl_list()"
+    set -- ${_current_line} || _ui_error_local "Failed expanding DL info inside dl_list()" "${LINENO-}" "${FUNCNAME-}"
     if test -n "${_backup_ifs}"; then IFS="${_backup_ifs}"; else unset IFS; fi
 
     local_filename="${1}"
@@ -1113,7 +1132,7 @@ is_in_path_env()
   if test -n "${CYGPATH?}"; then
     # Only on Bash under Windows
     local _path
-    _path="$("${CYGPATH:?}" -u -- "${1:?}")" || ui_error 'Unable to convert a path in is_in_path_env()'
+    _path="$("${CYGPATH:?}" -u -- "${1:?}")" || _ui_error_local 'Unable to convert a path in is_in_path_env()' "${LINENO-}" "${FUNCNAME-}"
     set -- "${_path:?}"
   fi
 
@@ -1125,7 +1144,7 @@ add_to_path_env()
   if test -n "${CYGPATH?}"; then
     # Only on Bash under Windows
     local _path
-    _path="$("${CYGPATH:?}" -u -- "${1:?}")" || ui_error 'Unable to convert a path in add_to_path_env()'
+    _path="$("${CYGPATH:?}" -u -- "${1:?}")" || _ui_error_local 'Unable to convert a path in add_to_path_env()' "${LINENO-}" "${FUNCNAME-}"
     set -- "${_path:?}"
   fi
 
@@ -1146,7 +1165,7 @@ remove_from_path_env()
   if test -n "${CYGPATH?}"; then
     # Only on Bash under Windows
     local _single_path
-    _single_path="$("${CYGPATH:?}" -u -- "${1:?}")" || ui_error 'Unable to convert a path in remove_from_path_env()'
+    _single_path="$("${CYGPATH:?}" -u -- "${1:?}")" || _ui_error_local 'Unable to convert a path in remove_from_path_env()' "${LINENO-}" "${FUNCNAME-}"
     set -- "${_single_path:?}"
   fi
 
@@ -1267,7 +1286,7 @@ init_base()
   local _main_dir
 
   if test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${MAIN_DIR-}"; then
-    MAIN_DIR="$(realpath "${MAIN_DIR:?}")" || ui_error 'Unable to resolve the main dir'
+    MAIN_DIR="$(realpath "${MAIN_DIR:?}")" || _ui_error_local 'Unable to resolve the main dir' "${LINENO-}" "${FUNCNAME-}"
   fi
 
   # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
@@ -1277,17 +1296,17 @@ init_base()
 
   if test -n "${CYGPATH?}" && test -n "${MAIN_DIR-}"; then
     # Only on Bash under Windows
-    MAIN_DIR="$("${CYGPATH:?}" -m -l -- "${MAIN_DIR:?}")" || ui_error 'Unable to convert the main dir'
+    MAIN_DIR="$("${CYGPATH:?}" -m -l -- "${MAIN_DIR:?}")" || _ui_error_local 'Unable to convert the main dir' "${LINENO-}" "${FUNCNAME-}"
   fi
 
-  test -n "${MAIN_DIR-}" || ui_error 'MAIN_DIR env var is empty'
+  test -n "${MAIN_DIR-}" || _ui_error_local 'MAIN_DIR env var is empty' "${LINENO-}" "${FUNCNAME-}"
 
   TMPDIR="${TMPDIR:-${RUNNER_TEMP:-${TMP:-${TEMP:-/tmp}}}}"
   export TMPDIR
 
   if test -n "${CYGPATH?}" && test "${TMPDIR?}" = '/tmp'; then
     # Workaround for issues with Bash under Windows (for example the one included inside Git for Windows)
-    TMPDIR="$("${CYGPATH:?}" -m -a -l -- '/tmp')" || ui_error 'Unable to convert the temp directory'
+    TMPDIR="$("${CYGPATH:?}" -m -a -l -- '/tmp')" || _ui_error_local 'Unable to convert the temp directory' "${LINENO-}" "${FUNCNAME-}"
     TMP="${TMPDIR:?}"
     TEMP="${TMPDIR:?}"
   fi
@@ -1330,7 +1349,7 @@ init_path()
 
 init_vars()
 {
-  MODULE_NAME="$(simple_get_prop 'name' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module name string'
+  MODULE_NAME="$(simple_get_prop 'name' "${MAIN_DIR:?}/zip-content/module.prop")" || _ui_error_local 'Failed to parse the module name string' "${LINENO-}" "${FUNCNAME-}"
   readonly MODULE_NAME
   export MODULE_NAME
 }
@@ -1349,7 +1368,7 @@ detect_bb_and_id()
   if test "${PLATFORM:?}" = 'win' && test -n "${BB_CMD?}"; then
     ID_CMD='id'
   else
-    ID_CMD="$(command -v id)" || ui_error 'Unable to get the path of id'
+    ID_CMD="$(command -v id)" || _ui_error_local 'Unable to get the path of id' "${LINENO-}" "${FUNCNAME-}"
   fi
 
   readonly BB_CMD ID_CMD
@@ -1361,9 +1380,9 @@ is_root()
 
   if test "${PLATFORM:?}" = 'win' && test -n "${BB_CMD?}"; then
     # Bash under Windows is unable to detect root so we need to use BusyBox
-    _user_id="$("${BB_CMD:?}" id -u)" || ui_error 'Unable to get user ID'
+    _user_id="$("${BB_CMD:?}" id -u)" || _ui_error_local 'Unable to get user ID' "${LINENO-}" "${FUNCNAME-}"
   else
-    _user_id="$("${ID_CMD:?}" -u)" || ui_error 'Unable to get user ID'
+    _user_id="$("${ID_CMD:?}" -u)" || _ui_error_local 'Unable to get user ID' "${LINENO-}" "${FUNCNAME-}"
   fi
 
   if test "${_user_id:?}" -ne 0; then return 1; fi # Return false
@@ -1398,11 +1417,11 @@ init_cmdline()
   if test "${A5K_TITLE_IS_DEFAULT-}" != 'false'; then set_default_title; fi
 
   if test "${STARTED_FROM_BATCH_FILE:-0}" != '0' && test -n "${HOME-}"; then
-    HOME="$(realpath "${HOME:?}")" || ui_error 'Unable to resolve the home dir'
+    HOME="$(realpath "${HOME:?}")" || _ui_error_local 'Unable to resolve the home dir' "${LINENO-}" "${FUNCNAME-}"
   fi
   if test -n "${CYGPATH?}" && test -n "${HOME-}"; then
     # Only on Bash under Windows
-    HOME="$("${CYGPATH:?}" -u -- "${HOME:?}")" || ui_error 'Unable to convert the home dir'
+    HOME="$("${CYGPATH:?}" -u -- "${HOME:?}")" || _ui_error_local 'Unable to convert the home dir' "${LINENO-}" "${FUNCNAME-}"
   fi
 
   # shellcheck disable=SC3028 # In POSIX sh, SHLVL is undefined
@@ -1439,7 +1458,7 @@ init_cmdline()
   if test -n "${ANDROID_SDK_ROOT-}"; then
     if test -n "${CYGPATH?}"; then
       # Only on Bash under Windows
-      ANDROID_SDK_ROOT="$("${CYGPATH:?}" -m -l -a -- "${ANDROID_SDK_ROOT:?}")" || ui_error 'Unable to convert the Android SDK dir'
+      ANDROID_SDK_ROOT="$("${CYGPATH:?}" -m -l -a -- "${ANDROID_SDK_ROOT:?}")" || _ui_error_local 'Unable to convert the Android SDK dir' "${LINENO-}" "${FUNCNAME-}"
     fi
 
     add_to_path_env "${ANDROID_SDK_ROOT:?}/platform-tools"
@@ -1486,7 +1505,7 @@ init_cmdline()
 
     if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
       # shellcheck source=/dev/null
-      . "${MAIN_DIR:?}/includes/custom-aliases.sh" || ui_error 'Unable to source includes/custom-aliases.sh'
+      . "${MAIN_DIR:?}/includes/custom-aliases.sh" || _ui_error_local 'Unable to source includes/custom-aliases.sh' "${LINENO-}" "${FUNCNAME-}"
     fi
 
     alias 'build'='build.sh'
