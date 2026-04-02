@@ -12,8 +12,6 @@ export LANG='en_US.UTF-8'
 export TZ='UTC'
 
 unset LANGUAGE
-unset LC_CTYPE
-unset LC_MESSAGES
 unset UNZIP
 unset UNZIPOPT
 unset UNZIP_OPTS

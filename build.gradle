@@ -161,12 +161,6 @@ tasks.named('build') {
     description = 'Alias of "buildOtaOSS" task.'
 }
 
-tasks.register('install') {
-    group = null
-    description = 'Alias of "buildOtaOSS" task.'
-    dependsOn build
-}
-
 tasks.register('installTest', Exec) {
     group = 'verification'
     description = 'Test the flashable zip in a simulated Android recovery environment on your PC.'
