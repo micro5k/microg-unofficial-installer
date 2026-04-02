@@ -8,6 +8,7 @@ buildscript {
 
 plugins {
     id 'base'
+    id 'maven-publish'
     //id 'com.github.hierynomus.license-report' version '0.15.0'
     //id 'com.github.spotbugs' version '4.7.6'
 }
@@ -46,8 +47,7 @@ private void initialize() {
     }
 }
 
-private String getOurArchivesBaseName()
-{
+private String getOurArchivesBaseName() {
     String val = String.valueOf("${ext.ourArchivesBaseName}")
     if(val.isEmpty() || val == 'null')
         throw new InvalidUserDataException('String is empty.')
@@ -55,8 +55,15 @@ private String getOurArchivesBaseName()
     return "${val}"
 }
 
-private void configureSigning(def android, File keystorePropsFile)
-{
+private String getGitCommitHash() {
+    try {
+        return 'git rev-parse --short=8 HEAD'.execute().text.trim()
+    } catch (Exception ignored) {
+        return "unknown"
+    }
+}
+
+private void configureSigning(def android, File keystorePropsFile) {
     if(!keystorePropsFile.exists()) return
     if(android == null) throw new GradleException('android is null inside configureSigning()')
 
@@ -143,16 +150,18 @@ tasks.register('buildOtaOSS', Exec) {
     }
 }
 
-tasks.named('build') {
-    group = null
-    description = 'Alias of "buildOtaOSS" task.'
-    finalizedBy buildOtaOSS
-}
-
 tasks.named('assemble') {
     enabled = false
     group = null
     description = 'Dummy task.'
+}
+
+tasks.named('build') {
+    group = null
+    description = 'Alias of "buildOtaOSS" task.'
+    setDependsOn([])
+    dependsOn(assemble)
+    finalizedBy buildOtaOSS
 }
 
 tasks.register('installTest', Exec) {
@@ -188,4 +197,53 @@ tasks.named('wrapper').configure {
     println 'Gradle: ' + gradleVersionTarget
     gradleVersion = gradleVersionTarget
     distributionSha256Sum = gradleSha256Sum
+}
+
+/* === PUBLISHING === */
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = project.ext.ourArchivesBaseName
+            pom {
+                name = project.name
+                packaging = 'zip'
+            }
+        }
+    }
+}
+
+tasks.withType(PublishToMavenLocal).configureEach {
+    // Ensure builds run before this task
+    mustRunAfter 'build', 'buildOta', 'buildOtaOSS'
+
+    doFirst {
+        def projectId = project.ext.ourArchivesBaseName
+        def commit = getGitCommitHash()
+        def zipFiles = fileTree(dir: project.buildDir).matching {
+            include "${projectId}-${version}-g${commit}-*-by-ale5000-signed.zip"
+        }.files
+
+        if(zipFiles.size() < 1 || zipFiles.size() > 2) {
+            throw new GradleException("Publishing failed: Expected 1 or 2 artifacts in '${project.buildDir}', but found ${zipFiles.size()}. Check if build tasks were executed.")
+        }
+
+        // Add artifacts to the publication just before execution
+        def mavenPub = project.publishing.publications.maven
+        zipFiles.each { foundFile ->
+            def isFull = foundFile.name.contains('-full-')
+            def isOss = foundFile.name.contains('-oss-')
+
+            if(!isFull && !isOss) {
+                throw new GradleException("Publishing failed: File ${foundFile.name} missing a valid build type.")
+            }
+
+            mavenPub.artifact(foundFile) {
+                if(isFull) {
+                    classifier = 'full'
+                }
+                extension = 'zip'
+            }
+        }
+    }
 }
