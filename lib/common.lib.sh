@@ -78,7 +78,7 @@ ui_error()
     conf_*) _source_file='common.inc.sh' ;;
     *) _source_file="${4:-"${0##*/}"}" ;;
   esac
-  printf 1>&2 '%s:%s: ERROR: [%s] %s\n' "${_source_file?}" "${2:-0}" "${3:-<main>}" "${1:?}"
+  printf 1>&2 '%s:%s: ERROR: [%s] %s\n' "${_source_file:-unknown}" "${2:-0}" "${3:-<main>}" "${1:?}"
 
   pause_if_needed 0
   restore_saved_title_if_exist
