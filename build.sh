@@ -97,7 +97,7 @@ case "${BUILD_TYPE-}" in
 esac
 
 save_last_title
-set_title 'Building the flashable OTA zip...'
+set_title 'Building the flashable zip...'
 
 # shellcheck source=SCRIPTDIR/conf/common.inc.sh
 . "${MAIN_DIR:?}/conf/common.inc.sh"

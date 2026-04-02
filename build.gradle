@@ -120,7 +120,7 @@ static String getScriptExt() {
 }
 
 tasks.register('buildOta', Exec) {
-    group = '- OTA build'
+    group = '- Flashable ZIP'
     description = 'Build the flashable zip [Full edition].'
 
     doFirst {
@@ -132,7 +132,7 @@ tasks.register('buildOta', Exec) {
 }
 
 tasks.register('buildOtaOSS', Exec) {
-    group = '- OTA build'
+    group = '- Flashable ZIP'
     description = 'Build the flashable zip [OSS edition].'
 
     doFirst {
@@ -142,8 +142,17 @@ tasks.register('buildOtaOSS', Exec) {
         executable "${projectDir}/build" + getScriptExt()
     }
 }
-tasks.named('build').configure {
+
+tasks.named('build') {
+    group = null
+    description = 'Alias of "buildOtaOSS" task.'
     finalizedBy buildOtaOSS
+}
+
+tasks.named('assemble') {
+    enabled = false
+    group = null
+    description = 'Dummy task.'
 }
 
 tasks.register('installTest', Exec) {
@@ -164,12 +173,19 @@ tasks.register('test') {
     dependsOn installTest
 }
 
+tasks.named('check') {
+    dependsOn 'test'
+}
+
 // Dummy task
-tasks.register('install')
+tasks.register('install') {
+    enabled = false
+    group = null
+    description = 'Dummy task.'
+}
 
 tasks.named('wrapper').configure {
     println 'Gradle: ' + gradleVersionTarget
     gradleVersion = gradleVersionTarget
-    //distributionType = Wrapper.DistributionType.ALL
     distributionSha256Sum = gradleSha256Sum
 }

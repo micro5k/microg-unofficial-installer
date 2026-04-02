@@ -1,6 +1,6 @@
-###########################
-Build the flashable OTA zip
-###########################
+#######################
+Build the flashable zip
+#######################
 
 ..
    SPDX-FileCopyrightText: (c) 2026 ale5000

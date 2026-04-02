@@ -64,7 +64,7 @@ jobs:
           restore-keys: "lfs-"
           path: "cache/lfs"
           enableCrossOsArchive: true
-      - name: "Build the flashable OTA zip"
+      - name: "Build the flashable zip [OSS edition]"
         id: "build"
         shell: bash
         timeout-minutes: 10

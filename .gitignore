@@ -43,6 +43,7 @@ desktop.ini
 # Gradle files
 /.gradle/
 /build/
+/gradle/gradle-daemon-jvm.properties
 
 # Local Gradle configuration files
 local.properties

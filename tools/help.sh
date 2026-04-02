@@ -25,7 +25,7 @@ aligned_print 'help' 'Show this help'
 aligned_print 'shellhelp' 'Show the original help of the shell'
 printf '\n'
 
-aligned_print 'build' 'Build the flashable OTA zip (set the BUILD_TYPE env var to choose what to build)'
+aligned_print 'build' 'Build the flashable zip (set the BUILD_TYPE env var to choose what to build)'
 aligned_print 'make' 'Execute "make" of your PC (on Windows it fallback to internal "pdpmake" if no make is found)'
 if test "${PLATFORM:?}" = 'win'; then
   aligned_print 'pdpmake' 'Execute the internal "pdpmake"'

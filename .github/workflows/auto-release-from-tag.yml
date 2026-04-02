@@ -38,7 +38,7 @@ jobs:
         with:
           distribution: "temurin"
           java-version-file: ".tool-versions"
-      - name: "Build the flashable OTA zip"
+      - name: "Build the flashable zip [OSS edition]"
         id: "build"
         shell: bash
         timeout-minutes: 10

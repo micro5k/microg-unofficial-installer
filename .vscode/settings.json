@@ -1,5 +1,11 @@
 {
     "explorer.excludeGitIgnore": true,
+    "task.autoDetect": "off",
+
+    "gradle.autoDetect": "off",
+    "gradle.enabled": false,
+    "java.autobuild.enabled": false,
+    "java.import.gradle.enabled": false,
 
     "shellcheck.enable": true,
     "shellcheck.enableQuickFix": true,
@@ -9,15 +15,6 @@
     "codecov.coverage.enabled": true,
     "codacy.guardrails.analyzeGeneratedCode": "disabled",
     "codacy.guardrails.instructionsFile": "manual",
-
-    "task.autoDetect": "off",
-    "gradle.autoDetect": "off",
-
-    "java.autobuild.enabled": false,
-    "java.import.gradle.enabled": false,
-    "java.import.maven.enabled": false,
-    "java.server.launchMode": "LightWeight",
-    "java.showBuildStatusOnStart.enabled": false,
 
     "python.analysis.supportRestructuredText": true,
     "python.analysis.supportDocstringTemplate": true,

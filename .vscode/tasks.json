@@ -4,6 +4,22 @@
         "reveal": "always",
         "revealProblems": "onProblem"
     },
+    "problemMatcher": [
+        {
+            "owner": "custom-shell-output",
+            "fileLocation": "search",
+            "pattern": [
+                {
+                    "regexp": "^([^:]+):(\\d+):\\s+(ERROR|WARNING):\\s+\\[([^\\]]*)\\]\\s+(.*)\\r?$",
+                    "file": 1,
+                    "line": 2,
+                    "severity": 3,
+                    "code": 4,
+                    "message": 5
+                }
+            ]
+        }
+    ],
     "tasks": [
         {
             "label": "buildOta",
@@ -19,21 +35,7 @@
                     "BUILD_TYPE": "full"
                 }
             },
-            "group": "build",
-            "problemMatcher": {
-                "owner": "shell-build",
-                "fileLocation": "search",
-                "pattern": [
-                    {
-                        "regexp": "^([^:]+):(\\d+):\\s+(ERROR|WARNING):\\s+\\[([^\\]]*)\\]\\s+(.*)\\r?$",
-                        "file": 1,
-                        "line": 2,
-                        "severity": 3,
-                        "code": 4,
-                        "message": 5
-                    }
-                ]
-            }
+            "group": "build"
         },
         {
             "label": "buildOtaOSS",
@@ -49,21 +51,7 @@
                     "BUILD_TYPE": "oss"
                 }
             },
-            "group": "build",
-            "problemMatcher": {
-                "owner": "shell-build",
-                "fileLocation": "search",
-                "pattern": [
-                    {
-                        "regexp": "^([^:]+):(\\d+):\\s+(ERROR|WARNING):\\s+\\[([^\\]]*)\\]\\s+(.*)\\r?$",
-                        "file": 1,
-                        "line": 2,
-                        "severity": 3,
-                        "code": 4,
-                        "message": 5
-                    }
-                ]
-            }
+            "group": "build"
         },
         {
             "label": "installTest",
@@ -87,8 +75,7 @@
             },
             "presentation": {
                 "panel": "dedicated"
-            },
-            "problemMatcher": []
+            }
         },
         {
             "label": "reuse-lint",
@@ -96,7 +83,8 @@
             "detail": "Verify license and copyright compliance (REUSE).",
             "type": "shell",
             "command": "reuse",
-            "args": ["lint"]
+            "args": ["lint"],
+            "problemMatcher": []
         }
     ]
 }
