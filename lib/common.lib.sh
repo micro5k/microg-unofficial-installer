@@ -71,7 +71,14 @@ beep()
 # @see restore_saved_title_if_exist()
 ui_error()
 {
-  printf 1>&2 '%s:%s: ERROR: [%s] %s\n' "${4:-"${0##*/}"}" "${2:-0}" "${3:-<main>}" "${1:?}"
+  local _source_file
+  case "${3-}" in
+    conf_lfs_*) _source_file='lfs.inc.sh' ;;
+    conf_full_*) _source_file='full.inc.sh' ;;
+    conf_*) _source_file='common.inc.sh' ;;
+    *) _source_file="${4:-"${0##*/}"}" ;;
+  esac
+  printf 1>&2 '%s:%s: ERROR: [%s] %s\n' "${_source_file?}" "${2:-0}" "${3:-<main>}" "${1:?}"
 
   pause_if_needed 0
   restore_saved_title_if_exist
@@ -96,6 +103,11 @@ ui_warning()
 ui_debug()
 {
   printf 1>&2 '%s\n' "${1?}"
+}
+
+ui_nl()
+{
+  printf 1>&2 '\n'
 }
 
 export DL_DEBUG="${DL_DEBUG:-false}"
@@ -968,8 +980,8 @@ download_cached_if_lfs_pointer()
     local _expected_sha256 _mirror_url
 
     # shellcheck source=/dev/null
-    command 1> /dev/null -v 'get_mirror_by_sha256' || command . "${MAIN_DIR:?}/conf/lfs.inc.sh" || _ui_error_local "Failed to source 'conf/lfs.inc.sh'" "${LINENO-}" "${FUNCNAME-}"
-    _mirror_url="$(get_mirror_by_sha256 "${3:?}")" || _ui_error_local "Failed to get the mirror" "${LINENO-}" "${FUNCNAME-}"
+    command 1> /dev/null -v 'conf_lfs_get_mirror_by_sha256' || command . "${MAIN_DIR:?}/conf/lfs.inc.sh" || _ui_error_local "Failed to source 'conf/lfs.inc.sh'" "${LINENO-}" "${FUNCNAME-}"
+    _mirror_url="$(conf_lfs_get_mirror_by_sha256 "${3:?}")" || _ui_error_local "Failed to get the mirror" "${LINENO-}" "${FUNCNAME-}"
 
     _expected_sha256=$(grep -m 1 -e '^oid sha256:' -- "${2:?}/${1:?}" | cut -d ':' -f 2 -s) || _ui_error_local "Failed to extract the SHA256 hash from the LFS pointer" "${LINENO-}" "${FUNCNAME-}"
     dl_file 'LFS' "${_expected_sha256:?}" "${3:?}" "${_mirror_url:?}" ''

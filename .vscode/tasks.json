@@ -25,7 +25,7 @@
                 "fileLocation": "search",
                 "pattern": [
                     {
-                        "regexp": "^([^:]+):(\\d+):\\s+(ERROR|WARNING):\\s+\\[([^\\]]*)\\]\\s+(.*)$",
+                        "regexp": "^([^:]+):(\\d+):\\s+(ERROR|WARNING):\\s+\\[([^\\]]*)\\]\\s+(.*)\\r?$",
                         "file": 1,
                         "line": 2,
                         "severity": 3,
@@ -55,7 +55,7 @@
                 "fileLocation": "search",
                 "pattern": [
                     {
-                        "regexp": "^([^:]+):(\\d+):\\s+(ERROR|WARNING):\\s+\\[([^\\]]*)\\]\\s+(.*)$",
+                        "regexp": "^([^:]+):(\\d+):\\s+(ERROR|WARNING):\\s+\\[([^\\]]*)\\]\\s+(.*)\\r?$",
                         "file": 1,
                         "line": 2,
                         "severity": 3,

@@ -130,7 +130,7 @@ if test -n "${ZIP_SHORT_COMMIT_ID?}"; then
 fi
 
 if test "${OPENSOURCE_ONLY:?}" != 'false'; then
-  if ! is_oss_only_build_enabled; then
+  if ! conf_is_oss_only_build_enabled; then
     echo 'WARNING: The OSS only build is disabled'
     set_title 'OSS only build is disabled'
 
@@ -222,7 +222,7 @@ FILENAME_EXT='.zip'
 # Download and verify external application files to ensure package integrity; bundled files will be verified at a later stage
 {
   if test "${OPENSOURCE_ONLY:?}" = 'false'; then
-    current_dl_list="$(files_to_download)" || ui_error 'Missing download list' "${LINENO-}" "${FUNCNAME-}"
+    current_dl_list="$(conf_full_files_to_download)" || ui_error 'Missing download list' "${LINENO-}" "${FUNCNAME-}"
     dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files' "${LINENO-}" "${FUNCNAME-}"
 
     dl_file 'misc/keycheck' 'keycheck-arm.bin' '2e348074961b78c2cf9e8728910ce7c9596f195a6344ead35e536ccebe18df76' 'github.com/someone755/kerneller/raw/9bb15ca2e73e8b81e412d595b52a176bdeb7c70a/extract/tools/keycheck' ''
@@ -230,7 +230,7 @@ FILENAME_EXT='.zip'
     echo 'Skipped not OSS files!'
   fi
 
-  current_dl_list="$(oss_files_to_download)" || ui_error 'Missing download list' "${LINENO-}" "${FUNCNAME-}"
+  current_dl_list="$(conf_oss_files_to_download)" || ui_error 'Missing download list' "${LINENO-}" "${FUNCNAME-}"
   dl_list "${current_dl_list?}" || ui_error 'Failed to download the necessary files' "${LINENO-}" "${FUNCNAME-}"
 
   clear_dl_temp_dir || ui_error 'Failed to remove the DL temp dir' "${LINENO-}" "${FUNCNAME-}"
@@ -277,7 +277,7 @@ if test -e "${TEMP_DIR:?}/zip-content/origin/file-list.dat"; then
 fi
 
 if test "${OPENSOURCE_ONLY:?}" = 'false'; then
-  files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH MIN_API MAX_API FINAL_FILENAME INTERNAL_NAME FILE_HASH _; do
+  conf_full_files_to_download | while IFS='|' read -r LOCAL_FILENAME LOCAL_PATH MIN_API MAX_API FINAL_FILENAME INTERNAL_NAME FILE_HASH _; do
     mkdir -p -- "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}"
     cp -f -- "${BUILD_CACHE_DIR:?}/${LOCAL_PATH:?}/${LOCAL_FILENAME:?}.apk" "${TEMP_DIR:?}/zip-content/origin/${LOCAL_PATH:?}/" || ui_error "Failed to copy to the temp dir the file => '${LOCAL_PATH}/${LOCAL_FILENAME}.apk'" "${LINENO-}" "${FUNCNAME-}"
 

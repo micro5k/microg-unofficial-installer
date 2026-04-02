@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 # SPDX-FileCopyrightText: NONE
 # SPDX-License-Identifier: CC0-1.0
 
-files_to_download()
+conf_full_files_to_download()
 {
   cat << 'EOF'
 AndroidAuto|priv-app|23||AndroidAuto|com.google.android.projection.gearhead|9fc3e5646210f94ae8a0df299a272dcef1f0e890ceabfc80b3da455e4bffda46|www.apkmirror.com/apk/google-inc/android-auto/android-auto-1-2-520120-stub-release/android-auto-1-2-520120-stub-android-apk-download/|store-eu-par-2.gofile.io/download/web/cdd63095-af4c-4ded-a702-2ae5bc134366/AndroidAuto.apk
