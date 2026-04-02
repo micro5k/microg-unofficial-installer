@@ -151,17 +151,20 @@ tasks.register('buildOtaOSS', Exec) {
 }
 
 tasks.named('assemble') {
-    enabled = false
     group = null
-    description = 'Dummy task.'
+    description = 'Alias of "buildOtaOSS" task.'
+    finalizedBy buildOtaOSS
 }
 
 tasks.named('build') {
     group = null
     description = 'Alias of "buildOtaOSS" task.'
-    setDependsOn([])
-    dependsOn(assemble)
-    finalizedBy buildOtaOSS
+}
+
+tasks.register('install') {
+    group = null
+    description = 'Alias of "buildOtaOSS" task.'
+    dependsOn build
 }
 
 tasks.register('installTest', Exec) {
@@ -180,17 +183,6 @@ tasks.register('installTest', Exec) {
 
 tasks.register('test') {
     dependsOn installTest
-}
-
-tasks.named('check') {
-    dependsOn 'test'
-}
-
-// Dummy task
-tasks.register('install') {
-    enabled = false
-    group = null
-    description = 'Dummy task.'
 }
 
 tasks.named('wrapper').configure {
