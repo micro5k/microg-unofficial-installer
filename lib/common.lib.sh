@@ -1513,9 +1513,9 @@ init_cmdline()
     alias_scripts "${MAIN_DIR:?}/tools"
     alias_scripts "${MAIN_DIR:?}/utils"
 
-    if test -f "${MAIN_DIR:?}/includes/custom-aliases.sh"; then
+    if test -f "${MAIN_DIR:?}/lib/inc/custom-aliases.inc.sh"; then
       # shellcheck source=/dev/null
-      . "${MAIN_DIR:?}/includes/custom-aliases.sh" || _ui_error_local 'Unable to source includes/custom-aliases.sh' "${LINENO-}" "${FUNCNAME-}"
+      . "${MAIN_DIR:?}/lib/inc/custom-aliases.inc.sh" || _ui_error_local 'Unable to source lib/inc/custom-aliases.inc.sh' "${LINENO-}" "${FUNCNAME-}"
     fi
 
     alias 'build'='build.sh'
