@@ -64,9 +64,12 @@ detect_script_dir || return 1 2>&- || exit 1
 export BUILD_CACHE_DIR="${MAIN_DIR:?}/cache/build"
 export LFS_CACHE_DIR="${MAIN_DIR:?}/cache/lfs"
 
-unset DO_INIT_CMDLINE
-# shellcheck source=SCRIPTDIR/lib/main.lib.sh
-if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR:?}/lib/main.lib.sh"; fi
+{
+  unset DO_INIT_CMDLINE
+  readonly LIB_FILENAME='main.lib.sh'
+  # shellcheck source=SCRIPTDIR/lib/main.lib.sh
+  if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR:?}/lib/${LIB_FILENAME:?}"; fi
+}
 
 if test -n "${OPENSOURCE_ONLY-}"; then
   ui_error 'You must set BUILD_TYPE instead of OPENSOURCE_ONLY' "${LINENO-}" "${FUNCNAME-}"
@@ -99,10 +102,10 @@ esac
 save_last_title
 set_title 'Building the flashable zip...'
 
-# shellcheck source=SCRIPTDIR/conf/common.inc.sh
-. "${MAIN_DIR:?}/conf/common.inc.sh"
-# shellcheck source=SCRIPTDIR/conf/full.inc.sh
-if test "${OPENSOURCE_ONLY:?}" = 'false'; then . "${MAIN_DIR:?}/conf/full.inc.sh"; fi
+# shellcheck source=SCRIPTDIR/conf/conf-common.inc.sh
+. "${MAIN_DIR:?}/conf/conf-common.inc.sh"
+# shellcheck source=SCRIPTDIR/conf/conf-full.inc.sh
+if test "${OPENSOURCE_ONLY:?}" = 'false'; then . "${MAIN_DIR:?}/conf/conf-full.inc.sh"; fi
 
 _init_dir="$(pwd)" || ui_error 'Failed to read the current dir' "${LINENO-}" "${FUNCNAME-}"
 

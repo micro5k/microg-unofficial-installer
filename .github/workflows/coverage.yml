@@ -47,7 +47,7 @@ jobs:
         uses: actions/cache/restore@v5
         timeout-minutes: 5
         with:
-          key: "build-${{ hashFiles('conf/full.inc.sh') }}"
+          key: "build-${{ hashFiles('conf/conf-full.inc.sh') }}"
           restore-keys: "build-"
           path: "cache/build"
           enableCrossOsArchive: true
@@ -55,7 +55,7 @@ jobs:
         uses: actions/cache/restore@v5
         timeout-minutes: 5
         with:
-          key: "lfs-${{ hashFiles('conf/lfs.inc.sh') }}"
+          key: "lfs-${{ hashFiles('conf/conf-lfs.inc.sh') }}"
           restore-keys: "lfs-"
           path: "cache/lfs"
           enableCrossOsArchive: true

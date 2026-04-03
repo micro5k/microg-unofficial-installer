@@ -8,6 +8,7 @@ on:
   push:
     paths:
       - "LICENSES/*"
+      - "conf/*.sh"
       - "docs/*.rst"
       - "includes/*"
       - "tools/*.jar"
@@ -15,7 +16,6 @@ on:
       - "CHANGELOG.rst"
       - "LICENSE*.rst"
       - "build.sh"
-      - "conf-*.sh"
     branches:
       - "**"
   schedule:
@@ -52,7 +52,7 @@ jobs:
         uses: actions/cache@v5
         timeout-minutes: 5
         with:
-          key: "build-${{ hashFiles('conf/full.inc.sh') }}"
+          key: "build-${{ hashFiles('conf/conf-full.inc.sh') }}"
           restore-keys: "build-"
           path: "cache/build"
           enableCrossOsArchive: true
@@ -60,7 +60,7 @@ jobs:
         uses: actions/cache@v5
         timeout-minutes: 5
         with:
-          key: "lfs-${{ hashFiles('conf/lfs.inc.sh') }}"
+          key: "lfs-${{ hashFiles('conf/conf-lfs.inc.sh') }}"
           restore-keys: "lfs-"
           path: "cache/lfs"
           enableCrossOsArchive: true
@@ -267,14 +267,14 @@ jobs:
         with:
           lfs: false
           sparse-checkout: |
-            conf/full.inc.sh
-            conf/lfs.inc.sh
+            conf/conf-full.inc.sh
+            conf/conf-lfs.inc.sh
           sparse-checkout-cone-mode: false
       - name: "Ping build cache" # Cache expiration: 7 days
         uses: actions/cache/restore@v5
         timeout-minutes: 5
         with:
-          key: "build-${{ hashFiles('conf/full.inc.sh') }}"
+          key: "build-${{ hashFiles('conf/conf-full.inc.sh') }}"
           restore-keys: "build-"
           path: "cache/build"
           enableCrossOsArchive: true
@@ -283,7 +283,7 @@ jobs:
         uses: actions/cache/restore@v5
         timeout-minutes: 5
         with:
-          key: "lfs-${{ hashFiles('conf/lfs.inc.sh') }}"
+          key: "lfs-${{ hashFiles('conf/conf-lfs.inc.sh') }}"
           restore-keys: "lfs-"
           path: "cache/lfs"
           enableCrossOsArchive: true

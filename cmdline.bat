@@ -29,7 +29,7 @@ SET "IS_PATH_INITIALIZED="
 SET "__QUOTED_PARAMS="
 SET "__SHELL_EXE=%~dp0tools\win\busybox.exe"
 
-"%__SHELL_EXE%" ash -s -c ". '%~dp0lib\main.lib.sh' || exit ${?}" "ash" %*
+"%__SHELL_EXE%" ash -s -c "readonly LIB_FILENAME='main.lib.sh'; . '%~dp0lib\main.lib.sh' || exit ${?}" "ash" %*
 
 ENDLOCAL 2> nul
 IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%

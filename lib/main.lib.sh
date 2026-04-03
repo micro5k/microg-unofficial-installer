@@ -85,7 +85,7 @@ ui_error()
 
 _ui_error_local()
 {
-  ui_error "${1:?}" "${2-}" "${3-}" 'common.lib.sh'
+  ui_error "${1:?}" "${2-}" "${3-}" "${LIB_FILENAME:?}"
 }
 
 ui_error_msg()
@@ -978,7 +978,7 @@ download_cached_if_lfs_pointer()
     local _expected_sha256 _mirror_url
 
     # shellcheck source=/dev/null
-    command 1> /dev/null -v 'conf_lfs_get_mirror_by_sha256' || command . "${MAIN_DIR:?}/conf/lfs.inc.sh" || _ui_error_local "Failed to source 'conf/lfs.inc.sh'" "${LINENO-}" "${FUNCNAME-}"
+    command 1> /dev/null -v 'conf_lfs_get_mirror_by_sha256' || command . "${MAIN_DIR:?}/conf/conf-lfs.inc.sh" || _ui_error_local "Failed to source 'conf/conf-lfs.inc.sh'" "${LINENO-}" "${FUNCNAME-}"
     _mirror_url="$(conf_lfs_get_mirror_by_sha256 "${3:?}")" || _ui_error_local "Failed to get the mirror" "${LINENO-}" "${FUNCNAME-}"
 
     _expected_sha256=$(grep -m 1 -e '^oid sha256:' -- "${2:?}/${1:?}" | cut -d ':' -f 2 -s) || _ui_error_local "Failed to extract the SHA256 hash from the LFS pointer" "${LINENO-}" "${FUNCNAME-}"
@@ -1515,7 +1515,7 @@ init_cmdline()
 
     if test -f "${MAIN_DIR:?}/lib/inc/custom-aliases.inc.sh"; then
       # shellcheck source=/dev/null
-      . "${MAIN_DIR:?}/lib/inc/custom-aliases.inc.sh" || _ui_error_local 'Unable to source lib/inc/custom-aliases.inc.sh' "${LINENO-}" "${FUNCNAME-}"
+      . "${MAIN_DIR:?}/lib/inc/custom-aliases.inc.sh" || _ui_error_local "Unable to source 'inc/custom-aliases.inc.sh'" "${LINENO-}" "${FUNCNAME-}"
     fi
 
     alias 'build'='build.sh'
