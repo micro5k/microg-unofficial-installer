@@ -102,6 +102,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     export LIB_FILENAME
 
     if test "${_run_strategy}" = 'source'; then
+      # shellcheck source=SCRIPTDIR/lib/main.lib.sh
       . "${_main_dir}/lib/${LIB_FILENAME}" "${@}" || return "${?}"
     elif test "${_run_strategy}" = 's-opt'; then
       # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
