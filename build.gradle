@@ -27,7 +27,7 @@ private void initialize() {
     defaultTasks 'tasks'
 
     // Define the custom build directory
-    project.buildDir = project.file('output')
+    layout.buildDirectory = 'output'
 
     // Load properties from module.prop
     def moduleProp = project.file('zip-content/module.prop')
@@ -43,24 +43,32 @@ private void initialize() {
     ext.isAlpha = version.endsWith('-alpha')
     //ext.isBeta = version.endsWith('-beta')
 
-    println "Project: ${name}"
-    println "Version: ${version}"
-    println "OS: ${System.getProperty('os.name')}"
-
     if(JavaVersion.current() < JavaVersion.VERSION_17) {
         throw new GradleException('Java 17 or later is required')
     }
 }
 
-private String getProjectId() {
-    project.findProperty('projectId') ?: { throw new InvalidUserDataException('projectId is empty or null.') }()
+private static String getScriptExt() {
+    System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows') ? '.bat' : '.sh'
 }
 
-private String getGitCommitHash() {
-    try {
-        'git rev-parse --short=8 HEAD'.execute().text.trim()
-    } catch (ignored) {
-        'unknown'
+private Provider<String> getProjectId() {
+    project.provider {
+        project.findProperty('projectId') ?: { 
+            throw new InvalidUserDataException('projectId is empty or null.') 
+        }()
+    }
+}
+
+private Provider<String> getGitCommitHash() {
+    providers.exec {
+        commandLine 'git', 'rev-parse', '--short=8', 'HEAD'
+    }.standardOutput.asText.map{ it.trim() }.orElse('unknown')
+}
+
+private Provider<String> getZipName(String variant = '*') {
+    getProjectId().zip(getGitCommitHash()) { id, gitCommitHash ->
+        "${id}-${project.version}-g${gitCommitHash}-${variant}-by-ale5000-signed.zip"
     }
 }
 
@@ -96,19 +104,23 @@ private void configureSigning(def android, File keystorePropsFile) {
     android.buildTypes.release.signingConfig android.signingConfigs.config
 }
 
-static String getScriptExt() {
-    System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows') ? '.bat' : '.sh'
-}
-
 initialize()
 
 /* ===BLOCKS=== */
 
 base {
-    archivesName = getProjectId()
+    archivesName.set(getProjectId())
 }
 
 /* ==TASKS=== */
+
+gradle.taskGraph.whenReady {
+    logger.lifecycle '='*36
+    logger.lifecycle "Project: ${project.name}"
+    logger.lifecycle "Version: ${project.version}"
+    logger.lifecycle "OS:      ${System.getProperty('os.name')}"
+    logger.lifecycle '='*36
+}
 
 tasks.register('cleanRecoveryOutput', Delete) {
     group = '- Cleanup'
@@ -149,11 +161,27 @@ tasks.register('buildOta', Exec) {
     group = '- Flashable ZIP'
     description = 'Build the flashable zip [Full edition].'
 
+    ['LICENSES', 'conf', 'docs', 'lib', 'zip-content'].each { folder ->
+        inputs.dir(layout.projectDirectory.dir(folder)).withPropertyName("inputDir_${folder}")
+    }
+    inputs.files(
+        layout.projectDirectory.dir('tools').asFileTree.matching { include '*.jar' },
+        layout.projectDirectory.files('CHANGELOG.rst', 'build.sh'),
+        layout.projectDirectory.asFileTree.matching { include 'LICENSE*.rst' }
+    ).withPropertyName('inputFiles')
+
+    outputs.file(layout.buildDirectory.file(getZipName('full')))
+
+    workingDir = layout.projectDirectory
+    executable = layout.projectDirectory.file("build${getScriptExt()}")
+
+    environment([
+        'BUILD_TYPE': 'full',
+        'NO_PAUSE'  : '1'
+    ])
+
     doFirst {
         println 'Building the flashable zip with Gradle...'
-        environment BUILD_TYPE: 'full'
-        environment NO_PAUSE: '1'
-        executable "${projectDir}/build" + getScriptExt()
     }
 }
 
@@ -161,18 +189,34 @@ tasks.register('buildOtaOSS', Exec) {
     group = '- Flashable ZIP'
     description = 'Build the flashable zip [OSS edition].'
 
+    ['LICENSES', 'conf', 'docs', 'lib', 'zip-content'].each { folder ->
+        inputs.dir(layout.projectDirectory.dir(folder)).withPropertyName("inputDir_${folder}")
+    }
+    inputs.files(
+        layout.projectDirectory.dir('tools').asFileTree.matching { include '*.jar' },
+        layout.projectDirectory.files('CHANGELOG.rst', 'build.sh'),
+        layout.projectDirectory.asFileTree.matching { include 'LICENSE*.rst' }
+    ).withPropertyName('inputFiles')
+
+    outputs.file(layout.buildDirectory.file(getZipName('oss')))
+
+    workingDir = layout.projectDirectory
+    executable = layout.projectDirectory.file("build${getScriptExt()}")
+
+    environment([
+        'BUILD_TYPE': 'oss',
+        'NO_PAUSE'  : '1'
+    ])
+
     doFirst {
         println 'Building the flashable zip (open-source components only) with Gradle...'
-        environment BUILD_TYPE: 'oss'
-        environment NO_PAUSE: '1'
-        executable "${projectDir}/build" + getScriptExt()
     }
 }
 
 tasks.named('assemble') {
     group = null
     description = 'Alias of "buildOtaOSS" task.'
-    finalizedBy buildOtaOSS
+    dependsOn tasks.named('buildOtaOSS')
 }
 
 tasks.named('build') {
@@ -210,7 +254,7 @@ publishing {
     publications {
         maven(MavenPublication) {
             groupId = 'com.github.micro5k'
-            artifactId = project.ext.projectId
+            artifactId = getProjectId().get()
             version = project.ext.isAlpha ? "${project.version}-SNAPSHOT" : project.version
             pom {
                 name = project.name
@@ -225,14 +269,13 @@ tasks.withType(PublishToMavenLocal).configureEach {
     mustRunAfter 'build', 'buildOta', 'buildOtaOSS'
 
     doFirst {
-        def projectId = project.ext.projectId
-        def commit = getGitCommitHash()
-        def zipFiles = fileTree(dir: project.buildDir).matching {
-            include "${projectId}-${version}-g${commit}-*-by-ale5000-signed.zip"
-        }.files
+        def zipFiles = layout.buildDirectory.asFileTree.matching {
+            include getZipName().get()
+        }
 
-        if(zipFiles.size() < 1 || zipFiles.size() > 2) {
-            throw new GradleException("Publishing failed: Expected 1 or 2 artifacts in '${project.buildDir}', but found ${zipFiles.size()}. Check if build tasks were executed.")
+        def count = zipFiles.size()
+        if(count !in 1..2) {
+            throw new GradleException("Publishing failed: Expected 1 or 2 artifacts, but found ${count}. Check if build tasks were executed.")
         }
 
         // Add artifacts to the publication just before execution
