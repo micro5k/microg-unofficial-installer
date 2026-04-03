@@ -8,6 +8,9 @@
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTIONS_INCLUDED='true'; fi
 
+readonly LIB_FILENAME="${USING_LIB:?}"
+unset USING_LIB
+
 export LANG='en_US.UTF-8'
 export TZ='UTC'
 
@@ -28,6 +31,12 @@ unset CDPATH
 
 readonly NL='
 '
+
+_lib_funcname_test_internal()
+{
+  readonly LIB_FUNCNAME_TEST="${FUNCNAME-}"
+}
+_lib_funcname_test_internal
 
 pause_if_needed()
 {
@@ -71,10 +80,11 @@ ui_error()
 {
   local _source_file
   case "${3-}" in
-    conf_lfs_*) _source_file='lfs.inc.sh' ;;
-    conf_full_*) _source_file='full.inc.sh' ;;
-    conf_*) _source_file='common.inc.sh' ;;
-    *) _source_file="${4:-"${0##*/}"}" ;;
+    lib* | _lib*) _source_file="${LIB_FILENAME:?}" ;;
+    conf_lfs_*) _source_file='conf-lfs.inc.sh' ;;
+    conf_full_*) _source_file='conf-full.inc.sh' ;;
+    conf_*) _source_file='conf-common.inc.sh' ;;
+    *) _source_file="${4:-${LIB_FUNCNAME_TEST:+"${0##*/}"}}" ;;
   esac
   printf 1>&2 '%s:%s: ERROR: [%s] %s\n' "${_source_file:-unknown}" "${2:-0}" "${3:-<main>}" "${1:?}"
 

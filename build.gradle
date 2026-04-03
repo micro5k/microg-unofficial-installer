@@ -26,39 +26,41 @@ private void initialize() {
 
     defaultTasks 'tasks'
 
-    project.buildDir = project.file("output")
-    project.file('zip-content/module.prop').withInputStream { props.load(it) }
+    // Define the custom build directory
+    project.buildDir = project.file('output')
 
-    description = String.valueOf(props.getProperty('description'))
-    version = String.valueOf(props.getProperty('version')).toLowerCase(Locale.ENGLISH).trim()
-    group = String.valueOf(props.getProperty('group'))
+    // Load properties from module.prop
+    def moduleProp = project.file('zip-content/module.prop')
+    if (moduleProp.exists()) {
+        moduleProp.withInputStream { props.load(it) }
+    }
 
-    ext.ourArchivesBaseName = String.valueOf(props.getProperty('id')).trim()
+    description = String.valueOf(props.getProperty('description', 'Unknown flashable ZIP'))
+    version = String.valueOf(props.getProperty('version', 'v0.0.0-unknown')).toLowerCase(Locale.ENGLISH).trim()
+    group = String.valueOf(props.getProperty('group', 'unknown'))
+    ext.projectId = String.valueOf(props.getProperty('id', '')).trim()
+
     ext.isAlpha = version.endsWith('-alpha')
     //ext.isBeta = version.endsWith('-beta')
 
-    println name
-    println 'Version: ' + version
-    println 'OS: ' + System.properties['os.name']
+    println "Project: ${name}"
+    println "Version: ${version}"
+    println "OS: ${System.getProperty('os.name')}"
 
     if(JavaVersion.current() < JavaVersion.VERSION_17) {
         throw new GradleException('Java 17 or later is required')
     }
 }
 
-private String getOurArchivesBaseName() {
-    String val = String.valueOf("${ext.ourArchivesBaseName}")
-    if(val.isEmpty() || val == 'null')
-        throw new InvalidUserDataException('String is empty.')
-
-    return "${val}"
+private String getProjectId() {
+    project.findProperty('projectId') ?: { throw new InvalidUserDataException('projectId is empty or null.') }()
 }
 
 private String getGitCommitHash() {
     try {
-        return 'git rev-parse --short=8 HEAD'.execute().text.trim()
-    } catch (Exception ignored) {
-        return "unknown"
+        'git rev-parse --short=8 HEAD'.execute().text.trim()
+    } catch (ignored) {
+        'unknown'
     }
 }
 
@@ -94,34 +96,52 @@ private void configureSigning(def android, File keystorePropsFile) {
     android.buildTypes.release.signingConfig android.signingConfigs.config
 }
 
+static String getScriptExt() {
+    System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows') ? '.bat' : '.sh'
+}
+
 initialize()
 
 /* ===BLOCKS=== */
 
 base {
-    archivesName = getOurArchivesBaseName()
+    archivesName = getProjectId()
 }
 
 /* ==TASKS=== */
 
-tasks.register('cleanCache', Delete) {
-    delete "${projectDir}/cache"
-}
-
 tasks.register('cleanRecoveryOutput', Delete) {
-    delete "${projectDir}/recovery-simulator/output"
+    group = '- Cleanup'
+    description = 'Deletes the recovery simulator output directory.'
+    delete layout.projectDirectory.dir('recovery-simulator/output')
 }
 
-tasks.named('clean').configure {
-    finalizedBy tasks.named('cleanRecoveryOutput')
-    finalizedBy tasks.named('cleanCache')
+tasks.named('clean') {
+    group = '- Cleanup'
+    dependsOn tasks.named('cleanRecoveryOutput')
 }
 
-static String getScriptExt() {
-    if(System.properties['os.name'].toLowerCase(Locale.ROOT).contains('windows')) {
-        return '.bat'
-    } else {
-        return '.sh'
+tasks.register('cleanCache', Delete) {
+    group = '- Cleanup'
+    description = 'Deletes the local cache directory.'
+    delete layout.projectDirectory.dir('cache')
+}
+
+tasks.register('distClean') {
+    group = '- Cleanup'
+    description = 'Cleans all build outputs, local caches, and removes all untracked/ignored files via Git.'
+    dependsOn tasks.named('clean'), tasks.named('cleanCache')
+
+    doLast {
+        def gitDir = layout.projectDirectory.dir('.git').asFile
+        if(gitDir.exists()) {
+            exec {
+                commandLine 'git', 'clean', '-xdf'
+                ignoreExitValue = true
+            }
+        } else {
+            logger.warn('WARNING: Skipping git clean: .git directory not found.')
+        }
     }
 }
 
@@ -190,7 +210,7 @@ publishing {
     publications {
         maven(MavenPublication) {
             groupId = 'com.github.micro5k'
-            artifactId = project.ext.ourArchivesBaseName
+            artifactId = project.ext.projectId
             version = project.ext.isAlpha ? "${project.version}-SNAPSHOT" : project.version
             pom {
                 name = project.name
@@ -205,7 +225,7 @@ tasks.withType(PublishToMavenLocal).configureEach {
     mustRunAfter 'build', 'buildOta', 'buildOtaOSS'
 
     doFirst {
-        def projectId = project.ext.ourArchivesBaseName
+        def projectId = project.ext.projectId
         def commit = getGitCommitHash()
         def zipFiles = fileTree(dir: project.buildDir).matching {
             include "${projectId}-${version}-g${commit}-*-by-ale5000-signed.zip"

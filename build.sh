@@ -66,9 +66,9 @@ export LFS_CACHE_DIR="${MAIN_DIR:?}/cache/lfs"
 
 {
   unset DO_INIT_CMDLINE
-  readonly LIB_FILENAME='main.lib.sh'
+  USING_LIB='main.lib.sh'
   # shellcheck source=SCRIPTDIR/lib/main.lib.sh
-  if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR:?}/lib/${LIB_FILENAME:?}"; fi
+  if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then . "${MAIN_DIR:?}/lib/${USING_LIB:?}"; fi
 }
 
 if test -n "${OPENSOURCE_ONLY-}"; then

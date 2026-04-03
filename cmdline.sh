@@ -98,15 +98,14 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     unset IS_PATH_INITIALIZED
     unset __QUOTED_PARAMS
 
-    readonly LIB_FILENAME='main.lib.sh'
-    export LIB_FILENAME
+    export USING_LIB='main.lib.sh'
 
     if test "${_run_strategy}" = 'source'; then
       # shellcheck source=SCRIPTDIR/lib/main.lib.sh
-      . "${_main_dir}/lib/${LIB_FILENAME}" "${@}" || return "${?}"
+      . "${_main_dir}/lib/${USING_LIB}" "${@}" || return "${?}"
     elif test "${_run_strategy}" = 's-opt'; then
       # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" ${_applet} -s -c ". '${_main_dir}/lib/${LIB_FILENAME}' || exit \${?}" "${_applet:-${0-}}" "${@}"
+      exec "${__SHELL_EXE}" ${_applet} -s -c ". '${_main_dir}/lib/${USING_LIB}' || exit \${?}" "${_applet:-${0-}}" "${@}"
     else
       if test "${#}" -gt 0; then
         _nl="$(printf '\nx')" _nl="${_nl%x}"
@@ -121,7 +120,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       fi
 
       # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" ${_applet} --init-file "${_main_dir}/lib/${LIB_FILENAME}"
+      exec "${__SHELL_EXE}" ${_applet} --init-file "${_main_dir}/lib/${USING_LIB}"
     fi
   }
 
