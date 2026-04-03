@@ -99,10 +99,10 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     unset __QUOTED_PARAMS
 
     if test "${_run_strategy}" = 'source'; then
-      . "${_main_dir}/lib/common.lib.sh" "${@}" || return "${?}"
+      . "${_main_dir}/lib/main.lib.sh" "${@}" || return "${?}"
     elif test "${_run_strategy}" = 's-opt'; then
       # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" ${_applet} -s -c ". '${_main_dir}/lib/common.lib.sh' || exit \${?}" "${_applet:-${0-}}" "${@}"
+      exec "${__SHELL_EXE}" ${_applet} -s -c ". '${_main_dir}/lib/main.lib.sh' || exit \${?}" "${_applet:-${0-}}" "${@}"
     else
       if test "${#}" -gt 0; then
         _nl="$(printf '\nx')" _nl="${_nl%x}"
@@ -117,7 +117,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       fi
 
       # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" ${_applet} --init-file "${_main_dir}/lib/common.lib.sh"
+      exec "${__SHELL_EXE}" ${_applet} --init-file "${_main_dir}/lib/main.lib.sh"
     fi
   }
 
