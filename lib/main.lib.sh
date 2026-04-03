@@ -1564,7 +1564,6 @@ init_cmdline()
   export DIRECTORY_SEPARATOR='/'
 
   export NO_PAUSE=1
-  export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false}"
 
   # Escape the colors with \[ \] => https://mywiki.wooledge.org/BashFAQ/053
   readonly __DEFAULT_PS1='\[\033[1;32m\]\u\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$ '

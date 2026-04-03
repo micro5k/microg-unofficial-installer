@@ -8,9 +8,9 @@ on:
   push:
     paths:
       - "LICENSES/*"
-      - "conf/*.sh"
+      - "conf/*"
       - "docs/*.rst"
-      - "includes/*"
+      - "lib/*.sh"
       - "tools/*.jar"
       - "zip-content/**"
       - "CHANGELOG.rst"
