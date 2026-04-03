@@ -1,0 +1,26 @@
+// SPDX-FileCopyrightText: NONE
+// SPDX-License-Identifier: CC0-1.0
+
+plugins {
+    id 'base'
+}
+
+repositories {
+    mavenLocal()
+    maven { url 'https://jitpack.io' }
+    mavenCentral()
+}
+
+configurations {
+    flashableZip
+}
+
+dependencies {
+    flashableZip('com.github.micro5k:microg-unofficial-installer:latest.release@zip')
+}
+
+tasks.register('downloadZip', Copy) {
+    group = 'download'
+    from configurations.flashableZip
+    into layout.buildDirectory
+}

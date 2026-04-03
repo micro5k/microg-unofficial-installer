@@ -32,11 +32,10 @@ private void initialize() {
     description = String.valueOf(props.getProperty('description'))
     version = String.valueOf(props.getProperty('version')).toLowerCase(Locale.ENGLISH).trim()
     group = String.valueOf(props.getProperty('group'))
-    ext.ourArchivesBaseName = String.valueOf(props.getProperty('id')).trim()
 
+    ext.ourArchivesBaseName = String.valueOf(props.getProperty('id')).trim()
+    ext.isAlpha = version.endsWith('-alpha')
     //ext.isBeta = version.endsWith('-beta')
-    //ext.isAlpha = version.endsWith('-alpha')
-    //ext.isSnapshot = version.endsWith('-snapshot')
 
     println name
     println 'Version: ' + version
@@ -190,7 +189,9 @@ tasks.named('wrapper').configure {
 publishing {
     publications {
         maven(MavenPublication) {
+            groupId = 'com.github.micro5k'
             artifactId = project.ext.ourArchivesBaseName
+            version = project.ext.isAlpha ? "${project.version}-SNAPSHOT" : project.version
             pom {
                 name = project.name
                 packaging = 'zip'

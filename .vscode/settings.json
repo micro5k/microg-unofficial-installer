@@ -6,6 +6,7 @@
     "gradle.enabled": false,
     "java.autobuild.enabled": false,
     "java.import.gradle.enabled": false,
+    "java.import.maven.enabled": false,
 
     "shellcheck.enable": true,
     "shellcheck.enableQuickFix": true,
