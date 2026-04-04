@@ -8,10 +8,13 @@ pluginManagement {
 
 plugins { id 'com.gradle.develocity' }
 
-develocity.buildScan {
-    termsOfUseUrl.set 'https://gradle.com/help/legal-terms-of-use'
-    termsOfUseAgree.set 'yes'
-    publishing.onlyIf { providers.environmentVariable('UPLOAD_BUILD_SCAN').getOrElse('').toBoolean() }
-}
-
 rootProject.name = 'microG unofficial installer'
+
+// Initialize the provider early to ensure compatibility with the Gradle configuration cache
+providers.environmentVariable('UPLOAD_BUILD_SCAN').with { uploadBuildScan ->
+    develocity.buildScan {
+        termsOfUseUrl.set 'https://gradle.com/help/legal-terms-of-use'
+        termsOfUseAgree.set 'yes'
+        publishing.onlyIf { uploadBuildScan.getOrElse('').toBoolean() }
+    }
+}

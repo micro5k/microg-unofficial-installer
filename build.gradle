@@ -42,28 +42,33 @@ configure(project) {
 
 /* ===HEADER=== */
 
-interface HeaderParams extends FlowParameters {
+interface HeaderParams extends ValueSourceParameters {
     @Input Property<String> getProjectName()
     @Input Property<String> getVersion()
     @Input Property<String> getOsName()
 }
 
-abstract class HeaderAction implements FlowAction<HeaderParams> {
-    private static final log = Logging.getLogger(HeaderAction)
+abstract class HeaderPrinter implements ValueSource<String, HeaderParams> {
+    private static final log = Logging.getLogger(HeaderPrinter)
 
-    void execute(FlowParameters p) {
+    @Override String obtain() {
         log.lifecycle '=' * 36
-        log.lifecycle "Project: ${p.projectName.get()}"
-        log.lifecycle "Version: ${p.version.get()}"
-        log.lifecycle "OS:      ${p.osName.get()}"
+        log.lifecycle "Project: ${parameters.projectName.get()}"
+        log.lifecycle "Version: ${parameters.version.get()}"
+        log.lifecycle "OS:      ${parameters.osName.get()}"
         log.lifecycle '=' * 36
+        ''
     }
 }
 
-services.get(FlowScope).always(HeaderAction) {
+def headerTrigger = providers.of(HeaderPrinter) {
     parameters.projectName.set project.name
     parameters.version.set ext.lazyVersion
     parameters.osName.set ext.lazyOsName
+}
+
+gradle.taskGraph.whenReady {
+    { headerTrigger.get() }
 }
 
 /* ===FUNCTIONS=== */
