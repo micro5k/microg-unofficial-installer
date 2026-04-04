@@ -59,8 +59,8 @@ abstract class HeaderAction implements FlowAction<HeaderParams> {
 }
 
 services.get(FlowScope).always(HeaderAction) {
-    parameters.projectName.set(project.name)
-    parameters.version.set(ext.lazyVersion)
+    parameters.projectName.set project.name
+    parameters.version.set ext.lazyVersion
 }
 
 /* ===FUNCTIONS=== */
@@ -132,7 +132,7 @@ private Provider<String> getZipName(String variant = '*') {
 /* ===BLOCKS=== */
 
 base {
-    archivesName.set(getProjectId())
+    archivesName.set getProjectId()
 }
 
 project.afterEvaluate {
