@@ -13,12 +13,6 @@ plugins {
     //id 'com.github.spotbugs' version '4.7.6'
 }
 
-develocity.buildScan {
-    termsOfUseUrl.set 'https://gradle.com/help/legal-terms-of-use'
-    termsOfUseAgree.set 'yes'
-    publishing.onlyIf { System.getenv('UPLOAD_BUILD_SCAN') != null }
-}
-
 def moduleProps = providers.fileContents(layout.projectDirectory.file('zip-content/module.prop'))
     .asText
     .map { text ->
@@ -142,7 +136,9 @@ base {
 }
 
 project.afterEvaluate {
-    // This is as lazy as possible and still display values properly in "gradlew properties"
+    // Keep it as lazy as possible while ensuring values show up correctly in 'gradlew properties',
+    // since these Gradle properties and the maven-publish plugin don't support Providers.
+
     description = "${-> ext.lazyDescription.get()}"
     version = "${-> ext.lazyVersion.get()}"
     group = "${-> ext.lazyGroup.get()}"

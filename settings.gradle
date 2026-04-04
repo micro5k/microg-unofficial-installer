@@ -1,13 +1,17 @@
-// -*- coding: utf-8; mode: conf-javaprop -*-
 // SPDX-FileCopyrightText: NONE
 // SPDX-License-Identifier: CC0-1.0
 
-buildscript {
+pluginManagement {
     apply from: 'dependencies.gradle'
+    plugins { id 'com.gradle.develocity' version "${-> develocityPluginVersion}" }
 }
 
-plugins {
-    id 'com.gradle.develocity' version "${gradleDevelocityVersion}"  /* New name of com.gradle.build-scan */
+plugins { id 'com.gradle.develocity' }
+
+develocity.buildScan {
+    termsOfUseUrl.set 'https://gradle.com/help/legal-terms-of-use'
+    termsOfUseAgree.set 'yes'
+    publishing.onlyIf { providers.environmentVariable('UPLOAD_BUILD_SCAN').getOrElse('').toBoolean() }
 }
 
 rootProject.name = 'microG unofficial installer'
