@@ -32,6 +32,7 @@ configure(project) {
         lazyVersion = moduleProps.map { it.getProperty('version', 'v0.0.0-unknown').trim().toLowerCase(Locale.ROOT) }
         lazyGroup = moduleProps.map { it.getProperty('group', 'unknown').trim() }
         lazyProjectId = moduleProps.map { it.getProperty('id', '').trim() }
+        lazyOsName = providers.systemProperty('os.name')
     }
 
     if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
@@ -44,6 +45,7 @@ configure(project) {
 interface HeaderParams extends FlowParameters {
     @Input Property<String> getProjectName()
     @Input Property<String> getVersion()
+    @Input Property<String> getOsName()
 }
 
 abstract class HeaderAction implements FlowAction<HeaderParams> {
@@ -53,7 +55,7 @@ abstract class HeaderAction implements FlowAction<HeaderParams> {
         log.lifecycle '=' * 36
         log.lifecycle "Project: ${p.projectName.get()}"
         log.lifecycle "Version: ${p.version.get()}"
-        log.lifecycle "OS:      ${System.getProperty('os.name')}"
+        log.lifecycle "OS:      ${p.osName.get()}"
         log.lifecycle '=' * 36
     }
 }
@@ -61,12 +63,13 @@ abstract class HeaderAction implements FlowAction<HeaderParams> {
 services.get(FlowScope).always(HeaderAction) {
     parameters.projectName.set project.name
     parameters.version.set ext.lazyVersion
+    parameters.osName.set ext.lazyOsName
 }
 
 /* ===FUNCTIONS=== */
 
-private static String getScriptExt() {
-    System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows') ? '.bat' : '.sh'
+private Provider<String> getScriptExt() {
+    ext.lazyOsName.map { it.toLowerCase(Locale.ROOT).contains('windows') ? '.bat' : '.sh' }
 }
 
 private Provider<String> getMavenVersion() {
@@ -101,7 +104,7 @@ private Provider<String> getZipName(String variant = '*') {
     if(!keystorePropsFile.exists()) return
     if(android == null) throw new GradleException('android is null inside configureSigning()')
 
-    println 'Signed build'
+    logger.lifecycle 'Signed build'
 
     Properties keystoreProps = new Properties()
     keystoreProps.load(new FileInputStream(keystorePropsFile))
@@ -183,14 +186,13 @@ tasks.register('distClean') {
     dependsOn tasks.named('clean'), tasks.named('cleanCache')
 
     doLast {
-        def gitDir = layout.projectDirectory.dir('.git').asFile
-        if(gitDir.exists()) {
+        if (layout.projectDirectory.dir('.git').asFile.exists()) {
             exec {
                 commandLine 'git', 'clean', '-xdf'
                 ignoreExitValue = true
             }
         } else {
-            logger.warn('WARNING: Skipping git clean: .git directory not found.')
+            logger.warn 'WARNING: Skipping git clean: .git directory not found.'
         }
     }
 }
@@ -211,7 +213,7 @@ tasks.register('buildOta', Exec) {
     outputs.file(layout.buildDirectory.file(getZipName('full')))
 
     workingDir = layout.projectDirectory
-    executable = layout.projectDirectory.file("build${getScriptExt()}")
+    executable = "${-> layout.projectDirectory.file("build${getScriptExt().get()}") }"
 
     environment([
         'BUILD_TYPE': 'full',
@@ -219,7 +221,7 @@ tasks.register('buildOta', Exec) {
     ])
 
     doFirst {
-        println 'Building the flashable zip with Gradle...'
+        logger.lifecycle 'Building the flashable zip with Gradle...'
     }
 }
 
@@ -239,7 +241,7 @@ tasks.register('buildOtaOSS', Exec) {
     outputs.file(layout.buildDirectory.file(getZipName('oss')))
 
     workingDir = layout.projectDirectory
-    executable = layout.projectDirectory.file("build${getScriptExt()}")
+    executable = "${-> layout.projectDirectory.file("build${getScriptExt().get()}") }"
 
     environment([
         'BUILD_TYPE': 'oss',
@@ -247,7 +249,7 @@ tasks.register('buildOtaOSS', Exec) {
     ])
 
     doFirst {
-        println 'Building the flashable zip (open-source components only) with Gradle...'
+        logger.lifecycle 'Building the flashable zip (open-source components only) with Gradle...'
     }
 }
 
@@ -288,7 +290,7 @@ tasks.named('wrapper') {
     distributionSha256Sum = gradleSha256Sum
 
     doFirst {
-        logger.lifecycle("Gradle: ${gradleVersionTarget}")
+        logger.lifecycle "Gradle: ${gradleVersionTarget}"
     }
 }
 
