@@ -291,11 +291,13 @@ tasks.register('test') {
 }
 
 tasks.named('wrapper') {
-    gradleVersion = gradleVersionTarget
-    distributionSha256Sum = gradleSha256Sum
+    gradleVersion = "${-> targetGradleVersion}"
+    distributionSha256Sum = "${-> targetGradleSha256Sum}"
 
     doFirst {
-        logger.lifecycle "Gradle: ${gradleVersionTarget}"
+        logger.lifecycle 'Gradle wrapper update status:'
+        logger.lifecycle "- Current version: ${-> gradle.gradleVersion}"
+        logger.lifecycle "- Target version:  ${-> targetGradleVersion}"
     }
 }
 
