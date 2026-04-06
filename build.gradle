@@ -106,6 +106,28 @@ private Provider<String> getZipName(String variant = '*') {
     android.buildTypes.release.signingConfig android.signingConfigs.config
 }*/
 
+/* ===CLASSES=== */
+
+import groovy.transform.PackageScope
+
+@PackageScope
+final class Bridge {
+    private static MavenPublication mavenPub
+
+    private Bridge() {}
+
+    private static void init(Project project) {
+        if(this.mavenPub == null) {
+            this.mavenPub = project.publishing.publications.maven
+        }
+    }
+
+    @PackageScope
+    static MavenPublication getMavenPub() {
+        return this.mavenPub
+    }
+}
+
 /* ===BLOCKS=== */
 
 base {
@@ -133,6 +155,8 @@ project.afterEvaluate {
             }
         }
     }
+
+    Bridge.init(project)
 }
 
 /* ===TASKS=== */
@@ -270,42 +294,54 @@ tasks.named('wrapper') {
     }
 }
 
-tasks.register('collectArtifacts') {
-    notCompatibleWithConfigurationCache('Dynamic artifact insertion, not compatible with CC.')
-    doNotTrackState('Force task execution by disabling up-to-date checks.')
+/* === PUBLISHING === */
 
+abstract class DynamicArtifactSource implements ValueSource<Integer, DynamicArtifactParams> {
+    private static final List<String> artifactTypes = ['oss', 'full'].asImmutable()
+
+    interface DynamicArtifactParams extends ValueSourceParameters {
+        @InputFiles ConfigurableFileCollection getZipFiles()
+    }
+
+    @Override
+    Integer obtain() {
+        final HashSet<String> seen = []
+        final MavenPublication mavenPub = Bridge.getMavenPub()
+        parameters.zipFiles.files.each { foundFile ->
+            String type = artifactTypes.find { foundFile.name.contains("-${it}-") } ?: { throw new GradleException("Publishing failed: File ${foundFile.name} is missing a valid build type.") }()
+            if(!seen.add(type)) throw new GradleException("Publishing failed: The type '${type}' already exists.")
+            mavenPub.artifact(foundFile) { extension = 'zip'; classifier = (type == 'oss' ? null : type) }
+        }
+        if(seen.isEmpty()) throw new GradleException("Publishing failed: No artifact found. Check if build tasks were executed.")
+        seen.size()
+    }
+}
+
+def zipFilesTree = getZipName().map { name ->
+    layout.buildDirectory.asFileTree.matching { include name }
+}
+
+def artifactProcessor = providers.of(DynamicArtifactSource) {
+    parameters {
+        zipFiles.setFrom zipFilesTree
+    }
+}
+
+tasks.register('collectArtifacts') {
+    notCompatibleWithConfigurationCache('Dynamic artifact insertion is not compatible with CC.')
+    outputs.upToDateWhen { false }
+ 
     mustRunAfter 'buildOta', 'buildOtaOSS', 'assemble', 'build'
 
-    doFirst {
-        def zipFiles = layout.buildDirectory.asFileTree.matching {
-            include getZipName().get()
-        }
-
-        def count = zipFiles.size()
-        if(count !in 1..2) {
-            throw new GradleException("Publishing failed: Expected 1 or 2 artifacts, but found ${count}. Check if build tasks were executed.")
-        }
-
-        def mavenPub = project.publishing.publications.maven
-        zipFiles.each { foundFile ->
-            def isFull = foundFile.name.contains('-full-')
-            def isOss = foundFile.name.contains('-oss-')
-
-            if(!isFull && !isOss) {
-                throw new GradleException("Publishing failed: File ${foundFile.name} missing a valid build type.")
-            }
-
-            mavenPub.artifact(foundFile) {
-                if(isFull) {
-                    classifier = 'full'
-                }
-                extension = 'zip'
-            }
-        }
+    doLast {
+        Integer count = artifactProcessor.get()
+        logger.lifecycle "Successfully registered ${count} artifact(s)."
     }
 }
 
 tasks.register('showPublishedArtifacts') {
+    outputs.upToDateWhen { false }
+
     def artifactData = provider {
         publishing.publications.collectMany { pub ->
             pub.artifacts?.collect { "Pub: ${pub.name} | File: ${it.file.name} | Ext: ${it.extension}${it.classifier ? " | Classifier: ${it.classifier}" : ""}" } ?: []
@@ -331,27 +367,28 @@ tasks.withType(GenerateMavenPom).configureEach {
 
 /* ===HEADER=== */
 
-interface HeaderParams extends ValueSourceParameters {
-    @Input Property<String> getProjectName()
-    @Input Property<String> getVersion()
-    @Input Property<String> getOsName()
-}
-
-abstract class HeaderPrinter implements ValueSource<String, HeaderParams> {
+abstract class HeaderPrinter implements ValueSource<Boolean, HeaderParams> {
     private static final log = Logging.getLogger(HeaderPrinter)
 
-    @Override String obtain() {
+    interface HeaderParams extends ValueSourceParameters {
+        @Input Property<String> getProjectName()
+        @Input Property<String> getVersion()
+        @Input Property<String> getOsName()
+    }
+
+    @Override
+    Boolean obtain() {
         log.lifecycle '=' * 36
         log.lifecycle "Project: ${parameters.projectName.get()}"
         log.lifecycle "Version: ${parameters.version.get()}"
         log.lifecycle "OS:      ${parameters.osName.get()}"
         log.lifecycle '=' * 36
-        ''
+        true
     }
 }
 
 def headerTrigger = providers.of(HeaderPrinter) {
-    parameters.projectName.set project.name
+    parameters.projectName.set provider { project.name }
     parameters.version.set ext.lazyVersion
     parameters.osName.set ext.lazyOsName
 }
