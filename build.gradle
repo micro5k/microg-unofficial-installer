@@ -40,37 +40,6 @@ configure(project) {
     }
 }
 
-/* ===HEADER=== */
-
-interface HeaderParams extends ValueSourceParameters {
-    @Input Property<String> getProjectName()
-    @Input Property<String> getVersion()
-    @Input Property<String> getOsName()
-}
-
-abstract class HeaderPrinter implements ValueSource<String, HeaderParams> {
-    private static final log = Logging.getLogger(HeaderPrinter)
-
-    @Override String obtain() {
-        log.lifecycle '=' * 36
-        log.lifecycle "Project: ${parameters.projectName.get()}"
-        log.lifecycle "Version: ${parameters.version.get()}"
-        log.lifecycle "OS:      ${parameters.osName.get()}"
-        log.lifecycle '=' * 36
-        ''
-    }
-}
-
-def headerTrigger = providers.of(HeaderPrinter) {
-    parameters.projectName.set project.name
-    parameters.version.set ext.lazyVersion
-    parameters.osName.set ext.lazyOsName
-}
-
-gradle.taskGraph.whenReady {
-    { headerTrigger.get() }
-}
-
 /* ===FUNCTIONS=== */
 
 private Provider<String> getScriptExt() {
@@ -301,10 +270,11 @@ tasks.named('wrapper') {
     }
 }
 
-tasks.withType(PublishToMavenLocal).configureEach {
-    notCompatibleWithConfigurationCache('Not yet compatible with CC.')
-    // Ensure builds run before this task
-    mustRunAfter 'build', 'buildOta', 'buildOtaOSS'
+tasks.register('collectArtifacts') {
+    notCompatibleWithConfigurationCache('Dynamic artifact insertion, not compatible with CC.')
+    doNotTrackState('Force task execution by disabling up-to-date checks.')
+
+    mustRunAfter 'buildOta', 'buildOtaOSS', 'assemble', 'build'
 
     doFirst {
         def zipFiles = layout.buildDirectory.asFileTree.matching {
@@ -316,7 +286,6 @@ tasks.withType(PublishToMavenLocal).configureEach {
             throw new GradleException("Publishing failed: Expected 1 or 2 artifacts, but found ${count}. Check if build tasks were executed.")
         }
 
-        // Add artifacts to the publication just before execution
         def mavenPub = project.publishing.publications.maven
         zipFiles.each { foundFile ->
             def isFull = foundFile.name.contains('-full-')
@@ -334,4 +303,59 @@ tasks.withType(PublishToMavenLocal).configureEach {
             }
         }
     }
+}
+
+tasks.register('showPublishedArtifacts') {
+    def artifactData = provider {
+        publishing.publications.collectMany { pub ->
+            pub.artifacts?.collect { "Pub: ${pub.name} | File: ${it.file.name} | Ext: ${it.extension}${it.classifier ? " | Classifier: ${it.classifier}" : ""}" } ?: []
+        }
+    }
+
+    inputs.property('data', artifactData)
+
+    doLast {
+        artifactData.get().each { logger.lifecycle it }
+    }
+}
+
+tasks.withType(GenerateMavenPom).configureEach {
+    dependsOn 'collectArtifacts'
+}
+
+[PublishToMavenRepository, PublishToMavenLocal].each { type ->
+    tasks.withType(type).configureEach {
+        finalizedBy 'showPublishedArtifacts'
+    }
+}
+
+/* ===HEADER=== */
+
+interface HeaderParams extends ValueSourceParameters {
+    @Input Property<String> getProjectName()
+    @Input Property<String> getVersion()
+    @Input Property<String> getOsName()
+}
+
+abstract class HeaderPrinter implements ValueSource<String, HeaderParams> {
+    private static final log = Logging.getLogger(HeaderPrinter)
+
+    @Override String obtain() {
+        log.lifecycle '=' * 36
+        log.lifecycle "Project: ${parameters.projectName.get()}"
+        log.lifecycle "Version: ${parameters.version.get()}"
+        log.lifecycle "OS:      ${parameters.osName.get()}"
+        log.lifecycle '=' * 36
+        ''
+    }
+}
+
+def headerTrigger = providers.of(HeaderPrinter) {
+    parameters.projectName.set project.name
+    parameters.version.set ext.lazyVersion
+    parameters.osName.set ext.lazyOsName
+}
+
+gradle.taskGraph.whenReady {
+    { headerTrigger.get() }
 }
