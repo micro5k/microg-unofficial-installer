@@ -156,7 +156,7 @@ project.afterEvaluate {
         }
     }
 
-    Bridge.init(project)
+    //Bridge.init(project)
 }
 
 /* ===TASKS=== */
@@ -296,7 +296,9 @@ tasks.named('wrapper') {
 
 /* === PUBLISHING === */
 
-abstract class DynamicArtifactSource implements ValueSource<Integer, DynamicArtifactParams> {
+final Provider<FileTree> zipFilesTree = getZipName().map { name -> layout.buildDirectory.asFileTree.matching { include name } }
+
+/*abstract class DynamicArtifactSource implements ValueSource<Integer, DynamicArtifactParams> {
     private static final List<String> artifactTypes = ['oss', 'full'].asImmutable()
 
     interface DynamicArtifactParams extends ValueSourceParameters {
@@ -310,31 +312,44 @@ abstract class DynamicArtifactSource implements ValueSource<Integer, DynamicArti
         parameters.zipFiles.files.each { foundFile ->
             String type = artifactTypes.find { foundFile.name.contains("-${it}-") } ?: { throw new GradleException("Publishing failed: File ${foundFile.name} is missing a valid build type.") }()
             if(!seen.add(type)) throw new GradleException("Publishing failed: The type '${type}' already exists.")
-            mavenPub.artifact(foundFile) { extension = 'zip'; classifier = (type == 'oss' ? null : type) }
+            mavenPub.artifact(foundFile) { extension = 'zip'; classifier = (type == 'oss' ? null : type); builtBy 'collectArtifacts' }
         }
         if(seen.isEmpty()) throw new GradleException("Publishing failed: No artifact found. Check if build tasks were executed.")
         seen.size()
     }
 }
 
-def zipFilesTree = getZipName().map { name ->
-    layout.buildDirectory.asFileTree.matching { include name }
-}
+final Provider<Integer> artifactsProcessor = providers.of(DynamicArtifactSource) {
+    parameters.zipFiles.setFrom zipFilesTree
+}*/
 
-def artifactProcessor = providers.of(DynamicArtifactSource) {
-    parameters {
-        zipFiles.setFrom zipFilesTree
+Integer processArtifacts(parameters, mavenPub)
+{
+    final List<String> artifactTypes = ['oss', 'full'].asImmutable()
+    final HashSet<String> seen = []
+    parameters.zipFiles.files.each { foundFile ->
+        String type = artifactTypes.find { foundFile.name.contains("-${it}-") } ?: { throw new GradleException("Publishing failed: File ${foundFile.name} is missing a valid build type.") }()
+        if(!seen.add(type)) throw new GradleException("Publishing failed: The type '${type}' already exists.")
+        mavenPub.artifact(foundFile) { extension = 'zip'; classifier = (type == 'oss' ? null : type); builtBy 'collectArtifacts' }
     }
+    if(seen.isEmpty()) throw new GradleException("Publishing failed: No artifact found. Check if build tasks were executed.")
+    seen.size()
 }
 
 tasks.register('collectArtifacts') {
     notCompatibleWithConfigurationCache('Dynamic artifact insertion is not compatible with CC.')
-    outputs.upToDateWhen { false }
- 
     mustRunAfter 'buildOta', 'buildOtaOSS', 'assemble', 'build'
 
+    outputs.files(zipFilesTree).withPropertyName('collectedZips')
+    outputs.upToDateWhen { false }
+
     doLast {
-        Integer count = artifactProcessor.get()
+        //final Integer count = artifactsProcessor.get()
+
+        final Expando parameters = [zipFiles: objects.fileCollection()]
+        parameters.zipFiles.setFrom getZipName().map { name -> layout.buildDirectory.asFileTree.matching { include name } }
+        final Integer count = processArtifacts(parameters, project.publishing.publications.maven)
+
         logger.lifecycle "Successfully registered ${count} artifact(s)."
     }
 }
@@ -357,10 +372,14 @@ tasks.register('showPublishedArtifacts') {
 
 tasks.withType(GenerateMavenPom).configureEach {
     dependsOn 'collectArtifacts'
+    //inputs.files(tasks.named('collectArtifacts').map { it.outputs.files })
 }
 
 [PublishToMavenRepository, PublishToMavenLocal].each { type ->
     tasks.withType(type).configureEach {
+        dependsOn 'collectArtifacts'
+        //inputs.files(tasks.named('collectArtifacts').map { it.outputs.files })
+
         finalizedBy 'showPublishedArtifacts'
     }
 }
