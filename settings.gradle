@@ -10,6 +10,10 @@ plugins { id 'com.gradle.develocity' }
 
 rootProject.name = 'microG unofficial installer'
 
+gradle.rootProject { project ->
+    project.layout.buildDirectory.set project.layout.projectDirectory.dir("output")
+}
+
 // Initialize the provider early to ensure compatibility with the Gradle configuration cache
 providers.environmentVariable('UPLOAD_BUILD_SCAN').with { uploadBuildScan ->
     develocity.buildScan {
