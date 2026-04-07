@@ -200,15 +200,15 @@ tasks.register('buildOta', Exec) {
     description = 'Build the flashable zip [Full edition].'
 
     ['LICENSES', 'conf', 'docs', 'lib', 'zip-content'].each { folder ->
-        inputs.dir(layout.projectDirectory.dir(folder)).withPropertyName("inputDir_${folder}")
+        inputs.dir(layout.projectDirectory.dir(folder)).withPropertyName("buildInputDir_${folder}")
     }
     inputs.files(
         layout.projectDirectory.dir('tools').asFileTree.matching { include '*.jar' },
         layout.projectDirectory.files('CHANGELOG.rst', 'build.sh'),
         layout.projectDirectory.asFileTree.matching { include 'LICENSE*.rst' }
-    ).withPropertyName('inputFiles')
+    ).withPropertyName('buildInputFiles')
 
-    outputs.file(layout.buildDirectory.file(getZipName('full')))
+    outputs.file(layout.buildDirectory.file(getZipName('full'))).withPropertyName('buildOutputFileFull')
 
     workingDir = layout.projectDirectory
     executable = "${-> layout.projectDirectory.file("build${getScriptExt().get()}") }"
@@ -228,15 +228,15 @@ tasks.register('buildOtaOSS', Exec) {
     description = 'Build the flashable zip [OSS edition].'
 
     ['LICENSES', 'conf', 'docs', 'lib', 'zip-content'].each { folder ->
-        inputs.dir(layout.projectDirectory.dir(folder)).withPropertyName("inputDir_${folder}")
+        inputs.dir(layout.projectDirectory.dir(folder)).withPropertyName("buildInputDir_${folder}")
     }
     inputs.files(
         layout.projectDirectory.dir('tools').asFileTree.matching { include '*.jar' },
         layout.projectDirectory.files('CHANGELOG.rst', 'build.sh'),
         layout.projectDirectory.asFileTree.matching { include 'LICENSE*.rst' }
-    ).withPropertyName('inputFiles')
+    ).withPropertyName('buildInputFiles')
 
-    outputs.file(layout.buildDirectory.file(getZipName('oss')))
+    outputs.file(layout.buildDirectory.file(getZipName('oss'))).withPropertyName('buildOutputFileOss')
 
     workingDir = layout.projectDirectory
     executable = "${-> layout.projectDirectory.file("build${getScriptExt().get()}") }"
@@ -341,6 +341,7 @@ tasks.register('collectArtifacts') {
     mustRunAfter 'buildOta', 'buildOtaOSS', 'assemble', 'build'
 
     outputs.files(zipFilesTree).withPropertyName('collectedZips')
+    outputs.cacheIf('Non-cacheable dynamic artifact insertion') { false }
     outputs.upToDateWhen { false }
 
     doLast {
