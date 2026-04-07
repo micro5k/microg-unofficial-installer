@@ -115,9 +115,9 @@ final class Bridge {
 
     private Bridge() {}
 
-    private static void init(Project project) {
+    private static void init(MavenPublication mavenPub) {
         if(this.mavenPub == null) {
-            this.mavenPub = project.publishing.publications.maven
+            this.mavenPub = mavenPub
         }
     }
 
@@ -154,8 +154,6 @@ project.afterEvaluate {
             }
         }
     }
-
-    //Bridge.init(project)
 }
 
 /* ===TASKS=== */
@@ -314,7 +312,8 @@ final Provider<FileTree> zipFilesTree = layout.buildDirectory.map { dir -> dir.a
         parameters.zipFiles.files.each { foundFile ->
             String type = artifactTypes.find { foundFile.name.contains("-${it}-") } ?: { throw new GradleException("Publishing failed: File ${foundFile.name} is missing a valid build type.") }()
             if(!seen.add(type)) throw new GradleException("Publishing failed: The type '${type}' already exists.")
-            mavenPub.artifact(foundFile) { extension = 'zip'; classifier = (type == 'oss' ? null : type); builtBy 'collectArtifacts' }
+            String currClsf = (type == 'oss' ? null : type)
+            mavenPub.artifact(foundFile) { extension = 'zip'; classifier = currClsf; builtBy 'collectArtifacts' }
         }
         if(seen.isEmpty()) throw new GradleException("Publishing failed: No artifact found. Check if build tasks were executed.")
         seen.size()
@@ -329,10 +328,20 @@ Integer processArtifacts(parameters, mavenPub)
 {
     final List<String> artifactTypes = ['oss', 'full'].asImmutable()
     final HashSet<String> seen = []
+    final boolean isLocal = gradle.startParameter.taskNames.any { it == 'publishToMavenLocal' || it.endsWith(':publishToMavenLocal') }
     parameters.zipFiles.files.each { foundFile ->
         String type = artifactTypes.find { foundFile.name.contains("-${it}-") } ?: { throw new GradleException("Publishing failed: File ${foundFile.name} is missing a valid build type.") }()
         if(!seen.add(type)) throw new GradleException("Publishing failed: The type '${type}' already exists.")
-        mavenPub.artifact(foundFile) { extension = 'zip'; classifier = (type == 'oss' ? null : type); builtBy 'collectArtifacts' }
+        String currClsf = (type == 'oss' ? null : type)
+        mavenPub.artifact(foundFile) { extension = 'zip'; classifier = currClsf; builtBy 'collectArtifacts' }
+        if(isLocal) {
+            ['sha256', 'md5'].each { ext ->
+                File checksumFile = file("${foundFile.absolutePath}.${ext}")
+                if (checksumFile.exists()) {
+                    mavenPub.artifact(checksumFile) { extension = "zip.${ext}"; classifier = currClsf; builtBy 'collectArtifacts' }
+                }
+            }
+        }
     }
     if(seen.isEmpty()) throw new GradleException("Publishing failed: No artifact found. Check if build tasks were executed.")
     seen.size()
@@ -347,13 +356,8 @@ tasks.register('collectArtifacts') {
     inputs.files(zipFilesTree).withPropertyName('collectedZips')
     outputs.upToDateWhen { false }
 
-    /*doFirst {
-        if(zipFilesTree.get().isEmpty()) {
-            throw new GradleException("Publishing failed: No artifact found. Run build tasks first.")
-        }
-    }*/
-
     doLast {
+        //Bridge.init(publishing.publications.maven)
         //final Integer count = artifactsProcessor.get()
 
         final Map<String, Object> parameters = [
@@ -363,7 +367,7 @@ tasks.register('collectArtifacts') {
         ].asImmutable()
         final Integer count = processArtifacts(parameters, publishing.publications.maven)
 
-        logger.lifecycle "Successfully registered ${count} artifact(s)."
+        logger.lifecycle "Successfully registered ${count} base artifact(s)."
     }
 }
 
