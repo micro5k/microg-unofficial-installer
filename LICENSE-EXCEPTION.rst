@@ -31,8 +31,8 @@ below. In plain terms, this exception allows you to:
    as The Software, provided they only interact via standard interfaces (APIs,
    CLI) and are not modified versions of The Software itself.
 
--  **Use modern tools** like digital signing, code coverage, and profiling
-   without worrying about license conflicts.
+-  **Create and distribute archives** using modern tools like digital signing,
+   code coverage, and profiling without worrying about license conflicts.
 
 **The core rule remains:** any changes you make to The Software's own files must
 still be shared under the GPLv3.
