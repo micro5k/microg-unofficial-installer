@@ -116,6 +116,8 @@ jobs:
         if: "${{ success() || steps.submit-deps-1.outcome == 'success' }}"
         uses: actions/dependency-review-action@v4
         with:
+          base-ref: "${{ github.event.before }}"
+          head-ref: "${{ github.event.after }}"
           warn-on-critical-vulnerabilities: true
           retry-on-snapshot-warnings: true
           retry-on-snapshot-warnings-timeout: 180
