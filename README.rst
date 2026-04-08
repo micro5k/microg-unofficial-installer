@@ -152,20 +152,22 @@ This project is licensed under the **GNU General Public License v3.0 or later**
 (GPLv3+), with a custom **Archive Packaging Exception** to facilitate
 distribution in compressed packages.
 
-*  **Core license**: The full text of the GPLv3 can be found in `./LICENSE.rst`.
-*  **Exception terms**: The specific permissions for creating archives are
-   detailed in `./LICENSE-EXCEPTION.rst`.
+-  **Core license**: The full text of the GPLv3 can be found in `LICENSE.rst
+   <./LICENSE.rst>`__.
+-  **Exception terms**: The specific permissions for creating archives are
+   detailed in `LICENSE-EXCEPTION.rst <./LICENSE-EXCEPTION.rst>`__.
 
-**What this means for you:**
-You are free to bundle this software into your own archives (such as flashable
-ZIPs or tarballs) alongside proprietary or differently licensed modules,
-provided those modules are independent and not derived from this software.
+**What this means for you:** You are free to bundle this software into your own
+archives (such as flashable ZIPs or tarballs) alongside proprietary or
+differently licensed modules, provided those modules are independent and not
+derived from this software.
 
-**Note for developers:**
-The following SPDX identifier is used in this project's source files to enable
-the archive packaging exception:
+**Note for developers:** The following SPDX identifier is used in this project's
+source files to enable the archive packaging exception:
 
-   ``SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception``
+.. code:: yaml
+
+   SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 
 Copyright

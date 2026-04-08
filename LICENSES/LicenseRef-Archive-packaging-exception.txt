@@ -1,5 +1,7 @@
 Archive Packaging Exception
 
+Version 1.1, 8 April 2026
+
 PREAMBLE
 
 This document defines the "Archive Packaging Exception". To apply this
