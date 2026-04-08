@@ -150,6 +150,21 @@ project.afterEvaluate {
                 pom {
                     name = "${-> project.name}"
                     packaging = 'zip'
+
+                    licenses {
+                        license {
+                            name = 'GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception'
+                            url = 'https://www.gnu.org/licenses/gpl-3.0.txt'
+                            distribution = 'repo'
+                            comments = 'Licensed under GNU General Public License v3.0 or later with Archive Packaging Exception. Full license texts are available in LICENSES within the ZIP.'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = 'ale5000'
+                        }
+                    }
                 }
             }
         }
