@@ -10,8 +10,9 @@ PREAMBLE
 This document defines the "Archive Packaging Exception". To apply this exception
 to your source files, include the following SPDX identifier in the file header:
 
-   ``SPDX-License-Identifier: GPL-3.0-or-later WITH
-   LicenseRef-Archive-packaging-exception``
+.. code:: yaml
+
+   SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 As a special exception, the copyright holders of The Software give you
 permission to combine The Software with independent modules under the terms of
