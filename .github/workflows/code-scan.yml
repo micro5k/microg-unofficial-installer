@@ -93,11 +93,32 @@ jobs:
             ~/.gradle/notifications
           enableCrossOsArchive: true
       - name: "Generate and submit dependency graph"
+        id: "submit-deps-1"
+        continue-on-error: true
         uses: gradle/actions/dependency-submission@v6
         with:
           dependency-graph: "generate-and-submit"
           cache-disabled: true
           validate-wrappers: true
+      - name: "Wait before retry (if needed)"
+        if: "${{ steps.submit-deps-1.outcome == 'failure' }}"
+        shell: bash
+        run: "sleep 30"
+      - name: "Retry: Generate and submit dependency graph (if needed)"
+        id: "submit-deps-2"
+        if: "${{ steps.submit-deps-1.outcome == 'failure' }}"
+        uses: gradle/actions/dependency-submission@v6
+        with:
+          dependency-graph: "generate-and-submit"
+          cache-disabled: true
+          validate-wrappers: true
+      - name: "Dependency review"
+        if: "${{ success() || steps.submit-deps-1.outcome == 'success' }}"
+        uses: github/dependency-review-action@v4
+        with:
+          warn-on-critical-vulnerabilities: true
+          retry-on-snapshot-warnings: true
+          retry-on-snapshot-warnings-timeout: 180
 
   codacy:
     name: "Codacy"
