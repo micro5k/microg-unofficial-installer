@@ -339,26 +339,41 @@ final Provider<Integer> artifactsProcessor = providers.of(DynamicArtifactSource)
     parameters.zipFiles.setFrom zipFilesTree
 }*/
 
-Integer processArtifacts(parameters, mavenPub)
-{
+import java.security.MessageDigest
+import java.security.DigestInputStream
+
+File generateChecksum(targetFile, algorithm) {
+    final MessageDigest md = MessageDigest.getInstance(algorithm.toUpperCase().replace('SHA256', 'SHA-256').replace('SHA1', 'SHA-1'))
+    final byte[] buffer = new byte[65536]
+    targetFile.withInputStream {
+        final DigestInputStream dis = new DigestInputStream(it, md)
+        while(dis.read(buffer) != -1) { }
+    }
+    final File chksumFile = file("${targetFile.absolutePath}.${algorithm}")
+    chksumFile.text = md.digest().encodeHex().toString()
+
+    chksumFile
+}
+
+Integer processArtifacts(parameters, mavenPub) {
     final List<String> artifactTypes = ['oss', 'full'].asImmutable()
     final HashSet<String> seen = []
     final boolean isLocal = gradle.startParameter.taskNames.any { it == 'publishToMavenLocal' || it.endsWith(':publishToMavenLocal') }
     parameters.zipFiles.files.each { foundFile ->
-        String type = artifactTypes.find { foundFile.name.contains("-${it}-") } ?: { throw new GradleException("Publishing failed: File ${foundFile.name} is missing a valid build type.") }()
+        final String type = artifactTypes.find { foundFile.name.contains("-${it}-") } ?: { throw new GradleException("Publishing failed: File ${foundFile.name} is missing a valid build type.") }()
         if(!seen.add(type)) throw new GradleException("Publishing failed: The type '${type}' already exists.")
-        String currClsf = (type == 'oss' ? null : type)
+        final String currClsf = (type == 'oss' ? null : type)
         mavenPub.artifact(foundFile) { extension = 'zip'; classifier = currClsf; builtBy 'collectArtifacts' }
         if(isLocal) {
-            ['sha256', 'md5'].each { ext ->
-                File checksumFile = file("${foundFile.absolutePath}.${ext}")
-                if (checksumFile.exists()) {
-                    mavenPub.artifact(checksumFile) { extension = "zip.${ext}"; classifier = currClsf; builtBy 'collectArtifacts' }
-                }
+            ['sha256', 'sha1', 'md5'].each { hashExt ->
+                final File existChksumFile = file("${foundFile.absolutePath}.${hashExt}")
+                final File chksumFile = existChksumFile.exists() ? existChksumFile : generateChecksum(foundFile, hashExt)
+                mavenPub.artifact(chksumFile) { extension = "zip.${hashExt}"; classifier = currClsf; builtBy 'collectArtifacts' }
             }
         }
     }
     if(seen.isEmpty()) throw new GradleException("Publishing failed: No artifact found. Check if build tasks were executed.")
+
     seen.size()
 }
 
