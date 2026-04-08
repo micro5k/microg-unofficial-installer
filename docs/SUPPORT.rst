@@ -3,8 +3,8 @@ Support
 #######
 
 ..
-   SPDX-FileCopyrightText: (c) 2016 ale5000
-   SPDX-License-Identifier: GPL-3.0-or-later
+   SPDX-FileCopyrightText: 2016 ale5000
+   SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
    SPDX-FileType: DOCUMENTATION
 
 The most efficient way to receive support is to open an issue_ on GitHub or

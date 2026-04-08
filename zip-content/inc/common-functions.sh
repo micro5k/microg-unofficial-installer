@@ -3,7 +3,7 @@
 # @brief A library with common functions used during flashable ZIP installation.
 
 # SPDX-FileCopyrightText: 2016 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 # shellcheck enable=all
 # shellcheck disable=SC3043 # SC3043: In POSIX sh, local is undefined

@@ -1,6 +1,6 @@
 ..
    SPDX-FileCopyrightText: 2016 ale5000
-   SPDX-License-Identifier: GPL-3.0-or-later
+   SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
    SPDX-FileType: DOCUMENTATION
 
 =====

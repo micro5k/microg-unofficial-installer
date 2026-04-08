@@ -4,7 +4,7 @@ version = 1
 path = [
   "busybox/busybox-*.bin"
 ]
-SPDX-FileCopyrightText = "Copyright (C) tons of folks. <https://github.com/yashdsaraf/busybox/raw/master/AUTHORS>"
+SPDX-FileCopyrightText = "tons of folks <https://github.com/yashdsaraf/busybox/raw/master/AUTHORS>"
 SPDX-License-Identifier = "GPL-2.0-only"
 SPDX-FileType = "APPLICATION"
 SPDX-FileComment = [
@@ -16,7 +16,7 @@ SPDX-FileComment = [
 path = [
   "aapt/aapt-*.bin"
 ]
-SPDX-FileCopyrightText = "2005-2008 The Android Open Source Project"
+SPDX-FileCopyrightText = "2005 The Android Open Source Project"
 SPDX-License-Identifier = "Apache-2.0"
 SPDX-FileType = "APPLICATION"
 SPDX-FileComment = [

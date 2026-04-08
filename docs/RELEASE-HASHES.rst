@@ -3,8 +3,8 @@ Release hashes
 ##############
 
 ..
-   SPDX-FileCopyrightText: (c) 2026 ale5000
-   SPDX-License-Identifier: GPL-3.0-or-later
+   SPDX-FileCopyrightText: 2026 ale5000
+   SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
    SPDX-FileType: DOCUMENTATION
 
 This page lists the SHA-256 hashes of all beta and stable releases of the

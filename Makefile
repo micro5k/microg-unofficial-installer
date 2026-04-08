@@ -1,6 +1,6 @@
 #!/usr/bin/env -S make -f
 # SPDX-FileCopyrightText: 2024 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 .POSIX:
 

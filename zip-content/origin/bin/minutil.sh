@@ -1,6 +1,6 @@
 #!/system/bin/sh
-# SPDX-FileCopyrightText: (c) 2022 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2022 ale5000
+# SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.5.0'
+readonly SCRIPT_VERSION='1.5.1'
 
 ### CONFIGURATION ###
 

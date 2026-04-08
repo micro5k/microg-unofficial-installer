@@ -1,77 +1,108 @@
-===================
-License declaration
-===================
+===========================
+ARCHIVE PACKAGING EXCEPTION
+===========================
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+PREAMBLE
+========
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+This document defines the "Archive Packaging Exception". To apply this 
+exception to your source files, include the following SPDX identifier in 
+the file header:
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see https://www.gnu.org/licenses/.
+   ``SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception``
 
+As a special exception, the copyright holders of The Software give you 
+permission to combine The Software with independent modules under the 
+terms of the "Archive Packaging Exception" defined below.
 
-microG unofficial installer zip exception
-=========================================
+USER SUMMARY (NON-NORMATIVE)
+============================
 
-This microG unofficial installer GPLv3 licensed scripts exception ("Exception") is an additional
-permission under section 7 of the GNU General Public License, version 3 ("GPLv3").
-It applies to a given file (the "GPLv3 licensed scripts") that bears a notice placed by the
-copyright holder of the file stating that the file is governed by GPLv3 along with this Exception.
+This summary is provided for convenience and does not replace the legal text 
+below. In plain terms, this exception allows you to:
 
-When you use microG unofficial installer to compile an installable zip,
-it combines portions of GPLv3 licensed scripts in this zip.
-The purpose of this Exception is to allow generation of non-GPL zips,
-in this way, these scripts are covered by this Exception.
+*  **Create archives** (such as flashable ZIPs, tarballs, or other compressed 
+   formats) that bundle The Software together with your own private or 
+   proprietary files.
+*  **Keep your files private** even if they are distributed in the same 
+   package as The Software, provided they only interact via standard 
+   interfaces (APIs, CLI) and are not modified versions of The Software itself.
+*  **Use modern tools** like digital signing, code coverage, and profiling 
+   without worrying about license conflicts.
+
+**The core rule remains:** any changes you make to The Software's own files 
+must still be shared under the GPLv3.
+
+EXCEPTION TERMS
+===============
+
+This GPLv3 licensed software Archive Packaging Exception ("Exception") is an 
+additional permission under section 7 of the GNU General Public License, 
+version 3 ("GPLv3"). It applies to a given file (the "GPLv3 licensed 
+Components") that bears a notice placed by the copyright holder of the file 
+stating that the file is governed by GPLv3 along with this Exception.
+
+When you use The Software to assemble an installable archive, it combines the 
+GPLv3 licensed Components, or portions thereof, in this archive. The purpose 
+of this Exception is to allow generation of non-GPL archives; in this way, 
+these Components are covered by this Exception.
 
 0. Definitions.
 ---------------
-A file is an "Independent Module" if it either requires the GPLv3 licensed scripts for execution
-or installation after a Compilation Process, or makes use of an interface provided
-by the GPLv3 licensed scripts, but is not otherwise based on these GPLv3 scripts.
+A file is an "Independent Module" if it is not a derivative work of The 
+Software under applicable copyright law, and it either: (a) requires the 
+GPLv3 licensed Components for execution or installation after a Packaging 
+Process, or (b) makes use of an interface provided by the GPLv3 licensed 
+Components through documented APIs, command-line arguments, or standard 
+inter-process communication mechanisms, but is not otherwise based on these 
+GPLv3 Components.
 
-"microG unofficial installer" means a version of The microG unofficial installer Project, with
-or without modifications, governed by version 3 (or a specified later version) of the
-GNU General Public License (GPL) with the option of using any subsequent versions published by the FSF.
+"The Software" means this program and its associated files, with or without 
+modifications, governed by version 3 (or a specified later version) of the 
+GNU General Public License (GPL) with the option of using any subsequent 
+versions published by the FSF.
 
-"GPL-compatible Software" is software whose conditions of propagation,
-modification and use would permit combination with microG unofficial installer in accord with
-the license of microG unofficial installer.
+"GPL-compatible Software" is software whose conditions of propagation, 
+modification and use would permit combination with The Software in accord 
+with the license of The Software.
 
-"Installable zip" refers to output from any scripts that can be executed on Android compatible devices.
-Notwithstanding that, "Installable zip" does not include data in any format that is used as
-an intermediate representation, or used for producing an intermediate representation.
+"Installable Archive" refers to output from any scripts or tools (such as a 
+flashable zip, tarball, or any other compressed or containerized format) 
+that can be executed or deployed on a target system. Notwithstanding that, 
+"Installable Archive" does not include data in any format that is used as 
+an intermediate representation, or used for producing an intermediate 
+representation.
 
-The "Compilation Process" transforms code entirely represented in non-intermediate languages
-designed for human-written code, into an Installable Zip.
+The "Packaging Process" combines and compresses code, binaries, and files 
+into an Installable Archive.
 
-A Compilation Process is "Eligible" if it is done using microG unofficial installer,
-alone or with other GPL-compatible software, or if it is done without using any work
-based on microG unofficial installer.
-For example, using non-GPL-compatible Software to optimize any microG unofficial installer
-intermediate representations would not qualify as an Eligible Compilation Process.
+A Packaging Process is "Eligible" if it is done using The Software, alone or 
+with other GPL-compatible software, or if it is done without using any work 
+based on The Software. The use of non-GPL-compatible system tools (such as 
+standard compression utilities, digital signing tools, or code coverage and 
+profiling analysis tools) to finalize or validate the Installable Archive 
+does not render a Packaging Process ineligible.
 
 1. Grant of Additional Permission.
 ----------------------------------
-You have permission to propagate a work of installable zip formed
-by combining the GPLv3 licensed scripts with Independent Modules,
-even if such propagation would otherwise violate the terms of GPLv3,
-provided that all in the installable zip was generated by Eligible Compilation Processes.
-You may then convey such a combination under terms of your choice,
-consistent with the licensing of the Independent Modules.
+You have permission to propagate a work of an installable archive formed 
+by combining the GPLv3 licensed Components with Independent Modules, 
+even if such propagation would otherwise violate the terms of GPLv3. 
+This permission applies regardless of the license of the Independent Modules 
+(including, but not limited to, proprietary licenses or other copyleft 
+licenses incompatible with GPLv3), provided that all in the installable 
+archive was generated by Eligible Packaging Processes. You may then convey 
+such a combination under terms of your choice, consistent with the licensing 
+of the Independent Modules.
 
-2. Applicability of GPLv3 copyleft is retained on the GPLv3 licensed scripts.
------------------------------------------------------------------------------
-Any file within the installable zip that is part of the GPLv3 licensed scripts,
-is in itself still licensed as GPLv3 and retains its copyleft permissions.
-It is to be treated as an "aggregate" as specified in the GPLv3.
+2. Applicability of GPLv3 copyleft is retained on the GPLv3 licensed Components.
+--------------------------------------------------------------------------------
+Any file within the installable archive that is part of the GPLv3 licensed 
+Components, is in itself still licensed as GPLv3 and retains its copyleft 
+permissions. It is to be treated as an "aggregate" as specified in the GPLv3.
 
-3. No Weakening of microG unofficial installer Copyleft.
---------------------------------------------------------
-The availability of this Exception does not imply any general presumption that third-party software
-is unaffected by the copyleft requirements of the license of microG unofficial installer.
+3. No Weakening of Copyleft.
+----------------------------
+The availability of this Exception does not imply any general presumption 
+that third-party software is unaffected by the copyleft requirements of the 
+license of The Software.

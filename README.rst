@@ -4,14 +4,11 @@ microG unofficial installer
 
 ..
    SPDX-FileCopyrightText: 2016 ale5000
-   SPDX-License-Identifier: GPL-3.0-or-later
+   SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
    SPDX-FileType: DOCUMENTATION
 
 :Author:
    `ale5000 <https://github.com/ale5000-git>`_
-
-:License:
-   `GPLv3.0 or later <https://www.gnu.org/licenses/gpl-3.0.html>`_
 
 .. image:: https://app.readthedocs.org/projects/microg-unofficial-installer/badge/?version=latest
    :alt: Documentation status
@@ -146,6 +143,29 @@ development!
    coffee, kind words, or cold hard crypto, it's all welcome.
 |  *(No pressure. But the coffee does make the bugs fix themselves slightly
    faster.)*
+
+
+License
+=======
+
+This project is licensed under the **GNU General Public License v3.0 or later**
+(GPLv3+), with a custom **Archive Packaging Exception** to facilitate
+distribution in compressed packages.
+
+*  **Core license**: The full text of the GPLv3 can be found in `./LICENSE.rst`.
+*  **Exception terms**: The specific permissions for creating archives are
+   detailed in `./LICENSE-EXCEPTION.rst`.
+
+**What this means for you:**
+You are free to bundle this software into your own archives (such as flashable
+ZIPs or tarballs) alongside proprietary or differently licensed modules,
+provided those modules are independent and not derived from this software.
+
+**Note for developers:**
+The following SPDX identifier is used in this project's source files to enable
+the archive packaging exception:
+
+   ``SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception``
 
 
 Copyright

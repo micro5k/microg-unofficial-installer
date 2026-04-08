@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # SPDX-FileCopyrightText: 2024 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 # @name Bits info
 # @brief Report bit-widths of the shell, OS, CPU, and POSIX utilities; detect the architecture and type of binary files.
@@ -21,7 +21,7 @@
 
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.31'
+SCRIPT_VERSION='1.5.32'
 SCRIPT_AUTHOR='ale5000'
 
 ### CONFIGURATION ###

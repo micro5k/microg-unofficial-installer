@@ -5,11 +5,11 @@
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/blob/HEAD/zip-content/zip-install.sh
 
 # SPDX-FileCopyrightText: 2022 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.4.2'
+readonly ZIPINSTALL_VERSION='1.4.3'
 
 PATH="${PATH:-/system/bin}:."
 umask 022 || :

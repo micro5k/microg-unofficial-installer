@@ -1,8 +1,6 @@
 #!/usr/bin/env sh
-# SPDX-FileCopyrightText: 2016 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
-
-# shellcheck enable=all
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
 
 alias devprofgen='profile-generator'
 alias profgen='profile-generator'

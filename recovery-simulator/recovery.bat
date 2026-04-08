@@ -1,5 +1,5 @@
 @REM SPDX-FileCopyrightText: 2022 ale5000
-@REM SPDX-License-Identifier: GPL-3.0-or-later
+@REM SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 @echo off
 SETLOCAL 2> nul
