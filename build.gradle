@@ -43,16 +43,14 @@ configure(project) {
 
 import groovy.transform.Memoized
 
-private Provider<String> getScriptExt() {
-    ext.lazyOsName.map { it.toLowerCase(Locale.ROOT).contains('windows') ? '.bat' : '.sh' }
-}
-
-private Provider<String> getMavenVersion() {
-    ext.lazyVersion.map { it.endsWith('-alpha') ? "${it}-SNAPSHOT" : it }
-}
-
+@Memoized
 private Provider<String> getProjectId() {
     ext.lazyProjectId.map { it ?: { throw new InvalidUserDataException('id in "zip-content/module.prop" is empty or not set.') }() }
+}
+
+@Memoized
+private Provider<String> getScriptExt() {
+    ext.lazyOsName.map { it.toLowerCase(Locale.ROOT).contains('windows') ? '.bat' : '.sh' }
 }
 
 @Memoized
@@ -60,6 +58,11 @@ private Provider<String> getGitCommitHash() {
     providers.exec {
         commandLine 'git', 'rev-parse', '--short=8', 'HEAD'
     }.standardOutput.asText.map{ it.trim() }.orElse('unknown')
+}
+
+@Memoized
+private Provider<String> getMavenVersion() {
+    ext.lazyVersion.map { it.endsWith('-alpha') ? "${it}-SNAPSHOT" : it }
 }
 
 private Provider<String> getZipName(String variant = '*') {
@@ -184,7 +187,7 @@ tasks.register('cleanRecoveryOutput', Delete) {
 
 tasks.named('clean') {
     group = '- Cleanup'
-    dependsOn tasks.named('cleanRecoveryOutput')
+    dependsOn 'cleanRecoveryOutput'
 }
 
 tasks.register('cleanCache', Delete) {
@@ -196,7 +199,7 @@ tasks.register('cleanCache', Delete) {
 tasks.register('distClean') {
     group = '- Cleanup'
     description = 'Cleans all build outputs, local caches, and removes all untracked/ignored files via Git.'
-    dependsOn tasks.named('clean'), tasks.named('cleanCache')
+    dependsOn 'clean', 'cleanCache'
 
     doLast {
         if (layout.projectDirectory.dir('.git').asFile.exists()) {
@@ -271,7 +274,7 @@ tasks.register('buildOtaOSS', Exec) {
 tasks.named('assemble') {
     group = null
     description = 'Alias of "buildOtaOSS" task.'
-    dependsOn tasks.named('buildOtaOSS')
+    dependsOn 'buildOtaOSS'
 }
 
 tasks.named('build') {
