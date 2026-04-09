@@ -4,7 +4,7 @@ version = 1
 path = [
   "busybox/busybox-*.bin"
 ]
-SPDX-FileCopyrightText = "tons of folks <https://github.com/yashdsaraf/busybox/raw/master/AUTHORS>"
+SPDX-FileCopyrightText = "BusyBox authors <https://github.com/yashdsaraf/busybox/raw/master/AUTHORS>"
 SPDX-License-Identifier = "GPL-2.0-only"
 SPDX-FileType = "APPLICATION"
 SPDX-FileComment = [
