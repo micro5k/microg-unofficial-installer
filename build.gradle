@@ -41,6 +41,8 @@ configure(project) {
 
 /* ===FUNCTIONS=== */
 
+import groovy.transform.Memoized
+
 private Provider<String> getScriptExt() {
     ext.lazyOsName.map { it.toLowerCase(Locale.ROOT).contains('windows') ? '.bat' : '.sh' }
 }
@@ -53,6 +55,7 @@ private Provider<String> getProjectId() {
     ext.lazyProjectId.map { it ?: { throw new InvalidUserDataException('id in "zip-content/module.prop" is empty or not set.') }() }
 }
 
+@Memoized
 private Provider<String> getGitCommitHash() {
     providers.exec {
         commandLine 'git', 'rev-parse', '--short=8', 'HEAD'
@@ -310,8 +313,7 @@ tasks.named('wrapper') {
 
 /* === PUBLISHING === */
 
-final Closure<String> getMemoizedZipName = { getZipName().get() }.memoize()
-final Provider<FileTree> zipFilesTree = layout.buildDirectory.map { dir -> dir.asFileTree.matching { include getMemoizedZipName() } }
+final Provider<FileTree> zipFilesTree = getZipName().map { name -> layout.buildDirectory.asFileTree.matching { include name } }
 
 /*abstract class DynamicArtifactSource implements ValueSource<Integer, DynamicArtifactParams> {
     private static final List<String> artifactTypes = ['oss', 'full'].asImmutable()
@@ -458,5 +460,5 @@ def headerTrigger = providers.of(HeaderPrinter) {
 }
 
 gradle.taskGraph.whenReady {
-    { headerTrigger.get() }
+    headerTrigger.get()
 }
