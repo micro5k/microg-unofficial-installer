@@ -853,7 +853,7 @@ minutil_display_version()
 {
   # REUSE-IgnoreStart
   printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} (Minimal utilities)"
-  printf '%s\n' "Copyright (C) 2025 ${SCRIPT_AUTHOR:?}"
+  printf '%s\n' "Copyright (C) 2022 ${SCRIPT_AUTHOR:?}"
   printf '%s\n' 'License GPLv3+'
   # REUSE-IgnoreEnd
 }
