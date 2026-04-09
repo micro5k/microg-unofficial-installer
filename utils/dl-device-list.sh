@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # SPDX-FileCopyrightText: 2023 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 # @name Certified Android devices list downloader
 # @brief Download and re-encode the certified devices CSV.
@@ -15,7 +15,7 @@
 
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.0.5'
+readonly SCRIPT_VERSION='0.1.0'
 readonly SCRIPT_AUTHOR='ale5000'
 
 : "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}" "${SCRIPT_SHORTNAME:?}" "${SCRIPT_AUTHOR:?}"

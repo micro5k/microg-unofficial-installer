@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # SPDX-FileCopyrightText: 2023 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 # @name Android device profile generator
 # @brief Generate a microG device profile XML from the build properties of an Android device via ADB.
@@ -25,7 +25,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9'
+readonly SCRIPT_VERSION='1.9.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
 export LANG='en_US.UTF-8'

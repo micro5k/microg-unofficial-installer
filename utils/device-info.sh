@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # SPDX-FileCopyrightText: 2023 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 # @name Android device info extractor
 # @brief Extract and display hardware and software properties from ADB-connected Android devices or a build.prop-style file.
@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9'
+readonly SCRIPT_VERSION='2.9.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
