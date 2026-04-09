@@ -1,6 +1,6 @@
 #!/sbin/sh
-# SPDX-FileCopyrightText: 2022 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
 
 # shellcheck enable=all
 
