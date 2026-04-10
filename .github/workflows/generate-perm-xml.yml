@@ -77,7 +77,7 @@ jobs:
           enableCrossOsArchive: true
           lookup-only: true
       - name: "Keep workflow alive"
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         timeout-minutes: 5
         env:
           WORKFLOW_REF: "${{ github.workflow_ref }}"
