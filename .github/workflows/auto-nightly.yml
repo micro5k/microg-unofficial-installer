@@ -163,7 +163,7 @@ jobs:
           printf 'Update tag? %s\n' "${UPDATE_TAG:?}"
           printf 'Update release? %s\n' "${UPDATE_RELEASE:?}"
       - name: "Delete previous nightly release"
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         if: "${{ steps.nightly-logic.outputs.UPDATE_RELEASE == 'true' }}"
         with:
           retries: 3
@@ -188,7 +188,7 @@ jobs:
               throw new Error('getReleaseByTag failed: response is undefined or missing data.');
             }
       - name: "Update nightly tag"
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         if: "${{ steps.nightly-logic.outputs.UPDATE_TAG == 'true' }}"
         with:
           retries: 3
@@ -289,7 +289,7 @@ jobs:
           enableCrossOsArchive: true
           lookup-only: true
       - name: "Keep workflow alive"
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         timeout-minutes: 5
         env:
           WORKFLOW_REF: "${{ github.workflow_ref }}"
@@ -321,7 +321,7 @@ jobs:
 
     steps:
       - name: "Delete old caches"
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           retries: 3
           script: |

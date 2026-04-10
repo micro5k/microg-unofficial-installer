@@ -42,7 +42,7 @@ jobs:
           printf 'SONAR_TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
       - name: "Verify the dependency graph"
         id: dependency-graph
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         timeout-minutes: 5
         with:
           retries: 3
