@@ -196,10 +196,26 @@ tasks.register('cleanCache', Delete) {
     delete layout.projectDirectory.dir('cache')
 }
 
+tasks.register('cleanPubTmpFiles', Delete) {
+    group = '- Cleanup'
+    dependsOn 'cleanGeneratePomFileForMavenPublication'
+
+    delete layout.buildDirectory.dir('tmp/publishMavenPublicationToMavenLocal')
+    delete layout.buildDirectory.dir('tmp/generatedChecksums')
+
+    doLast {
+        ['publications/maven', 'publications', 'tmp'].each {
+            if(layout.buildDirectory.dir(it).get().asFile?.delete()) {
+                logger.info "Removed empty temporary folder: ${-> it}"
+            }
+        }
+    }
+}
+
 tasks.register('distClean') {
     group = '- Cleanup'
     description = 'Cleans all build outputs, local caches, and removes all untracked/ignored files via Git.'
-    dependsOn 'clean', 'cleanCache'
+    dependsOn 'clean', 'cleanCache', 'cleanPubTmpFiles'
 
     doLast {
         if (layout.projectDirectory.dir('.git').asFile.exists()) {
@@ -332,8 +348,8 @@ final Provider<FileTree> zipFilesTree = getZipName().map { name -> layout.buildD
         parameters.zipFiles.files.each { foundFile ->
             String type = artifactTypes.find { foundFile.name.contains("-${it}-") } ?: { throw new GradleException("Publishing failed: File ${foundFile.name} is missing a valid build type.") }()
             if(!seen.add(type)) throw new GradleException("Publishing failed: The type '${type}' already exists.")
-            String currClsf = (type == 'oss' ? null : type)
-            mavenPub.artifact(foundFile) { extension = 'zip'; classifier = currClsf; builtBy 'collectArtifacts' }
+            String clsf = (type == 'oss' ? null : type)
+            mavenPub.artifact(foundFile) { extension = 'zip'; classifier = clsf; builtBy 'collectArtifacts' }
         }
         if(seen.isEmpty()) throw new GradleException("Publishing failed: No artifact found. Check if build tasks were executed.")
         seen.size()
@@ -347,33 +363,38 @@ final Provider<Integer> artifactsProcessor = providers.of(DynamicArtifactSource)
 import java.security.MessageDigest
 import java.security.DigestInputStream
 
-File generateChecksum(targetFile, algorithm) {
-    final MessageDigest md = MessageDigest.getInstance(algorithm.toUpperCase().replace('SHA256', 'SHA-256').replace('SHA1', 'SHA-1'))
+File generateChecksum(targetFile, hashExt, checksumsDir) {
+    final MessageDigest md = MessageDigest.getInstance(hashExt.toUpperCase().replace('SHA256', 'SHA-256').replace('SHA1', 'SHA-1'))
     final byte[] buffer = new byte[65536]
     targetFile.withInputStream {
         final DigestInputStream dis = new DigestInputStream(it, md)
         while(dis.read(buffer) != -1) { }
     }
-    final File chksumFile = file("${targetFile.absolutePath}.${algorithm}")
+    final File chksumFile = new File(checksumsDir, "${targetFile.name}.${hashExt}")
     chksumFile.text = md.digest().encodeHex().toString()
 
     chksumFile
 }
 
 Integer processArtifacts(parameters, mavenPub) {
+    final Directory tmpDir = layout.buildDirectory.dir('tmp').get()
+    final File checksumsDir = tmpDir.dir('generatedChecksums').asFile
+    checksumsDir?.deleteDir()
+    checksumsDir.mkdirs()
+
     final List<String> artifactTypes = ['oss', 'full'].asImmutable()
     final HashSet<String> seen = []
     final boolean isLocal = gradle.startParameter.taskNames.any { it == 'publishToMavenLocal' || it.endsWith(':publishToMavenLocal') }
     parameters.zipFiles.files.each { foundFile ->
         final String type = artifactTypes.find { foundFile.name.contains("-${it}-") } ?: { throw new GradleException("Publishing failed: File ${foundFile.name} is missing a valid build type.") }()
         if(!seen.add(type)) throw new GradleException("Publishing failed: The type '${type}' already exists.")
-        final String currClsf = (type == 'oss' ? null : type)
-        mavenPub.artifact(foundFile) { extension = 'zip'; classifier = currClsf; builtBy 'collectArtifacts' }
+        final String clsf = (type == 'oss' ? null : type)
+        mavenPub.artifact(foundFile) { extension = 'zip'; classifier = clsf; builtBy 'collectArtifacts' }
         if(isLocal) {
             ['sha256', 'sha1', 'md5'].each { hashExt ->
                 final File existChksumFile = file("${foundFile.absolutePath}.${hashExt}")
-                final File chksumFile = existChksumFile.exists() ? existChksumFile : generateChecksum(foundFile, hashExt)
-                mavenPub.artifact(chksumFile) { extension = "zip.${hashExt}"; classifier = currClsf; builtBy 'collectArtifacts' }
+                final File chksumFile = existChksumFile.exists() ? existChksumFile : generateChecksum(foundFile, hashExt, checksumsDir)
+                mavenPub.artifact(chksumFile) { extension = "zip.${hashExt}"; classifier = clsf; builtBy 'collectArtifacts' }
             }
         }
     }
@@ -420,6 +441,10 @@ tasks.register('showPublishedArtifacts') {
     doLast {
         artifactData.get().each { logger.lifecycle it }
     }
+}
+
+tasks.named('publishToMavenLocal') {
+    finalizedBy 'cleanPubTmpFiles'
 }
 
 tasks.withType(GenerateMavenPom).configureEach {
