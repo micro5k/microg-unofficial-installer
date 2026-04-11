@@ -8,7 +8,7 @@
 # software properties (model, manufacturer, build fingerprint, Android version,
 # GSF ID, and more), and generates a device profile in the format expected by
 # microG, enabling device-identity spoofing for compatibility with services
-# that rely on Google Play Services attestation.
+# that rely on Play Services attestation.
 # @author ale5000
 
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils

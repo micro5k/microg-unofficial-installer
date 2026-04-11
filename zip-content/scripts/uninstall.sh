@@ -392,7 +392,7 @@ delete "${SYS_PATH:?}"/etc/default-permissions/microg-permissions.xml
 delete "${SYS_PATH:?}"/etc/default-permissions/permissions-com.google.android.gms.xml
 delete "${SYS_PATH:?}"/etc/default-permissions/microg-*-permissions.xml
 
-# Note: Since we don't delete all Google apps, deleting these xml files will likely cause a bootloop, so don't delete them
+# Note: Since we don't delete all GApps, deleting these xml files will likely cause a bootloop, so don't delete them
 # ToDO: In the future, simply remove the parts related to the removed apps
 #delete "${SYS_PATH:?}"/etc/permissions/privapp-permissions-google.xml
 #delete "${SYS_PATH:?}"/etc/permissions/privapp-permissions-google-p.xml

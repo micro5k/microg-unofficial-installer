@@ -20,7 +20,7 @@ devices.
 |  *(The ten minutes is for reading the instructions. The installation itself
    is faster. Unless something goes wrong. But let's stay positive.)*
 
-**What it does:** 🔧 It replaces the proprietary Google Play Services with
+**What it does:** 🔧 It replaces the proprietary Play Services with
 microG, a free and open-source re-implementation that keeps your apps happy
 without handing your entire digital life to a single corporation. Your apps
 stay. The surveillance apparatus does not.
