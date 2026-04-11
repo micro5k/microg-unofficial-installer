@@ -381,6 +381,7 @@ Integer processArtifacts(parameters, mavenPub) {
     final File checksumsDir = tmpDir.dir('generatedChecksums').asFile
     checksumsDir?.deleteDir()
     checksumsDir.mkdirs()
+    tmpDir.asFile?.deleteOnExit()
 
     final List<String> artifactTypes = ['oss', 'full'].asImmutable()
     final HashSet<String> seen = []
@@ -488,5 +489,5 @@ def headerTrigger = providers.of(HeaderPrinter) {
 }
 
 gradle.taskGraph.whenReady {
-    headerTrigger.get()
+    String resolved = "${-> headerTrigger.get()}"
 }
