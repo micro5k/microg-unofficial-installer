@@ -25,7 +25,7 @@ set -u
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.1'
+readonly SCRIPT_VERSION='1.9.2'
 readonly SCRIPT_AUTHOR='ale5000'
 
 export LANG='en_US.UTF-8'
@@ -891,7 +891,7 @@ generate_profile()
 main()
 {
   local _found || {
-    show_status_error "Local variables aren't supported!!!"
+    show_error "Local variables aren't supported!!!"
     return 99
   }
 
@@ -904,7 +904,7 @@ main()
   if test "${INPUT_TYPE:?}" = 'adb'; then
     verify_adb
     start_adb_server || {
-      show_status_error 'Failed to start ADB'
+      show_error 'Failed to start ADB'
       return 10
     }
     SELECTED_DEVICE="$(adb_get_serial)" || {
