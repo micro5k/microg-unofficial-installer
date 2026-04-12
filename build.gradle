@@ -313,8 +313,8 @@ tasks.register('installTest', Exec) {
 
     environment([
         'LIVE_SETUP_ALLOWED': 'false', /* Live setup doesn't work when executed through Gradle */
-        'NO_PAUSE'  : '1',
-        'BB_GLOBBING'  : '1'
+        'NO_PAUSE': '1',
+        'BB_GLOBBING': '1'
     ])
 }
 
