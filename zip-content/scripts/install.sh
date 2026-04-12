@@ -124,8 +124,11 @@ if test "${SETUP_TYPE:?}" = 'install'; then
   setup_app "${APP_FDROIDPRIVEXT:?}" 'APP_FDROIDPRIVEXT' 'F-Droid Privileged Extension' 'FDroidPrivilegedExtension' 'priv-app'
   setup_app "${APP_AURORASERVICES:?}" 'APP_AURORASERVICES' 'Aurora Services' 'AuroraServices' 'priv-app'
 
-  setup_app "${APP_NEWPIPE:?}" 'APP_NEWPIPE' 'NewPipe' 'NewPipe' 'app' true ||
+  if test "${SUPPORTED_ARCH:?}" = 'true' && setup_app "${APP_NEWPIPE:?}" 'APP_NEWPIPE' 'NewPipe' 'NewPipe' 'app' true; then
+    :
+  else
     setup_app "${APP_NEWPIPE:?}" 'APP_NEWPIPE' 'NewPipe Legacy Revo' 'NewPipeLegacyRevo' 'app' true
+  fi
 
   setup_app "${APP_MYLOCATION:?}" 'APP_MYLOCATION' 'My Location' 'MyLocation' 'app'
 
