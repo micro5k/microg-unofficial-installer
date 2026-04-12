@@ -299,20 +299,23 @@ tasks.named('build') {
 }
 
 tasks.register('installTest', Exec) {
-    notCompatibleWithConfigurationCache('Not yet compatible with CC.')
     group = 'verification'
     description = 'Test the flashable zip in a simulated Android recovery environment on your PC.'
 
     doNotTrackState('Force task execution by disabling up-to-date checks.')
     mustRunAfter buildOta, buildOtaOSS
 
-    doFirst {
-        environment LIVE_SETUP_ALLOWED: 'false' /* Live setup doesn't work when executed through Gradle */
-        environment NO_PAUSE: '1'
-        environment BB_GLOBBING: '1'
-        executable "${projectDir}/recovery-simulator/recovery" + getScriptExt()
-        args "${projectDir}/output/*.zip"
-    }
+    workingDir = layout.projectDirectory
+    executable = "${-> layout.projectDirectory.dir('recovery-simulator').file("recovery${ getScriptExt().get() }") }"
+
+    final Provider<RegularFile> outFilesProv = layout.buildDirectory.file('*.zip')
+    argumentProviders.add({ [outFilesProv.get().asFile.absolutePath] } as CommandLineArgumentProvider)
+
+    environment([
+        'LIVE_SETUP_ALLOWED': 'false', /* Live setup doesn't work when executed through Gradle */
+        'NO_PAUSE'  : '1',
+        'BB_GLOBBING'  : '1'
+    ])
 }
 
 tasks.register('test') {
@@ -462,7 +465,7 @@ tasks.withType(GenerateMavenPom).configureEach {
 
 /* ===HEADER=== */
 
-abstract class HeaderPrinter implements ValueSource<Boolean, HeaderParams> {
+abstract class HeaderPrinter implements ValueSource<String, HeaderParams> {
     private static final log = Logging.getLogger(HeaderPrinter)
 
     interface HeaderParams extends ValueSourceParameters {
@@ -472,13 +475,13 @@ abstract class HeaderPrinter implements ValueSource<Boolean, HeaderParams> {
     }
 
     @Override
-    Boolean obtain() {
+    String obtain() {
         log.lifecycle '=' * 36
         log.lifecycle "Project: ${parameters.projectName.get()}"
         log.lifecycle "Version: ${parameters.version.get()}"
         log.lifecycle "OS:      ${parameters.osName.get()}"
         log.lifecycle '=' * 36
-        true
+        ''
     }
 }
 
@@ -489,5 +492,5 @@ def headerTrigger = providers.of(HeaderPrinter) {
 }
 
 gradle.taskGraph.whenReady {
-    String resolved = "${-> headerTrigger.get()}"
+    logger.info "${-> headerTrigger.get()}"
 }
