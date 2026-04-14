@@ -12,7 +12,7 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import datetime
 import os
-import subprocess  # nosec B404
+import subprocess  # nosec: B404
 import sys
 
 from docutils import nodes
@@ -30,7 +30,7 @@ except ImportError:
     pass
 
 try:
-    from subprocess import DEVNULL as _TMP_DEVNULL
+    from subprocess import DEVNULL as _TMP_DEVNULL  # nosec: B404
 
     _DEVNULL = _TMP_DEVNULL  # type: int | IO[Any]
 except ImportError:
@@ -143,7 +143,8 @@ def get_revision():
     try:
         return (
             # Safe: uses list-based arguments (no shell) to prevent injection
-            subprocess.check_output(  # nosec B603 # noqa: S603
+            # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
+            subprocess.check_output(  # nosec: B603 # noqa: S603
                 [git, "rev-parse", "--short=8", "HEAD"],
                 stderr=_DEVNULL,
             )
