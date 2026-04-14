@@ -141,9 +141,9 @@ def get_revision():
     if not git:
         return None
     try:
+        # nosemgrep
         return (
             # Safe: uses list-based arguments (no shell) to prevent injection
-            # nosemgrep
             subprocess.check_output(  # nosec: B603 # noqa: S603
                 [git, "rev-parse", "--short=8", "HEAD"],
                 stderr=_DEVNULL,
@@ -151,6 +151,7 @@ def get_revision():
             .decode("utf-8")
             .strip()
         )
+        # nosemgrep-enable
     except Exception:
         return None
 
