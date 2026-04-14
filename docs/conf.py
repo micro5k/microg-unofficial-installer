@@ -143,7 +143,7 @@ def get_revision():
     try:
         return (
             # Safe: uses list-based arguments (no shell) to prevent injection
-            # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
+            # nosemgrep
             subprocess.check_output(  # nosec: B603 # noqa: S603
                 [git, "rev-parse", "--short=8", "HEAD"],
                 stderr=_DEVNULL,
