@@ -150,7 +150,7 @@ def get_revision():
             .decode("utf-8")
             .strip()
         )
-    except Exception:
+    except (FileNotFoundError, subprocess.CalledProcessError):
         return None
 
 
@@ -197,11 +197,10 @@ def _transform_rst_links(app, doctree):
         parts = uri.split("#", 1)
         has_anchor = len(parts) > 1
         reftype = "ref" if has_anchor else "doc"
-        reftarget = (
-            parts[1]
-            if has_anchor
-            else (parts[0][:-4] if parts[0].endswith(".rst") else parts[0])
-        )
+        if has_anchor:
+            reftarget = parts[1]
+        else:
+            reftarget = parts[0][:-4] if parts[0].endswith(".rst") else parts[0]
         logger.info(
             "[DEBUG] Converting %s -> :%s:`%s`",
             uri,
@@ -275,7 +274,8 @@ source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
 # Links are working using implicit references but MyST still emit warnings
 # instead of verify
-suppress_warnings = ["myst.xref_missing"]  # TODO: Find an alternative way
+# TODO: Find an alternative way
+suppress_warnings = ["myst.xref_missing"]
 
 # Options for HTML output
 html_theme = "sphinx_rtd_theme"

@@ -55,7 +55,7 @@
     },
     "ruff.lineLength": 80,
     "ruff.lint.select": ["ALL"],
-    "ruff.lint.ignore": ["ANN001", "ANN201", "ANN202", "PTH", "SIM105", "UP009", "UP030", "UP032"],
+    "ruff.lint.ignore": ["ANN001", "ANN201", "ANN202", "PTH", "SIM105", "UP009", "UP030", "UP032", "TD002", "TD003"],
     "[python]": {
         "editor.rulers": [80, 100, 120],
         "editor.defaultFormatter": "charliermarsh.ruff",
