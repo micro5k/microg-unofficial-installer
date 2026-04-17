@@ -13,24 +13,24 @@
   "skipCi": true,
   "contributors": [
     {
-      "login": "storm1ng",
-      "name": "Manuel Jenny",
-      "avatar_url": "https://avatars.githubusercontent.com/u/4191545?v=4",
-      "profile": "https://www.manueljenny.ch",
+      "login": "Nanolx",
+      "name": "Chris 'Nano' Bratusek",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3106131?v=4",
+      "profile": "https://www.nanolx.org",
       "contributions": ["code"]
-    },
-    {
-      "login": "",
-      "name": "~1769491",
-      "avatar_url": "https://avatars.githubusercontent.com/u/0?v=4",
-      "profile": "https://liberapay.com/~1769491/",
-      "contributions": ["financial"]
     },
     {
       "login": "theScrabi",
       "name": "Christian Schabesberger",
       "avatar_url": "https://avatars.githubusercontent.com/u/1891273?v=4",
       "profile": "https://github.com/theScrabi",
+      "contributions": ["code"]
+    },
+    {
+      "login": "storm1ng",
+      "name": "Manuel Jenny",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4191545?v=4",
+      "profile": "https://www.manueljenny.ch",
       "contributions": ["code"]
     },
     {
@@ -41,11 +41,18 @@
       "contributions": ["code"]
     },
     {
-      "login": "Nanolx",
-      "name": "Chris 'Nano' Bratusek",
-      "avatar_url": "https://avatars.githubusercontent.com/u/3106131?v=4",
-      "profile": "https://www.nanolx.org",
-      "contributions": ["code"]
+      "login": "",
+      "name": "eightscrow",
+      "avatar_url": "https://avatars.githubusercontent.com/u/0?v=4",
+      "profile": "https://liberapay.com/eightscrow/",
+      "contributions": ["financial"]
+    },
+    {
+      "login": "",
+      "name": "~1769491",
+      "avatar_url": "https://avatars.githubusercontent.com/u/0?v=4",
+      "profile": "https://liberapay.com/~1769491/",
+      "contributions": ["financial"]
     }
   ]
 }
