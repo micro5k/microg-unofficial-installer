@@ -7,23 +7,27 @@ microG unofficial installer
    SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
    SPDX-FileType: DOCUMENTATION
 
-Welcome to the documentation for **microG unofficial installer** |release|.
-📱
+Welcome to the documentation for **microG unofficial installer** |release|. 📱
 
 `microG unofficial installer
 <https://github.com/micro5k/microg-unofficial-installer>`_ is a flashable zip
-that installs `microG <https://microg.org/>`_ on a wide range of Android
-devices.
+created by **ale5000** that installs microG (by **Marvin Wißfeld**) on a wide
+range of Android devices.
 
 |  No advanced Android skills required — the installer handles the complexity
    for you — just a compatible recovery and about ten minutes of your time.
-|  *(The ten minutes is for reading the instructions. The installation itself
-   is faster. Unless something goes wrong. But let's stay positive.)*
+|  *(The ten minutes is for reading the instructions. The installation itself is
+   faster. Unless something goes wrong. But let's stay positive.)*
 
-**What it does:** 🔧 It replaces the proprietary Play Services with
-microG, a free and open-source re-implementation that keeps your apps happy
-without handing your entire digital life to a single corporation. Your apps
-stay. The surveillance apparatus does not.
+**What it does:** 🔧 It replaces the proprietary Play Services with microG, a
+free and open-source re-implementation that keeps your apps happy without
+handing your entire digital life to a single corporation. Your apps stay. The
+surveillance apparatus does not.
+
+**Credits:** 👑 This installer is just the delivery vehicle. The core engine,
+the technical **infrastructure**, and the years of **research** are the work of
+`Marvin Wißfeld <https://github.com/mar-v-in>`_ and the `microG Project
+<https://microg.org/>`_.
 
 **The ideal:** 🔒 Privacy, freedom, better battery life, and the belief that
 your phone should work for *you* — not the other way around. *(microG is

@@ -67,9 +67,9 @@ loader is locked, which would prevent a successful installation.
 
 The detection relies on system properties and works correctly when the device is
 booted into **recovery mode**. However, when the device is running the **normal
-system**, certain ROMs or Magisk modules
-may spoof a locked state even on an actually-unlocked device. In that specific
-case the detection may report a false positive.
+system**, certain ROMs or Magisk modules may spoof a locked state even on an
+actually-unlocked device. In that specific case the detection may report a false
+positive.
 
 .. admonition:: Workaround
    :class: hint
