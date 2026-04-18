@@ -11,7 +11,7 @@ Welcome to the documentation for **microG unofficial installer** |release|. 📱
 
 `microG unofficial installer
 <https://github.com/micro5k/microg-unofficial-installer>`_ is a flashable zip
-created by **ale5000** that installs microG (by **Marvin Wißfeld**) on a wide
+created by *ale5000* that installs **microG** (by *Marvin Wißfeld*) on a wide
 range of Android devices.
 
 |  No advanced Android skills required — the installer handles the complexity
@@ -24,10 +24,14 @@ free and open-source re-implementation that keeps your apps happy without
 handing your entire digital life to a single corporation. Your apps stay. The
 surveillance apparatus does not.
 
-**Credits:** 👑 This installer is just the delivery vehicle. The core engine,
-the technical **infrastructure**, and the years of **research** are the work of
-`Marvin Wißfeld <https://github.com/mar-v-in>`_ and the `microG Project
-<https://microg.org/>`_.
+**Credits:** 👑 This installer is just the delivery vehicle—the fancy pizza
+box, if you will. The actual "gourmet meal" (the core engine, infrastructure,
+and years of research) is the brilliant work of `Marvin Wißfeld
+<https://github.com/mar-v-in>`_ and the `microG Project <https://microg.org/>`_.
+For a full list of the brave souls who helped build this vehicle without
+crashing it into a tree, see the `contributors
+<https://github.com/micro5k/microg-unofficial-installer/blob/main/docs/CONTRIBUTORS.md>`_
+file in our repository.
 
 **The ideal:** 🔒 Privacy, freedom, better battery life, and the belief that
 your phone should work for *you* — not the other way around. *(microG is
