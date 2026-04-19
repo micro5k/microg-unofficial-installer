@@ -259,9 +259,11 @@ rm -rf "${TEMP_DIR:?}"/zip-content/misc/aapt || ui_error 'Failed to delete unuse
 rm -f "${TEMP_DIR:?}"/zip-content/misc/busybox/busybox-mips* || ui_error 'Failed to delete unused files in the temp dir'
 
 # Do not ship licenses of components used only by the repo and not by the produced zip
-rm -f "${TEMP_DIR:?}"/zip-content/LICENSES/LGPL-3.0-or-later.txt || ui_error 'Failed to delete unused licenses in the temp dir'
-rm -f "${TEMP_DIR:?}"/zip-content/LICENSES/Info-ZIP.txt || ui_error 'Failed to delete unused licenses in the temp dir'
-rm -f "${TEMP_DIR:?}"/zip-content/LICENSES/Unlicense.txt || ui_error 'Failed to delete unused licenses in the temp dir'
+for _license in 'Apache-2.0' 'CC0-1.0' 'Info-ZIP' 'LGPL-3.0-or-later' 'Unlicense'; do
+  if conf_common_should_skip_license "${_license:?}"; then
+    rm -f "${TEMP_DIR:?}"/zip-content/LICENSES/"${_license:?}.txt" || ui_error 'Failed to delete unused licenses in the temp dir'
+  fi
+done
 
 # Verify bundled application files to ensure package integrity; downloaded files have already been validated
 if test -e "${TEMP_DIR:?}/zip-content/origin/file-list.dat"; then
