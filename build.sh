@@ -257,8 +257,11 @@ cp -f "${MAIN_DIR:?}"/CHANGELOG.rst "${TEMP_DIR:?}/zip-content/docs/" || ui_erro
 # Do not ship currently unused files
 rm -rf "${TEMP_DIR:?}"/zip-content/misc/aapt || ui_error 'Failed to delete unused files in the temp dir'
 rm -f "${TEMP_DIR:?}"/zip-content/misc/busybox/busybox-mips* || ui_error 'Failed to delete unused files in the temp dir'
-rm -f "${TEMP_DIR:?}"/zip-content/LICENSES/Info-ZIP.txt || ui_error 'Failed to delete unused files in the temp dir'
-rm -f "${TEMP_DIR:?}"/zip-content/LICENSES/Unlicense.txt || ui_error 'Failed to delete unused files in the temp dir'
+
+# Do not ship licenses of components used only by the repo and not by the produced zip
+rm -f "${TEMP_DIR:?}"/zip-content/LICENSES/LGPL-3.0-or-later.txt || ui_error 'Failed to delete unused licenses in the temp dir'
+rm -f "${TEMP_DIR:?}"/zip-content/LICENSES/Info-ZIP.txt || ui_error 'Failed to delete unused licenses in the temp dir'
+rm -f "${TEMP_DIR:?}"/zip-content/LICENSES/Unlicense.txt || ui_error 'Failed to delete unused licenses in the temp dir'
 
 # Verify bundled application files to ensure package integrity; downloaded files have already been validated
 if test -e "${TEMP_DIR:?}/zip-content/origin/file-list.dat"; then
