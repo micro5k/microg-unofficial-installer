@@ -261,7 +261,7 @@ rm -f "${TEMP_DIR:?}"/zip-content/misc/busybox/busybox-mips* || ui_error 'Failed
 # Do not ship licenses of components used only by the repo and not by the produced zip
 for _license in 'Apache-2.0' 'CC0-1.0' 'Info-ZIP' 'LGPL-3.0-or-later' 'Unlicense'; do
   if conf_common_should_skip_license "${_license:?}"; then
-    rm -f "${TEMP_DIR:?}"/zip-content/LICENSES/"${_license:?}.txt" || ui_error 'Failed to delete unused licenses in the temp dir'
+    rm -f "${TEMP_DIR:?}/zip-content/LICENSES/${_license:?}.txt" || ui_error 'Failed to delete unused licenses in the temp dir'
   fi
 done
 
