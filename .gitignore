@@ -64,6 +64,7 @@ user.gradle
 /docs/devel/
 
 # Custom project folders
+/build-hooks/*.hook.sh
 /cache/
 /output/
 /recovery-simulator/output/

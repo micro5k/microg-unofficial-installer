@@ -102,6 +102,9 @@ esac
 save_last_title
 set_title 'Building the flashable zip...'
 
+# [HOOK] pre_init: Early setup
+run_hook 'pre_init'
+
 # shellcheck source=SCRIPTDIR/conf/conf-common.inc.sh
 . "${MAIN_DIR:?}/conf/conf-common.inc.sh"
 # shellcheck source=SCRIPTDIR/conf/conf-full.inc.sh
@@ -159,6 +162,9 @@ if test "${OPENSOURCE_ONLY:?}" != 'false'; then
   if test ! -f "${MAIN_DIR:?}/zip-content/settings-oss.conf"; then ui_error 'The settings file is missing' "${LINENO-}" "${FUNCNAME-}"; fi
 fi
 
+# [HOOK] post_init: After metadata extraction but before dependency check
+run_hook 'post_init'
+
 # Check dependencies
 command 1> /dev/null 2>&1 -v 'printf' || ui_error 'Missing: printf'
 command 1> /dev/null 2>&1 -v 'zip' || ui_error 'Missing: zip'
@@ -178,12 +184,18 @@ test "${JAVA_VER:-0}" -ge 17 || ui_error 'Java 17 or later is required' "${LINEN
 # Create the output dir
 mkdir -p "${OUT_DIR:?}" || ui_error 'Failed to create the output dir'
 
+# [HOOK] pre_temp_create: Triggered before temp directory initialization
+run_hook 'pre_temp_create'
+
 # Create the temp dir
 TEMP_DIR="$(mktemp -d -t ZIPBUILDER-XXXXXX)" || ui_error 'Failed to create our temp dir'
 if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
 
 # Empty our temp dir (should be already empty, but we must be sure)
 rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
+
+# [HOOK] post_temp_create: Ideal for injecting custom files into the temp directory
+run_hook 'post_temp_create'
 
 # Set filename
 sanitize_filename_part()
@@ -219,8 +231,8 @@ fi
 FILENAME="${FILENAME_START:?}${FILENAME_MIDDLE:?}${FILENAME_END:?}"
 FILENAME_EXT='.zip'
 
-# shellcheck source=SCRIPTDIR/addition.sh
-. "${MAIN_DIR}/addition.sh"
+# [HOOK] pre_download: Triggered before starting any external file download
+run_hook 'pre_download'
 
 # Download and verify external application files to ensure package integrity; bundled files will be verified at a later stage
 {
@@ -332,6 +344,9 @@ rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}"
 rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}".md5 || ui_error 'Failed to remove the previously built files' "${LINENO-}" "${FUNCNAME-}"
 rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}".sha256 || ui_error 'Failed to remove the previously built files' "${LINENO-}" "${FUNCNAME-}"
 
+# [HOOK] pre_package: Last chance to modify content before zipping
+run_hook 'pre_package'
+
 # Compress (it ensure that the list of files to compress is in the same order under all OSes)
 # Note: Unicode filenames in the zip are disabled since we don't need them and also zipsigner.jar chokes on them
 cd "${TEMP_DIR}/zip-content" || ui_error 'Failed to change the folder' "${LINENO-}" "${FUNCNAME-}"
@@ -339,11 +354,17 @@ echo 'Zipping...'
 find . -type f | LC_ALL=C sort | zip -D -9 -X -UN=n -nw "${TEMP_DIR}/flashable${FILENAME_EXT:?}" -@ || ui_error 'Failed compressing' "${LINENO-}" "${FUNCNAME-}"
 FILENAME="${FILENAME:?}-signed"
 
+# [HOOK] post_package: Triggered after compression, but before signing
+run_hook 'post_package'
+
 # Sign and zipalign
 echo ''
 echo 'Signing and zipaligning...'
 mkdir -p "${TEMP_DIR:?}/zipsign"
 java -Duser.timezone=UTC -Dzip.encoding=Cp437 -Djava.io.tmpdir="${TEMP_DIR:?}/zipsign" -jar "${MAIN_DIR:?}/tools/zipsigner.jar" "${TEMP_DIR:?}/flashable${FILENAME_EXT:?}" "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" || ui_error 'Failed signing and zipaligning' "${LINENO-}" "${FUNCNAME-}"
+
+# [HOOK] post_sign: Triggered after the signing process is complete
+run_hook 'post_sign'
 
 if test "${FAST_BUILD:-false}" = 'false'; then
   echo ''
@@ -397,13 +418,15 @@ if test "${GITHUB_JOB:-false}" != 'false'; then
   } >> "${GITHUB_OUTPUT?}"
 fi
 
+set +e
 cd "${_init_dir:?}" || ui_error 'Failed to change back the folder' "${LINENO-}" "${FUNCNAME-}"
+
+# [HOOK] on_finish: Final hook for notifications or moving files to a server
+run_hook 'on_finish'
 
 echo ''
 echo 'Done.'
 set_title 'Done'
-
-set +e
 
 # Ring bell
 beep

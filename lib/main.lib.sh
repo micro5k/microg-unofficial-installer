@@ -118,6 +118,17 @@ ui_nl()
   printf 1>&2 '\n'
 }
 
+run_hook()
+{
+  local hook_file="${MAIN_DIR:?}/build-hooks/${1:?}.hook.sh"
+
+  if test -f "${hook_file:?}"; then
+    ui_debug "Running hook: ${1?}..."
+    # shellcheck source=/dev/null
+    . "${hook_file:?}" "${hook_file:?}" "${@}" || ui_error "Hook '${1?}' failed with exit code ${?}" "${LINENO-}" "${FUNCNAME-}"
+  fi
+}
+
 export DL_DEBUG="${DL_DEBUG:-false}"
 export http_proxy="${http_proxy-}"
 export ftp_proxy="${ftp_proxy-}"
