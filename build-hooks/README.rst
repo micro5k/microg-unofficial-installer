@@ -2,6 +2,11 @@
 Hook system for build
 #####################
 
+..
+   SPDX-FileCopyrightText: 2026 ale5000
+   SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
+   SPDX-FileType: DOCUMENTATION
+
 This directory contains optional hooks to customize the build process. Each hook
 must be a shell script named following the pattern: ``<hook_name>.hook.sh``.
 

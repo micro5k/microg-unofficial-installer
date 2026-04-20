@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 # shellcheck enable=all
+# shellcheck disable=SC2240 # Ignore: The dot command does not support arguments in sh/dash
 # shellcheck disable=SC3028 # Ignore: In POSIX sh, FUNCNAME is undefined
 # shellcheck disable=SC3043 # Ignore: In POSIX sh, 'local' is undefined
 
