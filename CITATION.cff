@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+title: "microG unofficial installer"
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+authors:
+  - alias: "ale5000"
+    orcid: "https://orcid.org/0009-0002-1106-0669"
+identifiers:
+  - type: other
+    value: "GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception"
+    description: >-
+      Licensed under GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception.
+      The full text of this exception is available in the LICENSE-EXCEPTION.rst file at the root of this repository.
+  - type: url
+    value: "https://github.com/mar-v-in"
+    description: "Marvin Wißfeld - Author of the included microG components"
+repository-code: "https://github.com/micro5k/microg-unofficial-installer"
+abstract: "A tool to simplify microG installation on Android devices."
+keywords:
+  - microg
+  - flashable-zip
+  - flashable
+  - android-recovery
+  - android
+license: "GPL-3.0-or-later"
