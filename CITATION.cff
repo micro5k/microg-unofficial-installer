@@ -11,7 +11,7 @@ authors:
     orcid: "https://orcid.org/0009-0002-1106-0669"
 identifiers:
   - type: other
-    value: "SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception"
+    value: "License: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception"
     description: >-
       Licensed under GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception.
       The full text of this exception is available in the LICENSE-EXCEPTION.rst file at the root of this repository.
