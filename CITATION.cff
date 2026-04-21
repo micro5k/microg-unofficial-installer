@@ -1,3 +1,7 @@
+---
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
+
 cff-version: 1.2.0
 title: "microG unofficial installer"
 message: "If you use this software, please cite it using the metadata from this file."
