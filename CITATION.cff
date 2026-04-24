@@ -12,9 +12,7 @@ authors:
 identifiers:
   - type: other
     value: "License: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception"
-    description: >-
-      Licensed under GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception.
-      The full text of this exception is available in the LICENSE-EXCEPTION.rst file at the root of this repository.
+    description: "The full text of the licenses can be found in the LICENSES directory."
   - type: url
     value: "https://github.com/mar-v-in"
     description: "Marvin Wißfeld - Author of the included microG components"
