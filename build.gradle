@@ -13,23 +13,23 @@ plugins {
     //id 'com.github.spotbugs' version '4.7.6'
 }
 
-def moduleProps = providers.fileContents(layout.projectDirectory.file('zip-content/module.prop'))
-    .asText
-    .map { text ->
-        def p = new Properties()
-        p.load(new StringReader(text))
-        return p
-    }
-
-//def moduleProps = providers.properties(layout.projectDirectory.file('zip-content/module.prop'))
-
 configure(project) {
     defaultTasks 'tasks'
 
     ext {
-        lazyDescription = moduleProps.map { it.getProperty('description', 'Unknown flashable ZIP') }
+        moduleProps = providers.fileContents(layout.projectDirectory.file('zip-content/module.prop'))
+            .asText
+            .map {
+                final Properties p = new Properties()
+                p.load(new StringReader(it))
+                p
+            } as Provider<Properties>
+
+        //moduleProps = providers.properties(layout.projectDirectory.file('zip-content/module.prop')) as Provider<Properties>
+
+        //lazyDescription = moduleProps.map { it.getProperty('description', 'Unknown flashable ZIP') }
         lazyVersion = moduleProps.map { it.getProperty('version', 'v0.0.0-unknown').trim().toLowerCase(Locale.ROOT) }
-        lazyGroup = moduleProps.map { it.getProperty('group', 'unknown').trim() }
+        //lazyGroup = moduleProps.map { it.getProperty('group', 'unknown') }
         lazyProjectId = moduleProps.map { it.getProperty('id', '').trim() }
         lazyOsName = providers.systemProperty('os.name')
     }
@@ -46,6 +46,21 @@ import groovy.transform.Memoized
 @Memoized
 private Provider<String> getProjectId() {
     ext.lazyProjectId.map { it ?: { throw new InvalidUserDataException('id in "zip-content/module.prop" is empty or not set.') }() }
+}
+
+@Memoized
+private Provider<String> getLazyDescription() {
+    moduleProps.map { it.getProperty('description', 'Unknown flashable ZIP') }
+}
+
+@Memoized
+private Provider<String> getLazyGroup() {
+    moduleProps.map { it.getProperty('group', 'unknown') }
+}
+
+@Memoized
+private Provider<String> getLazyOrg() {
+    moduleProps.map { it.getProperty('organization', 'unknown') }
 }
 
 @Memoized
@@ -143,16 +158,16 @@ project.afterEvaluate {
     // Keep it as lazy as possible while ensuring values show up correctly in 'gradlew properties',
     // since these Gradle properties and the maven-publish plugin don't support Providers.
 
-    description = "${-> ext.lazyDescription.get()}"
-    version = "${-> ext.lazyVersion.get()}"
-    group = "${-> ext.lazyGroup.get()}"
+    description = "${-> lazyDescription.get() }"
+    version = "${-> ext.lazyVersion.get() }"
+    group = "${-> lazyGroup.get() }"
 
     publishing {
         publications {
             maven(MavenPublication) {
-                groupId = 'com.github.micro5k'
-                artifactId = "${-> getProjectId().get()}"
-                version = "${-> getMavenVersion().get()}"
+                groupId = "com.github.${-> lazyOrg.get() }"
+                artifactId = "${-> getProjectId().get() }"
+                version = "${-> getMavenVersion().get() }"
                 pom {
                     name = "${-> project.name}"
                     packaging = 'zip'
