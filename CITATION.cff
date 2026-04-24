@@ -21,9 +21,9 @@ identifiers:
 repository-code: "https://github.com/micro5k/microg-unofficial-installer"
 abstract: "A tool to simplify microG installation on Android devices."
 keywords:
-  - microg
+  - android
   - flashable-zip
   - flashable
-  - android-recovery
-  - android
+  - microg
+  - gapps
 license: "GPL-3.0-or-later"
