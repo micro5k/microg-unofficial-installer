@@ -2,14 +2,18 @@
 # SPDX-License-Identifier: CC0-1.0
 
 id=microg-unofficial-installer
-numericId=765145
 name=microG unofficial installer
 version=v1.3.2.48-alpha
 versionCode=6
 author=ale5000
 description=It installs microG on Android.
-group=net.ale5000
+
 support=https://github.com/micro5k/microg-unofficial-installer/issues
 donate=https://liberapay.com/microg-unofficial-by-ale5000/donate
 minApi=8
 maxApi=36
+
+group=net.ale5000
+organization=micro5k
+numericId=765145
+license=GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
