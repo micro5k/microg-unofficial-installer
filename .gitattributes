@@ -19,6 +19,7 @@ docs/CODEOWNERS     text eol=lf
 .shellcheckrc       text eol=lf
 .tool-versions      text eol=lf
 
+*.cff               text eol=lf
 *.gpg               text eol=lf
 *.js                text eol=lf
 *.json              text eol=lf
@@ -83,5 +84,5 @@ tools/win/etc/profile         text eol=lf
 *.png               binary
 *.jpg               binary
 
-# Git LFS
+# Git LFS files
 /zip-content/origin/priv-app/GmsCore.apk filter=lfs diff=lfs merge=lfs -text

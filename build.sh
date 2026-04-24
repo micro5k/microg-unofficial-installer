@@ -119,17 +119,25 @@ OUT_DIR="${MAIN_DIR:?}/output"
 MODULE_ID="$(simple_get_prop 'id' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module id string'
 MODULE_VER="$(simple_get_prop 'version' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module version string'
 MODULE_AUTHOR="$(simple_get_prop 'author' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module author string'
+MODULE_ORG="$(simple_get_prop 'organization' "${MAIN_DIR:?}/zip-content/module.prop")" || ui_error 'Failed to parse the module organization string'
 case "${MODULE_VER:?}" in
   *'-alpha') MODULE_IS_ALPHA='true' ;;
   *) MODULE_IS_ALPHA='false' ;;
 esac
 
+if test "${GITHUB_ACTIONS:-false}" != 'false'; then
+  CI_NAME='github'
+elif test "${CI:-false}" != 'false'; then
+  CI_NAME="${CI:?}"
+else
+  CI_NAME='false'
+fi
+
 # Set short commit ID
-ZIP_SHORT_COMMIT_ID=''
-if test "${CI:-false}" != 'false'; then
+if test "${CI_NAME:?}" != 'false'; then
   ZIP_SHORT_COMMIT_ID="${CI_COMMIT_SHA:-${GITHUB_SHA:?Missing commit ID}}" || ZIP_SHORT_COMMIT_ID=''
 else
-  ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse HEAD)" || ZIP_SHORT_COMMIT_ID=''
+  ZIP_SHORT_COMMIT_ID="$(git 2> /dev/null rev-parse --short=8 HEAD)" || ZIP_SHORT_COMMIT_ID=''
 fi
 if test -n "${ZIP_SHORT_COMMIT_ID?}"; then
   ZIP_SHORT_COMMIT_ID="$(printf '%s' "${ZIP_SHORT_COMMIT_ID:?}" | cut -b '-8')" || ZIP_SHORT_COMMIT_ID=''
@@ -211,14 +219,14 @@ FILENAME_START="${MODULE_ID:?}-${MODULE_VER:?}-"
 FILENAME_MIDDLE="${FILENAME_COMMIT_ID:?}"
 FILENAME_END="-${BUILD_TYPE:?}-by-${MODULE_AUTHOR:?}"
 
-if test "${CI:-false}" != 'false'; then
+if test "${CI_NAME:?}" != 'false'; then
   if test -n "${CI_COMMIT_BRANCH-}" && test "${CI_COMMIT_BRANCH:?}" != "${CI_DEFAULT_BRANCH:-unknown}"; then
     BRANCH_NAME="$(sanitize_filename_part "${CI_COMMIT_BRANCH:?}" || :)" # GitLab
   elif test "${GITHUB_REF_TYPE-}" = 'branch' && test -n "${GITHUB_REF_NAME-}" && test "${GITHUB_REF_NAME:?}" != "${GITHUB_REPOSITORY_DEFAULT_BRANCH:-main}"; then
     BRANCH_NAME="$(sanitize_filename_part "${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:?}}" || :)" # GitHub
   fi
   test -z "${BRANCH_NAME?}" || FILENAME_MIDDLE="${BRANCH_NAME:?}-${FILENAME_MIDDLE:?}"
-  if test "${CI_PROJECT_NAMESPACE:-${GITHUB_REPOSITORY_OWNER:-unknown}}" != 'micro''5k'; then
+  if test "${CI_PROJECT_NAMESPACE:-${GITHUB_REPOSITORY_OWNER:-unknown}}" != "${MODULE_ORG:?}"; then
     FILENAME_MIDDLE="fork-${FILENAME_MIDDLE:?}" # GitLab / GitHub
   fi
 else
@@ -376,7 +384,7 @@ cd "${OUT_DIR:?}" || ui_error 'Failed to change the folder' "${LINENO-}" "${FUNC
 
 # Cleanup remnants (skip on CI)
 pid=''
-if test "${CI:-false}" = 'false'; then
+if test "${CI_NAME:?}" = 'false'; then
   rm -r -f -- "${TEMP_DIR:?}" &
   #pid="${!}"
 fi
