@@ -80,9 +80,15 @@ private Provider<String> getScriptExt() {
 
 @Memoized
 private Provider<String> getGitCommitHash() {
-    providers.exec {
-        commandLine 'git', 'rev-parse', '--short=8', 'HEAD'
-    }.standardOutput.asText.map{ it.trim() }.orElse('unknown')
+    providers.provider { layout.projectDirectory.dir('.git').asFile.exists() }.flatMap { exists ->
+        if(!exists) {
+            return providers.provider { 'NOGIT' }
+        }
+
+        providers.exec {
+            commandLine 'git', 'rev-parse', '--short=8', 'HEAD'
+        }.standardOutput.asText.map { "g${ it.trim() }" }.orElse('unknown')
+    }
 }
 
 @Memoized
@@ -93,14 +99,14 @@ private Provider<String> getMavenVersion() {
 private Provider<String> getZipName(String variant = '*') {
     ext.lazyVersion.flatMap { v ->
         getProjectId().zip(getGitCommitHash()) { id, hash ->
-            "${id}-${v}-g${hash}-${variant}-by-ale5000-signed.zip"
+            "${id}-${v}-${hash}-${variant}-by-ale5000-signed.zip"
         }
     }
 }
 
 /*private Provider<String> getZipName(String variant = '*') {
     providers.zip(getProjectId(), getGitCommitHash(), ext.lazyVersion) { id, hash, v ->
-        "${id}-${v}-g${hash}-${variant}-by-ale5000-signed.zip"
+        "${id}-${v}-${hash}-${variant}-by-ale5000-signed.zip"
     }
 }*/
 

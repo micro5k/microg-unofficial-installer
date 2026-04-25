@@ -27,7 +27,7 @@ SPDX-FileComment = [
 path = [
   "gradle/wrapper/gradle-wrapper.jar"
 ]
-SPDX-FileCopyrightText = "2007 the original author or authors"
+SPDX-FileCopyrightText = "2007 The original author or authors"
 SPDX-License-Identifier = "Apache-2.0"
 SPDX-FileComment = [
   "Sources: https://github.com/gradle/gradle/tree/master/subprojects/wrapper"
