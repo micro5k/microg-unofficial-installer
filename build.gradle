@@ -70,7 +70,7 @@ private Provider<String> getLazyOrg() {
 
 @Memoized
 private Provider<String> getLazyLicense() {
-    moduleProps.map { it.getProperty('license', 'unknown') }
+    moduleProps.map { it.getProperty('license', 'NOASSERTION') }
 }
 
 @Memoized
@@ -87,13 +87,15 @@ private Provider<String> getGitCommitHash() {
 
         providers.exec {
             commandLine 'git', 'rev-parse', '--short=8', 'HEAD'
-        }.standardOutput.asText.map { "g${ it.trim() }" }.orElse('unknown')
+        }.standardOutput.asText.map { "g${ it.trim() }" }.orElse('UNKNOWN')
     }
 }
 
 @Memoized
 private Provider<String> getMavenVersion() {
-    ext.lazyVersion.map { it.endsWith('-alpha') ? "${it}-SNAPSHOT" : it }
+    ext.lazyVersion.flatMap { v ->
+        v.endsWith('-alpha') ? getGitCommitHash().map { "${v}-${it}-SNAPSHOT" } : providers.provider { v }
+    }
 }
 
 private Provider<String> getZipName(String variant = '*') {
