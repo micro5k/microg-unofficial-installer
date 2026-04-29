@@ -209,7 +209,7 @@ jobs:
           # Avoiding the SonarQube warning...
           mv -f -- ./build.gradle ./build-manually.gradle
       - name: "SonarQube scan"
-        uses: SonarSource/sonarqube-scan-action@v7
+        uses: SonarSource/sonarqube-scan-action@v8
         timeout-minutes: 10
         env:
           SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
