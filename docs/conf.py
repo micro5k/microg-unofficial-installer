@@ -3,7 +3,8 @@
 # SPDX-FileCopyrightText: 2026 ale5000
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-"""Configuration file for the Sphinx documentation builder.
+"""
+Configuration file for the Sphinx documentation builder.
 
 This module contains the configuration settings for generating documentation
 using Sphinx. For a full list of built-in configuration values, see:
@@ -54,7 +55,8 @@ try:
 except ImportError:
 
     class TimezoneUTC(datetime.tzinfo):
-        """UTC implementation for compatibility with legacy Python versions.
+        """
+        UTC implementation for compatibility with legacy Python versions.
 
         Ensures 'aware' datetime objects can be used for UTC time.
         """
@@ -81,7 +83,8 @@ _REPO_ROOT = os.path.normpath(os.path.join(_DOCS_DIR, ".."))  # type: Final
 
 def which(cmd, mode=os.F_OK | os.X_OK, path=None):
     # type: (str, int, str | None) -> str | None
-    """Find the full path to an executable file, mimicking shutil.which.
+    """
+    Find the full path to an executable file, mimicking shutil.which.
 
     :param cmd: The command to search for
     :param mode: The permission mode to check (default is exists and executable)
@@ -182,7 +185,8 @@ def _fix_shdoc_refs(_app, doctree):
 
 def _transform_rst_links(app, doctree):
     # type: (Sphinx, nodes.document) -> None
-    """Convert internal .rst file links to Sphinx cross-references.
+    """
+    Convert internal .rst file links to Sphinx cross-references.
 
     Automatically converts internal .rst file links to Sphinx cross-references
     (:doc: or :ref:), enabling validation and proper path resolution.
@@ -225,7 +229,8 @@ def _transform_rst_links(app, doctree):
 
 def setup(app):
     # type: (Sphinx) -> dict[str, Any]
-    """Connect custom logic to the Sphinx build process.
+    """
+    Connect custom logic to the Sphinx build process.
 
     This function tells Sphinx to run specific functions (hooks)
     at the right time during documentation generation.
