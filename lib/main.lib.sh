@@ -12,8 +12,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTION
 readonly LIB_FILENAME="${USING_LIB:?}"
 unset USING_LIB
 
-export LANG='en_US.UTF-8'
-export TZ='UTC'
+export LANG="${LANG:-"en_US.UTF-8"}"
 
 unset LANGUAGE
 unset UNZIP
