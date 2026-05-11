@@ -114,7 +114,7 @@ jobs:
           validate-wrappers: true
       - name: "Dependency review"
         if: "${{ success() || steps.submit-deps-1.outcome == 'success' }}"
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         with:
           base-ref: "${{ github.event.before }}"
           head-ref: "${{ github.event.after }}"
