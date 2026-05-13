@@ -203,7 +203,7 @@ jobs:
             }).catch(response => response);
             if(response && response.status === 200) {
               console.log('Nightly tag updated.');
-            } else if(response && response.status === 422 && response.message === 'Reference does not exist') {
+            } else if(response?.status === 422 && response?.message?.startsWith('Reference does not exist')) {
               const responseCreate = await github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
