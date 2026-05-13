@@ -359,7 +359,7 @@ run_hook 'pre_package'
 # Note: Unicode filenames in the zip are disabled since we don't need them and also zipsigner.jar chokes on them
 cd "${TEMP_DIR}/zip-content" || ui_error 'Failed to change the folder' "${LINENO-}" "${FUNCNAME-}"
 echo 'Zipping...'
-find . -type f | LC_ALL=C sort | zip -D -9 -X -UN=n -nw "${TEMP_DIR}/flashable${FILENAME_EXT:?}" -@ || ui_error 'Failed compressing' "${LINENO-}" "${FUNCNAME-}"
+find . -type f | LC_ALL='C.UTF-8' sort | zip -D -9 -X -UN=n -nw "${TEMP_DIR}/flashable${FILENAME_EXT:?}" -@ || ui_error 'Failed compressing' "${LINENO-}" "${FUNCNAME-}"
 FILENAME="${FILENAME:?}-signed"
 
 # [HOOK] post_package: Triggered after compression, but before signing
