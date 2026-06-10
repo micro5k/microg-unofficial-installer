@@ -83,6 +83,8 @@ printf '\n'
 test -d "${PWD:?}/.git-hooks"
 config_var core.hooksPath '.git-hooks' "${?}" || STATUS="${?}"
 HOME="${USER_HOME:-${HOME:?}}" git lfs install --local --force || STATUS="${?}"
+
+# shellcheck disable=SC2016 # Ignore: Expressions don't expand in single quotes, use double quotes for that
 {
   printf '\n%s\n' '# BEGIN CUSTOM'
   printf '%s\n' 'HOOKS_DIR="$(dirname "${0:?}")" || exit 2'
