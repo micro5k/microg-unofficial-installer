@@ -57,4 +57,4 @@ jobs:
         with:
           lfs: false
       - name: "JSON and YAML - Validator"
-        uses: GrantBirki/json-yaml-validate@v4
+        uses: GrantBirki/json-yaml-validate@v5
