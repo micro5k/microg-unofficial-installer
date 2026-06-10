@@ -82,7 +82,13 @@ printf '\n'
 
 test -d "${PWD:?}/.git-hooks"
 config_var core.hooksPath '.git-hooks' "${?}" || STATUS="${?}"
-HOME="${USER_HOME:-${HOME:?}}" git lfs install --local || STATUS="${?}"
+HOME="${USER_HOME:-${HOME:?}}" git lfs install --local --force || STATUS="${?}"
+{
+  printf '\n%s\n' '# BEGIN CUSTOM'
+  printf '%s\n' 'HOOKS_DIR="$(dirname "${0:?}")" || exit 2'
+  printf '%s\n' 'if test -f "${HOOKS_DIR:?}/post-checkout.main.sh"; then . "${HOOKS_DIR:?}/post-checkout.main.sh" || exit 2; fi'
+  printf '%s\n' '# END CUSTOM'
+} 1>> "${PWD:?}/.git-hooks/post-checkout"
 
 printf '\n'
 
