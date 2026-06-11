@@ -1755,19 +1755,12 @@ initialize()
   test "${DEBUG_LOG_ENABLED:?}" -ne 1 || display_info
   ui_msg_empty_line
 
-  DEST_PATH="${SYS_PATH:?}"
-  readonly DEST_PATH
-
   if test "${API:?}" -lt 1; then
     ui_error 'Invalid API level'
   fi
 
   if test ! -w "${SYS_PATH:?}"; then
     ui_error "The '${SYS_PATH?}' folder is NOT writable"
-  fi
-
-  if test "${DEST_PATH:?}" != "${SYS_PATH:?}" && test ! -w "${DEST_PATH:?}"; then
-    ui_error "The '${DEST_PATH?}' folder is NOT writable"
   fi
 
   ###
@@ -1793,6 +1786,26 @@ initialize()
     custom_package_extract_dir 'origin' "${TMP_PATH:?}"
     mkdir -p -- "${TMP_PATH:?}/files/etc" || ui_error "Failed to create the dir '${TMP_PATH?}/files/etc'"
   fi
+
+  DEST_PATH="${SYS_PATH:?}"
+  # shellcheck disable=SC2312
+  _req_b="$(get_disk_space_usage_of_file_or_folder "${TMP_PATH:?}/origin" 2> /dev/null || echo 0)"
+  
+  for _p in "${SYS_PATH:-}" "${PRODUCT_PATH:-}" "${SYS_EXT_PATH:-}" "${VENDOR_PATH:-}"; do
+    if test -n "${_p}" && test -w "${_p}"; then
+      # shellcheck disable=SC2312
+      _free_b="$(get_free_disk_space_of_partition "${_p}" 2> /dev/null || echo 0)"
+      if test "${_free_b}" -ge "${_req_b}"; then
+        DEST_PATH="${_p}"
+        break
+      fi
+    fi
+  done
+  
+  if test ! -w "${DEST_PATH}"; then
+    ui_error "The '${DEST_PATH}' folder is NOT writable"
+  fi
+  readonly DEST_PATH
 
   unset LAST_MOUNTPOINT
   unset LAST_PARTITION_MUST_BE_UNMOUNTED
