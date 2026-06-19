@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: true
       - name: "Use cache"
@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: "Checkout file"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           sparse-checkout: |
             tools/dl-perm-list.sh

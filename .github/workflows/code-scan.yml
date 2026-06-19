@@ -75,7 +75,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: false
       - name: "Setup Java"
@@ -136,7 +136,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: false
           fetch-depth: 20
@@ -200,7 +200,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: false
           fetch-depth: "0" # Shallow clones should be disabled for a better relevancy of analysis

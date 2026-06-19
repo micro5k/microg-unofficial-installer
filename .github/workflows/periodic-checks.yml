@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: false
       - name: "Validate Codecov configuration"
@@ -61,7 +61,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: false
       - name: "Validation"
@@ -78,7 +78,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: false
       - name: "Validation"

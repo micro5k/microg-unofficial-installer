@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: false
       - name: "ShellChecker"
@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: false
       - name: "REUSE compliance check"
@@ -53,7 +53,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: false
       - name: "JSON and YAML - Validator"
