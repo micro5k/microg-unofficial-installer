@@ -40,7 +40,7 @@ jobs:
 
     steps:
       - name: "Checkout sources"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: false
       - name: "Setup Java"
@@ -263,7 +263,7 @@ jobs:
 
     steps:
       - name: "Checkout needed files"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: false
           sparse-checkout: |
