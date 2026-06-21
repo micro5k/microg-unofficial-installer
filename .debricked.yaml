@@ -1,0 +1,7 @@
+---
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
+
+excluded_directories:
+  - "zip-content/origin/app"
+  - "zip-content/origin/priv-app"
