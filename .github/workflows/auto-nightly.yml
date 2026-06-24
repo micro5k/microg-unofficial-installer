@@ -49,7 +49,7 @@ jobs:
           distribution: "temurin"
           java-version-file: ".tool-versions"
       - name: "Use build cache"
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         timeout-minutes: 5
         with:
           key: "build-${{ hashFiles('conf/conf-full.inc.sh') }}"
@@ -57,7 +57,7 @@ jobs:
           path: "cache/build"
           enableCrossOsArchive: true
       - name: "Use LFS cache"
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         timeout-minutes: 5
         with:
           key: "lfs-${{ hashFiles('conf/conf-lfs.inc.sh') }}"
@@ -271,7 +271,7 @@ jobs:
             conf/conf-lfs.inc.sh
           sparse-checkout-cone-mode: false
       - name: "Ping build cache" # Cache expiration: 7 days
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         timeout-minutes: 5
         with:
           key: "build-${{ hashFiles('conf/conf-full.inc.sh') }}"
@@ -280,7 +280,7 @@ jobs:
           enableCrossOsArchive: true
           lookup-only: true
       - name: "Ping LFS cache" # Cache expiration: 7 days
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         timeout-minutes: 5
         with:
           key: "lfs-${{ hashFiles('conf/conf-lfs.inc.sh') }}"
