@@ -44,7 +44,7 @@ jobs:
           ruby-version: "3.4"
           bundler-cache: "true"
       - name: "Use build cache"
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         timeout-minutes: 5
         with:
           key: "build-${{ hashFiles('conf/conf-full.inc.sh') }}"
@@ -52,7 +52,7 @@ jobs:
           path: "cache/build"
           enableCrossOsArchive: true
       - name: "Use LFS cache"
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         timeout-minutes: 5
         with:
           key: "lfs-${{ hashFiles('conf/conf-lfs.inc.sh') }}"
