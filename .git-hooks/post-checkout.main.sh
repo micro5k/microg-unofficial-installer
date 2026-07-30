@@ -12,7 +12,7 @@ if test "${CHECKOUT_TYPE:?}" = '1'; then
   LOCAL_HASH="$(git 2> /dev/null rev-parse --verify "refs/tags/${TARGET_TAG:?}")" || LOCAL_HASH=''
 
   if test -n "${LOCAL_HASH?}"; then
-    REMOTE_HASH="$(git ls-remote "${REMOTE_NAME:?}" "refs/tags/${TARGET_TAG:?}" | cut -f 1 -s)" || REMOTE_HASH=''
+    REMOTE_HASH="$(git ls-remote "${REMOTE_NAME:?}" "refs/tags/${TARGET_TAG:?}" | cut -f 1 -s || :)"
 
     if test -n "${REMOTE_HASH?}" && test "${LOCAL_HASH:?}" != "${REMOTE_HASH:?}"; then
       git update-ref "refs/tags/${TARGET_TAG:?}" "${REMOTE_HASH:?}" || exit "${?}"
