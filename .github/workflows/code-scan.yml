@@ -95,7 +95,7 @@ jobs:
       - name: "Generate and submit dependency graph"
         id: "submit-deps-1"
         continue-on-error: true
-        uses: gradle/actions/dependency-submission@v6
+        uses: gradle/actions/dependency-submission@v6.2.0
         with:
           dependency-graph: "generate-and-submit"
           cache-disabled: true
@@ -107,7 +107,7 @@ jobs:
       - name: "Retry: Generate and submit dependency graph (if needed)"
         id: "submit-deps-2"
         if: "${{ steps.submit-deps-1.outcome == 'failure' }}"
-        uses: gradle/actions/dependency-submission@v6
+        uses: gradle/actions/dependency-submission@v6.2.0
         with:
           dependency-graph: "generate-and-submit"
           cache-disabled: true
