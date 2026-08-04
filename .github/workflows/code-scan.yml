@@ -182,7 +182,7 @@ jobs:
             )
           )' -- './results.sarif' 1> './results-combined.sarif'
       - name: "Upload SARIF results file to GitHub"
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v4.36.3
         if: "${{ github.ref == 'refs/heads/main' }}"
         with:
           token: "${{ github.token }}"
