@@ -32,3 +32,10 @@ SPDX-License-Identifier = "Apache-2.0"
 SPDX-FileComment = [
   "Sources: https://github.com/gradle/gradle/tree/master/subprojects/wrapper"
 ]
+
+[[annotations]]
+path = [
+  "tools/zipsigner*.jar"
+]
+SPDX-FileCopyrightText = "2019 John Wu"
+SPDX-License-Identifier = "GPL-3.0-or-later"
