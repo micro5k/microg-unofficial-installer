@@ -249,10 +249,10 @@ detect_os_and_other_things()
   fi
   unset __SHELL_EXE
 
+  if test "${SHELL_EXE:?}" = 'bash'; then _ui_error_local 'Shell executable must have the full path' "${LINENO-}" "${FUNCNAME-}"; fi
   if test -n "${CYGPATH?}"; then
     SHELL_EXE="$("${CYGPATH:?}" -m -a -l -- "${SHELL_EXE:?}")" || _ui_error_local 'Unable to convert the path of the shell' "${LINENO-}" "${FUNCNAME-}"
   fi
-  if test "${SHELL_EXE:?}" = 'bash'; then _ui_error_local 'Shell executable must have the full path' "${LINENO-}" "${FUNCNAME-}"; fi
 
   if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then
     PATHSEP=';'
