@@ -38,6 +38,22 @@ _lib_funcname_test_internal()
 }
 _lib_funcname_test_internal
 
+fix_posix_emulation_if_needed()
+{
+  # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
+  if test -f '/usr/bin/cygpath'; then
+    # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
+    PATH="/usr/bin:${PATH:-%empty}"
+
+    # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
+    #  working directory to 'C:\WINDOWS\system32'
+    # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+    if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
+      cd "${BASH_SOURCE:?}/.." || printf '%s\n' 'ERROR: Failed to restore the correct working directory'
+    fi
+  fi
+}
+
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
@@ -214,6 +230,8 @@ detect_os_and_other_things()
       ;;
   esac
 
+  if test "${PLATFORM:?}" = 'win' && test -f '/usr/bin/cygpath'; then CYGPATH='/usr/bin/cygpath'; fi
+
   if test "${PLATFORM?}" = 'linux'; then
     # Android identify itself as Linux
     case "$(uname 2> /dev/null -a | tr -- '[:upper:]' '[:lower:]')" in
@@ -231,20 +249,15 @@ detect_os_and_other_things()
   fi
   unset __SHELL_EXE
 
-  if test "${PLATFORM:?}" = 'win'; then
-    if test "${IS_BUSYBOX:?}" = 'true'; then
-      PATHSEP=';'
-      SHELL_APPLET="${0:-ash}"
-    else
-      if CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)"; then
-        SHELL_EXE="$("${CYGPATH:?}" -m -a -l -- "${SHELL_EXE:?}")" || _ui_error_local 'Unable to convert the path of the shell' "${LINENO-}" "${FUNCNAME-}"
-      else
-        CYGPATH=''
-      fi
-    fi
+  if test -n "${CYGPATH?}"; then
+    SHELL_EXE="$("${CYGPATH:?}" -m -a -l -- "${SHELL_EXE:?}")" || _ui_error_local 'Unable to convert the path of the shell' "${LINENO-}" "${FUNCNAME-}"
   fi
-
   if test "${SHELL_EXE:?}" = 'bash'; then _ui_error_local 'Shell executable must have the full path' "${LINENO-}" "${FUNCNAME-}"; fi
+
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then
+    PATHSEP=';'
+    SHELL_APPLET="${0:-ash}"
+  fi
 
   readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_EXE SHELL_APPLET
 }
@@ -1320,7 +1333,7 @@ init_base()
     MAIN_DIR="$(realpath "${MAIN_DIR:?}")" || _ui_error_local 'Unable to resolve the main dir' "${LINENO-}" "${FUNCNAME-}"
   fi
 
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
+  # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
   if test -z "${MAIN_DIR-}" && test -n "${BASH_SOURCE-}" && _main_dir="$(dirname "${BASH_SOURCE:?}")" && _main_dir="$(realpath "${_main_dir:?}/..")"; then
     MAIN_DIR="${_main_dir:?}"
   fi
@@ -1342,6 +1355,16 @@ init_base()
     TEMP="${TMPDIR:?}"
   fi
 
+  if test "${DO_INIT_CMDLINE:-0}" != '0' && test "${PLATFORM:?}" = 'win'; then
+    # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
+
+    # While this environment fix is typically handled by `fix_posix_emulation_if_needed`,
+    #  it must be explicitly reapplied here to resolve a specific edge case:
+    #  when an emulated environment (e.g., Git Bash) is invoked as a subshell
+    #  from a native, non-emulated Windows host shell.
+    PATH="/usr/bin${PATHSEP:?}${PATH:-%empty}"
+  fi
+
   TOOLS_DIR="${MAIN_DIR:?}/tools/${PLATFORM:?}"
 
   readonly MAIN_DIR TOOLS_DIR
@@ -1361,16 +1384,6 @@ init_path()
     _program_dir_32="$(get_32bit_programfiles)"
     if test -n "${_program_dir_32?}"; then
       add_to_path_env "${_program_dir_32:?}/GnuWin32/bin"
-    fi
-
-    # On Bash under Windows (for example the one included inside Git for Windows) we need to have '/usr/bin'
-    # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
-    # ADDITIONAL NOTE: We have to do this even under BusyBox otherwise every external bash/make executed as subshell of BusyBox will be broken.
-    if test -z "${PATH-}"; then
-      ui_warning 'PATH env is empty'
-      PATH='/usr/bin'
-    else
-      PATH="/usr/bin${PATHSEP:?}${PATH:?}"
     fi
   fi
 
@@ -1625,6 +1638,7 @@ if test "${DO_INIT_CMDLINE:-0}" != '0'; then
   (set +H 2> /dev/null) && set +H || :
 fi
 
+fix_posix_emulation_if_needed
 # Set environment variables
 detect_os_and_other_things
 export PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_EXE SHELL_APPLET

@@ -15,7 +15,7 @@
 
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.0'
+readonly SCRIPT_VERSION='0.1.1'
 readonly SCRIPT_AUTHOR='ale5000'
 
 : "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}" "${SCRIPT_SHORTNAME:?}" "${SCRIPT_AUTHOR:?}"
@@ -27,6 +27,22 @@ set -u
   (set -o posix 2> /dev/null) && set -o posix || true
   (set +H 2> /dev/null) && set +H || true
   (set -o pipefail 2> /dev/null) && set -o pipefail || true
+}
+
+fix_posix_emulation_if_needed()
+{
+  # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
+  if test -f '/usr/bin/cygpath'; then
+    # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
+    PATH="/usr/bin:${PATH:-%empty}"
+
+    # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
+    #  working directory to 'C:\WINDOWS\system32'
+    # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+    if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
+      cd "${BASH_SOURCE:?}/.." || printf '%s\n' 'ERROR: Failed to restore the correct working directory'
+    fi
+  fi
 }
 
 set_utf8_codepage()
@@ -153,6 +169,8 @@ dl_and_convert_device_list()
 
 main()
 {
+  fix_posix_emulation_if_needed
+
   set_utf8_codepage
 
   if dl_and_convert_device_list; then

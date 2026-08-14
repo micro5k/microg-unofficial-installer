@@ -17,7 +17,7 @@
 
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.2'
+readonly SCRIPT_VERSION='0.3.3'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -53,6 +53,22 @@ readonly WGET_CMD='wget'
 readonly DL_UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0'
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
 readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
+
+fix_posix_emulation_if_needed()
+{
+  # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
+  if test -f '/usr/bin/cygpath'; then
+    # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
+    PATH="/usr/bin:${PATH:-%empty}"
+
+    # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
+    #  working directory to 'C:\WINDOWS\system32'
+    # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+    if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
+      cd "${BASH_SOURCE:?}/.." || printf '%s\n' 'ERROR: Failed to restore the correct working directory'
+    fi
+  fi
+}
 
 pause_if_needed()
 {
@@ -146,6 +162,8 @@ download_and_parse_permissions()
 main()
 {
   local api tag
+
+  fix_posix_emulation_if_needed
 
   command 1> /dev/null -v "${WGET_CMD:?}" || {
     show_error 'Missing: wget'

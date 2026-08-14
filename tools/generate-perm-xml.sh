@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.5'
+readonly SCRIPT_VERSION='0.3.6'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -28,6 +28,22 @@ set -u
   # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
   (set +H 2> /dev/null) && set +H || true
   (set -o pipefail 2> /dev/null) && set -o pipefail || true
+}
+
+fix_posix_emulation_if_needed()
+{
+  # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
+  if test -f '/usr/bin/cygpath'; then
+    # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
+    PATH="/usr/bin:${PATH:-%empty}"
+
+    # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
+    #  working directory to 'C:\WINDOWS\system32'
+    # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+    if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
+      cd "${BASH_SOURCE:?}/.." || printf '%s\n' 'ERROR: Failed to restore the correct working directory'
+    fi
+  fi
 }
 
 pause_if_needed()
@@ -428,6 +444,8 @@ main()
 {
   local status backup_ifs base_name cmd_output pkg_name perm_list cert_sha256
 
+  fix_posix_emulation_if_needed
+
   if DATA_DIR="$(find_data_dir)" && test -d "${DATA_DIR:?}/perms"; then
     :
   else
@@ -451,9 +469,6 @@ main()
 
     IFS="${backup_ifs?}"
   }
-
-  # Avoid a strange issue on Bash under Windows
-  if command 1> /dev/null -v 'cygpath' && test "$(cygpath -m -- "${PWD:?}" || :)" = "$(cygpath -m -S || :)"; then cd "${DATA_DIR:?}/.." || return 6; fi
 
   BASE_DIR="$(realpath 2> /dev/null . || readlink -f .)" || return 7
   test -d "${BASE_DIR:?}/output" || mkdir -p -- "${BASE_DIR:?}/output" || return 8

@@ -15,11 +15,27 @@
 
 readonly SCRIPT_NAME='Android app permissions lister'
 readonly SCRIPT_SHORTNAME='AppPermList'
-readonly SCRIPT_VERSION='0.1.1'
+readonly SCRIPT_VERSION='0.1.2'
 readonly SCRIPT_AUTHOR='ale5000'
 
 # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
 case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'Failed: pipefail' ;; *) ;; esac
+
+fix_posix_emulation_if_needed()
+{
+  # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
+  if test -f '/usr/bin/cygpath'; then
+    # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
+    PATH="/usr/bin:${PATH:-%empty}"
+
+    # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
+    #  working directory to 'C:\WINDOWS\system32'
+    # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+    if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
+      cd "${BASH_SOURCE:?}/.." || printf '%s\n' 'ERROR: Failed to restore the correct working directory'
+    fi
+  fi
+}
 
 pause_if_needed()
 {
@@ -65,6 +81,8 @@ find_android_build_tool()
 
 main()
 {
+  fix_posix_emulation_if_needed
+
   test -n "${1-}" || {
     show_error "You must pass the filename of the file to be processed."
     return 3
