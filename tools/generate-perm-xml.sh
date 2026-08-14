@@ -35,7 +35,7 @@ fix_posix_emulation_if_needed()
   # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
   if test -f '/usr/bin/cygpath'; then
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
-    PATH="/usr/bin:${PATH:-%empty}"
+    case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-%empty}" ;; esac
 
     # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
     #  working directory to 'C:\WINDOWS\system32'

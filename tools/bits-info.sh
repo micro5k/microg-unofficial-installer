@@ -21,7 +21,7 @@
 
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.32'
+SCRIPT_VERSION='1.5.33'
 SCRIPT_AUTHOR='ale5000'
 
 ### CONFIGURATION ###
@@ -1129,6 +1129,22 @@ clear_env()
   unset SCRIPT_NAME SCRIPT_VERSION HEXDUMP_CMD backup_posix backup_path execute_script prefer_included_utilities
 }
 
+fix_posix_emulation_if_needed()
+{
+  # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
+  if test -f '/usr/bin/cygpath'; then
+    # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
+    case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-%empty}" ;; esac
+
+    # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
+    #  working directory to 'C:\WINDOWS\system32'
+    # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+    if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
+      cd "${BASH_SOURCE:?}/.." || printf '%s\n' 'ERROR: Failed to restore the correct working directory'
+    fi
+  fi
+}
+
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
@@ -1165,12 +1181,10 @@ main()
 
   limits_s_u='32767 65535 256446000 2147483647 4294967295 9223372036854775807 18446744073709551614 18446744073709551615'
 
+  fix_posix_emulation_if_needed
+
   shell_is_msys='false'
-  if is_shell_msys; then
-    shell_is_msys='true'
-    # We must do this in all cases with Bash under Windows using this POSIX layer otherwise we may run into freezes, obscure errors and unknown infinite loops!!!
-    PATH="/usr/bin:${PATH:-%empty}"
-  fi
+  if is_shell_msys; then shell_is_msys='true'; fi
 
   shell_exe="$(get_shell_exe || :)"
   shell_exe_original="${shell_exe}"
