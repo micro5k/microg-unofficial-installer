@@ -1361,7 +1361,7 @@ init_base()
     # While this environment fix is typically handled by `fix_posix_emulation_if_needed`,
     #  it must also be explicitly applied here to resolve a specific edge case:
     #  when an emulated environment (e.g., Git Bash) is invoked as a subshell
-    #  from a native, non-emulated Windows host shell(e.g., BusyBox for Windows).
+    #  from a native, non-emulated Windows host shell (e.g., BusyBox for Windows).
     case "${PATH-}" in "/usr/bin${PATHSEP:?}"*) ;; *) PATH="/usr/bin${PATHSEP:?}${PATH:-%empty}" ;; esac
   fi
 
