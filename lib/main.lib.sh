@@ -43,7 +43,9 @@ fix_posix_emulation_if_needed()
   # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
   if test -f '/usr/bin/cygpath'; then
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
-    case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-%empty}" ;; esac
+    if test "${USR_BIN_FIXED:-0}" = '0'; then
+      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-%empty}" ;; esac
+    fi
 
     # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
     #  working directory to 'C:\WINDOWS\system32'
@@ -1355,7 +1357,7 @@ init_base()
     TEMP="${TMPDIR:?}"
   fi
 
-  if test "${DO_INIT_CMDLINE:-0}" != '0' && test "${PLATFORM:?}" = 'win'; then
+  if test "${DO_INIT_CMDLINE:-0}" != '0' && test "${PLATFORM:?}" = 'win' && test "${USR_BIN_FIXED:-0}" = '0'; then
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
 
     # While this environment fix is typically handled by `fix_posix_emulation_if_needed`,
@@ -1363,6 +1365,7 @@ init_base()
     #  when an emulated environment (e.g., Git Bash) is invoked as a subshell
     #  from a native, non-emulated Windows host shell (e.g., BusyBox for Windows).
     case "${PATH-}" in "/usr/bin${PATHSEP:?}"*) ;; *) PATH="/usr/bin${PATHSEP:?}${PATH:-%empty}" ;; esac
+    export USR_BIN_FIXED=1
   fi
 
   TOOLS_DIR="${MAIN_DIR:?}/tools/${PLATFORM:?}"
@@ -1562,7 +1565,7 @@ init_cmdline()
 
   add_to_path_env "${UTILS_DIR:?}"
   add_to_path_env "${MAIN_DIR:?}"
-  PATH="%builtin${PATHSEP:?}${PATH-}"
+  _is_in_path_env_internal '%builtin' || PATH="%builtin${PATHSEP:?}${PATH:-%empty}"
   add_to_path_env "${MAIN_DIR:?}/tools"
 
   if test -n "${BB_CMD?}" && command 1> /dev/null 2>&1 -v 'alias'; then
