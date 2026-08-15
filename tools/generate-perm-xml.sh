@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.6'
+readonly SCRIPT_VERSION='0.3.7'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -554,14 +554,17 @@ while test "${#}" -gt 0; do
     -V | --version)
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' "Copyright (c) 2025 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n' 'License GPL v3+ OR Apache v2'
+      printf '%s\n' "Copyright (C) 2025 ${SCRIPT_AUTHOR:?}"
+      printf '%s\n\n' 'License GPLv3+ or Apache v2'
+      printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
       # REUSE-IgnoreEnd
       execute_script='false'
       ;;
+
     -v) SCRIPT_VERBOSE='true' ;;
 
     --use-placeholders) PLACEHOLDERS='true' ;;
+
     -) break ;;
 
     --)

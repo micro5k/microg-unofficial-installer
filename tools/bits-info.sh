@@ -21,7 +21,7 @@
 
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.33'
+SCRIPT_VERSION='1.5.34'
 SCRIPT_AUTHOR='ale5000'
 
 ### CONFIGURATION ###
@@ -1481,13 +1481,14 @@ STATUS=0
 while test "${#}" -gt 0; do
   case "${1}" in
     -V | --version)
-      execute_script='false'
-      no_pause=1
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
-      printf '%s\n' "Copyright (c) 2024 ${SCRIPT_AUTHOR}"
-      printf '%s\n' 'License GPL v3+'
+      printf '%s\n' "Copyright (C) 2024 ${SCRIPT_AUTHOR}"
+      printf '%s\n\n' 'License GPLv3+ with APE'
+      printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
       # REUSE-IgnoreEnd
+      execute_script='false'
+      no_pause=1
       ;;
     -h | --help | '-?')
       execute_script='false'

@@ -15,7 +15,7 @@
 
 readonly SCRIPT_NAME='Android app permissions lister'
 readonly SCRIPT_SHORTNAME='AppPermList'
-readonly SCRIPT_VERSION='0.1.2'
+readonly SCRIPT_VERSION='0.1.3'
 readonly SCRIPT_AUTHOR='ale5000'
 
 # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
@@ -107,8 +107,9 @@ while test "${#}" -gt 0; do
     -V | --version)
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' "Copyright (c) 2025 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n' 'License GPL v3+ OR Apache v2'
+      printf '%s\n' "Copyright (C) 2025 ${SCRIPT_AUTHOR:?}"
+      printf '%s\n\n' 'License GPLv3+ or Apache v2'
+      printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
       # REUSE-IgnoreEnd
       execute_script='false'
       ;;
