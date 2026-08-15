@@ -45,11 +45,29 @@ show_cmdline()
   printf '\n'
 }
 
+fix_posix_emulation_if_needed()
+{
+  # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
+  if test -f '/usr/bin/cygpath'; then
+    # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
+    if test "${USR_BIN_FIXED:-0}" = '0'; then
+      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-%empty}" ;; esac
+    fi
+
+    # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
+    #  working directory to 'C:\WINDOWS\system32'
+    # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+    if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
+      cd "${BASH_SOURCE:?}/.." || printf '%s\n' 'ERROR: Failed to restore the correct working directory'
+    fi
+  fi
+}
+
 detect_os_and_other_things()
 {
   if test -n "${PLATFORM-}" && test -n "${IS_BUSYBOX-}" && test -n "${PATHSEP-}"; then return 0; fi
 
-  PLATFORM="$(uname | tr -- '[:upper:]' '[:lower:]')"
+  PLATFORM="$(uname | tr -- '[:upper:]' '[:lower:]' || :)"
   IS_BUSYBOX='false'
   PATHSEP=':'
   CYGPATH=''
@@ -85,24 +103,22 @@ detect_os_and_other_things()
       ;;
   esac
 
-  # Android identify itself as Linux
   if test "${PLATFORM?}" = 'linux'; then
+    # Android identify itself as Linux
     case "$(uname 2> /dev/null -a | tr -- '[:upper:]' '[:lower:]')" in
       *' android'* | *'-lineage-'* | *'-leapdroid-'*) PLATFORM='android' ;;
       *) ;;
     esac
   fi
 
-  if test "${PLATFORM:?}" = 'win'; then
-    if test "${IS_BUSYBOX:?}" = 'true'; then
-      PATHSEP=';'
-      SHELL_CMD=''
-    fi
+  if test "${PLATFORM:?}" = 'win' && test -f '/usr/bin/cygpath'; then CYGPATH='/usr/bin/cygpath'; fi
+  if test -n "${CYGPATH?}"; then
+    SHELL_CMD="$("${CYGPATH:?}" -m -a -l -- "${SHELL_CMD:?}")" || ui_error 'Unable to convert the path of the shell'
+  fi
 
-    if test "${IS_BUSYBOX:?}" = 'false' && PATH="/usr/bin${PATHSEP:?}${PATH-}" command 1> /dev/null -v 'cygpath'; then
-      CYGPATH="$(PATH="/usr/bin${PATHSEP:?}${PATH-}" command -v cygpath)" || ui_error 'Unable to find the path of cygpath'
-      SHELL_CMD="$("${CYGPATH:?}" -m -a -l -- "${SHELL_CMD:?}")" || ui_error 'Unable to convert the path of the shell'
-    fi
+  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'true'; then
+    PATHSEP=';'
+    SHELL_CMD=''
   fi
 
   readonly PLATFORM IS_BUSYBOX PATHSEP CYGPATH SHELL_CMD
@@ -165,10 +181,6 @@ init_path()
   readonly IS_PATH_INITIALIZED='true'
 
   if test -n "${PATH-}"; then PATH="${PATH%"${PATHSEP:?}"}"; fi
-  # On Bash under Windows (for example the one included inside Git for Windows) we need to move '/usr/bin'
-  # before 'C:/Windows/System32' otherwise it will use the find/sort/etc. of Windows instead of the Unix compatible ones.
-  if test "${PLATFORM:?}" = 'win' && test "${IS_BUSYBOX:?}" = 'false'; then move_to_begin_of_path_env '/usr/bin'; fi
-
   add_to_path_env "$(realpath "${THIS_SCRIPT_DIR:?}/../tools/${PLATFORM:?}" || true)" || fail_with_msg 'Unable to add the tools dir to the PATH env'
 }
 
@@ -286,6 +298,7 @@ test -n "${FORCE_HW_KEYS-unset}" || unset FORCE_HW_KEYS
 if test -z "${CI-}"; then unset CI; fi
 if test -z "${SHELLOPTS-}"; then unset SHELLOPTS; fi
 
+fix_posix_emulation_if_needed
 detect_os_and_other_things
 unset SHELL
 

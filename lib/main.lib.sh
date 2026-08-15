@@ -232,8 +232,6 @@ detect_os_and_other_things()
       ;;
   esac
 
-  if test "${PLATFORM:?}" = 'win' && test -f '/usr/bin/cygpath'; then CYGPATH='/usr/bin/cygpath'; fi
-
   if test "${PLATFORM?}" = 'linux'; then
     # Android identify itself as Linux
     case "$(uname 2> /dev/null -a | tr -- '[:upper:]' '[:lower:]')" in
@@ -249,9 +247,10 @@ detect_os_and_other_things()
   else
     _ui_error_local 'Shell not found' "${LINENO-}" "${FUNCNAME-}"
   fi
+  if test "${SHELL_EXE:?}" = 'bash'; then _ui_error_local 'Shell executable must have the full path' "${LINENO-}" "${FUNCNAME-}"; fi
   unset __SHELL_EXE
 
-  if test "${SHELL_EXE:?}" = 'bash'; then _ui_error_local 'Shell executable must have the full path' "${LINENO-}" "${FUNCNAME-}"; fi
+  if test "${PLATFORM:?}" = 'win' && test -f '/usr/bin/cygpath'; then CYGPATH='/usr/bin/cygpath'; fi
   if test -n "${CYGPATH?}"; then
     SHELL_EXE="$("${CYGPATH:?}" -m -a -l -- "${SHELL_EXE:?}")" || _ui_error_local 'Unable to convert the path of the shell' "${LINENO-}" "${FUNCNAME-}"
   fi
