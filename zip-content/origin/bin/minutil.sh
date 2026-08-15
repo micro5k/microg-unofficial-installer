@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.5.3'
+readonly SCRIPT_VERSION='1.5.4'
 readonly SCRIPT_AUTHOR='ale5000'
 
 ### CONFIGURATION ###
@@ -968,7 +968,7 @@ if test "${DISPLAY_HELP:?}" = 'true'; then
   readonly _minutil_script_name
 
   printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} - Minimal utilities"
-  printf '%s\n\n' 'Licensed under GPLv3+'
+  printf '%s\n\n' 'Licensed under GPLv3+ with APE'
   printf '%s\n\n' "Usage: ${_minutil_script_name:?} [OPTIONS] [--]"
 
   _minutil_aligned_print '-h,--help' 'Show this help'
