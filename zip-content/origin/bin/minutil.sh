@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.5.2'
+readonly SCRIPT_VERSION='1.5.3'
 readonly SCRIPT_AUTHOR='ale5000'
 
 ### CONFIGURATION ###
@@ -854,7 +854,8 @@ minutil_display_version()
   # REUSE-IgnoreStart
   printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} (Minimal utilities)"
   printf '%s\n' "Copyright (C) 2022 ${SCRIPT_AUTHOR:?}"
-  printf '%s\n' 'License GPLv3+'
+  printf '%s\n\n' 'License GPLv3+ with APE'
+  printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
   # REUSE-IgnoreEnd
 }
 

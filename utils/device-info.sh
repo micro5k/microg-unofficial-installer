@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.2'
+readonly SCRIPT_VERSION='2.9.3'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -72,7 +72,9 @@ fix_posix_emulation_if_needed()
   # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
   if test -f '/usr/bin/cygpath'; then
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
-    PATH="/usr/bin:${PATH:-%empty}"
+    if test "${USR_BIN_FIXED:-0}" = '0'; then
+      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-%empty}" ;; esac
+    fi
 
     # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
     #  working directory to 'C:\WINDOWS\system32'
@@ -1623,8 +1625,9 @@ while test "${#}" -gt 0; do
     -V | --version)
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' "Copyright (c) 2023 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n' 'License GPL v3+'
+      printf '%s\n' "Copyright (C) 2023 ${SCRIPT_AUTHOR:?}"
+      printf '%s\n\n' 'License GPLv3+ with APE'
+      printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
       # REUSE-IgnoreEnd
       execute_script='false'
       ;;

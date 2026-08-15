@@ -148,9 +148,9 @@ development!
 License
 =======
 
-This project is licensed under the **GNU General Public License v3.0 or later**
-(GPLv3+), with a custom **Archive Packaging Exception** to facilitate
-distribution in compressed packages.
+This project is licensed under the **GNU General Public License v3 or later**
+(GPLv3+), with the **Archive Packaging Exception** to facilitate distribution in
+compressed packages.
 
 -  **Core license**: The full text of the GPLv3 can be found in `LICENSE.rst
    <./LICENSE.rst>`__.
