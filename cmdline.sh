@@ -65,32 +65,33 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       return 0
     }
 
-    __SHELL_EXE="$(get_shell_exe)" || __SHELL_EXE='bash'
+    __SHELL_EXE="$(get_shell_exe)" || __SHELL_EXE='unknown'
     export __SHELL_EXE
     unset _gse_shell_exe _gse_tmp_var
 
-    _shell_name=''
+    _shell_name="${__SHELL_EXE##*"/"}"
+    _shell_name="${_shell_name%".exe"}"
     _applet=''
-    case "${__SHELL_EXE%".exe"}" in
-      *'/bash') # Bash
+
+    case "${_shell_name}" in
+      'bash') # Bash
         _run_strategy='init-file'
         ;;
-      *'/busybox') # BusyBox
+      'busybox') # BusyBox
         _run_strategy='s-option'
         _applet="${CUSTOM_APPLET:-ash}"
         ;;
-      *'/zsh') # Zsh
+      'zsh') # Zsh
         _run_strategy='s-option'
-        _shell_name='zsh'
         ;;
-      *'/oil.ovm' | *'/oils-for-unix') # Oils
+      'oil.ovm' | 'oils-for-unix') # Oils
         _run_strategy='source'
         _applet="${CUSTOM_APPLET:-osh}"
         ;;
-      *'/osh') # Oils
+      'osh') # Oils
         _run_strategy='source'
         ;;
-      *'/fish') # Fish
+      'unknown' | 'fish')
         _run_strategy=''
         printf '%s\n' 'ERROR: Unsupported shell'
         exit 1
@@ -104,6 +105,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR}"; else _main_dir='.'; fi
 
     if test "${ONLY_FOR_TESTING:-false}" != 'false'; then
+      printf '%s\n' "${_shell_name}"
       printf '%s\n' "${__SHELL_EXE}"
       printf '%s\n' "${_main_dir}"
       _run_strategy='source'
@@ -122,7 +124,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       . "${_main_dir}/lib/${USING_LIB}" "${@}" || return "${?}"
     elif test "${_run_strategy}" = 's-option'; then
       # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${_main_dir}/lib/${USING_LIB}' || exit \${?}" "${_applet:-${_shell_name:-${0-}}}" "${@}"
+      exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${_main_dir}/lib/${USING_LIB}' || exit \${?}" "${_applet:-${_shell_name:-unknown}}" "${@}"
     else
       # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
       exec "${__SHELL_EXE}" --rcfile "${_main_dir}/lib/${USING_LIB}" -i -s -- "${@}"

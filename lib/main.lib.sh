@@ -243,14 +243,13 @@ detect_os_and_other_things()
     esac
   fi
 
-  if test -n "${__SHELL_EXE-}" && test "${__SHELL_EXE:?}" != 'bash' && SHELL_EXE="${__SHELL_EXE:?}"; then
+  if test -n "${__SHELL_EXE-}" && SHELL_EXE="${__SHELL_EXE:?}"; then
     :
   elif SHELL_EXE="$(get_shell_exe)" && test -n "${SHELL_EXE?}"; then
     :
   else
     _ui_error_local 'Shell not found' "${LINENO-}" "${FUNCNAME-}"
   fi
-  if test "${SHELL_EXE:?}" = 'bash'; then _ui_error_local 'Shell executable must have the full path' "${LINENO-}" "${FUNCNAME-}"; fi
   unset __SHELL_EXE
 
   if test "${PLATFORM:?}" = 'win' && test -f '/usr/bin/cygpath'; then CYGPATH='/usr/bin/cygpath'; fi
