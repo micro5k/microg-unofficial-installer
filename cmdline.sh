@@ -119,15 +119,15 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     export DO_INIT_CMDLINE=1
     export USING_LIB='main.lib.sh'
 
-    if test "${_run_strategy}" = 'source'; then
-      # shellcheck source=SCRIPTDIR/lib/main.lib.sh
-      . "${_main_dir}/lib/${USING_LIB}" "${@}" || return "${?}"
+    if test "${_run_strategy}" = 'init-file'; then
+      # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
+      exec "${__SHELL_EXE}" --rcfile "${_main_dir}/lib/${USING_LIB}" -i -s -- "${@}"
     elif test "${_run_strategy}" = 's-option'; then
       # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
       exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${_main_dir}/lib/${USING_LIB}' || exit \${?}" "${_applet:-${_shell_name:-unknown}}" "${@}"
     else
-      # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" --rcfile "${_main_dir}/lib/${USING_LIB}" -i -s -- "${@}"
+      # shellcheck source=SCRIPTDIR/lib/main.lib.sh
+      . "${_main_dir}/lib/${USING_LIB}" "${@}" || return "${?}"
     fi
   }
 
