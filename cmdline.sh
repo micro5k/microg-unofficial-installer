@@ -77,7 +77,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       'bash') # Bash
         _run_strategy='init-file-param'
         ;;
-      'busybox') # BusyBox
+      'busybox' | 'busybox-'*) # BusyBox
         _run_strategy='s-option'
         _applet="${CUSTOM_APPLET:-ash}"
         set -- "${_applet}" "${@}"
@@ -86,7 +86,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
         _run_strategy='s-option'
         export __OVERRIDE_0="${__SHELL_EXE}"
         ;;
-      'dash') # Dash
+      'dash' | 'sh') # Dash / sh
         _run_strategy='env-var'
         ;;
       'oil.ovm' | 'oils-for-unix') # Oils
