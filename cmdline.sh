@@ -13,7 +13,7 @@ command 1> /dev/null 2>&1 -v 'local' || {
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
-    local _main_dir _run_strategy _applet
+    local _main_dir _run_strategy _shell_name _applet
 
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
     if test -f '/usr/bin/cygpath' && test "${USR_BIN_FIXED:-0}" = '0'; then
@@ -69,12 +69,19 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     export __SHELL_EXE
     unset _gse_shell_exe _gse_tmp_var
 
-    _run_strategy='init-file'
+    _shell_name=''
     _applet=''
-    case "${__SHELL_EXE}" in
-      *'/busybox'*) # BusyBox
+    case "${__SHELL_EXE%".exe"}" in
+      *'/bash') # Bash
+        _run_strategy='init-file'
+        ;;
+      *'/busybox') # BusyBox
         _run_strategy='s-option'
         _applet="${CUSTOM_APPLET:-ash}"
+        ;;
+      *'/zsh') # Zsh
+        _run_strategy='s-option'
+        _shell_name='zsh'
         ;;
       *'/oil.ovm' | *'/oils-for-unix') # Oils
         _run_strategy='source'
@@ -83,7 +90,15 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       *'/osh') # Oils
         _run_strategy='source'
         ;;
-      *) ;;
+      *'/fish') # Fish
+        _run_strategy=''
+        printf '%s\n' 'ERROR: Unsupported shell'
+        exit 1
+        ;;
+      *)
+        _run_strategy='source'
+        printf '%s\n' 'WARNING: Unknown shell'
+        ;;
     esac
 
     if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR}"; else _main_dir='.'; fi
@@ -107,10 +122,10 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       . "${_main_dir}/lib/${USING_LIB}" "${@}" || return "${?}"
     elif test "${_run_strategy}" = 's-option'; then
       # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${_main_dir}/lib/${USING_LIB}' || exit \${?}" "${_applet:-${0-}}" "${@}"
+      exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${_main_dir}/lib/${USING_LIB}' || exit \${?}" "${_applet:-${_shell_name:-${0-}}}" "${@}"
     else
       # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" ${_applet} --rcfile "${_main_dir}/lib/${USING_LIB}" -i -s -- "${@}"
+      exec "${__SHELL_EXE}" --rcfile "${_main_dir}/lib/${USING_LIB}" -i -s -- "${@}"
     fi
   }
 
