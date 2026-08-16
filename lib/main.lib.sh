@@ -7,8 +7,10 @@
 # shellcheck disable=SC3028 # Ignore: In POSIX sh, FUNCNAME is undefined
 # shellcheck disable=SC3043 # Ignore: In POSIX sh, 'local' is undefined
 
-if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then readonly A5K_FUNCTIONS_INCLUDED='true'; fi
+unset A5K_FUNCTIONS_INCLUDED || return 2
+readonly A5K_FUNCTIONS_INCLUDED='true'
 
+unset LIB_FILENAME
 readonly LIB_FILENAME="${USING_LIB:?}"
 unset USING_LIB
 
@@ -1651,21 +1653,8 @@ init_vars
 detect_bb_and_id
 
 if test "${DO_INIT_CMDLINE:-0}" != '0'; then
-  if test -n "${__QUOTED_PARAMS-}" && test "${#}" -eq 0; then
-    _newline='
-'
-    _backup_ifs="${IFS-}"
-    IFS="${_newline:?}"
-    for _param in ${__QUOTED_PARAMS:?}; do
-      set -- "${@}" "${_param?}"
-    done
-    IFS="${_backup_ifs?}"
-    unset _newline _backup_ifs _param
-  fi
-
   unset DO_INIT_CMDLINE
-  unset __QUOTED_PARAMS
-  if test "${#}" -eq 0; then init_cmdline; else init_cmdline "${@}"; fi
+  if test "${#}" -gt 0; then init_cmdline "${@}"; else init_cmdline; fi
 fi
 
 export PATH

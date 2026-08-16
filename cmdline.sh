@@ -3,23 +3,25 @@
 # SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 # shellcheck enable=all
 
-# Workaround for shells without support for local (example: ksh pbosh obosh)
-command 1> /dev/null 2>&1 -v 'local' || {
-  eval ' local() { :; } ' || :
-  # On some variants of ksh this really works, but leave the function as dummy fallback
-  if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi
-}
-
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
+  # Workaround for shells without support for local (example: ksh pbosh obosh)
+  command 1> /dev/null 2>&1 -v 'local' || {
+    eval ' local() { :; } ' || :
+    # On some variants of ksh this really works, but leave the function as dummy fallback
+    if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi
+  }
+
   main()
   {
-    local _main_dir _run_strategy _applet _uname_os _nl
+    local _main_dir _run_strategy _applet
+
+    # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
+    if test -f '/usr/bin/cygpath' && test "${USR_BIN_FIXED:-0}" = '0'; then
+      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-%empty}" ;; esac
+    fi
 
     # Execute only if the first initialization has not already been done
     if test -z "${MAIN_DIR-}" || test -z "${USER_HOME-}"; then
-
-      # Avoid picturesque bugs on Bash under Windows
-      if test -x '/usr/bin/uname' && _uname_os="$(/usr/bin/uname 2> /dev/null -o)" && test "${_uname_os}" = 'Msys'; then PATH="/usr/bin:${PATH:-%empty}"; fi
 
       if test -z "${MAIN_DIR-}"; then
         # shellcheck disable=SC3028,SC2128 # Intended: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
@@ -71,7 +73,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     _applet=''
     case "${__SHELL_EXE}" in
       *'/busybox'*) # BusyBox
-        _run_strategy='s-opt'
+        _run_strategy='s-option'
         _applet="${CUSTOM_APPLET:-ash}"
         ;;
       *'/oil.ovm' | *'/oils-for-unix') # Oils
@@ -86,47 +88,31 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
     if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR}"; else _main_dir='.'; fi
 
-    if test "${ONLY_FOR_TESTING-}" = 'true'; then
+    if test "${ONLY_FOR_TESTING:-false}" != 'false'; then
       printf '%s\n' "${__SHELL_EXE}"
       printf '%s\n' "${_main_dir}"
       _run_strategy='source'
     fi
 
-    export DO_INIT_CMDLINE=1
     unset KILL_PPID
     unset STARTED_FROM_BATCH_FILE
     unset IS_PATH_INITIALIZED
-    unset __QUOTED_PARAMS
 
+    unset PROMPT_COMMAND PS1
+    export DO_INIT_CMDLINE=1
     export USING_LIB='main.lib.sh'
 
     if test "${_run_strategy}" = 'source'; then
       # shellcheck source=SCRIPTDIR/lib/main.lib.sh
       . "${_main_dir}/lib/${USING_LIB}" "${@}" || return "${?}"
-    elif test "${_run_strategy}" = 's-opt'; then
-      # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" ${_applet} -s -c ". '${_main_dir}/lib/${USING_LIB}' || exit \${?}" "${_applet:-${0-}}" "${@}"
+    elif test "${_run_strategy}" = 's-option'; then
+      # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
+      exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${_main_dir}/lib/${USING_LIB}' || exit \${?}" "${_applet:-${0-}}" "${@}"
     else
-      if test "${#}" -gt 0; then
-        _nl="$(printf '\nx')" _nl="${_nl%x}"
-
-        case "${*}" in
-          *"${_nl}"*) printf 1>&2 '%s\n' 'WARNING: Newline character found, parameters dropped' ;;
-          *)
-            __QUOTED_PARAMS="$(printf '%s\n' "${@}")"
-            export __QUOTED_PARAMS
-            ;;
-        esac
-      fi
-
-      # shellcheck disable=SC2086 # Ignore: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" ${_applet} --init-file "${_main_dir}/lib/${USING_LIB}"
+      # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
+      exec "${__SHELL_EXE}" ${_applet} --rcfile "${_main_dir}/lib/${USING_LIB}" -i -s -- "${@}"
     fi
   }
 
-  if test "${#}" -gt 0; then
-    main "${0-}" "${@}"
-  else
-    main "${0-}"
-  fi
+  if test "${#}" -gt 0; then main "${0-}" "${@}"; else main "${0-}"; fi
 fi

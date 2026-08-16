@@ -22,14 +22,15 @@ IF "%USER_HOME%" == "" (
   SET "HOME=%MAIN_DIR%"
 )
 
-SET "DO_INIT_CMDLINE=1"
 SET "KILL_PPID=1"
 SET "STARTED_FROM_BATCH_FILE=1"
 SET "IS_PATH_INITIALIZED="
-SET "__QUOTED_PARAMS="
 SET "__SHELL_EXE=%~dp0tools\win\busybox.exe"
 
-"%__SHELL_EXE%" ash -s -c "USING_LIB='main.lib.sh'; . '%~dp0lib\main.lib.sh' || exit ${?}" "ash" %*
+SET "DO_INIT_CMDLINE=1"
+SET "USING_LIB=main.lib.sh"
+
+"%__SHELL_EXE%" ash -i -s -c ". '%~dp0lib\%USING_LIB%' || exit ${?}" "ash" %*
 
 ENDLOCAL 2> nul
 IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
