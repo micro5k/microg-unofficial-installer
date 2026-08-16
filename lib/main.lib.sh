@@ -1487,7 +1487,7 @@ init_cmdline()
   readonly UTILS_DATA_DIR="${UTILS_DIR:?}/data"
   export UTILS_DIR UTILS_DATA_DIR
 
-  if test -n "${GIT_SSH:="$(command -v 'TortoiseGitPlink' || :)"}"; then export GIT_SSH; else unset GIT_SSH; fi
+  if test -n "${GIT_SSH:="$(command 2> /dev/null -v 'TortoiseGitPlink' || :)"}"; then export GIT_SSH; else unset GIT_SSH; fi
 
   # Set the path of Android SDK if not already set
   if test -z "${ANDROID_SDK_ROOT-}"; then
