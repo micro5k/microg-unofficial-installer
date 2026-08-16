@@ -1640,6 +1640,13 @@ if test "${DO_INIT_CMDLINE:-0}" != '0'; then
   case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'Failed: pipefail' ;; *) ;; esac
   # shellcheck disable=SC3041,SC2015 # Ignore: In POSIX sh, set flag -H is undefined
   (set +H 2> /dev/null) && set +H || :
+
+  unset ENV
+
+  if test -n "${__OVERRIDE_0-}"; then
+    eval " 0='${__OVERRIDE_0}' " || :
+    unset __OVERRIDE_0
+  fi
 fi
 
 fix_posix_emulation_if_needed

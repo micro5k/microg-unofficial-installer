@@ -75,14 +75,19 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
     case "${_shell_name}" in
       'bash') # Bash
-        _run_strategy='init-file'
+        _run_strategy='init-file-param'
         ;;
       'busybox') # BusyBox
         _run_strategy='s-option'
         _applet="${CUSTOM_APPLET:-ash}"
+        set -- "${_applet}" "${@}"
         ;;
       'zsh') # Zsh
         _run_strategy='s-option'
+        export __OVERRIDE_0="${__SHELL_EXE}"
+        ;;
+      'dash') # Dash
+        _run_strategy='env-var'
         ;;
       'oil.ovm' | 'oils-for-unix') # Oils
         _run_strategy='source'
@@ -119,12 +124,15 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     export DO_INIT_CMDLINE=1
     export USING_LIB='main.lib.sh'
 
-    if test "${_run_strategy}" = 'init-file'; then
+    if test "${_run_strategy}" = 'init-file-param'; then
       # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
       exec "${__SHELL_EXE}" --rcfile "${_main_dir}/lib/${USING_LIB}" -i -s -- "${@}"
     elif test "${_run_strategy}" = 's-option'; then
       # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${_main_dir}/lib/${USING_LIB}' || exit \${?}" "${_applet:-${_shell_name:-unknown}}" "${@}"
+      exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${_main_dir}/lib/${USING_LIB}' || exit \${?}" "${@}"
+    elif test "${_run_strategy}" = 'env-var'; then
+      export ENV="${_main_dir}/lib/${USING_LIB}"
+      exec "${__SHELL_EXE}" -i -s -- "${@}"
     else
       # shellcheck source=SCRIPTDIR/lib/main.lib.sh
       . "${_main_dir}/lib/${USING_LIB}" "${@}" || return "${?}"
