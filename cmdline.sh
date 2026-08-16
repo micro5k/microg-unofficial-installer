@@ -65,7 +65,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       return 0
     }
 
-    __SHELL_EXE="$(get_shell_exe)" || __SHELL_EXE='unknown'
+    if __SHELL_EXE="$(get_shell_exe)" && test "${__SHELL_EXE#*"/"}" != "${__SHELL_EXE}"; then :; else __SHELL_EXE='unknown'; fi
     export __SHELL_EXE
     unset _gse_shell_exe _gse_tmp_var
 
