@@ -8,6 +8,7 @@
 # shellcheck disable=SC3043 # Ignore: In POSIX sh, 'local' is undefined
 
 unset A5K_FUNCTIONS_INCLUDED || return 2
+# shellcheck disable=SC2034 # IGNORE: FOO appears unused. Verify use (or export if used externally)
 readonly A5K_FUNCTIONS_INCLUDED='true'
 
 unset LIB_FILENAME
