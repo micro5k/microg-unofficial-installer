@@ -13,30 +13,28 @@ command 1> /dev/null 2>&1 -v 'local' || {
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
   main()
   {
-    local _main_dir _run_strategy _shell_name _applet
+    local _run_strategy _shell_name _applet
 
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
-    if test -f '/usr/bin/cygpath' && test "${USR_BIN_FIXED:-0}" = '0'; then
-      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-%empty}" ;; esac
+    if test -f '/usr/bin/cygpath' && test "${USR_BIN_FIXED:-0}" = '0'; then PATH="/usr/bin:${PATH:-%empty}"; fi
+
+    if test -z "${MAIN_DIR-}"; then
+      # shellcheck disable=SC3028,SC2128 # Intended: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
+      if MAIN_DIR="${BASH_SOURCE-}" && test -n "${MAIN_DIR}"; then :; else MAIN_DIR="${1}"; fi
+      case "${MAIN_DIR}" in *'/cmdline.sh' | *'\cmdline.sh' | 'cmdline.sh') MAIN_DIR="$(dirname "${MAIN_DIR}")" || MAIN_DIR='' ;; *) MAIN_DIR='' ;; esac
+      export MAIN_DIR
+
+      if test -n "${MAIN_DIR}" && MAIN_DIR="$(realpath 2> /dev/null "${MAIN_DIR}" || readlink 2> /dev/null -f "${MAIN_DIR}")"; then :; else
+        printf '%s\n' 'ERROR: Unable to resolve the main dir'
+        exit 2
+      fi
     fi
 
-    # Execute only if the first initialization has not already been done
-    if test -z "${MAIN_DIR-}" || test -z "${USER_HOME-}"; then
-
-      if test -z "${MAIN_DIR-}"; then
-        # shellcheck disable=SC3028,SC2128 # Intended: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
-        if MAIN_DIR="${BASH_SOURCE-}" && test -n "${MAIN_DIR}"; then :; else MAIN_DIR="${1}"; fi
-        case "${MAIN_DIR}" in *'cmdline.sh') ;; *) MAIN_DIR='' ;; esac
-
-        if test -n "${MAIN_DIR}" && MAIN_DIR="$(dirname "${MAIN_DIR}")" && MAIN_DIR="$(realpath "${MAIN_DIR}")"; then export MAIN_DIR; else unset MAIN_DIR; fi
-      fi
-
-      if test -n "${MAIN_DIR-}" && test -z "${USER_HOME-}"; then
-        if test "${TERM_PROGRAM-}" = 'mintty'; then TERM_PROGRAM='mintty-'; fi
-        export USER_HOME="${HOME-}"
-        export HOME="${MAIN_DIR}"
-      fi
-
+    if test -z "${USER_HOME-}" && test -n "${HOME-}"; then
+      # Change TERM_PROGRAM if it is 'mintty'; otherwise BusyBox for Windows will override HOME
+      if test "${TERM_PROGRAM-}" = 'mintty'; then TERM_PROGRAM='mintty-'; fi
+      export USER_HOME="${HOME}"
+      export HOME="${MAIN_DIR}"
     fi
 
     shift
@@ -99,7 +97,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       'unknown' | 'fish')
         _run_strategy=''
         printf '%s\n' 'ERROR: Unsupported shell'
-        exit 1
+        exit 3
         ;;
       *)
         _run_strategy='source'
@@ -107,12 +105,10 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
         ;;
     esac
 
-    if test -n "${MAIN_DIR-}"; then _main_dir="${MAIN_DIR}"; else _main_dir='.'; fi
-
     if test "${ONLY_FOR_TESTING:-false}" != 'false'; then
       printf '%s\n' "${_shell_name}"
       printf '%s\n' "${__SHELL_EXE}"
-      printf '%s\n' "${_main_dir}"
+      printf '%s\n' "${MAIN_DIR}"
       _run_strategy='source'
     fi
 
@@ -126,18 +122,18 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
     if test "${_run_strategy}" = 'init-file-param'; then
       # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" --rcfile "${_main_dir}/lib/${USING_LIB}" -i -s -- "${@}"
+      exec "${__SHELL_EXE}" --rcfile "${MAIN_DIR}/lib/${USING_LIB}" -i -s -- "${@}"
     elif test "${_run_strategy}" = 's-option'; then
       # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
-      exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${_main_dir}/lib/${USING_LIB}' || exit \${?}" "${@}"
+      exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${MAIN_DIR}/lib/${USING_LIB}' || exit \${?}" "${@}"
     elif test "${_run_strategy}" = 'env-var'; then
-      export ENV="${_main_dir}/lib/${USING_LIB}"
+      export ENV="${MAIN_DIR}/lib/${USING_LIB}"
       exec "${__SHELL_EXE}" -i -s -- "${@}"
     else
       # shellcheck source=SCRIPTDIR/lib/main.lib.sh
-      . "${_main_dir}/lib/${USING_LIB}" "${@}" || return "${?}"
+      . "${MAIN_DIR}/lib/${USING_LIB}" "${@}" || return "${?}"
     fi
   }
 
-  if test "${#}" -gt 0; then main "${0-}" "${@}"; else main "${0-}"; fi
+  if test "$#" -gt 0; then main "${0-}" "${@}"; else main "${0-}"; fi
 fi

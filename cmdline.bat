@@ -5,7 +5,7 @@
 SETLOCAL 2> nul
 
 REM Fix the working directory when using "Run as administrator"
-IF "%CD%" == "%windir%\system32" CD /D "%~dp0"
+IF "%CD%" == "%SystemRoot%\system32" CD /D "%~dp0"
 
 IF NOT EXIST "%~dp0tools\win\busybox.exe" (
   ENDLOCAL 2> nul
@@ -17,6 +17,7 @@ SET "LANG=en_US.UTF-8"
 SET "MAIN_DIR=%~dp0"
 
 IF "%USER_HOME%" == "" (
+  REM Change TERM_PROGRAM if it is 'mintty'; otherwise BusyBox for Windows will override HOME
   IF "%TERM_PROGRAM%" == "mintty" SET "TERM_PROGRAM=mintty-"
   SET "USER_HOME=%USERPROFILE%"
   SET "HOME=%MAIN_DIR%"
