@@ -11,6 +11,30 @@ command 1> /dev/null 2>&1 -v 'local' || {
 }
 
 if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
+  get_shell_exe()
+  {
+    local _gse_shell_exe _gse_tmp_var
+
+    if _gse_shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${_gse_shell_exe}"; then
+      # On Linux / Android / Windows (on Windows only some shells support it)
+      printf '%s\n' "${_gse_shell_exe}"
+      return 0
+    elif _gse_tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${_gse_tmp_var}" && _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var}")"; then
+      # On Linux / macOS
+      # shellcheck disable=SC2230 # Ignore: 'which' is non-standard
+      case "${_gse_tmp_var}" in *'/'* | *"\\"*) ;; *) _gse_tmp_var="$(which 2> /dev/null "${_gse_tmp_var}")" || return 3 ;; esac # We may not get the full path with "command -v" on some old versions of Oils
+    elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var}"; then
+      if test "${_gse_tmp_var}" = '/bin/sh' && test "$(uname 2> /dev/null || :)" = 'Windows_NT'; then _gse_tmp_var="$(command 2> /dev/null -v 'busybox')" || return 2; fi
+      if test ! -x "${_gse_tmp_var}" && test -x "${_gse_tmp_var}.exe"; then _gse_tmp_var="${_gse_tmp_var}.exe"; fi # Special fix for broken versions of Bash under Windows
+    else
+      return 1
+    fi
+
+    _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var}" || realpath 2> /dev/null "${_gse_tmp_var}")" || _gse_shell_exe="${_gse_tmp_var}"
+    printf '%s\n' "${_gse_shell_exe}"
+    return 0
+  }
+
   main()
   {
     local _run_strategy _shell_name _applet
@@ -39,33 +63,8 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
     shift
 
-    get_shell_exe()
-    {
-      local _gse_shell_exe _gse_tmp_var
-
-      if _gse_shell_exe="$(readlink 2> /dev/null "/proc/${$}/exe")" && test -n "${_gse_shell_exe}"; then
-        # On Linux / Android / Windows (on Windows only some shells support it)
-        printf '%s\n' "${_gse_shell_exe}"
-        return 0
-      elif _gse_tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${_gse_tmp_var}" && _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var}")"; then
-        # On Linux / macOS
-        # shellcheck disable=SC2230 # Ignore: 'which' is non-standard
-        case "${_gse_tmp_var}" in *'/'* | *"\\"*) ;; *) _gse_tmp_var="$(which 2> /dev/null "${_gse_tmp_var}")" || return 3 ;; esac # We may not get the full path with "command -v" on some old versions of Oils
-      elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var}"; then
-        if test "${_gse_tmp_var}" = '/bin/sh' && test "$(uname 2> /dev/null || :)" = 'Windows_NT'; then _gse_tmp_var="$(command 2> /dev/null -v 'busybox')" || return 2; fi
-        if test ! -x "${_gse_tmp_var}" && test -x "${_gse_tmp_var}.exe"; then _gse_tmp_var="${_gse_tmp_var}.exe"; fi # Special fix for broken versions of Bash under Windows
-      else
-        return 1
-      fi
-
-      _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var}" || realpath 2> /dev/null "${_gse_tmp_var}")" || _gse_shell_exe="${_gse_tmp_var}"
-      printf '%s\n' "${_gse_shell_exe}"
-      return 0
-    }
-
     if __SHELL_EXE="$(get_shell_exe)" && test "${__SHELL_EXE#*"/"}" != "${__SHELL_EXE}"; then :; else __SHELL_EXE='unknown'; fi
     export __SHELL_EXE
-    unset _gse_shell_exe _gse_tmp_var
 
     _shell_name="${__SHELL_EXE##*"/"}"
     _shell_name="${_shell_name%".exe"}"
