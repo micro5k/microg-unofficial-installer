@@ -21,11 +21,11 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       return 0
     elif _gse_tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${_gse_tmp_var}" && _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var}")"; then
       # On Linux / macOS / BSD
-      # shellcheck disable=SC2230 # Ignore: 'which' is non-standard
       case "${_gse_tmp_var}" in *'/'* | *"\\"*) ;; *) _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var}")" || return 2 ;; esac
     elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var}"; then
       if test "${_gse_tmp_var}" = '/bin/sh' && test "$(uname 2> /dev/null || :)" = 'Windows_NT'; then _gse_tmp_var="$(command 2> /dev/null -v 'busybox')" || return 3; fi
-      case "${_gse_tmp_var}" in *'/'*) ;; *"\\"*) _gse_tmp_var="$(printf '%s' "${_gse_tmp_var}" | tr -- '\\' '/')" || return 4 ;; *) ;; esac
+      # shellcheck disable=SC1003 # IGNORE: Want to escape a single quote? echo 'This is how it'\''s done'
+      case "${_gse_tmp_var}" in *'/'*) ;; *"\\"*) _gse_tmp_var="$(printf '%s' "${_gse_tmp_var}" | tr '\\' '/')" || return 4 ;; *) ;; esac
     else
       return 1
     fi
