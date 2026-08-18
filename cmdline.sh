@@ -20,7 +20,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       printf '%s\n' "${_gse_shell_exe}"
       return 0
     elif _gse_tmp_var="$(ps 2> /dev/null -p "${$}" -o 'comm=')" && test -n "${_gse_tmp_var}" && _gse_tmp_var="$(command 2> /dev/null -v "${_gse_tmp_var}")"; then
-      # On Linux / macOS
+      # On Linux / macOS / BSD
       # shellcheck disable=SC2230 # Ignore: 'which' is non-standard
       case "${_gse_tmp_var}" in *'/'* | *"\\"*) ;; *) _gse_tmp_var="$(which 2> /dev/null "${_gse_tmp_var}")" || return 3 ;; esac # We may not get the full path with "command -v" on some old versions of Oils
     elif _gse_tmp_var="${BASH:-${SHELL-}}" && test -n "${_gse_tmp_var}"; then
@@ -30,7 +30,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       return 1
     fi
 
-    _gse_shell_exe="$(readlink 2> /dev/null -f "${_gse_tmp_var}" || realpath 2> /dev/null "${_gse_tmp_var}")" || _gse_shell_exe="${_gse_tmp_var}"
+    _gse_shell_exe="$(realpath 2> /dev/null "${_gse_tmp_var}" || readlink 2> /dev/null -f "${_gse_tmp_var}")" || _gse_shell_exe="${_gse_tmp_var}"
     printf '%s\n' "${_gse_shell_exe}"
     return 0
   }
@@ -40,19 +40,27 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
     local _run_strategy _shell_name _applet
 
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
-    if test -f '/usr/bin/cygpath' && test "${USR_BIN_FIXED:-0}" = '0'; then PATH="/usr/bin:${PATH:-%empty}"; fi
+    if test -f '/usr/bin/cygpath' && test "${USR_BIN_FIXED:-0}" = '0'; then
+      PATH="/usr/bin:${PATH-}"
+      export PATH="${PATH%":"}"
+      export USR_BIN_FIXED=1
+    fi
 
     if test -z "${MAIN_DIR-}"; then
       # shellcheck disable=SC3028,SC2128 # Intended: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
       if MAIN_DIR="${BASH_SOURCE-}" && test -n "${MAIN_DIR}"; then :; else MAIN_DIR="${1}"; fi
       case "${MAIN_DIR}" in *'/cmdline.sh' | *'\cmdline.sh' | 'cmdline.sh') MAIN_DIR="$(dirname "${MAIN_DIR}")" || MAIN_DIR='' ;; *) MAIN_DIR='' ;; esac
-      export MAIN_DIR
 
-      if test -n "${MAIN_DIR}" && MAIN_DIR="$(realpath 2> /dev/null "${MAIN_DIR}" || readlink 2> /dev/null -f "${MAIN_DIR}")"; then :; else
+      # NOTE: Rarely, realpath or readlink -f can succeed but return an empty string
+      if test -n "${MAIN_DIR}" && MAIN_DIR="$(realpath 2> /dev/null "${MAIN_DIR}" || readlink 2> /dev/null -f "${MAIN_DIR}")" && test -n "${MAIN_DIR}"; then
+        export MAIN_DIR
+      else
         printf '%s\n' 'ERROR: Unable to resolve the main dir'
         exit 2
       fi
     fi
+
+    shift
 
     if test -z "${USER_HOME-}" && test -n "${HOME-}"; then
       # Change TERM_PROGRAM if it is 'mintty'; otherwise BusyBox for Windows will override HOME
@@ -60,8 +68,6 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
       export USER_HOME="${HOME}"
       export HOME="${MAIN_DIR}"
     fi
-
-    shift
 
     if __SHELL_EXE="$(get_shell_exe)" && test "${__SHELL_EXE#*"/"}" != "${__SHELL_EXE}"; then :; else __SHELL_EXE='unknown'; fi
     export __SHELL_EXE
