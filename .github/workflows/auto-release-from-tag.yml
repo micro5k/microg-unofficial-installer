@@ -41,7 +41,7 @@ jobs:
       - name: "Build the flashable zip [OSS edition]"
         id: "build"
         shell: bash
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: |
           # Building...
           make clean buildotaoss

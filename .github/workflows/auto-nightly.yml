@@ -58,7 +58,7 @@ jobs:
           enableCrossOsArchive: true
       - name: "Use LFS cache"
         uses: actions/cache@v6
-        timeout-minutes: 5
+        timeout-minutes: 10
         with:
           key: "lfs-${{ hashFiles('conf/conf-lfs.inc.sh') }}"
           restore-keys: "lfs-"
@@ -67,7 +67,7 @@ jobs:
       - name: "Build the flashable zip [OSS edition]"
         id: "build"
         shell: bash
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: |
           # Building...
           BUILD_TYPE='oss' '${{ github.workspace }}/build.sh'

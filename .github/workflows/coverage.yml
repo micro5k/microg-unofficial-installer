@@ -20,7 +20,7 @@ jobs:
   coverage:
     name: "Coverage"
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     concurrency:
       group: "${{ github.repository_id }}-${{ github.workflow }}-coverage"
       cancel-in-progress: false
@@ -53,7 +53,7 @@ jobs:
           enableCrossOsArchive: true
       - name: "Use LFS cache"
         uses: actions/cache/restore@v6
-        timeout-minutes: 5
+        timeout-minutes: 10
         with:
           key: "lfs-${{ hashFiles('conf/conf-lfs.inc.sh') }}"
           restore-keys: "lfs-"
@@ -62,12 +62,13 @@ jobs:
       - name: "Build (with coverage)"
         id: "build"
         shell: bash
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: |
           # Executing code coverage...
           export BUILD_TYPE=oss
           #sudo apt-get -qq -y install moreutils 1>/dev/null
-          bundle exec bashcov '${{ github.workspace }}/build.sh' # To timestamp the output pipe it to: TZ=UTC ts '[%H:%M:%S]'
+          # To timestamp the output pipe it to: TZ=UTC ts '[%H:%M:%S]'
+          bundle exec bashcov '${{ github.workspace }}/build.sh' -- --no-default-build-type --no-pause
       - name: "Testing (with coverage)"
         shell: bash
         timeout-minutes: 10
@@ -77,7 +78,7 @@ jobs:
           echo '==========================='
           echo 'TESTING OF ZIP INSTALLATION'
           echo '==========================='
-          bundle exec bashcov '${{ github.workspace }}/recovery-simulator/recovery.sh' '${{ steps.build.outputs.ZIP_FOLDER }}/${{ steps.build.outputs.ZIP_FILENAME }}'
+          bundle exec bashcov '${{ github.workspace }}/recovery-simulator/recovery.sh' -- '${{ steps.build.outputs.ZIP_FOLDER }}/${{ steps.build.outputs.ZIP_FILENAME }}'
           printf '\n'
           echo '==============='
           echo 'RECOVERY OUTPUT'

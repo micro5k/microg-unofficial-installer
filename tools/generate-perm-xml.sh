@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # SPDX-FileCopyrightText: 2025 ale5000
-# SPDX-License-Identifier: GPL-3.0-or-later OR Apache-2.0
+# SPDX-License-Identifier: Apache-2.0 OR GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
 # @name Android ROM permissions XML generator
 # @brief Generate privapp-permissions and default-permissions XML files for Android ROM builds.
@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.7'
+readonly SCRIPT_VERSION='0.3.8'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -555,7 +555,7 @@ while test "${#}" -gt 0; do
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
       printf '%s\n' "Copyright (C) 2025 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n\n' 'License GPLv3+ or Apache v2'
+      printf '%s\n\n' 'License Apache v2 or GPLv3+ with APE'
       printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
       # REUSE-IgnoreEnd
       execute_script='false'
