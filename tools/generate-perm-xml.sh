@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.8'
+readonly SCRIPT_VERSION='0.3.9'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -29,6 +29,8 @@ set -u
   (set +H 2> /dev/null) && set +H || true
   (set -o pipefail 2> /dev/null) && set -o pipefail || true
 }
+
+readonly MAX_API='37'
 
 fix_posix_emulation_if_needed()
 {
@@ -96,8 +98,6 @@ reset_color()
 {
   printf 1>&2 '\033[0m\r'
 }
-
-readonly MAX_API='36'
 
 readonly NL='
 '
