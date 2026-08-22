@@ -6,6 +6,7 @@
 # shellcheck disable=SC2240 # Ignore: The dot command does not support arguments in sh/dash
 # shellcheck disable=SC3028 # Ignore: In POSIX sh, FUNCNAME is undefined
 # shellcheck disable=SC3043 # Ignore: In POSIX sh, 'local' is undefined
+# shellcheck disable=SC2310 # Ignore: check-set-e-suppressed
 
 unset A5K_FUNCTIONS_INCLUDED || return 2
 # shellcheck disable=SC2034 # IGNORE: FOO appears unused. Verify use (or export if used externally)
@@ -141,12 +142,26 @@ ui_nl()
 
 run_hook()
 {
-  local hook_file="${MAIN_DIR:?}/build-hooks/${1:?}.hook.sh"
+  local exit_code errexit hook_file
+
+  exit_code=0
+  errexit=0
+  hook_file="${MAIN_DIR:?}/build-hooks/${1:?}.hook.sh"
 
   if test -f "${hook_file:?}"; then
     ui_debug "Running hook: ${1?}..."
+    set -- 'hook' "${hook_file?}" "${@}"
+
+    case "${-}" in *e*) errexit=1 ;; *) ;; esac
+    set +e
     # shellcheck source=/dev/null
-    . "${hook_file:?}" "${hook_file:?}" "${@}" || ui_error "Hook '${1?}' failed with exit code ${?}" "${LINENO-}" "${FUNCNAME-}"
+    . "${hook_file?}" "${@}"
+    exit_code="${?}"
+    case "${errexit?}" in '1') set -e ;; *) ;; esac
+
+    if test "${exit_code?}" -ne 0; then
+      ui_error "Hook '${3?}' failed with exit code ${exit_code?}" "${LINENO-}" "${FUNCNAME-}"
+    fi
   fi
 }
 

@@ -23,10 +23,13 @@ script, so they have access to all variables (like ``${TEMP_DIR:?}``,
 Available hooks
 ===============
 
-#. **pre_init** Triggered after core libraries are loaded and command-line
-   parameters are parsed, but before loading configuration files. *Use case:*
-   Override logic based on the selected ``${BUILD_TYPE:?}`` or modify early
-   script flags before configurations are applied.
+#. **post_parse_args** Triggered immediately after command-line parameters are
+   parsed and validated. *Use case:* Modify environment flags or override logic
+   based on the selected ``${BUILD_TYPE:?}`` before any initialization begins.
+
+#. **pre_init** Triggered after core libraries are loaded, but before loading
+   configuration files. *Use case:* Modify early script flags before
+   configurations are applied.
 
 #. **post_init** Triggered after metadata extraction (ID, Version, Author) but
    before dependency checks. *Use case:* Dynamically modify the module version

@@ -99,11 +99,14 @@ case "${BUILD_TYPE-}" in
   *) ui_error "Invalid build type => '${BUILD_TYPE-}'" "${LINENO-}" "${FUNCNAME-}" ;;
 esac
 
+# [HOOK] post_parse_args: Triggered after parameter evaluation but before environment configuration
+run_hook 'post_parse_args' "${@}"
+
 save_last_title
 set_title 'Building the flashable zip...'
 
 # [HOOK] pre_init: Early setup
-run_hook 'pre_init'
+run_hook 'pre_init' "${@}"
 
 # shellcheck source=SCRIPTDIR/conf/conf-common.inc.sh
 . "${MAIN_DIR:?}/conf/conf-common.inc.sh"
@@ -171,7 +174,7 @@ if test "${OPENSOURCE_ONLY:?}" != 'false'; then
 fi
 
 # [HOOK] post_init: After metadata extraction but before dependency check
-run_hook 'post_init'
+run_hook 'post_init' "${@}"
 
 # Check dependencies
 command 1> /dev/null 2>&1 -v 'printf' || ui_error 'Missing: printf'
@@ -193,7 +196,7 @@ test "${JAVA_VER:-0}" -ge 17 || ui_error 'Java 17 or later is required' "${LINEN
 mkdir -p "${OUT_DIR:?}" || ui_error 'Failed to create the output dir'
 
 # [HOOK] pre_temp_create: Triggered before temp directory initialization
-run_hook 'pre_temp_create'
+run_hook 'pre_temp_create' "${@}"
 
 # Create the temp dir
 TEMP_DIR="$(mktemp -d -t ZIPBUILDER-XXXXXX)" || ui_error 'Failed to create our temp dir'
@@ -203,7 +206,7 @@ if test -z "${TEMP_DIR}"; then ui_error 'Failed to create our temp dir'; fi
 rm -rf "${TEMP_DIR:?}"/* || ui_error 'Failed to empty our temp dir'
 
 # [HOOK] post_temp_create: Ideal for injecting custom files into the temp directory
-run_hook 'post_temp_create'
+run_hook 'post_temp_create' "${@}"
 
 # Set filename
 sanitize_filename_part()
@@ -240,7 +243,7 @@ FILENAME="${FILENAME_START:?}${FILENAME_MIDDLE:?}${FILENAME_END:?}"
 FILENAME_EXT='.zip'
 
 # [HOOK] pre_download: Triggered before starting any external file download
-run_hook 'pre_download'
+run_hook 'pre_download' "${@}"
 
 # Download and verify external application files to ensure package integrity; bundled files will be verified at a later stage
 {
@@ -353,7 +356,7 @@ rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}"
 rm -f "${OUT_DIR:?}/${FILENAME_START:?}"*"${FILENAME_END:?}"*"${FILENAME_EXT:?}".sha256 || ui_error 'Failed to remove the previously built files' "${LINENO-}" "${FUNCNAME-}"
 
 # [HOOK] pre_package: Last chance to modify content before zipping
-run_hook 'pre_package'
+run_hook 'pre_package' "${@}"
 
 # Compress (it ensure that the list of files to compress is in the same order under all OSes)
 # Note: Unicode filenames in the zip are disabled since we don't need them and also zipsigner.jar chokes on them
@@ -363,7 +366,7 @@ find . -type f | LC_ALL='C.UTF-8' sort | zip -D -9 -X -UN=n -nw "${TEMP_DIR}/fla
 FILENAME="${FILENAME:?}-signed"
 
 # [HOOK] post_package: Triggered after compression, but before signing
-run_hook 'post_package'
+run_hook 'post_package' "${@}"
 
 # Sign and zipalign
 echo ''
@@ -372,7 +375,7 @@ mkdir -p "${TEMP_DIR:?}/zipsign"
 java -Duser.timezone=UTC -Dzip.encoding=Cp437 -Djava.io.tmpdir="${TEMP_DIR:?}/zipsign" -jar "${MAIN_DIR:?}/tools/zipsigner.jar" "${TEMP_DIR:?}/flashable${FILENAME_EXT:?}" "${TEMP_DIR:?}/${FILENAME:?}${FILENAME_EXT:?}" || ui_error 'Failed signing and zipaligning' "${LINENO-}" "${FUNCNAME-}"
 
 # [HOOK] post_sign: Triggered after the signing process is complete
-run_hook 'post_sign'
+run_hook 'post_sign' "${@}"
 
 if test "${FAST_BUILD:-false}" = 'false'; then
   echo ''
@@ -410,6 +413,8 @@ if test -n "${ZIP_MD5?}"; then
   printf '%s\n' "MD5: ${ZIP_MD5:?}"
 fi
 
+cd "${_init_dir:?}" || ui_error 'Failed to change back the folder' "${LINENO-}" "${FUNCNAME-}"
+
 # Save info for later use
 if test "${GITHUB_JOB:-false}" != 'false'; then
   {
@@ -427,10 +432,9 @@ if test "${GITHUB_JOB:-false}" != 'false'; then
 fi
 
 set +e
-cd "${_init_dir:?}" || ui_error 'Failed to change back the folder' "${LINENO-}" "${FUNCNAME-}"
 
 # [HOOK] on_finish: Final hook for notifications or moving files to a server
-run_hook 'on_finish'
+run_hook 'on_finish' "${@}"
 
 echo ''
 echo 'Done.'
