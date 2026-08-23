@@ -68,7 +68,7 @@ jobs:
           export BUILD_TYPE=oss
           #sudo apt-get -qq -y install moreutils 1>/dev/null
           # To timestamp the output pipe it to: TZ=UTC ts '[%H:%M:%S]'
-          bundle exec bashcov '${{ github.workspace }}/build.sh' -- --no-default-build-type --no-pause
+          bundle exec bashcov "${GITHUB_WORKSPACE:?}/build.sh" -- --no-default-build-type --no-pause
       - name: "Testing (with coverage)"
         shell: bash
         timeout-minutes: 10
@@ -78,20 +78,20 @@ jobs:
           echo '==========================='
           echo 'TESTING OF ZIP INSTALLATION'
           echo '==========================='
-          bundle exec bashcov '${{ github.workspace }}/recovery-simulator/recovery.sh' -- '${{ steps.build.outputs.ZIP_FOLDER }}/${{ steps.build.outputs.ZIP_FILENAME }}'
+          bundle exec bashcov "${GITHUB_WORKSPACE:?}/recovery-simulator/recovery.sh" -- '${{ steps.build.outputs.ZIP_FOLDER }}/${{ steps.build.outputs.ZIP_FILENAME }}'
           printf '\n'
           echo '==============='
           echo 'RECOVERY OUTPUT'
           echo '==============='
-          if test -e '${{ github.workspace }}/recovery-simulator/output/recovery-output.log'; then
-            cat '${{ github.workspace }}/recovery-simulator/output/recovery-output.log'
+          if test -e "${GITHUB_WORKSPACE:?}/recovery-simulator/output/recovery-output.log"; then
+            cat "${GITHUB_WORKSPACE:?}/recovery-simulator/output/recovery-output.log"
           fi
           printf '\n'
           echo '==============='
           echo 'INSTALLED FILES'
           echo '==============='
-          if test -e '${{ github.workspace }}/recovery-simulator/output/installed-files.log'; then
-            cat '${{ github.workspace }}/recovery-simulator/output/installed-files.log'
+          if test -e "${GITHUB_WORKSPACE:?}/recovery-simulator/output/installed-files.log"; then
+            cat "${GITHUB_WORKSPACE:?}/recovery-simulator/output/installed-files.log"
           fi
       - name: "Verify Codecov token"
         id: "codecov-token"
