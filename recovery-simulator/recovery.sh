@@ -389,11 +389,17 @@ if test -n "${CYGPATH?}"; then
 else
   _android_path="${_our_overrider_dir:?}${PATHSEP:?}${_android_sys:?}/bin"
 fi
-_android_tmp="${_base_simulation_path:?}/tmp"
 
+_android_tmp="${_base_simulation_path:?}/tmp"
 _android_busybox="${_android_sys:?}/bin/busybox"
 
-readonly _android_ext_stor _android_sec_stor _android_lib_path _android_data _android_sys _android_path _android_tmp _android_busybox
+if test "${COVERAGE:-false}" = 'false'; then
+  _android_update_bin="${_android_tmp:?}/update-binary"
+else
+  _android_update_bin="${_android_tmp:?}/update-binary.sh"
+fi
+
+readonly _android_ext_stor _android_sec_stor _android_lib_path _android_data _android_sys _android_path _android_tmp _android_busybox _android_update_bin
 
 # Simulate the Android recovery environment inside the temp folder
 mkdir -p "${_base_simulation_path:?}"
@@ -555,7 +561,7 @@ flash_zips()
     # Simulate the environment variables of a real recovery
     simulate_env || return "${?}"
 
-    "${_android_busybox:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_tmp:?}/update-binary" || fail_with_msg 'Failed to extract the update-binary'
+    "${_android_busybox:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_update_bin:?}" || fail_with_msg 'Failed to extract the update-binary'
 
     echo "custom_flash_start ${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1>&"${recovery_fd:?}"
     set +e
