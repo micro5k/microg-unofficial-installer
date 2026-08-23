@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.5.4'
+readonly SCRIPT_VERSION='1.5.5'
 readonly SCRIPT_AUTHOR='ale5000'
 
 ### CONFIGURATION ###
@@ -304,6 +304,9 @@ _gms_list_perms()
 {
   {
     cat << 'EOF'
+android.permission.ACCESS_ADSERVICES_AD_ID
+android.permission.ACCESS_ADSERVICES_ATTRIBUTION
+android.permission.ACCESS_ADSERVICES_TOPICS
 android.permission.ACCESS_COARSE_LOCATION
 android.permission.ACCESS_FINE_LOCATION
 android.permission.ACCESS_BACKGROUND_LOCATION
@@ -319,6 +322,7 @@ android.permission.BODY_SENSORS
 android.permission.CAMERA
 android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST
 android.permission.CHANGE_WIFI_STATE
+android.permission.DUMP
 android.permission.FAKE_PACKAGE_SIGNATURE
 android.permission.FOREGROUND_SERVICE
 android.permission.GET_ACCOUNTS
@@ -329,10 +333,13 @@ android.permission.INTERNET
 android.permission.LOCATION_HARDWARE
 android.permission.MANAGE_ACCOUNTS
 android.permission.MANAGE_USB
+android.permission.MODIFY_AUDIO_SETTINGS
 android.permission.MODIFY_PHONE_STATE
 android.permission.NETWORK_SCAN
 android.permission.NFC
 android.permission.POST_NOTIFICATIONS
+android.permission.PROVIDE_DEFAULT_ENABLED_CREDENTIAL_SERVICE
+android.permission.PROVIDE_REMOTE_CREDENTIALS
 android.permission.READ_CONTACTS
 android.permission.READ_EXTERNAL_STORAGE
 android.permission.READ_PHONE_STATE
@@ -356,6 +363,7 @@ com.google.android.c2dm.permission.RECEIVE
 com.google.android.c2dm.permission.SEND
 com.google.android.gms.auth.api.phone.permission.SEND
 com.google.android.gms.auth.permission.GOOGLE_ACCOUNT_CHANGE
+com.google.android.gms.locationsharingreporter.periodic.STATUS_UPDATE
 com.google.android.gms.nearby.exposurenotification.EXPOSURE_CALLBACK
 com.google.android.gms.permission.AD_ID
 com.google.android.gtalkservice.permission.GTALK_SERVICE
@@ -387,7 +395,9 @@ android.permission.REQUEST_INSTALL_PACKAGES
 android.permission.USE_CREDENTIALS
 com.google.android.gms.auth.permission.GOOGLE_ACCOUNT_CHANGE
 com.google.android.gms.permission.READ_SETTINGS
+com.google.android.gms.permission.WRITE_SETTINGS
 org.microg.gms.permission.READ_SETTINGS
+org.microg.gms.permission.WRITE_SETTINGS
 EOF
   } || {
     error_msg 'HereDoc failed'
