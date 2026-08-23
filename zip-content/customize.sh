@@ -558,7 +558,11 @@ if test "${DEBUG_LOG:?}" -ne 0; then
 fi
 
 export PATH="${PREVIOUS_PATH?}"
-delete_recursive_safe "${TMP_PATH:?}"
+
+# Only clean up temporary files in real (non-simulated) environments
+if test "${TEST_INSTALL:-false}" = 'false'; then
+  delete_recursive_safe "${TMP_PATH:?}"
+fi
 
 #!!! UNSAFE ENVIRONMENT FROM HERE !!!#
 
