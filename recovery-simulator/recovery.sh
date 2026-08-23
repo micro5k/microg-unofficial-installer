@@ -627,6 +627,8 @@ cd "${_init_dir:?}" || fail_with_msg 'Failed to change back the folder'
 set +e
 
 # Final cleanup
-rm -rf -- "${OUR_TEMP_DIR:?}" &
+if test "${CI:-false}" = 'false'; then
+  rm -rf -- "${OUR_TEMP_DIR:?}" &
+fi
 
 if test "${STATUS:?}" -ne 0; then exit "${STATUS:?}"; fi
