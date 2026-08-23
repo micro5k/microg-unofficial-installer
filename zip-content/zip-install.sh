@@ -9,7 +9,7 @@
 
 # shellcheck enable=all
 
-readonly ZIPINSTALL_VERSION='1.4.3'
+readonly ZIPINSTALL_VERSION='1.4.4'
 
 PATH="${PATH:-/system/bin}:."
 umask 022 || :
@@ -253,9 +253,6 @@ _clean_at_exit()
     # Legacy versions of rm don't accept any parameter (except -r and -R)
     rm "${SCRIPT_NAME:?}" || :
   fi
-  if test -n "${UPD_SCRIPT_NAME-}" && test -f "${UPD_SCRIPT_NAME:?}"; then
-    rm "${UPD_SCRIPT_NAME:?}" || :
-  fi
   if test -n "${TMPDIR-}" && test -d "${TMPDIR:?}/bb-applets"; then
     rm -r "${TMPDIR:?}/bb-applets" || :
   fi
@@ -303,7 +300,6 @@ export TMPDIR
 test "${PROPAGATE_BUSYBOX:-false}" = 'false' || propagate_busybox
 
 SCRIPT_NAME="${TMPDIR:?}/update-binary" || exit 12
-UPD_SCRIPT_NAME="${TMPDIR:?}/updater-script" || exit 12
 ZIPFILE="${1:?}"
 
 unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/update-binary' 1> "${SCRIPT_NAME:?}" || {
@@ -314,8 +310,6 @@ test -s "${SCRIPT_NAME:?}" || {
   ui_error_msg "Failed to extract update-binary (2) from => '${ZIPFILE:-}'"
   exit 14
 }
-
-unzip -p -qq "${ZIPFILE:?}" 'META-INF/com/google/android/updater-script' 1> "${UPD_SCRIPT_NAME:?}" || : # Not strictly needed
 
 STATUS=0
 if ! _is_head_functional || test '#!' = "$(head -c 2 -- "${SCRIPT_NAME:?}" || :)"; then
