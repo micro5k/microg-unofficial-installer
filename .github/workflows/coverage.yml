@@ -108,6 +108,7 @@ jobs:
         timeout-minutes: 10
         with:
           fail_ci_if_error: true
+          files: "${{ github.workspace }}/coverage/coverage.xml"
           token: "${{ secrets.CODECOV_TOKEN }}"
       - name: "Verify Codacy token"
         id: "codacy-token"
