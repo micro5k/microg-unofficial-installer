@@ -508,6 +508,7 @@ simulate_env()
   export OVERRIDE_DIR="${_our_overrider_dir:?}"
   export RS_OVERRIDE_SCRIPT="${_our_overrider_script:?}"
   export TEST_INSTALL=true
+  export __FLASHABLE_ZIP_ENTRY_POINT="${_android_update_bin:?}"
 }
 
 restore_env()
@@ -519,6 +520,7 @@ restore_env()
 
   unset BB_OVERRIDE_APPLETS
   unset CUSTOM_BUSYBOX
+  unset __FLASHABLE_ZIP_ENTRY_POINT
 
   unset -f -- mount umount chown su sudo
 

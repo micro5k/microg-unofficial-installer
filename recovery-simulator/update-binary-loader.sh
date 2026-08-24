@@ -27,13 +27,9 @@ IFS='
 # editorconfig-checker-enable
 PS1='\w \$ '
 PS2='> '
-
 if test "${COVERAGE:-false}" = 'false'; then
   PS4='+ '
-
-  # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
-  . "${TMPDIR:?}/update-binary" || exit "${?}"
-else
-  # shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
-  . "${TMPDIR:?}/update-binary.sh" || exit "${?}"
 fi
+
+# shellcheck source=SCRIPTDIR/../zip-content/META-INF/com/google/android/update-binary.sh
+. "${__FLASHABLE_ZIP_ENTRY_POINT:?}" || exit "${?}"
