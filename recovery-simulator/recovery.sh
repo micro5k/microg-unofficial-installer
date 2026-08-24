@@ -563,7 +563,7 @@ flash_zips()
     # Simulate the environment variables of a real recovery
     simulate_env || return "${?}"
 
-    "${_android_busybox:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_update_bin:?}" || fail_with_msg 'Failed to extract the update-binary'
+    "${_android_busybox:?}" unzip -opq "${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 'META-INF/com/google/android/update-binary' > "${_android_update_bin:?}" || fail_with_msg "Failed to extract update-binary from '${FLASHABLE_ZIP_NAME?}'"
     chmod 0755 "${_android_update_bin:?}" || fail_with_msg "chmod failed on '${_android_update_bin?}'"
 
     echo "custom_flash_start ${_android_sec_stor:?}/${FLASHABLE_ZIP_NAME:?}" 1>&"${recovery_fd:?}"
