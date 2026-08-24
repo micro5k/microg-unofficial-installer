@@ -108,10 +108,12 @@ jobs:
         uses: codecov/codecov-action@v7
         timeout-minutes: 10
         with:
-          files: "./coverage/coverage.xml"
-          disable_search: true
-          fail_ci_if_error: true
           token: "${{ secrets.CODECOV_TOKEN }}"
+          files: "./coverage/coverage.xml"
+          plugins: "noop"
+          disable_search: true
+          disable_telem: true
+          fail_ci_if_error: true
       - name: "Verify Codacy token"
         id: "codacy-token"
         shell: bash
@@ -126,5 +128,5 @@ jobs:
         uses: codacy/codacy-coverage-reporter-action@v1
         timeout-minutes: 10
         with:
-          coverage-reports: "./coverage/coverage.xml"
           project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
+          coverage-reports: "./coverage/coverage.xml"
