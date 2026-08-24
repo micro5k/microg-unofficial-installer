@@ -130,3 +130,11 @@ jobs:
         with:
           project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
           coverage-reports: "./coverage/coverage.xml"
+      - name: "Save Cobertura XML coverage report"
+        uses: actions/upload-artifact@v7
+        with:
+          path: "./coverage/coverage.xml"
+          retention-days: 1
+          archive: false
+          overwrite: false
+          if-no-files-found: "error"
