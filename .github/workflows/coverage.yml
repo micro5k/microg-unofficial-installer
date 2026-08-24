@@ -16,6 +16,7 @@ on:
     tags:
       - "v*.*"
   pull_request:
+  workflow_dispatch:
 jobs:
   coverage:
     name: "Coverage"
@@ -108,7 +109,7 @@ jobs:
         timeout-minutes: 10
         with:
           fail_ci_if_error: true
-          files: "${{ github.workspace }}/coverage/coverage.xml"
+          files: "./coverage/coverage.xml"
           token: "${{ secrets.CODECOV_TOKEN }}"
       - name: "Verify Codacy token"
         id: "codacy-token"
@@ -124,5 +125,5 @@ jobs:
         uses: codacy/codacy-coverage-reporter-action@v1
         timeout-minutes: 10
         with:
-          coverage-reports: "${{ github.workspace }}/coverage/coverage.xml"
+          coverage-reports: "./coverage/coverage.xml"
           project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
