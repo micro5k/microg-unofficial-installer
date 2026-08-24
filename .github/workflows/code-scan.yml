@@ -260,7 +260,7 @@ jobs:
           SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
         with:
           args: >
-            "${{ steps.download-coverage.outcome == 'success' && '-Dsonar.coverage.reportPaths=./coverage/coverage.xml' || '' }}"
+            ${{ steps.download-coverage.outcome == 'success' && '-Dsonar.coverage.reportPaths=./coverage/coverage.xml' || '' }}
       - name: "Post Avoid SonarQube warning"
         shell: bash
         if: "always()"
