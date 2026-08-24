@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     concurrency:
-      group: "${{ github.repository_id }}-${{ github.workflow }}-coverage"
+      group: "${{ github.repository_id }}-coverage"
       cancel-in-progress: false
     permissions:
       contents: read # Needed to checkout the repository (only required for private repositories)
