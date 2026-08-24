@@ -124,4 +124,5 @@ jobs:
         uses: codacy/codacy-coverage-reporter-action@v1
         timeout-minutes: 10
         with:
+          coverage-reports: "${{ github.workspace }}/coverage/coverage.xml"
           project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
