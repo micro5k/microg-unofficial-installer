@@ -395,8 +395,8 @@ _android_busybox="${_android_sys:?}/bin/busybox"
 _bootstrap_script_repo="${THIS_SCRIPT_DIR:?}/update-binary-loader.sh"
 
 if test "${COVERAGE:-false}" = 'false'; then
-  _bootstrap_script="${_android_tmp:?}/update-binary-loader.sh"
-  _android_update_bin="${_android_tmp:?}/update-binary"
+  _bootstrap_script="${_android_tmp:?}/update-binary"
+  _android_update_bin="${_android_tmp:?}/update-binary-real"
 else
   _bootstrap_script="${_bootstrap_script_repo:?}"
   _android_update_bin="${_android_tmp:?}/update-binary.sh"
