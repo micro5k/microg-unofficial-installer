@@ -192,10 +192,12 @@ jobs:
     name: "SonarQube"
     needs: [pre-requisites]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     if: "${{ github.event_name == 'push' && needs.pre-requisites.outputs.sonar-token-set == 'true' }}"
     permissions:
       contents: read # Needed to checkout the repository (only required for private repositories)
+      actions: read
+      checks: read
 
     steps:
       - name: "Checkout sources"
@@ -203,19 +205,64 @@ jobs:
         with:
           lfs: false
           fetch-depth: "0" # Shallow clones should be disabled for a better relevancy of analysis
+      - name: "Await the twin coverage workflow"
+        id: "await-coverage"
+        uses: actions/github-script@v9
+        timeout-minutes: 20
+        with:
+          script: |
+            const repo = { owner: context.repo.owner, repo: context.repo.repo };
+            const sha = context.payload.pull_request?.head.sha || context.sha;
+            const branch = context.payload.pull_request ? context.payload.pull_request.head.ref : context.ref.replace('refs/heads/', '');
+            // Search coverage workflow (2 attempts)
+            let run = null;
+            for(let i = 0; i < 2; i++) {
+              const { data: { workflow_runs } } = await github.rest.actions.listWorkflowRuns({
+                ...repo, workflow_id: 'coverage.yml', head_sha: sha, branch, event: context.eventName
+              });
+              run = workflow_runs[0]; // Newest matching run is natively at index 0
+              if(run || i === 1) break;
+              await new Promise(r => setTimeout(r, 5000));
+            }
+            if(!run) {
+              core.notice('Coverage workflow skipped or not triggered for this event. Proceeding without coverage data.');
+              core.setOutput('run_id', '');
+              return;
+            }
+            // Polling loop: wait actively until the target workflow run is completed
+            while(['in_progress', 'queued', 'waiting'].includes(run.status)) {
+              console.log(`Coverage workflow is ${run.status}. Waiting 1 minute...`);
+              await new Promise(r => setTimeout(r, 60000));
+              run = (await github.rest.actions.getWorkflowRun({ ...repo, run_id: run.id })).data;
+            }
+            const ok = run.conclusion === 'success';
+            if(!ok) core.notice(`Coverage workflow ended with status: ${run.conclusion}. Proceeding without coverage data.`);
+            core.setOutput('run_id', ok ? run.id : '');
+      - name: "Download Cobertura XML coverage report"
+        id: "download-coverage"
+        if: "${{ steps.await-coverage.outputs.run_id != '' }}"
+        uses: actions/download-artifact@v8
+        timeout-minutes: 10
+        with:
+          run-id: "${{ steps.await-coverage.outputs.run_id }}"
+          name: "coverage.xml"
+          path: "${{ github.workspace }}/coverage/"
       - name: "Avoid SonarQube warning"
         shell: bash
         run: |
           # Avoiding the SonarQube warning...
-          mv -f -- ./build.gradle ./build-manually.gradle
+          mv -f -- ./build.gradle ./build-disabled.gradle
       - name: "SonarQube scan"
         uses: SonarSource/sonarqube-scan-action@v8
         timeout-minutes: 10
         env:
           SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
+        with:
+          args: >
+            "${{ steps.download-coverage.outcome == 'success' && '-Dsonar.coverage.reportPaths=./coverage/coverage.xml' || '' }}"
       - name: "Post Avoid SonarQube warning"
         shell: bash
         if: "always()"
         run: |
           # Post job cleanup.
-          mv -f -- ./build-manually.gradle ./build.gradle
+          test ! -f ./build-disabled.gradle || mv -f -- ./build-disabled.gradle ./build.gradle
