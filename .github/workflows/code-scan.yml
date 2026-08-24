@@ -231,8 +231,8 @@ jobs:
             }
             // Polling loop: wait actively until the target workflow run is completed
             while(['in_progress', 'queued', 'waiting'].includes(run.status)) {
-              console.log(`Coverage workflow is ${run.status}. Waiting 1 minute...`);
-              await new Promise(r => setTimeout(r, 60000));
+              console.log(`Coverage workflow is ${run.status}. Waiting 30 seconds...`);
+              await new Promise(r => setTimeout(r, 30000));
               run = (await github.rest.actions.getWorkflowRun({ ...repo, run_id: run.id })).data;
             }
             const ok = run.conclusion === 'success';
@@ -244,6 +244,7 @@ jobs:
         uses: actions/download-artifact@v8
         timeout-minutes: 10
         with:
+          github-token: "${{ github.token }}"
           run-id: "${{ steps.await-coverage.outputs.run_id }}"
           name: "coverage.xml"
           path: "${{ github.workspace }}/coverage/"
