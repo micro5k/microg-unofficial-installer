@@ -238,7 +238,7 @@ jobs:
             const ok = run.conclusion === 'success';
             if(!ok) core.notice(`Coverage workflow ended with status: ${run.conclusion}. Proceeding without coverage data.`);
             core.setOutput('run_id', ok ? run.id : '');
-      - name: "Download Cobertura XML coverage report"
+      - name: "Get coverage report"
         id: "download-coverage"
         if: "${{ steps.await-coverage.outputs.run_id != '' }}"
         uses: actions/download-artifact@v8
@@ -246,7 +246,7 @@ jobs:
         with:
           github-token: "${{ github.token }}"
           run-id: "${{ steps.await-coverage.outputs.run_id }}"
-          name: "coverage.xml"
+          name: "coverage.json"
           path: "${{ github.workspace }}/coverage/"
       - name: "Avoid SonarQube warning"
         shell: bash
@@ -260,7 +260,7 @@ jobs:
           SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
         with:
           args: >
-            ${{ steps.download-coverage.outcome == 'success' && '-Dsonar.coverage.reportPaths=./coverage/coverage.xml' || '' }}
+            ${{ steps.download-coverage.outcome == 'success' && '-Dsonar.coverage.reportPaths=./coverage/coverage.json' || '' }}
       - name: "Post Avoid SonarQube warning"
         shell: bash
         if: "always()"

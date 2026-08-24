@@ -130,10 +130,10 @@ jobs:
         with:
           project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
           coverage-reports: "./coverage/coverage.xml"
-      - name: "Save Cobertura XML coverage report"
+      - name: "Store coverage report"
         uses: actions/upload-artifact@v7
         with:
-          path: "${{ github.workspace }}/coverage/coverage.xml"
+          path: "${{ github.workspace }}/coverage/coverage.json"
           retention-days: 1
           archive: false
           overwrite: false
