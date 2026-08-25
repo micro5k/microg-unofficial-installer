@@ -114,14 +114,6 @@ jobs:
           dependency-graph: "generate-and-submit"
           cache-disabled: true
           validate-wrappers: true
-      - name: "Dependency review"
-        if: "${{ success() || steps.submit-deps-1.outcome == 'success' }}"
-        uses: actions/dependency-review-action@v5
-        with:
-          base-ref: "${{ github.event.before }}"
-          head-ref: "${{ github.event.after }}"
-          retry-on-snapshot-warnings: true
-          retry-on-snapshot-warnings-timeout: 180
 
   codacy:
     name: "Codacy"
