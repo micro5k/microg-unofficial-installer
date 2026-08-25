@@ -4,7 +4,7 @@
 
 source 'https://rubygems.org'
 
-ruby ">=3.0"
+ruby ">=3.2"
 
-gem 'bashcov', '>=3.3'
+gem 'bashcov', '>=4.0'
 gem 'simplecov-cobertura'

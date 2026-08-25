@@ -1,19 +1,13 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    bashcov (3.3.0)
-      simplecov (~> 0.21)
-    docile (1.4.1)
+    bashcov (4.0.0)
+      simplecov (~> 1.1)
     rexml (3.4.4)
-    simplecov (0.22.0)
-      docile (~> 1.1)
-      simplecov-html (~> 0.11)
-      simplecov_json_formatter (~> 0.1)
-    simplecov-cobertura (3.2.0)
+    simplecov (1.1.1)
+    simplecov-cobertura (4.0.0)
       rexml
-      simplecov (~> 0.19)
-    simplecov-html (0.13.2)
-    simplecov_json_formatter (0.1.4)
+      simplecov (~> 1.0)
 
 PLATFORMS
   arm64-darwin
@@ -23,11 +17,11 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  bashcov (>= 3.3)
+  bashcov (>= 4.0)
   simplecov-cobertura
 
 RUBY VERSION
   ruby 3.4.5p51
 
 BUNDLED WITH
-  4.0.10
+  4.0.19

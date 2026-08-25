@@ -3,7 +3,7 @@
 # SPDX-FileCopyrightText: NONE
 # SPDX-License-Identifier: CC0-1.0
 
-require 'simplecov_json_formatter'
+require 'simplecov'
 require 'simplecov-cobertura'
 
 SimpleCov.configure do
@@ -12,5 +12,5 @@ SimpleCov.configure do
     SimpleCov::Formatter::JSONFormatter       # For SonarQube
   ])
 
-  add_filter 'gradlew'
+  skip 'gradlew'
 end
