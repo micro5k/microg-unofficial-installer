@@ -249,7 +249,7 @@ jobs:
           name: "coverage.json"
           path: "${{ github.workspace }}/coverage/"
       - name: "Convert SimpleCov JSON coverage to SonarQube generic XML coverage"
-        if: "${{ steps.download-coverage.outputs.artifact-id != '' }}"
+        if: "${{ steps.download-coverage.outcome != 'skipped' }}"
         shell: bash
         timeout-minutes: 10
         run: |
@@ -280,7 +280,7 @@ jobs:
           SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
         with:
           args: >
-            ${{ steps.download-coverage.outputs.artifact-id != '' && '-Dsonar.coverageReportPaths=./coverage/sonar-generic-coverage.xml' || '' }}
+            ${{ steps.download-coverage.outcome != 'skipped' && '-Dsonar.coverageReportPaths=./coverage/sonar-generic-coverage.xml' || '' }}
       - name: "Post Avoid SonarQube warning"
         shell: bash
         if: "always()"
