@@ -65,6 +65,7 @@ jobs:
       - name: "Checkout file"
         uses: actions/checkout@v7
         with:
+          lfs: false
           sparse-checkout: |
             tools/dl-perm-list.sh
           sparse-checkout-cone-mode: false
