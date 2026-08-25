@@ -238,7 +238,7 @@ jobs:
             const ok = run.conclusion === 'success';
             if(!ok) core.notice(`Coverage workflow ended with status: ${run.conclusion}. Proceeding without coverage data.`);
             core.setOutput('run_id', ok ? run.id : '');
-      - name: "Get coverage report"
+      - name: "Get JSON coverage report"
         id: "download-coverage"
         if: "${{ steps.await-coverage.outputs.run_id != '' }}"
         uses: actions/download-artifact@v8
@@ -248,6 +248,25 @@ jobs:
           run-id: "${{ steps.await-coverage.outputs.run_id }}"
           name: "coverage.json"
           path: "${{ github.workspace }}/coverage/"
+      - name: "Convert SimpleCov JSON coverage to SonarQube generic XML coverage"
+        shell: bash
+        timeout-minutes: 10
+        run: |
+          jq -r '
+            "<coverage version=\"1\">",
+            (
+              (.coverage | keys_unsorted[]) as $path |
+              (.coverage[$path].lines) as $lines |
+              "<file path=\"\($path)\">",
+              ( range(0; $lines | length) | 
+                $lines[.] as $val | 
+                select($val != null) | 
+                "  <lineToCover lineNumber=\"\(.+1)\" covered=\"\(if $val > 0 then "true" else "false" end)\"/>"
+              ),
+              "</file>"
+            ),
+            "</coverage>"
+          ' -- "${GITHUB_WORKSPACE:?}/coverage/coverage.json" 1> "${GITHUB_WORKSPACE:?}/coverage/sonar-generic-coverage.xml"
       - name: "Avoid SonarQube warning"
         shell: bash
         run: |
@@ -260,7 +279,7 @@ jobs:
           SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
         with:
           args: >
-            ${{ steps.download-coverage.outcome == 'success' && '-Dsonar.coverageReportPaths=./coverage/coverage.json' || '' }}
+            ${{ steps.download-coverage.outcome == 'success' && '-Dsonar.coverageReportPaths=./coverage/sonar-generic-coverage.xml' || '' }}
       - name: "Post Avoid SonarQube warning"
         shell: bash
         if: "always()"
