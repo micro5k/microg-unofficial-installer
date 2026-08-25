@@ -249,6 +249,7 @@ jobs:
           name: "coverage.json"
           path: "${{ github.workspace }}/coverage/"
       - name: "Convert SimpleCov JSON coverage to SonarQube generic XML coverage"
+        if: "${{ steps.download-coverage.outcome == 'success' }}"
         shell: bash
         timeout-minutes: 10
         run: |
