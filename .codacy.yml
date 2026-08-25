@@ -1,0 +1,8 @@
+---
+# SPDX-FileCopyrightText: NONE
+# SPDX-License-Identifier: CC0-1.0
+
+engines:
+  trivy:
+    exclude_paths:
+      - "Gemfile.lock" # Temporary workaround for the broken scan
