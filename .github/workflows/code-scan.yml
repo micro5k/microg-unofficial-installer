@@ -138,6 +138,8 @@ jobs:
       - name: "Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
         timeout-minutes: 10
+        env:
+          CODACY_ANALYSIS_CLI_VERSION: "7.10.1"
         with:
           project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
           #verbose: true
