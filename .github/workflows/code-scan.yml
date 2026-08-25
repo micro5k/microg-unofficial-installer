@@ -142,7 +142,6 @@ jobs:
           submodules: false
           fetch-tags: false
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
-          filter: "tree:0"
       - name: "Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
         timeout-minutes: 10
