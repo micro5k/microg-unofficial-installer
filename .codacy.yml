@@ -4,5 +4,4 @@
 
 engines:
   trivy:
-    exclude_paths:
-      - "Gemfile.lock" # Temporary workaround for the broken scan
+    enabled: false # Temporary workaround for the broken scan
