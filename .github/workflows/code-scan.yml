@@ -6,8 +6,11 @@ name: "SAST"
 permissions: {}
 on:
   push:
-    paths:
-      - "**"
+    paths-ignore:
+      - ".github/**"
+      - ".gitlab/**"
+      - ".gitlab-ci.yml"
+      - ".travis.yml"
     branches:
       - "main"
   schedule:

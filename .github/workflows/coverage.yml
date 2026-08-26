@@ -94,17 +94,10 @@ jobs:
           if test -e "${GITHUB_WORKSPACE:?}/recovery-simulator/output/installed-files.log"; then
             cat "${GITHUB_WORKSPACE:?}/recovery-simulator/output/installed-files.log"
           fi
-      - name: "Verify Codecov token"
-        id: "codecov-token"
-        shell: bash
+      - name: "Upload coverage reports to Codecov"
         env:
           CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
-        run: |
-          # Verifying token...
-          if test -n "${CODECOV_TOKEN?}"; then token_set='true'; else token_set='false'; fi
-          printf 'TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
-      - name: "Upload coverage reports to Codecov"
-        if: "${{ steps.codecov-token.outputs.TOKEN_SET == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
+        if: "${{ env.CODECOV_TOKEN != '' && github.ref_type != 'tag' }}"
         uses: codecov/codecov-action@v7
         timeout-minutes: 10
         with:
@@ -114,17 +107,10 @@ jobs:
           disable_search: true
           disable_telem: true
           fail_ci_if_error: true
-      - name: "Verify Codacy token"
-        id: "codacy-token"
-        shell: bash
-        env:
-          CODACY_TOKEN: "${{ secrets.CODACY_PROJECT_TOKEN }}"
-        run: |
-          # Verifying token...
-          if test -n "${CODACY_TOKEN?}"; then token_set='true'; else token_set='false'; fi
-          printf 'TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
       - name: "Upload coverage reports to Codacy"
-        if: "${{ steps.codacy-token.outputs.TOKEN_SET == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
+        env:
+          CODACY_PROJECT_TOKEN: "${{ secrets.CODACY_PROJECT_TOKEN }}"
+        if: "${{ env.CODACY_PROJECT_TOKEN != '' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
         uses: codacy/codacy-coverage-reporter-action@v1
         timeout-minutes: 10
         with:
