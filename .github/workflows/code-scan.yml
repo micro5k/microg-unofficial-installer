@@ -130,6 +130,9 @@ jobs:
     permissions:
       contents: read # Needed to checkout the repository (only required for private repositories)
       security-events: write
+    env:
+      CODACY_ANALYSIS_CLI_VERSION: "7.10.1"
+      DOCKER_IMAGE_PATH: "/tmp/codacy-cli-image.tar"
 
     steps:
       - name: "Checkout sources"
@@ -138,11 +141,33 @@ jobs:
           lfs: false
           submodules: false
           fetch-tags: false
+      - name: "Use Docker image cache"
+        id: docker-cache
+        uses: actions/cache@v6
+        timeout-minutes: 10
+        with:
+          key: "codacy-cli-${{ runner.os }}-${{ env.CODACY_ANALYSIS_CLI_VERSION }}"
+          path: "${{ env.DOCKER_IMAGE_PATH }}"
+      - name: "Download Docker image if not cached"
+        shell: bash
+        timeout-minutes: 10
+        if: "${{ steps.docker-cache.outputs.cache-hit != 'true' }}"
+        run: |
+          docker pull "codacy/codacy-analysis-cli:${CODACY_ANALYSIS_CLI_VERSION:?}"
+          docker save "codacy/codacy-analysis-cli:${CODACY_ANALYSIS_CLI_VERSION:?}" -o "${DOCKER_IMAGE_PATH:?}"
+      - name: "Load Docker image from cache if cached"
+        shell: bash
+        timeout-minutes: 10
+        if: "${{ steps.docker-cache.outputs.cache-hit == 'true' }}"
+        run: |
+          docker load -i "${DOCKER_IMAGE_PATH:?}"
+          rm -f -- "${DOCKER_IMAGE_PATH:?}"
       - name: "Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
         timeout-minutes: 10
         env:
-          CODACY_ANALYSIS_CLI_VERSION: "7.10.1"
+          # Must be explicitly passed to this step, otherwise the action defaults to its own version
+          CODACY_ANALYSIS_CLI_VERSION: "${{ env.CODACY_ANALYSIS_CLI_VERSION }}"
         with:
           project-token: "${{ secrets.CODACY_PROJECT_TOKEN }}"
           #verbose: true
