@@ -284,23 +284,27 @@ if test "${ENV_RESETTED:-false}" = 'false'; then
   reset_env_and_rerun_myself "${@}" || fail_with_msg 'failed: exec'
   exit 127
 fi
-unset ENV_RESETTED
-if test -z "${DEBUG_LOG-}"; then unset DEBUG_LOG; fi
-if test -z "${LIVE_SETUP_ALLOWED-}"; then unset LIVE_SETUP_ALLOWED; fi
 
-test -n "${DRY_RUN-unset}" || unset DRY_RUN
-test -n "${KEY_TEST_ONLY-unset}" || unset KEY_TEST_ONLY
-test -n "${BYPASS_LOCK_CHECK-unset}" || unset BYPASS_LOCK_CHECK
+clean_empty_exports()
+{
+  local __fn_first_part='' __fn_val=''
 
-test -n "${INPUT_TYPE-unset}" || unset INPUT_TYPE
-test -n "${FORCE_HW_KEYS-unset}" || unset FORCE_HW_KEYS
-
-if test -z "${CI-}"; then unset CI; fi
-if test -z "${SHELLOPTS-}"; then unset SHELLOPTS; fi
+  while IFS='=' read -r __fn_first_part __fn_val; do
+    case "${__fn_val}" in
+      '""' | "''")
+        unset "${__fn_first_part##* }"
+        ;;
+      *) ;;
+    esac
+  done << EOF
+$(export)
+EOF
+}
 
 fix_posix_emulation_if_needed
+clean_empty_exports
 detect_os_and_other_things
-unset SHELL
+unset ENV_RESETTED SHELL
 
 if test "${COVERAGE:-false}" != 'false'; then
   test -n "${SHELL_CMD?}" || fail_with_msg 'Unable to find current shell path'
