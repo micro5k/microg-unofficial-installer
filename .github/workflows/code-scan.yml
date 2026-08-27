@@ -183,6 +183,7 @@ jobs:
         shell: bash
         timeout-minutes: 5
         run: |
+          # Combining...
           jq '.runs |= (
             # Group runs by tool name to create unique categories (Post-March 27, 2026 GitHub requirement)
             group_by(.tool.driver.name) |
@@ -207,6 +208,11 @@ jobs:
               }
             )
           )' -- './results.sarif' 1> './results-combined.sarif'
+      - name: "Validate the SARIF file"
+        uses: microsoft/sarif-actions@v0.2
+        timeout-minutes: 5
+        with:
+          command: "validate ./results-combined.sarif"
       - name: "Upload SARIF results file to GitHub"
         uses: github/codeql-action/upload-sarif@v4
         timeout-minutes: 10
