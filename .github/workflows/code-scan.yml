@@ -183,7 +183,7 @@ jobs:
         shell: bash
         timeout-minutes: 5
         run: |
-          # Combining...
+          # Combining all SARIF runs by tool name...
           jq '.runs |= (
             # Shorten tool driver name by replacing " (reported by " with " ("
             map(.tool.driver.name |= sub(" \\(reported by "; " (")) |
@@ -198,13 +198,8 @@ jobs:
                 # Collect all results and artifacts from the group, removing ruleIndex if it is -1
                 "results": ([$group[].results[] | if .ruleIndex == -1 then del(.ruleIndex) else . end] | unique),
                 "artifacts": ([$group[].artifacts[]] | unique),
-                # Merge all invocation fields and calculate global success
-                "invocations": [
-                  (
-                    reduce $group[].invocations[] as $item ({}; . + $item) |
-                    . + { "executionSuccessful": ([$group[].invocations[].executionSuccessful] | all) }
-                  )
-                ]
+                # Keep individual invocations and remove workingDirectory if it matches "file:///codacy"
+                "invocations": ([$group[].invocations[] | if .workingDirectory.uri == "file:///codacy" then del(.workingDirectory) else . end])
               }
             )
           )' -- './results.sarif' 1> './results-combined.sarif'

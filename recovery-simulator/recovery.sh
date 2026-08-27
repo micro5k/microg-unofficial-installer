@@ -287,13 +287,11 @@ recovery_flash_end()
 
 clean_empty_exports()
 {
-  local __fn_first_part='' __fn_val=''
+  local IFS __fn_first_part='' __fn_val=''
 
   while IFS='=' read -r __fn_first_part __fn_val; do
     case "${__fn_val}" in
-      '""' | "''")
-        unset "${__fn_first_part##* }"
-        ;;
+      '""' | "''") unset "${__fn_first_part##* }" ;;
       *) ;;
     esac
   done << EOF
@@ -301,10 +299,12 @@ $(export)
 EOF
 }
 
-fix_posix_emulation_if_needed
+# Clean up temporary variables used during the environment reset
 clean_empty_exports
-detect_os_and_other_things
 unset ENV_RESETTED SHELL
+
+fix_posix_emulation_if_needed
+detect_os_and_other_things
 
 if test "${COVERAGE:-false}" != 'false'; then
   test -n "${SHELL_CMD?}" || fail_with_msg 'Unable to find current shell path'
