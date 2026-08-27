@@ -185,6 +185,8 @@ jobs:
         run: |
           # Combining...
           jq '.runs |= (
+            # Shorten tool driver name by replacing " (reported by " with " ("
+            map(.tool.driver.name |= sub(" \\(reported by "; " (")) |
             # Group runs by tool name to create unique categories (Post-March 27, 2026 GitHub requirement)
             group_by(.tool.driver.name) |
             map(
@@ -193,10 +195,8 @@ jobs:
               .[0] as $first |
               # Rebuild the run object by collecting data in a single pass
               $first + {
-                # Add mandatory category ID
-                "automationDetails": ($first.automationDetails + { "id": ("Codacy/" + $first.tool.driver.name) }),
-                # Collect all results and artifacts from the group
-                "results": ([$group[].results[]] | unique),
+                # Collect all results and artifacts from the group, removing ruleIndex if it is -1
+                "results": ([$group[].results[] | if .ruleIndex == -1 then del(.ruleIndex) else . end] | unique),
                 "artifacts": ([$group[].artifacts[]] | unique),
                 # Merge all invocation fields and calculate global success
                 "invocations": [
@@ -219,7 +219,7 @@ jobs:
         if: "${{ github.ref == 'refs/heads/main' }}"
         with:
           token: "${{ github.token }}"
-          sarif_file: "results-combined.sarif"
+          sarif_file: "./results-combined.sarif"
           category: "Codacy"
 
   sonarqube:
