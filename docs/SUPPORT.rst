@@ -7,8 +7,8 @@ Support
    SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
    SPDX-FileType: DOCUMENTATION
 
-The most efficient way to receive support is to open an issue_ on GitHub or
-post in the `official support thread`_ on the XDA forum.
+The most efficient way to receive support is to open an issue_ on GitHub or post
+in the `official support thread`_ on the XDA forum.
 
 .. _issue: https://github.com/micro5k/microg-unofficial-installer/issues
 
@@ -31,8 +31,8 @@ To save time, please complete these steps before reaching out:
 Reporting a bug
 ===============
 
-When opening a new issue, please provide as much of the following information
-as possible:
+When opening a new issue, please provide as much of the following information as
+possible:
 
 -  **Issue description:**
       -  A clear summary of the problem.

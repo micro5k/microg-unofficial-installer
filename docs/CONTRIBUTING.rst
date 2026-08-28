@@ -30,13 +30,13 @@ No worries! You can learn the ropes with this `step-by-step guide
 Linting
 =======
 
-To maintain a high standard of code quality, we use automated tools to check
-for errors and formatting.
+To maintain a high standard of code quality, we use automated tools to check for
+errors and formatting.
 
 -  `ShellCheck <https://www.shellcheck.net/>`_: Validates shell scripts for
    common errors and pitfalls.
--  `REUSE <https://reuse.software/>`_: Checks that all files have proper
-   license and copyright headers.
+-  `REUSE <https://reuse.software/>`_: Checks that all files have proper license
+   and copyright headers.
 
 These checks run automatically on every pull request via CI.
 

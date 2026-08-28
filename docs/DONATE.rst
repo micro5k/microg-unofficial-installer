@@ -8,6 +8,7 @@ Support the project |rocket|
    SPDX-FileType: DOCUMENTATION
 
 .. |rocket| replace:: 🚀
+
 .. |coffee| replace:: ☕
 
 This installer is a labor of love, built on the principles of **free and
@@ -21,10 +22,10 @@ Why donate?
 
 -  **Faster development:** Your support allows me to prioritize this project,
    speeding up bug fixes and the rollout of new features.
--  **Device Lab:** Android is vast. Contributions help me purchase physical
-   test devices to debug hardware-specific issues and ensure compatibility.
--  **Sustainability:** Helping cover costs for development tools and
-   maintaining the project long-term.
+-  **Device Lab:** Android is vast. Contributions help me purchase physical test
+   devices to debug hardware-specific issues and ensure compatibility.
+-  **Sustainability:** Helping cover costs for development tools and maintaining
+   the project long-term.
 
 
 Choose Your Impact |coffee|
@@ -52,10 +53,10 @@ We use different platforms depending on how you prefer to support us:
 
 -  **Best for:** Long-term sustainability.
 
--  **How it works:** Liberapay is a non-profit platform designed for
-   **recurring weekly, monthly, or yearly donations**. It doesn't take a cut of
-   your donation (only payment processing fees apply), making it the most
-   efficient way to provide steady, predictable support.
+-  **How it works:** Liberapay is a non-profit platform designed for **recurring
+   weekly, monthly, or yearly donations**. It doesn't take a cut of your
+   donation (only payment processing fees apply), making it the most efficient
+   way to provide steady, predictable support.
 
 2. IssueHunt: Bounty-based support
 ----------------------------------

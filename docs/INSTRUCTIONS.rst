@@ -100,13 +100,13 @@ volume keys are not being detected correctly during live setup:
 
    adb shell "setprop zip.microg-unofficial-installer.KEY_TEST_ONLY 1"
 
-When ``KEY_TEST_ONLY`` is enabled, the installer **skips the actual
-installation entirely** and instead runs an interactive hardware-key
-diagnostic. It prompts you to press any button 8 times in a row; for every
-press it displays the raw input event (key code and action) directly on screen
-so you can see exactly which key codes your device reports. Use this to
-diagnose key-detection problems on devices with non-standard hardware buttons,
-or to find the correct key codes for custom input mappings.
+When ``KEY_TEST_ONLY`` is enabled, the installer **skips the actual installation
+entirely** and instead runs an interactive hardware-key diagnostic. It prompts
+you to press any button 8 times in a row; for every press it displays the raw
+input event (key code and action) directly on screen so you can see exactly
+which key codes your device reports. Use this to diagnose key-detection problems
+on devices with non-standard hardware buttons, or to find the correct key codes
+for custom input mappings.
 
 .. warning::
 
@@ -121,14 +121,13 @@ or to find the correct key codes for custom input mappings.
 Installation
 ============
 
-Choose only **one** installation method below that matches your setup and
-follow **only** those steps — do not combine steps from different methods.
+Choose only **one** installation method below that matches your setup and follow
+**only** those steps — do not combine steps from different methods.
 
 Via custom recovery
 -------------------
 
-#. Transfer the flashable zip to your device's internal storage or microSD
-   card.
+#. Transfer the flashable zip to your device's internal storage or microSD card.
 
 #. Reboot into recovery (hold **Power + Volume Down** — exact key combination
    depends on your device).
@@ -166,14 +165,13 @@ Via ``zip-install.sh`` (ADB or terminal, root required, no recovery needed)
 This method installs the zip from a running Android system using
 ``zip-install.sh``.
 
-#. Connect your device via USB with USB debugging enabled *(ADB only — skip
-   if using a terminal app on the device)*.
+#. Connect your device via USB with USB debugging enabled *(ADB only — skip if
+   using a terminal app on the device)*.
 
-#. Open a shell: run ``adb shell`` on the PC or open a **terminal app**
-   directly on the device.
+#. Open a shell: run ``adb shell`` on the PC or open a **terminal app** directly
+   on the device.
 
-#. Transfer the flashable zip to your device's internal storage or microSD
-   card.
+#. Transfer the flashable zip to your device's internal storage or microSD card.
 
 #. Run:
 
@@ -211,8 +209,8 @@ Installation fails or device does not boot
       adb shell "setprop zip.common.DEBUG_LOG 1"
 
    |  Then flash **immediately** without rebooting.
-   |  Logs are saved to ``debug-a5k.log`` on either the microSD card or
-      internal storage.
+   |  Logs are saved to ``debug-a5k.log`` on either the microSD card or internal
+      storage.
 
    **Remember:** ``setprop`` values are lost on reboot — see the Configure_
    section.
