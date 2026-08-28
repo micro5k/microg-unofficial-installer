@@ -15,7 +15,7 @@
 
 readonly SCRIPT_NAME='Android app signing certificate extractor'
 readonly SCRIPT_SHORTNAME='AppSignExt'
-readonly SCRIPT_VERSION='0.1.4'
+readonly SCRIPT_VERSION='0.1.5'
 readonly SCRIPT_AUTHOR='ale5000'
 
 # shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
@@ -76,7 +76,7 @@ get_cert_sha256()
   }
 
   if : "${APKSIGNER_PATH:="$(command -v 'apksigner' || command -v 'apksigner.bat' || :)"}" && test -n "${APKSIGNER_PATH?}"; then
-    _cert_sha256="$("${APKSIGNER_PATH:?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -F -e 'certificate SHA-256 digest:' | cut -d ':' -f '2-' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g;s/:$//')" || return 4
+    _cert_sha256="$("${APKSIGNER_PATH:?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g; s/:$//')" || return 4
   elif : "${KEYTOOL_PATH:="$(command -v 'keytool' || :)"}" && test -n "${KEYTOOL_PATH-}"; then
     _cert_sha256="$("${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' ')" || return 5
   else

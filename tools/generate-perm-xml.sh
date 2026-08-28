@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.9'
+readonly SCRIPT_VERSION='0.3.10'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -417,7 +417,7 @@ get_cert_sha256()
   if test -n "${APKSIGNER_PATH-}"; then
     show_status 'Using apksigner...'
     set_red_color
-    "${APKSIGNER_PATH:?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -F -e 'certificate SHA-256 digest:' | cut -d ':' -f '2-' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g;s/:$//'
+    "${APKSIGNER_PATH:?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g; s/:$//'
   elif test -n "${KEYTOOL_PATH-}"; then
     show_status 'Using keytool...'
     set_red_color
