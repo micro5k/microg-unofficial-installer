@@ -294,9 +294,9 @@ jobs:
               (.coverage | keys_unsorted[]) as $path |
               (.coverage[$path].lines) as $lines |
               "<file path=\"\($path)\">",
-              ( range(0; $lines | length) | 
-                $lines[.] as $val | 
-                select($val != null) | 
+              ( range(0; $lines | length) |
+                $lines[.] as $val |
+                select($val != null) |
                 "  <lineToCover lineNumber=\"\(.+1)\" covered=\"\(if $val > 0 then "true" else "false" end)\"/>"
               ),
               "</file>"
