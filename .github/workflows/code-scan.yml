@@ -13,16 +13,12 @@ on:
       - ".travis.yml"
     branches:
       - "main"
-  schedule:
-    # At 12:00 AM, every 31 days, only in January (UTC)
-    - cron: "0 0 */31 1 *"
 
 jobs:
   pre-requisites:
     name: "Pre-requisites"
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: "${{ github.event_name == 'push' }}"
     outputs:
       dependency-graph-enabled: "${{ steps.dependency-graph.outputs.result }}"
       codacy-token-set: "${{ steps.check-tokens.outputs.CODACY_TOKEN_SET }}"
@@ -33,12 +29,12 @@ jobs:
         id: check-tokens
         shell: bash
         env:
-          CODACY_TOKEN: "${{ secrets.CODACY_PROJECT_TOKEN }}"
+          CODACY_PROJECT_TOKEN: "${{ secrets.CODACY_PROJECT_TOKEN }}"
           SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
         run: |
           # Verifying tokens...
           # Codacy
-          if test -n "${CODACY_TOKEN?}"; then token_set='true'; else token_set='false'; fi
+          if test -n "${CODACY_PROJECT_TOKEN?}"; then token_set='true'; else token_set='false'; fi
           printf 'CODACY_TOKEN_SET=%s\n' "${token_set:?}" 1>> "${GITHUB_OUTPUT?}"
           # SonarQube
           if test -n "${SONAR_TOKEN?}"; then token_set='true'; else token_set='false'; fi
@@ -72,7 +68,7 @@ jobs:
     needs: [pre-requisites]
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: "${{ github.event_name == 'push' && needs.pre-requisites.outputs.dependency-graph-enabled == 'true' }}"
+    if: "${{ needs.pre-requisites.outputs.dependency-graph-enabled == 'true' }}"
     permissions:
       contents: write
 
@@ -123,7 +119,7 @@ jobs:
     needs: [pre-requisites]
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: "${{ github.event_name == 'push' && needs.pre-requisites.outputs.codacy-token-set == 'true' }}"
+    if: "${{ needs.pre-requisites.outputs.codacy-token-set == 'true' }}"
     concurrency:
       group: "${{ github.repository_id }}-${{ github.workflow }}-codacy"
       cancel-in-progress: false
@@ -230,7 +226,7 @@ jobs:
     needs: [pre-requisites]
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    if: "${{ github.event_name == 'push' && needs.pre-requisites.outputs.sonar-token-set == 'true' }}"
+    if: "${{ needs.pre-requisites.outputs.sonar-token-set == 'true' }}"
     permissions:
       contents: read # Needed to checkout the repository (only required for private repositories)
       actions: read
