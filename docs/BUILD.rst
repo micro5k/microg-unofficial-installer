@@ -33,8 +33,8 @@ All build methods require:
 
 Additional requirements depending on the build method:
 
--  **make / pdpmake** — for the ``make`` build method: install the make tool on
-   your system.
+-  **make / pdpmake** — for the ``make`` build method: install the make tool
+   on your system.
 
 -  **Gradle wrapper** — for the ``./gradlew`` build method: no separate
    installation is needed; the wrapper (``gradlew`` / ``gradlew.bat``) included
