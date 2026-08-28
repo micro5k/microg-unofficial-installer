@@ -287,7 +287,7 @@ recovery_flash_end()
 
 clean_empty_exports()
 {
-  local IFS __fn_first_part='' __fn_val=''
+  local __fn_first_part='' __fn_val=''
 
   while IFS='=' read -r __fn_first_part __fn_val; do
     case "${__fn_val}" in

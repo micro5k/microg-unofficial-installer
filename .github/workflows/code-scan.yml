@@ -208,6 +208,14 @@ jobs:
         timeout-minutes: 5
         with:
           command: "validate ./results-combined.sarif"
+      - name: "Store the SARIF file"
+        uses: actions/upload-artifact@v7
+        timeout-minutes: 10
+        with:
+          path: "${{ github.workspace }}/results-combined.sarif"
+          retention-days: 1
+          archive: false
+          overwrite: false
       - name: "Upload SARIF results file to GitHub"
         uses: github/codeql-action/upload-sarif@v4
         timeout-minutes: 10
