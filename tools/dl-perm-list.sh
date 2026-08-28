@@ -17,7 +17,7 @@
 
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.6'
+readonly SCRIPT_VERSION='0.3.7'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -151,13 +151,18 @@ dl()
 
 download_and_parse_permissions()
 {
-  printf '%s\n' '<manifest xmlns:android="http://schemas.android.com/apk/res/android">' 1> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" || return "${?}" # NOSONAR
+  {
+    printf '%s\n%s\n%s\n%s\n' '<!--' ' SPDX-FileCopyrightText: 2006 The Android Open Source Project' ' SPDX-License-Identifier: Apache-2.0' '-->' || return "${?}"
+    printf '%s\n' '<manifest xmlns:android="http://schemas.android.com/apk/res/android">' || return "${?}"
+  } 1> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" || return "${?}"
 
   dl "${BASE_URL:?}+/refs/tags/${2:?}/core/res/AndroidManifest.xml?format=text" '-' |
     base64 -d |
     tr -s -- '\n' ' ' |
     sed -e 's|>|>\n|g' |
-    grep -F -e '<permission' 1>> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" || return "${?}"
+    grep -F -e '<permission' |
+    sed -e 's|">|" />|g' 1>> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" ||
+    return "${?}"
 
   printf '%s\n' '</manifest>' 1>> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" || return "${?}"
 }
