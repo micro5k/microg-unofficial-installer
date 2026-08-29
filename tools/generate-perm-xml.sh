@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.12'
+readonly SCRIPT_VERSION='0.3.13'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -402,7 +402,7 @@ parse_perms_and_generate_xml_files()
         append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'privapp-permissions' '' '' || ui_error "Failed to append the '${NAME?}' permission on '${_filename?}'"
       done
       terminate_xml 'privapp-permissions'
-    } 1> "${BASE_DIR:?}/output/${_filename:?}"
+    } 1> "${OUTPUT_DIR:?}/${_filename:?}"
   fi
   if test -n "${_dangerous_perm_list?}"; then
     _filename="default-permissions-${_base_name:?}.xml"
@@ -414,7 +414,7 @@ parse_perms_and_generate_xml_files()
       done
       unset LAST_PERM_GROUP
       terminate_xml 'default-permissions'
-    } 1> "${BASE_DIR:?}/output/${_filename:?}"
+    } 1> "${OUTPUT_DIR:?}/${_filename:?}"
   fi
 }
 
@@ -439,7 +439,7 @@ find_android_build_tool()
 
   if _tool_path="$(command -v "${1:?}")" && test -n "${_tool_path?}"; then
     :
-  elif test -n "${ANDROID_SDK_ROOT-}" && test -d "${ANDROID_SDK_ROOT:?}/build-tools" && _tool_path="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${_tool_path?}"; then
+  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME:?}/build-tools" && _tool_path="$(find "${ANDROID_HOME:?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${_tool_path?}"; then
     :
   else
     return 1
@@ -452,9 +452,29 @@ main()
 {
   local status backup_ifs base_name cmd_output pkg_name perm_list cert_sha256=''
 
-  NO_CERT_DIGEST="${NO_CERT_DIGEST:-false}"
-
   fix_posix_emulation_if_needed
+
+  # Global configuration (can be overridden via environment variables)
+  export OUTPUT_DIR="${OUTPUT_DIR-}"
+  export AAPT_PATH="${AAPT_PATH-}"
+  export APKSIGNER_PATH="${APKSIGNER_PATH-}"
+  export KEYTOOL_PATH="${KEYTOOL_PATH-}"
+  export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT-}}"
+
+  # Set the path of Android SDK if not already set
+  if test -z "${ANDROID_HOME?}"; then
+    if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA?}/Android/Sdk"; then
+      ANDROID_HOME="${LOCALAPPDATA?}/Android/Sdk" # Windows
+    elif test -n "${HOME-}" && test -d "${HOME?}/Library/Android/sdk"; then
+      ANDROID_HOME="${HOME?}/Library/Android/sdk" # macOS
+    elif test -n "${HOME-}" && test -d "${HOME?}/.local/share/android/sdk"; then
+      ANDROID_HOME="${HOME?}/.local/share/android/sdk" # Linux (XDG)
+    elif test -n "${HOME-}" && test -d "${HOME?}/Android/Sdk"; then
+      ANDROID_HOME="${HOME?}/Android/Sdk" # Linux (Standard)
+    elif test -d '/usr/lib/android-sdk'; then
+      ANDROID_HOME='/usr/lib/android-sdk' # Linux (APT)
+    fi
+  fi
 
   if DATA_DIR="$(find_data_dir)" && test -d "${DATA_DIR:?}/perms"; then
     :
@@ -480,43 +500,31 @@ main()
     IFS="${backup_ifs?}"
   }
 
-  BASE_DIR="$(realpath 2> /dev/null . || readlink -f .)" || return 7
-  test -d "${BASE_DIR:?}/output" || mkdir -p -- "${BASE_DIR:?}/output" || return 8
+  BASE_DIR="$(realpath 2> /dev/null . || readlink 2> /dev/null -f .)" || return 7
 
-  # Set the path of Android SDK if not already set
-  export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME-}}"
-  if test -z "${ANDROID_SDK_ROOT?}"; then
-    if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA:?}/Android/Sdk"; then
-      ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk" # Windows
-    elif test -n "${HOME-}" && test -d "${HOME:?}/Android/Sdk"; then
-      ANDROID_SDK_ROOT="${HOME:?}/Android/Sdk" # Linux
-    elif test -n "${HOME-}" && test -d "${HOME:?}/Library/Android/sdk"; then
-      ANDROID_SDK_ROOT="${HOME:?}/Library/Android/sdk" # macOS
-    elif test -d '/usr/lib/android-sdk'; then
-      ANDROID_SDK_ROOT='/usr/lib/android-sdk' # Linux (apt)
-    fi
-  fi
+  test -n "${OUTPUT_DIR?}" || OUTPUT_DIR="${BASE_DIR:?}/output"
+  test -d "${OUTPUT_DIR:?}" || mkdir -p -- "${OUTPUT_DIR:?}" || return 8
 
-  if test -n "${AAPT_PATH-}" || AAPT_PATH="$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt')"; then
+  if test -n "${AAPT_PATH?}" || AAPT_PATH="$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt')"; then
     :
   else
     show_error "Neither aapt2 nor aapt were found. You need to set AAPT_PATH"
     return 255
   fi
 
-  if test -n "${APKSIGNER_PATH-}" || APKSIGNER_PATH="$(find_android_build_tool 'apksigner' || command -v 'apksigner.bat')"; then
+  if test -n "${APKSIGNER_PATH?}" || APKSIGNER_PATH="$(find_android_build_tool 'apksigner' || command -v 'apksigner.bat')"; then
     :
-  elif test -n "${KEYTOOL_PATH-}" || KEYTOOL_PATH="$(command -v 'keytool')"; then
+  elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command -v 'keytool')"; then
     :
   else
     show_error "Neither apksigner nor keytool were found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH"
     return 255
   fi
 
-  printf 1>&2 '%s\n' "Output dir: ${BASE_DIR:?}/output"
+  printf 1>&2 '%s\n' "Output dir: ${OUTPUT_DIR:?}"
 
   status=0
-  while test "${#}" -gt 0; do
+  while test "$#" -gt 0; do
     base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
     printf 1>&2 '\n%s\n' "Filename: ${base_name:?}"
 
@@ -561,30 +569,32 @@ main()
   return "${status:?}"
 }
 
+execute_script='true'
 STATUS=0
 SCRIPT_VERBOSE='false'
 PLACEHOLDERS='false'
-execute_script='true'
+export NO_CERT_DIGEST='false'
 
-while test "${#}" -gt 0; do
+while test "$#" -gt 0; do
   case "${1?}" in
     -V | --version)
+      execute_script='false'
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
       printf '%s\n' "Copyright (C) 2025 ${SCRIPT_AUTHOR:?}"
       printf '%s\n\n' 'License Apache v2 or GPLv3+ with APE'
       printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
       # REUSE-IgnoreEnd
-      execute_script='false'
       ;;
 
     -v) SCRIPT_VERBOSE='true' ;;
-
     --use-placeholders) PLACEHOLDERS='true' ;;
+    --no-cert-digest) NO_CERT_DIGEST='true' ;;
 
-    -) break ;;
-
-    --)
+    -) # Read from STDIN (implies end of options)
+      break
+      ;;
+    --) # End of options / Positional arguments follow
       shift
       break
       ;;
@@ -598,7 +608,6 @@ while test "${#}" -gt 0; do
       execute_script='false'
       STATUS=2
       ;;
-
     *) break ;;
   esac
 
@@ -608,7 +617,7 @@ done
 if test "${execute_script:?}" = 'true'; then
   show_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
-  if test "${#}" -eq 0; then set -- ''; fi
+  if test "$#" -eq 0; then set -- ''; fi
   main "${@}" || STATUS="${?}"
   reset_color
 fi
