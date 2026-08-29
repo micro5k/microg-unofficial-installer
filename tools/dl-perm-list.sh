@@ -151,10 +151,12 @@ dl()
 
 download_and_parse_permissions()
 {
+  # REUSE-IgnoreStart
   {
     printf '%s\n%s\n%s\n%s\n' '<!--' ' SPDX-FileCopyrightText: 2006 The Android Open Source Project' ' SPDX-License-Identifier: Apache-2.0' '-->' || return "${?}"
     printf '%s\n' '<manifest xmlns:android="http://schemas.android.com/apk/res/android">' || return "${?}"
   } 1> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" || return "${?}"
+  # REUSE-IgnoreEnd
 
   dl "${BASE_URL:?}+/refs/tags/${2:?}/core/res/AndroidManifest.xml?format=text" '-' |
     base64 -d |

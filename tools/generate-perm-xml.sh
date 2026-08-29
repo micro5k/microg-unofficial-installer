@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.10'
+readonly SCRIPT_VERSION='0.3.11'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -168,6 +168,8 @@ is_system_permission()
 
 begin_xml()
 {
+  local __fn_cert_digest=''
+
   # REUSE-IgnoreStart
   printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>'
   printf '%s\n' '<!--'
@@ -177,12 +179,16 @@ begin_xml()
   printf '%s\n\n' '-->'
   # REUSE-IgnoreEnd
 
+  if test "${NO_CERT_DIGEST:?}" = 'false'; then
+    __fn_cert_digest=" sha256-cert-digest=\"${2:?}\""
+  fi
+
   if test "${3:?}" = 'privapp-permissions'; then
     printf '%s\n' '<permissions>'
-    printf '%s\n' "    <privapp-permissions package=\"${1:?}\" sha256-cert-digest=\"${2:?}\">"
+    printf '%s\n' "    <privapp-permissions package=\"${1:?}\"${__fn_cert_digest?}>"
   elif test "${3:?}" = 'default-permissions'; then
     printf '%s\n' '<exceptions>'
-    printf '%s\n' "    <exception package=\"${1:?}\" sha256-cert-digest=\"${2:?}\">"
+    printf '%s\n' "    <exception package=\"${1:?}\"${__fn_cert_digest?}>"
   else
     return 1
   fi
@@ -265,7 +271,7 @@ parse_perms_and_generate_xml_files()
 
   _base_name="${1%".apk"}"
   _pkg_name="${2:?}"
-  _cert_sha256="${3:?}"
+  _cert_sha256="${3?}"
 
   test ! -t 0 || ui_error "Failed to retrieve the permissions list"
   _input="$(cat)" || ui_error "Failed to retrieve the permissions list"
@@ -391,7 +397,7 @@ parse_perms_and_generate_xml_files()
   if test -n "${_privileged_perm_list?}"; then
     _filename="privapp-permissions-${_base_name:?}.xml"
     {
-      begin_xml "${_pkg_name:?}" "${_cert_sha256:?}" 'privapp-permissions'
+      begin_xml "${_pkg_name:?}" "${_cert_sha256?}" 'privapp-permissions'
       printf '%s' "${_privileged_perm_list:?}" | while IFS='|' read -r NAME MIN_API; do
         append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'privapp-permissions' '' '' || ui_error "Failed to append the '${NAME?}' permission on '${_filename?}'"
       done
@@ -401,7 +407,7 @@ parse_perms_and_generate_xml_files()
   if test -n "${_dangerous_perm_list?}"; then
     _filename="default-permissions-${_base_name:?}.xml"
     {
-      begin_xml "${_pkg_name:?}" "${_cert_sha256:?}" 'default-permissions'
+      begin_xml "${_pkg_name:?}" "${_cert_sha256?}" 'default-permissions'
       LAST_PERM_GROUP=''
       printf '%s' "${_dangerous_perm_list:?}" | LC_ALL=C sort | while IFS='|' read -r GROUP _ NAME WHITELIST MIN_API; do
         append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'default-permissions' "${GROUP:?}" "${WHITELIST:?}" || ui_error "Failed to append the '${NAME?}' permission on '${_filename?}'"
@@ -444,7 +450,9 @@ find_android_build_tool()
 
 main()
 {
-  local status backup_ifs base_name cmd_output pkg_name perm_list cert_sha256
+  local status backup_ifs base_name cmd_output pkg_name perm_list cert_sha256=''
+
+  NO_CERT_DIGEST="${NO_CERT_DIGEST:-false}"
 
   fix_posix_emulation_if_needed
 
@@ -525,15 +533,17 @@ main()
     perm_list="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission: ' | cut -d "'" -f '2' -s | LC_ALL=C sort)" || return 11
     cmd_output=''
 
-    cert_sha256="$(get_cert_sha256 "${1:?}")" || {
-      status=12
-      show_error "get_cert_sha256() failed"
-      shift || return 254
-      continue
-    }
+    if test "${NO_CERT_DIGEST:?}" = 'false'; then
+      cert_sha256="$(get_cert_sha256 "${1:?}")" || {
+        status=12
+        show_error "get_cert_sha256() failed"
+        shift || return 254
+        continue
+      }
+    fi
 
     show_status 'Parsing...'
-    printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name:?}" "${pkg_name:?}" "${cert_sha256:?}" || {
+    printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name:?}" "${pkg_name:?}" "${cert_sha256?}" || {
       status="${?}"
       show_error "Parsing failed"
     }
