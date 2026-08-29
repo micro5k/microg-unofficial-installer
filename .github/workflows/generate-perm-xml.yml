@@ -24,22 +24,24 @@ jobs:
         uses: actions/checkout@v7
         with:
           lfs: true
-      - name: "Use cache"
+      - name: "Use perms cache"
         id: cache-step
         uses: actions/cache@v6
         timeout-minutes: 5
         with:
           key: "perms-${{ hashFiles('tools/dl-perm-list.sh') }}"
-          restore-keys: "perms-"
           path: "cache/tools/perms"
           enableCrossOsArchive: true
       - name: "Execute script"
         shell: bash
         timeout-minutes: 10
+        env:
+          CACHE_HIT: "${{ steps.cache-step.outputs.cache-hit }}"
         run: |
           # Executing script...
+          export OUTPUT_DIR='./output'
           export TOOLS_DATA_DIR='./cache/tools'
-          if test ! -d './cache/tools/perms' || '${{ steps.cache-step.outputs.cache-hit != 'true' }}'; then
+          if test ! -f './cache/tools/perms/.completed' || test "${CACHE_HIT?}" != 'true'; then
             './tools/dl-perm-list.sh' || exit "${?}"
           fi
           find './zip-content' './cache' -name '*.apk' | './tools/generate-perm-xml.sh' --use-placeholders - || exit "${?}"
