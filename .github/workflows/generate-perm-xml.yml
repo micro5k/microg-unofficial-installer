@@ -41,7 +41,7 @@ jobs:
           # Executing script...
           export OUTPUT_DIR='./output'
           export TOOLS_DATA_DIR='./cache/tools'
-          if test ! -f './cache/tools/perms/.completed' || test "${CACHE_HIT?}" != 'true'; then
+          if test "${CACHE_HIT?}" != 'true' || test ! -f './cache/tools/perms/.completed'; then
             './tools/dl-perm-list.sh' || exit "${?}"
           fi
           find './zip-content' './cache' -name '*.apk' | './tools/generate-perm-xml.sh' --use-placeholders - || exit "${?}"
