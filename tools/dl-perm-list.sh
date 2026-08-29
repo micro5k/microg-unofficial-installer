@@ -17,7 +17,7 @@
 
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.8'
+readonly SCRIPT_VERSION='0.3.9'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -160,7 +160,7 @@ download_and_parse_permissions()
   # REUSE-IgnoreEnd
 
   dl "${BASE_URL:?}+/refs/tags/${2:?}/core/res/AndroidManifest.xml?format=text" '-' |
-    base64 -d |
+    base64 -d - |
     tr -s -- '\n' ' ' |
     sed -e 's|>|>\n|g' |
     grep -F -e '<permission' |
@@ -170,19 +170,28 @@ download_and_parse_permissions()
   printf '%s\n' '</manifest>' 1>> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" || return "${?}"
 }
 
+clean_perms_dir_if_empty()
+{
+  if test -n "${DATA_DIR-}" && test -d "${DATA_DIR?}/perms"; then
+    rmdir 2> /dev/null -- "${DATA_DIR?}/perms" || :
+  fi
+}
+
 main()
 {
   local api='' tag=''
 
   fix_posix_emulation_if_needed
 
+  DATA_DIR="$(find_data_dir || create_and_return_data_dir)" || return 1
+
   command 1> /dev/null -v "${WGET_CMD:?}" || {
     show_error 'Missing: wget'
     return 255
   }
 
-  DATA_DIR="$(find_data_dir || create_and_return_data_dir)" || return 1
   test -d "${DATA_DIR:?}/perms" || mkdir -p -- "${DATA_DIR:?}/perms" || return 1
+  rm -f -- "${DATA_DIR:?}/perms/.completed"
 
   for api in $(seq -- 23 "${MAX_API:?}"); do
     tag="$(eval " printf '%s\n' \"\${TAG_API_${api:?}:?}\" ")" || {
@@ -192,9 +201,12 @@ main()
     printf '%s\n' "API ${api:?}: ${tag:?}"
     download_and_parse_permissions "${api:?}" "${tag:?}" || {
       printf '%s\n' "Failed to download/parse XML for API ${api?}"
+      rm -f -- "${DATA_DIR:?}/perms/base-permissions-api-${api:?}.xml"
       return 5
     }
   done
+
+  touch -- "${DATA_DIR:?}/perms/.completed"
 }
 
 execute_script='true'
@@ -240,6 +252,7 @@ if test "${execute_script:?}" = 'true'; then
 
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
+  clean_perms_dir_if_empty
 fi
 
 pause_if_needed "${STATUS:?}"
