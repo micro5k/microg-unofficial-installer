@@ -19,9 +19,9 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_YEAR='2025'
+readonly SCRIPT_VERSION='0.3.15'
 readonly SCRIPT_AUTHOR='ale5000'
-readonly SCRIPT_VERSION='0.3.14'
+readonly SCRIPT_YEAR='2025'
 
 set -u
 # shellcheck disable=SC3040,SC3041,SC2015
@@ -572,8 +572,8 @@ main()
 
 execute_script='true'
 STATUS=0
-SCRIPT_VERBOSE='false'
-PLACEHOLDERS='false'
+export SCRIPT_VERBOSE='false'
+export PLACEHOLDERS='false'
 export NO_CERT_DIGEST='false'
 
 while test "$#" -gt 0; do
@@ -618,7 +618,7 @@ done
 if test "${execute_script:?}" = 'true'; then
   show_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
-  if test "$#" -eq 0; then set -- ''; fi
+  test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
   reset_color
 fi

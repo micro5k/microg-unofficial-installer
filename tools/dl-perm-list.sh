@@ -17,8 +17,9 @@
 
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.7'
+readonly SCRIPT_VERSION='0.3.8'
 readonly SCRIPT_AUTHOR='ale5000'
+readonly SCRIPT_YEAR='2025'
 
 set -u
 # shellcheck disable=SC3040,SC3041,SC2015
@@ -171,7 +172,7 @@ download_and_parse_permissions()
 
 main()
 {
-  local api tag
+  local api='' tag=''
 
   fix_posix_emulation_if_needed
 
@@ -196,41 +197,39 @@ main()
   done
 }
 
-STATUS=0
 execute_script='true'
+STATUS=0
 
-while test "${#}" -gt 0; do
+while test "$#" -gt 0; do
   case "${1?}" in
     -V | --version)
+      execute_script='false'
       # REUSE-IgnoreStart
-      printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' "Copyright (C) 2025 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n\n' 'License Apache v2 or GPLv3+ with APE'
+      printf '%s\n' "${SCRIPT_NAME:?}, version ${SCRIPT_VERSION:?}"
+      printf '%s\n' "Copyright (C) ${SCRIPT_YEAR:?} ${SCRIPT_AUTHOR:?}"
+      printf '%s\n\n' 'License Apache-2.0 or GPLv3+ with APE.'
       printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
       # REUSE-IgnoreEnd
-      execute_script='false'
       ;;
 
-    --)
+    -) # Read from STDIN (implies end of options)
+      break
+      ;;
+    --) # End of options / Positional arguments follow
       shift
       break
       ;;
-
     --*)
+      execute_script='false'
+      STATUS=2
       printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
-      execute_script='false'
-      STATUS=2
       ;;
-
     -*)
-      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
       execute_script='false'
       STATUS=2
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
       ;;
-
-    *)
-      break
-      ;;
+    *) break ;;
   esac
 
   shift
@@ -239,7 +238,7 @@ done
 if test "${execute_script:?}" = 'true'; then
   show_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
-  if test "${#}" -eq 0; then set -- ''; fi
+  test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
 fi
 
