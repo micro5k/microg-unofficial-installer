@@ -21,7 +21,7 @@ readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
 readonly SCRIPT_YEAR='2025'
 readonly SCRIPT_AUTHOR='ale5000'
-readonly SCRIPT_VERSION='0.3.13'
+readonly SCRIPT_VERSION='0.3.14'
 
 set -u
 # shellcheck disable=SC3040,SC3041,SC2015
@@ -581,9 +581,9 @@ while test "$#" -gt 0; do
     -V | --version)
       execute_script='false'
       # REUSE-IgnoreStart
-      printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
+      printf '%s\n' "${SCRIPT_NAME:?}, version ${SCRIPT_VERSION:?}"
       printf '%s\n' "Copyright (C) ${SCRIPT_YEAR:?} ${SCRIPT_AUTHOR:?}"
-      printf '%s\n\n' 'License Apache v2 or GPLv3+ with APE'
+      printf '%s\n\n' 'License Apache-2.0 or GPLv3+ with APE.'
       printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
       # REUSE-IgnoreEnd
       ;;
