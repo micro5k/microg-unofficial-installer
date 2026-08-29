@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.15'
+readonly SCRIPT_VERSION='0.3.16'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -513,13 +513,15 @@ main()
     return 255
   fi
 
-  if test -n "${APKSIGNER_PATH?}" || APKSIGNER_PATH="$(find_android_build_tool 'apksigner' || command -v 'apksigner.bat')"; then
-    :
-  elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command -v 'keytool')"; then
-    :
-  else
-    show_error "Neither apksigner nor keytool were found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH"
-    return 255
+  if test "${NO_CERT_DIGEST:?}" = 'false'; then
+    if test -n "${APKSIGNER_PATH?}" || APKSIGNER_PATH="$(find_android_build_tool 'apksigner' || command -v 'apksigner.bat')"; then
+      :
+    elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command -v 'keytool')"; then
+      :
+    else
+      show_error "Neither apksigner nor keytool were found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH"
+      return 255
+    fi
   fi
 
   printf 1>&2 '%s\n' "Output dir: ${OUTPUT_DIR:?}"
