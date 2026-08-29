@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.11'
+readonly SCRIPT_VERSION='0.3.12'
 readonly SCRIPT_AUTHOR='ale5000'
 
 set -u
@@ -537,6 +537,13 @@ main()
       cert_sha256="$(get_cert_sha256 "${1:?}")" || {
         status=12
         show_error "get_cert_sha256() failed"
+        shift || return 254
+        continue
+      }
+
+      test "${#cert_sha256}" -eq 95 || {
+        status=13
+        show_error "get_cert_sha256() returned wrong digest"
         shift || return 254
         continue
       }
