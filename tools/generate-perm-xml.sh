@@ -19,8 +19,9 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.13'
+readonly SCRIPT_YEAR='2025'
 readonly SCRIPT_AUTHOR='ale5000'
+readonly SCRIPT_VERSION='0.3.13'
 
 set -u
 # shellcheck disable=SC3040,SC3041,SC2015
@@ -581,7 +582,7 @@ while test "$#" -gt 0; do
       execute_script='false'
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' "Copyright (C) 2025 ${SCRIPT_AUTHOR:?}"
+      printf '%s\n' "Copyright (C) ${SCRIPT_YEAR:?} ${SCRIPT_AUTHOR:?}"
       printf '%s\n\n' 'License Apache v2 or GPLv3+ with APE'
       printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
       # REUSE-IgnoreEnd
@@ -599,14 +600,14 @@ while test "$#" -gt 0; do
       break
       ;;
     --*)
-      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
       execute_script='false'
       STATUS=2
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
       ;;
     -*)
-      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
       execute_script='false'
       STATUS=2
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
       ;;
     *) break ;;
   esac
