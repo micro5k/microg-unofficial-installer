@@ -17,7 +17,7 @@
 
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.9'
+readonly SCRIPT_VERSION='0.3.10'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -145,31 +145,6 @@ create_and_return_data_dir()
   printf '%s\n' "${_path:?}"
 }
 
-dl()
-{
-  "${WGET_CMD:?}" -q -O "${2:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --no-cache -- "${1:?}" || return "${?}"
-}
-
-download_and_parse_permissions()
-{
-  # REUSE-IgnoreStart
-  {
-    printf '%s\n%s\n%s\n%s\n' '<!--' ' SPDX-FileCopyrightText: 2006 The Android Open Source Project' ' SPDX-License-Identifier: Apache-2.0' '-->' || return "${?}"
-    printf '%s\n' '<manifest xmlns:android="http://schemas.android.com/apk/res/android">' || return "${?}"
-  } 1> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" || return "${?}"
-  # REUSE-IgnoreEnd
-
-  dl "${BASE_URL:?}+/refs/tags/${2:?}/core/res/AndroidManifest.xml?format=text" '-' |
-    base64 -d - |
-    tr -s -- '\n' ' ' |
-    sed -e 's|>|>\n|g' |
-    grep -F -e '<permission' |
-    sed -e 's|">|" />|g' 1>> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" ||
-    return "${?}"
-
-  printf '%s\n' '</manifest>' 1>> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml" || return "${?}"
-}
-
 clean_perms_dir_if_empty()
 {
   if test -n "${DATA_DIR-}" && test -d "${DATA_DIR?}/perms"; then
@@ -177,11 +152,66 @@ clean_perms_dir_if_empty()
   fi
 }
 
+dl()
+{
+  "${WGET_CMD:?}" -q -O "${2:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --no-cache -- "${1:?}" || return "${?}"
+}
+
+fetch_and_extract_manifest_permissions()
+{
+  {
+    # REUSE-IgnoreStart
+    printf '%s\n%s\n%s\n%s\n' '<!--' ' SPDX-FileCopyrightText: 2006 The Android Open Source Project' ' SPDX-License-Identifier: Apache-2.0' '-->' || return "${?}"
+    printf '%s\n' '<manifest xmlns:android="http://schemas.android.com/apk/res/android">' || return "${?}"
+    # REUSE-IgnoreEnd
+
+    dl "${BASE_URL:?}+/refs/tags/${2:?}/core/res/AndroidManifest.xml?format=text" '-' |
+      base64 -d - |
+      tr -s -- '\n' ' ' |
+      sed -e 's|>|>\n|g' |
+      grep -F -e '<permission' |
+      sed -e 's|">|" />|g' ||
+      return "${?}"
+
+    printf '%s\n' '</manifest>'
+  } 1> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml"
+
+  return "${?}"
+}
+
+fetch_and_extract_manifest_permissions_with_retry()
+{
+  local __fn_attempts_left="${MAX_ATTEMPTS:?}"
+
+  while true; do
+    if fetch_and_extract_manifest_permissions "${@}"; then return 0; fi
+
+    __fn_attempts_left="$((__fn_attempts_left - 1))" || return "${?}"
+    test "${__fn_attempts_left}" -gt 0 || break
+
+    sleep "${RETRY_DELAY:?}" || return "${?}"
+  done
+
+  return 1
+}
+
 main()
 {
   local api='' tag=''
 
   fix_posix_emulation_if_needed
+
+  # Global configuration (can be overridden via environment variables)
+  export REQUEST_DELAY="${REQUEST_DELAY-}" # Delay to wait after a successful request
+  export RETRY_DELAY="${RETRY_DELAY-}"     # Delay to wait after a failed request before a retry
+  export MAX_ATTEMPTS="${MAX_ATTEMPTS:-3}" # Maximum number of total attempts allowed (per API level)
+
+  if test -z "${REQUEST_DELAY?}"; then
+    if test "${CI:-false}" = 'false'; then REQUEST_DELAY='0.2'; else REQUEST_DELAY='1'; fi
+  fi
+  if test -z "${RETRY_DELAY?}"; then
+    if test "${CI:-false}" = 'false'; then RETRY_DELAY='5'; else RETRY_DELAY='15'; fi
+  fi
 
   DATA_DIR="$(find_data_dir || create_and_return_data_dir)" || return 1
 
@@ -199,11 +229,12 @@ main()
       return 4
     }
     printf '%s\n' "API ${api:?}: ${tag:?}"
-    download_and_parse_permissions "${api:?}" "${tag:?}" || {
+    fetch_and_extract_manifest_permissions_with_retry "${api:?}" "${tag:?}" || {
       printf '%s\n' "Failed to download/parse XML for API ${api?}"
       rm -f -- "${DATA_DIR:?}/perms/base-permissions-api-${api:?}.xml"
       return 5
     }
+    sleep "${REQUEST_DELAY:?}" || return "${?}"
   done
 
   touch -- "${DATA_DIR:?}/perms/.completed"
