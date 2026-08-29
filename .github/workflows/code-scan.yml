@@ -118,7 +118,7 @@ jobs:
     name: "Codacy"
     needs: [pre-requisites]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     if: "${{ needs.pre-requisites.outputs.codacy-token-set == 'true' }}"
     concurrency:
       group: "${{ github.repository_id }}-${{ github.workflow }}-codacy"
@@ -146,7 +146,7 @@ jobs:
           path: "${{ env.DOCKER_IMAGE_PATH }}"
       - name: "Download Docker image if not cached"
         shell: bash
-        timeout-minutes: 10
+        timeout-minutes: 15
         if: "${{ steps.docker-cache.outputs.cache-hit != 'true' }}"
         run: |
           docker pull "codacy/codacy-analysis-cli:${CODACY_ANALYSIS_CLI_VERSION:?}"
@@ -160,7 +160,7 @@ jobs:
           rm -f -- "${DOCKER_IMAGE_PATH:?}"
       - name: "Codacy analysis"
         uses: codacy/codacy-analysis-cli-action@v4
-        timeout-minutes: 15
+        timeout-minutes: 20
         env:
           # Must be explicitly passed to this step, otherwise the action defaults to its own version
           CODACY_ANALYSIS_CLI_VERSION: "${{ env.CODACY_ANALYSIS_CLI_VERSION }}"
