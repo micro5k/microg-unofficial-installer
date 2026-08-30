@@ -20,22 +20,33 @@ jobs:
       contents: read # Needed to checkout the repository (only required for private repositories)
 
     steps:
-      - name: "Checkout sources"
+      - name: "Checkout repo"
         uses: actions/checkout@v7
         with:
+          path: "./repo"
           lfs: true
+          sparse-checkout: |
+            **/*.apk
+          sparse-checkout-cone-mode: false
+      - name: "Checkout scripts"
+        uses: actions/checkout@v7
+        timeout-minutes: 5
+        with:
+          path: "./scripts-repo"
+          repository: "micro5k/microg-unofficial-installer"
+          persist-credentials: false
+          lfs: false
           sparse-checkout: |
             tools/dl-perm-list.sh
             tools/generate-perm-xml.sh
-            **/*.apk
           sparse-checkout-cone-mode: false
       - name: "Use perms cache"
         id: perms-cache
         uses: actions/cache@v6
         timeout-minutes: 5
         with:
-          key: "perms-${{ hashFiles('tools/dl-perm-list.sh') }}"
-          path: "cache/tools/perms"
+          key: "perms-${{ hashFiles('scripts-repo/tools/dl-perm-list.sh') }}"
+          path: "cache/perms"
           enableCrossOsArchive: true
       - name: "Execute scripts"
         shell: bash
@@ -44,20 +55,20 @@ jobs:
           CACHE_HIT: "${{ steps.perms-cache.outputs.cache-hit }}"
         run: |
           # Executing scripts...
-          export OUTPUT_DIR='./output'
-          export TOOLS_DATA_DIR='./cache/tools'
-          if test "${CACHE_HIT?}" != 'true' || test ! -f './cache/tools/perms/.completed'; then
-            './tools/dl-perm-list.sh' || exit "${?}"
+          export OUTPUT_DIR='./scripts-repo/output'
+          export TOOLS_DATA_DIR='./cache'
+          if test "${CACHE_HIT?}" != 'true' || test ! -f './cache/perms/.completed'; then
+            './scripts-repo/tools/dl-perm-list.sh' || exit "${?}"
           fi
-          set -- './zip-content' || exit "${?}"
+          set -- './repo/zip-content' || exit "${?}"
           test ! -d './cache/build' || set -- "${@}" './cache/build' || exit "${?}"
-          find "${@}" -name '*.apk' | './tools/generate-perm-xml.sh' --use-placeholders - || exit "${?}"
+          find "${@}" -name '*.apk' | './scripts-repo/tools/generate-perm-xml.sh' --use-placeholders - || exit "${?}"
       - name: "Store artifacts"
         uses: actions/upload-artifact@v7
         timeout-minutes: 10
         with:
           name: "XML permissions"
-          path: "${{ github.workspace }}/output/*.xml"
+          path: "${{ github.workspace }}/scripts-repo/output/*.xml"
           retention-days: 10
           overwrite: false
           if-no-files-found: "error"
@@ -74,7 +85,11 @@ jobs:
     steps:
       - name: "Checkout file"
         uses: actions/checkout@v7
+        timeout-minutes: 5
         with:
+          path: "./scripts-repo"
+          repository: "micro5k/microg-unofficial-installer"
+          persist-credentials: false
           lfs: false
           sparse-checkout: |
             tools/dl-perm-list.sh
@@ -83,11 +98,11 @@ jobs:
         uses: actions/cache/restore@v6
         timeout-minutes: 5
         with:
-          key: "perms-${{ hashFiles('tools/dl-perm-list.sh') }}"
-          path: "cache/tools/perms"
+          key: "perms-${{ hashFiles('scripts-repo/tools/dl-perm-list.sh') }}"
+          path: "cache/perms"
           enableCrossOsArchive: true
           lookup-only: true
-      - name: "Keep workflow alive"
+      - name: "Keep this workflow alive"
         uses: actions/github-script@v9
         timeout-minutes: 5
         env:
