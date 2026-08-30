@@ -1571,4 +1571,4 @@ if test "${execute_script}" = 'true'; then
 fi
 
 clear_env
-pause_if_needed "${STATUS?}"
+pause_if_needed "${STATUS}"
