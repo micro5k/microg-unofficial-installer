@@ -15,7 +15,7 @@ aligned_print()
 }
 
 printf '%s\n' "${MODULE_NAME:?} help"
-printf '%s\n\n' 'Licensed under GPLv3+ with APE'
+printf '%s\n\n' 'Licensed under GPLv3+ with APE.'
 
 aligned_print 'COMMAND' 'DESCRIPTION'
 aligned_print '-------' '-----------'

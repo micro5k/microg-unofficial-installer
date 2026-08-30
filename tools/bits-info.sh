@@ -21,8 +21,9 @@
 
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.35'
+SCRIPT_VERSION='1.5.36'
 SCRIPT_AUTHOR='ale5000'
+SCRIPT_YEAR='2024'
 
 ### CONFIGURATION ###
 
@@ -697,7 +698,7 @@ detect_bitness_of_files()
   # Detect usable utility
   : "${HEXDUMP_CMD:=$(detect_hex_dump_cmd || :)}"
 
-  if test "${1:-empty}" = '-' && test "${#}" -eq 1; then
+  if test "${1:-empty}" = '-' && test "$#" -eq 1; then
 
     (
       _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
@@ -729,11 +730,11 @@ detect_bitness_of_files()
     LC_ALL='C' # We only use bytes and not characters
     export LC_ALL
 
-    if test "${#}" -le 1; then
+    if test "$#" -le 1; then
       detect_bitness_of_single_file "${1-}" || _dbof_ret_code="${?}"
     else
       test -n "${1}" || shift
-      while test "${#}" -gt 0; do
+      while test "$#" -gt 0; do
         printf '%s: ' "$1"
         detect_bitness_of_single_file "$1" || _dbof_ret_code="$((_dbof_ret_code + 1))"
         shift
@@ -916,7 +917,7 @@ get_applet_name()
       # - /bin/busybox ash
       # - /bin/ash
 
-      if test "${#}" -gt 0; then
+      if test "$#" -gt 0; then
         for _gan_applet in bash lash msh hush ash osh ysh oil sh; do
           if test "${2:-empty}" = "${_gan_applet}"; then
             : # Found
@@ -1478,18 +1479,19 @@ prefer_included_utilities=0
 no_pause=0
 STATUS=0
 
-while test "${#}" -gt 0; do
+while test "$#" -gt 0; do
   case "${1}" in
     -V | --version)
-      # REUSE-IgnoreStart
-      printf '%s\n' "${SCRIPT_NAME} v${SCRIPT_VERSION}"
-      printf '%s\n' "Copyright (C) 2024 ${SCRIPT_AUTHOR}"
-      printf '%s\n\n' 'License GPLv3+ with APE'
-      printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
-      # REUSE-IgnoreEnd
       execute_script='false'
       no_pause=1
+      # REUSE-IgnoreStart
+      printf '%s\n' "${SCRIPT_NAME}, version ${SCRIPT_VERSION}"
+      printf '%s\n' "Copyright (C) ${SCRIPT_YEAR} ${SCRIPT_AUTHOR}"
+      printf '%s\n\n' 'License GPLv3+ with APE.'
+      printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
+      # REUSE-IgnoreEnd
       ;;
+
     -h | --help | '-?')
       execute_script='false'
       no_pause=1
@@ -1533,26 +1535,23 @@ while test "${#}" -gt 0; do
       list_available_shells || STATUS="${?}"
       ;;
 
-    --)
+    -) # Read from STDIN (implies end of options)
+      break
+      ;;
+    --) # End of options / Positional arguments follow
       shift
       break
       ;;
-
-    -) # Get file list from STDIN
-      break
-      ;;
-
     --*)
       execute_script='false'
-      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME}: unrecognized option '${1}'"
       STATUS=2
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME}: unrecognized option '${1}'"
       ;;
     -*)
       execute_script='false'
-      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME}: invalid option -- '${1#-}'"
       STATUS=2
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME}: invalid option -- '${1#-}'"
       ;;
-
     *) break ;;
   esac
 
@@ -1562,7 +1561,7 @@ done || :
 if test "${execute_script}" = 'true'; then
   backup_path="${PATH-unset}"
 
-  if test "${#}" -eq 0; then
+  if test "$#" -eq 0; then
     main "${prefer_included_utilities}" || STATUS="${?}"
   else
     detect_bitness_of_files "${@}" || STATUS="${?}"
