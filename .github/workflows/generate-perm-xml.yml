@@ -2,17 +2,17 @@
 # SPDX-FileCopyrightText: NONE
 # SPDX-License-Identifier: CC0-1.0
 
-name: "Generate permission XML files"
+name: "Android permissions generation"
 permissions: {}
 on:
   workflow_dispatch:
   schedule:
-    # At 02:00 AM, every 6 days (UTC)
+    # Runs at 02:00, every 6 days
     - cron: "0 2 */6 * *"
 
 jobs:
-  generation:
-    name: "Generation"
+  generate-permissions:
+    name: "Generate Android permission XMLs"
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: "${{ github.event_name != 'schedule' }}"
@@ -24,6 +24,11 @@ jobs:
         uses: actions/checkout@v7
         with:
           lfs: true
+          sparse-checkout: |
+            tools/dl-perm-list.sh
+            tools/generate-perm-xml.sh
+            **/*.apk
+          sparse-checkout-cone-mode: false
       - name: "Use perms cache"
         id: cache-step
         uses: actions/cache@v6
@@ -32,26 +37,27 @@ jobs:
           key: "perms-${{ hashFiles('tools/dl-perm-list.sh') }}"
           path: "cache/tools/perms"
           enableCrossOsArchive: true
-      - name: "Execute script"
+      - name: "Execute scripts"
         shell: bash
         timeout-minutes: 10
         env:
           CACHE_HIT: "${{ steps.cache-step.outputs.cache-hit }}"
         run: |
-          # Executing script...
+          # Executing scripts...
           export OUTPUT_DIR='./output'
           export TOOLS_DATA_DIR='./cache/tools'
           if test "${CACHE_HIT?}" != 'true' || test ! -f './cache/tools/perms/.completed'; then
             './tools/dl-perm-list.sh' || exit "${?}"
           fi
-          find './zip-content' './cache' -name '*.apk' | './tools/generate-perm-xml.sh' --use-placeholders - || exit "${?}"
-      - name: "Upload artifacts"
+          find './zip-content' './cache/build' -name '*.apk' | './tools/generate-perm-xml.sh' --use-placeholders - || exit "${?}"
+      - name: "Store artifacts"
         uses: actions/upload-artifact@v7
+        timeout-minutes: 10
         with:
           name: "XML permissions"
-          path: "output/*.xml"
-          overwrite: false
+          path: "${{ github.workspace }}/output/*.xml"
           retention-days: 10
+          overwrite: false
           if-no-files-found: "error"
 
   keep-alive:
