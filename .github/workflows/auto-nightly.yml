@@ -288,28 +288,17 @@ jobs:
           path: "cache/lfs"
           enableCrossOsArchive: true
           lookup-only: true
-      - name: "Keep workflow alive"
+      - name: "Keep this workflow alive"
         uses: actions/github-script@v9
         timeout-minutes: 5
-        env:
-          WORKFLOW_REF: "${{ github.workflow_ref }}"
         with:
           retries: 3
           script: |
             /* jshint esversion: 11 */
-            const workflow_filename = process.env.WORKFLOW_REF.split('@', 1).at(0).split('/').slice(2).join('/');
-            const response = await github.rest.actions.enableWorkflow({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: workflow_filename
-            }).catch(response => response);
-            if(response && response.status === 204) {
-              console.log('Workflow enabled.');
-            } else {
-              let errorMsg = 'enableWorkflow failed';
-              if(response && response.status && response.message) errorMsg += ' with error ' + response.status + ' (' + response.message + ')';
-              throw new Error(errorMsg);
-            }
+            const workflow_id = process.env.GITHUB_WORKFLOW_REF.split('@', 1).at(0).split('/').pop(); // context.workflow_ref
+            await github.rest.actions.enableWorkflow({ ...context.repo, workflow_id })
+              .then(() => console.log('Success.'))
+              .catch(err => { throw new Error('enableWorkflow failed with error ' + err.status + ' (' + err.message + ')'); });
 
   clean-caches:
     name: "Clean old caches"
