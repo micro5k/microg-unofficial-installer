@@ -30,7 +30,7 @@ jobs:
             **/*.apk
           sparse-checkout-cone-mode: false
       - name: "Use perms cache"
-        id: cache-step
+        id: perms-cache
         uses: actions/cache@v6
         timeout-minutes: 5
         with:
@@ -41,7 +41,7 @@ jobs:
         shell: bash
         timeout-minutes: 10
         env:
-          CACHE_HIT: "${{ steps.cache-step.outputs.cache-hit }}"
+          CACHE_HIT: "${{ steps.perms-cache.outputs.cache-hit }}"
         run: |
           # Executing scripts...
           export OUTPUT_DIR='./output'
@@ -60,8 +60,8 @@ jobs:
           overwrite: false
           if-no-files-found: "error"
 
-  keep-alive:
-    name: "Keep alive"
+  keep-cache-alive:
+    name: "Keep cache alive"
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: "${{ github.event_name == 'schedule' }}"
@@ -77,8 +77,8 @@ jobs:
           sparse-checkout: |
             tools/dl-perm-list.sh
           sparse-checkout-cone-mode: false
-      - name: "Ping cache" # Cache expiration: 7 days
-        uses: actions/cache@v6
+      - name: "Ping perms cache" # Cache expiration: 7 days
+        uses: actions/cache/restore@v6
         timeout-minutes: 5
         with:
           key: "perms-${{ hashFiles('tools/dl-perm-list.sh') }}"
