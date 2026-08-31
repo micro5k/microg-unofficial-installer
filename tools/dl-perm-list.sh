@@ -17,17 +17,13 @@
 
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.11'
+readonly SCRIPT_VERSION='0.3.12'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
-set -u
-# shellcheck disable=SC3040,SC3041,SC2015
-{
-  # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-  (set +H 2> /dev/null) && set +H || true
-  (set -o pipefail 2> /dev/null) && set -o pipefail || true
-}
+set -u 2> /dev/null || :
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
+case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) ;; esac
 
 readonly BASE_URL='https://android.googlesource.com/platform/frameworks/base/'
 readonly MAX_API='37'
@@ -189,6 +185,9 @@ fetch_and_extract_manifest_permissions_with_retry()
     __fn_attempts_left="$((__fn_attempts_left - 1))" || return "${?}"
     test "${__fn_attempts_left}" -gt 0 || break
 
+    printf 1>&2 '  %s %s\n' "WARNING: Failed to download or parse API ${1?} XML." \
+      "Retrying in ${RETRY_DELAY?} seconds (attempts left: ${__fn_attempts_left?})..."
+
     sleep "${RETRY_DELAY:?}" || return "${?}"
   done
 
@@ -225,12 +224,12 @@ main()
 
   for api in $(seq -- 23 "${MAX_API:?}"); do
     tag="$(eval " printf '%s\n' \"\${TAG_API_${api:?}:?}\" ")" || {
-      printf '%s\n' "Failed to get tag for API ${api?}"
+      show_error "Failed to get tag for API ${api?}"
       return 4
     }
     printf '%s\n' "API ${api:?}: ${tag:?}"
     fetch_and_extract_manifest_permissions_with_retry "${api:?}" "${tag:?}" || {
-      printf '%s\n' "Failed to download/parse XML for API ${api?}"
+      show_error "Failed to download or parse API ${api?} XML"
       rm -f -- "${DATA_DIR:?}/perms/base-permissions-api-${api:?}.xml"
       return 5
     }
