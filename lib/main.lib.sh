@@ -174,7 +174,7 @@ if test "${CI:-false}" != 'false' && test "${CI_DEBUG_TRACE:-${RUNNER_DEBUG:-fal
 # shellcheck disable=SC2034
 {
   readonly WGET_CMD='wget'
-  readonly DL_UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0'
+  readonly DL_UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0'
   readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
   readonly DL_ACCEPT_ALL_HEADER='Accept: */*'
   readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
