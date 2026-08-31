@@ -33,7 +33,7 @@ jobs:
         timeout-minutes: 5
         with:
           path: "./scripts-repo"
-          repository: "micro5k/microg-unofficial-installer"
+          #repository: "micro5k/microg-unofficial-installer"
           persist-credentials: false
           lfs: false
           sparse-checkout: |

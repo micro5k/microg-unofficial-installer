@@ -17,7 +17,7 @@
 
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.10'
+readonly SCRIPT_VERSION='0.3.11'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -207,7 +207,7 @@ main()
   export MAX_ATTEMPTS="${MAX_ATTEMPTS:-3}" # Maximum number of total attempts allowed (per API level)
 
   if test -z "${REQUEST_DELAY?}"; then
-    if test "${CI:-false}" = 'false'; then REQUEST_DELAY='0.2'; else REQUEST_DELAY='1'; fi
+    if test "${CI:-false}" = 'false'; then REQUEST_DELAY='0.2'; else REQUEST_DELAY='0.5'; fi
   fi
   if test -z "${RETRY_DELAY?}"; then
     if test "${CI:-false}" = 'false'; then RETRY_DELAY='5'; else RETRY_DELAY='15'; fi
