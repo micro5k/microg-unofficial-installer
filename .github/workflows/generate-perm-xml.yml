@@ -50,25 +50,26 @@ jobs:
           enableCrossOsArchive: true
       - name: "Execute scripts"
         shell: bash
+        working-directory: "./repo"
         timeout-minutes: 10
         env:
           CACHE_HIT: "${{ steps.perms-cache.outputs.cache-hit }}"
         run: |
           # Executing scripts...
-          export OUTPUT_DIR='./scripts-repo/output'
-          export TOOLS_DATA_DIR='./cache'
-          if test "${CACHE_HIT?}" != 'true' || test ! -f './cache/perms/.completed'; then
-            './scripts-repo/tools/dl-perm-list.sh' || exit "${?}"
+          export OUTPUT_DIR='./output'
+          export TOOLS_DATA_DIR="${GITHUB_WORKSPACE:?}/cache"
+          if test "${CACHE_HIT?}" != 'true' || test ! -f "${GITHUB_WORKSPACE:?}/cache/perms/.completed"; then
+            "${GITHUB_WORKSPACE:?}/scripts-repo/tools/dl-perm-list.sh" || exit "${?}"
           fi
-          set -- './repo/zip-content' || exit "${?}"
-          test ! -d './cache/build' || set -- "${@}" './cache/build' || exit "${?}"
-          find "${@}" -name '*.apk' | './scripts-repo/tools/generate-perm-xml.sh' --use-placeholders - || exit "${?}"
+          set -- './zip-content' || exit "${?}"
+          test ! -d "${GITHUB_WORKSPACE:?}/cache/build" || set -- "${@}" "${GITHUB_WORKSPACE:?}/cache/build" || exit "${?}"
+          find "${@}" -name '*.apk' | "${GITHUB_WORKSPACE:?}/scripts-repo/tools/generate-perm-xml.sh" --use-placeholders - || exit "${?}"
       - name: "Store artifacts"
         uses: actions/upload-artifact@v7
         timeout-minutes: 10
         with:
           name: "XML permissions"
-          path: "${{ github.workspace }}/scripts-repo/output/*.xml"
+          path: "${{ github.workspace }}/repo/output/*.xml"
           retention-days: 10
           overwrite: false
           if-no-files-found: "error"
