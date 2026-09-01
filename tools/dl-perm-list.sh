@@ -12,6 +12,7 @@
 # @author ale5000
 
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/tools
+
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
