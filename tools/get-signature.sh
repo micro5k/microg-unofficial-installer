@@ -13,15 +13,30 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
+# @section GLOBAL CONSTANTS ----
+#region
 readonly SCRIPT_NAME='Android app signing certificate extractor'
 readonly SCRIPT_SHORTNAME='AppSignExt'
 readonly SCRIPT_VERSION='0.1.7'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
+#endregion
 
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
 case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) ;; esac
+
+# @section UTILITY & UI FUNCTIONS ----
+#region
+show_status()
+{
+  printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
+}
+
+show_error()
+{
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
+}
 
 fix_posix_emulation_if_needed()
 {
@@ -57,17 +72,10 @@ pause_if_needed()
   unset no_pause
   return "${1:-0}"
 }
+#endregion
 
-show_status()
-{
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
-}
-
-show_error()
-{
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
-}
-
+# @section CORE LOGIC & ANDROID SDK FUNCTIONS ----
+#region
 set_android_sdk_path_if_unset()
 {
   test -z "${ANDROID_HOME-}" || return
@@ -120,7 +128,10 @@ get_cert_sha256()
     return 6
   fi
 }
+#endregion
 
+# @section MAIN FUNCTION ----
+#region
 main()
 {
   fix_posix_emulation_if_needed
@@ -148,7 +159,10 @@ main()
 
   get_cert_sha256 "${@}"
 }
+#endregion
 
+# @section CLI ARGUMENTS PARSING (ENTRY POINT) ----
+#region
 execute_script='true'
 STATUS=0
 
@@ -186,13 +200,17 @@ while test "$#" -gt 0; do
 
   shift
 done
+#endregion
 
+# @section EXECUTION ----
+#region
 if test "${execute_script:?}" = 'true'; then
   show_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
 fi
+#endregion
 
 pause_if_needed "${STATUS:?}"
 exit "${?}"

@@ -7,6 +7,7 @@
         "lextudio.restructuredtext",
         "marcovr.actions-shell-scripts",
         "ms-python.vscode-pylance",
+        "ran-codes.code-organizer",
         "timonwong.shellcheck"
     ],
     "unwantedRecommendations": ["vscjava.vscode-java-pack"]
