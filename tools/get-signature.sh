@@ -15,12 +15,13 @@
 
 readonly SCRIPT_NAME='Android app signing certificate extractor'
 readonly SCRIPT_SHORTNAME='AppSignExt'
-readonly SCRIPT_VERSION='0.1.6'
+readonly SCRIPT_VERSION='0.1.7'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
-# shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
-case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'Failed: pipefail' ;; *) ;; esac
+set -u 2> /dev/null || :
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
+case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) ;; esac
 
 fix_posix_emulation_if_needed()
 {
@@ -67,34 +68,83 @@ show_error()
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
 }
 
+set_android_sdk_path_if_unset()
+{
+  test -z "${ANDROID_HOME-}" || return
+
+  # Set the path of Android SDK if not already set
+  if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA?}/Android/Sdk"; then
+    ANDROID_HOME="${LOCALAPPDATA?}/Android/Sdk" # Windows
+  elif test -n "${HOME-}" && test -d "${HOME?}/Library/Android/sdk"; then
+    ANDROID_HOME="${HOME?}/Library/Android/sdk" # macOS
+  elif test -n "${HOME-}" && test -d "${HOME?}/.local/share/android/sdk"; then
+    ANDROID_HOME="${HOME?}/.local/share/android/sdk" # Linux (XDG)
+  elif test -n "${HOME-}" && test -d "${HOME?}/Android/Sdk"; then
+    ANDROID_HOME="${HOME?}/Android/Sdk" # Linux (Standard)
+  elif test -d '/usr/lib/android-sdk'; then
+    ANDROID_HOME='/usr/lib/android-sdk' # Linux (APT)
+  fi
+}
+
+find_android_build_tool()
+{
+  local __fn_tool_path
+
+  if __fn_tool_path="$(
+    unalias "${1:?}" 2> /dev/null
+    command 2> /dev/null -v "${1:?}"
+  )" && test -n "${__fn_tool_path?}"; then
+    :
+  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME?}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path?}"; then
+    :
+  else
+    return 1
+  fi
+
+  printf '%s\n' "${__fn_tool_path:?}"
+}
+
 get_cert_sha256()
 {
   local _cert_sha256
 
-  test -n "${1-}" || {
-    show_error "You must pass the filename of the file to be processed."
-    return 3
-  }
-
-  if : "${APKSIGNER_PATH:="$(command -v 'apksigner' || command -v 'apksigner.bat' || :)"}" && test -n "${APKSIGNER_PATH?}"; then
-    _cert_sha256="$("${APKSIGNER_PATH:?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g; s/:$//')" || return 4
-  elif : "${KEYTOOL_PATH:="$(command -v 'keytool' || :)"}" && test -n "${KEYTOOL_PATH-}"; then
-    _cert_sha256="$("${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' ')" || return 5
+  if test -n "${APKSIGNER_PATH?}"; then
+    _cert_sha256="$("${APKSIGNER_PATH?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g; s/:$//')" || return 4
   else
-    show_error "Neither apksigner nor keytool were found. You must set either APKSIGNER_PATH or KEYTOOL_PATH"
-    return 255
+    _cert_sha256="$("${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' ')" || return 5
   fi
 
   if test -n "${_cert_sha256?}"; then
     printf '%s\n' "sha256-cert-digest=\"${_cert_sha256:?}\""
   else
-    return 1
+    return 6
   fi
 }
 
 main()
 {
   fix_posix_emulation_if_needed
+
+  # BEGIN: Global config (overridable via env)
+  export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+  set_android_sdk_path_if_unset
+  export APKSIGNER_PATH="${APKSIGNER_PATH:-$(find_android_build_tool 'apksigner' || command 2> /dev/null -v 'apksigner.bat' || :)}"
+  export KEYTOOL_PATH="${KEYTOOL_PATH-}"
+  # END: Global config
+
+  test -n "${1-}" || {
+    show_error 'You must pass the filename of the file to be processed'
+    return 3
+  }
+
+  if test -n "${APKSIGNER_PATH?}"; then
+    :
+  elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command 2> /dev/null -v 'keytool')"; then
+    :
+  else
+    show_error 'Neither apksigner nor keytool were found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH'
+    return 255
+  fi
 
   get_cert_sha256 "${@}"
 }

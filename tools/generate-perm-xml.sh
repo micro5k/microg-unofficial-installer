@@ -23,13 +23,11 @@ readonly SCRIPT_VERSION='0.3.17'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
-set -u
-# shellcheck disable=SC3040,SC3041,SC2015
-{
-  # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-  (set +H 2> /dev/null) && set +H || true
-  (set -o pipefail 2> /dev/null) && set -o pipefail || true
-}
+set -u 2> /dev/null || :
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
+case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) ;; esac
+# shellcheck disable=SC3041 # IGNORE: In POSIX sh, set flag -H is undefined
+(set +H 2> /dev/null) && set +H || :
 
 readonly MAX_API='37'
 

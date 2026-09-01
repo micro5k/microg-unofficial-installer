@@ -19,8 +19,9 @@ readonly SCRIPT_VERSION='0.1.6'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
-# shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
-case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'Failed: pipefail' ;; *) ;; esac
+set -u 2> /dev/null || :
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
+case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) ;; esac
 
 fix_posix_emulation_if_needed()
 {
@@ -114,7 +115,7 @@ main()
   # END: Global config
 
   test -n "${1-}" || {
-    show_error "You must pass the filename of the file to be processed."
+    show_error 'You must pass the filename of the file to be processed'
     return 3
   }
 
