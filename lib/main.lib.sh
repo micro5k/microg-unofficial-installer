@@ -1343,6 +1343,21 @@ alias_scripts()
   return
 }
 
+find_android_build_tool()
+{
+  local __fn_tool_path
+
+  if __fn_tool_path="$(unalias "${1:?}" 2> /dev/null; command 2> /dev/null -v "${1:?}")" && test -n "${__fn_tool_path?}"; then
+    :
+  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME:?}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME:?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path?}"; then
+    :
+  else
+    return 1
+  fi
+
+  printf '%s\n' "${__fn_tool_path:?}"
+}
+
 init_base()
 {
   local _main_dir
@@ -1506,15 +1521,15 @@ init_cmdline()
 
   # Set the path of Android SDK if not already set
   if test -z "${ANDROID_SDK_ROOT-}"; then
-    if test -n "${USER_HOME-}" && test -e "${USER_HOME:?}/Android/Sdk"; then
-      # Linux
-      export ANDROID_SDK_ROOT="${USER_HOME:?}/Android/Sdk"
-    elif test -n "${LOCALAPPDATA-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
+    if test -n "${LOCALAPPDATA-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
       # Windows
       export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
     elif test -n "${USER_HOME-}" && test -e "${USER_HOME:?}/Library/Android/sdk"; then
       # macOS
       export ANDROID_SDK_ROOT="${USER_HOME:?}/Library/Android/sdk"
+    elif test -n "${USER_HOME-}" && test -e "${USER_HOME:?}/Android/Sdk"; then
+      # Linux
+      export ANDROID_SDK_ROOT="${USER_HOME:?}/Android/Sdk"
     fi
   fi
 
@@ -1523,30 +1538,20 @@ init_cmdline()
       # Only on Bash under Windows
       ANDROID_SDK_ROOT="$("${CYGPATH:?}" -m -l -a -- "${ANDROID_SDK_ROOT:?}")" || _ui_error_local 'Unable to convert the Android SDK dir' "${LINENO-}" "${FUNCNAME-}"
     fi
-
     add_to_path_env "${ANDROID_SDK_ROOT:?}/platform-tools"
-
-    if test -e "${ANDROID_SDK_ROOT:?}/build-tools"; then
-      if AAPT2_PATH="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -maxdepth 2 -iname 'aapt2*' | LC_ALL=C sort -V -r | head -n 1)" && test -n "${AAPT2_PATH?}"; then
-        export AAPT2_PATH
-        if command 1> /dev/null 2>&1 -v 'alias'; then
-          # shellcheck disable=SC2139
-          alias 'aapt2'="'${AAPT2_PATH:?}'"
-        fi
-      else
-        unset AAPT2_PATH
-      fi
-      if APKSIGNER_PATH="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -maxdepth 2 -iname 'apksigner*' | LC_ALL=C sort -V -r | head -n 1)" && test -n "${APKSIGNER_PATH?}"; then
-        export APKSIGNER_PATH
-        if command 1> /dev/null 2>&1 -v 'alias'; then
-          # shellcheck disable=SC2139
-          alias 'apksigner'="'${APKSIGNER_PATH:?}'"
-        fi
-      else
-        unset APKSIGNER_PATH
-      fi
-    fi
   fi
+
+  export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT-}}"
+  export AAPT_PATH="${AAPT_PATH:-$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt')}"
+  export APKSIGNER_PATH="${APKSIGNER_PATH:-$(find_android_build_tool 'apksigner' || command 2> /dev/null -v 'apksigner.bat')}"
+
+  # shellcheck disable=SC2139 # IGNORE: This expands when defined, not when used
+  {
+    if command 1> /dev/null 2>&1 -v 'alias'; then
+      alias aapt="'${AAPT_PATH?}'"
+      alias apksigner="'${APKSIGNER_PATH?}'"
+    fi
+  }
 
   if test "${PLATFORM:?}" = 'win'; then
     export BB_OVERRIDE_APPLETS='; make'

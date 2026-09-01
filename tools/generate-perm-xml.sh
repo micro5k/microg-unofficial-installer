@@ -436,17 +436,17 @@ get_cert_sha256()
 
 find_android_build_tool()
 {
-  local _tool_path
+  local __fn_tool_path
 
-  if _tool_path="$(command -v "${1:?}")" && test -n "${_tool_path?}"; then
+  if __fn_tool_path="$(command 2> /dev/null -v "${1:?}")" && test -n "${__fn_tool_path?}"; then
     :
-  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME:?}/build-tools" && _tool_path="$(find "${ANDROID_HOME:?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${_tool_path?}"; then
+  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME:?}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME:?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path?}"; then
     :
   else
     return 1
   fi
 
-  printf '%s\n' "${_tool_path:?}"
+  printf '%s\n' "${__fn_tool_path:?}"
 }
 
 main()
@@ -514,9 +514,9 @@ main()
   fi
 
   if test "${NO_CERT_DIGEST:?}" = 'false'; then
-    if test -n "${APKSIGNER_PATH?}" || APKSIGNER_PATH="$(find_android_build_tool 'apksigner' || command -v 'apksigner.bat')"; then
+    if test -n "${APKSIGNER_PATH?}" || APKSIGNER_PATH="$(find_android_build_tool 'apksigner' || command 2> /dev/null -v 'apksigner.bat')"; then
       :
-    elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command -v 'keytool')"; then
+    elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command 2> /dev/null -v 'keytool')"; then
       :
     else
       show_error "Neither apksigner nor keytool were found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH"
