@@ -18,7 +18,7 @@ case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || ec
 
 # shellcheck disable=SC3028
 case ":${SHELLOPTS-}:" in
-  *':xtrace:'*) # Auto-enable `set -x` for shells that do NOT support SHELLOPTS
+  *':xtrace:'*) # Auto-enable "set -x" for shells that do NOT support SHELLOPTS
     set -x
     export COVERAGE='true'
     ;;

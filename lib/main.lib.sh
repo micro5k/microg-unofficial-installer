@@ -1412,7 +1412,7 @@ init_base()
   if test "${DO_INIT_CMDLINE:-0}" != '0' && test "${PLATFORM:?}" = 'win' && test "${USR_BIN_FIXED:-0}" = '0'; then
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
 
-    # While this environment fix is typically handled by `fix_posix_emulation_if_needed`,
+    # While this environment fix is typically handled by "fix_posix_emulation_if_needed",
     #  it must also be explicitly applied here to resolve a specific edge case:
     #  when an emulated environment (e.g., Git Bash) is invoked as a subshell
     #  from a native, non-emulated Windows host shell (e.g., BusyBox for Windows).
@@ -1491,10 +1491,10 @@ is_root()
 shellhelp()
 {
   if test "${#}" -gt 0; then
-    PATH="%builtin${PATHSEP:?}${PATH-}" \help "${@}"
+    PATH="%builtin${PATHSEP:?}${PATH:-%empty}" help "${@}"
   else
     # shellcheck disable=SC2016 # It is intended: Expressions don't expand in single quotes
-    PATH="%builtin${PATHSEP:?}${PATH-}" \help | sed -e 's/Type `help/Type `shellhelp/g'
+    PATH="%builtin${PATHSEP:?}${PATH:-%empty}" help | sed -e 's/Type `help/Type `shellhelp/g'
   fi
 }
 
