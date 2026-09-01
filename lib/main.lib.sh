@@ -1587,8 +1587,8 @@ init_cmdline()
 
     # shellcheck disable=SC2139 # IGNORE: This expands when defined, not when used
     {
-      alias aapt="'${AAPT_PATH?}'"
-      alias apksigner="'${APKSIGNER_PATH?}'"
+      test -z "${AAPT_PATH?}" || alias aapt="'${AAPT_PATH?}'"
+      test -z "${APKSIGNER_PATH?}" || alias apksigner="'${APKSIGNER_PATH?}'"
     }
   fi
 
