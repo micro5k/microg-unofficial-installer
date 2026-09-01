@@ -200,10 +200,11 @@ main()
 
   fix_posix_emulation_if_needed
 
-  # Global configuration (can be overridden via environment variables)
+  # BEGIN: Global config (overridable via env)
   export REQUEST_DELAY="${REQUEST_DELAY-}" # Delay to wait after a successful request
   export RETRY_DELAY="${RETRY_DELAY-}"     # Delay to wait after a failed request before a retry
   export MAX_ATTEMPTS="${MAX_ATTEMPTS:-3}" # Maximum number of total attempts allowed (per API level)
+  # END: Global config
 
   if test -z "${REQUEST_DELAY?}"; then
     if test "${CI:-false}" = 'false'; then REQUEST_DELAY='0.2'; else REQUEST_DELAY='0.5'; fi

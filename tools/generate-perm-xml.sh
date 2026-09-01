@@ -19,7 +19,7 @@
 
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.16'
+readonly SCRIPT_VERSION='0.3.17'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -434,13 +434,34 @@ get_cert_sha256()
   fi
 }
 
+set_android_sdk_path_if_unset()
+{
+  test -z "${ANDROID_HOME-}" || return
+
+  # Set the path of Android SDK if not already set
+  if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA?}/Android/Sdk"; then
+    ANDROID_HOME="${LOCALAPPDATA?}/Android/Sdk" # Windows
+  elif test -n "${HOME-}" && test -d "${HOME?}/Library/Android/sdk"; then
+    ANDROID_HOME="${HOME?}/Library/Android/sdk" # macOS
+  elif test -n "${HOME-}" && test -d "${HOME?}/.local/share/android/sdk"; then
+    ANDROID_HOME="${HOME?}/.local/share/android/sdk" # Linux (XDG)
+  elif test -n "${HOME-}" && test -d "${HOME?}/Android/Sdk"; then
+    ANDROID_HOME="${HOME?}/Android/Sdk" # Linux (Standard)
+  elif test -d '/usr/lib/android-sdk'; then
+    ANDROID_HOME='/usr/lib/android-sdk' # Linux (APT)
+  fi
+}
+
 find_android_build_tool()
 {
   local __fn_tool_path
 
-  if __fn_tool_path="$(command 2> /dev/null -v "${1:?}")" && test -n "${__fn_tool_path?}"; then
+  if __fn_tool_path="$(
+    unalias "${1:?}" 2> /dev/null
+    command 2> /dev/null -v "${1:?}"
+  )" && test -n "${__fn_tool_path?}"; then
     :
-  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME:?}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME:?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path?}"; then
+  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME?}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path?}"; then
     :
   else
     return 1
@@ -455,27 +476,15 @@ main()
 
   fix_posix_emulation_if_needed
 
-  # Global configuration (can be overridden via environment variables)
-  export OUTPUT_DIR="${OUTPUT_DIR-}"
-  export AAPT_PATH="${AAPT_PATH-}"
+  # BEGIN: Global config (overridable via env)
+  export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+  set_android_sdk_path_if_unset
+  export AAPT_PATH="${AAPT_PATH:-$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt' || :)}"
   export APKSIGNER_PATH="${APKSIGNER_PATH-}"
   export KEYTOOL_PATH="${KEYTOOL_PATH-}"
-  export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT-}}"
 
-  # Set the path of Android SDK if not already set
-  if test -z "${ANDROID_HOME?}"; then
-    if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA?}/Android/Sdk"; then
-      ANDROID_HOME="${LOCALAPPDATA?}/Android/Sdk" # Windows
-    elif test -n "${HOME-}" && test -d "${HOME?}/Library/Android/sdk"; then
-      ANDROID_HOME="${HOME?}/Library/Android/sdk" # macOS
-    elif test -n "${HOME-}" && test -d "${HOME?}/.local/share/android/sdk"; then
-      ANDROID_HOME="${HOME?}/.local/share/android/sdk" # Linux (XDG)
-    elif test -n "${HOME-}" && test -d "${HOME?}/Android/Sdk"; then
-      ANDROID_HOME="${HOME?}/Android/Sdk" # Linux (Standard)
-    elif test -d '/usr/lib/android-sdk'; then
-      ANDROID_HOME='/usr/lib/android-sdk' # Linux (APT)
-    fi
-  fi
+  export OUTPUT_DIR="${OUTPUT_DIR-}"
+  # END: Global config
 
   if DATA_DIR="$(find_data_dir)" && test -d "${DATA_DIR:?}/perms"; then
     :
@@ -506,10 +515,8 @@ main()
   test -n "${OUTPUT_DIR?}" || OUTPUT_DIR="${BASE_DIR:?}/output"
   test -d "${OUTPUT_DIR:?}" || mkdir -p -- "${OUTPUT_DIR:?}" || return 8
 
-  if test -n "${AAPT_PATH?}" || AAPT_PATH="$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt')"; then
-    :
-  else
-    show_error "Neither aapt2 nor aapt were found. You need to set AAPT_PATH"
+  if test -z "${AAPT_PATH?}"; then
+    show_error 'Neither aapt2 nor aapt were found. You need to set AAPT_PATH'
     return 255
   fi
 
@@ -519,7 +526,7 @@ main()
     elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command 2> /dev/null -v 'keytool')"; then
       :
     else
-      show_error "Neither apksigner nor keytool were found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH"
+      show_error 'Neither apksigner nor keytool were found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH'
       return 255
     fi
   fi

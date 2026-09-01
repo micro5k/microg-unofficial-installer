@@ -15,7 +15,7 @@
 
 readonly SCRIPT_NAME='Android app permissions lister'
 readonly SCRIPT_SHORTNAME='AppPermList'
-readonly SCRIPT_VERSION='0.1.5'
+readonly SCRIPT_VERSION='0.1.6'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -67,34 +67,59 @@ show_error()
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
 }
 
+set_android_sdk_path_if_unset()
+{
+  test -z "${ANDROID_HOME-}" || return
+
+  # Set the path of Android SDK if not already set
+  if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA?}/Android/Sdk"; then
+    ANDROID_HOME="${LOCALAPPDATA?}/Android/Sdk" # Windows
+  elif test -n "${HOME-}" && test -d "${HOME?}/Library/Android/sdk"; then
+    ANDROID_HOME="${HOME?}/Library/Android/sdk" # macOS
+  elif test -n "${HOME-}" && test -d "${HOME?}/.local/share/android/sdk"; then
+    ANDROID_HOME="${HOME?}/.local/share/android/sdk" # Linux (XDG)
+  elif test -n "${HOME-}" && test -d "${HOME?}/Android/Sdk"; then
+    ANDROID_HOME="${HOME?}/Android/Sdk" # Linux (Standard)
+  elif test -d '/usr/lib/android-sdk'; then
+    ANDROID_HOME='/usr/lib/android-sdk' # Linux (APT)
+  fi
+}
+
 find_android_build_tool()
 {
-  local _tool_path
+  local __fn_tool_path
 
-  if _tool_path="$(command -v "${1:?}")" && test -n "${_tool_path?}"; then
+  if __fn_tool_path="$(
+    unalias "${1:?}" 2> /dev/null
+    command 2> /dev/null -v "${1:?}"
+  )" && test -n "${__fn_tool_path?}"; then
     :
-  elif test -n "${ANDROID_SDK_ROOT-}" && test -d "${ANDROID_SDK_ROOT:?}/build-tools" && _tool_path="$(find "${ANDROID_SDK_ROOT:?}/build-tools" -maxdepth 2 -iname "${1:?}*" | LC_ALL=C sort -V -r | head -n 1)" && test -n "${_tool_path?}"; then
+  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME?}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path?}"; then
     :
   else
     return 1
   fi
 
-  printf '%s\n' "${_tool_path:?}"
+  printf '%s\n' "${__fn_tool_path:?}"
 }
 
 main()
 {
   fix_posix_emulation_if_needed
 
+  # BEGIN: Global config (overridable via env)
+  export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+  set_android_sdk_path_if_unset
+  export AAPT_PATH="${AAPT_PATH:-$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt' || :)}"
+  # END: Global config
+
   test -n "${1-}" || {
     show_error "You must pass the filename of the file to be processed."
     return 3
   }
 
-  : "${AAPT_PATH:="$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt' || :)"}"
-
-  if test -n "${AAPT_PATH-}"; then
-    "${AAPT_PATH:?}" dump permissions "${@}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL=C sort || return "${?}"
+  if test -n "${AAPT_PATH?}"; then
+    "${AAPT_PATH?}" dump permissions "${@}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | sort || return "${?}"
   else
     return 255
   fi
