@@ -77,7 +77,7 @@ fi
 
 # Parse parameters
 default_build_type='true'
-while test "${#}" -gt 0; do
+while test "$#" -gt 0; do
   case "${1?}" in
     --no-default-build-type) default_build_type='false' ;;
     --no-pause) export NO_PAUSE=1 ;;

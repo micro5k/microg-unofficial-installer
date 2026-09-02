@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Android app signing certificate extractor'
 readonly SCRIPT_SHORTNAME='AppSignExt'
-readonly SCRIPT_VERSION='0.1.7'
+readonly SCRIPT_VERSION='0.1.8'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 #endregion
@@ -75,7 +75,7 @@ pause_if_needed()
 }
 #endregion
 
-# @section CORE LOGIC & ANDROID SDK FUNCTIONS ----
+# @section CORE FUNCTIONS ----
 #region
 set_android_sdk_path_if_unset()
 {
@@ -162,7 +162,7 @@ main()
 }
 #endregion
 
-# @section CLI ARGUMENTS PARSING (ENTRY POINT) ----
+# @section CLI ARGUMENTS PARSING ----
 #region
 execute_script='true'
 STATUS=0
@@ -203,7 +203,7 @@ while test "$#" -gt 0; do
 done
 #endregion
 
-# @section EXECUTION ----
+# @section EXECUTION ENTRY POINT ----
 #region
 if test "${execute_script:?}" = 'true'; then
   show_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
@@ -211,7 +211,7 @@ if test "${execute_script:?}" = 'true'; then
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
 fi
-#endregion
 
 pause_if_needed "${STATUS:?}"
 exit "${?}"
+#endregion

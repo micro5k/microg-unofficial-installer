@@ -34,7 +34,7 @@ fail_with_msg()
 show_cmdline()
 {
   printf "'%s'" "${0-}"
-  if test "${#}" -gt 0; then printf " '%s'" "${@}"; fi
+  if test "$#" -gt 0; then printf " '%s'" "${@}"; fi
   printf '\n'
 }
 
@@ -44,7 +44,7 @@ if test "${ENV_RESETTED:-false}" = 'false'; then
   show_cmdline "${@}"
   printf '\n'
 
-  if test "${#}" -eq 0; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
+  if test "$#" -eq 0; then fail_with_msg 'You must pass the filename of the flashable ZIP as parameter'; fi
 
   SHELL="${BASH:-${SHELL-}}"
   if test -z "${SHELL?}"; then SHELL="$(command -v 'bash')" || fail_with_msg 'Unable to find current shell path'; fi
