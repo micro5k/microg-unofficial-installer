@@ -29,16 +29,6 @@ case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || ec
 
 # @section UTILITY & UI FUNCTIONS ----
 #region
-show_status()
-{
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
-}
-
-show_error()
-{
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
-}
-
 fix_posix_emulation_if_needed()
 {
   # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
@@ -55,6 +45,16 @@ fix_posix_emulation_if_needed()
       cd "${BASH_SOURCE:?}/.." || printf '%s\n' 'ERROR: Failed to restore the correct working directory'
     fi
   fi
+}
+
+show_status()
+{
+  printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
+}
+
+show_error()
+{
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
 }
 
 pause_if_needed()
