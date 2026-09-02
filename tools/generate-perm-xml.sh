@@ -18,11 +18,16 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
+# @section GLOBAL CONSTANTS ----
+#region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
 readonly SCRIPT_VERSION='0.3.17'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
+
+readonly MAX_API='37'
+#endregion
 
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
@@ -30,8 +35,8 @@ case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || ec
 # shellcheck disable=SC3041 # IGNORE: In POSIX sh, set flag -H is undefined
 (set +H 2> /dev/null) && set +H || :
 
-readonly MAX_API='37'
-
+# @section UTILITY & UI FUNCTIONS ----
+#region
 fix_posix_emulation_if_needed()
 {
   # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
@@ -50,21 +55,14 @@ fix_posix_emulation_if_needed()
   fi
 }
 
-pause_if_needed()
+set_red_color()
 {
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
-  if test "${NO_PAUSE:-0}" = '0' && test "${no_pause:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
-    if test -n "${NO_COLOR-}"; then
-      printf 1>&2 '\n%s' 'Press any key to exit... ' || :
-    else
-      printf 1>&2 '\n\033[1;32m\r%s' 'Press any key to exit... ' || :
-    fi
-    # shellcheck disable=SC3045 # Ignore: In POSIX sh, read -s / -n is undefined
-    IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
-    if test -n "${NO_COLOR-}"; then printf 1>&2 '\n' || :; else printf 1>&2 '\n\033[0m\r    \r' || :; fi
-  fi
-  unset no_pause
-  return "${1:-0}"
+  printf 1>&2 '\033[1;31m\r'
+}
+
+reset_color()
+{
+  printf 1>&2 '\033[0m\r'
 }
 
 show_status()
@@ -89,18 +87,82 @@ ui_error()
   exit 55
 }
 
-set_red_color()
+pause_if_needed()
 {
-  printf 1>&2 '\033[1;31m\r'
+  # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
+  if test "${NO_PAUSE:-0}" = '0' && test "${no_pause:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
+    if test -n "${NO_COLOR-}"; then
+      printf 1>&2 '\n%s' 'Press any key to exit... ' || :
+    else
+      printf 1>&2 '\n\033[1;32m\r%s' 'Press any key to exit... ' || :
+    fi
+    # shellcheck disable=SC3045 # Ignore: In POSIX sh, read -s / -n is undefined
+    IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
+    if test -n "${NO_COLOR-}"; then printf 1>&2 '\n' || :; else printf 1>&2 '\n\033[0m\r    \r' || :; fi
+  fi
+  unset no_pause
+  return "${1:-0}"
+}
+#endregion
+
+# @section CORE FUNCTIONS ----
+#region
+set_android_sdk_path_if_unset()
+{
+  test -z "${ANDROID_HOME-}" || return
+
+  # Set the path of Android SDK if not already set
+  if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA?}/Android/Sdk"; then
+    ANDROID_HOME="${LOCALAPPDATA?}/Android/Sdk" # Windows
+  elif test -n "${HOME-}" && test -d "${HOME?}/Library/Android/sdk"; then
+    ANDROID_HOME="${HOME?}/Library/Android/sdk" # macOS
+  elif test -n "${HOME-}" && test -d "${HOME?}/.local/share/android/sdk"; then
+    ANDROID_HOME="${HOME?}/.local/share/android/sdk" # Linux (XDG)
+  elif test -n "${HOME-}" && test -d "${HOME?}/Android/Sdk"; then
+    ANDROID_HOME="${HOME?}/Android/Sdk" # Linux (Standard)
+  elif test -d '/usr/lib/android-sdk'; then
+    ANDROID_HOME='/usr/lib/android-sdk' # Linux (APT)
+  fi
 }
 
-reset_color()
+find_android_build_tool()
 {
-  printf 1>&2 '\033[0m\r'
+  local __fn_tool_path
+
+  if __fn_tool_path="$(
+    unalias "${1:?}" 2> /dev/null
+    command 2> /dev/null -v "${1:?}"
+  )" && test -n "${__fn_tool_path?}"; then
+    :
+  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME?}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path?}"; then
+    :
+  else
+    return 1
+  fi
+
+  printf '%s\n' "${__fn_tool_path:?}"
 }
 
-readonly NL='
-'
+find_data_dir()
+{
+  local _path
+
+  # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
+  if test -n "${TOOLS_DATA_DIR-}" && _path="${TOOLS_DATA_DIR:?}" && test -d "${_path:?}"; then
+    :
+  elif test -n "${BASH_SOURCE-}" && _path="$(dirname "${BASH_SOURCE:?}")/data" && test -d "${_path:?}"; then
+    : # It is expected: expanding an array without an index gives the first element
+  elif test -n "${0-}" && _path="$(dirname "${0:?}")/data" && test -d "${_path:?}"; then
+    :
+  elif _path='./data' && test -d "${_path:?}"; then
+    :
+  else
+    return 1
+  fi
+
+  _path="$(realpath 2> /dev/null "${_path:?}" || readlink -f "${_path:?}")" || return 1
+  printf '%s\n' "${_path:?}"
+}
 
 get_custom_permission_declaration()
 {
@@ -129,27 +191,6 @@ get_custom_permission_declaration()
 EOF
 
   # <permission-tree android:name="com.google.android.googleapps.permission.GOOGLE_AUTH"/>
-}
-
-find_data_dir()
-{
-  local _path
-
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
-  if test -n "${TOOLS_DATA_DIR-}" && _path="${TOOLS_DATA_DIR:?}" && test -d "${_path:?}"; then
-    :
-  elif test -n "${BASH_SOURCE-}" && _path="$(dirname "${BASH_SOURCE:?}")/data" && test -d "${_path:?}"; then
-    : # It is expected: expanding an array without an index gives the first element
-  elif test -n "${0-}" && _path="$(dirname "${0:?}")/data" && test -d "${_path:?}"; then
-    :
-  elif _path='./data' && test -d "${_path:?}"; then
-    :
-  else
-    return 1
-  fi
-
-  _path="$(realpath 2> /dev/null "${_path:?}" || readlink -f "${_path:?}")" || return 1
-  printf '%s\n' "${_path:?}"
 }
 
 get_permission_declaration()
@@ -432,43 +473,10 @@ get_cert_sha256()
     return 255
   fi
 }
+#endregion
 
-set_android_sdk_path_if_unset()
-{
-  test -z "${ANDROID_HOME-}" || return
-
-  # Set the path of Android SDK if not already set
-  if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA?}/Android/Sdk"; then
-    ANDROID_HOME="${LOCALAPPDATA?}/Android/Sdk" # Windows
-  elif test -n "${HOME-}" && test -d "${HOME?}/Library/Android/sdk"; then
-    ANDROID_HOME="${HOME?}/Library/Android/sdk" # macOS
-  elif test -n "${HOME-}" && test -d "${HOME?}/.local/share/android/sdk"; then
-    ANDROID_HOME="${HOME?}/.local/share/android/sdk" # Linux (XDG)
-  elif test -n "${HOME-}" && test -d "${HOME?}/Android/Sdk"; then
-    ANDROID_HOME="${HOME?}/Android/Sdk" # Linux (Standard)
-  elif test -d '/usr/lib/android-sdk'; then
-    ANDROID_HOME='/usr/lib/android-sdk' # Linux (APT)
-  fi
-}
-
-find_android_build_tool()
-{
-  local __fn_tool_path
-
-  if __fn_tool_path="$(
-    unalias "${1:?}" 2> /dev/null
-    command 2> /dev/null -v "${1:?}"
-  )" && test -n "${__fn_tool_path?}"; then
-    :
-  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME?}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path?}"; then
-    :
-  else
-    return 1
-  fi
-
-  printf '%s\n' "${__fn_tool_path:?}"
-}
-
+# @section MAIN FUNCTION ----
+#region
 main()
 {
   local status backup_ifs base_name cmd_output pkg_name perm_list cert_sha256=''
@@ -484,6 +492,9 @@ main()
 
   export OUTPUT_DIR="${OUTPUT_DIR-}"
   # END: Global config
+
+  readonly NL='
+'
 
   if DATA_DIR="$(find_data_dir)" && test -d "${DATA_DIR:?}/perms"; then
     :
@@ -577,12 +588,15 @@ main()
 
   return "${status:?}"
 }
+#endregion
 
+# @section CLI ARGUMENTS PARSING ----
+#region
 execute_script='true'
 STATUS=0
-export SCRIPT_VERBOSE='false'
-export PLACEHOLDERS='false'
-export NO_CERT_DIGEST='false'
+SCRIPT_VERBOSE='false'
+PLACEHOLDERS='false'
+NO_CERT_DIGEST='false'
 
 while test "$#" -gt 0; do
   case "${1?}" in
@@ -622,7 +636,10 @@ while test "$#" -gt 0; do
 
   shift
 done
+#endregion
 
+# @section EXECUTION ENTRY POINT ----
+#region
 if test "${execute_script:?}" = 'true'; then
   show_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
@@ -633,3 +650,4 @@ fi
 
 pause_if_needed "${STATUS:?}"
 exit "${?}"
+#endregion
