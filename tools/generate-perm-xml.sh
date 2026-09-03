@@ -183,7 +183,8 @@ is_system_permission()
 {
   case "${1:?}" in
     android.permission.* | com.android.permission.* | com.android.*.permission.*) return 0 ;; # https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/res/AndroidManifest.xml
-    android.car.permission.*) return 0 ;;                                                     # https://android.googlesource.com/platform/packages/services/Car/+/HEAD/service/AndroidManifest.xml
+    android.intent.category.MASTER_CLEAR.permission.C2D_MESSAGE) return 0 ;;
+    android.car.permission.*) return 0 ;; # https://android.googlesource.com/platform/packages/services/Car/+/HEAD/service/AndroidManifest.xml
     *) ;;
   esac
   return 1
