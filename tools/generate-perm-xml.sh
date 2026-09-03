@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.17'
+readonly SCRIPT_VERSION='0.3.18'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -182,7 +182,8 @@ get_cert_sha256()
 is_system_permission()
 {
   case "${1:?}" in
-    'android.permission.'* | 'com.android.'*) return 0 ;;
+    android.permission.* | com.android.permission.* | com.android.*.permission.*) return 0 ;; # https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/res/AndroidManifest.xml
+    android.car.permission.*) return 0 ;;                                                     # https://android.googlesource.com/platform/packages/services/Car/+/HEAD/service/AndroidManifest.xml
     *) ;;
   esac
   return 1

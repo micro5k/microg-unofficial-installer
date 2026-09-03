@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.5.5'
+readonly SCRIPT_VERSION='1.5.6'
 readonly SCRIPT_AUTHOR='ale5000'
 
 ### CONFIGURATION ###
@@ -510,10 +510,11 @@ _minutil_is_perm_granted()
   return 1
 }
 
-_minutil_is_system_perm()
+_minutil_is_system_permission()
 {
   case "${1:?}" in
-    'android.permission.'* | 'com.android.'*) return 0 ;;
+    android.permission.* | com.android.permission.* | com.android.*.permission.*) return 0 ;; # https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/res/AndroidManifest.xml
+    android.car.permission.*) return 0 ;;                                                     # https://android.googlesource.com/platform/packages/services/Car/+/HEAD/service/AndroidManifest.xml
     *) ;;
   esac
   return 1
@@ -625,7 +626,7 @@ _minutil_grant_perms()
           # Unknown permission
           if test "${SCRIPT_VERBOSE:?}" != 'false'; then
             # ${CACHE_USABLE_PERMS} does NOT always list all permissions so it can't be used to filter permissions earlier in the code
-            if _minutil_is_system_perm "${_perm:?}" && ! contains "${_perm:?}" "${CACHE_USABLE_PERMS:?}"; then
+            if _minutil_is_system_permission "${_perm:?}" && ! contains "${_perm:?}" "${CACHE_USABLE_PERMS:?}"; then
               warn_msg "Permission NOT supported by your ROM => ${_perm?}"
             else
               warn_msg "Unknown permission => ${_perm?}"
