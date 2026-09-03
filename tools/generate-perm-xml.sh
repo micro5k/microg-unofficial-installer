@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.19'
+readonly SCRIPT_VERSION='0.3.20'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -178,8 +178,13 @@ get_apk_cert_sha256()
   else
     show_status 'Using keytool...'
     set_red_color
+    # IMPORTANT: This is slow and limited to v1 signatures
     __fn_cert_sha256="$(LC_ALL=C "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' :')" || return "${?}"
   fi
+
+  # IMPORTANT: This is faster but limited to v1 RSA signatures
+  # WARNING: Will fail if the META-INF folder contains an EC signature file instead of RSA
+  # __fn_cert_sha256="$(unzip -p "${1:?}" 'META-INF/*.RSA' | openssl pkcs7 -inform 'DER' -print_certs -quiet | openssl x509 -noout -sha256 -fingerprint | cut -d '=' -f '2' -s | tr -d -- ':')" || return "${?}"
 
   test "${#__fn_cert_sha256}" -eq 64 || {
     show_error 'Invalid SHA-256 hash length extracted'
@@ -192,9 +197,13 @@ get_apk_cert_sha256()
 is_system_permission()
 {
   case "${1:?}" in
-    android.permission.* | com.android.permission.* | com.android.*.permission.*) return 0 ;; # https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/res/AndroidManifest.xml
+    # https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/res/AndroidManifest.xml
+    com.android.vending.*) return 1 ;;
+    android.permission.* | com.android.permission.* | com.android.*.permission.*) return 0 ;;
     android.intent.category.MASTER_CLEAR.permission.C2D_MESSAGE) return 0 ;;
-    android.car.permission.*) return 0 ;; # https://android.googlesource.com/platform/packages/services/Car/+/HEAD/service/AndroidManifest.xml
+
+    # https://android.googlesource.com/platform/packages/services/Car/+/HEAD/service/AndroidManifest.xml
+    android.car.permission.*) return 0 ;;
     *) ;;
   esac
   return 1

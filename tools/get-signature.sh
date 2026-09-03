@@ -137,8 +137,13 @@ get_apk_cert_sha256()
   else
     show_status 'Using keytool...'
     set_red_color
+    # IMPORTANT: This is slow and limited to v1 signatures
     __fn_cert_sha256="$(LC_ALL=C "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' :')" || return "${?}"
   fi
+
+  # IMPORTANT: This is faster but limited to v1 RSA signatures
+  # WARNING: Will fail if the META-INF folder contains an EC signature file instead of RSA
+  # __fn_cert_sha256="$(unzip -p "${1:?}" 'META-INF/*.RSA' | openssl pkcs7 -inform 'DER' -print_certs -quiet | openssl x509 -noout -sha256 -fingerprint | cut -d '=' -f '2' -s | tr -d -- ':')" || return "${?}"
 
   test "${#__fn_cert_sha256}" -eq 64 || {
     show_error 'Invalid SHA-256 hash length extracted'
