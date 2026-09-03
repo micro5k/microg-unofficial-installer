@@ -22,11 +22,14 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.18'
+readonly SCRIPT_VERSION='0.3.19'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
 readonly MAX_API='37'
+
+readonly EX_UNAVAILABLE=69
+readonly EX_SOFTWARE=70
 #endregion
 
 set -u 2> /dev/null || :
@@ -164,19 +167,26 @@ find_data_dir()
   printf '%s\n' "${_path:?}"
 }
 
-get_cert_sha256()
+get_apk_cert_sha256()
 {
-  if test -n "${APKSIGNER_PATH-}"; then
+  local __fn_cert_sha256=''
+
+  if test -n "${APKSIGNER_PATH?}"; then
     show_status 'Using apksigner...'
     set_red_color
-    "${APKSIGNER_PATH:?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g; s/:$//'
-  elif test -n "${KEYTOOL_PATH-}"; then
+    __fn_cert_sha256="$("${APKSIGNER_PATH?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -i -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]')" || return "${?}"
+  else
     show_status 'Using keytool...'
     set_red_color
-    "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' '
-  else
-    return 255
+    __fn_cert_sha256="$(LC_ALL=C "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' :')" || return "${?}"
   fi
+
+  test "${#__fn_cert_sha256}" -eq 64 || {
+    show_error 'Invalid SHA-256 hash length extracted'
+    return "${EX_SOFTWARE?}"
+  }
+
+  printf '%s\n' "${__fn_cert_sha256?}" | sed -e 's/../&:/g; s/:$//'
 }
 
 is_system_permission()
@@ -529,7 +539,7 @@ main()
 
   if test -z "${AAPT_PATH?}"; then
     show_error 'Neither aapt2 nor aapt were found. You need to set AAPT_PATH'
-    return 255
+    return "${EX_UNAVAILABLE?}"
   fi
 
   if test "${NO_CERT_DIGEST:?}" = 'false'; then
@@ -539,7 +549,7 @@ main()
       :
     else
       show_error 'Neither apksigner nor keytool were found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH'
-      return 255
+      return "${EX_UNAVAILABLE?}"
     fi
   fi
 
@@ -555,7 +565,7 @@ main()
     cmd_output="$("${AAPT_PATH:?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || {
       status=9
       show_error "aapt failed"
-      shift || return 254
+      shift
       continue
     }
 
@@ -564,17 +574,10 @@ main()
     cmd_output=''
 
     if test "${NO_CERT_DIGEST:?}" = 'false'; then
-      cert_sha256="$(get_cert_sha256 "${1:?}")" || {
+      cert_sha256="$(get_apk_cert_sha256 "${1:?}")" || {
         status=12
-        show_error "get_cert_sha256() failed"
-        shift || return 254
-        continue
-      }
-
-      test "${#cert_sha256}" -eq 95 || {
-        status=13
-        show_error "get_cert_sha256() returned wrong digest"
-        shift || return 254
+        show_error "get_apk_cert_sha256() failed"
+        shift
         continue
       }
     fi
@@ -585,7 +588,7 @@ main()
       show_error "Parsing failed"
     }
 
-    shift || return 254
+    shift
   done
 
   return "${status:?}"

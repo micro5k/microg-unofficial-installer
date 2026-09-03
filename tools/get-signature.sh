@@ -18,9 +18,12 @@
 #region
 readonly SCRIPT_NAME='Android app signing certificate extractor'
 readonly SCRIPT_SHORTNAME='AppSignExt'
-readonly SCRIPT_VERSION='0.1.8'
+readonly SCRIPT_VERSION='0.1.9'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
+
+readonly EX_UNAVAILABLE=69
+readonly EX_SOFTWARE=70
 #endregion
 
 set -u 2> /dev/null || :
@@ -45,6 +48,16 @@ fix_posix_emulation_if_needed()
       cd "${BASH_SOURCE:?}/.." || printf '%s\n' 'ERROR: Failed to restore the correct working directory'
     fi
   fi
+}
+
+set_red_color()
+{
+  printf 1>&2 '\033[1;31m\r'
+}
+
+reset_color()
+{
+  printf 1>&2 '\033[0m\r'
 }
 
 show_status()
@@ -113,21 +126,26 @@ find_android_build_tool()
   printf '%s\n' "${__fn_tool_path:?}"
 }
 
-get_cert_sha256()
+get_apk_cert_sha256()
 {
-  local _cert_sha256
+  local __fn_cert_sha256=''
 
   if test -n "${APKSIGNER_PATH?}"; then
-    _cert_sha256="$("${APKSIGNER_PATH?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g; s/:$//')" || return 4
+    show_status 'Using apksigner...'
+    set_red_color
+    __fn_cert_sha256="$("${APKSIGNER_PATH?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -i -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]')" || return "${?}"
   else
-    _cert_sha256="$("${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' ')" || return 5
+    show_status 'Using keytool...'
+    set_red_color
+    __fn_cert_sha256="$(LC_ALL=C "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' :')" || return "${?}"
   fi
 
-  if test -n "${_cert_sha256?}"; then
-    printf '%s\n' "sha256-cert-digest=\"${_cert_sha256:?}\""
-  else
-    return 6
-  fi
+  test "${#__fn_cert_sha256}" -eq 64 || {
+    show_error 'Invalid SHA-256 hash length extracted'
+    return "${EX_SOFTWARE?}"
+  }
+
+  printf '%s\n' "${__fn_cert_sha256?}" | sed -e 's/../&:/g; s/:$//'
 }
 #endregion
 
@@ -135,6 +153,8 @@ get_cert_sha256()
 #region
 main()
 {
+  local cert_sha256=''
+
   fix_posix_emulation_if_needed
 
   # BEGIN: Global config (overridable via env)
@@ -155,10 +175,12 @@ main()
     :
   else
     show_error 'Neither apksigner nor keytool were found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH'
-    return 255
+    return "${EX_UNAVAILABLE?}"
   fi
 
-  get_cert_sha256 "${@}"
+  cert_sha256="$(get_apk_cert_sha256 "${@}")" || return "${?}"
+  reset_color
+  printf '%s\n' "sha256-cert-digest=\"${cert_sha256:?}\""
 }
 #endregion
 
@@ -210,6 +232,7 @@ if test "${execute_script:?}" = 'true'; then
 
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
+  reset_color
 fi
 
 pause_if_needed "${STATUS:?}"
