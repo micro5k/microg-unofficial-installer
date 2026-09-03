@@ -164,6 +164,60 @@ find_data_dir()
   printf '%s\n' "${_path:?}"
 }
 
+get_cert_sha256()
+{
+  if test -n "${APKSIGNER_PATH-}"; then
+    show_status 'Using apksigner...'
+    set_red_color
+    "${APKSIGNER_PATH:?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g; s/:$//'
+  elif test -n "${KEYTOOL_PATH-}"; then
+    show_status 'Using keytool...'
+    set_red_color
+    "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' '
+  else
+    return 255
+  fi
+}
+
+is_system_permission()
+{
+  case "${1:?}" in
+    'android.permission.'* | 'com.android.'*) return 0 ;;
+    *) ;;
+  esac
+  return 1
+}
+
+map_permission_group_to_label()
+{
+  # Info:
+  # - https://android.googlesource.com/platform/cts/+/ed6a170ab0d5e0365bc494a8004ee9ac50318892/tests/tests/permission3/src/android/permission3/cts/BaseUsePermissionTest.kt
+  # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/res/res/values/strings.xml
+
+  case "${1?}" in
+    '' | 'android.permission-group.UNDEFINED') printf '%s\n' 'Undefined' ;;
+    'android.permission-group.CALENDAR') printf '%s\n' 'Calendar' ;;
+    'android.permission-group.CALL_LOG') printf '%s\n' 'Call logs' ;;
+    'android.permission-group.CAMERA') printf '%s\n' 'Camera' ;;
+    'android.permission-group.CONTACTS') printf '%s\n' 'Contacts / Accounts' ;;
+    'android.permission-group.LOCATION') printf '%s\n' 'Location' ;;
+    'android.permission-group.MICROPHONE') printf '%s\n' 'Microphone' ;;
+    'android.permission-group.NEARBY_DEVICES') printf '%s\n' 'Nearby devices' ;;
+    'android.permission-group.NOTIFICATIONS') printf '%s\n' 'z)Notifications' ;;
+    'android.permission-group.PHONE') printf '%s\n' 'Phone' ;;
+    'android.permission-group.SENSORS') printf '%s\n' 'Body sensors' ;;
+    'android.permission-group.SMS') printf '%s\n' 'SMS' ;;
+    'android.permission-group.STORAGE') printf '%s\n' 'Storage / Files' ;;
+
+    *) printf '%s\n' "${1:?}" ;;
+  esac
+}
+
+get_permission_declaration()
+{
+  grep -m 1 -F -e "android:name=\"${1:?}\"" -- "${DATA_DIR:?}/perms/base-permissions-api-${2:?}.xml" || return 1
+}
+
 get_custom_permission_declaration()
 {
   grep -H -F -e "android:name=\"${1:?}\"" 0<< 'EOF'
@@ -191,20 +245,6 @@ get_custom_permission_declaration()
 EOF
 
   # <permission-tree android:name="com.google.android.googleapps.permission.GOOGLE_AUTH"/>
-}
-
-get_permission_declaration()
-{
-  grep -m 1 -F -e "android:name=\"${1:?}\"" -- "${DATA_DIR:?}/perms/base-permissions-api-${2:?}.xml" || return 1
-}
-
-is_system_permission()
-{
-  case "${1:?}" in
-    'android.permission.'* | 'com.android.'*) return 0 ;;
-    *) ;;
-  esac
-  return 1
 }
 
 begin_xml()
@@ -235,44 +275,6 @@ begin_xml()
   fi
 }
 
-terminate_xml()
-{
-  if test "${1:?}" = 'privapp-permissions'; then
-    printf '%s\n' '    </privapp-permissions>'
-    printf '%s\n' '</permissions>'
-  elif test "${1:?}" = 'default-permissions'; then
-    printf '%s\n' '    </exception>'
-    printf '%s\n' '</exceptions>'
-  else
-    return 1
-  fi
-}
-
-map_permission_group_to_label()
-{
-  # Info:
-  # - https://android.googlesource.com/platform/cts/+/ed6a170ab0d5e0365bc494a8004ee9ac50318892/tests/tests/permission3/src/android/permission3/cts/BaseUsePermissionTest.kt
-  # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/res/res/values/strings.xml
-
-  case "${1?}" in
-    '' | 'android.permission-group.UNDEFINED') printf '%s\n' 'Undefined' ;;
-    'android.permission-group.CALENDAR') printf '%s\n' 'Calendar' ;;
-    'android.permission-group.CALL_LOG') printf '%s\n' 'Call logs' ;;
-    'android.permission-group.CAMERA') printf '%s\n' 'Camera' ;;
-    'android.permission-group.CONTACTS') printf '%s\n' 'Contacts / Accounts' ;;
-    'android.permission-group.LOCATION') printf '%s\n' 'Location' ;;
-    'android.permission-group.MICROPHONE') printf '%s\n' 'Microphone' ;;
-    'android.permission-group.NEARBY_DEVICES') printf '%s\n' 'Nearby devices' ;;
-    'android.permission-group.NOTIFICATIONS') printf '%s\n' 'z)Notifications' ;;
-    'android.permission-group.PHONE') printf '%s\n' 'Phone' ;;
-    'android.permission-group.SENSORS') printf '%s\n' 'Body sensors' ;;
-    'android.permission-group.SMS') printf '%s\n' 'SMS' ;;
-    'android.permission-group.STORAGE') printf '%s\n' 'Storage / Files' ;;
-
-    *) printf '%s\n' "${1:?}" ;;
-  esac
-}
-
 append_perm_to_xml()
 {
   local _xml_compat_info
@@ -301,6 +303,19 @@ append_perm_to_xml()
       ;;
     *) return 1 ;;
   esac
+}
+
+terminate_xml()
+{
+  if test "${1:?}" = 'privapp-permissions'; then
+    printf '%s\n' '    </privapp-permissions>'
+    printf '%s\n' '</permissions>'
+  elif test "${1:?}" = 'default-permissions'; then
+    printf '%s\n' '    </exception>'
+    printf '%s\n' '</exceptions>'
+  else
+    return 1
+  fi
 }
 
 parse_perms_and_generate_xml_files()
@@ -456,21 +471,6 @@ parse_perms_and_generate_xml_files()
       unset LAST_PERM_GROUP
       terminate_xml 'default-permissions'
     } 1> "${OUTPUT_DIR:?}/${_filename:?}"
-  fi
-}
-
-get_cert_sha256()
-{
-  if test -n "${APKSIGNER_PATH-}"; then
-    show_status 'Using apksigner...'
-    set_red_color
-    "${APKSIGNER_PATH:?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]' | sed -e 's/../&:/g; s/:$//'
-  elif test -n "${KEYTOOL_PATH-}"; then
-    show_status 'Using keytool...'
-    set_red_color
-    "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' '
-  else
-    return 255
   fi
 }
 #endregion
