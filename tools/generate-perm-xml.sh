@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.20'
+readonly SCRIPT_VERSION='0.3.21'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -53,7 +53,7 @@ fix_posix_emulation_if_needed()
     #  working directory to 'C:\WINDOWS\system32'
     # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
     if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
-      cd "${BASH_SOURCE:?}/.." || printf '%s\n' 'ERROR: Failed to restore the correct working directory'
+      cd "${BASH_SOURCE:?}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
     fi
   fi
 }
@@ -187,7 +187,7 @@ get_apk_cert_sha256()
   # __fn_cert_sha256="$(unzip -p "${1:?}" 'META-INF/*.RSA' | openssl pkcs7 -inform 'DER' -print_certs -quiet | openssl x509 -noout -sha256 -fingerprint | cut -d '=' -f '2' -s | tr -d -- ':')" || return "${?}"
 
   test "${#__fn_cert_sha256}" -eq 64 || {
-    show_error 'Invalid SHA-256 hash length extracted'
+    show_error "Extracted SHA-256 hash length is invalid (got ${#__fn_cert_sha256} chars, expected 64)"
     return "${EX_SOFTWARE?}"
   }
 
@@ -514,20 +514,36 @@ main()
   export OUTPUT_DIR="${OUTPUT_DIR-}"
   # END: Global config
 
-  readonly NL='
-'
+  if test -z "${AAPT_PATH?}"; then
+    show_error 'Neither "aapt2" nor "aapt" could be found. You need to set AAPT_PATH'
+    return "${EX_UNAVAILABLE?}"
+  fi
 
-  if DATA_DIR="$(find_data_dir)" && test -d "${DATA_DIR:?}/perms"; then
+  if test "${NO_CERT_DIGEST:?}" = 'false'; then
+    if test -n "${APKSIGNER_PATH?}" || APKSIGNER_PATH="$(find_android_build_tool 'apksigner' || command 2> /dev/null -v 'apksigner.bat')"; then
+      :
+    elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command 2> /dev/null -v 'keytool')"; then
+      :
+    else
+      show_error 'Neither "apksigner" nor "keytool" could be found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH'
+      return "${EX_UNAVAILABLE?}"
+    fi
+  fi
+
+  if DATA_DIR="$(find_data_dir)" && test -f "${DATA_DIR:?}/perms/.completed"; then
     :
   else
-    show_error 'You must execute dl-perm-list.sh before using this script'
+    show_error 'Required data not found. Please execute "dl-perm-list.sh" before running this script'
     return 4
   fi
 
   test -n "${1-}" || {
-    show_error 'You must pass the filename of the file to be processed'
-    return 5
+    show_error 'Missing required argument. Please specify one or more APK file paths to process'
+    return 3
   }
+
+  readonly NL='
+'
 
   test "${1:?}" != '-' || {
     backup_ifs="${IFS-}"
@@ -545,22 +561,6 @@ main()
 
   test -n "${OUTPUT_DIR?}" || OUTPUT_DIR="${BASE_DIR:?}/output"
   test -d "${OUTPUT_DIR:?}" || mkdir -p -- "${OUTPUT_DIR:?}" || return 8
-
-  if test -z "${AAPT_PATH?}"; then
-    show_error 'Neither aapt2 nor aapt were found. You need to set AAPT_PATH'
-    return "${EX_UNAVAILABLE?}"
-  fi
-
-  if test "${NO_CERT_DIGEST:?}" = 'false'; then
-    if test -n "${APKSIGNER_PATH?}" || APKSIGNER_PATH="$(find_android_build_tool 'apksigner' || command 2> /dev/null -v 'apksigner.bat')"; then
-      :
-    elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command 2> /dev/null -v 'keytool')"; then
-      :
-    else
-      show_error 'Neither apksigner nor keytool were found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH'
-      return "${EX_UNAVAILABLE?}"
-    fi
-  fi
 
   printf 1>&2 '%s\n' "Output dir: ${OUTPUT_DIR:?}"
 
