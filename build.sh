@@ -8,8 +8,8 @@
 last_command="${_}" # IMPORTANT: This line must be at the start of the script before any other command otherwise it will not work
 
 set -e
-# shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
-case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) if set -o pipefail; then export USING_PIPEFAIL='true'; else echo 1>&2 'Failed: pipefail'; fi ;; *) ;; esac
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
+case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) if set -o pipefail; then export USING_PIPEFAIL='true'; else echo 1>&2 'ERROR: pipefail failed'; fi ;; *) echo 1>&2 'WARNING: pipefail not supported' ;; esac
 
 # REUSE-IgnoreStart
 cat << 'LICENSE'

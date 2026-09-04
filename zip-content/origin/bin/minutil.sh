@@ -14,8 +14,8 @@ readonly SCRIPT_AUTHOR='ale5000'
 ### CONFIGURATION ###
 
 set -e
-# shellcheck disable=SC3040 # Ignore: In POSIX sh, set option pipefail is undefined
-case "$(set 2> /dev/null -o || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'Failed: pipefail' ;; *) ;; esac
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
+case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) echo 1>&2 'WARNING: pipefail not supported' ;; esac
 
 POSIXLY_CORRECT='y'
 export POSIXLY_CORRECT

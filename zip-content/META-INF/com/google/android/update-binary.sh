@@ -11,12 +11,8 @@ echo 'PRE-LOADER' || :
 
 umask 022 || :
 set -u 2> /dev/null || :
-
-# Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-{
-  # shellcheck disable=all
-  (set -o pipefail 1> /dev/null 2>&1) && set -o pipefail || :
-}
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
+case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || : ;; *) ;; esac
 
 ### GLOBAL VARIABLES ###
 
