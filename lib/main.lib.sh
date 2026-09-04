@@ -462,9 +462,12 @@ verify_sha256_or_delete()
 
 _get_byte_length()
 {
-  local LC_ALL
-  export LC_ALL=C
+  local LC_ALL=''
+
+  export LC_ALL='C'
+  set -- "${1?}" || return "${?}"
   printf '%s\n' "${#1}"
+  unset LC_ALL
 }
 
 _dl_validate_exit_code()
