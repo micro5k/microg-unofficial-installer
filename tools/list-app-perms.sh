@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Android app permissions lister'
 readonly SCRIPT_SHORTNAME='AppPermList'
-readonly SCRIPT_VERSION='0.1.10'
+readonly SCRIPT_VERSION='0.1.11'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -167,8 +167,16 @@ main()
     base_name="$(basename "${1:-''}" || printf '%s\n' 'unknown')"
     printf '\n%s\n\n' "Filename: ${base_name:?}"
 
-    "${AAPT_PATH?}" dump permissions "${1?}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL='C.UTF-8' sort || {
+    show_status 'Using aapt...'
+    cmd_output="$("${AAPT_PATH?}" dump permissions "${1?}")" || {
       show_error "Failed to extract package manifest metadata from '${1?}' (exit code: ${?})"
+      status="${EX_DATAERR?}"
+      shift
+      continue
+    }
+
+    printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL='C.UTF-8' sort || {
+      show_error "Failed to process package permissions extracted from '${1?}' (exit code: ${?})"
       status="${EX_DATAERR?}"
     }
 
