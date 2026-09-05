@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.23'
+readonly SCRIPT_VERSION='0.3.24'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -568,11 +568,11 @@ main()
   while test "$#" -gt 0; do
     reset_color
     base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
-    printf 1>&2 '\n%s\n' "Filename: ${base_name:?}"
+    printf '\n%s\n\n' "Filename: ${base_name:?}"
 
     show_status 'Using aapt...'
     set_red_color
-    cmd_output="$("${AAPT_PATH?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || {
+    cmd_output="$("${AAPT_PATH?}" dump permissions "${1:?}")" || {
       show_error "Failed to extract package manifest metadata from '${1?}' (exit code: ${?})"
       status=9
       shift

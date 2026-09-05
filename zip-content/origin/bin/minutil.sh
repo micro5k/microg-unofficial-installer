@@ -8,7 +8,7 @@
 
 readonly SCRIPT_NAME='MinUtil'
 readonly SCRIPT_SHORTNAME="${SCRIPT_NAME?}"
-readonly SCRIPT_VERSION='1.5.6'
+readonly SCRIPT_VERSION='1.5.7'
 readonly SCRIPT_AUTHOR='ale5000'
 
 ### CONFIGURATION ###
@@ -513,8 +513,13 @@ _minutil_is_perm_granted()
 _minutil_is_system_permission()
 {
   case "${1:?}" in
-    android.permission.* | com.android.permission.* | com.android.*.permission.*) return 0 ;; # https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/res/AndroidManifest.xml
-    android.car.permission.*) return 0 ;;                                                     # https://android.googlesource.com/platform/packages/services/Car/+/HEAD/service/AndroidManifest.xml
+    # https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/res/AndroidManifest.xml
+    com.android.vending.*) return 1 ;;
+    android.permission.* | com.android.permission.* | com.android.*.permission.*) return 0 ;;
+    android.intent.category.MASTER_CLEAR.permission.C2D_MESSAGE) return 0 ;;
+
+    # https://android.googlesource.com/platform/packages/services/Car/+/HEAD/service/AndroidManifest.xml
+    android.car.permission.*) return 0 ;;
     *) ;;
   esac
   return 1
