@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.25'
+readonly SCRIPT_VERSION='0.3.27'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -62,9 +62,9 @@ fix_posix_emulation_if_needed()
   fi
 }
 
-set_red_color()
+set_yellow_color()
 {
-  printf 1>&2 '\033[1;31m\r'
+  printf 1>&2 '\033[1;33m\r'
 }
 
 reset_color()
@@ -177,14 +177,15 @@ get_apk_cert_sha256()
 
   if test -n "${APKSIGNER_PATH?}"; then
     show_status 'Using apksigner...'
-    set_red_color
+    set_yellow_color
     __fn_cert_sha256="$("${APKSIGNER_PATH?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -i -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]')" || return "${?}"
   else
     show_status 'Using keytool...'
-    set_red_color
+    set_yellow_color
     # IMPORTANT: This is slow and limited to v1 signatures
     __fn_cert_sha256="$(LC_ALL=C "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' :')" || return "${?}"
   fi
+  reset_color
 
   # IMPORTANT: This is faster but limited to v1 RSA signatures
   # WARNING: Will fail if the META-INF folder contains an EC signature file instead of RSA
@@ -579,13 +580,14 @@ main()
     printf '\n%s\n\n' "Filename: ${base_name:?}"
 
     show_status 'Using aapt...'
-    set_red_color
+    set_yellow_color
     cmd_output="$("${AAPT_PATH?}" dump permissions "${1?}")" || {
       show_error "Failed to extract package manifest metadata from '${1?}' (exit code: ${?})"
       status="${EX_DATAERR?}"
       shift
       continue
     }
+    reset_color
 
     pkg_name="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'package: ' | cut -d ':' -f '2-' -s | cut -b '2-')" || return 10
     perm_list="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission:' | cut -d "'" -f '2' -s | LC_ALL='C.UTF-8' sort)" || return 11

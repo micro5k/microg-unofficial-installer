@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Android app permissions lister'
 readonly SCRIPT_SHORTNAME='AppPermList'
-readonly SCRIPT_VERSION='0.1.11'
+readonly SCRIPT_VERSION='0.1.12'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -52,6 +52,16 @@ fix_posix_emulation_if_needed()
   fi
 }
 
+set_yellow_color()
+{
+  printf 1>&2 '\033[1;33m\r'
+}
+
+reset_color()
+{
+  printf 1>&2 '\033[0m\r'
+}
+
 show_status()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
@@ -59,7 +69,7 @@ show_status()
 
 show_error()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
+  printf 1>&2 '\n\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
 }
 
 pause_if_needed()
@@ -164,16 +174,19 @@ main()
   esac
 
   while test "$#" -gt 0; do
+    reset_color
     base_name="$(basename "${1:-''}" || printf '%s\n' 'unknown')"
     printf '\n%s\n\n' "Filename: ${base_name:?}"
 
     show_status 'Using aapt...'
+    set_yellow_color
     cmd_output="$("${AAPT_PATH?}" dump permissions "${1?}")" || {
       show_error "Failed to extract package manifest metadata from '${1?}' (exit code: ${?})"
       status="${EX_DATAERR?}"
       shift
       continue
     }
+    reset_color
 
     printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL='C.UTF-8' sort || {
       show_error "Failed to process package permissions extracted from '${1?}' (exit code: ${?})"
@@ -235,6 +248,7 @@ if test "${execute_script:?}" = 'true'; then
 
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
+  reset_color
 fi
 
 pause_if_needed "${STATUS:?}"
