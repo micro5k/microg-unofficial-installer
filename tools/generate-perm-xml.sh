@@ -549,7 +549,7 @@ main()
     IFS="${NL:?}"
     set -f || :
     # shellcheck disable=SC2046 # Word splitting is intended
-    set -- $(cat || printf '%s\n' '__CAT_FAILED__')
+    set -- $(cat || printf '%s\n' '__CAT_FAILED__' || :)
     set +f || :
     IFS="${backup_ifs?}"
   fi
