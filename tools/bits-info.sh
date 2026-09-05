@@ -22,7 +22,7 @@
 
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.37'
+SCRIPT_VERSION='1.5.38'
 SCRIPT_AUTHOR='ale5000'
 SCRIPT_YEAR='2024'
 
@@ -30,7 +30,7 @@ SCRIPT_YEAR='2024'
 
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
-case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) echo 1>&2 'WARNING: pipefail not supported' ;; esac
+case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) ;; esac
 
 # The "obosh" shell does NOT support "command" while the "posh" shell does NOT support "type"
 {
@@ -42,10 +42,8 @@ case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || ec
   type "${@}"
 }
 
-# For "zsh" shell
-if command 1> /dev/null 2>&1 -v 'setopt'; then
-  setopt SH_WORD_SPLIT || printf 1>&2 '%s\n' 'Failed: setopt'
-fi
+# Only for "zsh" shell
+if command -v 'setopt' 1> /dev/null 2>&1; then setopt SH_WORD_SPLIT || echo 1>&2 'ERROR: setopt failed'; fi
 
 # Workaround for shells without support for local (example: ksh pbosh obosh)
 command 1> /dev/null 2>&1 -v 'local' || {

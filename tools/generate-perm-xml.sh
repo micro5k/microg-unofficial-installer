@@ -22,15 +22,18 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.24'
+readonly SCRIPT_VERSION='0.3.25'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
 readonly MAX_API='37'
 
 readonly EX_USAGE=64
+readonly EX_DATAERR=65
+readonly EX_NOINPUT=66
 readonly EX_UNAVAILABLE=69
 readonly EX_SOFTWARE=70
+readonly EX_CONFIG=78
 #endregion
 
 set -u 2> /dev/null || :
@@ -501,7 +504,8 @@ parse_perms_and_generate_xml_files()
 #region
 main()
 {
-  local status=0 base_name='' backup_ifs cmd_output pkg_name perm_list cert_sha256=''
+  local backup_ifs="${IFS-}"
+  local status=0 base_name='' cmd_output='' pkg_name perm_list cert_sha256=''
 
   fix_posix_emulation_if_needed
 
@@ -535,46 +539,50 @@ main()
     :
   else
     show_error 'Required data not found. Please execute "dl-perm-list.sh" before running this script'
-    return 6
+    return "${EX_CONFIG?}"
   fi
-
-  test -n "${1-}" || {
-    show_error 'Missing required argument. Please specify one or more APK file paths to process'
-    return "${EX_USAGE?}"
-  }
 
   readonly NL='
 '
 
-  test "${1:?}" != '-' || {
-    backup_ifs="${IFS-}"
+  if test "$#" -eq 1 && test "${1?}" = '-'; then
     IFS="${NL:?}"
-
     set -f || :
     # shellcheck disable=SC2046 # Word splitting is intended
-    set -- $(cat | sort || :) || ui_error 'Failed expanding stdin inside main()'
+    set -- $(cat || printf '%s\n' '__CAT_FAILED__')
     set +f || :
-
     IFS="${backup_ifs?}"
-  }
+  fi
+
+  case "${1-}" in
+    '')
+      show_error 'Missing required argument. Please specify one or more APK file paths to process'
+      return "${EX_USAGE?}"
+      ;;
+    '__CAT_FAILED__')
+      show_error "Failed to read arguments from standard input"
+      return "${EX_NOINPUT?}"
+      ;;
+    *) ;;
+  esac
 
   BASE_DIR="$(realpath 2> /dev/null . || readlink 2> /dev/null -f .)" || return 7
 
   test -n "${OUTPUT_DIR?}" || OUTPUT_DIR="${BASE_DIR:?}/output"
   test -d "${OUTPUT_DIR:?}" || mkdir -p -- "${OUTPUT_DIR:?}" || return 8
 
-  printf 1>&2 '%s\n' "Output dir: ${OUTPUT_DIR:?}"
+  printf '%s\n' "Output dir: ${OUTPUT_DIR?}"
 
   while test "$#" -gt 0; do
     reset_color
-    base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
+    base_name="$(basename "${1:-''}" || printf '%s\n' 'unknown')"
     printf '\n%s\n\n' "Filename: ${base_name:?}"
 
     show_status 'Using aapt...'
     set_red_color
-    cmd_output="$("${AAPT_PATH?}" dump permissions "${1:?}")" || {
+    cmd_output="$("${AAPT_PATH?}" dump permissions "${1?}")" || {
       show_error "Failed to extract package manifest metadata from '${1?}' (exit code: ${?})"
-      status=9
+      status="${EX_DATAERR?}"
       shift
       continue
     }
@@ -586,7 +594,7 @@ main()
     if test "${NO_CERT_DIGEST:?}" = 'false'; then
       cert_sha256="$(get_apk_cert_sha256 "${1:?}")" || {
         show_error "Failed to extract certificate SHA-256 fingerprint from '${1?}' (exit code: ${?})"
-        status=12
+        status="${EX_DATAERR?}"
         shift
         continue
       }

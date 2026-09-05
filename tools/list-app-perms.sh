@@ -18,11 +18,13 @@
 #region
 readonly SCRIPT_NAME='Android app permissions lister'
 readonly SCRIPT_SHORTNAME='AppPermList'
-readonly SCRIPT_VERSION='0.1.9'
+readonly SCRIPT_VERSION='0.1.10'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
 readonly EX_USAGE=64
+readonly EX_DATAERR=65
+readonly EX_NOINPUT=66
 readonly EX_UNAVAILABLE=69
 #endregion
 
@@ -121,7 +123,8 @@ find_android_build_tool()
 #region
 main()
 {
-  local status=0 base_name=''
+  local backup_ifs="${IFS-}"
+  local status=0 base_name='' cmd_output=''
 
   fix_posix_emulation_if_needed
 
@@ -136,18 +139,37 @@ main()
     return "${EX_UNAVAILABLE?}"
   fi
 
-  test -n "${1-}" || {
-    show_error 'Missing required argument. Please specify one or more APK file paths to process'
-    return "${EX_USAGE?}"
-  }
+  readonly NL='
+'
+
+  if test "$#" -eq 1 && test "${1?}" = '-'; then
+    IFS="${NL:?}"
+    set -f || :
+    # shellcheck disable=SC2046 # Word splitting is intended
+    set -- $(cat || printf '%s\n' '__CAT_FAILED__')
+    set +f || :
+    IFS="${backup_ifs?}"
+  fi
+
+  case "${1-}" in
+    '')
+      show_error 'Missing required argument. Please specify one or more APK file paths to process'
+      return "${EX_USAGE?}"
+      ;;
+    '__CAT_FAILED__')
+      show_error "Failed to read arguments from standard input"
+      return "${EX_NOINPUT?}"
+      ;;
+    *) ;;
+  esac
 
   while test "$#" -gt 0; do
-    base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
+    base_name="$(basename "${1:-''}" || printf '%s\n' 'unknown')"
     printf '\n%s\n\n' "Filename: ${base_name:?}"
 
-    "${AAPT_PATH?}" dump permissions "${1:?}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL='C.UTF-8' sort || {
+    "${AAPT_PATH?}" dump permissions "${1?}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL='C.UTF-8' sort || {
       show_error "Failed to extract package manifest metadata from '${1?}' (exit code: ${?})"
-      status=9
+      status="${EX_DATAERR?}"
     }
 
     shift
