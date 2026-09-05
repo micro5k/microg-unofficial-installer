@@ -18,10 +18,11 @@
 #region
 readonly SCRIPT_NAME='Android app permissions lister'
 readonly SCRIPT_SHORTNAME='AppPermList'
-readonly SCRIPT_VERSION='0.1.8'
+readonly SCRIPT_VERSION='0.1.9'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
+readonly EX_USAGE=64
 readonly EX_UNAVAILABLE=69
 #endregion
 
@@ -120,6 +121,8 @@ find_android_build_tool()
 #region
 main()
 {
+  local status=0 base_name=''
+
   fix_posix_emulation_if_needed
 
   # BEGIN: Global config (overridable via env)
@@ -134,11 +137,23 @@ main()
   fi
 
   test -n "${1-}" || {
-    show_error 'Missing required argument. Please specify the APK file path to process'
-    return 3
+    show_error 'Missing required argument. Please specify one or more APK file paths to process'
+    return "${EX_USAGE?}"
   }
 
-  "${AAPT_PATH?}" dump permissions "${@}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | sort || return "${?}"
+  while test "$#" -gt 0; do
+    base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
+    printf '\n%s\n\n' "Filename: ${base_name:?}"
+
+    "${AAPT_PATH?}" dump permissions "${1:?}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL='C.UTF-8' sort || {
+      show_error "Failed to extract package manifest metadata from '${1?}' (exit code: ${?})"
+      status=9
+    }
+
+    shift
+  done
+
+  return "${status:?}"
 }
 #endregion
 

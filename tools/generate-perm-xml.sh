@@ -501,7 +501,7 @@ parse_perms_and_generate_xml_files()
 #region
 main()
 {
-  local status backup_ifs base_name cmd_output pkg_name perm_list cert_sha256=''
+  local status=0 base_name='' backup_ifs cmd_output pkg_name perm_list cert_sha256=''
 
   fix_posix_emulation_if_needed
 
@@ -565,14 +565,14 @@ main()
 
   printf 1>&2 '%s\n' "Output dir: ${OUTPUT_DIR:?}"
 
-  status=0
   while test "$#" -gt 0; do
+    reset_color
     base_name="$(basename "${1:?}" || printf '%s\n' 'unknown')"
     printf 1>&2 '\n%s\n' "Filename: ${base_name:?}"
 
     show_status 'Using aapt...'
     set_red_color
-    cmd_output="$("${AAPT_PATH:?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || {
+    cmd_output="$("${AAPT_PATH?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || {
       show_error "Failed to extract package manifest metadata from '${1?}' (exit code: ${?})"
       status=9
       shift
@@ -580,7 +580,7 @@ main()
     }
 
     pkg_name="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'package: ' | cut -d ':' -f '2-' -s | cut -b '2-')" || return 10
-    perm_list="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission: ' | cut -d "'" -f '2' -s | LC_ALL='C.UTF-8' sort)" || return 11
+    perm_list="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'uses-permission:' | cut -d "'" -f '2' -s | LC_ALL='C.UTF-8' sort)" || return 11
     cmd_output=''
 
     if test "${NO_CERT_DIGEST:?}" = 'false'; then
@@ -597,7 +597,6 @@ main()
       status="${?}"
       show_error "Parsing failed"
     }
-    reset_color
 
     shift
   done
