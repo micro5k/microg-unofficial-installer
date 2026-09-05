@@ -1136,7 +1136,7 @@ fix_posix_emulation_if_needed()
   if test -f '/usr/bin/cygpath'; then
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
     if test "${USR_BIN_FIXED:-0}" = '0'; then
-      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-%empty}" ;; esac
+      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-/bin}" ;; esac
     fi
 
     # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the

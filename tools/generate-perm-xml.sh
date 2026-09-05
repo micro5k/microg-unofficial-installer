@@ -22,12 +22,13 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.22'
+readonly SCRIPT_VERSION='0.3.23'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
 readonly MAX_API='37'
 
+readonly EX_USAGE=64
 readonly EX_UNAVAILABLE=69
 readonly EX_SOFTWARE=70
 #endregion
@@ -46,7 +47,7 @@ fix_posix_emulation_if_needed()
   if test -f '/usr/bin/cygpath'; then
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
     if test "${USR_BIN_FIXED:-0}" = '0'; then
-      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-%empty}" ;; esac
+      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-/bin}" ;; esac
     fi
 
     # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
@@ -534,12 +535,12 @@ main()
     :
   else
     show_error 'Required data not found. Please execute "dl-perm-list.sh" before running this script'
-    return 4
+    return 6
   fi
 
   test -n "${1-}" || {
     show_error 'Missing required argument. Please specify one or more APK file paths to process'
-    return 3
+    return "${EX_USAGE?}"
   }
 
   readonly NL='
@@ -572,8 +573,8 @@ main()
     show_status 'Using aapt...'
     set_red_color
     cmd_output="$("${AAPT_PATH:?}" dump permissions "${1:?}" | grep -F -e 'package: ' -e 'uses-permission: ')" || {
+      show_error "Failed to extract package manifest metadata from '${1?}' (exit code: ${?})"
       status=9
-      show_error "aapt failed"
       shift
       continue
     }
@@ -584,8 +585,8 @@ main()
 
     if test "${NO_CERT_DIGEST:?}" = 'false'; then
       cert_sha256="$(get_apk_cert_sha256 "${1:?}")" || {
+        show_error "Failed to extract certificate SHA-256 fingerprint from '${1?}' (exit code: ${?})"
         status=12
-        show_error "get_apk_cert_sha256() failed"
         shift
         continue
       }
@@ -596,6 +597,7 @@ main()
       status="${?}"
       show_error "Parsing failed"
     }
+    reset_color
 
     shift
   done

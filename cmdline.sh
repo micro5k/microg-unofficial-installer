@@ -43,8 +43,7 @@ if test "${A5K_FUNCTIONS_INCLUDED:-false}" = 'false'; then
 
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
     if test -f '/usr/bin/cygpath' && test "${USR_BIN_FIXED:-0}" = '0'; then
-      PATH="/usr/bin:${PATH-}"
-      export PATH="${PATH%":"}"
+      export PATH="/usr/bin:${PATH:-/bin}"
       export USR_BIN_FIXED=1
     fi
 

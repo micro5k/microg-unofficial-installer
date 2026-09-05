@@ -18,10 +18,11 @@
 #region
 readonly SCRIPT_NAME='Android app signing certificate extractor'
 readonly SCRIPT_SHORTNAME='AppSignExt'
-readonly SCRIPT_VERSION='0.1.10'
+readonly SCRIPT_VERSION='0.1.11'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
+readonly EX_USAGE=64
 readonly EX_UNAVAILABLE=69
 readonly EX_SOFTWARE=70
 #endregion
@@ -38,7 +39,7 @@ fix_posix_emulation_if_needed()
   if test -f '/usr/bin/cygpath'; then
     # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
     if test "${USR_BIN_FIXED:-0}" = '0'; then
-      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-%empty}" ;; esac
+      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-/bin}" ;; esac
     fi
 
     # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
@@ -180,7 +181,7 @@ main()
 
   test -n "${1-}" || {
     show_error 'Missing required argument. Please specify the APK file path to process'
-    return 3
+    return "${EX_USAGE?}"
   }
 
   cert_sha256="$(get_apk_cert_sha256 "${@}")" || return "${?}"
