@@ -18,13 +18,16 @@
 #region
 readonly SCRIPT_NAME='Android app signing certificate extractor'
 readonly SCRIPT_SHORTNAME='AppSignExt'
-readonly SCRIPT_VERSION='0.1.11'
+readonly SCRIPT_VERSION='0.1.12'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
 readonly EX_USAGE=64
+readonly EX_DATAERR=65
+readonly EX_NOINPUT=66
 readonly EX_UNAVAILABLE=69
 readonly EX_SOFTWARE=70
+readonly EX_OSERR=71
 #endregion
 
 set -u 2> /dev/null || :
@@ -51,9 +54,9 @@ fix_posix_emulation_if_needed()
   fi
 }
 
-set_red_color()
+set_yellow_color()
 {
-  printf 1>&2 '\033[1;31m\r'
+  printf 1>&2 '\033[1;33m\r'
 }
 
 reset_color()
@@ -68,7 +71,7 @@ show_status()
 
 show_error()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
+  printf 1>&2 '\n\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
 }
 
 pause_if_needed()
@@ -133,14 +136,15 @@ get_apk_cert_sha256()
 
   if test -n "${APKSIGNER_PATH?}"; then
     show_status 'Using apksigner...'
-    set_red_color
+    set_yellow_color
     __fn_cert_sha256="$("${APKSIGNER_PATH?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -i -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]')" || return "${?}"
   else
     show_status 'Using keytool...'
-    set_red_color
+    set_yellow_color
     # IMPORTANT: This is slow and limited to v1 signatures
     __fn_cert_sha256="$(LC_ALL=C "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' :')" || return "${?}"
   fi
+  reset_color
 
   # IMPORTANT: This is faster but limited to v1 RSA signatures
   # WARNING: Will fail if the META-INF folder contains an EC signature file instead of RSA
@@ -159,7 +163,8 @@ get_apk_cert_sha256()
 #region
 main()
 {
-  local cert_sha256=''
+  local backup_ifs="${IFS-}"
+  local status=0 base_name='' cert_sha256=''
 
   fix_posix_emulation_if_needed
 
@@ -179,14 +184,54 @@ main()
     return "${EX_UNAVAILABLE?}"
   fi
 
-  test -n "${1-}" || {
-    show_error 'Missing required argument. Please specify the APK file path to process'
-    return "${EX_USAGE?}"
-  }
+  unset JAVA_TOOL_OPTIONS
+  readonly NL='
+'
 
-  cert_sha256="$(get_apk_cert_sha256 "${@}")" || return "${?}"
-  reset_color
-  printf '%s\n' "sha256-cert-digest=\"${cert_sha256:?}\""
+  if test "$#" -eq 1 && test "${1?}" = '-'; then
+    IFS="${NL:?}"
+    set -f || :
+    # shellcheck disable=SC2046 # Word splitting is intended
+    set -- $(cat || printf '%s\n' '__CAT_FAILED__' || :) ||
+      {
+        show_error 'Too many arguments received from standard input or shell allocation failed'
+        set +f || :
+        return "${EX_OSERR?}"
+      }
+    set +f || :
+    IFS="${backup_ifs?}"
+  fi
+
+  case "${1-}" in
+    '')
+      show_error 'Missing required argument. Please specify one or more APK file paths to process'
+      return "${EX_USAGE?}"
+      ;;
+    '__CAT_FAILED__')
+      show_error "Failed to read arguments from standard input"
+      return "${EX_NOINPUT?}"
+      ;;
+    *) ;;
+  esac
+
+  while test "$#" -gt 0; do
+    reset_color
+    base_name="$(basename "${1:-''}" || printf '%s\n' 'unknown')"
+    printf '\n%s\n\n' "Filename: ${base_name:?}"
+
+    cert_sha256="$(get_apk_cert_sha256 "${1?}")" || {
+      show_error "Failed to extract certificate SHA-256 fingerprint from '${1?}' (exit code: ${?})"
+      status="${EX_DATAERR?}"
+      shift
+      continue
+    }
+
+    printf '%s\n' "sha256-cert-digest=\"${cert_sha256?}\""
+
+    shift
+  done
+
+  return "${status:?}"
 }
 #endregion
 

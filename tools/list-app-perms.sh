@@ -155,6 +155,7 @@ main()
     return "${EX_UNAVAILABLE?}"
   fi
 
+  unset JAVA_TOOL_OPTIONS
   readonly NL='
 '
 

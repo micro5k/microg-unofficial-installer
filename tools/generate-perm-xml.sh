@@ -547,6 +547,7 @@ main()
     return "${EX_CONFIG?}"
   fi
 
+  unset JAVA_TOOL_OPTIONS
   readonly NL='
 '
 
@@ -614,7 +615,7 @@ main()
     cmd_output=''
 
     if test "${NO_CERT_DIGEST:?}" = 'false'; then
-      cert_sha256="$(get_apk_cert_sha256 "${1:?}")" || {
+      cert_sha256="$(get_apk_cert_sha256 "${1?}")" || {
         show_error "Failed to extract certificate SHA-256 fingerprint from '${1?}' (exit code: ${?})"
         status="${EX_DATAERR?}"
         shift
