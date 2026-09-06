@@ -624,6 +624,7 @@ main()
 
     show_status 'Parsing...'
     printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name?}" "${pkg_name?}" "${cert_sha256?}" || {
+      # Reserved error codes for this function: 3-19
       status="${?}"
       show_error "Failed to parse and generate XML files for package '${pkg_name?}' (exit code: ${status?})"
     }
