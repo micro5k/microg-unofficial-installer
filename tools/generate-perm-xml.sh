@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.30'
+readonly SCRIPT_VERSION='0.3.31'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -86,13 +86,6 @@ show_warn()
 show_error()
 {
   printf 1>&2 '\n\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
-}
-
-ui_error()
-{
-  # ToDO: Remove this function
-  show_error "${1?}"
-  exit 55
 }
 
 pause_if_needed()
@@ -168,7 +161,7 @@ find_data_dir()
     return 1
   fi
 
-  _path="$(realpath 2> /dev/null "${_path:?}" || readlink -f "${_path:?}")" || return 1
+  _path="$(realpath 2> /dev/null "${_path:?}" || readlink -f "${_path:?}")" || return 3
   printf '%s\n' "${_path:?}"
 }
 
@@ -347,7 +340,8 @@ terminate_xml()
 
 parse_perms_and_generate_xml_files()
 {
-  local _backup_ifs _filename _base_name _pkg_name _cert_sha256 _input _perm _api
+  local _backup_ifs="${IFS-}"
+  local _filename _base_name _pkg_name _cert_sha256 _input _perm _api
   local _perm_decl_all _perm_decl _perm_prot_level _perm_flags _perm_whitelist _no_api_difference _perm_group _perm_after _perm_min_api
   local _perm_is_privileged _perm_is_dangerous _perm_type_found _perm_fake_sign
   local _privileged_perm_list _dangerous_perm_list
@@ -356,17 +350,19 @@ parse_perms_and_generate_xml_files()
   _pkg_name="${2:?}"
   _cert_sha256="${3?}"
 
-  test ! -t 0 || ui_error "Failed to retrieve the permissions list"
-  _input="$(cat)" || ui_error "Failed to retrieve the permissions list"
+  # Ensure the function is receiving input via a pipe (STDIN is not a TTY)
+  test ! -t 0 || return 3
+  # Read the entire STDIN content into a variable
+  _input="$(cat)" || return 4
 
-  _backup_ifs="${IFS-}"
   IFS="${NL:?}"
-
   set -f || :
   # shellcheck disable=SC2086 # Word splitting is intended
-  set -- ${_input:?} || ui_error "Failed expanding \${_input} inside parse_perms_and_generate_xml_files()"
+  set -- ${_input:?} || {
+    set +f || :
+    return 5
+  }
   set +f || :
-
   IFS="${_backup_ifs?}"
 
   # Info:
@@ -482,18 +478,25 @@ parse_perms_and_generate_xml_files()
     {
       begin_xml "${_pkg_name:?}" "${_cert_sha256?}" 'privapp-permissions'
       printf '%s' "${_privileged_perm_list:?}" | while IFS='|' read -r NAME MIN_API; do
-        append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'privapp-permissions' '' '' || ui_error "Failed to append the '${NAME?}' permission on '${_filename?}'"
+        append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'privapp-permissions' '' '' || {
+          show_error "Failed to append the '${NAME?}' permission on '${_filename?}'"
+          return 6
+        }
       done
       terminate_xml 'privapp-permissions'
     } 1> "${OUTPUT_DIR:?}/${_filename:?}"
   fi
+
   if test -n "${_dangerous_perm_list?}"; then
     _filename="default-permissions-${_base_name:?}.xml"
     {
       begin_xml "${_pkg_name:?}" "${_cert_sha256?}" 'default-permissions'
       LAST_PERM_GROUP=''
       printf '%s' "${_dangerous_perm_list:?}" | LC_ALL='C.UTF-8' sort | while IFS='|' read -r GROUP _ NAME WHITELIST MIN_API; do
-        append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'default-permissions' "${GROUP:?}" "${WHITELIST:?}" || ui_error "Failed to append the '${NAME?}' permission on '${_filename?}'"
+        append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'default-permissions' "${GROUP:?}" "${WHITELIST:?}" || {
+          show_error "Failed to append the '${NAME?}' permission on '${_filename?}'"
+          return 7
+        }
       done
       unset LAST_PERM_GROUP
       terminate_xml 'default-permissions'
@@ -573,10 +576,10 @@ main()
     *) ;;
   esac
 
-  BASE_DIR="$(realpath 2> /dev/null . || readlink 2> /dev/null -f .)" || return 7
+  BASE_DIR="$(realpath 2> /dev/null . || readlink 2> /dev/null -f .)" || return 20
 
   test -n "${OUTPUT_DIR?}" || OUTPUT_DIR="${BASE_DIR:?}/output"
-  test -d "${OUTPUT_DIR:?}" || mkdir -p -- "${OUTPUT_DIR:?}" || return 8
+  test -d "${OUTPUT_DIR:?}" || mkdir -p -- "${OUTPUT_DIR:?}" || return 21
 
   printf '%s\n' "Output dir: ${OUTPUT_DIR?}"
 
@@ -622,7 +625,7 @@ main()
     show_status 'Parsing...'
     printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name?}" "${pkg_name?}" "${cert_sha256?}" || {
       status="${?}"
-      show_error "Parsing failed"
+      show_error "Failed to parse and generate XML files for package '${pkg_name?}' (exit code: ${status?})"
     }
 
     shift
