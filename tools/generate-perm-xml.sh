@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.29'
+readonly SCRIPT_VERSION='0.3.30'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -603,7 +603,11 @@ main()
       continue
     fi
 
-    perm_list="$(printf '%s\n' "${cmd_output?}" | grep -F -e 'uses-permission:' | cut -d "'" -f '2' -s | LC_ALL='C.UTF-8' sort)" || return 11
+    perm_list="$(printf '%s\n' "${cmd_output?}" | grep -F -e 'uses-permission:' | cut -d "'" -f '2' -s | LC_ALL='C.UTF-8' sort)" || {
+      show_warn "This APK file does NOT request any permissions"
+      shift
+      continue
+    }
     cmd_output=''
 
     if test "${NO_CERT_DIGEST:?}" = 'false'; then
@@ -616,7 +620,7 @@ main()
     fi
 
     show_status 'Parsing...'
-    printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name:?}" "${pkg_name:?}" "${cert_sha256?}" || {
+    printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name?}" "${pkg_name?}" "${cert_sha256?}" || {
       status="${?}"
       show_error "Parsing failed"
     }

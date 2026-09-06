@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Android app permissions lister'
 readonly SCRIPT_SHORTNAME='AppPermList'
-readonly SCRIPT_VERSION='0.1.14'
+readonly SCRIPT_VERSION='0.1.15'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -66,6 +66,11 @@ reset_color()
 show_status()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
+}
+
+show_warn()
+{
+  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1?}"
 }
 
 show_error()
@@ -203,8 +208,7 @@ main()
     fi
 
     printf '%s\n' "${cmd_output?}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL='C.UTF-8' sort || {
-      show_error "Failed to process package permissions extracted from '${1?}' (exit code: ${?})"
-      status="${EX_DATAERR?}"
+      show_warn "This APK file does NOT request any permissions"
     }
     cmd_output=''
 
