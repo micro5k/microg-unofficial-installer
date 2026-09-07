@@ -73,17 +73,17 @@ reset_color()
   printf 1>&2 '\033[0m\r'
 }
 
-show_status()
+log_status()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
 }
 
-show_warn()
+log_warn()
 {
   printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1?}"
 }
 
-show_error()
+log_err()
 {
   printf 1>&2 '\n\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
 }
@@ -170,11 +170,11 @@ get_apk_cert_sha256()
   local __fn_cert_sha256=''
 
   if test -n "${APKSIGNER_PATH?}"; then
-    show_status 'Using apksigner...'
+    log_status 'Using apksigner...'
     set_yellow_color
     __fn_cert_sha256="$("${APKSIGNER_PATH?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -i -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]')" || return "${?}"
   else
-    show_status 'Using keytool...'
+    log_status 'Using keytool...'
     set_yellow_color
     # IMPORTANT: This is slow and limited to v1 signatures
     __fn_cert_sha256="$(LC_ALL=C "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' :')" || return "${?}"
@@ -186,7 +186,7 @@ get_apk_cert_sha256()
   # __fn_cert_sha256="$(unzip -p "${1:?}" 'META-INF/*.RSA' | openssl pkcs7 -inform 'DER' -print_certs -quiet | openssl x509 -noout -sha256 -fingerprint | cut -d '=' -f '2' -s | tr -d -- ':')" || return "${?}"
 
   test "${#__fn_cert_sha256}" -eq 64 || {
-    show_error "Extracted SHA-256 hash length is invalid (got ${#__fn_cert_sha256} chars, expected 64)"
+    log_err "Extracted SHA-256 hash length is invalid (got ${#__fn_cert_sha256} chars, expected 64)"
     return "${EX_SOFTWARE?}"
   }
 
@@ -399,18 +399,18 @@ parse_perms_and_generate_xml_files()
     elif _perm_decl_all="$(get_custom_permission_declaration "${_perm:?}")"; then
       _no_api_difference='true'
     else
-      show_warn "Unknown permission: ${_perm?}" # The permission cannot be found in any API, skip it
+      log_warn "Unknown permission: ${_perm?}" # The permission cannot be found in any API, skip it
       continue
     fi
 
     for _api in $(seq -- 23 "${MAX_API:?}"); do
       _perm_decl="$(printf '%s\n' "${_perm_decl_all:?}" | grep -F -e "perms/base-permissions-api-${_api:?}.xml:" -e '(standard input):')" || {
-        test "${SCRIPT_VERBOSE:?}" = 'false' || show_warn "The '${_perm?}' permission cannot be found on API ${_api?}"
+        test "${SCRIPT_VERBOSE:?}" = 'false' || log_warn "The '${_perm?}' permission cannot be found on API ${_api?}"
         continue
       }
       : "${_perm_min_api:=${_api:?}}" # Set min API for this permission
       _perm_prot_level="$(printf '%s\n' "${_perm_decl:?}" | grep -o -e 'android:protectionLevel="[^"]*"' | cut -d '"' -f '2' -s)" || {
-        show_error "Failed to the parse protection level of '${_perm?}' on API ${_api?}"
+        log_err "Failed to the parse protection level of '${_perm?}' on API ${_api?}"
         continue
       }
 
@@ -437,7 +437,7 @@ parse_perms_and_generate_xml_files()
 
       case "${_perm_type_found?}" in
         'true') ;;
-        *) show_warn "Unknown protection level for '${_perm?}'$(test "${_no_api_difference:?}" = 'true' || printf '%s\n' " on API ${_api?}" || :)$(test "${SCRIPT_VERBOSE:?}" = 'false' || printf '%s\n' " => ${_perm_prot_level?}" || :)" ;;
+        *) log_warn "Unknown protection level for '${_perm?}'$(test "${_no_api_difference:?}" = 'true' || printf '%s\n' " on API ${_api?}" || :)$(test "${SCRIPT_VERBOSE:?}" = 'false' || printf '%s\n' " => ${_perm_prot_level?}" || :)" ;;
       esac
       test "${_no_api_difference:?}" = 'false' || break
     done
@@ -479,7 +479,7 @@ parse_perms_and_generate_xml_files()
       begin_xml "${_pkg_name:?}" "${_cert_sha256?}" 'privapp-permissions'
       printf '%s' "${_privileged_perm_list:?}" | while IFS='|' read -r NAME MIN_API; do
         append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'privapp-permissions' '' '' || {
-          show_error "Failed to append the '${NAME?}' permission on '${_filename?}'"
+          log_err "Failed to append the '${NAME?}' permission on '${_filename?}'"
           return 6
         }
       done
@@ -494,7 +494,7 @@ parse_perms_and_generate_xml_files()
       LAST_PERM_GROUP=''
       printf '%s' "${_dangerous_perm_list:?}" | LC_ALL='C.UTF-8' sort | while IFS='|' read -r GROUP _ NAME WHITELIST MIN_API; do
         append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'default-permissions' "${GROUP:?}" "${WHITELIST:?}" || {
-          show_error "Failed to append the '${NAME?}' permission on '${_filename?}'"
+          log_err "Failed to append the '${NAME?}' permission on '${_filename?}'"
           return 7
         }
       done
@@ -525,7 +525,7 @@ main()
   # END: Global config
 
   if test -z "${AAPT_PATH?}"; then
-    show_error 'Neither "aapt2" nor "aapt" could be found. You need to set AAPT_PATH'
+    log_err 'Neither "aapt2" nor "aapt" could be found. You need to set AAPT_PATH'
     return "${EX_UNAVAILABLE?}"
   fi
 
@@ -535,7 +535,7 @@ main()
     elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command 2> /dev/null -v 'keytool')"; then
       :
     else
-      show_error 'Neither "apksigner" nor "keytool" could be found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH'
+      log_err 'Neither "apksigner" nor "keytool" could be found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH'
       return "${EX_UNAVAILABLE?}"
     fi
   fi
@@ -543,7 +543,7 @@ main()
   if DATA_DIR="$(find_data_dir)" && test -f "${DATA_DIR:?}/perms/.completed"; then
     :
   else
-    show_error 'Required data not found. Please execute "dl-perm-list.sh" before running this script'
+    log_err 'Required data not found. Please execute "dl-perm-list.sh" before running this script'
     return "${EX_CONFIG?}"
   fi
 
@@ -557,7 +557,7 @@ main()
     # shellcheck disable=SC2046 # NOTE: Word splitting is intended
     set -- $(cat || printf '%s\n' '__CAT_FAILED__' || :) ||
       {
-        show_error 'Too many arguments received from standard input or shell allocation failed'
+        log_err 'Too many arguments received from standard input or shell allocation failed'
         set +f || :
         if test "${backup_ifs?}" = 'unset'; then unset IFS; else IFS="${backup_ifs}"; fi
         return "${EX_OSERR?}"
@@ -568,11 +568,11 @@ main()
 
   case "${1-}" in
     '')
-      show_error 'Missing required argument. Please specify one or more APK file paths to process'
+      log_err 'Missing required argument. Please specify one or more APK file paths to process'
       return "${EX_USAGE?}"
       ;;
     '__CAT_FAILED__')
-      show_error "Failed to read arguments from standard input"
+      log_err "Failed to read arguments from standard input"
       return "${EX_NOINPUT?}"
       ;;
     *) ;;
@@ -590,10 +590,10 @@ main()
     base_name="$(basename "${1:-''}" || printf '%s\n' 'unknown')"
     printf '\n%s\n\n' "Filename: ${base_name:?}"
 
-    show_status 'Using aapt...'
+    log_status 'Using aapt...'
     set_yellow_color
     cmd_output="$("${AAPT_PATH?}" dump permissions "${1?}")" || {
-      show_error "Failed to extract package manifest metadata from '${1?}' (exit code: ${?})"
+      log_err "Failed to extract package manifest metadata from '${1?}' (exit code: ${?})"
       status="${EX_DATAERR?}"
       shift
       continue
@@ -602,14 +602,14 @@ main()
 
     pkg_name="$(printf '%s\n' "${cmd_output:?}" | grep -F -e 'package: ' | cut -d ':' -f '2-' -s | cut -b '2-')" || pkg_name=''
     if test -z "${pkg_name?}"; then
-      show_error "Failed to parse package name from metadata for '${1?}'"
+      log_err "Failed to parse package name from metadata for '${1?}'"
       status="${EX_DATAERR?}"
       shift
       continue
     fi
 
     perm_list="$(printf '%s\n' "${cmd_output?}" | grep -F -e 'uses-permission:' | cut -d "'" -f '2' -s | LC_ALL='C.UTF-8' sort)" || {
-      show_warn "This APK file does NOT request any permissions"
+      log_warn "This APK file does NOT request any permissions"
       shift
       continue
     }
@@ -617,18 +617,18 @@ main()
 
     if test "${NO_CERT_DIGEST:?}" = 'false'; then
       cert_sha256="$(get_apk_cert_sha256 "${1?}")" || {
-        show_error "Failed to extract certificate SHA-256 fingerprint from '${1?}' (exit code: ${?})"
+        log_err "Failed to extract certificate SHA-256 fingerprint from '${1?}' (exit code: ${?})"
         status="${EX_DATAERR?}"
         shift
         continue
       }
     fi
 
-    show_status 'Parsing...'
+    log_status 'Parsing...'
     printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name?}" "${pkg_name?}" "${cert_sha256?}" || {
       # NOTE: Reserved error codes for this function => 3-19
       status="${?}"
-      show_error "Failed to parse and generate XML files for package '${pkg_name?}' (exit code: ${status?})"
+      log_err "Failed to parse and generate XML files for package '${pkg_name?}' (exit code: ${status?})"
     }
 
     shift
@@ -689,7 +689,7 @@ done
 # @section EXECUTION ENTRY POINT ----
 #region
 if test "${execute_script:?}" = 'true'; then
-  show_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
+  log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"

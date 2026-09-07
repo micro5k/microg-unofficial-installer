@@ -64,12 +64,12 @@ reset_color()
   printf 1>&2 '\033[0m\r'
 }
 
-show_status()
+log_status()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
 }
 
-show_error()
+log_err()
 {
   printf 1>&2 '\n\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
 }
@@ -135,11 +135,11 @@ get_apk_cert_sha256()
   local __fn_cert_sha256=''
 
   if test -n "${APKSIGNER_PATH?}"; then
-    show_status 'Using apksigner...'
+    log_status 'Using apksigner...'
     set_yellow_color
     __fn_cert_sha256="$("${APKSIGNER_PATH?}" verify --min-sdk-version 24 --print-certs -- "${1:?}" | grep -m 1 -o -i -e 'certificate SHA-256 digest:.*' | cut -d ':' -f '2' -s | tr -d -- ' ' | tr -- '[:lower:]' '[:upper:]')" || return "${?}"
   else
-    show_status 'Using keytool...'
+    log_status 'Using keytool...'
     set_yellow_color
     # IMPORTANT: This is slow and limited to v1 signatures
     __fn_cert_sha256="$(LC_ALL=C "${KEYTOOL_PATH:?}" -printcert -jarfile "${1:?}" | grep -m 1 -F -e 'SHA256:' | cut -d ':' -f '2-' -s | tr -d -- ' :')" || return "${?}"
@@ -151,7 +151,7 @@ get_apk_cert_sha256()
   # __fn_cert_sha256="$(unzip -p "${1:?}" 'META-INF/*.RSA' | openssl pkcs7 -inform 'DER' -print_certs -quiet | openssl x509 -noout -sha256 -fingerprint | cut -d '=' -f '2' -s | tr -d -- ':')" || return "${?}"
 
   test "${#__fn_cert_sha256}" -eq 64 || {
-    show_error "Extracted SHA-256 hash length is invalid (got ${#__fn_cert_sha256} chars, expected 64)"
+    log_err "Extracted SHA-256 hash length is invalid (got ${#__fn_cert_sha256} chars, expected 64)"
     return "${EX_SOFTWARE?}"
   }
 
@@ -180,7 +180,7 @@ main()
   elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command 2> /dev/null -v 'keytool')"; then
     :
   else
-    show_error 'Neither "apksigner" nor "keytool" could be found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH'
+    log_err 'Neither "apksigner" nor "keytool" could be found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH'
     return "${EX_UNAVAILABLE?}"
   fi
 
@@ -194,7 +194,7 @@ main()
     # shellcheck disable=SC2046 # NOTE: Word splitting is intended
     set -- $(cat || printf '%s\n' '__CAT_FAILED__' || :) ||
       {
-        show_error 'Too many arguments received from standard input or shell allocation failed'
+        log_err 'Too many arguments received from standard input or shell allocation failed'
         set +f || :
         if test "${backup_ifs?}" = 'unset'; then unset IFS; else IFS="${backup_ifs}"; fi
         return "${EX_OSERR?}"
@@ -205,11 +205,11 @@ main()
 
   case "${1-}" in
     '')
-      show_error 'Missing required argument. Please specify one or more APK file paths to process'
+      log_err 'Missing required argument. Please specify one or more APK file paths to process'
       return "${EX_USAGE?}"
       ;;
     '__CAT_FAILED__')
-      show_error "Failed to read arguments from standard input"
+      log_err "Failed to read arguments from standard input"
       return "${EX_NOINPUT?}"
       ;;
     *) ;;
@@ -221,7 +221,7 @@ main()
     printf '\n%s\n\n' "Filename: ${base_name:?}"
 
     cert_sha256="$(get_apk_cert_sha256 "${1?}")" || {
-      show_error "Failed to extract certificate SHA-256 fingerprint from '${1?}' (exit code: ${?})"
+      log_err "Failed to extract certificate SHA-256 fingerprint from '${1?}' (exit code: ${?})"
       status="${EX_DATAERR?}"
       shift
       continue
@@ -280,7 +280,7 @@ done
 # @section EXECUTION ENTRY POINT ----
 #region
 if test "${execute_script:?}" = 'true'; then
-  show_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
+  log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
