@@ -139,7 +139,7 @@ find_android_build_tool()
 #region
 main()
 {
-  local backup_ifs="${IFS-}"
+  local backup_ifs="${IFS-unset}"
   local status=0 base_name='' cmd_output='' pkg_name=''
 
   fix_posix_emulation_if_needed
@@ -159,7 +159,7 @@ main()
   readonly NL='
 '
 
-  if test "$#" -eq 1 && test "${1?}" = '-'; then
+  if test "$#" -eq 1 && test "${1:-empty}" = '-'; then
     IFS="${NL:?}"
     set -f || :
     # shellcheck disable=SC2046 # NOTE: Word splitting is intended
@@ -167,10 +167,11 @@ main()
       {
         show_error 'Too many arguments received from standard input or shell allocation failed'
         set +f || :
+        if test "${backup_ifs?}" = 'unset'; then unset IFS; else IFS="${backup_ifs}"; fi
         return "${EX_OSERR?}"
       }
     set +f || :
-    IFS="${backup_ifs?}"
+    if test "${backup_ifs?}" = 'unset'; then unset IFS; else IFS="${backup_ifs}"; fi
   fi
 
   case "${1-}" in

@@ -1518,8 +1518,7 @@ while test "$#" -gt 0; do
       # Prefer internal applets over external utilities (only BusyBox under Windows)
       unset BB_OVERRIDE_APPLETS
       # Prefer internal applets over external utilities (only some versions of BusyBox under Android)
-      ASH_STANDALONE='1'
-      export ASH_STANDALONE
+      export ASH_STANDALONE=1
       ;;
     --no-pause)
       no_pause=1
