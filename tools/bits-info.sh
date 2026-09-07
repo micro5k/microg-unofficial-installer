@@ -54,6 +54,52 @@ command 1> /dev/null 2>&1 -v 'local' || {
 
 ### SCRIPT ###
 
+fix_posix_emulation_if_needed()
+{
+  # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
+  if test -f '/usr/bin/cygpath'; then
+    # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
+    if test "${USR_BIN_FIXED:-0}" = '0'; then
+      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-/bin}" ;; esac
+    fi
+
+    # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
+    #  working directory to 'C:\WINDOWS\system32'
+    # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+    if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
+      cd "${BASH_SOURCE:?}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
+    fi
+  fi
+}
+
+log_warn()
+{
+  if test -n "${NO_COLOR-}"; then
+    printf 1>&2 '%s\n' "WARNING: ${1}"
+  elif test "${CI:-false}" = 'false'; then
+    printf 1>&2 '\033[0;33m\r%s\n\033[0m\r    \r' "WARNING: ${1}"
+  else
+    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1}"
+  fi
+}
+
+pause_if_needed()
+{
+  # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
+  if test "${NO_PAUSE:-0}" = '0' && test "${no_pause:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
+    if test -n "${NO_COLOR-}"; then
+      printf 1>&2 '\n%s' 'Press any key to exit... ' || :
+    else
+      printf 1>&2 '\n\033[1;32m\r%s' 'Press any key to exit... ' || :
+    fi
+    # shellcheck disable=SC3045 # Ignore: In POSIX sh, read -s / -n is undefined
+    IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
+    if test -n "${NO_COLOR-}"; then printf 1>&2 '\n' || :; else printf 1>&2 '\n\033[0m\r    \r' || :; fi
+  fi
+  unset no_pause
+  return "${1:-0}"
+}
+
 convert_max_signed_int_to_bit()
 {
   # More info: https://www.netmeister.org/blog/epoch.html
@@ -113,17 +159,6 @@ convert_max_unsigned_int_to_bit()
   return 0
 }
 
-warn_msg()
-{
-  if test -n "${NO_COLOR-}"; then
-    printf 1>&2 '%s\n' "WARNING: ${1}"
-  elif test "${CI:-false}" = 'false'; then
-    printf 1>&2 '\033[0;33m\r%s\n\033[0m\r    \r' "WARNING: ${1}"
-  else
-    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1}"
-  fi
-}
-
 inc_num()
 {
   # NOTE: We are going to test integers at (and over) the shell limit so we can NOT use shell arithmetic because it can overflow
@@ -148,7 +183,7 @@ inc_num()
     '18446744073709551615') printf '%s\n' '18446744073709551616' ;;
 
     *)
-      warn_msg "Unexpected number => ${1}"
+      log_warn "Unexpected number => ${1}"
       return 2
       ;;
   esac
@@ -1066,9 +1101,9 @@ detect_bits_of_cut_b()
     else
       if _dbcb_num="$(inc_num "${_dbcb_max}")" && _dbcb_num="$(validate_num_for_cut_b "${_dbcb_num}" "${2}")" && _dbcb_tmp="$(: | cut 2> /dev/null -b "${_dbcb_num}")"; then
         if test "${2}" = 'mac'; then
-          warn_msg 'Detection of cut -b was inconclusive!!!'
+          log_warn 'Detection of cut -b was inconclusive!!!'
         else
-          warn_msg 'Detection of cut -b was inconclusive, please report it to the author!!!'
+          log_warn 'Detection of cut -b was inconclusive, please report it to the author!!!'
         fi
       fi
       break
@@ -1124,41 +1159,6 @@ clear_env()
   test "${prefer_included_utilities}" != '1' || unset ASH_STANDALONE
   if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
   unset SCRIPT_NAME SCRIPT_VERSION HEXDUMP_CMD backup_posix backup_path execute_script prefer_included_utilities
-}
-
-fix_posix_emulation_if_needed()
-{
-  # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
-  if test -f '/usr/bin/cygpath'; then
-    # Prioritize POSIX-emulated binaries over Windows natives to prevent hangs and obscure errors
-    if test "${USR_BIN_FIXED:-0}" = '0'; then
-      case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-/bin}" ;; esac
-    fi
-
-    # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
-    #  working directory to 'C:\WINDOWS\system32'
-    # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
-    if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
-      cd "${BASH_SOURCE:?}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
-    fi
-  fi
-}
-
-pause_if_needed()
-{
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
-  if test "${NO_PAUSE:-0}" = '0' && test "${no_pause:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
-    if test -n "${NO_COLOR-}"; then
-      printf 1>&2 '\n%s' 'Press any key to exit... ' || :
-    else
-      printf 1>&2 '\n\033[1;32m\r%s' 'Press any key to exit... ' || :
-    fi
-    # shellcheck disable=SC3045 # Ignore: In POSIX sh, read -s / -n is undefined
-    IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
-    if test -n "${NO_COLOR-}"; then printf 1>&2 '\n' || :; else printf 1>&2 '\n\033[0m\r    \r' || :; fi
-  fi
-  unset no_pause
-  return "${1:-0}"
 }
 
 main()
@@ -1272,7 +1272,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && test 2> /dev/null "${_num}" -gt 0; then
-        warn_msg 'Detection of shell test int comparison was inconclusive, please report it to the author!!!'
+        log_warn 'Detection of shell test int comparison was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1285,7 +1285,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && test "$((_num))" = "${_num}"; then
-        warn_msg 'Detection of shell arithmetic was inconclusive, please report it to the author!!!'
+        log_warn 'Detection of shell arithmetic was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1302,7 +1302,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && tmp_var="$(printf 2> /dev/null "%u\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
-        warn_msg 'Detection of unsigned shell printf was inconclusive, please report it to the author!!!'
+        log_warn 'Detection of unsigned shell printf was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1318,7 +1318,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && tmp_var="$(printf 2> /dev/null "%d\n" "${_num}")" && test "${tmp_var}" = "${_num}"; then
-        warn_msg 'Detection of signed shell printf was inconclusive, please report it to the author!!!'
+        log_warn 'Detection of signed shell printf was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1352,7 +1352,7 @@ main()
           _num="$(inc_num "${_max}")" && next_random_val="$(seed_and_get_random "${_num}")" && test "${next_random_val}" != "${random_val}" &&
             _num="$((_max - 1))" && previous_random_val="$(seed_and_get_random "${_num}")" && test "${next_random_val}" != "${previous_random_val}"
         then
-          warn_msg 'Detection of RANDOM seed was inconclusive, please report it to the author!!!'
+          log_warn 'Detection of RANDOM seed was inconclusive, please report it to the author!!!'
         fi
         break
       fi
@@ -1370,7 +1370,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%u\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
-        warn_msg 'Detection of unsigned awk printf was inconclusive, please report it to the author!!!'
+        log_warn 'Detection of unsigned awk printf was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1383,7 +1383,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && tmp_var="$(awk -v n="${_num}" -- 'BEGIN { printf "%d\n", n }')" && permissively_comparison "${tmp_var}" "${_num}"; then
-        warn_msg 'Detection of signed awk printf was inconclusive, please report it to the author!!!'
+        log_warn 'Detection of signed awk printf was inconclusive, please report it to the author!!!'
       fi
       break
     fi
@@ -1410,7 +1410,7 @@ main()
         _max="${_num}"
       else
         if _num="$(inc_num "${_max}")" && tmp_var="$(TZ='CET-1' date 2> /dev/null -d "@${_num}" -- '+%s')" && test "${tmp_var}" = "${_num}"; then
-          warn_msg 'Detection of date timestamp was inconclusive, please report it to the author!!!'
+          log_warn 'Detection of date timestamp was inconclusive, please report it to the author!!!'
         fi
         break
       fi
@@ -1424,7 +1424,7 @@ main()
       _max="${_num}"
     else
       if _num="$(inc_num "${_max}")" && tmp_var="$(TZ='CET-1' date 2> /dev/null -u -d "@${_num}" -- '+%s')" && test "${tmp_var}" = "${_num}"; then
-        warn_msg 'Detection of date -u timestamp was inconclusive, please report it to the author!!!'
+        log_warn 'Detection of date -u timestamp was inconclusive, please report it to the author!!!'
       fi
       break
     fi
