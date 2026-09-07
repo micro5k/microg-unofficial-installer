@@ -53,29 +53,49 @@ fix_posix_emulation_if_needed()
   fi
 }
 
+init_colors()
+{
+  CLR_RESET=''
+  CLR_RED=''
+  CLR_YELLOW_PLAIN=''
+  CLR_YELLOW=''
+  CLR_GREEN=''
+  CLR_CYAN=''
+
+  # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
+  if test -z "${NO_COLOR-}" && test -t 2; then
+    CLR_RESET='\033[0m'
+    CLR_RED='\033[1;31m'
+    CLR_YELLOW_PLAIN='\033[0;33m'
+    CLR_YELLOW='\033[1;33m'
+    CLR_GREEN='\033[1;32m'
+    CLR_CYAN='\033[1;36m'
+  fi
+}
+
 set_yellow_color()
 {
-  printf 1>&2 '\033[1;33m\r'
+  printf 1>&2 '%b' "${CLR_YELLOW}"
 }
 
 reset_color()
 {
-  printf 1>&2 '\033[0m\r'
+  printf 1>&2 '%b' "${CLR_RESET}"
 }
 
 log_status()
 {
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
+  printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
 }
 
 log_warn()
 {
-  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1?}"
+  printf 1>&2 '%b%s%b\n' "${CLR_YELLOW_PLAIN}" "WARNING: ${1}" "${CLR_RESET}"
 }
 
 log_err()
 {
-  printf 1>&2 '\n\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
+  printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
 }
 
 pause_if_needed()
@@ -265,6 +285,7 @@ done
 # @section EXECUTION ENTRY POINT ----
 #region
 if test "${execute_script:?}" = 'true'; then
+  init_colors
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
