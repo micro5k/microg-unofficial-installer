@@ -162,7 +162,7 @@ main()
   if test "$#" -eq 1 && test "${1?}" = '-'; then
     IFS="${NL:?}"
     set -f || :
-    # shellcheck disable=SC2046 # Word splitting is intended
+    # shellcheck disable=SC2046 # NOTE: Word splitting is intended
     set -- $(cat || printf '%s\n' '__CAT_FAILED__' || :) ||
       {
         show_error 'Too many arguments received from standard input or shell allocation failed'

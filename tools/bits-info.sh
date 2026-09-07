@@ -22,7 +22,7 @@
 
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.38'
+SCRIPT_VERSION='1.5.39'
 SCRIPT_AUTHOR='ale5000'
 SCRIPT_YEAR='2024'
 
@@ -207,9 +207,9 @@ dump_hex()
 {
   if test "${HEXDUMP_CMD:=$(detect_hex_dump_cmd || :)}" = 'xxd'; then
     xxd -p -s "${2}" -c "${3}" -l "${3}" -- "${1}"
-  elif test "${HEXDUMP_CMD?}" = 'hexdump'; then
+  elif test "${HEXDUMP_CMD}" = 'hexdump'; then
     hexdump -v -e '/1 "%02x"' -s "${2}" -n "${3}" -- "${1}" && printf '\n'
-  elif test "${HEXDUMP_CMD?}" = 'od'; then
+  elif test "${HEXDUMP_CMD}" = 'od'; then
     od -v -A 'n' -j "${2}" -N "${3}" -t 'x1' -- "${1}" | tr -d ' \n' && printf '\n'
   else
     return 1
@@ -682,69 +682,67 @@ detect_bitness_of_single_file_caller()
 
 detect_bitness_of_files()
 {
-  local _dbof_ret_code _dbof_file_list _dbof_filename _dbof_lcall
+  local backup_ifs backup_lcall use_stdin newline _dbof_ret_code
 
-  # With a single file it returns the specific error code otherwise if there are multiple files it returns the number of files that were not recognized.
+  fix_posix_emulation_if_needed
+
+  backup_ifs="${IFS-unset}"
+  backup_lcall="${LC_ALL-unset}"
+  use_stdin='false'
+  newline="$(printf '\nx')" && newline="${newline%x}" || return 193
+
+  # IMPORTANT: With a single file it returns the specific error code otherwise if there are multiple files it returns the number of files that were not recognized.
   # If the number is greater than 125 then it returns 125.
   _dbof_ret_code=0
-
-  if is_shell_msys; then
-    # We must do this in all cases with Bash under Windows using this POSIX layer otherwise we may run into freezes, obscure errors and unknown infinite loops!!!
-    PATH="/usr/bin:${PATH:-%empty}"
-  fi
 
   # Detect usable utility
   : "${HEXDUMP_CMD:=$(detect_hex_dump_cmd || :)}"
 
-  if test "${1:-empty}" = '-' && test "$#" -eq 1; then
+  if test "$#" -eq 1 && test "${1:-empty}" = '-'; then
+    IFS="${newline}"
+    set -f || :
+    # shellcheck disable=SC2046 # NOTE: Word splitting is intended
+    set -- $(cat || printf '%s\n' '__CAT_FAILED__' || :) ||
+      {
+        printf 1>&2 '%s\n' 'ERROR: Too many arguments received from standard input or shell allocation failed'
+        set +f || :
+        if test "${backup_ifs}" = 'unset'; then unset IFS; else IFS="${backup_ifs}"; fi
+        return 194
+      }
+    set +f || :
+    if test "${backup_ifs}" = 'unset'; then unset IFS; else IFS="${backup_ifs}"; fi
 
-    (
-      _dbof_file_list="$(cat | tr -- '\0' '\n')" || _dbof_file_list=''
-
-      IFS="$(printf '\nx')" IFS="${IFS%x}"
-      # shellcheck disable=SC2030 # Intended: Modification of LC_ALL is local (to subshell)
-      LC_ALL='C' # We only use bytes and not characters
-      export LC_ALL
-
-      if test -n "${_dbof_file_list}"; then
-        for _dbof_filename in ${_dbof_file_list}; do
-          printf '%s: ' "${_dbof_filename}"
-          detect_bitness_of_single_file "${_dbof_filename}" || _dbof_ret_code="$((_dbof_ret_code + 1))"
-        done
-      else
-        _dbof_ret_code=1
-      fi
-      printf '\nUnidentified files: %s\n' "${_dbof_ret_code}"
-
-      test "${_dbof_ret_code}" -le 125 || return 125
-      return "${_dbof_ret_code}"
-    ) ||
-      _dbof_ret_code="${?}"
-
-  else
-
-    # shellcheck disable=SC2031
-    _dbof_lcall="${LC_ALL-unset}"
-    LC_ALL='C' # We only use bytes and not characters
-    export LC_ALL
-
-    if test "$#" -le 1; then
-      detect_bitness_of_single_file "${1-}" || _dbof_ret_code="${?}"
-    else
-      test -n "${1}" || shift
-      while test "$#" -gt 0; do
-        printf '%s: ' "$1"
-        detect_bitness_of_single_file "$1" || _dbof_ret_code="$((_dbof_ret_code + 1))"
-        shift
-      done
-      printf '\nUnidentified files: %s\n' "${_dbof_ret_code}"
-    fi
-
-    if test "${_dbof_lcall}" = 'unset'; then unset LC_ALL; else LC_ALL="${_dbof_lcall}"; fi
-
+    use_stdin='true'
   fi
 
-  test "${_dbof_ret_code}" -le 125 || return 125
+  case "${1-}" in
+    '')
+      printf 1>&2 '%s\n' 'ERROR: Missing required argument. Please specify one or more file paths to process'
+      return 195
+      ;;
+    '__CAT_FAILED__')
+      printf 1>&2 '%s\n' 'ERROR: Failed to read arguments from standard input'
+      return 196
+      ;;
+    *) ;;
+  esac
+
+  export LC_ALL='C' # NOTE: Process data as raw bytes rather than multi-byte characters
+
+  if test "$#" -gt 1 || test "${use_stdin}" = 'true'; then
+    while test "$#" -gt 0; do
+      printf '%s' "${1:-''}: "
+      detect_bitness_of_single_file "${1}" || _dbof_ret_code="$((_dbof_ret_code + 1))"
+      shift
+    done
+    printf '\n%s\n' "Unidentified files: ${_dbof_ret_code}"
+  else
+    detect_bitness_of_single_file "${1-}" || _dbof_ret_code="${?}"
+  fi
+
+  if test "${backup_lcall}" = 'unset'; then unset LC_ALL; else LC_ALL="${backup_lcall}"; fi
+
+  if test "${_dbof_ret_code}" -gt 125; then return 125; fi
   return "${_dbof_ret_code}"
 }
 
