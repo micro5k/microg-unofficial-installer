@@ -2,9 +2,11 @@
 # SPDX-FileCopyrightText: 2023 ale5000
 # SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
 
+# shellcheck enable=all
+
 main()
 {
-  # shellcheck disable=SC3043
+  # shellcheck disable=SC3043 # IGNORE: In POSIX sh, 'local' is undefined
   local __fn_val=''
 
   if test -z "${ANDROID_ROOT-}" || test ! -f "${ANDROID_ROOT?}/build.prop" || test "$#" -gt 2; then
@@ -13,7 +15,12 @@ main()
   fi
 
   if test "$#" -gt 0; then
-    if test -n "${1?}" && __fn_val="$(grep -m 1 -F -e "${1?}=" -- "${ANDROID_ROOT?}/build.prop" | cut -d '=' -f '2-' -s)" && test -n "${__fn_val?}"; then
+    # shellcheck disable=SC2312 # IGNORE: Consider invoking this command separately to avoid masking its return value
+    if
+      test -n "${1?}" &&
+        __fn_val="$(grep -m 1 -F -e "${1?}=" -- "${ANDROID_ROOT?}/build.prop" | cut -d '=' -f '2-' -s)" &&
+        test -n "${__fn_val?}"
+    then
       printf '%s\n' "${__fn_val?}"
     else
       printf '%s\n' "${2-}"

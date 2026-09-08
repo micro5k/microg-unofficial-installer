@@ -3,6 +3,8 @@
 # SPDX-FileCopyrightText: NONE
 # SPDX-License-Identifier: CC0-1.0
 
+# shellcheck enable=all
+
 VANITY_NAME='microG unofficial installer'
 
 _fix_tmpdir()
@@ -49,15 +51,13 @@ list_files()
     cat << 'EOF'
 %PLACEHOLDER-1%
 EOF
-  } || {
-    _display_msg 1>&2 'ERROR: HereDoc failed'
-    return 1
-  }
+  } || _display_msg 1>&2 'ERROR: HereDoc failed'
 }
 
 case "${1-}" in
   backup)
     _display_msg "${VANITY_NAME?} - stage: ${1?}..."
+    # shellcheck disable=SC2312 # IGNORE: Consider invoking this command separately to avoid masking its return value
     list_files | while IFS='|' read -r FILE _; do
       test -n "${FILE?}" || continue
       _display_msg " ${S:?}/${FILE:?}"
@@ -67,6 +67,7 @@ case "${1-}" in
     ;;
   restore)
     _display_msg "${VANITY_NAME?} - stage: ${1?}..."
+    # shellcheck disable=SC2312 # IGNORE: Consider invoking this command separately to avoid masking its return value
     list_files | while IFS='|' read -r FILE REPLACEMENT; do
       test -n "${FILE?}" || continue
       R=''
