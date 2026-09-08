@@ -67,19 +67,21 @@ init_colors()
 {
   CLR_RESET=''
   CLR_RED=''
+  CLR_GREEN=''
   CLR_YELLOW_PLAIN=''
   CLR_YELLOW=''
-  CLR_GREEN=''
   CLR_CYAN=''
+  CLR_LINE=''
 
   # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
   if test -z "${NO_COLOR-}" && test -t 2; then
     CLR_RESET='\033[0m'
     CLR_RED='\033[1;31m'
+    CLR_GREEN='\033[1;32m'
     CLR_YELLOW_PLAIN='\033[0;33m'
     CLR_YELLOW='\033[1;33m'
-    CLR_GREEN='\033[1;32m'
     CLR_CYAN='\033[1;36m'
+    CLR_LINE='\r        \r'
   fi
 }
 
@@ -571,10 +573,11 @@ main()
   readonly NL='
 '
 
+  # Process arguments supplied via standard input when '-' is specified
   if test "$#" -eq 1 && test "${1:-empty}" = '-'; then
     IFS="${NL:?}"
     set -f || :
-    # shellcheck disable=SC2046 # NOTE: Word splitting is intended
+    # shellcheck disable=SC2046 # NOTE: Word splitting is intended here to split standard input line-by-line
     set -- $(cat || printf '%s\n' '__CAT_FAILED__' || :) ||
       {
         log_err 'Too many arguments received from standard input or shell allocation failed'
@@ -592,7 +595,7 @@ main()
       return "${EX_USAGE?}"
       ;;
     '__CAT_FAILED__')
-      log_err "Failed to read arguments from standard input"
+      log_err 'Failed to read arguments from standard input'
       return "${EX_NOINPUT?}"
       ;;
     *) ;;
@@ -629,7 +632,7 @@ main()
     fi
 
     perm_list="$(printf '%s\n' "${cmd_output?}" | grep -F -e 'uses-permission:' | cut -d "'" -f '2' -s | LC_ALL='C.UTF-8' sort)" || {
-      log_warn "This APK file does NOT request any permissions"
+      log_warn 'This APK file does NOT request any permissions'
       shift
       continue
     }

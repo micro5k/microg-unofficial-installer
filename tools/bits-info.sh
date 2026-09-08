@@ -84,7 +84,6 @@ init_colors()
 
   # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
   if test -z "${NO_COLOR-}" && test -t 2; then
-    
     CLR_RESET='\033[0m'
     CLR_RED='\033[1;31m'
     CLR_GREEN='\033[1;32m'
@@ -747,26 +746,29 @@ detect_bitness_of_single_file_caller()
 
 detect_bitness_of_files()
 {
-  local backup_ifs backup_lcall use_stdin newline _dbof_ret_code
+  local backup_ifs backup_lcall newline ret_code use_multifile_mode
 
   fix_posix_emulation_if_needed
 
+  # Save the current environment state to safely restore it later
   backup_ifs="${IFS-unset}"
   backup_lcall="${LC_ALL-unset}"
-  use_stdin='false'
+
   newline="$(printf '\nx')" && newline="${newline%x}" || return 193
 
-  # IMPORTANT: With a single file it returns the specific error code otherwise if there are multiple files it returns the number of files that were not recognized.
-  # If the number is greater than 125 then it returns 125.
-  _dbof_ret_code=0
+  # IMPORTANT: Single-file mode returns the specific error code from the detector.
+  # Multi-file mode returns the count of unrecognized files, capped at a maximum of 125.
+  ret_code=0
+  use_multifile_mode='false'
 
-  # Detect usable utility
+  # Detect and cache the hexadecimal dump utility if not already defined
   : "${HEXDUMP_CMD:=$(detect_hex_dump_cmd || :)}"
 
+  # Process arguments supplied via standard input when '-' is specified
   if test "$#" -eq 1 && test "${1:-empty}" = '-'; then
     IFS="${newline}"
     set -f || :
-    # shellcheck disable=SC2046 # NOTE: Word splitting is intended
+    # shellcheck disable=SC2046 # NOTE: Word splitting is intended here to split standard input line-by-line
     set -- $(cat || printf '%s\n' '__CAT_FAILED__' || :) ||
       {
         log_err 'Too many arguments received from standard input or shell allocation failed'
@@ -777,7 +779,12 @@ detect_bitness_of_files()
     set +f || :
     if test "${backup_ifs}" = 'unset'; then unset IFS; else IFS="${backup_ifs}"; fi
 
-    use_stdin='true'
+    use_multifile_mode='true'
+  else
+    if test "$#" -gt 0 && test -z "${1}"; then
+      shift
+      use_multifile_mode='true' # IMPORTANT: Allow an initial empty element to force multi-file mode
+    fi
   fi
 
   case "${1-}" in
@@ -794,21 +801,23 @@ detect_bitness_of_files()
 
   export LC_ALL='C' # NOTE: Process data as raw bytes rather than multi-byte characters
 
-  if test "$#" -gt 1 || test "${use_stdin}" = 'true'; then
+  # Process files using either multi-file or single file mode
+  if test "$#" -gt 1 || test "${use_multifile_mode}" = 'true'; then
     while test "$#" -gt 0; do
       printf '%s' "${1:-''}: "
-      detect_bitness_of_single_file "${1}" || _dbof_ret_code="$((_dbof_ret_code + 1))"
+      detect_bitness_of_single_file "${1}" || ret_code="$((ret_code + 1))"
       shift
     done
-    printf '\n%s\n' "Unidentified files: ${_dbof_ret_code}"
+    printf '\n%s\n' "Unidentified files: ${ret_code}"
   else
-    detect_bitness_of_single_file "${1-}" || _dbof_ret_code="${?}"
+    detect_bitness_of_single_file "${1-}" || ret_code="${?}"
   fi
 
   if test "${backup_lcall}" = 'unset'; then unset LC_ALL; else LC_ALL="${backup_lcall}"; fi
 
-  if test "${_dbof_ret_code}" -gt 125; then return 125; fi
-  return "${_dbof_ret_code}"
+  # IMPORTANT: Enforce a maximum exit code limit of 125 to avoid collisions with shell reserved codes
+  if test "${ret_code}" -gt 125; then return 125; fi
+  return "${ret_code}"
 }
 
 get_shell_exe()
