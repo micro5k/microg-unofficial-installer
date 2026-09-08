@@ -730,18 +730,20 @@ detect_bitness_of_single_file()
 
 detect_bitness_of_single_file_caller()
 {
-  local _dbsfc_ret_code _dbsfc_lcall
+  local __fn_backup_lcall __fn_status
 
-  _dbsfc_lcall="${LC_ALL-unset}"
-  LC_ALL='C' # We only use bytes and not characters
-  export LC_ALL
+  # Save the current environment state to safely restore it later
+  __fn_backup_lcall="${LC_ALL-unset}"
 
-  _dbsfc_ret_code=0
-  detect_bitness_of_single_file "${1}" || _dbsfc_ret_code="${?}"
+  export LC_ALL='C' # NOTE: Process data as raw bytes rather than multi-byte characters
 
-  if test "${_dbsfc_lcall}" = 'unset'; then unset LC_ALL; else LC_ALL="${_dbsfc_lcall}"; fi
+  __fn_status=0
+  detect_bitness_of_single_file "${1}" || __fn_status="${?}"
 
-  return "${_dbsfc_ret_code}"
+  # Restore the environment state
+  if test "${__fn_backup_lcall}" = 'unset'; then unset LC_ALL; else LC_ALL="${__fn_backup_lcall}"; fi
+
+  return "${__fn_status}"
 }
 
 detect_bitness_of_files()
@@ -813,6 +815,7 @@ detect_bitness_of_files()
     detect_bitness_of_single_file "${1-}" || ret_code="${?}"
   fi
 
+  # Restore the environment state
   if test "${backup_lcall}" = 'unset'; then unset LC_ALL; else LC_ALL="${backup_lcall}"; fi
 
   # IMPORTANT: Enforce a maximum exit code limit of 125 to avoid collisions with shell reserved codes
