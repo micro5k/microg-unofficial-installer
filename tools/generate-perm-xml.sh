@@ -603,7 +603,7 @@ main()
   test -n "${OUTPUT_DIR?}" || OUTPUT_DIR="${BASE_DIR:?}/output"
   test -d "${OUTPUT_DIR:?}" || mkdir -p -- "${OUTPUT_DIR:?}" || return 21
 
-  printf '%s\n' "Output dir: ${OUTPUT_DIR?}"
+  printf '\n%s\n' "Output dir: ${OUTPUT_DIR?}"
 
   while test "$#" -gt 0; do
     reset_color

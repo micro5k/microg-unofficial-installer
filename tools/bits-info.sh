@@ -22,7 +22,7 @@
 
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.39'
+SCRIPT_VERSION='1.5.40'
 SCRIPT_AUTHOR='ale5000'
 SCRIPT_YEAR='2024'
 
@@ -72,14 +72,44 @@ fix_posix_emulation_if_needed()
   fi
 }
 
+init_colors()
+{
+  CLR_RESET=''
+  CLR_RED=''
+  CLR_GREEN=''
+  CLR_YELLOW_PLAIN=''
+  CLR_YELLOW=''
+  CLR_CYAN=''
+  CLR_LINE=''
+
+  # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
+  if test -z "${NO_COLOR-}" && test -t 2; then
+    
+    CLR_RESET='\033[0m'
+    CLR_RED='\033[1;31m'
+    CLR_GREEN='\033[1;32m'
+    CLR_YELLOW_PLAIN='\033[0;33m'
+    CLR_YELLOW='\033[1;33m'
+    CLR_CYAN='\033[1;36m'
+    CLR_LINE='\r        \r'
+  fi
+}
+
 log_warn()
 {
-  if test -n "${NO_COLOR-}"; then
-    printf 1>&2 '%s\n' "WARNING: ${1}"
-  elif test "${CI:-false}" = 'false'; then
-    printf 1>&2 '\033[0;33m\r%s\n\033[0m\r    \r' "WARNING: ${1}"
+  if test "${CI:-false}" = 'false'; then
+    printf 1>&2 '%b%s\n%b' "${CLR_YELLOW_PLAIN}${CLR_LINE}" "WARNING: ${1}" "${CLR_RESET}${CLR_LINE}"
   else
-    printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1}"
+    printf 1>&2 '%b%s%b\n' "${CLR_YELLOW_PLAIN}" "WARNING: ${1}" "${CLR_RESET}"
+  fi
+}
+
+log_err()
+{
+  if test "${CI:-false}" = 'false'; then
+    printf 1>&2 '\n%b%s\n%b' "${CLR_RED}${CLR_LINE}" "ERROR: ${1}" "${CLR_RESET}${CLR_LINE}"
+  else
+    printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
   fi
 }
 
@@ -739,7 +769,7 @@ detect_bitness_of_files()
     # shellcheck disable=SC2046 # NOTE: Word splitting is intended
     set -- $(cat || printf '%s\n' '__CAT_FAILED__' || :) ||
       {
-        printf 1>&2 '%s\n' 'ERROR: Too many arguments received from standard input or shell allocation failed'
+        log_err 'Too many arguments received from standard input or shell allocation failed'
         set +f || :
         if test "${backup_ifs}" = 'unset'; then unset IFS; else IFS="${backup_ifs}"; fi
         return 194
@@ -752,11 +782,11 @@ detect_bitness_of_files()
 
   case "${1-}" in
     '')
-      printf 1>&2 '%s\n' 'ERROR: Missing required argument. Please specify one or more file paths to process'
+      log_err 'Missing required argument. Please specify one or more file paths to process'
       return 195
       ;;
     '__CAT_FAILED__')
-      printf 1>&2 '%s\n' 'ERROR: Failed to read arguments from standard input'
+      log_err 'Failed to read arguments from standard input'
       return 196
       ;;
     *) ;;
@@ -1554,6 +1584,7 @@ while test "$#" -gt 0; do
 done || :
 
 if test "${execute_script}" = 'true'; then
+  init_colors
   backup_path="${PATH-unset}"
 
   if test "$#" -eq 0; then
