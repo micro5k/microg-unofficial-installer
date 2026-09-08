@@ -22,11 +22,12 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.32'
+readonly SCRIPT_VERSION='0.3.33'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
-readonly MAX_API='37'
+readonly MAX_API=37
+readonly PERMS_DATA_PREFIX='base-permissions-api'
 
 readonly EX_USAGE=64
 readonly EX_DATAERR=65
@@ -257,7 +258,7 @@ map_permission_group_to_label()
 
 get_permission_declaration()
 {
-  grep -m 1 -F -e "android:name=\"${1:?}\"" -- "${DATA_DIR:?}/perms/base-permissions-api-${2:?}.xml" || return 1
+  grep -m 1 -F -e "android:name=\"${1:?}\"" -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX?}-${2:?}.xml" || return 1
 }
 
 get_custom_permission_declaration()
@@ -426,7 +427,7 @@ parse_perms_and_generate_xml_files()
     fi
 
     for _api in $(seq -- 23 "${MAX_API:?}"); do
-      _perm_decl="$(printf '%s\n' "${_perm_decl_all:?}" | grep -F -e "perms/base-permissions-api-${_api:?}.xml:" -e '(standard input):')" || {
+      _perm_decl="$(printf '%s\n' "${_perm_decl_all:?}" | grep -F -e "perms/${PERMS_DATA_PREFIX?}-${_api:?}.xml:" -e '(standard input):')" || {
         test "${SCRIPT_VERBOSE:?}" = 'false' || log_warn "The '${_perm?}' permission cannot be found on API ${_api?}"
         continue
       }

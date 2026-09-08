@@ -18,16 +18,13 @@
 
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.12'
+readonly SCRIPT_VERSION='0.3.13'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
-set -u 2> /dev/null || :
-# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
-case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) echo 1>&2 'WARNING: pipefail not supported' ;; esac
-
+readonly MAX_API=37
+readonly PERMS_DATA_PREFIX='base-permissions-api'
 readonly BASE_URL='https://android.googlesource.com/platform/frameworks/base/'
-readonly MAX_API='37'
 
 # shellcheck disable=SC2034
 {
@@ -52,6 +49,10 @@ readonly WGET_CMD='wget'
 readonly DL_UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0'
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
 readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
+
+set -u 2> /dev/null || :
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
+case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) echo 1>&2 'WARNING: pipefail not supported' ;; esac
 
 fix_posix_emulation_if_needed()
 {
@@ -171,7 +172,7 @@ fetch_and_extract_manifest_permissions()
       return "${?}"
 
     printf '%s\n' '</manifest>'
-  } 1> "${DATA_DIR:?}/perms/base-permissions-api-${1:?}.xml"
+  } 1> "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX?}-${1:?}.xml"
 
   return "${?}"
 }
@@ -223,6 +224,7 @@ main()
 
   test -d "${DATA_DIR:?}/perms" || mkdir -p -- "${DATA_DIR:?}/perms" || return 1
   rm -f -- "${DATA_DIR:?}/perms/.completed"
+  rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX:?}"-*.xml
 
   for api in $(seq -- 23 "${MAX_API:?}"); do
     tag="$(eval " printf '%s\n' \"\${TAG_API_${api:?}:?}\" ")" || {
@@ -232,7 +234,7 @@ main()
     printf '%s\n' "API ${api:?}: ${tag:?}"
     fetch_and_extract_manifest_permissions_with_retry "${api:?}" "${tag:?}" || {
       show_error "Failed to download or parse API ${api?} XML"
-      rm -f -- "${DATA_DIR:?}/perms/base-permissions-api-${api:?}.xml"
+      rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX?}-${api:?}.xml"
       return 5
     }
     sleep "${REQUEST_DELAY:?}" || return "${?}"
