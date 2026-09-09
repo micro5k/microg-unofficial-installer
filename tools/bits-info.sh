@@ -22,7 +22,7 @@
 
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.42'
+SCRIPT_VERSION='1.5.43'
 SCRIPT_AUTHOR='ale5000'
 SCRIPT_YEAR='2024'
 
@@ -1193,13 +1193,6 @@ list_available_shells()
   fi
 }
 
-clear_env()
-{
-  test "${prefer_included_utilities}" != '1' || unset ASH_STANDALONE
-  if test "${backup_posix}" = 'unset'; then unset POSIXLY_CORRECT; else POSIXLY_CORRECT="${backup_posix}"; fi
-  unset SCRIPT_NAME SCRIPT_VERSION HEXDUMP_CMD backup_posix backup_path execute_script prefer_included_utilities
-}
-
 main()
 {
   local prefer_included_utilities shell_is_msys shell_exe shell_exe_original date_timezone_bug limits limits_date limits_u limits_rnd_u limits_s_u _max _num tmp_var
@@ -1505,9 +1498,20 @@ main()
   printf '%s\n' "Bits of 'date -u' timestamp: ${date_u_bit}"
 }
 
-backup_posix="${POSIXLY_CORRECT-unset}"
-POSIXLY_CORRECT='y'
-export POSIXLY_CORRECT
+init_env()
+{
+  init_colors
+  backup_path="${PATH-unset}"
+}
+
+restore_env()
+{
+  if test "${backup_path}" = 'unset'; then unset PATH; else PATH="${backup_path}"; fi
+  unset backup_path execute_script prefer_included_utilities
+  unset SCRIPT_NAME SCRIPT_SHORTNAME SCRIPT_VERSION SCRIPT_AUTHOR SCRIPT_YEAR
+  unset HEXDUMP_CMD
+  set +u 2> /dev/null || :
+}
 
 execute_script='true'
 prefer_included_utilities=0
@@ -1595,8 +1599,7 @@ while test "$#" -gt 0; do
 done || :
 
 if test "${execute_script}" = 'true'; then
-  init_colors
-  backup_path="${PATH-unset}"
+  init_env
 
   if test "$#" -eq 0; then
     main "${prefer_included_utilities}" || STATUS="${?}"
@@ -1604,8 +1607,7 @@ if test "${execute_script}" = 'true'; then
     detect_bitness_of_files "${@}" || STATUS="${?}"
   fi
 
-  if test "${backup_path}" = 'unset'; then unset PATH; else PATH="${backup_path}"; fi
+  restore_env
 fi
 
-clear_env
 pause_if_needed "${STATUS}"
