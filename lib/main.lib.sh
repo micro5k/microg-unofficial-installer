@@ -152,7 +152,7 @@ run_hook()
     ui_debug "Running hook: ${1?}..."
     set -- 'hook' "${hook_file?}" "${@}"
 
-    case "${-}" in *e*) errexit=1 ;; *) ;; esac
+    case "$-" in *e*) errexit=1 ;; *) ;; esac
     set +e
     # shellcheck source=/dev/null
     . "${hook_file?}" "${@}"
