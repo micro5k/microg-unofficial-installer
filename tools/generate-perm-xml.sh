@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.33'
+readonly SCRIPT_VERSION='0.3.34'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -665,6 +665,7 @@ main()
 # @section CLI ARGUMENTS PARSING ----
 #region
 execute_script='true'
+no_pause=0
 STATUS=0
 SCRIPT_VERBOSE='false'
 PLACEHOLDERS='false'
@@ -674,6 +675,7 @@ while test "$#" -gt 0; do
   case "${1?}" in
     -V | --version)
       execute_script='false'
+      no_pause=1
       # REUSE-IgnoreStart
       printf '%s\n' "${SCRIPT_NAME:?}, version ${SCRIPT_VERSION:?}"
       printf '%s\n' "Copyright (C) ${SCRIPT_YEAR:?} ${SCRIPT_AUTHOR:?}"
@@ -686,6 +688,9 @@ while test "$#" -gt 0; do
     --use-placeholders) PLACEHOLDERS='true' ;;
     --no-cert-digest) NO_CERT_DIGEST='true' ;;
 
+    --no-pause)
+      no_pause=1
+      ;;
     -) # Read from STDIN (implies end of options)
       break
       ;;
@@ -695,11 +700,13 @@ while test "$#" -gt 0; do
       ;;
     --*)
       execute_script='false'
+      no_pause=1
       STATUS=2
       printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
       ;;
     -*)
       execute_script='false'
+      no_pause=1
       STATUS=2
       printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
       ;;

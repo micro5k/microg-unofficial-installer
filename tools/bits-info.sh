@@ -22,7 +22,7 @@
 
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.40'
+SCRIPT_VERSION='1.5.41'
 SCRIPT_AUTHOR='ale5000'
 SCRIPT_YEAR='2024'
 
@@ -1553,18 +1553,6 @@ while test "$#" -gt 0; do
       printf '%s\n' "find './dir_to_test' -type f -print0 | xargs -0 -- '${script_filename}' -- ''"
       printf '%s\n' "find './dir_to_test' -type f | ${script_filename} -"
       ;;
-    -i | --prefer-included-utilities)
-      # Enable code to prefer utilities that are in the same directory of the shell
-      prefer_included_utilities=1
-
-      # Prefer internal applets over external utilities (only BusyBox under Windows)
-      unset BB_OVERRIDE_APPLETS
-      # Prefer internal applets over external utilities (only some versions of BusyBox under Android)
-      export ASH_STANDALONE=1
-      ;;
-    --no-pause)
-      no_pause=1
-      ;;
 
     -l | --list-available-shells)
       execute_script='false'
@@ -1572,6 +1560,18 @@ while test "$#" -gt 0; do
       list_available_shells || STATUS="${?}"
       ;;
 
+    -i | --prefer-included-utilities)
+      # Enable code to prefer utilities that are in the same directory of the shell
+      prefer_included_utilities=1
+      # Prefer internal applets over external utilities (only BusyBox under Windows)
+      unset BB_OVERRIDE_APPLETS
+      # Prefer internal applets over external utilities (only some versions of BusyBox under Android)
+      export ASH_STANDALONE=1
+      ;;
+
+    --no-pause)
+      no_pause=1
+      ;;
     -) # Read from STDIN (implies end of options)
       break
       ;;
@@ -1581,11 +1581,13 @@ while test "$#" -gt 0; do
       ;;
     --*)
       execute_script='false'
+      no_pause=1
       STATUS=2
       printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME}: unrecognized option '${1}'"
       ;;
     -*)
       execute_script='false'
+      no_pause=1
       STATUS=2
       printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME}: invalid option -- '${1#-}'"
       ;;

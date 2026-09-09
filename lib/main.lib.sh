@@ -1571,7 +1571,7 @@ init_cmdline()
     else
       alias 'cls'='clear'
     fi
-    alias 'clear-prev'="printf '\033[A\33[2K\033[A\33[2K\r'"
+    alias 'clear-prev'="printf '%b' '\033[A\033[2K\033[A\033[2K\r'"
 
     alias_scripts "${MAIN_DIR:?}/tools"
     alias_scripts "${MAIN_DIR:?}/utils"
