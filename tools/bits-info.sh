@@ -22,7 +22,7 @@
 
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.43'
+SCRIPT_VERSION='1.5.44'
 SCRIPT_AUTHOR='ale5000'
 SCRIPT_YEAR='2024'
 
@@ -116,13 +116,12 @@ pause_if_needed()
 {
   # shellcheck disable=SC3028 # IGNORE: In POSIX sh, SHLVL is undefined
   if test "${no_pause:-0}" = '0' && test "${NO_PAUSE:-0}" = '0' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2 && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode'; then
-    case "$-" in *s*) unset no_pause && return "${1:-0}" ;; *) ;; esac
+    case "$-" in *s*) return "${1:-0}" ;; *) ;; esac
     printf 1>&2 '\n%b%s' "${CLR_GREEN-}${CLR_LINE-}" 'Press any key to exit... ' || :
     # shellcheck disable=SC3045 # IGNORE: In POSIX sh, read -s / -n is undefined
     IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
     printf 1>&2 '\n%b' "${CLR_RESET-}${CLR_LINE-}" || :
   fi
-  unset no_pause
   return "${1:-0}"
 }
 
@@ -1507,10 +1506,18 @@ init_env()
 restore_env()
 {
   if test "${backup_path}" = 'unset'; then unset PATH; else PATH="${backup_path}"; fi
-  unset backup_path execute_script prefer_included_utilities
+  unset HEXDUMP_CMD backup_path
+}
+
+final_cleanup()
+{
+  unset STATUS no_pause prefer_included_utilities execute_script
   unset SCRIPT_NAME SCRIPT_SHORTNAME SCRIPT_VERSION SCRIPT_AUTHOR SCRIPT_YEAR
-  unset HEXDUMP_CMD
+
+  case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set +o pipefail || : ;; *) ;; esac
   set +u 2> /dev/null || :
+
+  return "${1:-0}"
 }
 
 execute_script='true'
@@ -1610,4 +1617,5 @@ if test "${execute_script}" = 'true'; then
   restore_env
 fi
 
-pause_if_needed "${STATUS}"
+pause_if_needed
+final_cleanup "${STATUS}"

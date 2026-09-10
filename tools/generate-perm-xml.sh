@@ -115,13 +115,12 @@ pause_if_needed()
 {
   # shellcheck disable=SC3028 # IGNORE: In POSIX sh, SHLVL is undefined
   if test "${no_pause:-0}" = '0' && test "${NO_PAUSE:-0}" = '0' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2 && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode'; then
-    case "$-" in *s*) unset no_pause && return "${1:-0}" ;; *) ;; esac
+    case "$-" in *s*) return "${1:-0}" ;; *) ;; esac
     printf 1>&2 '\n%b%s' "${CLR_GREEN-}${CLR_LINE-}" 'Press any key to exit... ' || :
     # shellcheck disable=SC3045 # IGNORE: In POSIX sh, read -s / -n is undefined
     IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
     printf 1>&2 '\n%b' "${CLR_RESET-}${CLR_LINE-}" || :
   fi
-  unset no_pause
   return "${1:-0}"
 }
 #endregion
