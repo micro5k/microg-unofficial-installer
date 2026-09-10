@@ -1512,8 +1512,9 @@ restore_env()
 final_cleanup()
 {
   unset STATUS no_pause prefer_included_utilities execute_script
-  unset SCRIPT_NAME SCRIPT_SHORTNAME SCRIPT_VERSION SCRIPT_AUTHOR SCRIPT_YEAR
+  unset SCRIPT_YEAR SCRIPT_AUTHOR SCRIPT_VERSION SCRIPT_SHORTNAME SCRIPT_NAME
 
+  # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
   case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set +o pipefail || : ;; *) ;; esac
   set +u 2> /dev/null || :
 
