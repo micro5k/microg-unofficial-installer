@@ -25,12 +25,13 @@ readonly SCRIPT_AUTHOR='ale5000'
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
 case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) echo 1>&2 'WARNING: pipefail not supported' ;; esac
-
-# shellcheck disable=SC3040,SC3041,SC2015
-{
-  # Unsupported set options may cause the shell to exit (even without set -e), so first try them in a subshell to avoid this issue
-  (set +H 2> /dev/null) && set +H || true
-}
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option 'foo' is undefined
+if test -f '/usr/bin/cygpath'; then
+  # IMPORTANT: Double-clicking a script file on Windows opens Bash as an interactive shell and enables 'monitor', 'history' and 'histexpand' contrary to any logic
+  set +o monitor || :
+  (set +o history 2> /dev/null) && set +o history || :
+  (set +o histexpand 2> /dev/null) && set +o histexpand || :
+fi
 
 # shellcheck disable=SC2034
 {
