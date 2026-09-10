@@ -22,7 +22,7 @@
 
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.44'
+SCRIPT_VERSION='1.5.45'
 SCRIPT_AUTHOR='ale5000'
 SCRIPT_YEAR='2024'
 
@@ -31,6 +31,13 @@ SCRIPT_YEAR='2024'
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
 case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) ;; esac
+# IMPORTANT: Double-clicking a script file on Windows opens Bash as an interactive shell and enables 'history', 'histexpand' and 'monitor' contrary to any logic
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option 'foo' is undefined
+if test -f '/usr/bin/cygpath'; then
+  set +o histexpand || :
+  set +o history || :
+  set +o monitor || :
+fi
 
 # The "obosh" shell does NOT support "command" while the "posh" shell does NOT support "type"
 {
