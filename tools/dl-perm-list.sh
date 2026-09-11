@@ -101,6 +101,11 @@ init_colors()
   fi
 }
 
+log_scope_init()
+{
+  LOG_LEVEL=0
+}
+
 log_scope_begin()
 {
   LOG_LEVEL="$((LOG_LEVEL + 2))"
@@ -111,9 +116,14 @@ log_scope_end()
   test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
 }
 
-log_scope_reset()
+log_empty_line()
 {
-  LOG_LEVEL=0
+  printf '\n'
+}
+
+log_info()
+{
+  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
 log_status()
@@ -267,17 +277,18 @@ main()
 
   test -d "${DATA_DIR:?}/perms" || mkdir -p -- "${DATA_DIR:?}/perms" || return 1
 
-  printf '\n%s\n' 'Downloading...'
+  log_empty_line
+  log_info 'Downloading...'
+  log_scope_begin
   rm -f -- "${DATA_DIR:?}/perms/.completed"
   rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX:?}"-*.xml
 
-  log_scope_begin
   for api in $(seq -- 23 "${MAX_API:?}"); do
-    tag="$(eval " printf '%s\n' \"\${TAG_API_${api:?}:?}\" ")" || {
+    tag="$(eval " printf '%s\n' \"\${TAG_API_${api?}?}\" ")" || {
       log_err "Failed to get tag for API ${api?}"
       return 4
     }
-    printf '  %s\n' "API ${api:?}: ${tag:?}"
+    log_info "API ${api?}: ${tag?}"
     log_scope_begin
     fetch_and_extract_manifest_permissions_with_retry "${api:?}" "${tag:?}" || {
       log_err "Failed to download or parse API ${api?} XML"
@@ -287,9 +298,9 @@ main()
     log_scope_end
     sleep "${REQUEST_DELAY:?}" || return "${?}"
   done
-  log_scope_end
 
   touch -- "${DATA_DIR:?}/perms/.completed" || return "${?}"
+  log_scope_end
   printf '%s\n' 'Done.'
 }
 
@@ -340,7 +351,7 @@ done
 
 if test "${execute_script:?}" = 'true'; then
   init_colors
-  log_scope_reset
+  log_scope_init
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
