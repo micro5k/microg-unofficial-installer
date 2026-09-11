@@ -18,7 +18,7 @@
 
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.15'
+readonly SCRIPT_VERSION='0.3.16'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -79,30 +79,68 @@ fix_posix_emulation_if_needed()
   fi
 }
 
+init_colors()
+{
+  CLR_RESET=''
+  CLR_RED=''
+  CLR_GREEN=''
+  CLR_YELLOW_PLAIN=''
+  CLR_YELLOW=''
+  CLR_CYAN=''
+  CLR_LINE=''
+
+  # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
+  if test -z "${NO_COLOR-}" && test -t 2; then
+    CLR_RESET='\033[0m'
+    CLR_RED='\033[1;31m'
+    CLR_GREEN='\033[1;32m'
+    CLR_YELLOW_PLAIN='\033[0;33m'
+    CLR_YELLOW='\033[1;33m'
+    CLR_CYAN='\033[1;36m'
+    CLR_LINE='\r        \r'
+  fi
+}
+
+log_scope_begin()
+{
+  LOG_LEVEL="$((LOG_LEVEL + 2))"
+}
+
+log_scope_end()
+{
+  test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
+}
+
+log_scope_reset()
+{
+  LOG_LEVEL=0
+}
+
 log_status()
 {
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
+  printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
+}
+
+log_warn()
+{
+  printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
 }
 
 log_err()
 {
-  printf 1>&2 '\n\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
+  printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
 }
 
 pause_if_needed()
 {
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
-  if test "${NO_PAUSE:-0}" = '0' && test "${no_pause:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
-    if test -n "${NO_COLOR-}"; then
-      printf 1>&2 '\n%s' 'Press any key to exit... ' || :
-    else
-      printf 1>&2 '\n\033[1;32m\r%s' 'Press any key to exit... ' || :
-    fi
-    # shellcheck disable=SC3045 # Ignore: In POSIX sh, read -s / -n is undefined
+  # shellcheck disable=SC3028 # IGNORE: In POSIX sh, SHLVL is undefined
+  if test "${no_pause:-0}" = '0' && test "${NO_PAUSE:-0}" = '0' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2 && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode'; then
+    case "$-" in *s*) return "${1:-0}" ;; *) ;; esac
+    printf 1>&2 '\n%b%s' "${CLR_GREEN-}${CLR_LINE-}" 'Press any key to exit... ' || :
+    # shellcheck disable=SC3045 # IGNORE: In POSIX sh, read -s / -n is undefined
     IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
-    if test -n "${NO_COLOR-}"; then printf 1>&2 '\n' || :; else printf 1>&2 '\n\033[0m\r    \r' || :; fi
+    printf 1>&2 '\n%b' "${CLR_RESET-}${CLR_LINE-}" || :
   fi
-  unset no_pause
   return "${1:-0}"
 }
 
@@ -194,9 +232,7 @@ fetch_and_extract_manifest_permissions_with_retry()
     __fn_attempts_left="$((__fn_attempts_left - 1))" || return "${?}"
     test "${__fn_attempts_left}" -gt 0 || break
 
-    printf 1>&2 '    %s %s\n' "WARNING: Failed to download or parse API ${1?} XML." \
-      "Retrying in ${RETRY_DELAY?} seconds (attempts left: ${__fn_attempts_left?})..."
-
+    log_warn "Failed to download or parse API ${1?} XML. Retrying in ${RETRY_DELAY?} seconds (attempts left: ${__fn_attempts_left?})..."
     sleep "${RETRY_DELAY:?}" || return "${?}"
   done
 
@@ -235,19 +271,23 @@ main()
   rm -f -- "${DATA_DIR:?}/perms/.completed"
   rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX:?}"-*.xml
 
+  log_scope_begin
   for api in $(seq -- 23 "${MAX_API:?}"); do
     tag="$(eval " printf '%s\n' \"\${TAG_API_${api:?}:?}\" ")" || {
       log_err "Failed to get tag for API ${api?}"
       return 4
     }
     printf '  %s\n' "API ${api:?}: ${tag:?}"
+    log_scope_begin
     fetch_and_extract_manifest_permissions_with_retry "${api:?}" "${tag:?}" || {
       log_err "Failed to download or parse API ${api?} XML"
       rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX?}-${api:?}.xml"
       return 5
     }
+    log_scope_end
     sleep "${REQUEST_DELAY:?}" || return "${?}"
   done
+  log_scope_end
 
   touch -- "${DATA_DIR:?}/perms/.completed" || return "${?}"
   printf '%s\n' 'Done.'
@@ -299,6 +339,8 @@ while test "$#" -gt 0; do
 done
 
 if test "${execute_script:?}" = 'true'; then
+  init_colors
+  log_scope_reset
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
