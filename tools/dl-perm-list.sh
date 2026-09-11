@@ -79,6 +79,16 @@ fix_posix_emulation_if_needed()
   fi
 }
 
+log_status()
+{
+  printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
+}
+
+log_err()
+{
+  printf 1>&2 '\n\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
+}
+
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
@@ -94,16 +104,6 @@ pause_if_needed()
   fi
   unset no_pause
   return "${1:-0}"
-}
-
-show_status()
-{
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${1?}"
-}
-
-show_error()
-{
-  printf 1>&2 '\n\033[1;31m%s\033[0m\n' "ERROR: ${1?}"
 }
 
 find_data_dir()
@@ -225,7 +225,7 @@ main()
   DATA_DIR="$(find_data_dir || create_and_return_data_dir)" || return 1
 
   command 1> /dev/null -v "${WGET_CMD:?}" || {
-    show_error 'Missing: wget'
+    log_err 'Missing: wget'
     return 255
   }
 
@@ -237,12 +237,12 @@ main()
 
   for api in $(seq -- 23 "${MAX_API:?}"); do
     tag="$(eval " printf '%s\n' \"\${TAG_API_${api:?}:?}\" ")" || {
-      show_error "Failed to get tag for API ${api?}"
+      log_err "Failed to get tag for API ${api?}"
       return 4
     }
     printf '  %s\n' "API ${api:?}: ${tag:?}"
     fetch_and_extract_manifest_permissions_with_retry "${api:?}" "${tag:?}" || {
-      show_error "Failed to download or parse API ${api?} XML"
+      log_err "Failed to download or parse API ${api?} XML"
       rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX?}-${api:?}.xml"
       return 5
     }
@@ -299,7 +299,7 @@ while test "$#" -gt 0; do
 done
 
 if test "${execute_script:?}" = 'true'; then
-  show_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
+  log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
