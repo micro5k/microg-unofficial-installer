@@ -18,7 +18,7 @@
 
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.14'
+readonly SCRIPT_VERSION='0.3.15'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -194,7 +194,7 @@ fetch_and_extract_manifest_permissions_with_retry()
     __fn_attempts_left="$((__fn_attempts_left - 1))" || return "${?}"
     test "${__fn_attempts_left}" -gt 0 || break
 
-    printf 1>&2 '  %s %s\n' "WARNING: Failed to download or parse API ${1?} XML." \
+    printf 1>&2 '    %s %s\n' "WARNING: Failed to download or parse API ${1?} XML." \
       "Retrying in ${RETRY_DELAY?} seconds (attempts left: ${__fn_attempts_left?})..."
 
     sleep "${RETRY_DELAY:?}" || return "${?}"
@@ -230,6 +230,8 @@ main()
   }
 
   test -d "${DATA_DIR:?}/perms" || mkdir -p -- "${DATA_DIR:?}/perms" || return 1
+
+  printf '\n%s\n' 'Downloading...'
   rm -f -- "${DATA_DIR:?}/perms/.completed"
   rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX:?}"-*.xml
 
@@ -238,7 +240,7 @@ main()
       show_error "Failed to get tag for API ${api?}"
       return 4
     }
-    printf '%s\n' "API ${api:?}: ${tag:?}"
+    printf '  %s\n' "API ${api:?}: ${tag:?}"
     fetch_and_extract_manifest_permissions_with_retry "${api:?}" "${tag:?}" || {
       show_error "Failed to download or parse API ${api?} XML"
       rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX?}-${api:?}.xml"
@@ -247,7 +249,8 @@ main()
     sleep "${REQUEST_DELAY:?}" || return "${?}"
   done
 
-  touch -- "${DATA_DIR:?}/perms/.completed"
+  touch -- "${DATA_DIR:?}/perms/.completed" || return "${?}"
+  printf '%s\n' 'Done.'
 }
 
 execute_script='true'
