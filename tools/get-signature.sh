@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Android app signing certificate extractor'
 readonly SCRIPT_SHORTNAME='AppSignExt'
-readonly SCRIPT_VERSION='0.1.15'
+readonly SCRIPT_VERSION='0.1.16'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -41,7 +41,7 @@ if test -f '/usr/bin/cygpath'; then
   (set +o histexpand 2> /dev/null) && set +o histexpand || :
 fi
 
-# @section UTILITY & UI FUNCTIONS ----
+# @section TERMINAL SETUP & LOGGING FUNCTIONS ----
 #region
 fix_posix_emulation_if_needed()
 {
@@ -61,7 +61,7 @@ fix_posix_emulation_if_needed()
   fi
 }
 
-init_colors()
+color_init()
 {
   CLR_RESET=''
   CLR_RED=''
@@ -83,6 +83,23 @@ init_colors()
   fi
 }
 
+log_scope_init()
+{
+  LOG_LEVEL=0
+}
+
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
+log_scope_begin()
+{
+  LOG_LEVEL="$((LOG_LEVEL + 2))"
+}
+
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
+log_scope_end()
+{
+  test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
+}
+
 set_yellow_color()
 {
   printf 1>&2 '%b' "${CLR_YELLOW}"
@@ -93,6 +110,16 @@ reset_color()
   printf 1>&2 '%b' "${CLR_RESET}"
 }
 
+log_empty_line()
+{
+  printf '\n'
+}
+
+log_output()
+{
+  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
+}
+
 log_status()
 {
   printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
@@ -101,6 +128,13 @@ log_status()
 log_err()
 {
   printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
+}
+
+init()
+{
+  fix_posix_emulation_if_needed
+  color_init
+  log_scope_init
 }
 
 pause_if_needed()
@@ -117,7 +151,7 @@ pause_if_needed()
 }
 #endregion
 
-# @section CORE FUNCTIONS ----
+# @section ANDROID SDK FUNCTIONS ----
 #region
 set_android_sdk_path_if_unset()
 {
@@ -154,7 +188,10 @@ find_android_build_tool()
 
   printf '%s\n' "${__fn_tool_path:?}"
 }
+#endregion
 
+# @section CORE FUNCTIONS ----
+#region
 get_apk_cert_sha256()
 {
   local __fn_cert_sha256=''
@@ -190,8 +227,6 @@ main()
 {
   local backup_ifs="${IFS-unset}"
   local status=0 base_name='' cert_sha256=''
-
-  fix_posix_emulation_if_needed
 
   # BEGIN: Global config (overridable via env)
   export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
@@ -243,8 +278,9 @@ main()
 
   while test "$#" -gt 0; do
     reset_color
-    base_name="$(basename "${1:-''}" || printf '%s\n' 'unknown')"
-    printf '\n%s\n\n' "Filename: ${base_name:?}"
+    log_empty_line
+    base_name="$(basename "${1:-''}" || printf '%s\n' "${1:-''}" || :)"
+    log_output "Filename: ${base_name:?}"
 
     cert_sha256="$(get_apk_cert_sha256 "${1?}")" || {
       log_err "Failed to extract certificate SHA-256 fingerprint from '${1?}' (exit code: ${?})"
@@ -253,7 +289,7 @@ main()
       continue
     }
 
-    printf '%s\n' "sha256-cert-digest=\"${cert_sha256?}\""
+    log_output "sha256-cert-digest=\"${cert_sha256?}\""
 
     shift
   done
@@ -313,7 +349,7 @@ done
 # @section EXECUTION ENTRY POINT ----
 #region
 if test "${execute_script:?}" = 'true'; then
-  init_colors
+  init
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
