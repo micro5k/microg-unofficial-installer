@@ -4,7 +4,7 @@
 
 # @name AOSP system permissions downloader
 # @brief Download and parse AOSP system permission declarations for each supported Android API level.
-# @description For every supported Android API level (23 to 36) fetches the
+# @description For every supported Android API level (23 to 37) fetches the
 # corresponding AndroidManifest.xml from AOSP, extracts all <permission>
 # entries, and saves one XML file per API level under data/perms/.
 #
@@ -111,11 +111,13 @@ log_scope_init()
   LOG_LEVEL=0
 }
 
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
 log_scope_begin()
 {
   LOG_LEVEL="$((LOG_LEVEL + 2))"
 }
 
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
 log_scope_end()
 {
   test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
