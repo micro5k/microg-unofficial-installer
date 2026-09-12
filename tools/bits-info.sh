@@ -20,13 +20,14 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
+# @section GLOBAL CONSTANTS ----
+#region
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.45'
+SCRIPT_VERSION='1.5.46'
 SCRIPT_AUTHOR='ale5000'
 SCRIPT_YEAR='2024'
-
-### CONFIGURATION ###
+#endregion
 
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
@@ -59,8 +60,8 @@ command 1> /dev/null 2>&1 -v 'local' || {
   if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi
 }
 
-### SCRIPT ###
-
+# @section TERMINAL SETUP & LOGGING FUNCTIONS ----
+#region
 fix_posix_emulation_if_needed()
 {
   # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
@@ -79,7 +80,7 @@ fix_posix_emulation_if_needed()
   fi
 }
 
-init_colors()
+color_init()
 {
   CLR_RESET=''
   CLR_RED=''
@@ -101,12 +102,39 @@ init_colors()
   fi
 }
 
+log_scope_init()
+{
+  LOG_LEVEL=0
+}
+
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
+log_scope_begin()
+{
+  LOG_LEVEL="$((LOG_LEVEL + 2))"
+}
+
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
+log_scope_end()
+{
+  test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
+}
+
+log_empty_line()
+{
+  printf '\n'
+}
+
+log_output()
+{
+  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
+}
+
 log_warn()
 {
   if test "${CI:-false}" = 'false'; then
-    printf 1>&2 '%b%s\n%b' "${CLR_YELLOW_PLAIN}${CLR_LINE}" "WARNING: ${1}" "${CLR_RESET}${CLR_LINE}"
+    printf 1>&2 '%b%*s%s\n%b' "${CLR_YELLOW_PLAIN}${CLR_LINE}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}${CLR_LINE}"
   else
-    printf 1>&2 '%b%s%b\n' "${CLR_YELLOW_PLAIN}" "WARNING: ${1}" "${CLR_RESET}"
+    printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
   fi
 }
 
@@ -117,6 +145,13 @@ log_err()
   else
     printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
   fi
+}
+
+init()
+{
+  fix_posix_emulation_if_needed
+  color_init
+  log_scope_init
 }
 
 pause_if_needed()
@@ -131,6 +166,7 @@ pause_if_needed()
   fi
   return "${1:-0}"
 }
+#endregion
 
 convert_max_signed_int_to_bit()
 {
@@ -753,8 +789,6 @@ detect_bitness_of_files()
 {
   local backup_ifs backup_lcall newline ret_code use_multifile_mode
 
-  fix_posix_emulation_if_needed
-
   # Save the current environment state to safely restore it later
   backup_ifs="${IFS-unset}"
   backup_lcall="${LC_ALL-unset}"
@@ -813,7 +847,8 @@ detect_bitness_of_files()
       detect_bitness_of_single_file "${1}" || ret_code="$((ret_code + 1))"
       shift
     done
-    printf '\n%s\n' "Unidentified files: ${ret_code}"
+    log_empty_line
+    log_output "Unidentified files: ${ret_code}"
   else
     detect_bitness_of_single_file "${1-}" || ret_code="${?}"
   fi
@@ -1218,8 +1253,6 @@ main()
 
   limits_s_u='32767 65535 256446000 2147483647 4294967295 9223372036854775807 18446744073709551614 18446744073709551615'
 
-  fix_posix_emulation_if_needed
-
   shell_is_msys='false'
   if is_shell_msys; then shell_is_msys='true'; fi
 
@@ -1506,7 +1539,7 @@ main()
 
 init_env()
 {
-  init_colors
+  init
   backup_path="${PATH-unset}"
 }
 
@@ -1528,6 +1561,8 @@ final_cleanup()
   return "${1:-0}"
 }
 
+# @section CLI ARGUMENTS PARSING ----
+#region
 execute_script='true'
 prefer_included_utilities=0
 no_pause=0
@@ -1612,7 +1647,10 @@ while test "$#" -gt 0; do
 
   shift
 done || :
+#endregion
 
+# @section EXECUTION ENTRY POINT ----
+#region
 if test "${execute_script}" = 'true'; then
   init_env
 
@@ -1627,3 +1665,4 @@ fi
 
 pause_if_needed
 final_cleanup "${STATUS}"
+#endregion
