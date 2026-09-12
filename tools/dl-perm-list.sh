@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.17'
+readonly SCRIPT_VERSION='0.3.18'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -64,7 +64,7 @@ if test -f '/usr/bin/cygpath'; then
   (set +o histexpand 2> /dev/null) && set +o histexpand || :
 fi
 
-# @section UTILITY & UI FUNCTIONS ----
+# @section TERMINAL SETUP & LOGGING FUNCTIONS ----
 #region
 fix_posix_emulation_if_needed()
 {
@@ -148,6 +148,7 @@ log_err()
 
 init()
 {
+  fix_posix_emulation_if_needed
   color_init
   log_scope_init
 }
@@ -166,7 +167,7 @@ pause_if_needed()
 }
 #endregion
 
-# @section CORE FUNCTIONS ----
+# @section STORAGE & DIRECTORY FUNCTIONS ----
 #region
 find_data_dir()
 {
@@ -218,7 +219,10 @@ clean_perms_dir_if_empty()
     rmdir 2> /dev/null -- "${DATA_DIR?}/perms" || :
   fi
 }
+#endregion
 
+# @section CORE FUNCTIONS ----
+#region
 dl()
 {
   "${WGET_CMD:?}" -q -O "${2:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --no-cache -- "${1:?}" || return "${?}"
@@ -269,8 +273,6 @@ fetch_and_extract_manifest_permissions_with_retry()
 main()
 {
   local api='' tag=''
-
-  fix_posix_emulation_if_needed
 
   # BEGIN: Global config (overridable via env)
   export REQUEST_DELAY="${REQUEST_DELAY-}" # Delay to wait after a successful request
