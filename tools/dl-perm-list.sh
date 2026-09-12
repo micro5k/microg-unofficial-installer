@@ -16,9 +16,11 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
+# @section GLOBAL CONSTANTS ----
+#region
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.16'
+readonly SCRIPT_VERSION='0.3.17'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -49,6 +51,7 @@ readonly WGET_CMD='wget'
 readonly DL_UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0'
 readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
 readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
+#endregion
 
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
@@ -61,6 +64,8 @@ if test -f '/usr/bin/cygpath'; then
   (set +o histexpand 2> /dev/null) && set +o histexpand || :
 fi
 
+# @section UTILITY & UI FUNCTIONS ----
+#region
 fix_posix_emulation_if_needed()
 {
   # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
@@ -79,7 +84,7 @@ fix_posix_emulation_if_needed()
   fi
 }
 
-init_colors()
+color_init()
 {
   CLR_RESET=''
   CLR_RED=''
@@ -121,7 +126,7 @@ log_empty_line()
   printf '\n'
 }
 
-log_info()
+log_output()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
@@ -141,6 +146,12 @@ log_err()
   printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
 }
 
+init()
+{
+  color_init
+  log_scope_init
+}
+
 pause_if_needed()
 {
   # shellcheck disable=SC3028 # IGNORE: In POSIX sh, SHLVL is undefined
@@ -153,7 +164,10 @@ pause_if_needed()
   fi
   return "${1:-0}"
 }
+#endregion
 
+# @section CORE FUNCTIONS ----
+#region
 find_data_dir()
 {
   local _path
@@ -248,7 +262,10 @@ fetch_and_extract_manifest_permissions_with_retry()
 
   return 1
 }
+#endregion
 
+# @section MAIN FUNCTION ----
+#region
 main()
 {
   local api='' tag=''
@@ -278,7 +295,7 @@ main()
   test -d "${DATA_DIR:?}/perms" || mkdir -p -- "${DATA_DIR:?}/perms" || return 1
 
   log_empty_line
-  log_info 'Downloading...'
+  log_output 'Downloading...'
   log_scope_begin
   rm -f -- "${DATA_DIR:?}/perms/.completed"
   rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX:?}"-*.xml
@@ -288,7 +305,7 @@ main()
       log_err "Failed to get tag for API ${api?}"
       return 4
     }
-    log_info "API ${api?}: ${tag?}"
+    log_output "API ${api?}: ${tag?}"
     log_scope_begin
     fetch_and_extract_manifest_permissions_with_retry "${api:?}" "${tag:?}" || {
       log_err "Failed to download or parse API ${api?} XML"
@@ -301,9 +318,12 @@ main()
 
   touch -- "${DATA_DIR:?}/perms/.completed" || return "${?}"
   log_scope_end
-  printf '%s\n' 'Done.'
+  log_output 'Done.'
 }
+#endregion
 
+# @section CLI ARGUMENTS PARSING ----
+#region
 execute_script='true'
 no_pause=0
 STATUS=0
@@ -348,10 +368,12 @@ while test "$#" -gt 0; do
 
   shift
 done
+#endregion
 
+# @section EXECUTION ENTRY POINT ----
+#region
 if test "${execute_script:?}" = 'true'; then
-  init_colors
-  log_scope_init
+  init
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
@@ -361,3 +383,4 @@ fi
 
 pause_if_needed "${STATUS:?}"
 exit "${?}"
+#endregion
