@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.18'
+readonly SCRIPT_VERSION='0.3.19'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -292,7 +292,7 @@ main()
   DATA_DIR="$(find_data_dir || create_and_return_data_dir)" || return 1
 
   command 1> /dev/null -v "${WGET_CMD:?}" || {
-    log_err 'Missing: wget'
+    log_err 'wget is required'
     return 255
   }
 

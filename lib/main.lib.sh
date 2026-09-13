@@ -1497,7 +1497,7 @@ shellhelp()
     PATH="%builtin${PATHSEP:?}${PATH:-%empty}" help "${@}"
   else
     # shellcheck disable=SC2016 # It is intended: Expressions don't expand in single quotes
-    PATH="%builtin${PATHSEP:?}${PATH:-%empty}" help | sed -e 's/Type `help/Type `shellhelp/g'
+    PATH="%builtin${PATHSEP:?}${PATH:-%empty}" help | sed -e "$(printf '%b' 's|Type \0140help|Type \0140shellhelp|g')"
   fi
 }
 
