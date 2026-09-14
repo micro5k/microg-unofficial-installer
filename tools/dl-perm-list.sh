@@ -223,8 +223,8 @@ create_and_return_data_dir()
 
 clean_perms_dir_if_empty()
 {
-  if test -n "${DATA_DIR-}" && test -d "${DATA_DIR?}/perms"; then
-    rmdir 2> /dev/null -- "${DATA_DIR?}/perms" || :
+  if test -n "${DATA_DIR-}" && test -d "${DATA_DIR}/perms"; then
+    rmdir "${DATA_DIR:?}/perms" 2> /dev/null || :
   fi
 }
 #endregion
