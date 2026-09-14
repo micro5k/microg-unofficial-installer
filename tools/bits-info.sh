@@ -24,7 +24,7 @@
 #region
 SCRIPT_NAME='Bits info'
 SCRIPT_SHORTNAME='BitsInfo'
-SCRIPT_VERSION='1.5.46'
+SCRIPT_VERSION='1.5.47'
 SCRIPT_AUTHOR='ale5000'
 SCRIPT_YEAR='2024'
 #endregion
@@ -42,7 +42,7 @@ fi
 
 # The "obosh" shell does NOT support "command" while the "posh" shell does NOT support "type"
 {
-  command 1> /dev/null -v ':'
+  command -v ':' 1> /dev/null
 } 2> /dev/null || command()
 {
   test "${1:-empty}" = '-v' || exit 255
@@ -54,10 +54,10 @@ fi
 if command -v 'setopt' 1> /dev/null 2>&1; then setopt SH_WORD_SPLIT || echo 1>&2 'ERROR: setopt failed'; fi
 
 # Workaround for shells without support for local (example: ksh pbosh obosh)
-command 1> /dev/null 2>&1 -v 'local' || {
+command -v 'local' 1> /dev/null 2>&1 || {
   eval ' local() { :; } ' || :
   # On some variants of ksh this really works, but leave the function as dummy fallback
-  if command 1> /dev/null 2>&1 -v 'typeset'; then alias 'local'='typeset'; fi
+  if command -v 'typeset' 1> /dev/null 2>&1; then alias 'local'='typeset'; fi
 }
 
 # @section TERMINAL SETUP & LOGGING FUNCTIONS ----
@@ -294,11 +294,11 @@ file_getprop()
 
 detect_hex_dump_cmd()
 {
-  if command 1> /dev/null 2>&1 -v 'xxd'; then
+  if command -v 'xxd' 1> /dev/null 2>&1; then
     printf '%s\n' 'xxd'
-  elif command 1> /dev/null 2>&1 -v 'hexdump' && test "$(printf ' ' | hexdump 2> /dev/null -v -e '/1 "%02x"' || :)" = '20'; then
+  elif command -v 'hexdump' 1> /dev/null 2>&1 && test "$(printf ' ' | hexdump 2> /dev/null -v -e '/1 "%02x"' || :)" = '20'; then
     printf '%s\n' 'hexdump'
-  elif command 1> /dev/null 2>&1 -v 'od'; then
+  elif command -v 'od' 1> /dev/null 2>&1; then
     printf '%s\n' 'od'
   else
     return 1
@@ -1106,10 +1106,10 @@ get_version()
 {
   local _version
 
-  if ! command 1> /dev/null 2>&1 -v "${1}"; then
+  command -v "${1}" 1> /dev/null 2>&1 || {
     printf '%s\n' 'missing'
     return 1
-  fi
+  }
 
   # NOTE: "cut --version" of GNU textutils 1.5 return failure but still print the correct output although it is printed to STDERR
   _version="$("${1}" 2> /dev/null -Wversion || "${1}" 2>&1 --version || :)"
