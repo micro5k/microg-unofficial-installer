@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.21'
+readonly SCRIPT_VERSION='0.3.22'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -295,8 +295,23 @@ main()
     if test "${CI:-false}" = 'false'; then RETRY_DELAY='5'; else RETRY_DELAY='15'; fi
   fi
 
+  case "${REQUEST_DELAY?}" in
+    0 | *[!0-9.]* | *.*.* | .*)
+      log_err "REQUEST_DELAY must be a strictly positive integer or decimal, got: '${REQUEST_DELAY?}'"
+      return "${EX_USAGE?}"
+      ;;
+    *)
+      if test "${REQUEST_DELAY%.*}" != "${REQUEST_DELAY}"; then
+        sleep '0.01' 1> /dev/null 2>&1 || {
+          REQUEST_DELAY="$((${REQUEST_DELAY%.*} + 1))" || return 20
+          log_warn "System sleep does NOT support decimals. Rounding up REQUEST_DELAY to: '${REQUEST_DELAY}'"
+        }
+      fi
+      ;;
+  esac
+
   case "${RETRY_DELAY?}" in
-    '' | 0 | *[!0-9]*)
+    0 | *[!0-9]*)
       log_err "RETRY_DELAY must be a strictly positive integer, got: '${RETRY_DELAY?}'"
       return "${EX_USAGE?}"
       ;;
