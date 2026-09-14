@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.20'
+readonly SCRIPT_VERSION='0.3.21'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -28,6 +28,7 @@ readonly MAX_API=37
 readonly PERMS_DATA_PREFIX='base-permissions-api'
 readonly BASE_URL='https://android.googlesource.com/platform/frameworks/base/'
 
+readonly EX_USAGE=64
 readonly EX_UNAVAILABLE=69
 readonly EX_SOFTWARE=70
 readonly EX_TEMPFAIL=75
@@ -267,7 +268,7 @@ fetch_and_extract_manifest_permissions_with_retry()
     __fn_attempts_left="$((__fn_attempts_left - 1))" || return "${?}"
     test "${__fn_attempts_left}" -gt 0 || break
 
-    log_warn "Failed to download or parse API ${1?} XML. Retrying in ${RETRY_DELAY?} seconds (attempts left: ${__fn_attempts_left?})..."
+    log_warn "Failed to download (or parse) API ${1?} XML. Retrying in ${RETRY_DELAY?} seconds (attempts left: ${__fn_attempts_left?})..."
     sleep "${RETRY_DELAY:?}" || return "${?}"
   done
 
@@ -293,6 +294,14 @@ main()
   if test -z "${RETRY_DELAY?}"; then
     if test "${CI:-false}" = 'false'; then RETRY_DELAY='5'; else RETRY_DELAY='15'; fi
   fi
+
+  case "${RETRY_DELAY?}" in
+    '' | 0 | *[!0-9]*)
+      log_err "RETRY_DELAY must be a strictly positive integer, got: '${RETRY_DELAY?}'"
+      return "${EX_USAGE?}"
+      ;;
+    *) ;;
+  esac
 
   command -v "${WGET_CMD:?}" 1> /dev/null 2>&1 || {
     log_err 'wget is required'
