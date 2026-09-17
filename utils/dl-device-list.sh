@@ -21,6 +21,8 @@ readonly SCRIPT_SHORTNAME='CertDevDl'
 readonly SCRIPT_VERSION='0.1.2'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
+
+readonly EX_TEMPFAIL=75
 #endregion
 
 set -u 2> /dev/null || :
@@ -71,30 +73,82 @@ restore_codepage()
   fi
 }
 
+color_init()
+{
+  CLR_RESET=''
+  CLR_RED=''
+  CLR_GREEN=''
+  CLR_YELLOW_PLAIN=''
+  CLR_YELLOW=''
+  CLR_CYAN=''
+  CLR_LINE=''
+
+  # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
+  if test -z "${NO_COLOR-}" && test -t 2; then
+    CLR_RESET='\033[0m'
+    CLR_RED='\033[1;31m'
+    CLR_GREEN='\033[1;32m'
+    CLR_YELLOW_PLAIN='\033[0;33m'
+    CLR_YELLOW='\033[1;33m'
+    CLR_CYAN='\033[1;36m'
+    CLR_LINE='\r        \r'
+  fi
+}
+
+log_scope_init()
+{
+  LOG_LEVEL=0
+}
+
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
+log_scope_begin()
+{
+  LOG_LEVEL="$((LOG_LEVEL + 2))"
+}
+
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
+log_scope_end()
+{
+  test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
+}
+
+log_empty_line()
+{
+  printf '\n'
+}
+
 log_output()
 {
-  printf '%s\n' "${1}"
+  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
+}
+
+log_status()
+{
+  printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
 }
 
 log_err()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1}"
+  printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
+}
+
+init()
+{
+  fix_posix_emulation_if_needed
+  color_init
+  log_scope_init
 }
 
 pause_if_needed()
 {
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
-  if test "${NO_PAUSE:-0}" = '0' && test "${no_pause:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
-    if test -n "${NO_COLOR-}"; then
-      printf 1>&2 '\n%s' 'Press any key to exit... ' || :
-    else
-      printf 1>&2 '\n\033[1;32m\r%s' 'Press any key to exit... ' || :
-    fi
-    # shellcheck disable=SC3045 # Ignore: In POSIX sh, read -s / -n is undefined
+  # shellcheck disable=SC3028 # IGNORE: In POSIX sh, SHLVL is undefined
+  if test "${no_pause:-0}" = '0' && test "${NO_PAUSE:-0}" = '0' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2 && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode'; then
+    case "$-" in *s*) return "${1:-0}" ;; *) ;; esac
+    printf 1>&2 '\n%b%s' "${CLR_GREEN-}${CLR_LINE-}" 'Press any key to exit... ' || :
+    # shellcheck disable=SC3045 # IGNORE: In POSIX sh, read -s / -n is undefined
     IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
-    if test -n "${NO_COLOR-}"; then printf 1>&2 '\n' || :; else printf 1>&2 '\n\033[0m\r    \r' || :; fi
+    printf 1>&2 '\n%b' "${CLR_RESET-}${CLR_LINE-}" || :
   fi
-  unset no_pause
   return "${1:-0}"
 }
 #endregion
@@ -179,15 +233,20 @@ dl_and_convert_device_list()
 
 main()
 {
-  fix_posix_emulation_if_needed
-
   set_utf8_codepage
 
-  if dl_and_convert_device_list; then
-    log_output 'File downloaded correctly :)'
-  else
-    log_err 'Download failed!!!'
-  fi
+  log_empty_line
+  log_output 'Downloading...'
+  log_scope_begin
+
+  dl_and_convert_device_list || {
+    log_err "Failed to download"
+    restore_codepage
+    return "${EX_TEMPFAIL?}"
+  }
+
+  log_scope_end
+  log_output 'Done.'
 
   restore_codepage
 }
@@ -244,8 +303,8 @@ done
 # @section EXECUTION ENTRY POINT ----
 #region
 if test "${execute_script:?}" = 'true'; then
-  #init
-  #log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
+  init
+  log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
