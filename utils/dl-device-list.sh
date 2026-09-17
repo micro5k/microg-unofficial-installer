@@ -10,15 +10,18 @@
 # @author ale5000
 
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils
+
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
+# @section GLOBAL CONSTANTS ----
+#region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.1'
+readonly SCRIPT_VERSION='0.1.2'
 readonly SCRIPT_AUTHOR='ale5000'
-
-: "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}" "${SCRIPT_SHORTNAME:?}" "${SCRIPT_AUTHOR:?}"
+readonly SCRIPT_YEAR='2023'
+#endregion
 
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
@@ -31,6 +34,8 @@ if test -f '/usr/bin/cygpath'; then
   (set +o histexpand 2> /dev/null) && set +o histexpand || :
 fi
 
+# @section TERMINAL SETUP & LOGGING FUNCTIONS ----
+#region
 fix_posix_emulation_if_needed()
 {
   # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
@@ -66,14 +71,14 @@ restore_codepage()
   fi
 }
 
-show_error()
+log_err()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1}"
 }
 
-show_info()
+log_output()
 {
-  printf '\033[1;32m%s\033[0m\n' "${*}"
+  printf '%s\n' "${1}"
 }
 
 pause_if_needed()
@@ -92,6 +97,7 @@ pause_if_needed()
   unset no_pause
   return "${1:-0}"
 }
+#endregion
 
 contains()
 {
@@ -178,14 +184,73 @@ main()
   set_utf8_codepage
 
   if dl_and_convert_device_list; then
-    show_info 'File downloaded correctly :)'
+    log_output 'File downloaded correctly :)'
   else
-    show_error 'Download failed!!!'
+    log_err 'Download failed!!!'
   fi
 
   restore_codepage
-  pause_if_needed
 }
 
+# @section CLI ARGUMENTS PARSING ----
+#region
+execute_script='true'
+no_pause=0
+STATUS=0
 readonly SAVE_AS_UTF8='true'
-main
+
+while test "$#" -gt 0; do
+  case "${1?}" in
+    -V | --version)
+      execute_script='false'
+      no_pause=1
+      # REUSE-IgnoreStart
+      printf '%s\n' "${SCRIPT_NAME:?}, version ${SCRIPT_VERSION:?}"
+      printf '%s\n' "Copyright (C) ${SCRIPT_YEAR:?} ${SCRIPT_AUTHOR:?}"
+      printf '%s\n\n' 'License GPLv3+ with APE.'
+      printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
+      # REUSE-IgnoreEnd
+      ;;
+
+    --no-pause)
+      no_pause=1
+      ;;
+    -) # Read from STDIN (implies end of options)
+      break
+      ;;
+    --) # End of options / Positional arguments follow
+      shift
+      break
+      ;;
+    --*)
+      execute_script='false'
+      no_pause=1
+      STATUS=2
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
+      ;;
+    -*)
+      execute_script='false'
+      no_pause=1
+      STATUS=2
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
+      ;;
+    *) break ;;
+  esac
+
+  shift
+done
+#endregion
+
+# @section EXECUTION ENTRY POINT ----
+#region
+if test "${execute_script:?}" = 'true'; then
+  #init
+  #log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
+
+  test "$#" -ne 0 || set -- ''
+  main "${@}" || STATUS="${?}"
+fi
+
+pause_if_needed "${STATUS:?}"
+exit "${?}"
+#endregion
