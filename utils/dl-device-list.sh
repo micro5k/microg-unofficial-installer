@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.2'
+readonly SCRIPT_VERSION='0.1.3'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -235,6 +235,10 @@ main()
 {
   set_utf8_codepage
 
+  # BEGIN: Global config (overridable via env)
+  export SAVE_AS_UTF8="${SAVE_AS_UTF8:-true}"
+  # END: Global config
+
   log_empty_line
   log_output 'Downloading...'
   log_scope_begin
@@ -256,7 +260,6 @@ main()
 execute_script='true'
 no_pause=0
 STATUS=0
-readonly SAVE_AS_UTF8='true'
 
 while test "$#" -gt 0; do
   case "${1?}" in
