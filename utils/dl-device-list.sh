@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.4'
+readonly SCRIPT_VERSION='0.1.5'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -66,8 +66,8 @@ fix_posix_emulation_if_needed()
 
 set_utf8_codepage()
 {
-  if command 1> /dev/null -v 'chcp.com' && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2-' -s | LC_ALL=C tr -d ' \r')" && test "${PREVIOUS_CODEPAGE?}" -ne 65001; then
-    'chcp.com' 1> /dev/null 65001
+  if command -v 'chcp.com' 1> /dev/null 2>&1 && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2' -s | tr -d ' \r')" && test "${PREVIOUS_CODEPAGE}" -ne 65001; then
+    'chcp.com' 1> /dev/null 65001 || return "${?}"
   else
     PREVIOUS_CODEPAGE=''
   fi
@@ -76,7 +76,7 @@ set_utf8_codepage()
 restore_codepage()
 {
   if test -n "${PREVIOUS_CODEPAGE-}"; then
-    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}"
+    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}" || :
     PREVIOUS_CODEPAGE=''
   fi
 }
@@ -249,7 +249,7 @@ dl_with_retry()
 
 dl_and_convert_device_list()
 {
-  local _file _var
+  local _file
 
   _file="${DATA_DIR?}/device-list.csv"
 
@@ -260,10 +260,7 @@ dl_and_convert_device_list()
 
   iconv_compat "${_file:?}-temp" "${_file:?}-temp" -f 'UTF-16LE' -t 'UTF-8' || return "${?}"
 
-  _var="$(printf '\342\200\235')"
-  sed -i "s/${_var:?}/\"/g" "${_file:?}-temp" || return "${?}"
-
-  if test "${SAVE_AS_UTF8}" = 'true'; then
+  if test "${ENABLE_UTF8}" = 'true'; then
     mv -f -T -- "${_file:?}-temp" "${_file:?}" || return "${?}"
   else
     iconv_compat "${_file:?}-temp" "${_file:?}" -c -f 'UTF-8' -t 'WINDOWS-1252//IGNORE' || return "${?}"
@@ -278,10 +275,8 @@ main()
 {
   local status=0
 
-  set_utf8_codepage
-
   # BEGIN: Global config (overridable via env)
-  export SAVE_AS_UTF8="${SAVE_AS_UTF8:-true}"
+  export ENABLE_UTF8="${ENABLE_UTF8:-true}"
   export RETRY_DELAY="${RETRY_DELAY-}"     # Delay to wait after a failed request before a retry
   export MAX_ATTEMPTS="${MAX_ATTEMPTS:-3}" # Maximum number of total attempts allowed (per download)
   # END: Global config
@@ -297,6 +292,13 @@ main()
       ;;
     *) ;;
   esac
+
+  if test "${ENABLE_UTF8?}" = 'true'; then
+    export LANG='C.UTF-8'
+    set_utf8_codepage
+  else
+    export LANG='C'
+  fi
 
   command -v "${WGET_CMD:?}" 1> /dev/null 2>&1 || {
     log_err 'wget is required'
@@ -317,14 +319,11 @@ main()
 
   dl_and_convert_device_list || {
     status="${?}"
-    restore_codepage
     return "${status?}"
   }
 
   log_scope_end
   log_output 'Done.'
-
-  restore_codepage
 }
 #endregion
 
@@ -384,6 +383,7 @@ if test "${execute_script:?}" = 'true'; then
 
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
+  restore_codepage
 fi
 
 pause_if_needed "${STATUS:?}"

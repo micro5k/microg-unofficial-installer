@@ -279,7 +279,7 @@ main()
       ;;
     *)
       if test "${REQUEST_DELAY%.*}" != "${REQUEST_DELAY}"; then
-        sleep '0.01' 1> /dev/null 2>&1 || {
+        sleep '0.01' 2> /dev/null 1>&2 || {
           REQUEST_DELAY="$((${REQUEST_DELAY%.*} + 1))" || return 20
           log_warn "System sleep does NOT support decimals. Rounding up REQUEST_DELAY to: '${REQUEST_DELAY}'"
         }

@@ -28,7 +28,7 @@ fi
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.5'
+readonly SCRIPT_VERSION='1.9.6'
 readonly SCRIPT_AUTHOR='ale5000'
 
 export LANG='en_US.UTF-8'
@@ -644,7 +644,7 @@ generate_device_info()
 
   if is_valid_value "${MARKETING_DEVICE_INFO?}"; then
     _info="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
-  elif test "${OFFICIAL_STATUS:?}" -le 1 && is_valid_value "${OFFICIAL_DEVICE_INFO?}" && ! contains_nocase "${OFFICIAL_DEVICE_INFO:?}" "${BUILD_MODEL?}"; then
+  elif test "${OFFICIAL_STATUS:?}" -eq 0 && is_valid_value "${OFFICIAL_DEVICE_INFO?}" && ! contains_nocase "${OFFICIAL_DEVICE_INFO:?}" "${BUILD_MODEL?}"; then
     _info="${OFFICIAL_DEVICE_INFO?}"
   elif compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo' && _lenovo_device_name="$(auto_getprop 'ro.lenovo.series')" && is_valid_value "${_lenovo_device_name?}"; then
     _info="$(uc_first_char "${_lenovo_device_name:?}")"
@@ -662,7 +662,7 @@ generate_device_info()
     _info="${BUILD_MANUFACTURER:?} ${_info?}"
   fi
 
-  printf '%s\n' "$(uc_first_char "${_info?}" || true)" | sed 's/"/\&quot;/g'
+  printf '%s\n' "$(uc_first_char "${_info?}" || true)" | sed -e "$(printf '%b' 's|\0342\0200\0235|\&quot;|g; s|"|\&quot;|g')"
 }
 
 find_bootloader()
