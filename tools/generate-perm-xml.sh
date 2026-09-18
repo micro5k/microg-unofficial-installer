@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.36'
+readonly SCRIPT_VERSION='0.3.37'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -210,25 +210,25 @@ find_android_build_tool()
 
 # @section STORAGE & DIRECTORY FUNCTIONS ----
 #region
-find_data_dir()
+resolve_data_dir()
 {
-  local _path
+  local __fn_path=''
 
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
-  if test -n "${TOOLS_DATA_DIR-}" && _path="${TOOLS_DATA_DIR:?}" && test -d "${_path:?}"; then
+  # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+  if test -n "${TOOLS_DATA_DIR-}" && __fn_path="${TOOLS_DATA_DIR}"; then
     :
-  elif test -n "${BASH_SOURCE-}" && _path="$(dirname "${BASH_SOURCE:?}")/data" && test -d "${_path:?}"; then
-    : # It is expected: expanding an array without an index gives the first element
-  elif test -n "${0-}" && _path="$(dirname "${0:?}")/data" && test -d "${_path:?}"; then
+  elif test -n "${BASH_SOURCE-}" && test -f "${BASH_SOURCE}" && __fn_path="$(dirname "${BASH_SOURCE}")/data"; then
+    : # NOTE: Index omitted intentionally; we explicitly want the first element only
+  elif test -n "${0-}" && test -f "${0}" && __fn_path="$(dirname "${0}")/data"; then
     :
-  elif _path='./data' && test -d "${_path:?}"; then
+  elif __fn_path='./data'; then
     :
   else
     return 1
   fi
 
-  _path="$(realpath 2> /dev/null "${_path:?}" || readlink -f "${_path:?}")" || return 3
-  printf '%s\n' "${_path:?}"
+  __fn_path="$(realpath 2> /dev/null "${__fn_path:?}" || readlink -f "${__fn_path:?}")" || return 3
+  printf '%s\n' "${__fn_path:?}"
 }
 #endregion
 
@@ -608,7 +608,7 @@ main()
     fi
   fi
 
-  if DATA_DIR="$(find_data_dir)" && test -f "${DATA_DIR:?}/perms/.completed"; then
+  if DATA_DIR="$(resolve_data_dir)" && test -f "${DATA_DIR}/perms/.completed"; then
     :
   else
     log_err 'Required data not found. Please execute "dl-perm-list.sh" before running this script'

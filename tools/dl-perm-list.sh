@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.22'
+readonly SCRIPT_VERSION='0.3.23'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -177,48 +177,25 @@ pause_if_needed()
 
 # @section STORAGE & DIRECTORY FUNCTIONS ----
 #region
-find_data_dir()
+resolve_data_dir()
 {
-  local _path
+  local __fn_path=''
 
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
-  if test -n "${TOOLS_DATA_DIR-}" && _path="${TOOLS_DATA_DIR:?}" && test -d "${_path:?}"; then
+  # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+  if test -n "${TOOLS_DATA_DIR-}" && __fn_path="${TOOLS_DATA_DIR}"; then
     :
-  elif test -n "${BASH_SOURCE-}" && _path="$(dirname "${BASH_SOURCE:?}")/data" && test -d "${_path:?}"; then
-    : # It is expected: expanding an array without an index gives the first element
-  elif test -n "${0-}" && _path="$(dirname "${0:?}")/data" && test -d "${_path:?}"; then
+  elif test -n "${BASH_SOURCE-}" && test -f "${BASH_SOURCE}" && __fn_path="$(dirname "${BASH_SOURCE}")/data"; then
+    : # NOTE: Index omitted intentionally; we explicitly want the first element only
+  elif test -n "${0-}" && test -f "${0}" && __fn_path="$(dirname "${0}")/data"; then
     :
-  elif _path='./data' && test -d "${_path:?}"; then
+  elif __fn_path='./data'; then
     :
   else
     return 1
   fi
 
-  _path="$(realpath 2> /dev/null "${_path:?}" || readlink -f "${_path:?}")" || return 3
-  printf '%s\n' "${_path:?}"
-}
-
-create_and_return_data_dir()
-{
-  local _path
-
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, BASH_SOURCE is undefined
-  if test -n "${TOOLS_DATA_DIR-}" && _path="${TOOLS_DATA_DIR:?}"; then
-    :
-  elif test -n "${BASH_SOURCE-}" && test -f "${BASH_SOURCE:?}" && _path="$(dirname "${BASH_SOURCE:?}")/data"; then
-    : # It is expected: expanding an array without an index gives the first element
-  elif test -n "${0-}" && test -f "${0:?}" && _path="$(dirname "${0:?}")/data"; then
-    :
-  elif _path='./data'; then
-    :
-  else
-    return 1
-  fi
-
-  test -d "${_path:?}" || mkdir -p -- "${_path:?}" || return 1
-
-  _path="$(realpath 2> /dev/null "${_path:?}" || readlink -f "${_path:?}")" || return 1
-  printf '%s\n' "${_path:?}"
+  __fn_path="$(realpath 2> /dev/null "${__fn_path:?}" || readlink -f "${__fn_path:?}")" || return 3
+  printf '%s\n' "${__fn_path:?}"
 }
 
 clean_perms_dir_if_empty()
@@ -323,14 +300,12 @@ main()
     return "${EX_UNAVAILABLE?}"
   }
 
-  if DATA_DIR="$(find_data_dir || create_and_return_data_dir)"; then
+  if DATA_DIR="$(resolve_data_dir)" && mkdir -p -- "${DATA_DIR}/perms"; then
     :
   else
     log_err 'Unable to create the required data directory'
     return "${EX_CONFIG?}"
   fi
-
-  test -d "${DATA_DIR:?}/perms" || mkdir -p -- "${DATA_DIR:?}/perms" || return 3
 
   log_empty_line
   log_output 'Downloading...'
