@@ -28,7 +28,7 @@ fi
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.4'
+readonly SCRIPT_VERSION='1.9.5'
 readonly SCRIPT_AUTHOR='ale5000'
 
 export LANG='en_US.UTF-8'
@@ -630,10 +630,9 @@ parse_devices_list()
     return 99
   fi
 
-  if grep -m 1 -i -e "^${BUILD_MANUFACTURER?},.*,${BUILD_DEVICE?},${BUILD_MODEL?}$" -- "${_file:?}" | cut -d ',' -f '2' -s; then
+  # NOTE: We only cross-reference 'device' and 'model' against the certified list, brand discrepancies can be safely ignored
+  if grep -m 1 -e ",\"${BUILD_DEVICE?}\",\"${BUILD_MODEL?}\"$" -- "${_file:?}" | cut -d ',' -f '2' -s; then
     return 0
-  elif grep -m 1 -i -e "^${BUILD_BRAND?},.*,${BUILD_DEVICE?},${BUILD_MODEL?}$" -- "${_file:?}" | cut -d ',' -f '2' -s; then
-    return 1
   fi
 
   return 2
@@ -798,16 +797,17 @@ generate_profile()
   TEXT_OFFICIAL_STATUS=''
   OFFICIAL_STATUS=0
   OFFICIAL_DEVICE_INFO="$(parse_devices_list)" || OFFICIAL_STATUS="${?}"
+  OFFICIAL_DEVICE_INFO="${OFFICIAL_DEVICE_INFO#\"}"
+  OFFICIAL_DEVICE_INFO="${OFFICIAL_DEVICE_INFO%\"}"
   case "${OFFICIAL_STATUS:?}" in
-    0 | 1)
+    0)
       show_status_msg 'Device certified: YES'
-      TEXT_OFFICIAL_STATUS=" <!-- Device certified: YES (${OFFICIAL_STATUS:?}) -->"
+      TEXT_OFFICIAL_STATUS=" <!-- Device certified: YES -->"
       ;;
-    2)
+    *)
       show_negative_info 'Device certified: ' 'NO'
       TEXT_OFFICIAL_STATUS=" <!-- Device certified: NO -->"
       ;;
-    *) ;;
   esac
 
   BUILD_BOARD="$(validated_chosen_getprop 'ro.product.board')"
