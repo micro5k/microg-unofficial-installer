@@ -484,15 +484,6 @@ is_string_nocase_starting_with()
   return 1 # NOT found
 }
 
-trim_space_left()
-{
-  local _var
-  _var="$(cat)" || return 1
-
-  printf '%s\n' "${_var# }"
-  return 0
-}
-
 is_valid_serial()
 {
   if test "${#1}" -lt 2 || is_all_zeros "${1:?}" || is_string_nocase_starting_with 'EMULATOR' "${1:?}"; then
