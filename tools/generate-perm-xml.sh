@@ -214,7 +214,7 @@ resolve_data_dir()
 {
   local __fn_path=''
 
-  # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+  # shellcheck disable=SC3028,SC2128 # IGNORE: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
   if test -n "${TOOLS_DATA_DIR-}" && __fn_path="${TOOLS_DATA_DIR}"; then
     :
   elif test -n "${BASH_SOURCE-}" && test -f "${BASH_SOURCE}" && __fn_path="$(dirname "${BASH_SOURCE}")/data"; then

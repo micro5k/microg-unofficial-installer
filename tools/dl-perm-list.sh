@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.23'
+readonly SCRIPT_VERSION='0.3.24'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -181,7 +181,7 @@ resolve_data_dir()
 {
   local __fn_path=''
 
-  # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+  # shellcheck disable=SC3028,SC2128 # IGNORE: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
   if test -n "${TOOLS_DATA_DIR-}" && __fn_path="${TOOLS_DATA_DIR}"; then
     :
   elif test -n "${BASH_SOURCE-}" && test -f "${BASH_SOURCE}" && __fn_path="$(dirname "${BASH_SOURCE}")/data"; then
@@ -210,7 +210,7 @@ clean_perms_dir_if_empty()
 #region
 dl()
 {
-  "${WGET_CMD:?}" -q -O "${2:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --no-cache -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" -q -t 1 -O "${2:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" || return "${?}"
 }
 
 fetch_and_extract_manifest_permissions()
@@ -310,8 +310,8 @@ main()
   log_empty_line
   log_output 'Downloading...'
   log_scope_begin
-  rm -f -- "${DATA_DIR:?}/perms/.completed" || return 4
-  rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX:?}"-*.xml || return 5
+  rm -f -- "${DATA_DIR:?}/perms/.completed" || return 20
+  rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX:?}"-*.xml || return 21
 
   for api in $(seq -- 23 "${MAX_API:?}"); do
     tag="$(eval " printf '%s\n' \"\${TAG_API_${api}?}\" ")" || {
@@ -322,14 +322,14 @@ main()
     log_scope_begin
     fetch_and_extract_manifest_permissions_with_retry "${api:?}" "${tag:?}" || {
       log_err "Failed to download (or parse) API ${api?} XML"
-      rm -f -- "${DATA_DIR?}/perms/${PERMS_DATA_PREFIX?}-${api?}.xml" || :
+      rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX:?}-${api:?}.xml" || :
       return "${EX_TEMPFAIL?}"
     }
     log_scope_end
-    sleep "${REQUEST_DELAY:?}" || return 6
+    sleep "${REQUEST_DELAY:?}" || return 22
   done
 
-  touch -- "${DATA_DIR?}/perms/.completed" || return 7
+  touch -- "${DATA_DIR?}/perms/.completed" || return 23
   log_scope_end
   log_output 'Done.'
 }

@@ -18,11 +18,19 @@
 #region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.3'
+readonly SCRIPT_VERSION='0.1.4'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
+readonly EX_USAGE=64
+readonly EX_UNAVAILABLE=69
 readonly EX_TEMPFAIL=75
+readonly EX_CONFIG=78
+
+readonly WGET_CMD='wget'
+readonly DL_UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0'
+readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
 #endregion
 
 set -u 2> /dev/null || :
@@ -127,6 +135,11 @@ log_status()
   printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
 }
 
+log_warn()
+{
+  printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
+}
+
 log_err()
 {
   printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
@@ -153,6 +166,32 @@ pause_if_needed()
 }
 #endregion
 
+# @section STORAGE & DIRECTORY FUNCTIONS ----
+#region
+resolve_data_dir()
+{
+  local __fn_path=''
+
+  # shellcheck disable=SC3028,SC2128 # IGNORE: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
+  if test -n "${UTILS_DATA_DIR-}" && __fn_path="${UTILS_DATA_DIR}"; then
+    :
+  elif test -n "${BASH_SOURCE-}" && test -f "${BASH_SOURCE}" && __fn_path="$(dirname "${BASH_SOURCE}")/data"; then
+    : # NOTE: Index omitted intentionally; we explicitly want the first element only
+  elif test -n "${0-}" && test -f "${0}" && __fn_path="$(dirname "${0}")/data"; then
+    :
+  elif __fn_path='./data'; then
+    :
+  else
+    return 1
+  fi
+
+  __fn_path="$(realpath 2> /dev/null "${__fn_path:?}" || readlink -f "${__fn_path:?}")" || return 3
+  printf '%s\n' "${__fn_path:?}"
+}
+#endregion
+
+# @section CORE FUNCTIONS ----
+#region
 contains()
 {
   case "${2?}" in
@@ -184,39 +223,40 @@ iconv_compat()
   fi
 }
 
-readonly WGET_CMD='wget'
-readonly DL_UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0'
-readonly DL_ACCEPT_HEADER='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-readonly DL_ACCEPT_LANG_HEADER='Accept-Language: en-US,en;q=0.5'
-
 dl()
 {
-  "${WGET_CMD:?}" -q -O "${2:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --no-cache -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" -q -t 1 -O "${2:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --no-cache -- "${1:?}" || return "${?}"
+}
+
+dl_with_retry()
+{
+  local __fn_attempts_left="${MAX_ATTEMPTS:?}"
+
+  while true; do
+    rm -f "${2:?}" || return "${?}"
+    if dl "${@}"; then return 0; fi
+
+    __fn_attempts_left="$((__fn_attempts_left - 1))" || return "${?}"
+    test "${__fn_attempts_left}" -gt 0 || break
+
+    log_warn "Failed to download. Retrying in ${RETRY_DELAY?} seconds (attempts left: ${__fn_attempts_left?})..."
+    sleep "${RETRY_DELAY:?}" || return "${?}"
+  done
+
+  rm -f "${2:?}" || :
+  return 1
 }
 
 dl_and_convert_device_list()
 {
-  local _path _file _var
+  local _file _var
 
-  # shellcheck disable=SC3028
-  if test -n "${UTILS_DATA_DIR:-}"; then
-    _path="${UTILS_DATA_DIR:?}"
-  elif test -n "${BASH_SOURCE:-}" && _path="$(dirname "${BASH_SOURCE:?}")/data"; then # Expanding an array without an index gives the first element (it is intended)
-    :
-  elif test -n "${0:-}" && _path="$(dirname "${0:?}")/data"; then
-    :
-  else
-    _path='./data'
-  fi
+  _file="${DATA_DIR?}/device-list.csv"
 
-  if mkdir -p "${_path:?}"; then
-    _file="${_path:?}/device-list.csv"
-  else
-    return 1
-  fi
-
-  rm -f "${_file:?}-temp" || return "${?}"
-  dl 'https://storage.googleapis.com/play_public/supported_devices.csv' "${_file:?}-temp" || return "${?}"
+  dl_with_retry 'https://storage.googleapis.com/play_public/supported_devices.csv' "${_file:?}-temp" || {
+    log_err "Failed to download"
+    return "${EX_TEMPFAIL?}"
+  }
 
   iconv_compat "${_file:?}-temp" "${_file:?}-temp" -f 'UTF-16LE' -t 'UTF-8' || return "${?}"
 
@@ -230,23 +270,55 @@ dl_and_convert_device_list()
     rm -f "${_file:?}-temp" || return "${?}"
   fi
 }
+#endregion
 
+# @section MAIN FUNCTION ----
+#region
 main()
 {
+  local status=0
+
   set_utf8_codepage
 
   # BEGIN: Global config (overridable via env)
   export SAVE_AS_UTF8="${SAVE_AS_UTF8:-true}"
+  export RETRY_DELAY="${RETRY_DELAY-}"     # Delay to wait after a failed request before a retry
+  export MAX_ATTEMPTS="${MAX_ATTEMPTS:-3}" # Maximum number of total attempts allowed (per download)
   # END: Global config
+
+  if test -z "${RETRY_DELAY?}"; then
+    if test "${CI:-false}" = 'false'; then RETRY_DELAY='5'; else RETRY_DELAY='15'; fi
+  fi
+
+  case "${RETRY_DELAY?}" in
+    0 | *[!0-9]*)
+      log_err "RETRY_DELAY must be a strictly positive integer, got: '${RETRY_DELAY?}'"
+      return "${EX_USAGE?}"
+      ;;
+    *) ;;
+  esac
+
+  command -v "${WGET_CMD:?}" 1> /dev/null 2>&1 || {
+    log_err 'wget is required'
+    return "${EX_UNAVAILABLE?}"
+  }
+
+  if DATA_DIR="$(resolve_data_dir)" && mkdir -p -- "${DATA_DIR}"; then
+    :
+  else
+    log_err 'Unable to create the required data directory'
+    return "${EX_CONFIG?}"
+  fi
 
   log_empty_line
   log_output 'Downloading...'
   log_scope_begin
+  rm -f -- "${DATA_DIR:?}/device-list.csv" || return 20
 
   dl_and_convert_device_list || {
-    log_err "Failed to download"
+    status="${?}"
     restore_codepage
-    return "${EX_TEMPFAIL?}"
+    return "${status?}"
   }
 
   log_scope_end
@@ -254,6 +326,7 @@ main()
 
   restore_codepage
 }
+#endregion
 
 # @section CLI ARGUMENTS PARSING ----
 #region
