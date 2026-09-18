@@ -233,7 +233,7 @@ dl_with_retry()
   local __fn_attempts_left="${MAX_ATTEMPTS:?}"
 
   while true; do
-    rm -f "${2:?}" || return "${?}"
+    rm -f -- "${2:?}" || return "${?}"
     if dl "${@}"; then return 0; fi
 
     __fn_attempts_left="$((__fn_attempts_left - 1))" || return "${?}"
@@ -243,7 +243,7 @@ dl_with_retry()
     sleep "${RETRY_DELAY:?}" || return "${?}"
   done
 
-  rm -f "${2:?}" || :
+  rm -f -- "${2:?}" || :
   return 1
 }
 
@@ -264,7 +264,7 @@ dl_and_convert_device_list()
     mv -f -T -- "${_file:?}-temp" "${_file:?}" || return "${?}"
   else
     iconv_compat "${_file:?}-temp" "${_file:?}" -c -f 'UTF-8' -t 'WINDOWS-1252//IGNORE' || return "${?}"
-    rm -f "${_file:?}-temp" || return "${?}"
+    rm -f -- "${_file:?}-temp" || return "${?}"
   fi
 }
 #endregion

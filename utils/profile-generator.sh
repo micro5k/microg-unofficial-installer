@@ -15,6 +15,17 @@
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
+readonly SCRIPT_NAME='Android device profile generator'
+readonly SCRIPT_SHORTNAME='DevProfGen'
+readonly SCRIPT_VERSION='1.9.7'
+readonly SCRIPT_AUTHOR='ale5000'
+readonly SCRIPT_YEAR='2023'
+
+readonly EX_CONFIG=78
+
+export LANG='en_US.UTF-8'
+CI="${CI:-false}"
+
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
 case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) echo 1>&2 'WARNING: pipefail not supported' ;; esac
@@ -26,14 +37,8 @@ if test -f '/usr/bin/cygpath'; then
   (set +o histexpand 2> /dev/null) && set +o histexpand || :
 fi
 
-readonly SCRIPT_NAME='Android device profile generator'
-readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.6'
-readonly SCRIPT_AUTHOR='ale5000'
-
-export LANG='en_US.UTF-8'
-CI="${CI:-false}"
-
+# @section TERMINAL SETUP & LOGGING FUNCTIONS ----
+#region
 fix_posix_emulation_if_needed()
 {
   # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
@@ -54,8 +59,8 @@ fix_posix_emulation_if_needed()
 
 set_utf8_codepage()
 {
-  if command 1> /dev/null -v 'chcp.com' && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '\r' | trim_space_left)" && test "${PREVIOUS_CODEPAGE?}" -ne 65001; then
-    'chcp.com' 1> /dev/null 65001
+  if command -v 'chcp.com' 1> /dev/null 2>&1 && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2' -s | tr -d ' \r')" && test "${PREVIOUS_CODEPAGE}" -ne 65001; then
+    'chcp.com' 1> /dev/null 65001 || return "${?}"
   else
     PREVIOUS_CODEPAGE=''
   fi
@@ -64,14 +69,53 @@ set_utf8_codepage()
 restore_codepage()
 {
   if test -n "${PREVIOUS_CODEPAGE-}"; then
-    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}"
+    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}" || :
     PREVIOUS_CODEPAGE=''
   fi
 }
 
-show_status_msg()
+color_init()
 {
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
+  CLR_RESET=''
+  CLR_RED=''
+  CLR_GREEN=''
+  CLR_YELLOW_PLAIN=''
+  CLR_YELLOW=''
+  CLR_CYAN=''
+  CLR_LINE=''
+
+  # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
+  if test -z "${NO_COLOR-}" && test -t 2; then
+    CLR_RESET='\033[0m'
+    CLR_RED='\033[1;31m'
+    CLR_GREEN='\033[1;32m'
+    CLR_YELLOW_PLAIN='\033[0;33m'
+    CLR_YELLOW='\033[1;33m'
+    CLR_CYAN='\033[1;36m'
+    CLR_LINE='\r        \r'
+  fi
+}
+
+log_scope_init()
+{
+  LOG_LEVEL=0
+}
+
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
+log_scope_begin()
+{
+  LOG_LEVEL="$((LOG_LEVEL + 2))"
+}
+
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
+log_scope_end()
+{
+  test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
+}
+
+log_status()
+{
+  printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
 }
 
 device_not_ready_status_msg_initialize()
@@ -119,6 +163,13 @@ show_negative_info()
   printf 1>&2 '\033[1;32m%s\033[1;31m%s\033[0m\n' "${1:?}" "${2:?}"
 }
 
+init()
+{
+  fix_posix_emulation_if_needed
+  color_init
+  log_scope_init
+}
+
 set_title()
 {
   if test "${CI:?}" != 'false'; then return 1; fi
@@ -158,20 +209,41 @@ restore_title()
 
 pause_if_needed()
 {
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
-  if test "${NO_PAUSE:-0}" = '0' && test "${no_pause:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
-    if test -n "${NO_COLOR-}"; then
-      printf 1>&2 '\n%s' 'Press any key to exit... ' || :
-    else
-      printf 1>&2 '\n\033[1;32m\r%s' 'Press any key to exit... ' || :
-    fi
-    # shellcheck disable=SC3045 # Ignore: In POSIX sh, read -s / -n is undefined
+  # shellcheck disable=SC3028 # IGNORE: In POSIX sh, SHLVL is undefined
+  if test "${no_pause:-0}" = '0' && test "${NO_PAUSE:-0}" = '0' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2 && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode'; then
+    case "$-" in *s*) return "${1:-0}" ;; *) ;; esac
+    printf 1>&2 '\n%b%s' "${CLR_GREEN-}${CLR_LINE-}" 'Press any key to exit... ' || :
+    # shellcheck disable=SC3045 # IGNORE: In POSIX sh, read -s / -n is undefined
     IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
-    if test -n "${NO_COLOR-}"; then printf 1>&2 '\n' || :; else printf 1>&2 '\n\033[0m\r    \r' || :; fi
+    printf 1>&2 '\n%b' "${CLR_RESET-}${CLR_LINE-}" || :
   fi
-  unset no_pause
   return "${1:-0}"
 }
+#endregion
+
+# @section STORAGE & DIRECTORY FUNCTIONS ----
+#region
+resolve_data_dir()
+{
+  local __fn_path=''
+
+  # shellcheck disable=SC3028,SC2128 # IGNORE: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
+  if test -n "${UTILS_DATA_DIR-}" && __fn_path="${UTILS_DATA_DIR}"; then
+    :
+  elif test -n "${BASH_SOURCE-}" && test -f "${BASH_SOURCE}" && __fn_path="$(dirname "${BASH_SOURCE}")/data"; then
+    : # NOTE: Index omitted intentionally; we explicitly want the first element only
+  elif test -n "${0-}" && test -f "${0}" && __fn_path="$(dirname "${0}")/data"; then
+    :
+  elif __fn_path='./data'; then
+    :
+  else
+    return 1
+  fi
+
+  __fn_path="$(realpath 2> /dev/null "${__fn_path:?}" || readlink -f "${__fn_path:?}")" || return 3
+  printf '%s\n' "${__fn_path:?}"
+}
+#endregion
 
 verify_adb()
 {
@@ -329,7 +401,7 @@ verify_device_status()
 
 wait_connection()
 {
-  show_status_msg 'Waiting for the device...'
+  log_status 'Waiting for the device...'
   if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
     adb -s "${1:?}" 'wait-for-recovery'
   else
@@ -610,32 +682,21 @@ generate_rom_info()
 
 parse_devices_list()
 {
-  local _file
-
-  if test "${EMU_NAME?}" = 'Leapdroid'; then return 2; fi
-
-  # shellcheck disable=SC3028
-  if test -n "${UTILS_DATA_DIR:-}" && test -e "${UTILS_DATA_DIR:?}/device-list.csv"; then
-    _file="${UTILS_DATA_DIR:?}/device-list.csv"
-  elif test -n "${BASH_SOURCE:-}" && _file="$(dirname "${BASH_SOURCE:?}")/data/device-list.csv" && test -e "${_file:?}"; then # Expanding an array without an index gives the first element (it is intended)
+  if DATA_DIR="$(resolve_data_dir)" && test -f "${DATA_DIR}/device-list.csv"; then
     :
-  elif test -n "${0:-}" && _file="$(dirname "${0:?}")/data/device-list.csv" && test -e "${_file:?}"; then
-    :
-  elif test -e './data/device-list.csv'; then
-    _file='./data/device-list.csv'
-  elif test -e './device-list.csv'; then
-    _file='./device-list.csv'
   else
-    show_warn 'THE DEVICE LIST IS MISSING! Use dl-device-list.sh'
-    return 99
+    show_warn 'THE DEVICE LIST IS MISSING! Please execute "dl-device-list.sh" before running this script'
+    return "${EX_CONFIG?}"
   fi
 
+  if test "${EMU_NAME?}" = 'Leapdroid'; then return 1; fi
+
   # NOTE: We only cross-reference 'device' and 'model' against the certified list, brand discrepancies can be safely ignored
-  if grep -m 1 -e ",\"${BUILD_DEVICE?}\",\"${BUILD_MODEL?}\"$" -- "${_file:?}" | cut -d ',' -f '2' -s; then
+  if grep -m 1 -e ",\"${BUILD_DEVICE?}\",\"${BUILD_MODEL?}\"$" -- "${DATA_DIR}/device-list.csv" | cut -d ',' -f '2' -s; then
     return 0
   fi
 
-  return 2
+  return 1
 }
 
 generate_device_info()
@@ -801,13 +862,14 @@ generate_profile()
   OFFICIAL_DEVICE_INFO="${OFFICIAL_DEVICE_INFO%\"}"
   case "${OFFICIAL_STATUS:?}" in
     0)
-      show_status_msg 'Device certified: YES'
+      log_status 'Device certified: YES'
       TEXT_OFFICIAL_STATUS=" <!-- Device certified: YES -->"
       ;;
-    *)
+    1)
       show_negative_info 'Device certified: ' 'NO'
       TEXT_OFFICIAL_STATUS=" <!-- Device certified: NO -->"
       ;;
+    *) ;;
   esac
 
   BUILD_BOARD="$(validated_chosen_getprop 'ro.product.board')"
@@ -849,7 +911,7 @@ generate_profile()
 
   ANON_SERIAL_NUMBER=''
   if SERIAL_NUMBER="$(find_serialno)"; then
-    show_status_msg "Serial number: ${SERIAL_NUMBER:-}"
+    log_status "Serial number: ${SERIAL_NUMBER:-}"
     ANON_SERIAL_NUMBER="$(anonymize_code "${SERIAL_NUMBER:?}")"
   fi
 
@@ -911,12 +973,7 @@ generate_profile()
 
 main()
 {
-  local _found || {
-    show_error "Local variables aren't supported!!!"
-    return 99
-  }
-
-  fix_posix_emulation_if_needed
+  local _found
 
   if test -z "${1-}" || test "${1:?}" = 'adb'; then
     INPUT_TYPE='adb'
@@ -942,7 +999,7 @@ main()
       return 1
     fi
     wait_connection "${SELECTED_DEVICE:?}"
-    show_status_msg 'Generating profile...'
+    log_status 'Generating profile...'
     check_boot_completed
   else
     test -e "${INPUT_TYPE:?}" || {
@@ -951,7 +1008,7 @@ main()
       return 1
     }
 
-    show_status_msg 'Generating profile...'
+    log_status 'Generating profile...'
     if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
       PROP_TYPE='1'
       DEVICE_IN_RECOVERY='false'
@@ -965,20 +1022,25 @@ main()
   generate_profile
 }
 
+
+# @section CLI ARGUMENTS PARSING ----
+#region
 execute_script='true'
 change_title='true'
+no_pause=0
 STATUS=0
 
-while test "${#}" -gt 0; do
+while test "$#" -gt 0; do
   case "${1?}" in
     -V | --version)
+      execute_script='false'
+      no_pause=1
       # REUSE-IgnoreStart
-      printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' "Copyright (C) 2023 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n\n' 'License GPLv3+ with APE'
+      printf '%s\n' "${SCRIPT_NAME:?}, version ${SCRIPT_VERSION:?}"
+      printf '%s\n' "Copyright (C) ${SCRIPT_YEAR:?} ${SCRIPT_AUTHOR:?}"
+      printf '%s\n\n' 'License GPLv3+ with APE.'
       printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
       # REUSE-IgnoreEnd
-      execute_script='false'
       ;;
 
     -p | --privacy-mode) ;;
@@ -986,46 +1048,51 @@ while test "${#}" -gt 0; do
     --no-title)
       change_title='false'
       ;;
-
-    --)
+    --no-pause)
+      no_pause=1
+      ;;
+    -) # Read from STDIN (implies end of options)
+      break
+      ;;
+    --) # End of options / Positional arguments follow
       shift
       break
       ;;
-
     --*)
+      execute_script='false'
+      no_pause=1
+      STATUS=2
       printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
-      execute_script='false'
-      STATUS=2
       ;;
-
     -*)
-      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
       execute_script='false'
+      no_pause=1
       STATUS=2
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
       ;;
-
-    *)
-      break
-      ;;
+    *) break ;;
   esac
 
   shift
 done
+#endregion
 
+# @section EXECUTION ENTRY POINT ----
+#region
 if test "${execute_script:?}" = 'true'; then
-  if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
+  init
 
+  if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
   set_utf8_codepage
 
-  show_status_msg "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
+  log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
-  if test "${#}" -eq 0; then set -- ''; fi
-  main "${@}"
-  STATUS="${?}"
-
+  test "$#" -ne 0 || set -- ''
+  main "${@}" || STATUS="${?}"
   restore_codepage
 fi
 
 pause_if_needed
 restore_title
 exit "${STATUS:?}"
+#endregion
