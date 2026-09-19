@@ -17,7 +17,7 @@
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.8'
+readonly SCRIPT_VERSION='1.9.9'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -673,6 +673,8 @@ generate_rom_info()
 
 parse_devices_list()
 {
+  local __fn_csv_device __fn_csv_model
+
   if DATA_DIR="$(resolve_data_dir)" && test -f "${DATA_DIR}/device-list.csv"; then
     :
   else
@@ -683,8 +685,11 @@ parse_devices_list()
   if test "${EMU_NAME?}" = 'Leapdroid'; then return 1; fi
   if test -z "${BUILD_DEVICE?}" && test -z "${BUILD_MODEL?}"; then return 2; fi
 
+  __fn_csv_device="$(printf '%s\n' "${BUILD_DEVICE?}" | sed 's/"/""/g')" || return 2
+  __fn_csv_model="$(printf '%s\n' "${BUILD_MODEL?}" | sed 's/"/""/g')" || return 2
+
   # NOTE: We only cross-reference 'device' and 'model' against the certified list, brand discrepancies can be safely ignored
-  if grep -m 1 -e ",\"${BUILD_DEVICE?}\",\"${BUILD_MODEL?}\"$" -- "${DATA_DIR}/device-list.csv" | cut -d ',' -f '2' -s; then
+  if grep -m 1 -e ",\"${__fn_csv_device?}\",\"${__fn_csv_model?}\"$" -- "${DATA_DIR}/device-list.csv" | cut -d ',' -f '2' -s; then
     return 0
   fi
 
