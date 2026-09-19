@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.5'
+readonly SCRIPT_VERSION='0.1.6'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -259,6 +259,7 @@ dl_and_convert_device_list()
   }
 
   iconv_compat "${_file:?}-temp" "${_file:?}-temp" -f 'UTF-16LE' -t 'UTF-8' || return "${?}"
+  sed -i "s|\\\\'|'|g" "${_file:?}-temp" || return "${?}"
 
   if test "${ENABLE_UTF8}" = 'true'; then
     mv -f -T -- "${_file:?}-temp" "${_file:?}" || return "${?}"
