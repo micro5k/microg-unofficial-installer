@@ -17,7 +17,7 @@
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.7'
+readonly SCRIPT_VERSION='1.9.8'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -529,18 +529,18 @@ auto_getprop()
     _val="$(prop_output_parse "${INPUT_TYPE:?}" "${@}")" || return 1
   fi
 
-  if test -z "${_val?}" || test "${_val:?}" = 'unknown'; then
-    return 2
-  fi
+  # ${2:-0} => 2 (Allow empty value)
+  if test -z "${_val?}" && test "${2:-0}" != '2'; then return 2; fi
+  if test "${_val?}" = 'unknown'; then return 2; fi
 
-  printf '%s\n' "${_val:?}"
+  printf '%s\n' "${_val?}"
   return 0
 }
 
 validated_chosen_getprop()
 {
   local _value
-  if ! _value="$(auto_getprop "${1:?}")" || ! is_valid_value "${_value?}" "${2:-}"; then
+  if ! _value="$(auto_getprop "${1:?}" "${2-}")" || ! is_valid_value "${_value?}" "${2-}"; then
     show_error "Invalid value for ${1:-}"
     return 1
   fi
@@ -681,6 +681,7 @@ parse_devices_list()
   fi
 
   if test "${EMU_NAME?}" = 'Leapdroid'; then return 1; fi
+  if test -z "${BUILD_DEVICE?}" && test -z "${BUILD_MODEL?}"; then return 2; fi
 
   # NOTE: We only cross-reference 'device' and 'model' against the certified list, brand discrepancies can be safely ignored
   if grep -m 1 -e ",\"${BUILD_DEVICE?}\",\"${BUILD_MODEL?}\"$" -- "${DATA_DIR}/device-list.csv" | cut -d ',' -f '2' -s; then
@@ -1012,7 +1013,6 @@ main()
 
   generate_profile
 }
-
 
 # @section CLI ARGUMENTS PARSING ----
 #region
