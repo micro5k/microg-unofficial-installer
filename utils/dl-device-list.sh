@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.7'
+readonly SCRIPT_VERSION='0.1.8'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -249,27 +249,25 @@ dl_with_retry()
 
 dl_and_convert_device_list()
 {
-  local _file __fn_tmp_file='' __fn_bs='\'
+  # shellcheck disable=SC1003
+  local __fn_file="${DATA_DIR:?}/device-list.csv" __fn_tmp_file='' __fn_bs='\'
+  __fn_tmp_file="${__fn_file?}.$$"
 
-  _file="${DATA_DIR?}/device-list.csv"
-  __fn_tmp_file="${_file:?}-temp"
+  rm -f -- "${__fn_file:?}" || return "${?}"
 
-  dl_with_retry 'https://storage.googleapis.com/play_public/supported_devices.csv' "${__fn_tmp_file:?}" || {
+  dl_with_retry 'https://storage.googleapis.com/play_public/supported_devices.csv' "${__fn_tmp_file?}.1.tmp" || {
     log_err "Failed to download"
     return "${EX_TEMPFAIL?}"
   }
 
-  iconv_compat "${__fn_tmp_file:?}" "${__fn_tmp_file:?}" -f 'UTF-16LE' -t 'UTF-8' || return "${?}"
-
-  # NOTE: Use -i'e' as a compatibility workaround for macOS sed (creates a backup file with 'e' extension)
-  sed -i'e' -e "s|${__fn_bs}${__fn_bs}'|'|g" -- "${__fn_tmp_file:?}" || return "${?}"
-  rm -f -- "${__fn_tmp_file:?}e" || return "${?}"
+  iconv -f 'UTF-16LE' -t 'UTF-8' -- "${__fn_tmp_file?}.1.tmp" | LC_ALL=C tr -d '\r' | LC_ALL=C sed -e "s/${__fn_bs}${__fn_bs}'/'/g" 1> "${__fn_tmp_file?}.2.tmp" || return "${?}"
+  rm -f -- "${__fn_tmp_file?}.1.tmp" || return "${?}"
 
   if test "${ENABLE_UTF8}" = 'true'; then
-    mv -f -T -- "${__fn_tmp_file:?}" "${_file:?}" || return "${?}"
+    mv -f -- "${__fn_tmp_file?}.2.tmp" "${__fn_file:?}" || return "${?}"
   else
-    iconv_compat "${__fn_tmp_file:?}" "${_file:?}" -c -f 'UTF-8' -t 'WINDOWS-1252//IGNORE' || return "${?}"
-    rm -f -- "${__fn_tmp_file:?}" || return "${?}"
+    iconv_compat "${__fn_tmp_file?}.2.tmp" "${__fn_file:?}" -c -f 'UTF-8' -t 'WINDOWS-1252//IGNORE' || return "${?}"
+    rm -f -- "${__fn_tmp_file?}.2.tmp" || return "${?}"
   fi
 }
 #endregion
@@ -320,7 +318,6 @@ main()
   log_empty_line
   log_output 'Downloading...'
   log_scope_begin
-  rm -f -- "${DATA_DIR:?}/device-list.csv" || return 20
 
   dl_and_convert_device_list || {
     status="${?}"

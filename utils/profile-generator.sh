@@ -247,7 +247,7 @@ resolve_data_dir()
 
 csv_encode_field()
 {
-  printf '%s\n' "${1}" | sed 's|"|""|g; s|^|"|; s|$|"|'
+  printf '%s\n' "${1}" | sed -e 's|"|""|g; s|^|"|; s|$|"|'
   return "${?}"
 }
 
@@ -263,7 +263,7 @@ csv_decode_field()
     *) ;;
   esac
 
-  printf '%s\n' "${__fn_field_val}" | sed 's|""|"|g'
+  printf '%s\n' "${__fn_field_val}" | sed -e 's|""|"|g'
   return "${?}"
 }
 
