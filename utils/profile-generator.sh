@@ -17,7 +17,7 @@
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.9'
+readonly SCRIPT_VERSION='1.9.10'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -244,6 +244,34 @@ resolve_data_dir()
   printf '%s\n' "${__fn_path:?}"
 }
 #endregion
+
+csv_encode_field()
+{
+  printf '%s\n' "${1}" | sed 's|"|""|g; s|^|"|; s|$|"|'
+  return "${?}"
+}
+
+csv_decode_field()
+{
+  local __fn_field_val="${1}"
+
+  case "${__fn_field_val?}" in
+    '"'*'"')
+      __fn_field_val="${__fn_field_val#\"}"
+      __fn_field_val="${__fn_field_val%\"}"
+      ;;
+    *) ;;
+  esac
+
+  printf '%s\n' "${__fn_field_val}" | sed 's|""|"|g'
+  return "${?}"
+}
+
+xml_encode_field()
+{
+  sed -e 's|&|\&amp;|g; s|<|\&lt;|g; s|>|\&gt;|g; s|"|\&quot;|g'
+  return "${?}"
+}
 
 verify_adb()
 {
@@ -685,11 +713,11 @@ parse_devices_list()
   if test "${EMU_NAME?}" = 'Leapdroid'; then return 1; fi
   if test -z "${BUILD_DEVICE?}" && test -z "${BUILD_MODEL?}"; then return 2; fi
 
-  __fn_csv_device="$(printf '%s\n' "${BUILD_DEVICE?}" | sed 's/"/""/g')" || return 2
-  __fn_csv_model="$(printf '%s\n' "${BUILD_MODEL?}" | sed 's/"/""/g')" || return 2
+  __fn_csv_device="$(csv_encode_field "${BUILD_DEVICE?}")" || return 2
+  __fn_csv_model="$(csv_encode_field "${BUILD_MODEL?}")" || return 2
 
   # NOTE: We only cross-reference 'device' and 'model' against the certified list, brand discrepancies can be safely ignored
-  if grep -m 1 -e ",\"${__fn_csv_device?}\",\"${__fn_csv_model?}\"$" -- "${DATA_DIR}/device-list.csv" | cut -d ',' -f '2' -s; then
+  if grep -m 1 -e ",${__fn_csv_device?},${__fn_csv_model?}$" -- "${DATA_DIR}/device-list.csv" | cut -d ',' -f '2' -s; then
     return 0
   fi
 
@@ -702,7 +730,7 @@ generate_device_info()
 
   if is_valid_value "${MARKETING_DEVICE_INFO?}"; then
     _info="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
-  elif test "${OFFICIAL_STATUS:?}" -eq 0 && is_valid_value "${OFFICIAL_DEVICE_INFO?}" && ! contains_nocase "${OFFICIAL_DEVICE_INFO:?}" "${BUILD_MODEL?}"; then
+  elif test -n "${OFFICIAL_DEVICE_INFO?}" && is_valid_value "${OFFICIAL_DEVICE_INFO}" && ! contains_nocase "${OFFICIAL_DEVICE_INFO}" "${BUILD_MODEL?}"; then
     _info="${OFFICIAL_DEVICE_INFO?}"
   elif compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo' && _lenovo_device_name="$(auto_getprop 'ro.lenovo.series')" && is_valid_value "${_lenovo_device_name?}"; then
     _info="$(uc_first_char "${_lenovo_device_name:?}")"
@@ -720,7 +748,7 @@ generate_device_info()
     _info="${BUILD_MANUFACTURER:?} ${_info?}"
   fi
 
-  printf '%s\n' "$(uc_first_char "${_info?}" || true)" | sed -e "$(printf '%b' 's|\0342\0200\0235|\&quot;|g; s|"|\&quot;|g')"
+  printf '%s\n' "$(uc_first_char "${_info?}" || :)" | sed -e "$(printf '%b' 's|\0342\0200\0235|"|g')" | xml_encode_field
 }
 
 find_bootloader()
@@ -852,15 +880,14 @@ generate_profile()
 
   generate_rom_info
 
-  TEXT_OFFICIAL_STATUS=''
   OFFICIAL_STATUS=0
   OFFICIAL_DEVICE_INFO="$(parse_devices_list)" || OFFICIAL_STATUS="${?}"
-  OFFICIAL_DEVICE_INFO="${OFFICIAL_DEVICE_INFO#\"}"
-  OFFICIAL_DEVICE_INFO="${OFFICIAL_DEVICE_INFO%\"}"
+  TEXT_OFFICIAL_STATUS=''
   case "${OFFICIAL_STATUS:?}" in
     0)
       log_status 'Device certified: YES'
       TEXT_OFFICIAL_STATUS=" <!-- Device certified: YES -->"
+      OFFICIAL_DEVICE_INFO="$(csv_decode_field "${OFFICIAL_DEVICE_INFO?}" || :)"
       ;;
     1)
       show_negative_info 'Device certified: ' 'NO'
