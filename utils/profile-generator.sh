@@ -17,7 +17,7 @@
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.12'
+readonly SCRIPT_VERSION='1.9.13'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -228,6 +228,35 @@ pause_if_needed()
 }
 #endregion
 
+# @section ANDROID SDK FUNCTIONS ----
+#region
+set_android_sdk_path_if_unset()
+{
+  : "${ANDROID_HOME:=${ANDROID_SDK_ROOT-}}"
+  test -z "${ANDROID_HOME}" || return 0
+
+  # Set the path of Android SDK if not already set
+  if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA}/Android/Sdk"; then
+    ANDROID_HOME="${LOCALAPPDATA?}/Android/Sdk" # Windows
+  elif test -n "${HOME-}" && test -d "${HOME}/Library/Android/sdk"; then
+    ANDROID_HOME="${HOME?}/Library/Android/sdk" # macOS
+  elif test -n "${HOME-}" && test -d "${HOME}/.local/share/android/sdk"; then
+    ANDROID_HOME="${HOME?}/.local/share/android/sdk" # Linux (XDG standard)
+  elif test -n "${HOME-}" && test -d "${HOME}/Android/Sdk"; then
+    ANDROID_HOME="${HOME?}/Android/Sdk" # Linux (Standard)
+  elif test -d '/opt/android-sdk'; then
+    ANDROID_HOME='/opt/android-sdk' # Linux (Global)
+  elif test -d '/usr/lib/android-sdk'; then
+    ANDROID_HOME='/usr/lib/android-sdk' # Linux (apt)
+  elif test -d '/usr/local/lib/android/sdk'; then
+    ANDROID_HOME='/usr/local/lib/android/sdk' # FreeBSD / Linux (Global alternative)
+  else
+    ANDROID_HOME=''
+  fi
+  return 0
+}
+#endregion
+
 # @section STORAGE & DIRECTORY FUNCTIONS ----
 #region
 resolve_data_dir()
@@ -288,29 +317,20 @@ xml_encode_field()
 
 verify_adb()
 {
-  if command -v adb 1> /dev/null; then
+  local __fn_pathsep=':'
+
+  if command -v 'adb' 1> /dev/null 2>&1; then
     return 0
   fi
 
-  if test "${OS:-}" = 'Windows_NT'; then
-    # Set the path of Android SDK if not already set
-    if test -z "${ANDROID_SDK_ROOT:-}" && test -n "${LOCALAPPDATA:-}" && test -e "${LOCALAPPDATA:?}/Android/Sdk"; then
-      export ANDROID_SDK_ROOT="${LOCALAPPDATA:?}/Android/Sdk"
-    fi
-  fi
+  set_android_sdk_path_if_unset
 
-  if test -n "${ANDROID_SDK_ROOT:-}"; then
-    local _pathsep
-    if test "$(uname -o 2> /dev/null | LC_ALL=C tr '[:upper:]' '[:lower:]' || true)" = 'ms/windows'; then
-      _pathsep=';' # BusyBox-w32
-    else
-      _pathsep=':' # Other shells on Windows
-    fi
+  if test -n "${ANDROID_HOME-}"; then
+    if test "$(uname -o 2> /dev/null | tr '[:upper:]' '[:lower:]' || :)" = 'ms/windows'; then __fn_pathsep=';'; fi # BusyBox-w32
 
-    # shellcheck disable=SC2123
-    export PATH="${ANDROID_SDK_ROOT:?}/platform-tools${_pathsep:?}${PATH}"
+    export PATH="${ANDROID_HOME?}/platform-tools${__fn_pathsep?}${PATH:-/usr/bin}"
 
-    if command -v adb 1> /dev/null; then
+    if command -v 'adb' 1> /dev/null 2>&1; then
       return 0
     fi
   fi
