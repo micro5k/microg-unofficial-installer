@@ -183,14 +183,13 @@ resolve_data_dir()
     : # NOTE: Index omitted intentionally; we explicitly want the first element only
   elif test -n "${0-}" && test -f "${0}" && __fn_path="$(dirname "${0}")/data"; then
     :
-  elif __fn_path='./data'; then
-    :
   else
-    return 1
+    __fn_path='./data'
   fi
 
-  __fn_path="$(realpath 2> /dev/null "${__fn_path:?}" || readlink -f "${__fn_path:?}")" || return 3
+  __fn_path="$(realpath 2> /dev/null "${__fn_path:?}" || readlink -f "${__fn_path:?}")" || return 1
   printf '%s\n' "${__fn_path:?}"
+  return 0
 }
 #endregion
 
@@ -283,9 +282,12 @@ main()
   local status=0
 
   # BEGIN: Global config (overridable via env)
-  export ENABLE_UTF8="${ENABLE_UTF8:-true}"
+  export UTILS_DATA_DIR
+
   export RETRY_DELAY="${RETRY_DELAY-}"     # Delay to wait after a failed request before a retry
   export MAX_ATTEMPTS="${MAX_ATTEMPTS:-3}" # Maximum number of total attempts allowed (per download)
+
+  export ENABLE_UTF8="${ENABLE_UTF8:-true}"
   # END: Global config
 
   if test -z "${RETRY_DELAY?}"; then
