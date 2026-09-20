@@ -17,7 +17,7 @@
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.10'
+readonly SCRIPT_VERSION='1.9.11'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -247,7 +247,7 @@ resolve_data_dir()
 
 csv_encode_field()
 {
-  printf '%s\n' "${1}" | sed -e 's|"|""|g; s|^|"|; s|$|"|'
+  printf '%s\n' "${1}" | sed -e 's/"/""/g; s/^/"/; s/$/"/'
   return "${?}"
 }
 
@@ -263,7 +263,13 @@ csv_decode_field()
     *) ;;
   esac
 
-  printf '%s\n' "${__fn_field_val}" | sed -e 's|""|"|g'
+  printf '%s\n' "${__fn_field_val}" | sed -e 's/""/"/g'
+  return "${?}"
+}
+
+escape_grep_literal()
+{
+  sed -e 's/[[$.*^]/\\&/g'
   return "${?}"
 }
 
@@ -713,8 +719,8 @@ parse_devices_list()
   if test "${EMU_NAME?}" = 'Leapdroid'; then return 1; fi
   if test -z "${BUILD_DEVICE?}" && test -z "${BUILD_MODEL?}"; then return 2; fi
 
-  __fn_csv_device="$(csv_encode_field "${BUILD_DEVICE?}")" || return 2
-  __fn_csv_model="$(csv_encode_field "${BUILD_MODEL?}")" || return 2
+  __fn_csv_device="$(csv_encode_field "${BUILD_DEVICE?}" | escape_grep_literal)" || return 2
+  __fn_csv_model="$(csv_encode_field "${BUILD_MODEL?}" | escape_grep_literal)" || return 2
 
   # NOTE: We only cross-reference 'device' and 'model' against the certified list, brand discrepancies can be safely ignored
   if grep -m 1 -e ",${__fn_csv_device?},${__fn_csv_model?}$" -- "${DATA_DIR}/device-list.csv" | cut -d ',' -f '2' -s; then
