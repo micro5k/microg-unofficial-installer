@@ -83,23 +83,27 @@ color_init()
     CLR_CYAN='\033[1;36m'
     CLR_LINE='\r        \r'
   fi
+  return 0
 }
 
 log_scope_init()
 {
   LOG_LEVEL=0
+  return 0
 }
 
 # shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
 log_scope_begin()
 {
   LOG_LEVEL="$((LOG_LEVEL + 2))"
+  return 0
 }
 
 # shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
 log_scope_end()
 {
   test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
+  return 0
 }
 
 set_yellow_color()

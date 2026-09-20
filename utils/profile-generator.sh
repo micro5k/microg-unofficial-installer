@@ -17,11 +17,14 @@
 
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.11'
+readonly SCRIPT_VERSION='1.9.12'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
 readonly EX_CONFIG=78
+
+readonly NL='
+'
 
 export LANG='en_US.UTF-8'
 CI="${CI:-false}"
@@ -94,23 +97,27 @@ color_init()
     CLR_CYAN='\033[1;36m'
     CLR_LINE='\r        \r'
   fi
+  return 0
 }
 
 log_scope_init()
 {
   LOG_LEVEL=0
+  return 0
 }
 
 # shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
 log_scope_begin()
 {
   LOG_LEVEL="$((LOG_LEVEL + 2))"
+  return 0
 }
 
 # shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
 log_scope_end()
 {
   test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
+  return 0
 }
 
 log_status()
@@ -269,6 +276,7 @@ csv_decode_field()
 
 escape_grep_literal()
 {
+  # NOTE: Backslashes and newlines are already blocked before this function
   sed -e 's/[[$.*^]/\\&/g'
   return "${?}"
 }
@@ -705,6 +713,17 @@ generate_rom_info()
   fi
 }
 
+has_invalid_chars_for_device_search()
+{
+  case "${1}" in
+    *\\* | *,* | *"${NL:?}"*)
+      return 0
+      ;;
+    *) ;;
+  esac
+  return 1
+}
+
 parse_devices_list()
 {
   local __fn_csv_device __fn_csv_model
@@ -718,6 +737,11 @@ parse_devices_list()
 
   if test "${EMU_NAME?}" = 'Leapdroid'; then return 1; fi
   if test -z "${BUILD_DEVICE?}" && test -z "${BUILD_MODEL?}"; then return 2; fi
+
+  if has_invalid_chars_for_device_search "${BUILD_DEVICE?}" || has_invalid_chars_for_device_search "${BUILD_MODEL?}"; then
+    show_warn 'Device or model name contains invalid characters: backslashes, commas, or newlines'
+    return 2
+  fi
 
   __fn_csv_device="$(csv_encode_field "${BUILD_DEVICE?}" | escape_grep_literal)" || return 2
   __fn_csv_model="$(csv_encode_field "${BUILD_MODEL?}" | escape_grep_literal)" || return 2
