@@ -24,15 +24,15 @@ readonly SCRIPT_VERSION='0.3.24'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
-readonly MAX_API=37
-readonly PERMS_DATA_PREFIX='base-permissions-api'
-readonly BASE_URL='https://android.googlesource.com/platform/frameworks/base/'
-
 readonly EX_USAGE=64
 readonly EX_UNAVAILABLE=69
 readonly EX_SOFTWARE=70
 readonly EX_TEMPFAIL=75
 readonly EX_CONFIG=78
+
+readonly MAX_API=37
+readonly PERMS_DATA_PREFIX='base-permissions-api'
+readonly BASE_URL='https://android.googlesource.com/platform/frameworks/base/'
 
 # shellcheck disable=SC2034
 {

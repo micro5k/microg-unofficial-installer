@@ -22,12 +22,9 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.37'
+readonly SCRIPT_VERSION='0.3.38'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
-
-readonly MAX_API=37
-readonly PERMS_DATA_PREFIX='base-permissions-api'
 
 readonly EX_USAGE=64
 readonly EX_DATAERR=65
@@ -36,6 +33,12 @@ readonly EX_UNAVAILABLE=69
 readonly EX_SOFTWARE=70
 readonly EX_OSERR=71
 readonly EX_CONFIG=78
+
+readonly MAX_API=37
+readonly PERMS_DATA_PREFIX='base-permissions-api'
+
+readonly NL='
+'
 #endregion
 
 set -u 2> /dev/null || :
@@ -168,8 +171,8 @@ pause_if_needed()
 #region
 set_android_sdk_path_if_unset()
 {
-  ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT-}}"
-  test -z "${ANDROID_HOME?}" || return
+  : "${ANDROID_HOME:=${ANDROID_SDK_ROOT-}}"
+  test -z "${ANDROID_HOME}" || return 0
 
   # Set the path of Android SDK if not already set
   if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA}/Android/Sdk"; then
@@ -186,7 +189,10 @@ set_android_sdk_path_if_unset()
     ANDROID_HOME='/usr/lib/android-sdk' # Linux (apt)
   elif test -d '/usr/local/lib/android/sdk'; then
     ANDROID_HOME='/usr/local/lib/android/sdk' # FreeBSD / Linux (Global alternative)
+  else
+    ANDROID_HOME=''
   fi
+  return 0
 }
 
 find_android_build_tool()
@@ -198,7 +204,7 @@ find_android_build_tool()
     command 2> /dev/null -v "${1:?}"
   )" && test -n "${__fn_tool_path?}"; then
     :
-  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME?}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path?}"; then
+  elif set_android_sdk_path_if_unset && test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path}"; then
     :
   else
     return 1
@@ -580,8 +586,7 @@ main()
 {
   local backup_ifs="${IFS-unset}"
   local status=0 base_name='' cmd_output='' pkg_name='' perm_list='' cert_sha256=''
-
-  set_android_sdk_path_if_unset
+  unset JAVA_TOOL_OPTIONS
 
   # BEGIN: Global config (overridable via env)
   export ANDROID_HOME
@@ -598,9 +603,9 @@ main()
   fi
 
   if test "${NO_CERT_DIGEST:?}" = 'false'; then
-    if test -n "${APKSIGNER_PATH?}" || APKSIGNER_PATH="$(find_android_build_tool 'apksigner' || command 2> /dev/null -v 'apksigner.bat')"; then
+    if test -n "${APKSIGNER_PATH?}" || APKSIGNER_PATH="$(find_android_build_tool 'apksigner' || command -v 'apksigner.bat' 2> /dev/null)"; then
       :
-    elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command 2> /dev/null -v 'keytool')"; then
+    elif test -n "${KEYTOOL_PATH?}" || KEYTOOL_PATH="$(command -v 'keytool' 2> /dev/null)"; then
       :
     else
       log_err 'Neither "apksigner" nor "keytool" could be found. You need to set either APKSIGNER_PATH or KEYTOOL_PATH'
@@ -614,10 +619,6 @@ main()
     log_err 'Required data not found. Please execute "dl-perm-list.sh" before running this script'
     return "${EX_CONFIG?}"
   fi
-
-  unset JAVA_TOOL_OPTIONS
-  readonly NL='
-'
 
   # Process arguments supplied via standard input when '-' is specified
   if test "$#" -eq 1 && test "${1:-empty}" = '-'; then

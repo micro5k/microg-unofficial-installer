@@ -1348,20 +1348,28 @@ alias_scripts()
 
 set_android_sdk_path_if_unset()
 {
-  test -z "${ANDROID_HOME-}" || return
+  : "${ANDROID_HOME:=${ANDROID_SDK_ROOT-}}"
+  test -z "${ANDROID_HOME}" || return 0
 
   # Set the path of Android SDK if not already set
-  if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA?}/Android/Sdk"; then
+  if test -n "${LOCALAPPDATA-}" && test -d "${LOCALAPPDATA}/Android/Sdk"; then
     ANDROID_HOME="${LOCALAPPDATA?}/Android/Sdk" # Windows
-  elif test -n "${USER_HOME-}" && test -d "${USER_HOME?}/Library/Android/sdk"; then
+  elif test -n "${USER_HOME-}" && test -d "${USER_HOME}/Library/Android/sdk"; then
     ANDROID_HOME="${USER_HOME?}/Library/Android/sdk" # macOS
-  elif test -n "${USER_HOME-}" && test -d "${USER_HOME?}/.local/share/android/sdk"; then
-    ANDROID_HOME="${USER_HOME?}/.local/share/android/sdk" # Linux (XDG)
-  elif test -n "${USER_HOME-}" && test -d "${USER_HOME?}/Android/Sdk"; then
+  elif test -n "${USER_HOME-}" && test -d "${USER_HOME}/.local/share/android/sdk"; then
+    ANDROID_HOME="${USER_HOME?}/.local/share/android/sdk" # Linux (XDG standard)
+  elif test -n "${USER_HOME-}" && test -d "${USER_HOME}/Android/Sdk"; then
     ANDROID_HOME="${USER_HOME?}/Android/Sdk" # Linux (Standard)
+  elif test -d '/opt/android-sdk'; then
+    ANDROID_HOME='/opt/android-sdk' # Linux (Global)
   elif test -d '/usr/lib/android-sdk'; then
-    ANDROID_HOME='/usr/lib/android-sdk' # Linux (APT)
+    ANDROID_HOME='/usr/lib/android-sdk' # Linux (apt)
+  elif test -d '/usr/local/lib/android/sdk'; then
+    ANDROID_HOME='/usr/local/lib/android/sdk' # FreeBSD / Linux (Global alternative)
+  else
+    ANDROID_HOME=''
   fi
+  return 0
 }
 
 find_android_build_tool()
@@ -1373,7 +1381,7 @@ find_android_build_tool()
     command 2> /dev/null -v "${1:?}"
   )" && test -n "${__fn_tool_path?}"; then
     :
-  elif test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME?}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME?}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path?}"; then
+  elif set_android_sdk_path_if_unset && test -n "${ANDROID_HOME-}" && test -d "${ANDROID_HOME}/build-tools" && __fn_tool_path="$(find "${ANDROID_HOME}/build-tools" -maxdepth 2 -iname "${1:?}*" | sort -V -r | head -n 1)" && test -n "${__fn_tool_path}"; then
     :
   else
     return 1
@@ -1543,20 +1551,19 @@ init_cmdline()
 
   if test -n "${GIT_SSH:="$(command 2> /dev/null -v 'TortoiseGitPlink' || :)"}"; then export GIT_SSH; else unset GIT_SSH; fi
 
-  export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
   set_android_sdk_path_if_unset
-  export AAPT_PATH="${AAPT_PATH:-$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt' || :)}"
-  export APKSIGNER_PATH="${APKSIGNER_PATH:-$(find_android_build_tool 'apksigner' || command 2> /dev/null -v 'apksigner.bat' || :)}"
-
-  if test -n "${ANDROID_HOME?}"; then
+  if test -n "${ANDROID_HOME-}"; then
     if test -n "${CYGPATH?}"; then
       # Only on Bash under Windows
       ANDROID_HOME="$("${CYGPATH?}" -m -l -a -- "${ANDROID_HOME?}")" || _ui_error_local 'Unable to convert the Android SDK dir' "${LINENO-}" "${FUNCNAME-}"
     fi
+    export ANDROID_HOME
     export ANDROID_SDK_ROOT="${ANDROID_HOME?}"
 
     add_to_path_env "${ANDROID_HOME?}/platform-tools"
   fi
+  export AAPT_PATH="${AAPT_PATH:-$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt' || :)}"
+  export APKSIGNER_PATH="${APKSIGNER_PATH:-$(find_android_build_tool 'apksigner' || command -v 'apksigner.bat' 2> /dev/null || :)}"
 
   if test "${PLATFORM:?}" = 'win'; then
     export BB_OVERRIDE_APPLETS='; make'
@@ -1696,7 +1703,7 @@ fi
 
 export PATH
 
-if test -n "${ANDROID_HOME:-}" && test -e "${ANDROID_HOME:?}/emulator/emulator.exe"; then
+if test -n "${ANDROID_HOME-}" && test -e "${ANDROID_HOME:?}/emulator/emulator.exe"; then
   # shellcheck disable=SC2139
   {
     alias 'emu'="'${ANDROID_HOME:?}/emulator/emulator.exe' -no-boot-anim"
