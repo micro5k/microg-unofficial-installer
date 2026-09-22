@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.8'
+readonly SCRIPT_VERSION='0.1.9'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -263,7 +263,10 @@ dl_and_convert_device_list()
     return "${EX_TEMPFAIL?}"
   }
 
-  iconv -f 'UTF-16LE' -t 'UTF-8' -- "${__fn_tmp_file?}.1.tmp" | LC_ALL=C tr -d '\r' | LC_ALL=C sed -e "s/${__fn_bs}${__fn_bs}'/'/g" 1> "${__fn_tmp_file?}.2.tmp" || return "${?}"
+  iconv -f 'UTF-16LE' -t 'UTF-8' -- "${__fn_tmp_file?}.1.tmp" |
+    LC_ALL=C tr -d '\r' |
+    LC_ALL=C sed -e "s/${__fn_bs}${__fn_bs}\(['${__fn_bs}]\)/\1/g" 1> "${__fn_tmp_file?}.2.tmp" ||
+    return "${?}"
   rm -f -- "${__fn_tmp_file?}.1.tmp" || return "${?}"
 
   if test "${ENABLE_UTF8}" = 'true'; then
