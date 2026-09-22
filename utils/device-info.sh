@@ -14,13 +14,18 @@
 # @author ale5000
 
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils
+
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
+# @section GLOBAL CONSTANTS ----
+#region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.3'
+readonly SCRIPT_VERSION='2.9.4'
 readonly SCRIPT_AUTHOR='ale5000'
+readonly SCRIPT_YEAR='2023'
+#endregion
 
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
@@ -1616,22 +1621,26 @@ main()
   return 0
 }
 
+# @section CLI ARGUMENTS PARSING ----
+#region
 execute_script='true'
 change_title='true'
+no_pause=0
 STATUS=0
 PRIVACY_MODE='false'
 OPEN_DEVICE_STATUS_INFO_ONLY='false'
 
-while test "${#}" -gt 0; do
+while test "$#" -gt 0; do
   case "${1?}" in
     -V | --version)
+      execute_script='false'
+      no_pause=1
       # REUSE-IgnoreStart
-      printf '%s\n' "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?}"
-      printf '%s\n' "Copyright (C) 2023 ${SCRIPT_AUTHOR:?}"
-      printf '%s\n\n' 'License GPLv3+ with APE'
+      printf '%s\n' "${SCRIPT_NAME:?}, version ${SCRIPT_VERSION:?}"
+      printf '%s\n' "Copyright (C) ${SCRIPT_YEAR:?} ${SCRIPT_AUTHOR:?}"
+      printf '%s\n\n' 'License GPLv3+ with APE.'
       printf '%s\n' 'There is NO WARRANTY, to the extent permitted by law.'
       # REUSE-IgnoreEnd
-      execute_script='false'
       ;;
 
     --open-device-status-info)
@@ -1645,44 +1654,46 @@ while test "${#}" -gt 0; do
     --no-title)
       change_title='false'
       ;;
-
-    --)
+    --no-pause)
+      no_pause=1
+      ;;
+    -) # Read from STDIN (implies end of options)
+      break
+      ;;
+    --) # End of options / Positional arguments follow
       shift
       break
       ;;
-
     --*)
+      execute_script='false'
+      no_pause=1
+      STATUS=2
       printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: unrecognized option '${1}'"
-      execute_script='false'
-      STATUS=2
       ;;
-
     -*)
-      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
       execute_script='false'
+      no_pause=1
       STATUS=2
+      printf 1>&2 '%s\n' "${SCRIPT_SHORTNAME?}: invalid option -- '${1#-}'"
       ;;
-
-    *)
-      break
-      ;;
+    *) break ;;
   esac
 
   shift
 done
+#endregion
 
+# @section EXECUTION ENTRY POINT ----
+#region
 if test "${execute_script:?}" = 'true'; then
   if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
+  set_utf8_codepage
 
   if test "${CI:?}" != 'false' || test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
   exec 3>&1 # Create a copy of stdout
 
-  set_utf8_codepage
-
-  if test "${#}" -eq 0; then set -- ''; fi
-  main "${@}"
-  STATUS="${?}"
-
+  test "$#" -ne 0 || set -- ''
+  main "${@}" || STATUS="${?}"
   restore_codepage
 
   exec 3>&- # Close descriptor
@@ -1691,3 +1702,4 @@ fi
 pause_if_needed
 restore_title
 exit "${STATUS:?}"
+#endregion

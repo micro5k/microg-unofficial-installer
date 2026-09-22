@@ -12,9 +12,12 @@
 # @author ale5000
 
 # Get the latest version from here: https://github.com/micro5k/microg-unofficial-installer/tree/main/utils
+
 # shellcheck enable=all
 # shellcheck disable=SC3043 # In POSIX sh, local is undefined
 
+# @section GLOBAL CONSTANTS ----
+#region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
 readonly SCRIPT_VERSION='1.9.13'
@@ -23,11 +26,12 @@ readonly SCRIPT_YEAR='2023'
 
 readonly EX_CONFIG=78
 
-readonly NL='
-'
-
 export LANG='en_US.UTF-8'
 CI="${CI:-false}"
+
+readonly NL='
+'
+#endregion
 
 set -u 2> /dev/null || :
 # shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
