@@ -174,13 +174,6 @@ log_negative_info()
   printf 1>&2 '\033[1;32m%s\033[1;31m%s\033[0m\n' "${1:?}" "${2:?}"
 }
 
-init()
-{
-  fix_posix_emulation_if_needed
-  color_init
-  log_scope_init
-}
-
 set_title()
 {
   if test "${CI:?}" != 'false'; then return 1; fi
@@ -216,6 +209,13 @@ restore_title()
   fi
 
   TITLE_SET='false'
+}
+
+init()
+{
+  fix_posix_emulation_if_needed
+  color_init
+  log_scope_init
 }
 
 pause_if_needed()

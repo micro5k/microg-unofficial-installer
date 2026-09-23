@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.5'
+readonly SCRIPT_VERSION='2.9.6'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 #endregion
@@ -74,6 +74,8 @@ CI="${CI:-false}"
 IFS=' 	
 '
 
+# @section TERMINAL SETUP & LOGGING FUNCTIONS ----
+#region
 fix_posix_emulation_if_needed()
 {
   # Workarounds for shells using Windows-POSIX emulation layers (e.g., Git Bash under Windows)
@@ -94,8 +96,8 @@ fix_posix_emulation_if_needed()
 
 set_utf8_codepage()
 {
-  if command 1> /dev/null -v 'chcp.com' && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2-' -s | LC_ALL=C tr -d ' \r')" && test "${PREVIOUS_CODEPAGE?}" -ne 65001; then
-    'chcp.com' 1> /dev/null 65001
+  if command -v 'chcp.com' 1> /dev/null 2>&1 && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2' -s | tr -d ' \r')" && test "${PREVIOUS_CODEPAGE}" -ne 65001; then
+    'chcp.com' 1> /dev/null 65001 || return "${?}"
   else
     PREVIOUS_CODEPAGE=''
   fi
@@ -104,9 +106,57 @@ set_utf8_codepage()
 restore_codepage()
 {
   if test -n "${PREVIOUS_CODEPAGE-}"; then
-    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}"
+    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}" || :
     PREVIOUS_CODEPAGE=''
   fi
+}
+
+color_init()
+{
+  CLR_RESET=''
+  CLR_RED=''
+  CLR_GREEN=''
+  CLR_YELLOW_PLAIN=''
+  CLR_YELLOW=''
+  CLR_CYAN=''
+  CLR_LINE=''
+
+  # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
+  if test -z "${NO_COLOR-}" && test -t 2; then
+    CLR_RESET='\033[0m'
+    CLR_RED='\033[1;31m'
+    CLR_GREEN='\033[1;32m'
+    CLR_YELLOW_PLAIN='\033[0;33m'
+    CLR_YELLOW='\033[1;33m'
+    CLR_CYAN='\033[1;36m'
+    CLR_LINE='\r        \r'
+  fi
+  return 0
+}
+
+log_scope_init()
+{
+  LOG_LEVEL=0
+  return 0
+}
+
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
+log_scope_begin()
+{
+  LOG_LEVEL="$((LOG_LEVEL + 2))"
+  return 0
+}
+
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
+log_scope_end()
+{
+  test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
+  return 0
+}
+
+log_empty_line()
+{
+  printf '\n'
 }
 
 log_status()
@@ -239,22 +289,26 @@ restore_title()
   TITLE_SET='false'
 }
 
+init()
+{
+  fix_posix_emulation_if_needed
+  color_init
+  log_scope_init
+}
+
 pause_if_needed()
 {
-  # shellcheck disable=SC3028 # Ignore: In POSIX sh, SHLVL is undefined
-  if test "${NO_PAUSE:-0}" = '0' && test "${no_pause:-0}" = '0' && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2; then
-    if test -n "${NO_COLOR-}"; then
-      printf 1>&2 '\n%s' 'Press any key to exit... ' || :
-    else
-      printf 1>&2 '\n\033[1;32m\r%s' 'Press any key to exit... ' || :
-    fi
-    # shellcheck disable=SC3045 # Ignore: In POSIX sh, read -s / -n is undefined
+  # shellcheck disable=SC3028 # IGNORE: In POSIX sh, SHLVL is undefined
+  if test "${no_pause:-0}" = '0' && test "${NO_PAUSE:-0}" = '0' && test "${SHLVL:-1}" = '1' && test -t 0 && test -t 1 && test -t 2 && test "${CI:-false}" = 'false' && test "${TERM_PROGRAM:-none}" != 'vscode'; then
+    case "$-" in *s*) return "${1:-0}" ;; *) ;; esac
+    printf 1>&2 '\n%b%s' "${CLR_GREEN-}${CLR_LINE-}" 'Press any key to exit... ' || :
+    # shellcheck disable=SC3045 # IGNORE: In POSIX sh, read -s / -n is undefined
     IFS='' read 2> /dev/null 1>&2 -r -s -n1 _ || IFS='' read 1>&2 -r _ || :
-    if test -n "${NO_COLOR-}"; then printf 1>&2 '\n' || :; else printf 1>&2 '\n\033[0m\r    \r' || :; fi
+    printf 1>&2 '\n%b' "${CLR_RESET-}${CLR_LINE-}" || :
   fi
-  unset no_pause
   return "${1:-0}"
 }
+#endregion
 
 verify_adb()
 {
@@ -1371,7 +1425,7 @@ extract_all_info()
   BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" || BUILD_VERSION_SDK='999'
 
   show_section 'BASIC INFO'
-  show_msg ''
+  log_empty_line
 
   if EMU_NAME="$(auto_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
     display_info 'Emulator' "${EMU_NAME?}"
@@ -1404,30 +1458,30 @@ extract_all_info()
     display_info_or_warn 'Device path' "${DEVICE_PATH?}" "${?}" 'non-sensitive'
   }
 
-  show_msg ''
+  log_empty_line
 
   SERIAL_NUMBER="$(find_serialno)"
   display_info_or_warn 'Serial number' "${SERIAL_NUMBER?}" "${?}"
   CPU_SERIAL_NUMBER="$(find_cpu_serialno "${SELECTED_DEVICE:?}")"
   display_info_or_warn 'CPU serial number' "${CPU_SERIAL_NUMBER?}" "${?}"
 
-  show_msg ''
+  log_empty_line
 
   ANDROID_ID="$(get_android_id "${SELECTED_DEVICE:?}")"
   is_valid_android_id "${ANDROID_ID?}"
   display_info_or_warn 'Android ID' "${ANDROID_ID?}" "${?}"
 
-  show_msg ''
+  log_empty_line
 
   DISPLAY_SIZE="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null size' | cut -d ':' -f '2-' -s | trim_space_left)"
   display_info_or_warn 'Display size' "${DISPLAY_SIZE?}" "${?}" 'non-sensitive'
   DISPLAY_DENSITY="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null density' | cut -d ':' -f '2-' -s | trim_space_left)"
   display_info_or_warn 'Display density' "${DISPLAY_DENSITY?}" "${?}" 'non-sensitive'
 
-  show_msg ''
+  log_empty_line
 
   show_section 'SLOT INFO'
-  show_msg ''
+  log_empty_line
 
   DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.alpha')" || DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.orig.alpha')"
   DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.alpha')" || DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.orig.alpha')"
@@ -1439,7 +1493,7 @@ extract_all_info()
 
   display_info 'Slot count' "${SLOT_COUNT?}"
 
-  show_msg ''
+  log_empty_line
 
   log_output "DEFAULT SLOT"
   get_imei "${SELECTED_DEVICE:?}"
@@ -1450,7 +1504,7 @@ extract_all_info()
 
   get_line_number "${SELECTED_DEVICE:?}"
 
-  show_msg ''
+  log_empty_line
 
   local _index slot_state operator_current_slot
   for _index in $(seq "${SLOT_COUNT:?}"); do
@@ -1487,12 +1541,12 @@ extract_all_info()
       get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${_index:?}"
     fi
 
-    show_msg ''
+    log_empty_line
   done
 
   show_section 'ADVANCED INFO (root may be required)'
   adb_root "${SELECTED_DEVICE:?}"
-  show_msg ''
+  log_empty_line
 
   device_shell "${SELECTED_DEVICE:?}" "if test -e '/system' && test ! -e '/system/bin/sh'; then mount -t 'auto' -o 'ro' '/system' 2> /dev/null || true; fi"
   device_shell "${SELECTED_DEVICE:?}" "if test -e '/data' && test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
@@ -1508,15 +1562,15 @@ extract_all_info()
     display_info_or_warn 'GSF ID (decimal)' "${GSF_ID_DEC?}" "${?}"
   }
 
-  show_msg ''
+  log_empty_line
 
   ADVERTISING_ID="$(get_advertising_id "${SELECTED_DEVICE:?}")"
   validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
-  show_msg ''
+  log_empty_line
 
   show_section 'EFS INFO (root may be required)'
-  show_msg ''
+  log_empty_line
 
   parse_nv_data "${SELECTED_DEVICE:?}"
   validate_and_display_info 'Hardware version' "${HARDWARE_VERSION?}"
@@ -1537,8 +1591,6 @@ main()
     show_status_error "Local variables aren't supported!!!"
     return 99
   }
-
-  fix_posix_emulation_if_needed
 
   show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
@@ -1568,7 +1620,7 @@ main()
     for _device in $(adb devices | grep -v -i -F -e 'list' | cut -f '1' -s); do
       if test -z "${_device?}"; then continue; fi
 
-      show_msg ''
+      log_empty_line
       show_selected_device "${_device:?}"
 
       if detect_status_and_wait_connection "${_device:?}" 'true'; then
@@ -1691,6 +1743,8 @@ done
 # @section EXECUTION ENTRY POINT ----
 #region
 if test "${execute_script:?}" = 'true'; then
+  init
+
   if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
   set_utf8_codepage
 
