@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.7'
+readonly SCRIPT_VERSION='2.9.8'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -154,21 +154,26 @@ log_empty_line()
   printf '\n'
 }
 
+log_output()
+{
+  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
+}
+
 log_status()
 {
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
+  printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
 }
 
 show_status_warn()
 {
-  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
-  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${*}"; fi
+  printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
+  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${1}"; fi
 }
 
 show_status_error()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
-  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "ERROR: ${*}"; fi
+  printf 1>&2 '%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
+  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "ERROR: ${1}"; fi
 }
 
 show_msg()
@@ -176,21 +181,16 @@ show_msg()
   printf '%s\n' "${*}"
 }
 
-log_output()
-{
-  printf '%s\n' "${*}"
-}
-
 log_warn()
 {
-  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
-  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${*}"; fi
+  printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
+  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${1}"; fi
 }
 
 log_err()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
-  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "ERROR: ${*}"; fi
+  printf 1>&2 '%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
+  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "ERROR: ${1}"; fi
 }
 
 show_script_name()
