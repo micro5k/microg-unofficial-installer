@@ -25,18 +25,6 @@ readonly SCRIPT_SHORTNAME='DevInfo'
 readonly SCRIPT_VERSION='2.9.7'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
-#endregion
-
-set -u 2> /dev/null || :
-# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
-case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) echo 1>&2 'WARNING: pipefail not supported' ;; esac
-# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option 'foo' is undefined
-if test -f '/usr/bin/cygpath'; then
-  # IMPORTANT: Double-clicking a script file on Windows opens Bash as an interactive shell and enables 'monitor', 'history' and 'histexpand' contrary to any logic
-  set +o monitor || :
-  (set +o history 2> /dev/null) && set +o history || :
-  (set +o histexpand 2> /dev/null) && set +o histexpand || :
-fi
 
 # shellcheck disable=SC2034
 {
@@ -62,17 +50,24 @@ fi
   readonly ANDROID_15_SDK=35 # Not yet released
 }
 
-readonly NL='
-'
-
 export LANG='en_US.UTF-8'
 DEBUG="${DEBUG:-0}"
 CI="${CI:-false}"
 
-# IFS change is intended
-# nosemgrep
-IFS=' 	
+readonly NL='
 '
+#endregion
+
+set -u 2> /dev/null || :
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option pipefail is undefined
+case "$(set -o 2> /dev/null || set || :)" in *'pipefail'*) set -o pipefail || echo 1>&2 'ERROR: pipefail failed' ;; *) echo 1>&2 'WARNING: pipefail not supported' ;; esac
+# shellcheck disable=SC3040 # IGNORE: In POSIX sh, set option 'foo' is undefined
+if test -f '/usr/bin/cygpath'; then
+  # IMPORTANT: Double-clicking a script file on Windows opens Bash as an interactive shell and enables 'monitor', 'history' and 'histexpand' contrary to any logic
+  set +o monitor || :
+  (set +o history 2> /dev/null) && set +o history || :
+  (set +o histexpand 2> /dev/null) && set +o histexpand || :
+fi
 
 # @section TERMINAL SETUP & LOGGING FUNCTIONS ----
 #region
@@ -176,36 +171,6 @@ show_status_error()
   if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "ERROR: ${*}"; fi
 }
 
-device_not_ready_status_msg_initialize()
-{
-  static_device_not_ready_displayed='false'
-}
-
-show_device_not_ready_status_msg()
-{
-  if test "${static_device_not_ready_displayed:?}" = 'false'; then
-    static_device_not_ready_displayed='true'
-    printf 1>&2 '\033[1;32m%s\033[0m' 'Device is not ready, waiting.'
-  else
-    printf 1>&2 '\033[1;32m%s\033[0m' '.'
-  fi
-}
-
-device_not_ready_status_msg_terminate()
-{
-  if test "${static_device_not_ready_displayed:?}" != 'false'; then printf 1>&2 '\n'; fi
-  static_device_not_ready_displayed=''
-}
-
-show_device_waiting_status_msg()
-{
-  if test "${static_device_not_ready_displayed:?}" = 'false'; then
-    printf 1>&2 '\033[1;32m%s\033[0m\n' 'Waiting for the device...'
-  else
-    printf 1>&2 '\033[32m%s\033[0m' '.'
-  fi
-}
-
 show_msg()
 {
   printf '%s\n' "${*}"
@@ -249,6 +214,36 @@ show_section()
     printf '\033[1;36m%s\033[0m\n' "${*}"
   else
     printf '%s\n' "${*}"
+  fi
+}
+
+device_not_ready_status_msg_initialize()
+{
+  static_device_not_ready_displayed='false'
+}
+
+device_not_ready_status_msg_terminate()
+{
+  if test "${static_device_not_ready_displayed:?}" != 'false'; then printf 1>&2 '\n'; fi
+  static_device_not_ready_displayed=''
+}
+
+show_device_not_ready_status_msg()
+{
+  if test "${static_device_not_ready_displayed:?}" = 'false'; then
+    static_device_not_ready_displayed='true'
+    printf 1>&2 '\033[1;32m%s\033[0m' 'Device is not ready, waiting.'
+  else
+    printf 1>&2 '\033[1;32m%s\033[0m' '.'
+  fi
+}
+
+show_device_waiting_status_msg()
+{
+  if test "${static_device_not_ready_displayed:?}" = 'false'; then
+    printf 1>&2 '\033[1;32m%s\033[0m\n' 'Waiting for the device...'
+  else
+    printf 1>&2 '\033[32m%s\033[0m' '.'
   fi
 }
 
