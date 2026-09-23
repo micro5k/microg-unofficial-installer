@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.13'
+readonly SCRIPT_VERSION='1.9.14'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -159,17 +159,17 @@ show_device_waiting_status_msg()
   fi
 }
 
-show_warn()
+log_warn()
 {
   printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
 }
 
-show_error()
+log_err()
 {
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
 }
 
-show_negative_info()
+log_negative_info()
 {
   printf 1>&2 '\033[1;32m%s\033[1;31m%s\033[0m\n' "${1:?}" "${2:?}"
 }
@@ -339,7 +339,7 @@ verify_adb()
     fi
   fi
 
-  show_error 'adb is NOT available'
+  log_err 'adb is NOT available'
   pause_if_needed
   exit 1
 }
@@ -606,7 +606,7 @@ validated_chosen_getprop()
 {
   local _value
   if ! _value="$(auto_getprop "${1:?}" "${2-}")" || ! is_valid_value "${_value?}" "${2-}"; then
-    show_error "Invalid value for ${1:-}"
+    log_err "Invalid value for ${1:-}"
     return 1
   fi
 
@@ -625,7 +625,7 @@ is_boot_completed()
 check_boot_completed()
 {
   is_boot_completed || {
-    show_error 'The device has not finished booting yet!!!'
+    log_err 'The device has not finished booting yet!!!'
     pause_if_needed
     exit 1
   }
@@ -754,7 +754,7 @@ parse_devices_list()
   if DATA_DIR="$(resolve_data_dir)" && test -f "${DATA_DIR}/device-list.csv"; then
     :
   else
-    show_warn 'THE DEVICE LIST IS MISSING! Please execute "dl-device-list.sh" before running this script'
+    log_warn 'THE DEVICE LIST IS MISSING! Please execute "dl-device-list.sh" before running this script'
     return "${EX_CONFIG?}"
   fi
 
@@ -762,7 +762,7 @@ parse_devices_list()
   if test -z "${BUILD_DEVICE?}" && test -z "${BUILD_MODEL?}"; then return 2; fi
 
   if has_invalid_chars_for_device_search "${BUILD_DEVICE?}" || has_invalid_chars_for_device_search "${BUILD_MODEL?}"; then
-    show_warn 'Device or model name contains invalid characters: backslashes, commas, or newlines'
+    log_warn 'Device or model name contains invalid characters: backslashes, commas, or newlines'
     return 2
   fi
 
@@ -813,7 +813,7 @@ find_bootloader()
   elif _val="$(auto_getprop 'ro.boot.bootloader')" && is_valid_value "${_val?}"; then
     :
   else
-    show_warn 'Build.BOOTLOADER not found'
+    log_warn 'Build.BOOTLOADER not found'
     printf '%s' 'unknown'
     return 1
   fi
@@ -830,7 +830,7 @@ find_hardware()
   elif _val="$(auto_getprop 'ro.boot.hardware')" && is_valid_value "${_val?}"; then
     :
   else
-    show_warn 'Build.HARDWARE not found'
+    log_warn 'Build.HARDWARE not found'
     printf '%s' 'unknown'
     return 1
   fi
@@ -853,7 +853,7 @@ find_radio()
   elif _val="$(auto_getprop 'ro.boot.baseband')" && is_valid_value "${_val?}"; then
     :
   else
-    show_warn 'Build.RADIO not found'
+    log_warn 'Build.RADIO not found'
     printf '%s' 'unknown'
     return 1
   fi
@@ -882,7 +882,7 @@ find_serialno()
   elif _val="$(auto_getprop 'ro.kernel.androidboot.serialno')" && is_valid_serial "${_val?}"; then
     :
   else
-    show_warn 'Serial number not found'
+    log_warn 'Serial number not found'
     return 1
   fi
 
@@ -943,7 +943,7 @@ generate_profile()
       OFFICIAL_DEVICE_INFO="$(csv_decode_field "${OFFICIAL_DEVICE_INFO?}" || :)"
       ;;
     1)
-      show_negative_info 'Device certified: ' 'NO'
+      log_negative_info 'Device certified: ' 'NO'
       TEXT_OFFICIAL_STATUS=" <!-- Device certified: NO -->"
       ;;
     *) ;;
@@ -954,7 +954,7 @@ generate_profile()
   BUILD_BOOTLOADER="$(find_bootloader)"
   BUILD_BOOTLOADER_EXPECT="$(auto_getprop 'ro.build.expect.bootloader')" || BUILD_BOOTLOADER_EXPECT=''
   if is_valid_value "${BUILD_BOOTLOADER_EXPECT?}" && test "${BUILD_BOOTLOADER_EXPECT?}" != "${BUILD_BOOTLOADER?}"; then
-    show_warn "Build.BOOTLOADER does NOT match, current: ${BUILD_BOOTLOADER:-}, expected: ${BUILD_BOOTLOADER_EXPECT:-}"
+    log_warn "Build.BOOTLOADER does NOT match, current: ${BUILD_BOOTLOADER:-}, expected: ${BUILD_BOOTLOADER_EXPECT:-}"
   fi
 
   BUILD_CPU_ABI="$(validated_chosen_getprop 'ro.product.cpu.abi')"
@@ -969,7 +969,7 @@ generate_profile()
   BUILD_RADIO="$(find_radio)"
   BUILD_RADIO_EXPECT="$(auto_getprop 'ro.build.expect.baseband')" || BUILD_RADIO_EXPECT=''
   if is_valid_value "${BUILD_RADIO_EXPECT?}" && test "${BUILD_RADIO_EXPECT?}" != "${BUILD_RADIO?}"; then
-    show_warn "Build.RADIO does NOT match, current: ${BUILD_RADIO:-}, expected: ${BUILD_RADIO_EXPECT:-}"
+    log_warn "Build.RADIO does NOT match, current: ${BUILD_RADIO:-}, expected: ${BUILD_RADIO_EXPECT:-}"
   fi
 
   BUILD_TAGS="$(validated_chosen_getprop 'ro.build.tags')"
@@ -1061,17 +1061,17 @@ main()
   if test "${INPUT_TYPE:?}" = 'adb'; then
     verify_adb
     start_adb_server || {
-      show_error 'Failed to start ADB'
+      log_err 'Failed to start ADB'
       return 10
     }
     SELECTED_DEVICE="$(adb_get_serial)" || {
-      show_error 'Failed to get the selected device'
+      log_err 'Failed to get the selected device'
       pause_if_needed
       return 1
     }
     verify_device_status "${SELECTED_DEVICE:?}"
     if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
-      show_error "Recovery isn't currently supported"
+      log_err "Recovery isn't currently supported"
       pause_if_needed
       return 1
     fi
@@ -1080,7 +1080,7 @@ main()
     check_boot_completed
   else
     test -e "${INPUT_TYPE:?}" || {
-      show_error "Input file doesn't exist => '${INPUT_TYPE:-}'"
+      log_err "Input file doesn't exist => '${INPUT_TYPE:-}'"
       pause_if_needed
       return 1
     }
@@ -1092,7 +1092,7 @@ main()
       check_boot_completed
     else
       PROP_TYPE='2'
-      show_error 'Profiles generated in this way will be incomplete!!!'
+      log_err 'Profiles generated in this way will be incomplete!!!'
     fi
   fi
 

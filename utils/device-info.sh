@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.4'
+readonly SCRIPT_VERSION='2.9.5'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 #endregion
@@ -109,7 +109,7 @@ restore_codepage()
   fi
 }
 
-show_status_info()
+log_status()
 {
   printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
 }
@@ -161,13 +161,18 @@ show_msg()
   printf '%s\n' "${*}"
 }
 
-show_warn()
+log_output()
+{
+  printf '%s\n' "${*}"
+}
+
+log_warn()
 {
   printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
   if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${*}"; fi
 }
 
-show_error()
+log_err()
 {
   printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
   if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "ERROR: ${*}"; fi
@@ -626,7 +631,7 @@ validated_chosen_getprop()
 {
   local _value
   if ! _value="$(auto_getprop "${1:?}")" || ! is_valid_value "${_value?}" "${2:-}"; then
-    show_error "Invalid value for ${1:-}"
+    log_err "Invalid value for ${1:-}"
     return 1
   fi
 
@@ -844,7 +849,7 @@ is_phonesubinfo_response_valid()
 
 display_info()
 {
-  show_msg "${1?}: ${2?}"
+  log_output "${1?}: ${2?}"
 }
 
 display_info_or_warn()
@@ -853,12 +858,12 @@ display_info_or_warn()
   _is_valid="${3:?}" # It is a return value, so 0 is true
 
   if test -z "${2?}"; then
-    show_warn "${1?} not found"
+    log_warn "${1?} not found"
     return 1
   fi
 
   if test "${_is_valid:?}" -ne 0; then
-    show_warn "Invalid ${1?}: ${2?}"
+    log_warn "Invalid ${1?}: ${2?}"
     return 2
   fi
 
@@ -876,19 +881,19 @@ display_phonesubinfo_or_warn()
   _is_valid="${3:?}" # It is a return value, so 0 is true
 
   if test -z "${2?}"; then
-    show_warn "${1?} not found"
+    log_warn "${1?} not found"
     return 1
   fi
 
   if ! is_phonesubinfo_response_valid "${2?}"; then
     local _err
     _err="$(printf '%s\n' "${2?}" | cut -c '2-70')"
-    show_warn "Cannot find ${1?} due to '${_err?}'"
+    log_warn "Cannot find ${1?} due to '${_err?}'"
     return 3
   fi
 
   if test "${_is_valid:?}" -ne 0; then
-    show_warn "Invalid ${1?}: ${2?}"
+    log_warn "Invalid ${1?}: ${2?}"
     return 2
   fi
 
@@ -904,28 +909,28 @@ display_phonesubinfo_or_warn()
 validate_and_display_info()
 {
   if ! is_valid_value "${2?}"; then
-    show_warn "${1:-} not found"
+    log_warn "${1:-} not found"
     return 1
   fi
 
   if ! is_phonesubinfo_response_valid "${2?}"; then
     local _err
     _err="$(printf '%s\n' "${2?}" | cut -c '2-69')"
-    show_warn "Cannot find ${1:-} due to '${_err:-}'"
+    log_warn "Cannot find ${1:-} due to '${_err:-}'"
     return 3
   fi
 
   if test -n "${4:-}"; then
     if test "${#2}" -lt "${3?}" || test "${#2}" -gt "${4?}"; then
-      show_warn "Invalid ${1:-}: ${2:-}"
+      log_warn "Invalid ${1:-}: ${2:-}"
       return 2
     fi
   elif test -n "${3:-}" && test "${#2}" -ne "${3?}"; then
-    show_warn "Invalid ${1:-}: ${2:-}"
+    log_warn "Invalid ${1:-}: ${2:-}"
     return 2
   fi
 
-  show_msg "${1?}: ${2?}"
+  log_output "${1?}: ${2?}"
 }
 
 open_device_status_info()
@@ -1314,7 +1319,7 @@ get_slot_info()
   done
 
   if test "${_i:?}" -lt 1 || test "${_i:?}" -gt 4; then
-    show_warn 'Unable to get slot count, defaulting to 1'
+    log_warn 'Unable to get slot count, defaulting to 1'
     #printf '%s\n' '1'
     SLOT_COUNT='1'
     return
@@ -1357,11 +1362,11 @@ extract_all_info()
   if ! ensure_boot_completed; then return 2; fi
 
   if test "${PRIVACY_MODE?}" = 'true'; then
-    show_warn 'PRIVACY MODE is enabled, all sensitive data will be anonymized!'
+    log_warn 'PRIVACY MODE is enabled, all sensitive data will be anonymized!'
   fi
 
-  show_status_info 'Finding info...'
-  show_status_info ''
+  log_status 'Finding info...'
+  log_status ''
 
   BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" || BUILD_VERSION_SDK='999'
 
@@ -1436,7 +1441,7 @@ extract_all_info()
 
   show_msg ''
 
-  show_msg "DEFAULT SLOT"
+  log_output "DEFAULT SLOT"
   get_imei "${SELECTED_DEVICE:?}"
   get_iccid "${SELECTED_DEVICE:?}"
 
@@ -1449,7 +1454,7 @@ extract_all_info()
 
   local _index slot_state operator_current_slot
   for _index in $(seq "${SLOT_COUNT:?}"); do
-    show_msg "SLOT ${_index:?}"
+    log_output "SLOT ${_index:?}"
     case "${_index:?}" in
       1)
         slot_state="${SLOT1_STATE?}"
@@ -1603,12 +1608,12 @@ main()
 
     if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_SELECTION:?}"; then
       PROP_TYPE='1'
-      show_warn 'Operating in getprop mode, the extracted info will be severely limited!!!'
+      log_warn 'Operating in getprop mode, the extracted info will be severely limited!!!'
 
       extract_all_info "${INPUT_SELECTION:?}"
     elif grep -m 1 -q -e '^.*\..*=' -- "${INPUT_SELECTION:?}"; then
       PROP_TYPE='2'
-      show_warn 'Operating in build.prop mode, the extracted info will be severely limited!!!'
+      log_warn 'Operating in build.prop mode, the extracted info will be severely limited!!!'
 
       extract_all_info "${INPUT_SELECTION:?}"
     else
