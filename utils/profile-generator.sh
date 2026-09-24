@@ -59,15 +59,16 @@ fix_posix_emulation_if_needed()
     #  working directory to 'C:\WINDOWS\system32'
     # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
     if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
-      cd "${BASH_SOURCE:?}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
+      cd "${BASH_SOURCE?}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
     fi
   fi
+  return 0
 }
 
 set_utf8_codepage()
 {
   if command -v 'chcp.com' 1> /dev/null 2>&1 && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2' -s | tr -d ' \r')" && test "${PREVIOUS_CODEPAGE}" -ne 65001; then
-    'chcp.com' 1> /dev/null 65001 || return "${?}"
+    'chcp.com' 1> /dev/null 65001 || return "$?"
   else
     PREVIOUS_CODEPAGE=''
   fi
@@ -79,6 +80,7 @@ restore_codepage()
     'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}" || :
     PREVIOUS_CODEPAGE=''
   fi
+  return 0
 }
 
 color_init()
@@ -129,6 +131,7 @@ log_scope_end()
 log_status()
 {
   printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
+  return 0
 }
 
 device_not_ready_status_msg_initialize()
@@ -218,6 +221,7 @@ init()
   fix_posix_emulation_if_needed
   color_init
   log_scope_init
+  return 0
 }
 
 pause_if_needed()

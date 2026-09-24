@@ -58,9 +58,10 @@ fix_posix_emulation_if_needed()
     #  working directory to 'C:\WINDOWS\system32'
     # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
     if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
-      cd "${BASH_SOURCE:?}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
+      cd "${BASH_SOURCE?}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
     fi
   fi
+  return 0
 }
 
 color_init()
@@ -70,6 +71,7 @@ color_init()
   CLR_GREEN=''
   CLR_YELLOW_PLAIN=''
   CLR_YELLOW=''
+  CLR_MAGENTA=''
   CLR_CYAN=''
   CLR_LINE=''
 
@@ -80,6 +82,7 @@ color_init()
     CLR_GREEN='\033[1;32m'
     CLR_YELLOW_PLAIN='\033[0;33m'
     CLR_YELLOW='\033[1;33m'
+    CLR_MAGENTA='\033[1;35m'
     CLR_CYAN='\033[1;36m'
     CLR_LINE='\r        \r'
   fi
@@ -129,6 +132,7 @@ log_output()
 log_status()
 {
   printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
+  return 0
 }
 
 log_warn()
@@ -146,6 +150,7 @@ init()
   fix_posix_emulation_if_needed
   color_init
   log_scope_init
+  return 0
 }
 
 pause_if_needed()
