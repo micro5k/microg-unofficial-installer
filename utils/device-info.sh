@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.8'
+readonly SCRIPT_VERSION='2.9.9'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -113,6 +113,7 @@ color_init()
   CLR_GREEN=''
   CLR_YELLOW_PLAIN=''
   CLR_YELLOW=''
+  CLR_MAGENTA=''
   CLR_CYAN=''
   CLR_LINE=''
 
@@ -123,6 +124,7 @@ color_init()
     CLR_GREEN='\033[1;32m'
     CLR_YELLOW_PLAIN='\033[0;33m'
     CLR_YELLOW='\033[1;33m'
+    CLR_MAGENTA='\033[1;35m'
     CLR_CYAN='\033[1;36m'
     CLR_LINE='\r        \r'
   fi
@@ -170,12 +172,6 @@ show_status_warn()
   if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${1}"; fi
 }
 
-show_status_error()
-{
-  printf 1>&2 '%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
-  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "ERROR: ${1}"; fi
-}
-
 show_msg()
 {
   printf '%s\n' "${*}"
@@ -185,6 +181,12 @@ log_warn()
 {
   printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
   if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${1}"; fi
+}
+
+log_non_fatal()
+{
+  printf 1>&2 '%b%*s%s%b\n' "${CLR_MAGENTA}" "${LOG_LEVEL}" '' "NON-FATAL ERROR: ${1}" "${CLR_RESET}"
+  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "NON-FATAL ERROR: ${1}"; fi
 }
 
 log_err()
@@ -354,7 +356,7 @@ verify_adb()
     fi
   fi
 
-  show_status_error 'adb is NOT available'
+  log_err 'adb is NOT available'
   pause_if_needed
   exit 1
 }
@@ -364,7 +366,7 @@ verify_adb_mode_deps()
   verify_adb
 
   if ! command -v timeout 1> /dev/null; then
-    show_status_error 'timeout is NOT available'
+    log_err 'timeout is NOT available'
     pause_if_needed
     exit 1
   fi
@@ -478,22 +480,22 @@ is_timeout()
 
 adb_unfroze()
 {
-  if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 0; fi
 
-  show_status_error 'adb was frozen, reconnecting...'
+  log_non_fatal 'adb was frozen, reconnecting...'
   adb 1> /dev/null 2>&1 -s "${1:?}" reconnect # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
   detect_status_and_wait_connection "${1:?}"
 }
 
 adb_root()
 {
-  if test "${INPUT_TYPE:?}" != 'adb'; then return; fi
-  if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '\r' || true)" = 'root'; then return; fi # Already rooted
+  if test "${INPUT_TYPE:?}" != 'adb'; then return 0; fi
+  if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '\r' || true)" = 'root'; then return 0; fi # Already rooted
 
   timeout 1> /dev/null 2>&1 -- 6 adb -s "${1:?}" root
   if is_timeout "${?}"; then
     adb_unfroze "${1:?}"
-    return
+    return 0
   fi
 
   detect_status_and_wait_connection "${1:?}"
@@ -700,7 +702,7 @@ validated_chosen_getprop()
 {
   local _value
   if ! _value="$(auto_getprop "${1:?}")" || ! is_valid_value "${_value?}" "${2:-}"; then
-    log_err "Invalid value for ${1:-}"
+    log_non_fatal "Invalid value for ${1:-}"
     return 1
   fi
 
@@ -725,7 +727,7 @@ ensure_boot_completed()
     }
   elif test "${INPUT_TYPE:?}" = 'file' && test "${PROP_TYPE:?}" = 1; then
     is_boot_completed || {
-      show_status_error 'Getprop comes from a device that has not finished booting yet, skipped'
+      log_err 'Getprop comes from a device that has not finished booting yet, skipped'
       return 1
     }
   fi
@@ -1602,10 +1604,7 @@ extract_all_info()
 
 main()
 {
-  local _found || {
-    show_status_error "Local variables aren't supported!!!"
-    return 99
-  }
+  local _found
 
   show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
 
@@ -1624,7 +1623,7 @@ main()
 
     verify_adb_mode_deps
     start_adb_server || {
-      show_status_error 'Failed to start ADB'
+      log_err 'Failed to start ADB'
       return 10
     }
 
@@ -1659,7 +1658,7 @@ main()
     done
 
     if test "${_found:?}" = 'false'; then
-      show_status_error 'No devices/emulators found'
+      log_err 'No devices/emulators found'
       return 11
     fi
 
@@ -1667,7 +1666,7 @@ main()
   else
 
     test -f "${INPUT_SELECTION:?}" || {
-      show_status_error "Input file doesn't exist => '${INPUT_SELECTION?}'"
+      log_err "Input file doesn't exist => '${INPUT_SELECTION?}'"
       return 12
     }
 
@@ -1684,7 +1683,7 @@ main()
 
       extract_all_info "${INPUT_SELECTION:?}"
     else
-      show_status_error "Unknown input file => '${INPUT_SELECTION?}'"
+      log_err "Unknown input file => '${INPUT_SELECTION?}'"
       return 13
     fi
 

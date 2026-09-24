@@ -88,6 +88,7 @@ color_init()
   CLR_GREEN=''
   CLR_YELLOW_PLAIN=''
   CLR_YELLOW=''
+  CLR_MAGENTA=''
   CLR_CYAN=''
   CLR_LINE=''
 
@@ -98,6 +99,7 @@ color_init()
     CLR_GREEN='\033[1;32m'
     CLR_YELLOW_PLAIN='\033[0;33m'
     CLR_YELLOW='\033[1;33m'
+    CLR_MAGENTA='\033[1;35m'
     CLR_CYAN='\033[1;36m'
     CLR_LINE='\r        \r'
   fi
