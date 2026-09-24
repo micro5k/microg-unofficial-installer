@@ -166,12 +166,12 @@ show_device_waiting_status_msg()
 
 log_warn()
 {
-  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${*}"
+  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1}"
 }
 
 log_err()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${*}"
+  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1}"
 }
 
 log_negative_info()

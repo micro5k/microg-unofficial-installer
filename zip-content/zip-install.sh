@@ -164,7 +164,7 @@ is_root()
   return 1
 }
 
-if test "${#}" -gt 0; then
+if test "$#" -gt 0; then
   for _param in "${@}"; do
     shift || {
       ui_error_msg 'shift failed'
@@ -192,7 +192,7 @@ if test "${#}" -gt 0; then
   unset _param _param_copy
 fi
 
-if test "${#}" -eq 0; then
+if test "$#" -eq 0; then
   ui_error_msg 'You must specify the ZIP file to install'
   exit 5
 fi

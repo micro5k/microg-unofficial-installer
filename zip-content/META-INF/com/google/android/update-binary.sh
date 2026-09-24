@@ -55,7 +55,7 @@ command 1> /dev/null -v 'printf' || {
       printf()
       {
         if test "${1:-}" = '%s\n\n'; then _printf_newline='true'; fi
-        if test "${#}" -gt 1; then shift; fi
+        if test "$#" -gt 1; then shift; fi
         echo "${@}"
 
         test "${_printf_newline:-false}" = 'false' || echo ''

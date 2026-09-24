@@ -243,9 +243,9 @@ else
 fi
 readonly CURRENT_USER
 
-if test "${#}" -eq 0; then
+if test "$#" -eq 0; then
   DISPLAY_HELP='true'
-elif test "${#}" -eq 1 && test "${1?}" = '--'; then
+elif test "$#" -eq 1 && test "${1?}" = '--'; then
   DISPLAY_HELP='true'
 fi
 
@@ -266,7 +266,7 @@ if _minutil_check_getopt; then
   test -n "${NO_COLOR-}" || printf 1>&2 '\033[0m\r    \r' || :
 fi
 
-if test "${#}" -gt 0; then
+if test "$#" -gt 0; then
   for param in "${@}"; do
     if test "${param?}" = '-v'; then
       SCRIPT_VERBOSE='true'
@@ -899,7 +899,7 @@ invalid_param()
   set_status_if_error '2'
 }
 
-while test "${#}" -gt 0; do
+while test "$#" -gt 0; do
   case "${1?}" in
     -v) ;; # Early parameters, already parsed
 
@@ -976,7 +976,7 @@ while test "${#}" -gt 0; do
   shift
 done || :
 
-test "${#}" -eq 0 || invalid_param "invalid parameter '${1-}'"
+test "$#" -eq 0 || invalid_param "invalid parameter '${1-}'"
 
 if test "${DISPLAY_HELP:?}" = 'true'; then
   if test "${_minutil_newline:-false}" != 'false'; then printf '\n'; fi

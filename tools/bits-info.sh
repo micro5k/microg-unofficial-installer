@@ -1210,7 +1210,7 @@ code_timeout()
   shift 2
 
   "${_func_name}" 2>&3 "${@}" &
-  _pid="${!}"
+  _pid="$!"
   if test -z "${_pid}" || test "${_pid}" = "${$}" || test "${_pid}" -le 1; then return 126; fi # Seriously broken shell
 
   while test "$((_sec_limit = _sec_limit - 1))" -ge 0; do

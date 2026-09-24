@@ -3081,7 +3081,7 @@ input_device_listener_start()
   mkdir -p "${TMP_PATH:?}/working-files/input/input-events" || ui_error 'Failed to create the folder for input events'
   for _device_path in "${@}"; do
     cat 1>> "${TMP_PATH:?}/working-files/input/input-events/0" -u -- "${_device_path:?}" &
-    printf '%s\n' "${!}" 1>> "${TMP_PATH:?}/working-files/input/pids-to-kill.dat"
+    printf '%s\n' "$!" 1>> "${TMP_PATH:?}/working-files/input/pids-to-kill.dat"
   done
 }
 
@@ -3636,7 +3636,7 @@ choose_inputevent()
 {
   local _key _status _last_key_pressed _key_desc _ret
 
-  test "${#}" -le 1 || ui_error "Key detection (input event) - too many arguments"
+  test "$#" -le 1 || ui_error "Key detection (input event) - too many arguments"
 
   input_device_listener_start || {
     ui_msg_empty_line
@@ -3687,7 +3687,7 @@ choose_inputevent()
 
     if test "${_key?}" = "${INPUT_CODE_POWER:-116}" && test "${KEY_TEST_ONLY:?}" -eq 0; then continue; fi # Power key (ignored completely)
 
-    test "${#}" -eq 0 || shift # Remove timeout after the first successful key press / release event (excluding power key)
+    test "$#" -eq 0 || shift # Remove timeout after the first successful key press / release event (excluding power key)
 
     if test "${KEY_TEST_ONLY:?}" -eq 1; then
       ui_msg "Event { Event type: 1, Key code: ${_key?}, Action: $((_status - 10)) }"

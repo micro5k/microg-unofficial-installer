@@ -177,7 +177,7 @@ show_status_warn()
 
 show_msg()
 {
-  printf '%s\n' "${*}"
+  printf '%s\n' "${1}"
 }
 
 log_warn()
@@ -200,25 +200,25 @@ log_err()
 
 show_script_name()
 {
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${*}"
-  if "${STDOUT_REDIRECTED?}"; then printf 1>&3 '%s\n' "${*}"; fi
+  printf 1>&2 '\033[1;32m%s\033[0m\n' "${1}"
+  if "${STDOUT_REDIRECTED?}"; then printf 1>&3 '%s\n' "${1}"; fi
 }
 
 show_selected_device()
 {
   if test -t 1; then
-    printf '\033[1;31;103m%s\033[0m\n' "SELECTED: ${*}"
+    printf '\033[1;31;103m%s\033[0m\n' "SELECTED: ${1}"
   else
-    printf '%s\n' "SELECTED: ${*}"
+    printf '%s\n' "SELECTED: ${1}"
   fi
 }
 
 show_section()
 {
   if test -t 1; then
-    printf '\033[1;36m%s\033[0m\n' "${*}"
+    printf '\033[1;36m%s\033[0m\n' "${1}"
   else
-    printf '%s\n' "${*}"
+    printf '%s\n' "${1}"
   fi
 }
 
@@ -905,7 +905,7 @@ call_phonesubinfo()
   _method_code="$(apply_phonesubinfo_deviation "${2:?}")"
   shift 2
 
-  if test "${#}" -eq 0; then set -- ''; fi # Avoid issues on Bash under Mac
+  test "$#" -ne 0 || set -- '' # Avoid issues on Bash under Mac
   adb -s "${_device:?}" shell "service call iphonesubinfo ${_method_code:?} ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
 }
 # https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl
