@@ -20,6 +20,12 @@ command -v 'local' 1> /dev/null 2>&1 || {
   if command -v 'typeset' 1> /dev/null 2>&1; then alias 'local'='typeset'; fi
 }
 
+ensure_failure()
+{
+  if test "${1}" -eq 0; then printf '%s\n' 127; else printf '%s\n' "${1}"; fi
+  return 0
+}
+
 get_shell_exe()
 {
   local _gse_shell_exe _gse_tmp_var
@@ -137,16 +143,21 @@ main()
   if test "${_run_strategy}" = 'init-file-param'; then
     # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
     exec "${__SHELL_EXE}" --rcfile "${MAIN_DIR}/lib/${USING_LIB}" -i -s -- "${@}"
+    exit "$(ensure_failure "$?" || :)"
   elif test "${_run_strategy}" = 's-option'; then
     # shellcheck disable=SC2086 # IGNORE: Double quote to prevent globbing and word splitting
-    exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${MAIN_DIR}/lib/${USING_LIB}' || exit \${?}" "${@}"
+    exec "${__SHELL_EXE}" ${_applet} -i -s -c ". '${MAIN_DIR}/lib/${USING_LIB}' || exit \$?" "${@}"
+    exit "$(ensure_failure "$?" || :)"
   elif test "${_run_strategy}" = 'env-var'; then
     export ENV="${MAIN_DIR}/lib/${USING_LIB}"
     exec "${__SHELL_EXE}" -i -s -- "${@}"
+    exit "$(ensure_failure "$?" || :)"
   else
     # shellcheck source=SCRIPTDIR/lib/main.lib.sh
-    . "${MAIN_DIR}/lib/${USING_LIB}" "${@}" || return "${?}"
+    . "${MAIN_DIR}/lib/${USING_LIB}" "${@}" || return "$(ensure_failure "$?" || :)"
   fi
+
+  return 0
 }
 
 if test "$#" -gt 0; then main "${0-}" "${@}"; else main "${0-}"; fi
