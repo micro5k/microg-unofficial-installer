@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.10'
+readonly SCRIPT_VERSION='2.9.11'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -51,7 +51,6 @@ readonly SCRIPT_YEAR='2023'
 }
 
 export LANG='en_US.UTF-8'
-DEBUG="${DEBUG:-0}"
 CI="${CI:-false}"
 
 readonly NL='
@@ -166,28 +165,38 @@ log_output()
 
 log_status()
 {
-  printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
+  case "${FD}" in
+    2) printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}" ;;
+    *) printf 1>&3 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}" ;;
+  esac
   return 0
 }
 
 log_warn()
 {
-  printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
-  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${1}"; fi
+  case "${FD}" in
+    2) printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}" ;;
+    *) printf 1>&3 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}" ;;
+  esac
   return 0
 }
 
 log_non_fatal()
 {
-  printf 1>&2 '%b%*s%s%b\n' "${CLR_MAGENTA}" "${LOG_LEVEL}" '' "NON-FATAL ERROR: ${1}" "${CLR_RESET}"
-  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "NON-FATAL ERROR: ${1}"; fi
+  case "${FD}" in
+    2) printf 1>&2 '%b%*s%s%b\n' "${CLR_MAGENTA}" "${LOG_LEVEL}" '' "NON-FATAL ERROR: ${1}" "${CLR_RESET}" ;;
+    *) printf 1>&3 '%b%*s%s%b\n' "${CLR_MAGENTA}" "${LOG_LEVEL}" '' "NON-FATAL ERROR: ${1}" "${CLR_RESET}" ;;
+  esac
   return 0
 }
 
 log_err()
 {
-  printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
-  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '\n%s\n' "ERROR: ${1}"; fi
+  case "${FD}" in
+    2) printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}" ;;
+    *) printf 1>&3 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}" ;;
+  esac
+  return 0
 }
 
 show_selected_device()
@@ -1762,19 +1771,22 @@ done
 # @section EXECUTION ENTRY POINT ----
 #region
 if test "${execute_script:?}" = 'true'; then
+  FD=2
+  if test "${DEBUG:-0}" != 0 && test ! -t 1; then
+    exec 3>&1 # Duplicate STDOUT to FD 3 to ensure output can reach the original destination without being intercepted by a command substitution
+    FD=3
+    NO_COLOR=1
+  fi
+
   init
   if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
   set_utf8_codepage
-
-  if test "${CI:?}" != 'false' || test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
-  exec 3>&1 # Create a copy of stdout
 
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"
   restore_codepage
-
   exec 3>&- # Close descriptor
 fi
 
