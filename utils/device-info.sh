@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.12'
+readonly SCRIPT_VERSION='2.9.13'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -1617,7 +1617,7 @@ extract_all_info()
 
 main()
 {
-  local _found
+  local first='' _found
 
   DEVICE_STATE=''
 
@@ -1642,10 +1642,12 @@ main()
 
     _found='false'
     _last_error_code=0
+    first=1
     for _device in $(adb devices | grep -v -i -F -e 'list' | cut -f '1' -s); do
       if test -z "${_device?}"; then continue; fi
 
       log_out_blank
+      if test "${first?}" = 0; then printf '=== DEVICE-BREAK ===\n\n'; else first=0; fi
       show_selected_device "${_device:?}"
 
       if detect_status_and_wait_connection "${_device:?}" 'true'; then
@@ -1681,6 +1683,7 @@ main()
       return 12
     }
 
+    log_out_blank
     show_selected_device "${INPUT_SELECTION:?}"
 
     if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_SELECTION:?}"; then
