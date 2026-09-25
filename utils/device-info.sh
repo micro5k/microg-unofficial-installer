@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.9'
+readonly SCRIPT_VERSION='2.9.10'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -156,6 +156,7 @@ log_scope_end()
 log_empty_line()
 {
   printf '\n'
+  return 0
 }
 
 log_output()
@@ -169,39 +170,24 @@ log_status()
   return 0
 }
 
-show_status_warn()
-{
-  printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
-  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${1}"; fi
-}
-
-show_msg()
-{
-  printf '%s\n' "${1}"
-}
-
 log_warn()
 {
   printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
   if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "WARNING: ${1}"; fi
+  return 0
 }
 
 log_non_fatal()
 {
   printf 1>&2 '%b%*s%s%b\n' "${CLR_MAGENTA}" "${LOG_LEVEL}" '' "NON-FATAL ERROR: ${1}" "${CLR_RESET}"
   if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "NON-FATAL ERROR: ${1}"; fi
+  return 0
 }
 
 log_err()
 {
-  printf 1>&2 '%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
-  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '%s\n' "ERROR: ${1}"; fi
-}
-
-show_script_name()
-{
-  printf 1>&2 '\033[1;32m%s\033[0m\n' "${1}"
-  if "${STDOUT_REDIRECTED?}"; then printf 1>&3 '%s\n' "${1}"; fi
+  printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
+  if "${STDOUT_REDIRECTED?}" && test "${DEBUG:?}" != 0; then printf 1>&3 '\n%s\n' "ERROR: ${1}"; fi
 }
 
 show_selected_device()
@@ -726,7 +712,7 @@ ensure_boot_completed()
 {
   if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_STATE?}" = 'device'; then
     is_boot_completed || {
-      show_status_warn 'Device has not finished booting yet, skipped'
+      log_warn 'Device has not finished booting yet, skipped'
       return 1
     }
   elif test "${INPUT_TYPE:?}" = 'file' && test "${PROP_TYPE:?}" = 1; then
@@ -1014,14 +1000,31 @@ open_device_status_info()
   _device="${1:?}"
   if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
 
-  show_msg 'Waiting...'
+  log_status 'Opening About phone > Status...'
+
   adb -s "${_device:?}" shell 'svc 2> /dev/null power stayon true'
 
+  # ==============================================
+  # ANDROID LOCKSCREEN DETECTION STRINGS REFERENCE
+  # ==============================================
+  # - mShowingLockscreen  -> Android 4.0 to 11 (Standard AOSP flag)
+  # - mKeyguardShowing    -> Android 4.4 to 9  (Legacy window policy flag)
+  # - mDreamingLockscreen -> Android 6.0 to 11 (Active during ambient mode)
+  # - isStatusBarKeyguard -> Android 7.0 to 11 (Status bar container state)
+  # - isKeyguardShowing   -> Android 10 to 13  (Refactored API variable)
+  # - KeyguardShowing     -> Android 12 to 17  (Modern SystemUI refactored output)
+  # ==============================================
+
   adb -s "${_device:?}" shell '
+    input keyevent KEYCODE_WAKEUP || :
+
     # If the screen is locked then unlock it (only swipe is supported)
-    if uiautomator 2> /dev/null dump --compressed "/proc/self/fd/1" | grep -q -F -e "com.android.systemui:id/keyguard_message_area"; then
-      echo 1>&2 "Unlocking screen..."
+    if dumpsys window policy 2>/dev/null | grep -q -F -e "mShowingLockscreen=true" -e "mKeyguardShowing=true" -e "mDreamingLockscreen=true" -e "isStatusBarKeyguard=true" -e "isKeyguardShowing=true" -e "KeyguardShowing=true"; then
+      echo 1>&2 "Device is locked. Unlocking screen..."
       input swipe 200 650 200 0
+    elif ! dumpsys window policy 2>/dev/null | grep -q -F -e "mShowingLockscreen=" -e "mKeyguardShowing=" -e "mDreamingLockscreen=" -e "isStatusBarKeyguard=" -e "isKeyguardShowing=" -e "KeyguardShowing="; then
+      echo 1>&2 "ERROR: Failed to determine lockscreen status."
+      exit 3
     fi
 
     am 1> /dev/null 2>&1 start -a "android.settings.DEVICE_INFO_SETTINGS"
@@ -1610,8 +1613,6 @@ main()
 {
   local _found
 
-  show_script_name "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"
-
   DEVICE_STATE=''
 
   if test -z "${1-}" || test "${1:?}" = 'adb'; then
@@ -1657,7 +1658,7 @@ main()
           *) _last_error_code="${_status_code:?}" ;;
         esac
       else
-        show_status_warn 'Device is offline/unauthorized, skipped'
+        log_warn 'Device is offline/unauthorized, skipped'
       fi
     done
 
@@ -1718,7 +1719,7 @@ while test "$#" -gt 0; do
       # REUSE-IgnoreEnd
       ;;
 
-    --open-device-status-info)
+    -I | --open-device-status-info)
       OPEN_DEVICE_STATUS_INFO_ONLY='true'
       ;;
 
@@ -1762,12 +1763,13 @@ done
 #region
 if test "${execute_script:?}" = 'true'; then
   init
-
   if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
   set_utf8_codepage
 
   if test "${CI:?}" != 'false' || test -t 1; then STDOUT_REDIRECTED='false'; else STDOUT_REDIRECTED='true'; fi
   exec 3>&1 # Create a copy of stdout
+
+  log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
   main "${@}" || STATUS="${?}"

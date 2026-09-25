@@ -166,12 +166,14 @@ show_device_waiting_status_msg()
 
 log_warn()
 {
-  printf 1>&2 '\033[0;33m%s\033[0m\n' "WARNING: ${1}"
+  printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
+  return 0
 }
 
 log_err()
 {
-  printf 1>&2 '\033[1;31m%s\033[0m\n' "ERROR: ${1}"
+  printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
+  return 0
 }
 
 log_negative_info()
@@ -1163,7 +1165,6 @@ done
 #region
 if test "${execute_script:?}" = 'true'; then
   init
-
   if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
   set_utf8_codepage
 
