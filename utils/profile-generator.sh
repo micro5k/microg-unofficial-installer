@@ -134,6 +134,24 @@ log_status()
   return 0
 }
 
+log_negative_info()
+{
+  printf 1>&2 '\033[1;32m%s\033[1;31m%s\033[0m\n' "${1:?}" "${2:?}"
+  return 0
+}
+
+log_warn()
+{
+  printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
+  return 0
+}
+
+log_err()
+{
+  printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
+  return 0
+}
+
 device_not_ready_status_msg_initialize()
 {
   static_device_not_ready_displayed='false'
@@ -162,23 +180,6 @@ show_device_waiting_status_msg()
   else
     printf 1>&2 '\033[32m%s\033[0m' '.'
   fi
-}
-
-log_warn()
-{
-  printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
-  return 0
-}
-
-log_err()
-{
-  printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
-  return 0
-}
-
-log_negative_info()
-{
-  printf 1>&2 '\033[1;32m%s\033[1;31m%s\033[0m\n' "${1:?}" "${2:?}"
 }
 
 set_title()
