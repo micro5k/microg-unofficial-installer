@@ -95,7 +95,7 @@ color_init()
   CLR_LINE=''
 
   # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
-  if test -z "${NO_COLOR-}" && test -t 2; then
+  if test -z "${NO_COLOR-}" && test -t 1 && test -t 2; then
     CLR_RESET='\033[0m'
     CLR_RED='\033[1;31m'
     CLR_GREEN='\033[1;32m'
@@ -128,15 +128,15 @@ log_scope_end()
   return 0
 }
 
-log_empty_line()
+log_out()
+{
+  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
+}
+
+log_out_blank()
 {
   printf '\n'
   return 0
-}
-
-log_output()
-{
-  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
 log_status()
@@ -333,8 +333,8 @@ main()
     return "${EX_CONFIG?}"
   fi
 
-  log_empty_line
-  log_output 'Downloading...'
+  log_out_blank
+  log_out 'Downloading...'
   log_scope_begin
 
   dl_and_convert_device_list || {
@@ -343,7 +343,7 @@ main()
   }
 
   log_scope_end
-  log_output 'Done.'
+  log_out 'Done.'
 }
 #endregion
 

@@ -103,7 +103,7 @@ color_init()
   CLR_LINE=''
 
   # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
-  if test -z "${NO_COLOR-}" && test -t 2; then
+  if test -z "${NO_COLOR-}" && test -t 1 && test -t 2; then
     CLR_RESET='\033[0m'
     CLR_RED='\033[1;31m'
     CLR_GREEN='\033[1;32m'
@@ -136,14 +136,14 @@ log_scope_end()
   return 0
 }
 
-log_empty_line()
-{
-  printf '\n'
-}
-
-log_output()
+log_out()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
+}
+
+log_out_blank()
+{
+  printf '\n'
 }
 
 log_status()
@@ -317,8 +317,8 @@ main()
     return "${EX_CONFIG?}"
   fi
 
-  log_empty_line
-  log_output 'Downloading...'
+  log_out_blank
+  log_out 'Downloading...'
   log_scope_begin
   rm -f -- "${DATA_DIR:?}/perms/.completed" || return 20
   rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX:?}"-*.xml || return 21
@@ -328,7 +328,7 @@ main()
       log_err "Failed to read tag name for API ${api?}"
       return "${EX_SOFTWARE?}"
     }
-    log_output "API ${api?}: ${tag?}"
+    log_out "API ${api?}: ${tag?}"
     log_scope_begin
     fetch_and_extract_manifest_permissions_with_retry "${api:?}" "${tag:?}" || {
       log_err "Failed to download (or parse) API ${api?} XML"
@@ -341,7 +341,7 @@ main()
 
   touch -- "${DATA_DIR?}/perms/.completed" || return 23
   log_scope_end
-  log_output 'Done.'
+  log_out 'Done.'
 }
 #endregion
 

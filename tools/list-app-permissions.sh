@@ -76,7 +76,7 @@ color_init()
   CLR_LINE=''
 
   # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
-  if test -z "${NO_COLOR-}" && test -t 2; then
+  if test -z "${NO_COLOR-}" && test -t 1 && test -t 2; then
     CLR_RESET='\033[0m'
     CLR_RED='\033[1;31m'
     CLR_GREEN='\033[1;32m'
@@ -119,14 +119,14 @@ reset_color()
   printf 1>&2 '%b' "${CLR_RESET}"
 }
 
-log_empty_line()
-{
-  printf '\n'
-}
-
-log_output()
+log_out()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
+}
+
+log_out_blank()
+{
+  printf '\n'
 }
 
 log_status()
@@ -262,9 +262,9 @@ main()
 
   while test "$#" -gt 0; do
     reset_color
-    log_empty_line
+    log_out_blank
     base_name="$(basename "${1:-''}" || printf '%s\n' "${1:-''}" || :)"
-    log_output "Filename: ${base_name:?}"
+    log_out "Filename: ${base_name:?}"
 
     log_status 'Using aapt...'
     set_yellow_color

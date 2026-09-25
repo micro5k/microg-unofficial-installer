@@ -95,7 +95,7 @@ color_init()
   CLR_LINE=''
 
   # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
-  if test -z "${NO_COLOR-}" && test -t 2; then
+  if test -z "${NO_COLOR-}" && test -t 1 && test -t 2; then
     CLR_RESET='\033[0m'
     CLR_RED='\033[1;31m'
     CLR_GREEN='\033[1;32m'
@@ -1166,8 +1166,8 @@ done
 if test "${execute_script:?}" = 'true'; then
   init
   if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
-  set_utf8_codepage
 
+  set_utf8_codepage
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''

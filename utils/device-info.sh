@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.11'
+readonly SCRIPT_VERSION='2.9.12'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -119,7 +119,7 @@ color_init()
   CLR_LINE=''
 
   # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
-  if test -z "${NO_COLOR-}" && test -t 2; then
+  if test -z "${NO_COLOR-}" && test -t 1 && test -t 2; then
     CLR_RESET='\033[0m'
     CLR_RED='\033[1;31m'
     CLR_GREEN='\033[1;32m'
@@ -152,15 +152,21 @@ log_scope_end()
   return 0
 }
 
-log_empty_line()
+log_out_section()
 {
-  printf '\n'
+  printf '%b%s%b\n' "${CLR_CYAN}" "${1}" "${CLR_RESET}"
   return 0
 }
 
-log_output()
+log_out()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
+}
+
+log_out_blank()
+{
+  printf '\n'
+  return 0
 }
 
 log_status()
@@ -205,15 +211,6 @@ show_selected_device()
     printf '\033[1;31;103m%s\033[0m\n' "SELECTED: ${1}"
   else
     printf '%s\n' "SELECTED: ${1}"
-  fi
-}
-
-show_section()
-{
-  if test -t 1; then
-    printf '\033[1;36m%s\033[0m\n' "${1}"
-  else
-    printf '%s\n' "${1}"
   fi
 }
 
@@ -919,7 +916,7 @@ is_phonesubinfo_response_valid()
 
 display_info()
 {
-  log_output "${1?}: ${2?}"
+  log_out "${1?}: ${2?}"
 }
 
 display_info_or_warn()
@@ -1000,7 +997,7 @@ validate_and_display_info()
     return 2
   fi
 
-  log_output "${1?}: ${2?}"
+  log_out "${1?}: ${2?}"
 }
 
 open_device_status_info()
@@ -1457,8 +1454,8 @@ extract_all_info()
 
   BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" || BUILD_VERSION_SDK='999'
 
-  show_section 'BASIC INFO'
-  log_empty_line
+  log_out_section 'BASIC INFO'
+  log_out_blank
 
   if EMU_NAME="$(auto_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
     display_info 'Emulator' "${EMU_NAME?}"
@@ -1491,30 +1488,30 @@ extract_all_info()
     display_info_or_warn 'Device path' "${DEVICE_PATH?}" "${?}" 'non-sensitive'
   }
 
-  log_empty_line
+  log_out_blank
 
   SERIAL_NUMBER="$(find_serialno)"
   display_info_or_warn 'Serial number' "${SERIAL_NUMBER?}" "${?}"
   CPU_SERIAL_NUMBER="$(find_cpu_serialno "${SELECTED_DEVICE:?}")"
   display_info_or_warn 'CPU serial number' "${CPU_SERIAL_NUMBER?}" "${?}"
 
-  log_empty_line
+  log_out_blank
 
   ANDROID_ID="$(get_android_id "${SELECTED_DEVICE:?}")"
   is_valid_android_id "${ANDROID_ID?}"
   display_info_or_warn 'Android ID' "${ANDROID_ID?}" "${?}"
 
-  log_empty_line
+  log_out_blank
 
   DISPLAY_SIZE="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null size' | cut -d ':' -f '2-' -s | trim_space_left)"
   display_info_or_warn 'Display size' "${DISPLAY_SIZE?}" "${?}" 'non-sensitive'
   DISPLAY_DENSITY="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null density' | cut -d ':' -f '2-' -s | trim_space_left)"
   display_info_or_warn 'Display density' "${DISPLAY_DENSITY?}" "${?}" 'non-sensitive'
 
-  log_empty_line
+  log_out_blank
 
-  show_section 'SLOT INFO'
-  log_empty_line
+  log_out_section 'SLOT INFO'
+  log_out_blank
 
   DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.alpha')" || DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.orig.alpha')"
   DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.alpha')" || DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.orig.alpha')"
@@ -1526,9 +1523,9 @@ extract_all_info()
 
   display_info 'Slot count' "${SLOT_COUNT?}"
 
-  log_empty_line
+  log_out_blank
 
-  log_output "DEFAULT SLOT"
+  log_out "DEFAULT SLOT"
   get_imei "${SELECTED_DEVICE:?}"
   get_iccid "${SELECTED_DEVICE:?}"
 
@@ -1537,11 +1534,11 @@ extract_all_info()
 
   get_line_number "${SELECTED_DEVICE:?}"
 
-  log_empty_line
+  log_out_blank
 
   local _index slot_state operator_current_slot
   for _index in $(seq "${SLOT_COUNT:?}"); do
-    log_output "SLOT ${_index:?}"
+    log_out "SLOT ${_index:?}"
     case "${_index:?}" in
       1)
         slot_state="${SLOT1_STATE?}"
@@ -1574,12 +1571,12 @@ extract_all_info()
       get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${_index:?}"
     fi
 
-    log_empty_line
+    log_out_blank
   done
 
-  show_section 'ADVANCED INFO (root may be required)'
+  log_out_section 'ADVANCED INFO (root may be required)'
   adb_root "${SELECTED_DEVICE:?}"
-  log_empty_line
+  log_out_blank
 
   device_shell "${SELECTED_DEVICE:?}" "if test -e '/system' && test ! -e '/system/bin/sh'; then mount -t 'auto' -o 'ro' '/system' 2> /dev/null || true; fi"
   device_shell "${SELECTED_DEVICE:?}" "if test -e '/data' && test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
@@ -1595,15 +1592,15 @@ extract_all_info()
     display_info_or_warn 'GSF ID (decimal)' "${GSF_ID_DEC?}" "${?}"
   }
 
-  log_empty_line
+  log_out_blank
 
   ADVERTISING_ID="$(get_advertising_id "${SELECTED_DEVICE:?}")"
   validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
-  log_empty_line
+  log_out_blank
 
-  show_section 'EFS INFO (root may be required)'
-  log_empty_line
+  log_out_section 'EFS INFO (root may be required)'
+  log_out_blank
 
   parse_nv_data "${SELECTED_DEVICE:?}"
   validate_and_display_info 'Hardware version' "${HARDWARE_VERSION?}"
@@ -1648,7 +1645,7 @@ main()
     for _device in $(adb devices | grep -v -i -F -e 'list' | cut -f '1' -s); do
       if test -z "${_device?}"; then continue; fi
 
-      log_empty_line
+      log_out_blank
       show_selected_device "${_device:?}"
 
       if detect_status_and_wait_connection "${_device:?}" 'true'; then
@@ -1771,17 +1768,16 @@ done
 # @section EXECUTION ENTRY POINT ----
 #region
 if test "${execute_script:?}" = 'true'; then
-  FD=2
-  if test "${DEBUG:-0}" != 0 && test ! -t 1; then
-    exec 3>&1 # Duplicate STDOUT to FD 3 to ensure output can reach the original destination without being intercepted by a command substitution
-    FD=3
-    NO_COLOR=1
-  fi
-
   init
   if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
-  set_utf8_codepage
 
+  FD=2
+  if test "${DEBUG:-0}" != 0; then
+    exec 3>&1 # Duplicate STDOUT to FD 3 to ensure output can reach the original destination without being intercepted by a command substitution
+    FD=3
+  fi
+
+  set_utf8_codepage
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
