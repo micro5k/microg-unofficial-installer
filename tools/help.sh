@@ -16,13 +16,14 @@ if test -f '/usr/bin/cygpath'; then
 fi
 
 if test -z "${MODULE_NAME-}" || test -z "${MAIN_DIR-}" || test -z "${PLATFORM-}" || test -z "${IS_BUSYBOX-}"; then
-  echo 'ERROR: You must first run cmdline.sh or cmdline.bat and then you can type: help'
+  printf 1>&2 '%s\n' 'ERROR: You must first run cmdline.sh or cmdline.bat and then you can type: help'
   exit 1
 fi
 
 aligned_print()
 {
   printf '%-15s %s\n' "${@}"
+  return 0
 }
 
 printf '%s\n' "${MODULE_NAME:?} help"
