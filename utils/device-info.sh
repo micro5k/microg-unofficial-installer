@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.15'
+readonly SCRIPT_VERSION='2.9.16'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -359,20 +359,22 @@ verify_adb()
     fi
   fi
 
-  log_err 'adb is required'
-  pause_if_needed
-  exit "${EX_UNAVAILABLE?}"
+  return 1
 }
 
 verify_adb_mode_deps()
 {
-  verify_adb
+  verify_adb || {
+    log_err 'adb is required'
+    return "${EX_UNAVAILABLE?}"
+  }
 
-  if ! command -v timeout 1> /dev/null; then
-    log_err 'timeout is NOT available'
-    pause_if_needed
-    exit 1
-  fi
+  command -v 'timeout' 1> /dev/null 2>&1 || {
+    log_err 'timeout is required'
+    return "${EX_UNAVAILABLE?}"
+  }
+
+  return 0
 }
 
 start_adb_server()
@@ -1638,23 +1640,17 @@ main()
   fi
 
   if test "${INPUT_TYPE:?}" = 'adb'; then
-
-    verify_adb_mode_deps
+    verify_adb_mode_deps || return "${?}"
     start_adb_server || {
       log_err 'Failed to start ADB'
       return 10
     }
 
+    log_blank
     for _device_id in $(adb devices | grep -v -F -e 'List of devices' | cut -f 1 -s); do
       test -n "${_device_id?}" || continue
 
-      if test "${first?}" = 0; then
-        printf '\n=== DEVICE-BREAK ===\n\n'
-      else
-        first=0
-        log_blank
-      fi
-
+      if test "${first?}" = 0; then printf '\n=== DEVICE-BREAK ===\n\n'; else first=0; fi
       log_out_selected_device "${_device_id?}"
 
       if detect_status_and_wait_connection "${_device_id?}" 'true'; then
@@ -1675,9 +1671,7 @@ main()
       log_err 'No devices or emulators found. Please connect a device or start an emulator'
       return 11
     }
-
   else
-
     test -f "${INPUT_SELECTION:?}" || {
       log_err "Input file doesn't exist => '${INPUT_SELECTION?}'"
       return 12
@@ -1700,7 +1694,6 @@ main()
       log_err "Unknown input file => '${INPUT_SELECTION?}'"
       status=13
     fi
-
   fi
 
   return "${status:?}"

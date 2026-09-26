@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.15'
+readonly SCRIPT_VERSION='1.9.16'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -357,9 +357,22 @@ verify_adb()
     fi
   fi
 
-  log_err 'adb is required'
-  pause_if_needed
-  exit "${EX_UNAVAILABLE?}"
+  return 1
+}
+
+verify_adb_mode_deps()
+{
+  verify_adb || {
+    log_err 'adb is required'
+    return "${EX_UNAVAILABLE?}"
+  }
+
+  command -v 'timeout' 1> /dev/null 2>&1 || {
+    log_err 'timeout is required'
+    return "${EX_UNAVAILABLE?}"
+  }
+
+  return 0
 }
 
 start_adb_server()
@@ -1072,21 +1085,17 @@ main()
   fi
 
   if test "${INPUT_TYPE:?}" = 'adb'; then
-    verify_adb
+    verify_adb_mode_deps || return "${?}"
     start_adb_server || {
       log_err 'Failed to start ADB'
       return 10
     }
 
+    log_blank
     for _device_id in $(adb devices | grep -v -F -e 'List of devices' | cut -f 1 -s); do
       test -n "${_device_id?}" || continue
 
-      if test "${first?}" = 0; then
-        printf '\n=== DEVICE-BREAK ===\n\n'
-      else
-        first=0
-        log_blank
-      fi
+      if test "${first?}" = 0; then printf '\n=== DEVICE-BREAK ===\n\n'; else first=0; fi
 
       #if detect_status_and_wait_connection "${_device_id?}" 'true'; then
       found=1
@@ -1096,7 +1105,8 @@ main()
       verify_device_status "${SELECTED_DEVICE:?}"
       if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
         log_err "Recovery isn't currently supported"
-        return 1
+        status=1
+        continue
       fi
       wait_connection "${SELECTED_DEVICE:?}"
       log_status 'Generating profile...'
@@ -1112,7 +1122,6 @@ main()
       log_err 'No devices or emulators found. Please connect a device or start an emulator'
       return 11
     }
-
   else
     test -e "${INPUT_TYPE:?}" || {
       log_err "Input file doesn't exist => '${INPUT_TYPE:-}'"
@@ -1121,6 +1130,7 @@ main()
 
     log_blank
     log_status 'Generating profile...'
+
     if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
       PROP_TYPE='1'
       DEVICE_IN_RECOVERY='false'
