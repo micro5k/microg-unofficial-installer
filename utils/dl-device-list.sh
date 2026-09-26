@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.9'
+readonly SCRIPT_VERSION='0.1.10'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -323,6 +323,11 @@ main()
 
   command -v "${WGET_CMD:?}" 1> /dev/null 2>&1 || {
     log_err 'wget is required'
+    return "${EX_UNAVAILABLE?}"
+  }
+
+  command -v 'iconv' 1> /dev/null 2>&1 || {
+    log_err 'iconv is required'
     return "${EX_UNAVAILABLE?}"
   }
 
