@@ -20,10 +20,11 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.14'
+readonly SCRIPT_VERSION='1.9.15'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
+readonly EX_UNAVAILABLE=69
 readonly EX_CONFIG=78
 
 export LANG='en_US.UTF-8'
@@ -133,6 +134,12 @@ log_scope_end()
 log_status()
 {
   printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
+  return 0
+}
+
+log_blank()
+{
+  printf 1>&2 '\n'
   return 0
 }
 
@@ -350,9 +357,9 @@ verify_adb()
     fi
   fi
 
-  log_err 'adb is NOT available'
+  log_err 'adb is required'
   pause_if_needed
-  exit 1
+  exit "${EX_UNAVAILABLE?}"
 }
 
 start_adb_server()
@@ -452,11 +459,6 @@ detect_status_and_wait_connection()
   return "${?}"
 }
 if false; then detect_status_and_wait_connection; fi # ToDO: use it
-
-adb_get_serial()
-{
-  adb 'get-serialno'
-}
 
 is_recovery()
 {
@@ -1061,9 +1063,9 @@ generate_profile()
 
 main()
 {
-  local _found
+  local status=0 found=0 first=1 _device_id=''
 
-  if test -z "${1-}" || test "${1:?}" = 'adb'; then
+  if test -z "${1-}" || test "${1}" = 'adb'; then
     INPUT_TYPE='adb'
   else
     INPUT_TYPE="${1:?}"
@@ -1075,27 +1077,45 @@ main()
       log_err 'Failed to start ADB'
       return 10
     }
-    SELECTED_DEVICE="$(adb_get_serial)" || {
-      log_err 'Failed to get the selected device'
-      pause_if_needed
-      return 1
+
+    for _device_id in $(adb devices | grep -v -F -e 'List of devices' | cut -f 1 -s); do
+      test -n "${_device_id?}" || continue
+
+      log_blank
+      if test "${first?}" = 0; then printf '=== DEVICE-BREAK ===\n\n'; else first=0; fi
+
+      #if detect_status_and_wait_connection "${_device_id?}" 'true'; then
+      found=1
+
+      SELECTED_DEVICE="${_device_id?}"
+
+      verify_device_status "${SELECTED_DEVICE:?}"
+      if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
+        log_err "Recovery isn't currently supported"
+        return 1
+      fi
+      wait_connection "${SELECTED_DEVICE:?}"
+      log_status 'Generating profile...'
+      check_boot_completed
+
+      generate_profile || status="${?}"
+      #else
+      #  log_warn 'Device is offline/unauthorized, skipped'
+      #fi
+    done
+
+    test "${found:?}" = 1 || {
+      log_err 'No devices or emulators found. Please connect a device or start an emulator'
+      return 11
     }
-    verify_device_status "${SELECTED_DEVICE:?}"
-    if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
-      log_err "Recovery isn't currently supported"
-      pause_if_needed
-      return 1
-    fi
-    wait_connection "${SELECTED_DEVICE:?}"
-    log_status 'Generating profile...'
-    check_boot_completed
+
   else
     test -e "${INPUT_TYPE:?}" || {
       log_err "Input file doesn't exist => '${INPUT_TYPE:-}'"
-      pause_if_needed
       return 1
     }
 
+    log_blank
     log_status 'Generating profile...'
     if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
       PROP_TYPE='1'
@@ -1105,9 +1125,11 @@ main()
       PROP_TYPE='2'
       log_err 'Profiles generated in this way will be incomplete!!!'
     fi
+
+    generate_profile || status="${?}"
   fi
 
-  generate_profile
+  return "${status:?}"
 }
 
 # @section CLI ARGUMENTS PARSING ----

@@ -22,9 +22,11 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.14'
+readonly SCRIPT_VERSION='2.9.15'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
+
+readonly EX_UNAVAILABLE=69
 
 # shellcheck disable=SC2034
 {
@@ -351,9 +353,9 @@ verify_adb()
     fi
   fi
 
-  log_err 'adb is NOT available'
+  log_err 'adb is required'
   pause_if_needed
-  exit 1
+  exit "${EX_UNAVAILABLE?}"
 }
 
 verify_adb_mode_deps()
@@ -1616,11 +1618,11 @@ extract_all_info()
 
 main()
 {
-  local first='' _found
+  local status=0 found=0 first=1 _device_id=''
 
   DEVICE_STATE=''
 
-  if test -z "${1-}" || test "${1:?}" = 'adb'; then
+  if test -z "${1-}" || test "${1}" = 'adb'; then
     INPUT_TYPE='adb'
     INPUT_SELECTION=''
     PROP_TYPE=''
@@ -1637,44 +1639,32 @@ main()
       return 10
     }
 
-    local _device _status_code _last_error_code
-
-    _found='false'
-    _last_error_code=0
-    first=1
-    for _device in $(adb devices | grep -v -i -F -e 'list' | cut -f '1' -s); do
-      if test -z "${_device?}"; then continue; fi
+    for _device_id in $(adb devices | grep -v -F -e 'List of devices' | cut -f 1 -s); do
+      test -n "${_device_id?}" || continue
 
       log_out_blank
       if test "${first?}" = 0; then printf '=== DEVICE-BREAK ===\n\n'; else first=0; fi
-      log_out_selected_device "${_device:?}"
+      log_out_selected_device "${_device_id?}"
 
-      if detect_status_and_wait_connection "${_device:?}" 'true'; then
-        _found='true'
+      if detect_status_and_wait_connection "${_device_id?}" 'true'; then
+        found=1
 
         if test "${OPEN_DEVICE_STATUS_INFO_ONLY:?}" = 'true'; then
-          open_device_status_info "${_device:?}"
+          open_device_status_info "${_device_id?}" || status="${?}"
           continue
         fi
 
-        extract_all_info "${_device:?}"
-        _status_code="${?}"
-
-        case "${_status_code:?}" in
-          0) ;;
-          *) _last_error_code="${_status_code:?}" ;;
-        esac
+        extract_all_info "${_device_id?}" || status="${?}"
       else
         log_warn 'Device is offline/unauthorized, skipped'
       fi
     done
 
-    if test "${_found:?}" = 'false'; then
-      log_err 'No devices/emulators found'
+    test "${found:?}" = 1 || {
+      log_err 'No devices or emulators found. Please connect a device or start an emulator'
       return 11
-    fi
+    }
 
-    return "${_last_error_code:?}"
   else
 
     test -f "${INPUT_SELECTION:?}" || {
@@ -1689,20 +1679,20 @@ main()
       PROP_TYPE='1'
       log_warn 'Operating in getprop mode, the extracted info will be severely limited!!!'
 
-      extract_all_info "${INPUT_SELECTION:?}"
+      extract_all_info "${INPUT_SELECTION:?}" || status="${?}"
     elif grep -m 1 -q -e '^.*\..*=' -- "${INPUT_SELECTION:?}"; then
       PROP_TYPE='2'
       log_warn 'Operating in build.prop mode, the extracted info will be severely limited!!!'
 
-      extract_all_info "${INPUT_SELECTION:?}"
+      extract_all_info "${INPUT_SELECTION:?}" || status="${?}"
     else
       log_err "Unknown input file => '${INPUT_SELECTION?}'"
-      return 13
+      status=13
     fi
 
   fi
 
-  return 0
+  return "${status:?}"
 }
 
 # @section CLI ARGUMENTS PARSING ----
