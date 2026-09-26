@@ -188,6 +188,12 @@ log_status()
   return 0
 }
 
+log_blank()
+{
+  printf 1>&2 '\n'
+  return 0
+}
+
 log_warn()
 {
   case "${FD}" in
@@ -1642,8 +1648,13 @@ main()
     for _device_id in $(adb devices | grep -v -F -e 'List of devices' | cut -f 1 -s); do
       test -n "${_device_id?}" || continue
 
-      log_out_blank
-      if test "${first?}" = 0; then printf '=== DEVICE-BREAK ===\n\n'; else first=0; fi
+      if test "${first?}" = 0; then
+        printf '\n=== DEVICE-BREAK ===\n\n'
+      else
+        first=0
+        log_blank
+      fi
+
       log_out_selected_device "${_device_id?}"
 
       if detect_status_and_wait_connection "${_device_id?}" 'true'; then
