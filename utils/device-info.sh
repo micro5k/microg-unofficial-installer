@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.13'
+readonly SCRIPT_VERSION='2.9.14'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -114,6 +114,7 @@ color_init()
   CLR_GREEN=''
   CLR_YELLOW_PLAIN=''
   CLR_YELLOW=''
+  CLR_YELLOW_BG_BLUE=''
   CLR_MAGENTA=''
   CLR_CYAN=''
   CLR_LINE=''
@@ -125,6 +126,7 @@ color_init()
     CLR_GREEN='\033[1;32m'
     CLR_YELLOW_PLAIN='\033[0;33m'
     CLR_YELLOW='\033[1;33m'
+    CLR_YELLOW_BG_BLUE='\033[1;33;44m'
     CLR_MAGENTA='\033[1;35m'
     CLR_CYAN='\033[1;36m'
     CLR_LINE='\r        \r'
@@ -149,6 +151,12 @@ log_scope_begin()
 log_scope_end()
 {
   test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
+  return 0
+}
+
+log_out_selected_device()
+{
+  printf '%b%s%b\n\n' "${CLR_YELLOW_BG_BLUE}" "SELECTED: ${1}" "${CLR_RESET}"
   return 0
 }
 
@@ -203,15 +211,6 @@ log_err()
     *) printf 1>&3 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}" ;;
   esac
   return 0
-}
-
-show_selected_device()
-{
-  if test -t 1; then
-    printf '\033[1;31;103m%s\033[0m\n' "SELECTED: ${1}"
-  else
-    printf '%s\n' "SELECTED: ${1}"
-  fi
 }
 
 device_not_ready_status_msg_initialize()
@@ -1648,7 +1647,7 @@ main()
 
       log_out_blank
       if test "${first?}" = 0; then printf '=== DEVICE-BREAK ===\n\n'; else first=0; fi
-      show_selected_device "${_device:?}"
+      log_out_selected_device "${_device:?}"
 
       if detect_status_and_wait_connection "${_device:?}" 'true'; then
         _found='true'
@@ -1684,7 +1683,7 @@ main()
     }
 
     log_out_blank
-    show_selected_device "${INPUT_SELECTION:?}"
+    log_out_selected_device "${INPUT_SELECTION:?}"
 
     if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_SELECTION:?}"; then
       PROP_TYPE='1'
