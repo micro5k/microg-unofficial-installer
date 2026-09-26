@@ -1091,11 +1091,14 @@ main()
       return 10
     }
 
-    log_blank
     for _device_id in $(adb devices | grep -v -F -e 'List of devices' | cut -f 1 -s); do
       test -n "${_device_id?}" || continue
 
-      if test "${first?}" = 0; then printf '\n=== DEVICE-BREAK ===\n\n'; else first=0; fi
+      if test "${first?}" = 0; then printf '\n=== DEVICE-BREAK ===\n\n'; else
+        first=0
+        log_blank
+      fi
+      #log_selected_device "${_device_id?}"
 
       #if detect_status_and_wait_connection "${_device_id?}" 'true'; then
       found=1
