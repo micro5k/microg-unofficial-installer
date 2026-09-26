@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.10'
+readonly SCRIPT_VERSION='0.1.11'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -199,6 +199,13 @@ resolve_data_dir()
   __fn_path="$(realpath 2> /dev/null "${__fn_path:?}" || readlink -f "${__fn_path:?}")" || return 1
   printf '%s\n' "${__fn_path:?}"
   return 0
+}
+
+final_cleanup()
+{
+  if test -n "${DATA_DIR-}" && test -d "${DATA_DIR}"; then
+    rm -f -- "${DATA_DIR:?}"/*.tmp || :
+  fi
 }
 #endregion
 
@@ -406,9 +413,9 @@ if test "${execute_script:?}" = 'true'; then
   init
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
-  test "$#" -ne 0 || set -- ''
-  main "${@}" || STATUS="${?}"
+  main || STATUS="${?}"
   restore_codepage
+  final_cleanup
 fi
 
 pause_if_needed "${STATUS:?}"

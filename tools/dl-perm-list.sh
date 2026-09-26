@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='AOSP system permissions downloader'
 readonly SCRIPT_SHORTNAME='SysPermDl'
-readonly SCRIPT_VERSION='0.3.24'
+readonly SCRIPT_VERSION='0.3.25'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -206,9 +206,10 @@ resolve_data_dir()
   return 0
 }
 
-clean_perms_dir_if_empty()
+final_cleanup()
 {
   if test -n "${DATA_DIR-}" && test -d "${DATA_DIR}/perms"; then
+    # Clean perms dir if empty
     rmdir "${DATA_DIR:?}/perms" 2> /dev/null || :
   fi
 }
@@ -399,9 +400,8 @@ if test "${execute_script:?}" = 'true'; then
   init
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
-  test "$#" -ne 0 || set -- ''
-  main "${@}" || STATUS="${?}"
-  clean_perms_dir_if_empty
+  main || STATUS="${?}"
+  final_cleanup
 fi
 
 pause_if_needed "${STATUS:?}"
