@@ -397,22 +397,24 @@ parse_device_status()
 
 detect_status_and_wait_connection()
 {
-  local __fn_dev_state='closed' _reconnected='false'
+  local __fn_dev_state='' __fn_recon='false'
 
   if test "${2:-1}" = 1; then DEVICE_STATE='unknown'; fi
   dev_status_init
 
+  : "${1:?}" # Ensure $1 is set and non-empty
+
   for _ in 1 2 3 4 5 6 7 8 9 10; do
-    __fn_dev_state="$(LC_ALL=C adb 2>&1 -s "${1?}" 'get-state' | LC_ALL=C tr -d '\r' || :)"
-    parse_device_status "${__fn_dev_state?}"
+    __fn_dev_state="$(LC_ALL=C adb 2>&1 -s "${1}" 'get-state' | LC_ALL=C tr -d '\r' || :)"
+    parse_device_status "${__fn_dev_state}"
     case "$?" in
       1) dev_status_not_ready ;; # Wait up to 5 seconds for transient states (10 attempts * 0.5 sec sleep)
       2)
         dev_status_not_ready
-        if test "${_reconnected:?}" = 'false'; then
-          _reconnected='true'
+        if test "${__fn_recon}" = 'false'; then
+          __fn_recon='true'
           # Force reconnect if the device is unauthorized, then wait 5 sec for the authentication prompt
-          adb 1> /dev/null 2>&1 -s "${1?}" reconnect offline && sleep 5 || :
+          adb 1> /dev/null 2>&1 -s "${1}" reconnect offline && sleep 5 || :
         fi
         ;;
       3)
@@ -426,18 +428,18 @@ detect_status_and_wait_connection()
       *) break ;;
     esac
 
-    sleep 2> /dev/null '0.5' || sleep 1
+    sleep 2> /dev/null '0.5' || sleep 1 || break
   done
 
   # Previous loop terminates with success or critical error (recoverable errors already handled at this point)
-  parse_device_status "${__fn_dev_state?}"
+  parse_device_status "${__fn_dev_state}"
   if test "$?" -ne 0; then
     dev_status_done
     return 10
   fi
 
   if test "${2:-1}" = 1; then
-    case "${__fn_dev_state?}" in
+    case "${__fn_dev_state}" in
       'device' | 'recovery' | 'sideload' | 'rescue' | 'bootloader') DEVICE_STATE="${__fn_dev_state?}" ;;
       *)
         dev_status_done
@@ -445,7 +447,7 @@ detect_status_and_wait_connection()
         return 11
         ;;
     esac
-  elif test "${__fn_dev_state?}" != "${DEVICE_STATE:?}"; then
+  elif test "${__fn_dev_state?}" != "${DEVICE_STATE?}"; then
     dev_status_done
     log_err "Device state mismatch: expected '${DEVICE_STATE?}', got '${__fn_dev_state?}'"
     return 12
