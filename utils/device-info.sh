@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.20'
+readonly SCRIPT_VERSION='2.9.21'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -731,7 +731,7 @@ ensure_boot_completed()
   return 0
 }
 
-validated_chosen_getprop()
+get_and_check_prop()
 {
   local __fn_prop_val
 
@@ -1466,7 +1466,7 @@ extract_all_info()
   log_status 'Finding info...'
   log_status ''
 
-  BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" || BUILD_VERSION_SDK='999'
+  BUILD_VERSION_SDK="$(get_and_check_prop 'ro.build.version.sdk')" || BUILD_VERSION_SDK='999'
 
   log_out_section 'BASIC INFO'
   log_out_blank
@@ -1482,11 +1482,11 @@ extract_all_info()
   {
     BUILD_MANUFACTURER="$(auto_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(auto_getprop 'ro.product.brand')"
   } && display_info 'Manufacturer' "${BUILD_MANUFACTURER?}"
-  BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
+  BUILD_MODEL="$(get_and_check_prop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
   {
     BUILD_DEVICE="$(auto_getprop 'ro.product.device')" || BUILD_DEVICE="$(auto_getprop 'ro.build.product')"
   } && display_info 'Device' "${BUILD_DEVICE?}"
-  ANDROID_VERSION="$(validated_chosen_getprop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
+  ANDROID_VERSION="$(get_and_check_prop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
   KERNEL_VERSION="$(get_kernel_version "${SELECTED_DEVICE:?}")" && display_info 'Kernel version' "${KERNEL_VERSION?}"
 
   {

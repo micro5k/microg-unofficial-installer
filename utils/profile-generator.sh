@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.20'
+readonly SCRIPT_VERSION='1.9.21'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -634,7 +634,7 @@ ensure_boot_completed()
   return 0
 }
 
-validated_chosen_getprop()
+get_and_check_prop()
 {
   local __fn_prop_val
 
@@ -939,14 +939,14 @@ generate_profile()
   # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
   # - https://developer.android.com/reference/android/os/Build
 
-  BUILD_BRAND="$(validated_chosen_getprop 'ro.product.brand')"
-  BUILD_MANUFACTURER="$(validated_chosen_getprop 'ro.product.manufacturer')"
-  BUILD_DEVICE="$(validated_chosen_getprop 'ro.product.device')" || BUILD_DEVICE="$(auto_getprop 'ro.build.product')" || BUILD_DEVICE=""
-  BUILD_MODEL="$(validated_chosen_getprop 'ro.product.model')"
-  BUILD_VERSION_RELEASE="$(validated_chosen_getprop 'ro.build.version.release')"
+  BUILD_BRAND="$(get_and_check_prop 'ro.product.brand' || :)"
+  BUILD_MANUFACTURER="$(get_and_check_prop 'ro.product.manufacturer' || :)"
+  BUILD_DEVICE="$(get_and_check_prop 'ro.product.device' || get_and_check_prop 'ro.build.product' || :)"
+  BUILD_MODEL="$(get_and_check_prop 'ro.product.model' || :)"
+  BUILD_VERSION_RELEASE="$(get_and_check_prop 'ro.build.version.release' || :)"
 
   TEXT_BUILD_TIME_HUMAN=''
-  if BUILD_TIME="$(validated_chosen_getprop 'ro.build.date.utc')"; then
+  if BUILD_TIME="$(get_and_check_prop 'ro.build.date.utc')"; then
     TEXT_BUILD_TIME_HUMAN="$(convert_time_to_human_readable_form "${BUILD_TIME:?}")"
     BUILD_TIME="${BUILD_TIME:?}000"
   fi
@@ -969,7 +969,7 @@ generate_profile()
     *) ;;
   esac
 
-  BUILD_BOARD="$(validated_chosen_getprop 'ro.product.board')"
+  BUILD_BOARD="$(get_and_check_prop 'ro.product.board' || :)"
 
   BUILD_BOOTLOADER="$(find_bootloader)"
   BUILD_BOOTLOADER_EXPECT="$(auto_getprop 'ro.build.expect.bootloader')" || BUILD_BOOTLOADER_EXPECT=''
@@ -977,14 +977,14 @@ generate_profile()
     log_warn "Build.BOOTLOADER does NOT match, current: ${BUILD_BOOTLOADER:-}, expected: ${BUILD_BOOTLOADER_EXPECT:-}"
   fi
 
-  BUILD_CPU_ABI="$(validated_chosen_getprop 'ro.product.cpu.abi')"
-  BUILD_CPU_ABI2="$(validated_chosen_getprop 'ro.product.cpu.abi2' 2)"
-  BUILD_DISPLAY="$(validated_chosen_getprop 'ro.build.display.id')"
-  BUILD_FINGERPRINT="$(validated_chosen_getprop 'ro.build.fingerprint')"
+  BUILD_CPU_ABI="$(get_and_check_prop 'ro.product.cpu.abi' || :)"
+  BUILD_CPU_ABI2="$(get_and_check_prop 'ro.product.cpu.abi2' 2 || :)"
+  BUILD_DISPLAY="$(get_and_check_prop 'ro.build.display.id' || :)"
+  BUILD_FINGERPRINT="$(get_and_check_prop 'ro.build.fingerprint' || :)"
   BUILD_HARDWARE="$(find_hardware)"
-  BUILD_HOST="$(validated_chosen_getprop 'ro.build.host')"
-  BUILD_ID="$(validated_chosen_getprop 'ro.build.id')"
-  BUILD_PRODUCT="$(validated_chosen_getprop 'ro.product.name')" || BUILD_PRODUCT='unknown'
+  BUILD_HOST="$(get_and_check_prop 'ro.build.host' || :)"
+  BUILD_ID="$(get_and_check_prop 'ro.build.id' || :)"
+  BUILD_PRODUCT="$(get_and_check_prop 'ro.product.name')" || BUILD_PRODUCT='unknown'
 
   BUILD_RADIO="$(find_radio)"
   BUILD_RADIO_EXPECT="$(auto_getprop 'ro.build.expect.baseband')" || BUILD_RADIO_EXPECT=''
@@ -992,18 +992,18 @@ generate_profile()
     log_warn "Build.RADIO does NOT match, current: ${BUILD_RADIO:-}, expected: ${BUILD_RADIO_EXPECT:-}"
   fi
 
-  BUILD_TAGS="$(validated_chosen_getprop 'ro.build.tags')"
+  BUILD_TAGS="$(get_and_check_prop 'ro.build.tags' || :)"
 
-  BUILD_TYPE="$(validated_chosen_getprop 'ro.build.type')"
-  BUILD_USER="$(validated_chosen_getprop 'ro.build.user')"
-  BUILD_VERSION_CODENAME="$(validated_chosen_getprop 'ro.build.version.codename')"
-  BUILD_VERSION_INCREMENTAL="$(validated_chosen_getprop 'ro.build.version.incremental')"
-  BUILD_VERSION_SECURITY_PATCH="$(validated_chosen_getprop 'ro.build.version.security_patch' 2)"
-  BUILD_VERSION_SDK="$(validated_chosen_getprop 'ro.build.version.sdk')" || BUILD_VERSION_SDK=0 # ToDO: Check if not numeric or empty
+  BUILD_TYPE="$(get_and_check_prop 'ro.build.type' || :)"
+  BUILD_USER="$(get_and_check_prop 'ro.build.user' || :)"
+  BUILD_VERSION_CODENAME="$(get_and_check_prop 'ro.build.version.codename' || :)"
+  BUILD_VERSION_INCREMENTAL="$(get_and_check_prop 'ro.build.version.incremental' || :)"
+  BUILD_VERSION_SECURITY_PATCH="$(get_and_check_prop 'ro.build.version.security_patch' 2 || :)"
+  BUILD_VERSION_SDK="$(get_and_check_prop 'ro.build.version.sdk')" || BUILD_VERSION_SDK=0 # ToDO: Check if not numeric or empty
   BUILD_VERSION_DEVICE_INITIAL_SDK_INT="$(auto_getprop 'ro.product.first_api_level')"
-  BUILD_SUPPORTED_ABIS="$(validated_chosen_getprop 'ro.product.cpu.abilist' 2)" # ToDO: Auto-generate it if missing
+  BUILD_SUPPORTED_ABIS="$(get_and_check_prop 'ro.product.cpu.abilist' 2 || :)" # ToDO: Auto-generate it if missing
 
-  BUILD_DESCRIPTION="$(validated_chosen_getprop 'ro.build.description')"
+  BUILD_DESCRIPTION="$(get_and_check_prop 'ro.build.description' || :)"
   TEXT_ADDITIONAL_INFO="ro.build.description: ${BUILD_DESCRIPTION?}"
 
   ANON_SERIAL_NUMBER=''
