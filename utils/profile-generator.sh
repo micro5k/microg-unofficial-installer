@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.21'
+readonly SCRIPT_VERSION='1.9.22'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -637,13 +637,34 @@ ensure_boot_completed()
 get_and_check_prop()
 {
   local __fn_prop_val
-
   __fn_prop_val="$(auto_getprop "${1}" || :)"
 
-  is_valid_value "${__fn_prop_val}" "${2-}" || {
-    log_non_fatal "The value of property '${1?}' is invalid"
-    return 1
-  }
+  case "${__fn_prop_val}" in
+    '' | 'unknown')
+      log_non_fatal "The value of property '${1?}' is missing or invalid"
+      return 1
+      ;;
+    *) ;;
+  esac
+  printf '%s\n' "${__fn_prop_val}"
+  return 0
+}
+
+get_and_check_optional_prop()
+{
+  local __fn_prop_val
+  __fn_prop_val="$(auto_getprop "${1}" || :)"
+
+  case "${__fn_prop_val}" in
+    '')
+      return 1
+      ;;
+    'unknown')
+      log_non_fatal "The value of property '${1?}' is invalid"
+      return 1
+      ;;
+    *) ;;
+  esac
   printf '%s\n' "${__fn_prop_val}"
   return 0
 }
@@ -978,7 +999,7 @@ generate_profile()
   fi
 
   BUILD_CPU_ABI="$(get_and_check_prop 'ro.product.cpu.abi' || :)"
-  BUILD_CPU_ABI2="$(get_and_check_prop 'ro.product.cpu.abi2' 2 || :)"
+  BUILD_CPU_ABI2="$(get_and_check_optional_prop 'ro.product.cpu.abi2' || :)"
   BUILD_DISPLAY="$(get_and_check_prop 'ro.build.display.id' || :)"
   BUILD_FINGERPRINT="$(get_and_check_prop 'ro.build.fingerprint' || :)"
   BUILD_HARDWARE="$(find_hardware)"
@@ -998,10 +1019,10 @@ generate_profile()
   BUILD_USER="$(get_and_check_prop 'ro.build.user' || :)"
   BUILD_VERSION_CODENAME="$(get_and_check_prop 'ro.build.version.codename' || :)"
   BUILD_VERSION_INCREMENTAL="$(get_and_check_prop 'ro.build.version.incremental' || :)"
-  BUILD_VERSION_SECURITY_PATCH="$(get_and_check_prop 'ro.build.version.security_patch' 2 || :)"
+  BUILD_VERSION_SECURITY_PATCH="$(get_and_check_optional_prop 'ro.build.version.security_patch' || :)"
   BUILD_VERSION_SDK="$(get_and_check_prop 'ro.build.version.sdk')" || BUILD_VERSION_SDK=0 # ToDO: Check if not numeric or empty
   BUILD_VERSION_DEVICE_INITIAL_SDK_INT="$(auto_getprop 'ro.product.first_api_level')"
-  BUILD_SUPPORTED_ABIS="$(get_and_check_prop 'ro.product.cpu.abilist' 2 || :)" # ToDO: Auto-generate it if missing
+  BUILD_SUPPORTED_ABIS="$(get_and_check_optional_prop 'ro.product.cpu.abilist' || :)" # ToDO: Auto-generate it if missing
 
   BUILD_DESCRIPTION="$(get_and_check_prop 'ro.build.description' || :)"
   TEXT_ADDITIONAL_INFO="ro.build.description: ${BUILD_DESCRIPTION?}"

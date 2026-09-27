@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.21'
+readonly SCRIPT_VERSION='2.9.22'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -734,13 +734,15 @@ ensure_boot_completed()
 get_and_check_prop()
 {
   local __fn_prop_val
-
   __fn_prop_val="$(auto_getprop "${1}" || :)"
 
-  is_valid_value "${__fn_prop_val}" "${2-}" || {
-    log_non_fatal "The value of property '${1?}' is invalid"
-    return 1
-  }
+  case "${__fn_prop_val}" in
+    '' | 'unknown')
+      log_non_fatal "The value of property '${1?}' is missing or invalid"
+      return 1
+      ;;
+    *) ;;
+  esac
   printf '%s\n' "${__fn_prop_val}"
   return 0
 }
