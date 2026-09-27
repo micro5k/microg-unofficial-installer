@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.19'
+readonly SCRIPT_VERSION='2.9.20'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -677,55 +677,36 @@ is_valid_color()
 
 device_getprop()
 {
-  adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '\r'
+  adb -s "${1}" shell "getprop '${2}'" | LC_ALL=C tr -d '\r' || return 1
+  return 0
 }
 
 getprop_output_parse()
 {
-  local _val
+  local __fn_val
 
-  if _val="$(grep -m 1 -e "^\[${2:?}\]\:" -- "${1:?}" | cut -d ':' -f '2-' -s | LC_ALL=C tr -d '\r' | LC_ALL='' grep -m 1 -o -e '^[[:blank:]]\[.*\]$')" && test "${#_val}" -gt 3; then
-    printf '%s\n' "${_val?}" | cut -c "3-$((${#_val} - 1))"
-    return "${?}"
-  fi
-
-  return 1
+  __fn_val="$(grep -m 1 -e '^\['"${2}"'\]:' -- "${1}" | LC_ALL=C cut -d ':' -f '2-' -s | LC_ALL=C tr -d '\r')" || return 1
+  __fn_val="${__fn_val#" ["}"
+  __fn_val="${__fn_val%"]"}"
+  printf '%s\n' "${__fn_val}"
+  return 0
 }
 
 prop_output_parse()
 {
-  grep -m 1 -e "^${2:?}=" -- "${1:?}" | cut -d '=' -f '2-' -s | LC_ALL=C tr -d '\r'
+  grep -m 1 -e "^${2}=" -- "${1}" | LC_ALL=C cut -d '=' -f '2-' -s | LC_ALL=C tr -d '\r' || return 1
+  return 0
 }
 
 auto_getprop()
 {
-  local _val
-
-  if test "${INPUT_TYPE:?}" = 'adb'; then
-    _val="$(device_getprop "${SELECTED_DEVICE:?}" "${@}")" || return 1
-  elif test "${PROP_TYPE:?}" = '1'; then
-    _val="$(getprop_output_parse "${INPUT_SELECTION:?}" "${@}")" || return 1
-  else
-    _val="$(prop_output_parse "${INPUT_SELECTION:?}" "${@}")" || return 1
-  fi
-
-  if test -z "${_val?}" || test "${_val:?}" = 'unknown'; then
-    return 2
-  fi
-
-  printf '%s\n' "${_val:?}"
+  case "${PROP_TYPE}" in
+    adb) device_getprop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
+    1) getprop_output_parse "${INPUT_SELECTION?}" "${1}" || return 1 ;;
+    2) prop_output_parse "${INPUT_SELECTION?}" "${1}" || return 1 ;;
+    *) return 2 ;;
+  esac
   return 0
-}
-
-validated_chosen_getprop()
-{
-  local _value
-  if ! _value="$(auto_getprop "${1:?}")" || ! is_valid_value "${_value?}" "${2:-}"; then
-    log_non_fatal "Invalid value for ${1:-}"
-    return 1
-  fi
-
-  printf '%s\n' "${_value?}"
 }
 
 is_boot_completed()
@@ -747,7 +728,20 @@ ensure_boot_completed()
       return 1
     }
   fi
+  return 0
+}
 
+validated_chosen_getprop()
+{
+  local __fn_prop_val
+
+  __fn_prop_val="$(auto_getprop "${1}" || :)"
+
+  is_valid_value "${__fn_prop_val}" "${2-}" || {
+    log_non_fatal "The value of property '${1?}' is invalid"
+    return 1
+  }
+  printf '%s\n' "${__fn_prop_val}"
   return 0
 }
 
@@ -1639,13 +1633,14 @@ main()
 {
   local status=0 found=0 first=1 _device_id=''
 
-  PROP_TYPE=''
   if test -z "${1-}" || test "${1}" = 'adb'; then
     INPUT_TYPE='adb'
     INPUT_SELECTION=''
+    PROP_TYPE='adb'
   else
     INPUT_TYPE='file'
     INPUT_SELECTION="${1:?}"
+    PROP_TYPE=''
   fi
 
   if test "${INPUT_TYPE:?}" = 'adb'; then
@@ -1667,7 +1662,7 @@ main()
       if detect_status_and_wait_connection "${_device_id?}"; then
         found=1
 
-        if test "${OPEN_DEVICE_STATUS_INFO_ONLY:?}" = 'true'; then
+        if test "${OPEN_DEVICE_STATUS_INFO_ONLY?}" = 'true'; then
           open_device_status_info "${_device_id?}" || status="${?}"
           continue
         fi
@@ -1689,18 +1684,18 @@ main()
     }
 
     log_out_blank
-    log_out_selected_device "${INPUT_SELECTION:?}"
+    log_out_selected_device "${INPUT_SELECTION?}"
 
-    if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_SELECTION:?}"; then
+    if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_SELECTION?}"; then
       PROP_TYPE='1'
       log_warn "Operating in restricted 'getprop' mode. Extracted information will be incomplete!!!"
 
-      extract_all_info "${INPUT_SELECTION:?}" || status="${?}"
-    elif grep -m 1 -q -e '^.*\..*=' -- "${INPUT_SELECTION:?}"; then
+      extract_all_info "${INPUT_SELECTION}" || status="${?}"
+    elif grep -m 1 -q -e '^.*\..*=' -- "${INPUT_SELECTION?}"; then
       PROP_TYPE='2'
       log_warn "Operating in restricted 'build.prop' mode. Extracted information will be incomplete!!!"
 
-      extract_all_info "${INPUT_SELECTION:?}" || status="${?}"
+      extract_all_info "${INPUT_SELECTION}" || status="${?}"
     else
       log_err "Unknown input file => '${INPUT_SELECTION?}'"
       status=13

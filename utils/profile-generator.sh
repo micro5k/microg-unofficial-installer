@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.19'
+readonly SCRIPT_VERSION='1.9.20'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -580,57 +580,36 @@ is_valid_serial()
 
 device_getprop()
 {
-  adb -s "${1:?}" shell "getprop '${2:?}'" | LC_ALL=C tr -d '\r'
+  adb -s "${1}" shell "getprop '${2}'" | LC_ALL=C tr -d '\r' || return 1
+  return 0
 }
 
 getprop_output_parse()
 {
-  local _value
+  local __fn_val
 
-  # Return success even if the property isn't found, it will be checked later
-  _value="$(grep -m 1 -e "^\[${2:?}\]\:" "${1:?}" | LC_ALL=C tr -d '[:cntrl:]' | cut -d ':' -f '2-' -s | grep -m 1 -o -e '^[[:blank:]]\[.*\]$')" || return 0
-  if test "${#_value}" -gt 3; then
-    printf '%s' "${_value?}" | cut -c "3-$((${#_value} - 1))"
-  fi
+  __fn_val="$(grep -m 1 -e '^\['"${2}"'\]:' -- "${1}" | LC_ALL=C cut -d ':' -f '2-' -s | LC_ALL=C tr -d '\r')" || return 1
+  __fn_val="${__fn_val#" ["}"
+  __fn_val="${__fn_val%"]"}"
+  printf '%s\n' "${__fn_val}"
+  return 0
 }
 
 prop_output_parse()
 {
-  local _value
-
-  # Return success even if the property isn't found, it will be checked later
-  grep -m 1 -e "^${2:?}=" "${1:?}" | LC_ALL=C tr -d '[:cntrl:]' | cut -d '=' -f '2-' -s || return 0
+  grep -m 1 -e "^${2}=" -- "${1}" | LC_ALL=C cut -d '=' -f '2-' -s | LC_ALL=C tr -d '\r' || return 1
+  return 0
 }
 
 auto_getprop()
 {
-  local _val
-
-  if test "${INPUT_TYPE:?}" = 'adb'; then
-    _val="$(device_getprop "${SELECTED_DEVICE:?}" "${@}")" || return 1
-  elif test "${PROP_TYPE:?}" = '1'; then
-    _val="$(getprop_output_parse "${INPUT_TYPE:?}" "${@}")" || return 1
-  else
-    _val="$(prop_output_parse "${INPUT_TYPE:?}" "${@}")" || return 1
-  fi
-
-  # ${2:-0} => 2 (Allow empty value)
-  if test -z "${_val?}" && test "${2:-0}" != '2'; then return 2; fi
-  if test "${_val?}" = 'unknown'; then return 2; fi
-
-  printf '%s\n' "${_val?}"
+  case "${PROP_TYPE}" in
+    adb) device_getprop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
+    1) getprop_output_parse "${INPUT_TYPE?}" "${1}" || return 1 ;;
+    2) prop_output_parse "${INPUT_TYPE?}" "${1}" || return 1 ;;
+    *) return 2 ;;
+  esac
   return 0
-}
-
-validated_chosen_getprop()
-{
-  local _value
-  if ! _value="$(auto_getprop "${1:?}" "${2-}")" || ! is_valid_value "${_value?}" "${2-}"; then
-    log_err "Invalid value for ${1:-}"
-    return 1
-  fi
-
-  printf '%s\n' "${_value?}"
 }
 
 is_boot_completed()
@@ -652,16 +631,29 @@ ensure_boot_completed()
       return 1
     }
   fi
-
   return 0
 }
 
-get_and_check_prop()
+validated_chosen_getprop()
 {
-  local _val
+  local __fn_prop_val
 
-  if _val="$(auto_getprop "${@}")" && is_valid_value "${_val?}"; then
-    printf '%s' "${_val:?}"
+  __fn_prop_val="$(auto_getprop "${1}" || :)"
+
+  is_valid_value "${__fn_prop_val}" "${2-}" || {
+    log_non_fatal "The value of property '${1?}' is invalid"
+    return 1
+  }
+  printf '%s\n' "${__fn_prop_val}"
+  return 0
+}
+
+get_and_check_prop_silent()
+{
+  local __fn_prop_val
+
+  if __fn_prop_val="$(auto_getprop "${1}")" && is_valid_value "${__fn_prop_val}"; then
+    printf '%s\n' "${__fn_prop_val}"
     return 0
   fi
   return 1
@@ -697,21 +689,21 @@ generate_rom_info()
 
   _mod_version="$(get_mod_version)"
 
-  if ROM_VERSION="$(get_and_check_prop 'ro.rr.version')"; then
+  if ROM_VERSION="$(get_and_check_prop_silent 'ro.rr.version')"; then
     if test -n "${_mod_version?}"; then
       ROM_VERSION="${_mod_version?}"
     else
       ROM_VERSION="$(printf '%s\n' "${ROM_VERSION?}" | cut -d 'v' -f '2-')"
     fi
     ROM_INFO="Resurrection Remix v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
-  elif ROM_VERSION="$(get_and_check_prop 'ro.du.version')"; then
+  elif ROM_VERSION="$(get_and_check_prop_silent 'ro.du.version')"; then
     if test -n "${_mod_version?}"; then
       ROM_VERSION="${_mod_version?}"
     else
       ROM_VERSION="$(printf '%s\n' "${ROM_VERSION?}" | cut -d 'v' -f '2-')"
     fi
     ROM_INFO="Dirty Unicorns v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
-  elif ROM_VERSION="$(get_and_check_prop 'ro.lineage.build.version')" || ROM_VERSION="$(get_and_check_prop 'ro.cm.build.version')" || ROM_VERSION="$(get_and_check_prop 'ro.lineage.version')" || ROM_VERSION="$(get_and_check_prop 'ro.cm.version')"; then
+  elif ROM_VERSION="$(get_and_check_prop_silent 'ro.lineage.build.version')" || ROM_VERSION="$(get_and_check_prop_silent 'ro.cm.build.version')" || ROM_VERSION="$(get_and_check_prop_silent 'ro.lineage.version')" || ROM_VERSION="$(get_and_check_prop_silent 'ro.cm.version')"; then
     if _temp_value="$(auto_getprop 'ro.elegal.url')" && test -n "${_temp_value?}"; then
       ROM_INFO="/e/ OS v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
     elif compare_nocase "$(auto_getprop 'ro.lineage.releasetype' || true)" 'microG'; then
@@ -722,7 +714,7 @@ generate_rom_info()
   elif test -n "${_mod_version?}"; then
     ROM_VERSION="${_mod_version?}"
     ROM_INFO="Android MOD v${ROM_VERSION?} - ${BUILD_VERSION_RELEASE?}"
-  elif ROM_VERSION="$(get_and_check_prop 'ro.miui.ui.version.name')"; then # Xiaomi
+  elif ROM_VERSION="$(get_and_check_prop_silent 'ro.miui.ui.version.name')"; then # Xiaomi
     if _temp_value="$(auto_getprop 'ro.build.version.incremental')" && _temp_value="$(printf '%s\n' "${_temp_value?}" | grep -m 1 -o -e 'V[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*' | cut -d 'V' -f '2-' -s)" && test -n "${_temp_value?}"; then
       _temp_value="${_temp_value%.}"
       ROM_VERSION="${_temp_value:?}"
@@ -730,15 +722,15 @@ generate_rom_info()
       ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d 'V' -f '2-')"
     fi
     ROM_INFO="MIUI v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
-  elif ROM_VERSION="$(get_and_check_prop 'ro.build.version.emui')"; then # Huawei
+  elif ROM_VERSION="$(get_and_check_prop_silent 'ro.build.version.emui')"; then # Huawei
     ROM_VERSION="$(printf '%s\n' "${ROM_VERSION:?}" | cut -d '_' -f '2-')"
     ROM_INFO="EMUI v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
 
-    if _real_build_time="$(get_and_check_prop 'ro.huawei.build.date.utc')"; then
+    if _real_build_time="$(get_and_check_prop_silent 'ro.huawei.build.date.utc')"; then
       TEXT_BUILD_TIME_HUMAN="${TEXT_BUILD_TIME_HUMAN?} - Real: $(convert_time_to_human_readable_form "${_real_build_time:?}")"
     fi
 
-    if REAL_SECURITY_PATCH="$(get_and_check_prop 'ro.huawei.build.version.security_patch')"; then
+    if REAL_SECURITY_PATCH="$(get_and_check_prop_silent 'ro.huawei.build.version.security_patch')"; then
       REAL_SECURITY_PATCH=" <!-- Real security patch: ${REAL_SECURITY_PATCH:-} -->"
     fi
   else
@@ -939,6 +931,7 @@ anonymize_code()
 
 generate_profile()
 {
+  SELECTED_DEVICE="${1:?}"
   ensure_boot_completed || return 2
 
   # Infos:
@@ -1079,11 +1072,12 @@ main()
 {
   local status=0 found=0 first=1 _device_id=''
 
-  PROP_TYPE=''
   if test -z "${1-}" || test "${1}" = 'adb'; then
     INPUT_TYPE='adb'
+    PROP_TYPE='adb'
   else
     INPUT_TYPE="${1:?}"
+    PROP_TYPE=''
   fi
 
   if test "${INPUT_TYPE:?}" = 'adb'; then
@@ -1105,16 +1099,14 @@ main()
       if detect_status_and_wait_connection "${_device_id?}"; then
         found=1
 
-        SELECTED_DEVICE="${_device_id?}"
+        log_status 'Generating profile...'
         if test "${DEVICE_STATE?}" != 'device'; then
           # Currently is only for: recovery
           log_err "Current device state not supported: ${DEVICE_STATE?}"
           status=1
           continue
         fi
-
-        log_status 'Generating profile...'
-        generate_profile || status="${?}"
+        generate_profile "${_device_id?}" || status="${?}"
       else
         log_warn 'Device is offline/unauthorized, skipped'
       fi
@@ -1125,22 +1117,22 @@ main()
       return 11
     }
   else
-    test -e "${INPUT_TYPE:?}" || {
-      log_err "Input file doesn't exist => '${INPUT_TYPE:-}'"
+    test -f "${INPUT_TYPE:?}" || {
+      log_err "Input file doesn't exist => '${INPUT_TYPE?}'"
       return 1
     }
 
     log_blank
     log_status 'Generating profile...'
 
-    if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
+    if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE?}"; then
       PROP_TYPE='1'
     else
       PROP_TYPE='2'
-      log_non_fatal "Operating in restricted 'build.prop' mode. Profiles generated in this mode will be incomplete!!!"
+      log_warn "Operating in restricted 'build.prop' mode. Profiles generated in this mode will be incomplete!!!"
     fi
 
-    generate_profile || status="${?}"
+    generate_profile "${INPUT_TYPE?}" || status="${?}"
   fi
 
   return "${status:?}"
