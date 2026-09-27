@@ -166,6 +166,12 @@ device_not_ready_status_msg_initialize()
   static_device_not_ready_displayed='false'
 }
 
+device_not_ready_status_msg_terminate()
+{
+  if test "${static_device_not_ready_displayed:?}" != 'false'; then printf 1>&2 '\n'; fi
+  static_device_not_ready_displayed=''
+}
+
 show_device_not_ready_status_msg()
 {
   if test "${static_device_not_ready_displayed:?}" = 'false'; then
@@ -174,12 +180,6 @@ show_device_not_ready_status_msg()
   else
     printf 1>&2 '\033[1;32m%s\033[0m' '.'
   fi
-}
-
-device_not_ready_status_msg_terminate()
-{
-  if test "${static_device_not_ready_displayed:?}" != 'false'; then printf 1>&2 '\n'; fi
-  static_device_not_ready_displayed=''
 }
 
 show_device_waiting_status_msg()
@@ -302,41 +302,6 @@ resolve_data_dir()
 }
 #endregion
 
-csv_encode_field()
-{
-  printf '%s\n' "${1}" | sed -e 's/"/""/g; s/^/"/; s/$/"/'
-  return "${?}"
-}
-
-csv_decode_field()
-{
-  local __fn_field_val="${1}"
-
-  case "${__fn_field_val?}" in
-    '"'*'"')
-      __fn_field_val="${__fn_field_val#\"}"
-      __fn_field_val="${__fn_field_val%\"}"
-      ;;
-    *) ;;
-  esac
-
-  printf '%s\n' "${__fn_field_val}" | sed -e 's/""/"/g'
-  return "${?}"
-}
-
-escape_grep_literal()
-{
-  # NOTE: Backslashes and newlines are already blocked before this function
-  sed -e 's/[[$.*^]/\\&/g'
-  return "${?}"
-}
-
-xml_encode_field()
-{
-  sed -e 's|&|\&amp;|g; s|<|\&lt;|g; s|>|\&gt;|g; s|"|\&quot;|g'
-  return "${?}"
-}
-
 verify_adb()
 {
   local __fn_pathsep=':'
@@ -378,8 +343,7 @@ verify_adb_mode_deps()
 start_adb_server()
 {
   if test "${INPUT_TYPE:?}" != 'adb'; then return 0; fi
-
-  adb 2> /dev/null 'start-server'
+  adb 2> /dev/null 'start-server' || return "${?}"
 }
 
 parse_device_status()
@@ -498,6 +462,41 @@ wait_connection()
   else
     adb -s "${1:?}" 'wait-for-device'
   fi
+}
+
+csv_encode_field()
+{
+  printf '%s\n' "${1}" | sed -e 's/"/""/g; s/^/"/; s/$/"/'
+  return "${?}"
+}
+
+csv_decode_field()
+{
+  local __fn_field_val="${1}"
+
+  case "${__fn_field_val?}" in
+    '"'*'"')
+      __fn_field_val="${__fn_field_val#\"}"
+      __fn_field_val="${__fn_field_val%\"}"
+      ;;
+    *) ;;
+  esac
+
+  printf '%s\n' "${__fn_field_val}" | sed -e 's/""/"/g'
+  return "${?}"
+}
+
+escape_grep_literal()
+{
+  # NOTE: Backslashes and newlines are already blocked before this function
+  sed -e 's/[[$.*^]/\\&/g'
+  return "${?}"
+}
+
+xml_encode_field()
+{
+  sed -e 's|&|\&amp;|g; s|<|\&lt;|g; s|>|\&gt;|g; s|"|\&quot;|g'
+  return "${?}"
 }
 
 is_all_zeros()

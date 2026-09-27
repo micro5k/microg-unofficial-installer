@@ -380,8 +380,7 @@ verify_adb_mode_deps()
 start_adb_server()
 {
   if test "${INPUT_TYPE:?}" != 'adb'; then return 0; fi
-
-  adb 2> /dev/null 'start-server'
+  adb 2> /dev/null 'start-server' || return "${?}"
 }
 
 parse_device_status()
