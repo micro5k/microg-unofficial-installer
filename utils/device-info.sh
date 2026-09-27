@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.16'
+readonly SCRIPT_VERSION='2.9.17'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -223,18 +223,18 @@ log_err()
   return 0
 }
 
-device_not_ready_status_msg_initialize()
+dev_status_init()
 {
   DEV_WAIT_SEEN=0
 }
 
-device_not_ready_status_msg_terminate()
+dev_status_done()
 {
   test "${DEV_WAIT_SEEN?}" = 0 || printf 1>&2 '\n'
   unset DEV_WAIT_SEEN
 }
 
-show_device_not_ready_status_msg()
+dev_status_not_ready()
 {
   if test "${DEV_WAIT_SEEN?}" = 0; then
     DEV_WAIT_SEEN=1
@@ -244,10 +244,10 @@ show_device_not_ready_status_msg()
   fi
 }
 
-show_device_waiting_status_msg()
+dev_status_waiting()
 {
   if test "${DEV_WAIT_SEEN?}" = 0; then
-    printf 1>&2 '%b%s%b' "${CLR_GREEN}" 'Waiting for the device...' "${CLR_RESET}"
+    printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" 'Waiting for the device...' "${CLR_RESET}"
   else
     printf 1>&2 '%b%s%b' "${CLR_GREEN_PLAIN}" '.' "${CLR_RESET}"
   fi
@@ -426,7 +426,7 @@ detect_status_and_wait_connection()
   local _status _reconnected
 
   DEVICE_STATE=''
-  device_not_ready_status_msg_initialize
+  dev_status_init
 
   _reconnected='false'
   for _ in 1 2 3 4 5 6 7 8 9 10; do
@@ -434,10 +434,10 @@ detect_status_and_wait_connection()
     parse_device_status "${_status?}"
     case "${?}" in
       1)
-        show_device_not_ready_status_msg # Wait 5 seconds maximum for transitory states (10 attempts with 0.5 sleep)
+        dev_status_not_ready # Wait 5 seconds maximum for transitory states (10 attempts with 0.5 sleep)
         ;;
       2)
-        show_device_not_ready_status_msg
+        dev_status_not_ready
         if test "${_reconnected:?}" = 'false'; then
           _reconnected='true'
           adb 1> /dev/null 2>&1 -s "${1?}" reconnect offline && sleep 3 # If the device is unauthorized, reconnect to request authorization and then wait
@@ -445,7 +445,7 @@ detect_status_and_wait_connection()
         ;;
       3)
         if test "${2:-false}" = 'false'; then
-          show_device_not_ready_status_msg # Note: The device may disappear for a few seconds after "adb root", "adb unroot" or "adb reconnect"
+          dev_status_not_ready # Note: The device may disappear for a few seconds after "adb root", "adb unroot" or "adb reconnect"
         else
           break
         fi
@@ -458,7 +458,7 @@ detect_status_and_wait_connection()
 
   parse_device_status "${_status?}"
   if test "${?}" -ne 0; then
-    device_not_ready_status_msg_terminate
+    dev_status_done
     return 1
   fi
 
@@ -469,9 +469,8 @@ detect_status_and_wait_connection()
     esac
   fi
 
-  show_device_waiting_status_msg
-
-  device_not_ready_status_msg_terminate
+  dev_status_waiting
+  dev_status_done
 
   adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE?}"
   return "${?}"
@@ -719,16 +718,13 @@ validated_chosen_getprop()
 
 is_boot_completed()
 {
-  if test "$(auto_getprop 2> /dev/null 'sys.boot_completed' || true)" = '1'; then
-    return 0
-  fi
-
+  if test "$(auto_getprop 2> /dev/null 'sys.boot_completed' || :)" = '1'; then return 0; fi
   return 1
 }
 
 ensure_boot_completed()
 {
-  if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_STATE?}" = 'device'; then
+  if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_STATE:?}" = 'device'; then
     is_boot_completed || {
       log_warn 'Device has not finished booting yet, skipped'
       return 1
@@ -1455,7 +1451,7 @@ get_operator_alpha_multi_slot()
 extract_all_info()
 {
   SELECTED_DEVICE="${1:?}"
-  if ! ensure_boot_completed; then return 2; fi
+  ensure_boot_completed || return 2
 
   if test "${PRIVACY_MODE?}" = 'true'; then
     log_warn 'PRIVACY MODE is enabled, all sensitive data will be anonymized!'
@@ -1631,10 +1627,10 @@ main()
 {
   local status=0 found=0 first=1 _device_id=''
 
+  PROP_TYPE=''
   if test -z "${1-}" || test "${1}" = 'adb'; then
     INPUT_TYPE='adb'
     INPUT_SELECTION=''
-    PROP_TYPE=''
   else
     INPUT_TYPE='file'
     INPUT_SELECTION="${1:?}"
@@ -1685,12 +1681,12 @@ main()
 
     if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_SELECTION:?}"; then
       PROP_TYPE='1'
-      log_warn 'Operating in getprop mode, the extracted info will be severely limited!!!'
+      log_warn "Operating in restricted 'getprop' mode. Extracted information will be incomplete!!!"
 
       extract_all_info "${INPUT_SELECTION:?}" || status="${?}"
     elif grep -m 1 -q -e '^.*\..*=' -- "${INPUT_SELECTION:?}"; then
       PROP_TYPE='2'
-      log_warn 'Operating in build.prop mode, the extracted info will be severely limited!!!'
+      log_warn "Operating in restricted 'build.prop' mode. Extracted information will be incomplete!!!"
 
       extract_all_info "${INPUT_SELECTION:?}" || status="${?}"
     else

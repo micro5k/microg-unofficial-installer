@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.16'
+readonly SCRIPT_VERSION='1.9.17'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -157,24 +157,30 @@ log_warn()
   return 0
 }
 
+log_non_fatal()
+{
+  printf 1>&2 '%b%*s%s%b\n' "${CLR_MAGENTA}" "${LOG_LEVEL}" '' "NON-FATAL ERROR: ${1}" "${CLR_RESET}"
+  return 0
+}
+
 log_err()
 {
   printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
   return 0
 }
 
-device_not_ready_status_msg_initialize()
+dev_status_init()
 {
   DEV_WAIT_SEEN=0
 }
 
-device_not_ready_status_msg_terminate()
+dev_status_done()
 {
   test "${DEV_WAIT_SEEN?}" = 0 || printf 1>&2 '\n'
   unset DEV_WAIT_SEEN
 }
 
-show_device_not_ready_status_msg()
+dev_status_not_ready()
 {
   if test "${DEV_WAIT_SEEN?}" = 0; then
     DEV_WAIT_SEEN=1
@@ -184,10 +190,10 @@ show_device_not_ready_status_msg()
   fi
 }
 
-show_device_waiting_status_msg()
+dev_status_waiting()
 {
   if test "${DEV_WAIT_SEEN?}" = 0; then
-    printf 1>&2 '%b%s%b' "${CLR_GREEN}" 'Waiting for the device...' "${CLR_RESET}"
+    printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" 'Waiting for the device...' "${CLR_RESET}"
   else
     printf 1>&2 '%b%s%b' "${CLR_GREEN_PLAIN}" '.' "${CLR_RESET}"
   fi
@@ -389,7 +395,7 @@ detect_status_and_wait_connection()
   local _status _reconnected
 
   DEVICE_STATE=''
-  device_not_ready_status_msg_initialize
+  dev_status_init
 
   _reconnected='false'
   for _ in 1 2 3 4 5 6 7 8 9 10; do
@@ -397,10 +403,10 @@ detect_status_and_wait_connection()
     parse_device_status "${_status?}"
     case "${?}" in
       1)
-        show_device_not_ready_status_msg # Wait 5 seconds maximum for transitory states (10 attempts with 0.5 sleep)
+        dev_status_not_ready # Wait 5 seconds maximum for transitory states (10 attempts with 0.5 sleep)
         ;;
       2)
-        show_device_not_ready_status_msg
+        dev_status_not_ready
         if test "${_reconnected:?}" = 'false'; then
           _reconnected='true'
           adb 1> /dev/null 2>&1 -s "${1?}" reconnect offline && sleep 3 # If the device is unauthorized, reconnect to request authorization and then wait
@@ -408,7 +414,7 @@ detect_status_and_wait_connection()
         ;;
       3)
         if test "${2:-false}" = 'false'; then
-          show_device_not_ready_status_msg # Note: The device may disappear for a few seconds after "adb root", "adb unroot" or "adb reconnect"
+          dev_status_not_ready # Note: The device may disappear for a few seconds after "adb root", "adb unroot" or "adb reconnect"
         else
           break
         fi
@@ -421,7 +427,7 @@ detect_status_and_wait_connection()
 
   parse_device_status "${_status?}"
   if test "${?}" -ne 0; then
-    device_not_ready_status_msg_terminate
+    dev_status_done
     return 1
   fi
 
@@ -432,40 +438,11 @@ detect_status_and_wait_connection()
     esac
   fi
 
-  show_device_waiting_status_msg
-
-  device_not_ready_status_msg_terminate
+  dev_status_waiting
+  dev_status_done
 
   adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE?}"
   return "${?}"
-}
-if false; then detect_status_and_wait_connection; fi # ToDO: use it
-
-is_recovery()
-{
-  if test "$(adb 2> /dev/null -s "${1:?}" 'get-state' || true)" = 'recovery'; then
-    return 0
-  fi
-  return 1
-}
-
-verify_device_status()
-{
-  if is_recovery "${1:?}"; then
-    DEVICE_IN_RECOVERY='true'
-  else
-    DEVICE_IN_RECOVERY='false'
-  fi
-}
-
-wait_connection()
-{
-  log_status 'Waiting for the device...'
-  if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
-    adb -s "${1:?}" 'wait-for-recovery'
-  else
-    adb -s "${1:?}" 'wait-for-device'
-  fi
 }
 
 csv_encode_field()
@@ -644,20 +621,25 @@ validated_chosen_getprop()
 
 is_boot_completed()
 {
-  if test "${DEVICE_IN_RECOVERY:?}" = 'true' || test "$(auto_getprop 'sys.boot_completed' || true)" = '1'; then
-    return 0
-  fi
-
+  if test "$(auto_getprop 2> /dev/null 'sys.boot_completed' || :)" = 1; then return 0; fi
   return 1
 }
 
-check_boot_completed()
+ensure_boot_completed()
 {
-  is_boot_completed || {
-    log_err 'The device has not finished booting yet!!!'
-    pause_if_needed
-    exit 1
-  }
+  if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_STATE:?}" = 'device'; then
+    is_boot_completed || {
+      log_warn 'Device has not finished booting yet, skipped'
+      return 1
+    }
+  elif test "${INPUT_TYPE:?}" != 'adb' && test "${PROP_TYPE:?}" = 1; then
+    is_boot_completed || {
+      log_err 'Getprop comes from a device that has not finished booting yet, skipped'
+      return 1
+    }
+  fi
+
+  return 0
 }
 
 get_and_check_prop()
@@ -943,6 +925,8 @@ anonymize_code()
 
 generate_profile()
 {
+  ensure_boot_completed || return 2
+
   # Infos:
   # - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
   # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/android/os/Build.java
@@ -1081,6 +1065,7 @@ main()
 {
   local status=0 found=0 first=1 _device_id=''
 
+  PROP_TYPE=''
   if test -z "${1-}" || test "${1}" = 'adb'; then
     INPUT_TYPE='adb'
   else
@@ -1103,25 +1088,22 @@ main()
       fi
       #log_selected_device "${_device_id?}"
 
-      #if detect_status_and_wait_connection "${_device_id?}" 'true'; then
-      found=1
+      if detect_status_and_wait_connection "${_device_id?}" 'true'; then
+        found=1
 
-      SELECTED_DEVICE="${_device_id?}"
+        SELECTED_DEVICE="${_device_id?}"
+        if test "${DEVICE_STATE?}" != 'device'; then
+          # Currently is only for: recovery
+          log_err "Current device state not supported: ${DEVICE_STATE?}"
+          status=1
+          continue
+        fi
 
-      verify_device_status "${SELECTED_DEVICE:?}"
-      if test "${DEVICE_IN_RECOVERY:?}" = 'true'; then
-        log_err "Recovery isn't currently supported"
-        status=1
-        continue
+        log_status 'Generating profile...'
+        generate_profile || status="${?}"
+      else
+        log_warn 'Device is offline/unauthorized, skipped'
       fi
-      wait_connection "${SELECTED_DEVICE:?}"
-      log_status 'Generating profile...'
-      check_boot_completed
-
-      generate_profile || status="${?}"
-      #else
-      #  log_warn 'Device is offline/unauthorized, skipped'
-      #fi
     done
 
     test "${found:?}" = 1 || {
@@ -1139,11 +1121,9 @@ main()
 
     if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE:?}"; then
       PROP_TYPE='1'
-      DEVICE_IN_RECOVERY='false'
-      check_boot_completed
     else
       PROP_TYPE='2'
-      log_err 'Profiles generated in this way will be incomplete!!!'
+      log_non_fatal "Operating in restricted 'build.prop' mode. Profiles generated in this mode will be incomplete!!!"
     fi
 
     generate_profile || status="${?}"
