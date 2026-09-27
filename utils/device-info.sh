@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.18'
+readonly SCRIPT_VERSION='2.9.19'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -226,12 +226,14 @@ log_err()
 dev_status_init()
 {
   DEV_WAIT_SEEN=0
+  return 0
 }
 
 dev_status_done()
 {
   test "${DEV_WAIT_SEEN?}" = 0 || printf 1>&2 '\n'
   unset DEV_WAIT_SEEN
+  return 0
 }
 
 dev_status_not_ready()
@@ -242,6 +244,7 @@ dev_status_not_ready()
   else
     printf 1>&2 '%b%s%b' "${CLR_GREEN}" '.' "${CLR_RESET}"
   fi
+  return 0
 }
 
 dev_status_waiting()
@@ -251,6 +254,7 @@ dev_status_waiting()
   else
     printf 1>&2 '%b%s%b' "${CLR_GREEN_PLAIN}" '.' "${CLR_RESET}"
   fi
+  return 0
 }
 
 set_title()
@@ -424,24 +428,26 @@ detect_status_and_wait_connection()
 {
   local __fn_dev_state='closed' _reconnected='false'
 
-  if test "${2:-false}" != 'false'; then DEVICE_STATE='unknown'; fi
+  if test "${2:-1}" = 1; then DEVICE_STATE='unknown'; fi
   dev_status_init
 
   for _ in 1 2 3 4 5 6 7 8 9 10; do
     __fn_dev_state="$(LC_ALL=C adb 2>&1 -s "${1?}" 'get-state' | LC_ALL=C tr -d '\r' || :)"
     parse_device_status "${__fn_dev_state?}"
     case "$?" in
-      1) dev_status_not_ready ;; # Wait 5 seconds maximum for transitory states (10 attempts with 0.5 sleep)
+      1) dev_status_not_ready ;; # Wait up to 5 seconds for transient states (10 attempts * 0.5 sec sleep)
       2)
         dev_status_not_ready
         if test "${_reconnected:?}" = 'false'; then
           _reconnected='true'
-          adb 1> /dev/null 2>&1 -s "${1?}" reconnect offline && sleep 3 # If the device is unauthorized, reconnect to request authorization and then wait
+          # Force reconnect if the device is unauthorized, then wait 5 sec for the authentication prompt
+          adb 1> /dev/null 2>&1 -s "${1?}" reconnect offline && sleep 5 || :
         fi
         ;;
       3)
-        if test "${2:-false}" = 'false'; then
-          dev_status_not_ready # Note: The device may disappear for a few seconds after "adb root", "adb unroot" or "adb reconnect"
+        if test "${2:-1}" != 1; then
+          # NOTE: Device might temporarily disappear for a few seconds after commands like 'adb root', 'adb unroot', or 'adb reconnect'
+          dev_status_not_ready
         else
           break
         fi
@@ -449,21 +455,29 @@ detect_status_and_wait_connection()
       *) break ;;
     esac
 
-    sleep 2> /dev/null '0.5' || sleep 1 || return 3
+    sleep 2> /dev/null '0.5' || sleep 1
   done
 
   # Previous loop terminates with success or critical error (recoverable errors already handled at this point)
   parse_device_status "${__fn_dev_state?}"
   if test "$?" -ne 0; then
     dev_status_done
-    return 1
+    return 10
   fi
 
-  if test "${2:-false}" != 'false'; then
+  if test "${2:-1}" = 1; then
     case "${__fn_dev_state?}" in
       'device' | 'recovery' | 'sideload' | 'rescue' | 'bootloader') DEVICE_STATE="${__fn_dev_state?}" ;;
-      *) return 4 ;;
+      *)
+        dev_status_done
+        log_err "Unexpected device state: '${__fn_dev_state?}'"
+        return 11
+        ;;
     esac
+  elif test "${__fn_dev_state?}" != "${DEVICE_STATE:?}"; then
+    dev_status_done
+    log_err "Device state mismatch: expected '${DEVICE_STATE?}', got '${__fn_dev_state?}'"
+    return 12
   fi
 
   dev_status_waiting
@@ -487,7 +501,7 @@ adb_unfroze()
 
   log_non_fatal 'adb was frozen, reconnecting...'
   adb 1> /dev/null 2>&1 -s "${1:?}" reconnect # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
-  detect_status_and_wait_connection "${1:?}"
+  detect_status_and_wait_connection "${1:?}" 0
 }
 
 adb_root()
@@ -501,7 +515,7 @@ adb_root()
     return 0
   fi
 
-  detect_status_and_wait_connection "${1:?}"
+  detect_status_and_wait_connection "${1:?}" 0
 
   # Dummy command to check if adb is frozen
   timeout -- 3 adb -s "${1:?}" shell ':'
@@ -1648,7 +1662,7 @@ main()
       fi
       log_out_selected_device "${_device_id?}"
 
-      if detect_status_and_wait_connection "${_device_id?}" 'true'; then
+      if detect_status_and_wait_connection "${_device_id?}"; then
         found=1
 
         if test "${OPEN_DEVICE_STATUS_INFO_ONLY:?}" = 'true'; then
