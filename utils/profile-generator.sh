@@ -88,6 +88,7 @@ color_init()
 {
   CLR_RESET=''
   CLR_RED=''
+  CLR_GREEN_PLAIN=''
   CLR_GREEN=''
   CLR_YELLOW_PLAIN=''
   CLR_YELLOW=''
@@ -100,8 +101,9 @@ color_init()
   if test -z "${NO_COLOR-}" && test -t 1 && test -t 2; then
     CLR_RESET='\033[0m'
     CLR_RED='\033[1;31m'
+    CLR_GREEN_PLAIN='\033[32m'
     CLR_GREEN='\033[1;32m'
-    CLR_YELLOW_PLAIN='\033[0;33m'
+    CLR_YELLOW_PLAIN='\033[33m'
     CLR_YELLOW='\033[1;33m'
     CLR_YELLOW_BG_BLUE='\033[1;33;44m'
     CLR_MAGENTA='\033[1;35m'
@@ -163,31 +165,31 @@ log_err()
 
 device_not_ready_status_msg_initialize()
 {
-  static_device_not_ready_displayed='false'
+  DEV_WAIT_SEEN=0
 }
 
 device_not_ready_status_msg_terminate()
 {
-  if test "${static_device_not_ready_displayed:?}" != 'false'; then printf 1>&2 '\n'; fi
-  static_device_not_ready_displayed=''
+  test "${DEV_WAIT_SEEN?}" = 0 || printf 1>&2 '\n'
+  unset DEV_WAIT_SEEN
 }
 
 show_device_not_ready_status_msg()
 {
-  if test "${static_device_not_ready_displayed:?}" = 'false'; then
-    static_device_not_ready_displayed='true'
-    printf 1>&2 '\033[1;32m%s\033[0m' 'Device is not ready, waiting.'
+  if test "${DEV_WAIT_SEEN?}" = 0; then
+    DEV_WAIT_SEEN=1
+    printf 1>&2 '%b%s%b' "${CLR_GREEN}" 'Device is not ready, waiting.' "${CLR_RESET}"
   else
-    printf 1>&2 '\033[1;32m%s\033[0m' '.'
+    printf 1>&2 '%b%s%b' "${CLR_GREEN}" '.' "${CLR_RESET}"
   fi
 }
 
 show_device_waiting_status_msg()
 {
-  if test "${static_device_not_ready_displayed:?}" = 'false'; then
-    printf 1>&2 '\033[1;32m%s\033[0m\n' 'Waiting for the device...'
+  if test "${DEV_WAIT_SEEN?}" = 0; then
+    printf 1>&2 '%b%s%b' "${CLR_GREEN}" 'Waiting for the device...' "${CLR_RESET}"
   else
-    printf 1>&2 '\033[32m%s\033[0m' '.'
+    printf 1>&2 '%b%s%b' "${CLR_GREEN_PLAIN}" '.' "${CLR_RESET}"
   fi
 }
 
@@ -363,6 +365,7 @@ parse_device_status()
   esac
   return 0
 }
+
 # Possible status:
 # - device
 # - recovery
@@ -385,21 +388,22 @@ detect_status_and_wait_connection()
 {
   local _status _reconnected
 
+  DEVICE_STATE=''
   device_not_ready_status_msg_initialize
 
   _reconnected='false'
   for _ in 1 2 3 4 5 6 7 8 9 10; do
-    _status="$(LC_ALL=C adb 2>&1 -s "${1:?}" 'get-state' | LC_ALL=C tr -d '\r' || true)"
+    _status="$(LC_ALL=C adb 2>&1 -s "${1?}" 'get-state' | LC_ALL=C tr -d '\r' || true)"
     parse_device_status "${_status?}"
     case "${?}" in
       1)
-        show_device_not_ready_status_msg # Wait 5 seconds maximum for transitory states
+        show_device_not_ready_status_msg # Wait 5 seconds maximum for transitory states (10 attempts with 0.5 sleep)
         ;;
       2)
         show_device_not_ready_status_msg
         if test "${_reconnected:?}" = 'false'; then
           _reconnected='true'
-          adb 1> /dev/null 2>&1 -s "${1:?}" reconnect offline && sleep 3 # If the device is unauthorized, reconnect to request authorization and then wait
+          adb 1> /dev/null 2>&1 -s "${1?}" reconnect offline && sleep 3 # If the device is unauthorized, reconnect to request authorization and then wait
         fi
         ;;
       3)
@@ -412,7 +416,7 @@ detect_status_and_wait_connection()
       *) break ;;
     esac
 
-    sleep 0.5
+    sleep 2> /dev/null '0.5' || sleep 1 || return 2
   done
 
   parse_device_status "${_status?}"
@@ -432,7 +436,7 @@ detect_status_and_wait_connection()
 
   device_not_ready_status_msg_terminate
 
-  adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE:?}"
+  adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE?}"
   return "${?}"
 }
 if false; then detect_status_and_wait_connection; fi # ToDO: use it
