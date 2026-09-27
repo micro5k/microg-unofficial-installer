@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.17'
+readonly SCRIPT_VERSION='2.9.18'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -370,19 +370,18 @@ verify_adb_mode_deps()
     log_err 'adb is required'
     return "${EX_UNAVAILABLE?}"
   }
-
   command -v 'timeout' 1> /dev/null 2>&1 || {
     log_err 'timeout is required'
     return "${EX_UNAVAILABLE?}"
   }
-
   return 0
 }
 
 start_adb_server()
 {
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 0; fi
-  adb 2> /dev/null 'start-server' || return "${?}"
+  test "${INPUT_TYPE?}" = 'adb' || return 0
+  adb 2> /dev/null 'start-server'
+  return "${?}"
 }
 
 parse_device_status()
@@ -423,19 +422,16 @@ parse_device_status()
 
 detect_status_and_wait_connection()
 {
-  local _status _reconnected
+  local __fn_dev_state='closed' _reconnected='false'
 
-  DEVICE_STATE=''
+  if test "${2:-false}" != 'false'; then DEVICE_STATE='unknown'; fi
   dev_status_init
 
-  _reconnected='false'
   for _ in 1 2 3 4 5 6 7 8 9 10; do
-    _status="$(LC_ALL=C adb 2>&1 -s "${1?}" 'get-state' | LC_ALL=C tr -d '\r' || true)"
-    parse_device_status "${_status?}"
-    case "${?}" in
-      1)
-        dev_status_not_ready # Wait 5 seconds maximum for transitory states (10 attempts with 0.5 sleep)
-        ;;
+    __fn_dev_state="$(LC_ALL=C adb 2>&1 -s "${1?}" 'get-state' | LC_ALL=C tr -d '\r' || :)"
+    parse_device_status "${__fn_dev_state?}"
+    case "$?" in
+      1) dev_status_not_ready ;; # Wait 5 seconds maximum for transitory states (10 attempts with 0.5 sleep)
       2)
         dev_status_not_ready
         if test "${_reconnected:?}" = 'false'; then
@@ -453,25 +449,25 @@ detect_status_and_wait_connection()
       *) break ;;
     esac
 
-    sleep 2> /dev/null '0.5' || sleep 1 || return 2
+    sleep 2> /dev/null '0.5' || sleep 1 || return 3
   done
 
-  parse_device_status "${_status?}"
-  if test "${?}" -ne 0; then
+  # Previous loop terminates with success or critical error (recoverable errors already handled at this point)
+  parse_device_status "${__fn_dev_state?}"
+  if test "$?" -ne 0; then
     dev_status_done
     return 1
   fi
 
   if test "${2:-false}" != 'false'; then
-    case "${_status?}" in
-      'recovery' | 'sideload' | 'rescue' | 'bootloader') DEVICE_STATE="${_status:?}" ;;
-      *) DEVICE_STATE='device' ;;
+    case "${__fn_dev_state?}" in
+      'device' | 'recovery' | 'sideload' | 'rescue' | 'bootloader') DEVICE_STATE="${__fn_dev_state?}" ;;
+      *) return 4 ;;
     esac
   fi
 
   dev_status_waiting
   dev_status_done
-
   adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE?}"
   return "${?}"
 }
@@ -718,7 +714,7 @@ validated_chosen_getprop()
 
 is_boot_completed()
 {
-  if test "$(auto_getprop 2> /dev/null 'sys.boot_completed' || :)" = '1'; then return 0; fi
+  if test "$(auto_getprop 2> /dev/null 'sys.boot_completed' || :)" = 1; then return 0; fi
   return 1
 }
 
