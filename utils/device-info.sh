@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.28'
+readonly SCRIPT_VERSION='2.9.29'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -674,9 +674,24 @@ is_valid_color()
   return 0 # Valid
 }
 
-fetch_device_prop()
+# shellcheck disable=SC2329
+get_device_live_prop()
 {
-  RET_VAL="$(adb -s "${1}" shell "getprop '${2}' ''" | LC_ALL=C tr -d '\r')" || return 1
+  RET_VAL="$(adb -s "${1}" shell "getprop '${2}'" | LC_ALL=C tr -d '\r')" || return 1
+  return 0
+}
+
+dump_device_props()
+{
+  adb -s "${1}" shell 'getprop' | LC_ALL=C tr -d '\r'
+}
+
+get_device_cached_prop()
+{
+  : "${ALL_PROPS:=$(dump_device_props "${1}" || log_err 'dump_device_props() failed' || :)}"
+  RET_VAL="$(printf '%s\n' "${ALL_PROPS}" | sed -n -e '/^\['"${2}"'\]:/ { p' -e ':a' -e 'n' -e 'ba' -e '}' | LC_ALL=C cut -d ':' -f '2-' -s)" || return 1
+  RET_VAL="${RET_VAL#" ["}"
+  RET_VAL="${RET_VAL%"]"}"
   return 0
 }
 
@@ -698,7 +713,7 @@ prop_get()
 {
   RET_VAL=''
   case "${PROP_TYPE}" in
-    A) fetch_device_prop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
+    A) get_device_cached_prop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
     G) parse_getprop_dump "${SELECTED_DEVICE}" "${1}" || return 1 ;;
     B) parse_build_prop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
     *) return 2 ;;
@@ -1477,6 +1492,7 @@ get_operator_alpha_multi_slot()
 dump_device_info()
 {
   SELECTED_DEVICE="${1:?}"
+  ALL_PROPS=''
   ensure_boot_completed || return 3
 
   if test "${PRIVACY_MODE?}" = 'true'; then
@@ -1643,7 +1659,7 @@ dump_device_info()
   EFS_SERIALNO="$(device_get_file_content "${SELECTED_DEVICE:?}" '/efs/FactoryApp/serial_no')"
   validate_and_display_info 'Serial number' "${EFS_SERIALNO?}"
 
-  unset RET_VAL
+  unset ALL_PROPS RET_VAL
   return 0
 }
 
