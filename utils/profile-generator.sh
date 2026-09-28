@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.25'
+readonly SCRIPT_VERSION='1.9.26'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -579,29 +579,27 @@ is_valid_serial()
 
 device_getprop()
 {
-  adb -s "${1}" shell "getprop '${2}'" | LC_ALL=C tr -d '\r' || return 1
+  RET_VAL="$(adb -s "${1}" shell "getprop '${2}' ''" | LC_ALL=C tr -d '\r')" || return 1
   return 0
 }
 
 getprop_output_parse()
 {
-  local __fn_val
-
-  __fn_val="$(grep -m 1 -e '^\['"${2}"'\]:' -- "${1}" | LC_ALL=C cut -d ':' -f '2-' -s | LC_ALL=C tr -d '\r')" || return 1
-  __fn_val="${__fn_val#" ["}"
-  __fn_val="${__fn_val%"]"}"
-  printf '%s\n' "${__fn_val}"
+  RET_VAL="$(grep -m 1 -e '^\['"${2}"'\]:' -- "${1}" | LC_ALL=C cut -d ':' -f '2-' -s | LC_ALL=C tr -d '\r')" || return 1
+  RET_VAL="${RET_VAL#" ["}"
+  RET_VAL="${RET_VAL%"]"}"
   return 0
 }
 
 prop_output_parse()
 {
-  grep -m 1 -e "^${2}=" -- "${1}" | LC_ALL=C cut -d '=' -f '2-' -s | LC_ALL=C tr -d '\r' || return 1
+  RET_VAL="$(grep -m 1 -e "^${2}=" -- "${1}" | LC_ALL=C cut -d '=' -f '2-' -s | LC_ALL=C tr -d '\r')" || return 1
   return 0
 }
 
 auto_getprop()
 {
+  RET_VAL=''
   case "${PROP_TYPE}" in
     adb) device_getprop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
     1) getprop_output_parse "${INPUT_TYPE?}" "${1}" || return 1 ;;
@@ -611,9 +609,18 @@ auto_getprop()
   return 0
 }
 
+# Deprecated
+auto_getprop_legacy()
+{
+  auto_getprop "${1}" || return "$?"
+  printf '%s\n' "${RET_VAL}"
+  return 0
+}
+
 is_boot_completed()
 {
-  case "$(auto_getprop 2> /dev/null 'sys.boot_completed' || :)" in
+  auto_getprop 'sys.boot_completed' || return 1
+  case "${RET_VAL}" in
     1) return 0 ;;
     *) ;;
   esac
@@ -638,49 +645,41 @@ ensure_boot_completed()
 
 get_and_check_prop()
 {
-  local __fn_prop_val
-  __fn_prop_val="$(auto_getprop "${1}")" || __fn_prop_val=''
-
-  case "${__fn_prop_val}" in
+  auto_getprop "${1}" || RET_VAL=''
+  case "${RET_VAL}" in
     '' | 'unknown')
       log_non_fatal "The value of property '${1?}' is missing or invalid"
       return 1
       ;;
     *) ;;
   esac
-  printf '%s\n' "${__fn_prop_val}"
+  printf '%s\n' "${RET_VAL}"
   return 0
 }
 
 get_and_check_optional_prop()
 {
-  local __fn_prop_val
-  __fn_prop_val="$(auto_getprop "${1}")" || __fn_prop_val=''
-
-  case "${__fn_prop_val}" in
-    '')
-      return 1
-      ;;
+  auto_getprop "${1}" || return 1
+  case "${RET_VAL}" in
+    '') return 1 ;;
     'unknown')
       log_non_fatal "The value of property '${1?}' is invalid"
       return 1
       ;;
     *) ;;
   esac
-  printf '%s\n' "${__fn_prop_val}"
+  printf '%s\n' "${RET_VAL}"
   return 0
 }
 
 get_and_check_prop_silent()
 {
-  local __fn_prop_val
-
-  __fn_prop_val="$(auto_getprop "${1}")" || return 1
-  case "${__fn_prop_val}" in
+  auto_getprop "${1}" || return 1
+  case "${RET_VAL}" in
     '' | 'unknown') return 1 ;;
     *) ;;
   esac
-  printf '%s\n' "${__fn_prop_val}"
+  printf '%s\n' "${RET_VAL}"
   return 0
 }
 
@@ -731,7 +730,7 @@ generate_rom_info()
   elif ROM_VERSION="$(get_and_check_prop_silent 'ro.lineage.build.version')" || ROM_VERSION="$(get_and_check_prop_silent 'ro.cm.build.version')" || ROM_VERSION="$(get_and_check_prop_silent 'ro.lineage.version')" || ROM_VERSION="$(get_and_check_prop_silent 'ro.cm.version')"; then
     if _temp_value="$(get_and_check_prop_silent 'ro.elegal.url')"; then
       ROM_INFO="/e/ OS v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
-    elif compare_nocase "$(auto_getprop 'ro.lineage.releasetype' || :)" 'microG'; then
+    elif compare_nocase "$(auto_getprop_legacy 'ro.lineage.releasetype' || :)" 'microG'; then
       ROM_INFO="LineageOS for microG v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
     else
       ROM_INFO="LineageOS v${ROM_VERSION:?} - ${BUILD_VERSION_RELEASE?}"
@@ -908,21 +907,21 @@ find_serialno()
 {
   local _val
 
-  if compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo' && _val="$(auto_getprop 'ro.lenovosn2')" && is_valid_serial "${_val?}"; then # Lenovo tablets
+  if compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo' && _val="$(auto_getprop_legacy 'ro.lenovosn2')" && is_valid_serial "${_val?}"; then # Lenovo tablets
     :
-  elif _val="$(auto_getprop 'ril.serialnumber')" && is_valid_serial "${_val?}"; then # Samsung phones / tablets (possibly others)
+  elif _val="$(auto_getprop_legacy 'ril.serialnumber')" && is_valid_serial "${_val?}"; then # Samsung phones / tablets (possibly others)
     :
-  elif _val="$(auto_getprop 'ro.ril.oem.psno')" && is_valid_serial "${_val?}"; then # Xiaomi phones (possibly others)
+  elif _val="$(auto_getprop_legacy 'ro.ril.oem.psno')" && is_valid_serial "${_val?}"; then # Xiaomi phones (possibly others)
     :
-  elif _val="$(auto_getprop 'ro.ril.oem.sno')" && is_valid_serial "${_val?}"; then # Xiaomi phones (possibly others)
+  elif _val="$(auto_getprop_legacy 'ro.ril.oem.sno')" && is_valid_serial "${_val?}"; then # Xiaomi phones (possibly others)
     :
-  elif _val="$(auto_getprop 'ro.serialno')" && is_valid_serial "${_val?}"; then
+  elif _val="$(auto_getprop_legacy 'ro.serialno')" && is_valid_serial "${_val?}"; then
     :
-  elif _val="$(auto_getprop 'sys.serialnumber')" && is_valid_serial "${_val?}"; then
+  elif _val="$(auto_getprop_legacy 'sys.serialnumber')" && is_valid_serial "${_val?}"; then
     :
-  elif _val="$(auto_getprop 'ro.boot.serialno')" && is_valid_serial "${_val?}"; then
+  elif _val="$(auto_getprop_legacy 'ro.boot.serialno')" && is_valid_serial "${_val?}"; then
     :
-  elif _val="$(auto_getprop 'ro.kernel.androidboot.serialno')" && is_valid_serial "${_val?}"; then
+  elif _val="$(auto_getprop_legacy 'ro.kernel.androidboot.serialno')" && is_valid_serial "${_val?}"; then
     :
   else
     log_warn 'Serial number not found'
@@ -1091,6 +1090,7 @@ generate_profile()
 </profile>"
   # REUSE-IgnoreEnd
 
+  unset RET_VAL
   return 0
 }
 
