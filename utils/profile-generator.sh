@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.26'
+readonly SCRIPT_VERSION='1.9.27'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -132,6 +132,12 @@ log_scope_begin()
 log_scope_end()
 {
   test "${LOG_LEVEL}" -lt 2 || LOG_LEVEL="$((LOG_LEVEL - 2))"
+  return 0
+}
+
+log_selected_device()
+{
+  printf 1>&2 '%b%s%b\n\n' "${CLR_YELLOW_BG_BLUE}" "SELECTED: ${1}" "${CLR_RESET}"
   return 0
 }
 
@@ -602,8 +608,8 @@ auto_getprop()
   RET_VAL=''
   case "${PROP_TYPE}" in
     adb) device_getprop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
-    1) getprop_output_parse "${INPUT_TYPE?}" "${1}" || return 1 ;;
-    2) prop_output_parse "${INPUT_TYPE?}" "${1}" || return 1 ;;
+    1) getprop_output_parse "${SELECTED_DEVICE}" "${1}" || return 1 ;;
+    2) prop_output_parse "${SELECTED_DEVICE}" "${1}" || return 1 ;;
     *) return 2 ;;
   esac
   return 0
@@ -634,7 +640,7 @@ ensure_boot_completed()
       log_warn 'Device has not finished booting yet, skipped'
       return 1
     }
-  elif test "${INPUT_TYPE:?}" != 'adb' && test "${PROP_TYPE:?}" = 1; then
+  elif test "${INPUT_TYPE:?}" = 'file' && test "${PROP_TYPE:?}" = 1; then
     is_boot_completed || {
       log_err 'Getprop comes from a device that has not finished booting yet, skipped'
       return 1
@@ -957,7 +963,9 @@ anonymize_code()
 generate_profile()
 {
   SELECTED_DEVICE="${1:?}"
-  ensure_boot_completed || return 2
+  ensure_boot_completed || return 3
+
+  log_status 'Generating profile...'
 
   # Infos:
   # - https://github.com/microg/GmsCore/blob/master/play-services-base/core/src/main/kotlin/org/microg/gms/profile/ProfileManager.kt
@@ -1096,14 +1104,13 @@ generate_profile()
 
 main()
 {
-  local status=0 found=0 first=1 _device_id=''
+  local status=0 found=0 first=1 _device_id='' _selected=''
 
   if test -z "${1-}" || test "${1}" = 'adb'; then
     INPUT_TYPE='adb'
     PROP_TYPE='adb'
   else
-    INPUT_TYPE="${1:?}"
-    PROP_TYPE=''
+    INPUT_TYPE='file'
   fi
 
   if test "${INPUT_TYPE:?}" = 'adb'; then
@@ -1120,19 +1127,18 @@ main()
         first=0
         log_blank
       fi
-      #log_selected_device "${_device_id?}"
+      log_selected_device "${_device_id?}"
 
       if detect_status_and_wait_connection "${_device_id?}"; then
         found=1
 
-        log_status 'Generating profile...'
         if test "${DEVICE_STATE?}" != 'device'; then
           # Currently is only for: recovery
           log_err "Current device state not supported: ${DEVICE_STATE?}"
           status=1
           continue
         fi
-        generate_profile "${_device_id?}" || status="${?}"
+        generate_profile "${_device_id?}" || status="$?"
       else
         log_warn 'Device is offline/unauthorized, skipped'
       fi
@@ -1143,22 +1149,26 @@ main()
       return 11
     }
   else
-    test -f "${INPUT_TYPE:?}" || {
-      log_err "Input file doesn't exist => '${INPUT_TYPE?}'"
-      return 1
+    _selected="${1:?}"
+    test -f "${_selected}" || {
+      log_err "Input file doesn't exist => '${_selected}'"
+      return 12
     }
 
     log_blank
-    log_status 'Generating profile...'
+    log_selected_device "${_selected}"
 
-    if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_TYPE?}"; then
+    if grep -m 1 -q -e '^\[.*\]: \[.*\]' -- "${_selected}"; then
       PROP_TYPE='1'
-    else
+    elif grep -m 1 -q -e '^.*\..*=' -- "${_selected}"; then
       PROP_TYPE='2'
       log_warn "Operating in restricted 'build.prop' mode. Profiles generated in this mode will be incomplete!!!"
+    else
+      log_err "Unknown input file => '${_selected}'"
+      return 13
     fi
 
-    generate_profile "${INPUT_TYPE?}" || status="${?}"
+    generate_profile "${_selected}" || status="$?"
   fi
 
   return "${status:?}"

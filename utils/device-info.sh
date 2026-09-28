@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.26'
+readonly SCRIPT_VERSION='2.9.27'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -699,8 +699,8 @@ auto_getprop()
   RET_VAL=''
   case "${PROP_TYPE}" in
     adb) device_getprop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
-    1) getprop_output_parse "${INPUT_SELECTION?}" "${1}" || return 1 ;;
-    2) prop_output_parse "${INPUT_SELECTION?}" "${1}" || return 1 ;;
+    1) getprop_output_parse "${SELECTED_DEVICE}" "${1}" || return 1 ;;
+    2) prop_output_parse "${SELECTED_DEVICE}" "${1}" || return 1 ;;
     *) return 2 ;;
   esac
   return 0
@@ -1474,10 +1474,10 @@ get_operator_alpha_multi_slot()
   printf '%s\n' "${_val:?}"
 }
 
-extract_all_info()
+dump_device_info()
 {
   SELECTED_DEVICE="${1:?}"
-  ensure_boot_completed || return 2
+  ensure_boot_completed || return 3
 
   if test "${PRIVACY_MODE?}" = 'true'; then
     log_warn 'PRIVACY MODE is enabled, all sensitive data will be anonymized!'
@@ -1649,20 +1649,17 @@ extract_all_info()
 
 main()
 {
-  local status=0 found=0 first=1 _device_id=''
+  local status=0 found=0 first=1 _device_id='' _selected=''
 
   if test -z "${1-}" || test "${1}" = 'adb'; then
     INPUT_TYPE='adb'
-    INPUT_SELECTION=''
     PROP_TYPE='adb'
   else
     INPUT_TYPE='file'
-    INPUT_SELECTION="${1:?}"
-    PROP_TYPE=''
   fi
 
   if test "${INPUT_TYPE:?}" = 'adb'; then
-    verify_adb_mode_deps || return "${?}"
+    verify_adb_mode_deps || return "$?"
     start_adb_server || {
       log_err 'Failed to start ADB'
       return 10
@@ -1685,7 +1682,7 @@ main()
           continue
         fi
 
-        extract_all_info "${_device_id?}" || status="${?}"
+        dump_device_info "${_device_id?}" || status="$?"
       else
         log_warn 'Device is offline/unauthorized, skipped'
       fi
@@ -1696,28 +1693,27 @@ main()
       return 11
     }
   else
-    test -f "${INPUT_SELECTION:?}" || {
-      log_err "Input file doesn't exist => '${INPUT_SELECTION?}'"
+    _selected="${1:?}"
+    test -f "${_selected}" || {
+      log_err "Input file doesn't exist => '${_selected}'"
       return 12
     }
 
     log_out_blank
-    log_out_selected_device "${INPUT_SELECTION?}"
+    log_out_selected_device "${_selected}"
 
-    if grep -m 1 -q -e '^\[.*\]\:[[:blank:]]\[.*\]' -- "${INPUT_SELECTION?}"; then
+    if grep -m 1 -q -e '^\[.*\]: \[.*\]' -- "${_selected}"; then
       PROP_TYPE='1'
       log_warn "Operating in restricted 'getprop' mode. Extracted information will be incomplete!!!"
-
-      extract_all_info "${INPUT_SELECTION}" || status="${?}"
-    elif grep -m 1 -q -e '^.*\..*=' -- "${INPUT_SELECTION?}"; then
+    elif grep -m 1 -q -e '^.*\..*=' -- "${_selected}"; then
       PROP_TYPE='2'
       log_warn "Operating in restricted 'build.prop' mode. Extracted information will be incomplete!!!"
-
-      extract_all_info "${INPUT_SELECTION}" || status="${?}"
     else
-      log_err "Unknown input file => '${INPUT_SELECTION?}'"
-      status=13
+      log_err "Unknown input file => '${_selected}'"
+      return 13
     fi
+
+    dump_device_info "${_selected}" || status="$?"
   fi
 
   return "${status:?}"
