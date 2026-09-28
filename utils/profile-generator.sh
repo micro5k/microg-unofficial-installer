@@ -505,12 +505,11 @@ is_all_zeros()
 
 is_valid_value()
 {
-  # ${2:-0} => 2 (Allow empty value)
-
-  if test -z "${1?}" && test "${2:-0}" != '2'; then return 1; fi
-  if test "${1?}" = 'unknown'; then return 1; fi
-
-  return 0 # Valid
+  case "${1}" in
+    '' | 'unknown') return 1 ;;
+    *) ;;
+  esac
+  return 0
 }
 
 lc_text()
@@ -637,7 +636,7 @@ ensure_boot_completed()
 get_and_check_prop()
 {
   local __fn_prop_val
-  __fn_prop_val="$(auto_getprop "${1}" || :)"
+  __fn_prop_val="$(auto_getprop "${1}")" || __fn_prop_val=''
 
   case "${__fn_prop_val}" in
     '' | 'unknown')
@@ -653,7 +652,7 @@ get_and_check_prop()
 get_and_check_optional_prop()
 {
   local __fn_prop_val
-  __fn_prop_val="$(auto_getprop "${1}" || :)"
+  __fn_prop_val="$(auto_getprop "${1}")" || __fn_prop_val=''
 
   case "${__fn_prop_val}" in
     '')
