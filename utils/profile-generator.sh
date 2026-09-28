@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.22'
+readonly SCRIPT_VERSION='1.9.23'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -613,7 +613,10 @@ auto_getprop()
 
 is_boot_completed()
 {
-  if test "$(auto_getprop 2> /dev/null 'sys.boot_completed' || :)" = 1; then return 0; fi
+  case "$(auto_getprop 2> /dev/null 'sys.boot_completed' || :)" in
+    1) return 0 ;;
+    *) ;;
+  esac
   return 1
 }
 
@@ -845,9 +848,9 @@ find_bootloader()
 {
   local _val
 
-  if _val="$(auto_getprop 'ro.bootloader')" && is_valid_value "${_val?}"; then
+  if _val="$(get_and_check_prop_silent 'ro.bootloader')"; then
     :
-  elif _val="$(auto_getprop 'ro.boot.bootloader')" && is_valid_value "${_val?}"; then
+  elif _val="$(get_and_check_prop_silent 'ro.boot.bootloader')"; then
     :
   else
     log_warn 'Build.BOOTLOADER not found'
@@ -862,9 +865,9 @@ find_hardware()
 {
   local _val
 
-  if _val="$(auto_getprop 'ro.hardware')" && is_valid_value "${_val?}"; then
+  if _val="$(get_and_check_prop_silent 'ro.hardware')"; then
     :
-  elif _val="$(auto_getprop 'ro.boot.hardware')" && is_valid_value "${_val?}"; then
+  elif _val="$(get_and_check_prop_silent 'ro.boot.hardware')"; then
     :
   else
     log_warn 'Build.HARDWARE not found'
@@ -879,15 +882,15 @@ find_radio()
 {
   local _val
 
-  if _val="$(auto_getprop 'gsm.version.baseband')" && is_valid_value "${_val?}"; then
+  if _val="$(get_and_check_prop_silent 'gsm.version.baseband')"; then
     :
-  elif _val="$(auto_getprop 'ril.sw_ver')" && is_valid_value "${_val?}"; then
+  elif _val="$(get_and_check_prop_silent 'ril.sw_ver')"; then
     :
-  elif _val="$(auto_getprop 'ro.boot.radio')" && is_valid_value "${_val?}"; then
+  elif _val="$(get_and_check_prop_silent 'ro.boot.radio')"; then
     :
-  elif _val="$(auto_getprop 'ro.baseband')" && is_valid_value "${_val?}"; then
+  elif _val="$(get_and_check_prop_silent 'ro.baseband')"; then
     :
-  elif _val="$(auto_getprop 'ro.boot.baseband')" && is_valid_value "${_val?}"; then
+  elif _val="$(get_and_check_prop_silent 'ro.boot.baseband')"; then
     :
   else
     log_warn 'Build.RADIO not found'

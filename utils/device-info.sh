@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.22'
+readonly SCRIPT_VERSION='2.9.23'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -710,7 +710,10 @@ auto_getprop()
 
 is_boot_completed()
 {
-  if test "$(auto_getprop 2> /dev/null 'sys.boot_completed' || :)" = 1; then return 0; fi
+  case "$(auto_getprop 2> /dev/null 'sys.boot_completed' || :)" in
+    1) return 0 ;;
+    *) ;;
+  esac
   return 1
 }
 
@@ -744,6 +747,17 @@ get_and_check_prop()
   esac
   printf '%s\n' "${__fn_prop_val}"
   return 0
+}
+
+get_and_check_prop_silent()
+{
+  local __fn_prop_val
+
+  if __fn_prop_val="$(auto_getprop "${1}")" && is_valid_value "${__fn_prop_val}"; then
+    printf '%s\n' "${__fn_prop_val}"
+    return 0
+  fi
+  return 1
 }
 
 device_get_file_content()
@@ -1173,11 +1187,11 @@ get_imei_multi_slot()
   fi
 
   if ! is_valid_imei "${_val?}"; then
-    if _prop="$(auto_getprop "ro.ril.miui.imei${_slot_index:?}")" && is_valid_value "${_prop?}"; then # Xiaomi
+    if _prop="$(get_and_check_prop_silent "ro.ril.miui.imei${_slot_index:?}")"; then # Xiaomi
       _val="${_prop:?}"
-    elif _prop="$(auto_getprop "ro.ril.oem.imei${_slot:?}")" && is_valid_value "${_prop?}"; then
+    elif _prop="$(get_and_check_prop_silent "ro.ril.oem.imei${_slot:?}")"; then
       _val="${_prop:?}"
-    elif _prop="$(auto_getprop "persist.radio.imei${_slot:?}")" && is_valid_value "${_prop?}"; then
+    elif _prop="$(get_and_check_prop_silent "persist.radio.imei${_slot:?}")"; then
       _val="${_prop:?}"
     fi
   fi
@@ -1198,13 +1212,13 @@ get_imei()
     : # Presumably Android 1.0-4.4W (but it doesn't work on all devices)
   elif _val="$(call_phonesubinfo "${1:?}" 1 s16 'com.android.shell')" && is_valid_imei "${_val?}"; then
     : # Android 1.0-14 => Function: String getDeviceId(String callingPackage)
-  elif _tmp="$(auto_getprop 'gsm.baseband.imei')" && is_valid_value "${_tmp?}"; then
+  elif _tmp="$(get_and_check_prop_silent 'gsm.baseband.imei')"; then
     _val="${_tmp:?}"
-  elif _tmp="$(auto_getprop 'ro.gsm.imei')" && is_valid_value "${_tmp?}"; then
+  elif _tmp="$(get_and_check_prop_silent 'ro.gsm.imei')"; then
     _val="${_tmp:?}"
-  elif _tmp="$(auto_getprop 'gsm.imei')" && is_valid_value "${_tmp?}"; then
+  elif _tmp="$(get_and_check_prop_silent 'gsm.imei')"; then
     _val="${_tmp:?}"
-  elif _tmp="$(auto_getprop 'ril.imei')" && is_valid_value "${_tmp?}"; then
+  elif _tmp="$(get_and_check_prop_silent 'ril.imei')"; then
     _val="${_tmp:?}"
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_4_4_SDK:?}" && test "${BUILD_VERSION_SDK:?}" -le "${ANDROID_5_1_SDK:?}"; then
     # Use only as absolute last resort
@@ -1402,7 +1416,7 @@ get_slot_info()
   SLOT2_STATE=''
   SLOT3_STATE=''
   SLOT4_STATE=''
-  _states="$(auto_getprop 'gsm.sim.state')" || _states=''
+  _states="$(get_and_check_prop 'gsm.sim.state' || :)"
 
   IFS=','
   _i=0
@@ -1472,21 +1486,17 @@ extract_all_info()
   log_out_section 'BASIC INFO'
   log_out_blank
 
-  if EMU_NAME="$(auto_getprop 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
+  if EMU_NAME="$(get_and_check_prop_silent 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')"; then
     display_info 'Emulator' "${EMU_NAME?}"
-  elif EMU_NAME="$(auto_getprop 'ro.kernel.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')" && is_valid_value "${EMU_NAME?}"; then
+  elif EMU_NAME="$(get_and_check_prop_silent 'ro.kernel.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')"; then
     display_info 'Emulator' "${EMU_NAME?}"
-  elif LEAPD_VERSION="$(auto_getprop 'ro.leapdroid.version')" && is_valid_value "${LEAPD_VERSION?}"; then
+  elif LEAPD_VERSION="$(get_and_check_prop_silent 'ro.leapdroid.version')"; then
     display_info 'Emulator' 'Leapdroid'
   fi
 
-  {
-    BUILD_MANUFACTURER="$(auto_getprop 'ro.product.manufacturer')" || BUILD_MANUFACTURER="$(auto_getprop 'ro.product.brand')"
-  } && display_info 'Manufacturer' "${BUILD_MANUFACTURER?}"
+  BUILD_MANUFACTURER="$(get_and_check_prop_silent 'ro.product.manufacturer' || get_and_check_prop_silent 'ro.product.brand')" && display_info 'Manufacturer' "${BUILD_MANUFACTURER?}"
   BUILD_MODEL="$(get_and_check_prop 'ro.product.model')" && display_info 'Model' "${BUILD_MODEL?}"
-  {
-    BUILD_DEVICE="$(auto_getprop 'ro.product.device')" || BUILD_DEVICE="$(auto_getprop 'ro.build.product')"
-  } && display_info 'Device' "${BUILD_DEVICE?}"
+  BUILD_DEVICE="$(get_and_check_prop_silent 'ro.product.device' || get_and_check_prop_silent 'ro.build.product')" && display_info 'Device' "${BUILD_DEVICE?}"
   ANDROID_VERSION="$(get_and_check_prop 'ro.build.version.release')" && display_info 'Android version' "${ANDROID_VERSION?}"
   KERNEL_VERSION="$(get_kernel_version "${SELECTED_DEVICE:?}")" && display_info 'Kernel version' "${KERNEL_VERSION?}"
 
@@ -1528,9 +1538,9 @@ extract_all_info()
   log_out_section 'SLOT INFO'
   log_out_blank
 
-  DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.alpha')" || DATA_RAW_OPERATOR1="$(auto_getprop 'gsm.sim.operator.orig.alpha')"
-  DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.alpha')" || DATA_RAW_OPERATOR2="$(auto_getprop 'gsm.operator.orig.alpha')"
-  DATA_RAW_OPERATOR3="$(auto_getprop 'gsm.sim.operator.spn')"
+  DATA_RAW_OPERATOR1="$(get_and_check_prop_silent 'gsm.sim.operator.alpha' || get_and_check_prop_silent 'gsm.sim.operator.orig.alpha' || :)"
+  DATA_RAW_OPERATOR2="$(get_and_check_prop_silent 'gsm.operator.alpha' || get_and_check_prop_silent 'gsm.operator.orig.alpha' || :)"
+  DATA_RAW_OPERATOR3="$(get_and_check_prop_silent 'gsm.sim.operator.spn' || :)"
   # ToDO: Check 'gsm.operator.alpha.vsim'
 
   # https://android.googlesource.com/platform/frameworks/base/+/HEAD/telephony/java/com/android/internal/telephony/TelephonyProperties.java
