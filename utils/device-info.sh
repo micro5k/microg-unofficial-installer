@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.27'
+readonly SCRIPT_VERSION='2.9.28'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -674,13 +674,13 @@ is_valid_color()
   return 0 # Valid
 }
 
-device_getprop()
+fetch_device_prop()
 {
   RET_VAL="$(adb -s "${1}" shell "getprop '${2}' ''" | LC_ALL=C tr -d '\r')" || return 1
   return 0
 }
 
-getprop_output_parse()
+parse_getprop_dump()
 {
   RET_VAL="$(grep -m 1 -e '^\['"${2}"'\]:' -- "${1}" | LC_ALL=C cut -d ':' -f '2-' -s | LC_ALL=C tr -d '\r')" || return 1
   RET_VAL="${RET_VAL#" ["}"
@@ -688,19 +688,19 @@ getprop_output_parse()
   return 0
 }
 
-prop_output_parse()
+parse_build_prop()
 {
   RET_VAL="$(grep -m 1 -e "^${2}=" -- "${1}" | LC_ALL=C cut -d '=' -f '2-' -s | LC_ALL=C tr -d '\r')" || return 1
   return 0
 }
 
-auto_getprop()
+prop_get()
 {
   RET_VAL=''
   case "${PROP_TYPE}" in
-    adb) device_getprop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
-    1) getprop_output_parse "${SELECTED_DEVICE}" "${1}" || return 1 ;;
-    2) prop_output_parse "${SELECTED_DEVICE}" "${1}" || return 1 ;;
+    A) fetch_device_prop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
+    G) parse_getprop_dump "${SELECTED_DEVICE}" "${1}" || return 1 ;;
+    B) parse_build_prop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
     *) return 2 ;;
   esac
   return 0
@@ -709,14 +709,14 @@ auto_getprop()
 # Deprecated
 auto_getprop_legacy()
 {
-  auto_getprop "${1}" || return "$?"
+  prop_get "${1}" || return "$?"
   printf '%s\n' "${RET_VAL}"
   return 0
 }
 
 is_boot_completed()
 {
-  auto_getprop 'sys.boot_completed' || return 1
+  prop_get 'sys.boot_completed' || return 1
   case "${RET_VAL}" in
     1) return 0 ;;
     *) ;;
@@ -731,7 +731,7 @@ ensure_boot_completed()
       log_warn 'Device has not finished booting yet, skipped'
       return 1
     }
-  elif test "${INPUT_TYPE:?}" = 'file' && test "${PROP_TYPE:?}" = 1; then
+  elif test "${INPUT_TYPE:?}" = 'file' && test "${PROP_TYPE:?}" = 'G'; then
     is_boot_completed || {
       log_err 'Getprop comes from a device that has not finished booting yet, skipped'
       return 1
@@ -742,7 +742,7 @@ ensure_boot_completed()
 
 get_and_check_prop()
 {
-  auto_getprop "${1}" || RET_VAL=''
+  prop_get "${1}" || RET_VAL=''
   case "${RET_VAL}" in
     '' | 'unknown')
       log_non_fatal "The value of property '${1?}' is missing or invalid"
@@ -756,7 +756,7 @@ get_and_check_prop()
 
 get_and_check_prop_silent()
 {
-  auto_getprop "${1}" || return 1
+  prop_get "${1}" || return 1
   case "${RET_VAL}" in
     '' | 'unknown') return 1 ;;
     *) ;;
@@ -1653,7 +1653,7 @@ main()
 
   if test -z "${1-}" || test "${1}" = 'adb'; then
     INPUT_TYPE='adb'
-    PROP_TYPE='adb'
+    PROP_TYPE='A'
   else
     INPUT_TYPE='file'
   fi
@@ -1703,10 +1703,10 @@ main()
     log_out_selected_device "${_selected}"
 
     if grep -m 1 -q -e '^\[.*\]: \[.*\]' -- "${_selected}"; then
-      PROP_TYPE='1'
+      PROP_TYPE='G'
       log_warn "Operating in restricted 'getprop' mode. Extracted information will be incomplete!!!"
     elif grep -m 1 -q -e '^.*\..*=' -- "${_selected}"; then
-      PROP_TYPE='2'
+      PROP_TYPE='B'
       log_warn "Operating in restricted 'build.prop' mode. Extracted information will be incomplete!!!"
     else
       log_err "Unknown input file => '${_selected}'"
