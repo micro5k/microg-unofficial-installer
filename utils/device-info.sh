@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.24'
+readonly SCRIPT_VERSION='2.9.25'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -758,6 +758,7 @@ get_and_check_prop_silent()
     '' | 'unknown') return 1 ;;
     *) ;;
   esac
+  printf '%s\n' "${__fn_prop_val}"
   return 0
 }
 
