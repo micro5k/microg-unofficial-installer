@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.23'
+readonly SCRIPT_VERSION='2.9.24'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -753,11 +753,12 @@ get_and_check_prop_silent()
 {
   local __fn_prop_val
 
-  if __fn_prop_val="$(auto_getprop "${1}")" && is_valid_value "${__fn_prop_val}"; then
-    printf '%s\n' "${__fn_prop_val}"
-    return 0
-  fi
-  return 1
+  __fn_prop_val="$(auto_getprop "${1}")" || return 1
+  case "${__fn_prop_val}" in
+    '' | 'unknown') return 1 ;;
+    *) ;;
+  esac
+  return 0
 }
 
 device_get_file_content()
@@ -1492,6 +1493,7 @@ extract_all_info()
     display_info 'Emulator' "${EMU_NAME?}"
   elif LEAPD_VERSION="$(get_and_check_prop_silent 'ro.leapdroid.version')"; then
     display_info 'Emulator' 'Leapdroid'
+    : "${LEAPD_VERSION}"
   fi
 
   BUILD_MANUFACTURER="$(get_and_check_prop_silent 'ro.product.manufacturer' || get_and_check_prop_silent 'ro.product.brand')" && display_info 'Manufacturer' "${BUILD_MANUFACTURER?}"
