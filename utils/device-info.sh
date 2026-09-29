@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.33'
+readonly SCRIPT_VERSION='2.9.34'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -898,13 +898,13 @@ get_device_back_color()
 
 device_shell()
 {
-  local _device
+  local __fn_dev="${1:?}"
   case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
-  _device="${1:?}"
   shift
-
-  adb -s "${_device:?}" shell "${*}" | LC_ALL=C tr -d '\r'
+  case "${1-}" in '') return 2 ;; *) ;; esac
+  adb -s "${__fn_dev}" shell "$*" | LC_ALL=C tr -d '\r'
+  return "$?"
 }
 
 device_get_devpath()
@@ -922,31 +922,29 @@ device_get_devpath()
 
 apply_phonesubinfo_deviation()
 {
-  local _method_code
-  _method_code="${1:?}"
+  local __fn_mcode="${1:?}"
 
   if compare_nocase "${BUILD_MANUFACTURER?}" 'HUAWEI' && test "${BUILD_VERSION_SDK:?}" -eq "${ANDROID_9_SDK:?}"; then
-    if test "${1:?}" -ge 3; then _method_code="$((_method_code + 1))"; fi
+    if test "${1:?}" -ge 3; then __fn_mcode="$((__fn_mcode + 1))"; fi
   elif compare_nocase "${BUILD_MANUFACTURER?}" 'samsung' && test "${BUILD_VERSION_SDK:?}" -eq "${ANDROID_11_SDK:?}"; then
     # Seen on Samsung Galaxy A50 (Android 11)
     # An unknown method at position 11 shift everything by 1
-    if test "${1:?}" -ge 11; then _method_code="$((_method_code + 1))"; fi
+    if test "${1:?}" -ge 11; then __fn_mcode="$((__fn_mcode + 1))"; fi
   fi
 
-  printf '%s\n' "${_method_code:?}"
+  printf '%s' "${__fn_mcode}"
 }
 
 call_phonesubinfo()
 {
-  local _device _method_code
+  local __fn_dev="${1:?}" __fn_mcode
   case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
-  _device="${1:?}"
-  _method_code="$(apply_phonesubinfo_deviation "${2:?}")"
+  __fn_mcode="$(apply_phonesubinfo_deviation "${2}")" || return 2
   shift 2
 
   test "$#" -ne 0 || set -- '' # Avoid issues on Bash under Mac
-  adb -s "${_device:?}" shell "service call iphonesubinfo ${_method_code:?} ${*}" | cut -d "'" -f '2' -s | LC_ALL=C tr -d -s '.[:cntrl:]' '[:space:]' | trim_space_on_sides
+  adb -s "${__fn_dev}" shell "service call iphonesubinfo ${__fn_mcode} $*" | LC_ALL=C cut -d "'" -f 2 -s | LC_ALL=C tr -d -s -- '.[:cntrl:]' ' ' | trim_space_on_sides
 }
 # https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl
 # https://android.googlesource.com/platform/frameworks/opt/telephony/+/master/src/java/com/android/internal/telephony/PhoneSubInfoController.java
@@ -1625,9 +1623,9 @@ dump_device_info()
   adb_root "${SELECTED_DEVICE:?}"
   log_out_blank
 
-  device_shell "${SELECTED_DEVICE:?}" "if test -e '/system' && test ! -e '/system/bin/sh'; then mount -t 'auto' -o 'ro' '/system' 2> /dev/null || true; fi"
-  device_shell "${SELECTED_DEVICE:?}" "if test -e '/data' && test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || true; fi"
-  device_shell "${SELECTED_DEVICE:?}" "if test -e '/efs'; then mount -t 'auto' -o 'ro' '/efs' 2> /dev/null || true; fi"
+  device_shell "${SELECTED_DEVICE:?}" "if test -e '/system' && test ! -e '/system/bin/sh'; then mount -t 'auto' -o 'ro' '/system' 2> /dev/null || :; fi"
+  device_shell "${SELECTED_DEVICE:?}" "if test -e '/data' && test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || :; fi"
+  device_shell "${SELECTED_DEVICE:?}" "if test -e '/efs'; then mount -t 'auto' -o 'ro' '/efs' 2> /dev/null || :; fi"
 
   {
     GSF_ID_DEC="$(get_gsf_id "${SELECTED_DEVICE:?}")"

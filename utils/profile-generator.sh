@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.33'
+readonly SCRIPT_VERSION='2.9.34'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -517,7 +517,7 @@ lc_text()
 
 uc_first_char()
 {
-  printf '%s\n' "${1}" | cut -c 1 | LC_ALL=C tr -d '\n' | tr '[:lower:]' '[:upper:]' || return "$?"
+  printf '%s' "${1%"${1#?}"}" | tr '[:lower:]' '[:upper:]' || return "$?"
   printf '%s' "${1#?}"
   return 0
 }
