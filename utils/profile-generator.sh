@@ -20,14 +20,12 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.31'
+readonly SCRIPT_VERSION='2.9.32'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
 readonly EX_UNAVAILABLE=69
 readonly EX_CONFIG=78
-
-export LANG='C.UTF-8'
 
 readonly NL='
 '
@@ -96,8 +94,6 @@ color_init()
   CLR_CYAN=''
   CLR_LINE=''
 
-  # NOTE: This script intentionally allows colors on STDERR even if STDOUT is redirected to a file
-
   # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
   if test -z "${NO_COLOR-}" && test -t 2; then
     CLR_RESET='\033[0m'
@@ -149,12 +145,6 @@ log_status()
 log_blank()
 {
   printf 1>&2 '\n'
-  return 0
-}
-
-log_negative_info()
-{
-  printf 1>&2 '\033[1;32m%s\033[1;31m%s\033[0m\n' "${1:?}" "${2:?}"
   return 0
 }
 
@@ -249,6 +239,8 @@ restore_title()
 
 init()
 {
+  export LANG='C.UTF-8'
+
   fix_posix_emulation_if_needed
   color_init
   log_scope_init
@@ -1011,7 +1003,7 @@ generate_profile()
       OFFICIAL_DEVICE_INFO="$(csv_decode_field "${OFFICIAL_DEVICE_INFO?}" || :)"
       ;;
     1)
-      log_negative_info 'Device certified: ' 'NO'
+      printf 1>&2 '%b%s%b%s%b\n' "${CLR_GREEN}" 'Device certified: ' "${CLR_RED}" 'NO' "${CLR_RESET}"
       TEXT_OFFICIAL_STATUS=" <!-- Device certified: NO -->"
       ;;
     *) ;;

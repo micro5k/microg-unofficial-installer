@@ -22,13 +22,11 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.31'
+readonly SCRIPT_VERSION='2.9.32'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
 readonly EX_UNAVAILABLE=69
-
-export LANG='C.UTF-8'
 
 # shellcheck disable=SC2034
 {
@@ -120,6 +118,8 @@ color_init()
   CLR_MAGENTA=''
   CLR_CYAN=''
   CLR_LINE=''
+
+  # IMPORTANT: Unlike other scripts, colors are disabled globally across both STDOUT and STDERR if either stream is redirected to a non-TTY target
 
   # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
   if test -z "${NO_COLOR-}" && test -t 1 && test -t 2; then
@@ -295,6 +295,8 @@ restore_title()
 
 init()
 {
+  export LANG='C.UTF-8'
+
   fix_posix_emulation_if_needed
   color_init
   log_scope_init

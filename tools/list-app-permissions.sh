@@ -78,7 +78,7 @@ color_init()
   CLR_LINE=''
 
   # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
-  if test -z "${NO_COLOR-}" && test -t 1 && test -t 2; then
+  if test -z "${NO_COLOR-}" && test -t 2; then
     CLR_RESET='\033[0m'
     CLR_RED='\033[1;31m'
     CLR_GREEN_PLAIN='\033[32m'
