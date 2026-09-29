@@ -20,15 +20,14 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.30'
+readonly SCRIPT_VERSION='2.9.31'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
 readonly EX_UNAVAILABLE=69
 readonly EX_CONFIG=78
 
-export LANG='en_US.UTF-8'
-CI="${CI:-false}"
+export LANG='C.UTF-8'
 
 readonly NL='
 '
@@ -213,7 +212,7 @@ dev_status_waiting()
 
 set_title()
 {
-  if test "${CI:?}" != 'false'; then return 1; fi
+  if test "${CI:-false}" != 'false'; then return 1; fi
   TITLE_SET='true'
 
   if command 1> /dev/null -v title; then
@@ -232,7 +231,7 @@ set_title()
 
 restore_title()
 {
-  if test "${CI:?}" != 'false' || test "${TITLE_SET:-false}" = 'false'; then return 1; fi
+  if test "${CI:-false}" != 'false' || test "${TITLE_SET:-false}" = 'false'; then return 1; fi
 
   if command 1> /dev/null -v title; then
     title "${PREVIOUS_TITLE-}" # Restore saved title
@@ -502,7 +501,7 @@ xml_encode_field()
 
 is_all_zeros()
 {
-  if test -n "${1?}" && test "$(printf '%s\n' "${1:?}" | LC_ALL=C tr -d '0' || true)" = ''; then
+  if test -n "${1?}" && test "$(printf '%s\n' "${1:?}" | tr -d '0' || true)" = ''; then
     return 0 # True
   fi
 
@@ -520,23 +519,23 @@ is_valid_value()
 
 lc_text()
 {
-  printf '%s' "${1?}" | LC_ALL=C tr '[:upper:]' '[:lower:]'
+  printf '%s' "${1?}" | tr '[:upper:]' '[:lower:]'
 }
 
 #uc_text()
 #{
-#  printf '%s' "${1?}" | LC_ALL=C tr '[:lower:]' '[:upper:]'
+#  printf '%s' "${1?}" | tr '[:lower:]' '[:upper:]'
 #}
 
 uc_first_char()
 {
-  printf '%s' "${1?}" | cut -c '1' | LC_ALL=C tr -d '\r\n' | LC_ALL=C tr '[:lower:]' '[:upper:]'
+  printf '%s' "${1?}" | cut -c '1' | LC_ALL=C tr -d '\r\n' | tr '[:lower:]' '[:upper:]'
   printf '%s\n' "${1?}" | cut -c '2-'
 }
 
 convert_time_to_human_readable_form()
 {
-  LC_ALL=C date -u -d "@${1:?}" '+%a %b %d %H:%M:%S %Z %Y'
+  LC_ALL='C.UTF-8' date -u -d "@${1:?}" '+%a %b %d %H:%M:%S %Z %Y'
 }
 
 compare_nocase()
@@ -954,7 +953,7 @@ find_serialno()
 
 anonymize_string()
 {
-  printf '%s\n' "${1?}" | LC_ALL=C tr '[:digit:]' '0' | tr 'a-f' 'f' | tr 'g-z' 'x' | tr 'A-F' 'F' | tr 'G-Z' 'X'
+  printf '%s\n' "${1?}" | tr '[:digit:]' '0' | tr 'a-f' 'f' | tr 'g-z' 'x' | tr 'A-F' 'F' | tr 'G-Z' 'X'
 }
 
 anonymize_code()

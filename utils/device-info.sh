@@ -22,11 +22,13 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.30'
+readonly SCRIPT_VERSION='2.9.31'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
 readonly EX_UNAVAILABLE=69
+
+export LANG='C.UTF-8'
 
 # shellcheck disable=SC2034
 {
@@ -51,9 +53,6 @@ readonly EX_UNAVAILABLE=69
   readonly ANDROID_14_SDK=34
   readonly ANDROID_15_SDK=35 # Not yet released
 }
-
-export LANG='en_US.UTF-8'
-CI="${CI:-false}"
 
 readonly NL='
 '
@@ -259,7 +258,7 @@ dev_status_waiting()
 
 set_title()
 {
-  if test "${CI:?}" != 'false'; then return 1; fi
+  if test "${CI:-false}" != 'false'; then return 1; fi
   TITLE_SET='true'
 
   if command 1> /dev/null -v title; then
@@ -278,7 +277,7 @@ set_title()
 
 restore_title()
 {
-  if test "${CI:?}" != 'false' || test "${TITLE_SET:-false}" = 'false'; then return 1; fi
+  if test "${CI:-false}" != 'false' || test "${TITLE_SET:-false}" = 'false'; then return 1; fi
 
   if command 1> /dev/null -v title; then
     title "${PREVIOUS_TITLE-}" # Restore saved title
@@ -525,7 +524,7 @@ adb_root()
 
 is_all_zeros()
 {
-  if test -n "${1?}" && test "$(printf '%s\n' "${1:?}" | LC_ALL=C tr -d '0' || true)" = ''; then
+  if test -n "${1?}" && test "$(printf '%s\n' "${1:?}" | tr -d '0' || true)" = ''; then
     return 0 # True
   fi
 
@@ -552,7 +551,7 @@ is_valid_length()
 
 lc_text()
 {
-  printf '%s' "${1?}" | LC_ALL=C tr '[:upper:]' '[:lower:]'
+  printf '%s' "${1?}" | tr '[:upper:]' '[:lower:]'
 }
 
 compare_nocase()
@@ -597,7 +596,7 @@ convert_dec_to_hex()
   if test -z "${1?}"; then return; fi
 
   if command 1> /dev/null -v bc; then
-    printf 'obase=16;%s\n' "${1?}" | bc -s | LC_ALL=C tr '[:upper:]' '[:lower:]'
+    printf 'obase=16;%s\n' "${1?}" | bc -s | tr '[:upper:]' '[:lower:]'
   else
     printf '%x\n' "${1?}"
   fi
@@ -605,7 +604,7 @@ convert_dec_to_hex()
 
 anonymize_string()
 {
-  printf '%s\n' "${1?}" | LC_ALL=C tr '[:digit:]' '0' | tr 'a-f' 'f' | tr 'g-z' 'x' | tr 'A-F' 'F' | tr 'G-Z' 'X'
+  printf '%s\n' "${1?}" | tr '[:digit:]' '0' | tr 'a-f' 'f' | tr 'g-z' 'x' | tr 'A-F' 'F' | tr 'G-Z' 'X'
 }
 
 anonymize_code()
