@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.32'
+readonly SCRIPT_VERSION='2.9.33'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -353,7 +353,7 @@ start_adb_server()
 {
   case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
   adb 2> /dev/null 'start-server'
-  return "${?}"
+  return "$?"
 }
 
 parse_device_status()
@@ -453,13 +453,13 @@ detect_status_and_wait_connection()
   dev_status_waiting
   dev_status_done
   adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE?}"
-  return "${?}"
+  return "$?"
 }
 
 csv_encode_field()
 {
   printf '%s\n' "${1}" | sed -e 's/"/""/g; s/^/"/; s/$/"/'
-  return "${?}"
+  return "$?"
 }
 
 csv_decode_field()
@@ -475,20 +475,20 @@ csv_decode_field()
   esac
 
   printf '%s\n' "${__fn_field_val}" | sed -e 's/""/"/g'
-  return "${?}"
+  return "$?"
 }
 
 escape_grep_literal()
 {
   # NOTE: Backslashes and newlines are already blocked before this function
   sed -e 's/[[$.*^]/\\&/g'
-  return "${?}"
+  return "$?"
 }
 
 xml_encode_field()
 {
   sed -e 's|&|\&amp;|g; s|<|\&lt;|g; s|>|\&gt;|g; s|"|\&quot;|g'
-  return "${?}"
+  return "$?"
 }
 
 is_all_zeros()
@@ -511,23 +511,22 @@ is_valid_value()
 
 lc_text()
 {
-  printf '%s' "${1?}" | tr '[:upper:]' '[:lower:]'
+  printf '%s' "${1}" | tr '[:upper:]' '[:lower:]'
+  return "$?"
 }
-
-#uc_text()
-#{
-#  printf '%s' "${1?}" | tr '[:lower:]' '[:upper:]'
-#}
 
 uc_first_char()
 {
-  printf '%s' "${1?}" | cut -c '1' | LC_ALL=C tr -d '\r\n' | tr '[:lower:]' '[:upper:]'
-  printf '%s\n' "${1?}" | cut -c '2-'
+  printf '%s\n' "${1}" | cut -c 1 | LC_ALL=C tr -d '\n' | tr '[:lower:]' '[:upper:]' || return "$?"
+  printf '%s' "${1#?}"
+  return 0
 }
 
 convert_time_to_human_readable_form()
 {
-  LC_ALL='C.UTF-8' date -u -d "@${1:?}" '+%a %b %d %H:%M:%S %Z %Y'
+  # Formats a Unix timestamp to UTC date (GNU/BusyBox date with BSD/macOS fallback)
+  LC_ALL=C date -u -d "@${1:?}" '+%a %b %d %H:%M:%S %Z %Y' 2> /dev/null || LC_ALL=C date -u -r "${1}" '+%a %b %d %H:%M:%S %Z %Y'
+  return "$?"
 }
 
 compare_nocase()
@@ -994,7 +993,7 @@ generate_profile()
   generate_rom_info
 
   OFFICIAL_STATUS=0
-  OFFICIAL_DEVICE_INFO="$(parse_devices_list)" || OFFICIAL_STATUS="${?}"
+  OFFICIAL_DEVICE_INFO="$(parse_devices_list)" || OFFICIAL_STATUS="$?"
   TEXT_OFFICIAL_STATUS=''
   case "${OFFICIAL_STATUS:?}" in
     0)
@@ -1245,7 +1244,7 @@ if test "${execute_script:?}" = 'true'; then
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
-  main "${@}" || STATUS="${?}"
+  main "${@}" || STATUS="$?"
   restore_codepage
 fi
 

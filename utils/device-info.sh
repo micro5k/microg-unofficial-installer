@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.32'
+readonly SCRIPT_VERSION='2.9.33'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -386,7 +386,7 @@ start_adb_server()
 {
   case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
   adb 2> /dev/null 'start-server'
-  return "${?}"
+  return "$?"
 }
 
 parse_device_status()
@@ -486,7 +486,7 @@ detect_status_and_wait_connection()
   dev_status_waiting
   dev_status_done
   adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE?}"
-  return "${?}"
+  return "$?"
 }
 
 is_timeout()
@@ -512,7 +512,7 @@ adb_root()
   if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '\r' || true)" = 'root'; then return 0; fi # Already rooted
 
   timeout 1> /dev/null 2>&1 -- 6 adb -s "${1:?}" root
-  if is_timeout "${?}"; then
+  if is_timeout "$?"; then
     adb_unfroze "${1:?}"
     return 0
   fi
@@ -521,7 +521,7 @@ adb_root()
 
   # Dummy command to check if adb is frozen
   timeout -- 3 adb -s "${1:?}" shell ':'
-  if is_timeout "${?}"; then adb_unfroze "${1:?}"; fi
+  if is_timeout "$?"; then adb_unfroze "${1:?}"; fi
 }
 
 is_all_zeros()
@@ -553,7 +553,8 @@ is_valid_length()
 
 lc_text()
 {
-  printf '%s' "${1?}" | tr '[:upper:]' '[:lower:]'
+  printf '%s' "${1}" | tr '[:upper:]' '[:lower:]'
+  return "$?"
 }
 
 compare_nocase()
@@ -1188,7 +1189,7 @@ get_imei_multi_slot()
   if test "${BUILD_VERSION_SDK:?}" -lt "${ANDROID_5_SDK:?}"; then
     if test "${_slot:?}" -eq 1; then
       is_valid_imei "${INFO_IMEI?}"
-      display_phonesubinfo_or_warn 'IMEI' "${INFO_IMEI?}" "${?}"
+      display_phonesubinfo_or_warn 'IMEI' "${INFO_IMEI?}" "$?"
     fi
 
     return # No multi-SIM support
@@ -1216,7 +1217,7 @@ get_imei_multi_slot()
   fi
 
   is_valid_imei "${_val?}"
-  display_phonesubinfo_or_warn 'IMEI' "${_val?}" "${?}"
+  display_phonesubinfo_or_warn 'IMEI' "${_val?}" "$?"
 }
 
 get_imei()
@@ -1264,7 +1265,7 @@ get_imei()
 
   INFO_IMEI="${_val?}"
   is_valid_imei "${_val?}"
-  display_phonesubinfo_or_warn 'IMEI' "${_val?}" "${?}"
+  display_phonesubinfo_or_warn 'IMEI' "${_val?}" "$?"
 
   # Function: String getDeviceSvn(String callingPackage, optional String callingFeatureId)
   if test -n "${_imei_sv?}"; then
@@ -1283,7 +1284,7 @@ get_imei()
 
   #INFO_IMEI_SV="${_val?}"
   is_valid_length "${_val?}" 2 2
-  display_phonesubinfo_or_warn 'IMEI SV' "${_val?}" "${?}" 'non-sensitive'
+  display_phonesubinfo_or_warn 'IMEI SV' "${_val?}" "$?" 'non-sensitive'
 }
 
 get_line_number_multi_slot()
@@ -1296,7 +1297,7 @@ get_line_number_multi_slot()
   if test "${BUILD_VERSION_SDK:?}" -lt "${ANDROID_5_SDK:?}"; then
     if test "${_slot:?}" -eq 1; then
       is_valid_line_number "${INFO_LINE_NUMBER?}"
-      display_phonesubinfo_or_warn 'Line number' "${INFO_LINE_NUMBER?}" "${?}"
+      display_phonesubinfo_or_warn 'Line number' "${INFO_LINE_NUMBER?}" "$?"
     fi
 
     return # No multi-SIM support
@@ -1331,7 +1332,7 @@ get_line_number_multi_slot()
   fi
 
   is_valid_line_number "${_val?}"
-  display_phonesubinfo_or_warn 'Line number' "${_val?}" "${?}"
+  display_phonesubinfo_or_warn 'Line number' "${_val?}" "$?"
 }
 
 get_line_number()
@@ -1358,7 +1359,7 @@ get_line_number()
 
   INFO_LINE_NUMBER="${_val?}"
   is_valid_line_number "${_val?}"
-  display_phonesubinfo_or_warn 'Line number' "${_val?}" "${?}"
+  display_phonesubinfo_or_warn 'Line number' "${_val?}" "$?"
 }
 
 get_iccid()
@@ -1381,7 +1382,7 @@ get_iccid()
     _val="$(call_phonesubinfo "${1:?}" 4)" || _val=''
   fi
   is_valid_length "${_val?}" 19 20
-  display_phonesubinfo_or_warn 'ICCID (SIM serial number)' "${_val?}" "${?}"
+  display_phonesubinfo_or_warn 'ICCID (SIM serial number)' "${_val?}" "$?"
 }
 
 get_data_folder()
@@ -1523,7 +1524,7 @@ dump_device_info()
 
   {
     SQLITE_VERSION="$(device_shell "${SELECTED_DEVICE:?}" 'sqlite3 2> /dev/null --version' | cut -d ' ' -f '1')"
-    display_info_or_warn 'SQLite version' "${SQLITE_VERSION?}" "${?}" 'non-sensitive'
+    display_info_or_warn 'SQLite version' "${SQLITE_VERSION?}" "$?" 'non-sensitive'
   }
 
   get_device_color
@@ -1531,28 +1532,28 @@ dump_device_info()
 
   {
     DEVICE_PATH="$(device_get_devpath "${SELECTED_DEVICE:?}")"
-    display_info_or_warn 'Device path' "${DEVICE_PATH?}" "${?}" 'non-sensitive'
+    display_info_or_warn 'Device path' "${DEVICE_PATH?}" "$?" 'non-sensitive'
   }
 
   log_out_blank
 
   SERIAL_NUMBER="$(find_serialno)"
-  display_info_or_warn 'Serial number' "${SERIAL_NUMBER?}" "${?}"
+  display_info_or_warn 'Serial number' "${SERIAL_NUMBER?}" "$?"
   CPU_SERIAL_NUMBER="$(find_cpu_serialno "${SELECTED_DEVICE:?}")"
-  display_info_or_warn 'CPU serial number' "${CPU_SERIAL_NUMBER?}" "${?}"
+  display_info_or_warn 'CPU serial number' "${CPU_SERIAL_NUMBER?}" "$?"
 
   log_out_blank
 
   ANDROID_ID="$(get_android_id "${SELECTED_DEVICE:?}")"
   is_valid_android_id "${ANDROID_ID?}"
-  display_info_or_warn 'Android ID' "${ANDROID_ID?}" "${?}"
+  display_info_or_warn 'Android ID' "${ANDROID_ID?}" "$?"
 
   log_out_blank
 
   DISPLAY_SIZE="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null size' | cut -d ':' -f '2-' -s | trim_space_left)"
-  display_info_or_warn 'Display size' "${DISPLAY_SIZE?}" "${?}" 'non-sensitive'
+  display_info_or_warn 'Display size' "${DISPLAY_SIZE?}" "$?" 'non-sensitive'
   DISPLAY_DENSITY="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null density' | cut -d ':' -f '2-' -s | trim_space_left)"
-  display_info_or_warn 'Display density' "${DISPLAY_DENSITY?}" "${?}" 'non-sensitive'
+  display_info_or_warn 'Display density' "${DISPLAY_DENSITY?}" "$?" 'non-sensitive'
 
   log_out_blank
 
@@ -1576,7 +1577,7 @@ dump_device_info()
   get_iccid "${SELECTED_DEVICE:?}"
 
   operator_current_slot="$(get_operator_alpha_multi_slot '1')"
-  display_info_or_warn "Operator" "${operator_current_slot?}" "${?}" 'non-sensitive'
+  display_info_or_warn "Operator" "${operator_current_slot?}" "$?" 'non-sensitive'
 
   get_line_number "${SELECTED_DEVICE:?}"
 
@@ -1611,7 +1612,7 @@ dump_device_info()
     get_imei_multi_slot "${SELECTED_DEVICE:?}" "${_index:?}"
 
     operator_current_slot="$(get_operator_alpha_multi_slot "${_index:?}")"
-    display_info_or_warn "Operator" "${operator_current_slot?}" "${?}" 'non-sensitive'
+    display_info_or_warn "Operator" "${operator_current_slot?}" "$?" 'non-sensitive'
 
     if ! compare_nocase "${slot_state?}" 'ABSENT'; then
       get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${_index:?}"
@@ -1632,10 +1633,10 @@ dump_device_info()
     GSF_ID_DEC="$(get_gsf_id "${SELECTED_DEVICE:?}")"
 
     GSF_ID="$(convert_dec_to_hex "${GSF_ID_DEC?}")" && is_valid_length "${GSF_ID?}" 16 16
-    display_info_or_warn 'GSF ID' "${GSF_ID?}" "${?}"
+    display_info_or_warn 'GSF ID' "${GSF_ID?}" "$?"
 
     is_valid_length "${GSF_ID_DEC?}" 19 19
-    display_info_or_warn 'GSF ID (decimal)' "${GSF_ID_DEC?}" "${?}"
+    display_info_or_warn 'GSF ID (decimal)' "${GSF_ID_DEC?}" "$?"
   }
 
   log_out_blank
@@ -1693,7 +1694,7 @@ main()
         found=1
 
         if test "${OPEN_DEVICE_STATUS_INFO_ONLY?}" = 'true'; then
-          open_device_status_info "${_device_id?}" || status="${?}"
+          open_device_status_info "${_device_id?}" || status="$?"
           continue
         fi
 
@@ -1812,7 +1813,7 @@ if test "${execute_script:?}" = 'true'; then
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''
-  main "${@}" || STATUS="${?}"
+  main "${@}" || STATUS="$?"
   restore_codepage
   exec 3>&- # Close descriptor
 fi
