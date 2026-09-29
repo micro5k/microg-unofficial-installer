@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='1.9.29'
+readonly SCRIPT_VERSION='2.9.30'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -360,7 +360,7 @@ verify_adb_mode_deps()
 
 start_adb_server()
 {
-  test "${INPUT_TYPE?}" = 'adb' || return 0
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
   adb 2> /dev/null 'start-server'
   return "${?}"
 }

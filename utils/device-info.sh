@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.29'
+readonly SCRIPT_VERSION='2.9.30'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -383,7 +383,7 @@ verify_adb_mode_deps()
 
 start_adb_server()
 {
-  test "${INPUT_TYPE?}" = 'adb' || return 0
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
   adb 2> /dev/null 'start-server'
   return "${?}"
 }
@@ -499,8 +499,7 @@ is_timeout()
 
 adb_unfroze()
 {
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 0; fi
-
+  case "${PROP_TYPE}" in A) ;; *) return 0 ;; esac
   log_non_fatal 'adb was frozen, reconnecting...'
   adb 1> /dev/null 2>&1 -s "${1:?}" reconnect # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
   detect_status_and_wait_connection "${1:?}" 0
@@ -508,7 +507,7 @@ adb_unfroze()
 
 adb_root()
 {
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 0; fi
+  case "${PROP_TYPE}" in A) ;; *) return 0 ;; esac
   if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '\r' || true)" = 'root'; then return 0; fi # Already rooted
 
   timeout 1> /dev/null 2>&1 -- 6 adb -s "${1:?}" root
@@ -782,7 +781,7 @@ get_and_check_prop_silent()
 
 device_get_file_content()
 {
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
   adb -s "${1:?}" shell "test -r '${2:?}' && cat '${2:?}'" | LC_ALL=C tr -d '\r'
 }
 
@@ -835,8 +834,7 @@ get_android_id()
 get_gsf_id()
 {
   local _val _my_command
-
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
   # We want this without expansion, since it will happens later inside adb shell
   # shellcheck disable=SC2016
@@ -856,8 +854,7 @@ get_gsf_id()
 get_advertising_id()
 {
   local adid
-
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
   adid="$(adb -s "${1:?}" shell 'cat "/data/data/com.google.android.gms/shared_prefs/adid_settings.xml" 2> /dev/null')" || adid=''
   test "${adid?}" != '' || return 1
@@ -900,7 +897,7 @@ get_device_back_color()
 device_shell()
 {
   local _device
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
   _device="${1:?}"
   shift
@@ -911,7 +908,7 @@ device_shell()
 device_get_devpath()
 {
   local _val
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
   if _val="$(adb -s "${1:?}" 'get-devpath' | LC_ALL=C tr -d '\r')" && test "${_val?}" != 'unknown'; then
     printf '%s\n' "${_val?}"
@@ -940,7 +937,7 @@ apply_phonesubinfo_deviation()
 call_phonesubinfo()
 {
   local _device _method_code
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
   _device="${1:?}"
   _method_code="$(apply_phonesubinfo_deviation "${2:?}")"
@@ -1052,8 +1049,9 @@ validate_and_display_info()
 open_device_status_info()
 {
   local _device
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
+
   _device="${1:?}"
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
 
   log_status 'Opening About phone > Status...'
 
@@ -1105,7 +1103,7 @@ open_device_status_info()
 get_kernel_version()
 {
   local _val
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
   if _val="$(adb -s "${1:?}" shell 'if command 1> /dev/null -v "uname" && uname 2> /dev/null -r; then :; elif test -r "/proc/version"; then cat "/proc/version"; fi' | LC_ALL=C tr -d '\r')"; then
     case "${_val?}" in
@@ -1125,9 +1123,9 @@ get_kernel_version()
 get_imei_via_MMI_code()
 {
   local _device
-  _device="${1:?}"
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+  _device="${1:?}"
 
   adb 1> /dev/null 2>&1 -s "${_device:?}" shell '
     svc power stayon true
@@ -1415,7 +1413,7 @@ parse_nv_data()
   HARDWARE_VERSION=''
   PRODUCT_CODE=''
 
-  if test "${INPUT_TYPE:?}" != 'adb'; then return 1; fi
+  case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
   _path="$(get_data_folder)" || return 1
   rm -f "${_path:?}/nv_data.bin" || return 1
