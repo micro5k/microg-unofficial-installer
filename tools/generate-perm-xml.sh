@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.38'
+readonly SCRIPT_VERSION='0.3.39'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -330,6 +330,7 @@ get_custom_permission_declaration()
   grep -H -F -e "android:name=\"${1:?}\"" 0<< 'EOF'
     # packages/providers/DownloadProvider
     <permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" android:permissionGroup="android.permission-group.NETWORK" android:protectionLevel="normal"/>
+
     # GSF
     <permission android:name="com.google.android.c2dm.permission.RECEIVE" android:protectionLevel="normal"/>
     <permission android:name="com.google.android.c2dm.permission.SEND" android:protectionLevel="signatureOrSystem"/>
@@ -339,6 +340,7 @@ get_custom_permission_declaration()
     <permission android:name="com.google.android.providers.gsf.permission.WRITE_GSERVICES" android:protectionLevel="signature"/>
     <permission android:name="com.google.android.providers.settings.permission.READ_GSETTINGS" android:protectionLevel="signature"/>
     <permission android:name="com.google.android.providers.settings.permission.WRITE_GSETTINGS" android:protectionLevel="signature"/>
+
     # GM
     <permission android:name="com.google.android.gm.email.permission.ACCESS_PROVIDER" android:protectionLevel="signature"/>
     <permission android:name="com.google.android.gm.email.permission.GET_WIDGET_UPDATE" android:protectionLevel="signature"/>
@@ -349,6 +351,21 @@ get_custom_permission_declaration()
     <permission android:name="com.google.android.gm.permission.READ_CONTENT_PROVIDER" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="dangerous"/>
     <permission android:name="com.google.android.gm.permission.READ_GMAIL" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
     <permission android:name="com.google.android.gm.permission.WRITE_GMAIL" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
+
+    <!-- https://android.googlesource.com/platform/packages/modules/AdServices/+/refs/heads/main/adservices/apk/AndroidManifest.xml -->
+    <permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" android:protectionLevel="normal"/>
+    <permission android:name="android.permission.ACCESS_ADSERVICES_AD_SELECTION" android:protectionLevel="normal"/>
+    <permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" android:protectionLevel="normal"/>
+    <permission android:name="android.permission.ACCESS_ADSERVICES_CUSTOM_AUDIENCE" android:protectionLevel="normal"/>
+    <permission android:name="android.permission.ACCESS_ADSERVICES_MANAGER" android:protectionLevel="signature"/>
+    <permission android:name="android.permission.ACCESS_ADSERVICES_PROTECTED_SIGNALS" android:protectionLevel="normal"/>
+    <permission android:name="android.permission.ACCESS_ADSERVICES_STATE" android:protectionLevel="signature|configurator"/>
+    <permission android:name="android.permission.ACCESS_ADSERVICES_TOPICS" android:protectionLevel="normal"/>
+    <permission android:name="android.permission.ACCESS_PRIVILEGED_AD_ID" android:protectionLevel="signature"/>
+    <permission android:name="android.permission.ACCESS_PRIVILEGED_ADSERVICES_COBALT_UPLOAD" android:protectionLevel="signature"/>
+    <permission android:name="android.permission.ACCESS_PRIVILEGED_APP_SET_ID" android:protectionLevel="signature"/>
+    <permission android:name="android.permission.MODIFY_ADSERVICES_STATE" android:protectionLevel="signature|configurator"/>
+    <permission android:name="android.permission.UPDATE_PRIVILEGED_AD_ID" android:protectionLevel="signature|configurator"/>
 EOF
 
   # <permission-tree android:name="com.google.android.googleapps.permission.GOOGLE_AUTH"/>
