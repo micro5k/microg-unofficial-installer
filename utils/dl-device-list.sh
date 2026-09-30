@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.11'
+readonly SCRIPT_VERSION='0.1.12'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -200,7 +200,7 @@ resolve_data_dir()
     __fn_path='./data'
   fi
 
-  __fn_path="$(realpath 2> /dev/null "${__fn_path:?}" || readlink -f "${__fn_path:?}")" || return 1
+  __fn_path="$(realpath 2> /dev/null "${__fn_path}" || readlink -f "${__fn_path}")" || return 1
   printf '%s\n' "${__fn_path:?}"
   return 0
 }

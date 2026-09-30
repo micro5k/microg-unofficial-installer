@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.34'
+readonly SCRIPT_VERSION='2.9.36'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -307,7 +307,7 @@ resolve_data_dir()
     __fn_path='./data'
   fi
 
-  __fn_path="$(realpath 2> /dev/null "${__fn_path:?}" || readlink -f "${__fn_path:?}")" || return 1
+  __fn_path="$(realpath 2> /dev/null "${__fn_path}" || readlink -f "${__fn_path}")" || return 1
   printf '%s\n' "${__fn_path:?}"
   return 0
 }

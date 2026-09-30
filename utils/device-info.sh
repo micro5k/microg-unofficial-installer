@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.35'
+readonly SCRIPT_VERSION='2.9.36'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -342,6 +342,29 @@ set_android_sdk_path_if_unset()
   else
     ANDROID_HOME=''
   fi
+  return 0
+}
+#endregion
+
+# @section STORAGE & DIRECTORY FUNCTIONS ----
+#region
+resolve_data_dir()
+{
+  local __fn_path=''
+
+  # shellcheck disable=SC3028,SC2128 # IGNORE: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
+  if test -n "${UTILS_DATA_DIR-}" && __fn_path="${UTILS_DATA_DIR}"; then
+    :
+  elif test -n "${BASH_SOURCE-}" && test -f "${BASH_SOURCE}" && __fn_path="$(dirname "${BASH_SOURCE}")/data"; then
+    : # NOTE: Index omitted intentionally; we explicitly want the first element only
+  elif test -n "${0-}" && test -f "${0}" && __fn_path="$(dirname "${0}")/data"; then
+    :
+  else
+    __fn_path='./data'
+  fi
+
+  __fn_path="$(realpath 2> /dev/null "${__fn_path}" || readlink -f "${__fn_path}")" || return 1
+  printf '%s\n' "${__fn_path:?}"
   return 0
 }
 #endregion
@@ -1378,47 +1401,28 @@ get_iccid()
   display_phonesubinfo_or_warn 'ICCID (SIM serial number)' "${_val?}" "$?"
 }
 
-get_data_folder()
-{
-  local _path
-
-  # shellcheck disable=SC3028
-  if test -n "${UTILS_DATA_DIR:-}"; then
-    _path="${UTILS_DATA_DIR:?}"
-  elif test -n "${BASH_SOURCE:-}" && _path="$(dirname "${BASH_SOURCE:?}")/data"; then # Expanding an array without an index gives the first element (it is intended)
-    :
-  elif test -n "${0:-}" && _path="$(dirname "${0:?}")/data"; then
-    :
-  else
-    _path='./data'
-  fi
-
-  _path="$(realpath "${_path:?}")" || return 1
-
-  if test ! -e "${_path:?}"; then
-    mkdir -p "${_path:?}" || return 1
-  fi
-
-  printf '%s\n' "${_path:?}"
-}
-
 parse_nv_data()
 {
-  local _path
+  local __fn_path
   HARDWARE_VERSION=''
   PRODUCT_CODE=''
   case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
-  _path="$(get_data_folder)" || return 2
+  if __fn_path="$(resolve_data_dir)" && mkdir -p -- "${__fn_path}"; then
+    :
+  else
+    log_non_fatal 'Unable to create the data directory'
+    return 2
+  fi
 
-  rm -f "${_path}/nv_data.bin" || return 3
-  MSYS_NO_PATHCONV=1 adb -s "${1:?}" pull '/efs/nv_data.bin' "${_path}/nv_data.bin" 1> /dev/null 2>&1 || return 4
-  test -f "${_path}/nv_data.bin" || return 5
+  rm -f "${__fn_path}/nv_data.bin" || return 3
+  MSYS_NO_PATHCONV=1 adb -s "${1:?}" pull '/efs/nv_data.bin' "${__fn_path}/nv_data.bin" 1> /dev/null 2>&1 || return 4
+  test -f "${__fn_path}/nv_data.bin" || return 5
 
-  HARDWARE_VERSION="$(dd if="${_path}/nv_data.bin" skip=1605636 count=18 iflag=skip_bytes,count_bytes status=none | LC_ALL=C tr -d '\0')"
-  PRODUCT_CODE="$(dd if="${_path}/nv_data.bin" skip=1605654 count=20 iflag=skip_bytes,count_bytes status=none | LC_ALL=C tr -d '\0')"
+  HARDWARE_VERSION="$(dd if="${__fn_path}/nv_data.bin" skip=1605636 count=18 iflag=skip_bytes,count_bytes status=none | LC_ALL=C tr -d '\0')"
+  PRODUCT_CODE="$(dd if="${__fn_path}/nv_data.bin" skip=1605654 count=20 iflag=skip_bytes,count_bytes status=none | LC_ALL=C tr -d '\0')"
 
-  rm -f "${_path}/nv_data.bin" || :
+  rm -f "${__fn_path}/nv_data.bin" || :
   return 0
 }
 
