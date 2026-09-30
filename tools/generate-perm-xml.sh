@@ -579,7 +579,7 @@ parse_perms_and_generate_xml_files()
     {
       begin_xml "${_pkg_name:?}" "${_cert_sha256?}" 'default-permissions'
       LAST_PERM_GROUP=''
-      printf '%s' "${_dangerous_perm_list:?}" | LC_ALL='C.UTF-8' sort | while IFS='|' read -r GROUP _ NAME WHITELIST MIN_API; do
+      printf '%s' "${_dangerous_perm_list:?}" | LC_ALL=C sort | while IFS='|' read -r GROUP _ NAME WHITELIST MIN_API; do
         append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'default-permissions' "${GROUP:?}" "${WHITELIST:?}" || {
           log_err "Failed to append the '${NAME?}' permission on '${_filename?}'"
           return 7
@@ -693,7 +693,7 @@ main()
       continue
     fi
 
-    perm_list="$(printf '%s\n' "${cmd_output?}" | grep -F -e 'uses-permission:' | cut -d "'" -f '2' -s | LC_ALL='C.UTF-8' sort)" || {
+    perm_list="$(printf '%s\n' "${cmd_output?}" | grep -F -e 'uses-permission:' | cut -d "'" -f '2' -s | LC_ALL=C sort)" || {
       log_warn 'This APK file does NOT request any permissions'
       shift
       continue

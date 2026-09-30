@@ -63,7 +63,7 @@ jobs:
           fi
           set -- './zip-content' || exit "${?}"
           test ! -d "${GITHUB_WORKSPACE:?}/cache/build" || set -- "${@}" "${GITHUB_WORKSPACE:?}/cache/build" || exit "${?}"
-          find "${@}" -name '*.apk' | LC_ALL='C.UTF-8' sort | "${GITHUB_WORKSPACE:?}/scripts-repo/tools/generate-perm-xml.sh" --use-placeholders - || exit "${?}"
+          find "${@}" -name '*.apk' | LC_ALL=C sort | "${GITHUB_WORKSPACE:?}/scripts-repo/tools/generate-perm-xml.sh" --use-placeholders - || exit "${?}"
       - name: "Store artifacts"
         uses: actions/upload-artifact@v7
         timeout-minutes: 10

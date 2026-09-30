@@ -288,7 +288,7 @@ main()
       continue
     fi
 
-    printf '%s\n' "${cmd_output?}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL='C.UTF-8' sort || {
+    printf '%s\n' "${cmd_output?}" | grep -F -e 'uses-permission: ' | cut -d ':' -f '2-' -s | cut -b '2-' | LC_ALL=C sort || {
       log_warn 'This APK file does NOT request any permissions'
     }
     cmd_output=''
