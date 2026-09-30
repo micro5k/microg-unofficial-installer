@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.34'
+readonly SCRIPT_VERSION='2.9.35'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -784,7 +784,7 @@ get_and_check_prop_silent()
 device_get_file_content()
 {
   case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
-  adb -s "${1:?}" shell "test -r '${2:?}' && cat '${2:?}'" | LC_ALL=C tr -d '\r'
+  adb -s "${1:?}" shell "test -r '${2:?}' && cat '${2}'" | LC_ALL=C tr -d '\r'
 }
 
 find_serialno()
@@ -1221,10 +1221,7 @@ get_imei_multi_slot()
 get_imei()
 {
   local _backup_ifs _tmp
-  local _val _index _imei_sv
-
-  _val=''
-  _imei_sv=''
+  local _val='' _index _imei_sv=''
 
   if _val="$(device_shell "${1:?}" 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && is_valid_imei "${_val?}"; then
     : # Presumably Android 1.0-4.4W (but it doesn't work on all devices)
@@ -1257,8 +1254,6 @@ get_imei()
 
       IFS="${_backup_ifs:-}"
     fi
-  else
-    _val=''
   fi
 
   INFO_IMEI="${_val?}"
@@ -1412,19 +1407,19 @@ parse_nv_data()
   local _path
   HARDWARE_VERSION=''
   PRODUCT_CODE=''
-
   case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
 
-  _path="$(get_data_folder)" || return 1
-  rm -f "${_path:?}/nv_data.bin" || return 1
+  _path="$(get_data_folder)" || return 2
 
-  adb 1> /dev/null 2>&1 -s "${1:?}" pull '/efs/nv_data.bin' "${_path:?}/nv_data.bin" || return 1
-  if test ! -r "${_path:?}/nv_data.bin"; then return 1; fi
+  rm -f "${_path}/nv_data.bin" || return 3
+  MSYS_NO_PATHCONV=1 adb -s "${1:?}" pull '/efs/nv_data.bin' "${_path}/nv_data.bin" 1> /dev/null 2>&1 || return 4
+  test -f "${_path}/nv_data.bin" || return 5
 
-  HARDWARE_VERSION="$(dd if="${_path:?}/nv_data.bin" skip=1605636 count=18 iflag=skip_bytes,count_bytes status=none)"
-  PRODUCT_CODE="$(dd if="${_path:?}/nv_data.bin" skip=1605654 count=20 iflag=skip_bytes,count_bytes status=none)"
+  HARDWARE_VERSION="$(dd if="${_path}/nv_data.bin" skip=1605636 count=18 iflag=skip_bytes,count_bytes status=none | LC_ALL=C tr -d '\0')"
+  PRODUCT_CODE="$(dd if="${_path}/nv_data.bin" skip=1605654 count=20 iflag=skip_bytes,count_bytes status=none | LC_ALL=C tr -d '\0')"
 
-  rm -f "${_path:?}/nv_data.bin" || return 1
+  rm -f "${_path}/nv_data.bin" || :
+  return 0
 }
 
 get_slot_info()
