@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.38'
+readonly SCRIPT_VERSION='2.9.39'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -66,16 +66,17 @@ fix_posix_emulation_if_needed()
 set_utf8_codepage()
 {
   if command -v 'chcp.com' 1> /dev/null 2>&1 && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2' -s | tr -d ' \r')" && test "${PREVIOUS_CODEPAGE}" -ne 65001; then
-    'chcp.com' 1> /dev/null 65001 || return "$?"
+    'chcp.com' 1> /dev/null 65001 || :
   else
     PREVIOUS_CODEPAGE=''
   fi
+  return 0
 }
 
 restore_codepage()
 {
   if test -n "${PREVIOUS_CODEPAGE-}"; then
-    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}" || :
+    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE}" || :
     PREVIOUS_CODEPAGE=''
   fi
   return 0
@@ -239,9 +240,10 @@ restore_title()
 
 init()
 {
-  export LANG='C.UTF-8'
+  export LANG='en_US.UTF-8'
 
   fix_posix_emulation_if_needed
+  set_utf8_codepage
   color_init
   log_scope_init
   return 0
@@ -1244,8 +1246,6 @@ done
 if test "${execute_script:?}" = 'true'; then
   init
   if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
-
-  set_utf8_codepage
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
   test "$#" -ne 0 || set -- ''

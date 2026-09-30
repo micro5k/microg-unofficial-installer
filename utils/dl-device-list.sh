@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.12'
+readonly SCRIPT_VERSION='0.1.13'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -68,16 +68,17 @@ fix_posix_emulation_if_needed()
 set_utf8_codepage()
 {
   if command -v 'chcp.com' 1> /dev/null 2>&1 && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2' -s | tr -d ' \r')" && test "${PREVIOUS_CODEPAGE}" -ne 65001; then
-    'chcp.com' 1> /dev/null 65001 || return "$?"
+    'chcp.com' 1> /dev/null 65001 || :
   else
     PREVIOUS_CODEPAGE=''
   fi
+  return 0
 }
 
 restore_codepage()
 {
   if test -n "${PREVIOUS_CODEPAGE-}"; then
-    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE:?}" || :
+    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE}" || :
     PREVIOUS_CODEPAGE=''
   fi
   return 0
@@ -326,7 +327,7 @@ main()
   esac
 
   if test "${ENABLE_UTF8?}" = 'true'; then
-    export LANG='C.UTF-8'
+    export LANG='en_US.UTF-8'
     set_utf8_codepage
   else
     export LANG='C'
