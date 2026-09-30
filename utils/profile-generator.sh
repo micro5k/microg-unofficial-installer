@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.36'
+readonly SCRIPT_VERSION='2.9.37'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -823,7 +823,7 @@ parse_devices_list()
   __fn_csv_model="$(csv_encode_field "${BUILD_MODEL?}" | escape_grep_literal)" || return 2
 
   # NOTE: We only cross-reference 'device' and 'model' against the certified list, brand discrepancies can be safely ignored
-  if grep -m 1 -e ",${__fn_csv_device?},${__fn_csv_model?}$" -- "${DATA_DIR}/device-list.csv" | cut -d ',' -f '2' -s; then
+  if grep -m 2 -e ",${__fn_csv_device?},${__fn_csv_model?}$" -- "${DATA_DIR}/device-list.csv" | cut -d ',' -f '2' -s; then
     return 0
   fi
 
@@ -836,7 +836,7 @@ generate_device_info()
 
   if is_valid_value "${MARKETING_DEVICE_INFO?}"; then
     _info="$(uc_first_char "${MARKETING_DEVICE_INFO:?}")"
-  elif test -n "${OFFICIAL_DEVICE_INFO?}" && is_valid_value "${OFFICIAL_DEVICE_INFO}" && ! contains_nocase "${OFFICIAL_DEVICE_INFO}" "${BUILD_MODEL?}"; then
+  elif test -n "${OFFICIAL_DEVICE_INFO?}" && test "${OFFICIAL_STATUS?}" -eq 0 && is_valid_value "${OFFICIAL_DEVICE_INFO}" && ! contains_nocase "${OFFICIAL_DEVICE_INFO}" "${BUILD_MODEL?}"; then
     _info="${OFFICIAL_DEVICE_INFO?}"
   elif compare_nocase "${BUILD_MANUFACTURER?}" 'Lenovo' && _lenovo_device_name="$(get_and_check_prop_silent 'ro.lenovo.series')"; then
     _info="$(uc_first_char "${_lenovo_device_name:?}")"
@@ -995,11 +995,14 @@ generate_profile()
   OFFICIAL_STATUS=0
   OFFICIAL_DEVICE_INFO="$(parse_devices_list)" || OFFICIAL_STATUS="$?"
   TEXT_OFFICIAL_STATUS=''
-  case "${OFFICIAL_STATUS:?}" in
+  case "${OFFICIAL_STATUS}" in
     0)
       log_status 'Device certified: YES'
       TEXT_OFFICIAL_STATUS=" <!-- Device certified: YES -->"
-      OFFICIAL_DEVICE_INFO="$(csv_decode_field "${OFFICIAL_DEVICE_INFO?}" || :)"
+      case "${OFFICIAL_DEVICE_INFO}" in
+        *"${NL:?}"*) OFFICIAL_DEVICE_INFO='' ;; # NOTE: Certified, but multiple matches mean exact model is unknown
+        *) OFFICIAL_DEVICE_INFO="$(csv_decode_field "${OFFICIAL_DEVICE_INFO}" || :)" ;;
+      esac
       ;;
     1)
       printf 1>&2 '%b%s%b%s%b\n' "${CLR_GREEN}" 'Device certified: ' "${CLR_RED}" 'NO' "${CLR_RESET}"
