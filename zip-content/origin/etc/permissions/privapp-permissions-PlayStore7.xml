@@ -7,6 +7,8 @@
 
 <permissions>
     <privapp-permissions package="com.android.vending" sha256-cert-digest="F0:FD:6C:5B:41:0F:25:CB:25:C3:B5:33:46:C8:97:2F:AE:30:F8:EE:74:11:DF:91:04:80:AD:6B:2D:60:DB:83">
+        <permission name="android.permission.ACCESS_DOWNLOAD_MANAGER" />
+        <permission name="android.permission.ACCESS_DOWNLOAD_MANAGER_ADVANCED" />
         <permission name="android.permission.BATTERY_STATS" />
         <permission name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />
         <permission name="android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST" />

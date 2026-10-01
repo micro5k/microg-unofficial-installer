@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.40'
+readonly SCRIPT_VERSION='0.3.41'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -328,9 +328,6 @@ get_permission_declaration()
 get_custom_permission_declaration()
 {
   grep -H -F -e "android:name=\"${1:?}\"" 0<< 'EOF'
-    # packages/providers/DownloadProvider
-    <permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" android:permissionGroup="android.permission-group.NETWORK" android:protectionLevel="normal"/>
-
     # GSF
     <permission android:name="com.google.android.c2dm.permission.RECEIVE" android:protectionLevel="normal"/>
     <permission android:name="com.google.android.c2dm.permission.SEND" android:protectionLevel="signatureOrSystem"/>
@@ -351,6 +348,14 @@ get_custom_permission_declaration()
     <permission android:name="com.google.android.gm.permission.READ_CONTENT_PROVIDER" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="dangerous"/>
     <permission android:name="com.google.android.gm.permission.READ_GMAIL" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
     <permission android:name="com.google.android.gm.permission.WRITE_GMAIL" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
+
+    <!-- https://android.googlesource.com/platform/packages/providers/DownloadProvider/+/refs/heads/main/AndroidManifest.xml -->
+    <permission android:name="android.permission.ACCESS_ALL_DOWNLOADS" android:protectionLevel="signature"/>
+    <permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER" android:protectionLevel="signatureOrSystem"/>
+    <permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER_ADVANCED" android:protectionLevel="signatureOrSystem"/>
+    <permission android:name="android.permission.DOWNLOAD_CACHE_NON_PURGEABLE" android:protectionLevel="signatureOrSystem"/>
+    <permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" android:protectionLevel="normal" android:permissionGroup="android.permission-group.NETWORK"/>
+    <permission android:name="android.permission.SEND_DOWNLOAD_COMPLETED_INTENTS" android:protectionLevel="signature"/>
 
     <!-- https://android.googlesource.com/platform/packages/modules/AdServices/+/refs/heads/main/adservices/apk/AndroidManifest.xml -->
     <permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" android:protectionLevel="normal"/>
