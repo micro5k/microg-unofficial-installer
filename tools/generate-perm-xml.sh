@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.39'
+readonly SCRIPT_VERSION='0.3.40'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -401,13 +401,13 @@ begin_xml()
 
 append_perm_to_xml()
 {
-  local _xml_compat_info
+  local _xml_compat_info=''
 
-  case "${2:?}" in '23') _xml_compat_info='' ;; *) _xml_compat_info=" <!-- MinApi: ${2:?} -->" ;; esac
-  if test -n "${4?}" && test "${4:?}" != "${LAST_PERM_GROUP?}" && LAST_PERM_GROUP="${4:?}"; then printf '%s\n' "        <!-- ${4#"z)"} -->"; fi
+  if test -n "${4?}" && test "${4}" != "${LAST_PERM_GROUP?}" && LAST_PERM_GROUP="${4}"; then printf '%s\n' "        <!-- ${4#"z)"} -->"; fi
 
   case "${3:?}" in
     'privapp-permissions')
+      case "${2}" in 23 | 24 | 25 | 26) ;; *) _xml_compat_info=" <!-- MinApi: ${2:?} -->" ;; esac
       if test "${1:?}" = 'android.permission.FAKE_PACKAGE_SIGNATURE' && test "${PLACEHOLDERS:?}" = 'true'; then
         printf '%s\n' "        <!-- %${1#"android.permission."}% -->${_xml_compat_info?}"
       else
@@ -415,6 +415,7 @@ append_perm_to_xml()
       fi
       ;;
     'default-permissions')
+      case "${2}" in 23) ;; *) _xml_compat_info=" <!-- MinApi: ${2:?} -->" ;; esac
       if {
         test -n "${_xml_compat_info?}" || test "${1:?}" = 'android.permission.FAKE_PACKAGE_SIGNATURE'
       } && test "${PLACEHOLDERS:?}" = 'true'; then
@@ -447,7 +448,7 @@ parse_perms_and_generate_xml_files()
   local _backup_ifs="${IFS-}"
   local _filename _base_name _pkg_name _cert_sha256 _input _perm _api
   local _perm_decl_all _perm_decl _perm_prot_level _perm_flags _perm_whitelist _no_api_difference _perm_group _perm_after _perm_min_api
-  local _perm_is_privileged _perm_is_dangerous _perm_type_found _perm_fake_sign
+  local _perm_is_privileged _perm_is_dangerous _perm_fake_sign
   local _privileged_perm_list _dangerous_perm_list
 
   _base_name="${1%".apk"}"
@@ -518,31 +519,24 @@ parse_perms_and_generate_xml_files()
         continue
       }
 
-      _perm_type_found='false'
-      case "|${_perm_prot_level?}|" in *'|normal|'* | *'|preinstalled|'*) _perm_type_found='true' ;; *) ;; esac
+      case "|${_perm_prot_level?}|" in
+        *'|privileged|'* | *'|system|'* | *'|signatureOrSystem|'*)
+          # NOTE: Exclude privileged permissions that were privileged only in APIs < 26, as privileged permission XMLs were introduced in API 26
+          if test "${_api:?}" -ge 26 || test "${_no_api_difference:?}" = 'true'; then _perm_is_privileged='true'; fi
+          ;;
 
-      case "|${_perm_prot_level?}|" in *'|privileged|'* | *'|system|'* | *'|signatureOrSystem|'*)
-        _perm_type_found='true'
-        # The XML files for privileged permissions only exist from API 26 onwards, so if a permission is only privileged in older versions, we exclude it.
-        if test "${_api:?}" -ge 26 || test "${_no_api_difference:?}" = 'true'; then _perm_is_privileged='true'; fi
-        ;;
-      *) ;;
-      esac
+        *'|dangerous|'*)
+          # NOTE: Default runtime permission XMLs were introduced in API 23
+          _perm_is_dangerous='true'
+          _perm_flags="$(printf '%s\n' "${_perm_decl:?}" | grep -o -e 'android:permissionFlags="[^"]*"' | cut -d '"' -f '2' -s)" || _perm_flags=''
+          case "|${_perm_flags?}|" in *'|hardRestricted|'* | *'|softRestricted|'*) _perm_whitelist='true' ;; *) ;; esac
+          ;;
 
-      case "|${_perm_prot_level?}|" in *'|dangerous|'*)
-        _perm_type_found='true'
-        _perm_is_dangerous='true'
+        *'|normal|'* | *'|preinstalled|'*) ;;
 
-        _perm_flags="$(printf '%s\n' "${_perm_decl:?}" | grep -o -e 'android:permissionFlags="[^"]*"' | cut -d '"' -f '2' -s)" || _perm_flags=''
-        case "|${_perm_flags?}|" in *'|hardRestricted|'* | *'|softRestricted|'*) _perm_whitelist='true' ;; *) ;; esac
-        ;;
-      *) ;;
-      esac
-
-      case "${_perm_type_found?}" in
-        'true') ;;
         *) log_warn "Unknown protection level for '${_perm?}'$(test "${_no_api_difference:?}" = 'true' || printf '%s\n' " on API ${_api?}" || :)$(test "${SCRIPT_VERBOSE:?}" = 'false' || printf '%s\n' " => ${_perm_prot_level?}" || :)" ;;
       esac
+
       test "${_no_api_difference:?}" = 'false' || break
     done
 
@@ -582,7 +576,7 @@ parse_perms_and_generate_xml_files()
     {
       begin_xml "${_pkg_name:?}" "${_cert_sha256?}" 'privapp-permissions'
       printf '%s' "${_privileged_perm_list:?}" | while IFS='|' read -r NAME MIN_API; do
-        append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'privapp-permissions' '' '' || {
+        append_perm_to_xml "${NAME:?}" "${MIN_API}" 'privapp-permissions' '' '' || {
           log_err "Failed to append the '${NAME?}' permission on '${_filename?}'"
           return 6
         }
@@ -597,7 +591,7 @@ parse_perms_and_generate_xml_files()
       begin_xml "${_pkg_name:?}" "${_cert_sha256?}" 'default-permissions'
       LAST_PERM_GROUP=''
       printf '%s' "${_dangerous_perm_list:?}" | LC_ALL=C sort | while IFS='|' read -r GROUP _ NAME WHITELIST MIN_API; do
-        append_perm_to_xml "${NAME:?}" "${MIN_API:?}" 'default-permissions' "${GROUP:?}" "${WHITELIST:?}" || {
+        append_perm_to_xml "${NAME:?}" "${MIN_API}" 'default-permissions' "${GROUP:?}" "${WHITELIST:?}" || {
           log_err "Failed to append the '${NAME?}' permission on '${_filename?}'"
           return 7
         }

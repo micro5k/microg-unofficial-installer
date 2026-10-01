@@ -20,7 +20,7 @@
         <permission name="android.permission.LOCATION_HARDWARE" />
         <permission name="android.permission.MANAGE_USB" />
         <permission name="android.permission.MODIFY_AUDIO_ROUTING" />
-        <permission name="android.permission.MODIFY_DAY_NIGHT_MODE" /> <!-- MinApi: 24 -->
+        <permission name="android.permission.MODIFY_DAY_NIGHT_MODE" />
         <permission name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
         <permission name="android.permission.SCHEDULE_EXACT_ALARM" /> <!-- MinApi: 31 -->
         <permission name="android.permission.START_ACTIVITIES_FROM_BACKGROUND" /> <!-- MinApi: 29 -->
