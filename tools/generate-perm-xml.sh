@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.41'
+readonly SCRIPT_VERSION='0.3.42'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -151,6 +151,12 @@ log_status()
 log_warn()
 {
   printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
+}
+
+log_non_fatal()
+{
+  printf 1>&2 '%b%*s%s%b\n' "${CLR_MAGENTA}" "${LOG_LEVEL}" '' "NON-FATAL ERROR: ${1}" "${CLR_RESET}"
+  return 0
 }
 
 log_err()
@@ -284,7 +290,7 @@ is_system_permission()
 {
   case "${1:?}" in
     # https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/res/AndroidManifest.xml
-    com.android.vending.*) return 1 ;;
+    com.android.chrome.* | com.android.vending.*) return 1 ;;
     android.permission.* | com.android.permission.* | com.android.*.permission.*) return 0 ;;
     android.intent.category.MASTER_CLEAR.permission.C2D_MESSAGE) return 0 ;;
 
@@ -371,6 +377,9 @@ get_custom_permission_declaration()
     <permission android:name="android.permission.ACCESS_PRIVILEGED_APP_SET_ID" android:protectionLevel="signature"/>
     <permission android:name="android.permission.MODIFY_ADSERVICES_STATE" android:protectionLevel="signature|configurator"/>
     <permission android:name="android.permission.UPDATE_PRIVILEGED_AD_ID" android:protectionLevel="signature|configurator"/>
+
+    <!-- Non-existent but widespread permissions -->
+    <permission android:name="android.permission.ACCESS_COARSE_UPDATES" android:protectionLevel="invalid"/>
 EOF
 
   # <permission-tree android:name="com.google.android.googleapps.permission.GOOGLE_AUTH"/>
@@ -504,12 +513,17 @@ parse_perms_and_generate_xml_files()
     esac
 
     _no_api_difference='false'
-    if _perm_decl_all="$(grep -r -H -m 1 -F -e "android:name=\"${_perm:?}\"" -- "${DATA_DIR:?}/perms")"; then
+    if _perm_decl_all="$(grep -r -H -m 1 -F -e "android:name=\"${_perm}\"" -- "${DATA_DIR:?}/perms")"; then
       :
-    elif _perm_decl_all="$(get_custom_permission_declaration "${_perm:?}")"; then
+    elif _perm_decl_all="$(get_custom_permission_declaration "${_perm}")"; then
       _no_api_difference='true'
     else
-      log_warn "Unknown permission: ${_perm?}" # The permission cannot be found in any API, skip it
+      if is_system_permission "${_perm}"; then
+        log_non_fatal "Unknown permission: ${_perm}"
+      else
+        log_warn "Unknown permission: ${_perm}"
+      fi
+      # The permission cannot be found in any API, skip it
       continue
     fi
 
@@ -537,7 +551,7 @@ parse_perms_and_generate_xml_files()
           case "|${_perm_flags?}|" in *'|hardRestricted|'* | *'|softRestricted|'*) _perm_whitelist='true' ;; *) ;; esac
           ;;
 
-        *'|normal|'* | *'|preinstalled|'*) ;;
+        *'|normal|'* | *'|preinstalled|'* | *'|invalid|'*) ;;
 
         *) log_warn "Unknown protection level for '${_perm?}'$(test "${_no_api_difference:?}" = 'true' || printf '%s\n' " on API ${_api?}" || :)$(test "${SCRIPT_VERBOSE:?}" = 'false' || printf '%s\n' " => ${_perm_prot_level?}" || :)" ;;
       esac
