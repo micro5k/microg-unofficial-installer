@@ -125,11 +125,13 @@ log_scope_end()
 set_yellow_color()
 {
   printf 1>&2 '%b' "${CLR_YELLOW}"
+  return 0
 }
 
 reset_color()
 {
   printf 1>&2 '%b' "${CLR_RESET}"
+  return 0
 }
 
 log_out()
@@ -140,6 +142,7 @@ log_out()
 log_out_blank()
 {
   printf '\n'
+  return 0
 }
 
 log_status()
@@ -151,6 +154,7 @@ log_status()
 log_warn()
 {
   printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
+  return 0
 }
 
 log_non_fatal()
@@ -162,6 +166,7 @@ log_non_fatal()
 log_err()
 {
   printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
+  return 0
 }
 
 init()
@@ -334,27 +339,6 @@ get_permission_declaration()
 get_custom_permission_declaration()
 {
   grep -H -F -e "android:name=\"${1:?}\"" 0<< 'EOF'
-    # GSF
-    <permission android:name="com.google.android.c2dm.permission.RECEIVE" android:protectionLevel="normal"/>
-    <permission android:name="com.google.android.c2dm.permission.SEND" android:protectionLevel="signatureOrSystem"/>
-    <permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH" android:protectionLevel="signature"/>
-    <permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.mail" android:protectionLevel="signature"/>
-    <permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" android:protectionLevel="normal"/>
-    <permission android:name="com.google.android.providers.gsf.permission.WRITE_GSERVICES" android:protectionLevel="signature"/>
-    <permission android:name="com.google.android.providers.settings.permission.READ_GSETTINGS" android:protectionLevel="signature"/>
-    <permission android:name="com.google.android.providers.settings.permission.WRITE_GSETTINGS" android:protectionLevel="signature"/>
-
-    # GM
-    <permission android:name="com.google.android.gm.email.permission.ACCESS_PROVIDER" android:protectionLevel="signature"/>
-    <permission android:name="com.google.android.gm.email.permission.GET_WIDGET_UPDATE" android:protectionLevel="signature"/>
-    <permission android:name="com.google.android.gm.email.permission.READ_ATTACHMENT" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
-    <permission android:name="com.google.android.gm.email.permission.UPDATE_AUTH_NOTIFICATION" android:protectionLevel="signature"/>
-    <permission android:name="com.google.android.gm.permission.AUTO_SEND" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
-    <permission android:name="com.google.android.gm.permission.BROADCAST_INTERNAL" android:protectionLevel="signature"/>
-    <permission android:name="com.google.android.gm.permission.READ_CONTENT_PROVIDER" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="dangerous"/>
-    <permission android:name="com.google.android.gm.permission.READ_GMAIL" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
-    <permission android:name="com.google.android.gm.permission.WRITE_GMAIL" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
-
     <!-- https://android.googlesource.com/platform/packages/providers/DownloadProvider/+/refs/heads/main/AndroidManifest.xml -->
     <permission android:name="android.permission.ACCESS_ALL_DOWNLOADS" android:protectionLevel="signature"/>
     <permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER" android:protectionLevel="signatureOrSystem"/>
@@ -380,6 +364,27 @@ get_custom_permission_declaration()
 
     <!-- Non-existent but widespread permissions -->
     <permission android:name="android.permission.ACCESS_COARSE_UPDATES" android:protectionLevel="invalid"/>
+
+    # GSF
+    <permission android:name="com.google.android.c2dm.permission.RECEIVE" android:protectionLevel="normal"/>
+    <permission android:name="com.google.android.c2dm.permission.SEND" android:protectionLevel="signatureOrSystem"/>
+    <permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.mail" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" android:protectionLevel="normal"/>
+    <permission android:name="com.google.android.providers.gsf.permission.WRITE_GSERVICES" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.providers.settings.permission.READ_GSETTINGS" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.providers.settings.permission.WRITE_GSETTINGS" android:protectionLevel="signature"/>
+
+    # GM
+    <permission android:name="com.google.android.gm.email.permission.ACCESS_PROVIDER" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.email.permission.GET_WIDGET_UPDATE" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.email.permission.READ_ATTACHMENT" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.email.permission.UPDATE_AUTH_NOTIFICATION" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.permission.AUTO_SEND" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.permission.BROADCAST_INTERNAL" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.permission.READ_CONTENT_PROVIDER" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="dangerous"/>
+    <permission android:name="com.google.android.gm.permission.READ_GMAIL" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
+    <permission android:name="com.google.android.gm.permission.WRITE_GMAIL" android:permissionGroup="android.permission-group.MESSAGES" android:protectionLevel="signature"/>
 EOF
 
   # <permission-tree android:name="com.google.android.googleapps.permission.GOOGLE_AUTH"/>
