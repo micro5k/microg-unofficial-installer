@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.42'
+readonly SCRIPT_VERSION='0.3.43'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -294,8 +294,10 @@ get_apk_cert_sha256()
 is_system_permission()
 {
   case "${1:?}" in
-    # https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/res/AndroidManifest.xml
     com.android.chrome.* | com.android.vending.*) return 1 ;;
+    android.permission.READ_APP_BADGE) return 1 ;;
+
+    # https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/res/AndroidManifest.xml
     android.permission.* | com.android.permission.* | com.android.*.permission.*) return 0 ;;
     android.intent.category.MASTER_CLEAR.permission.C2D_MESSAGE) return 0 ;;
 
@@ -339,7 +341,7 @@ get_permission_declaration()
 get_custom_permission_declaration()
 {
   grep -H -F -e "android:name=\"${1:?}\"" 0<< 'EOF'
-    <!-- https://android.googlesource.com/platform/packages/providers/DownloadProvider/+/refs/heads/main/AndroidManifest.xml -->
+    <!-- https://android.googlesource.com/platform/packages/providers/DownloadProvider/+/HEAD/AndroidManifest.xml -->
     <permission android:name="android.permission.ACCESS_ALL_DOWNLOADS" android:protectionLevel="signature"/>
     <permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER" android:protectionLevel="signatureOrSystem"/>
     <permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER_ADVANCED" android:protectionLevel="signatureOrSystem"/>
@@ -347,7 +349,7 @@ get_custom_permission_declaration()
     <permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" android:protectionLevel="normal" android:permissionGroup="android.permission-group.NETWORK"/>
     <permission android:name="android.permission.SEND_DOWNLOAD_COMPLETED_INTENTS" android:protectionLevel="signature"/>
 
-    <!-- https://android.googlesource.com/platform/packages/modules/AdServices/+/refs/heads/main/adservices/apk/AndroidManifest.xml -->
+    <!-- https://android.googlesource.com/platform/packages/modules/AdServices/+/HEAD/adservices/apk/AndroidManifest.xml -->
     <permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" android:protectionLevel="normal"/>
     <permission android:name="android.permission.ACCESS_ADSERVICES_AD_SELECTION" android:protectionLevel="normal"/>
     <permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" android:protectionLevel="normal"/>
@@ -364,6 +366,9 @@ get_custom_permission_declaration()
 
     <!-- Non-existent but widespread permissions -->
     <permission android:name="android.permission.ACCESS_COARSE_UPDATES" android:protectionLevel="invalid"/>
+
+    <!-- Custom / OEM permissions (not native AOSP), despite the "android.permission" prefix -->
+    <permission android:name="android.permission.READ_APP_BADGE" android:protectionLevel="normal"/>
 
     # GSF
     <permission android:name="com.google.android.c2dm.permission.RECEIVE" android:protectionLevel="normal"/>
