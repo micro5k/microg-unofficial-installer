@@ -11,6 +11,6 @@
         <permission name="android.permission.INSTALL_PACKAGES" />
         <permission name="android.permission.INTERACT_ACROSS_PROFILES" /> <!-- MinApi: 29 -->
         <permission name="android.permission.INTERACT_ACROSS_USERS" />
-        <!-- %FAKE_PACKAGE_SIGNATURE% -->
+        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />
     </privapp-permissions>
 </permissions>

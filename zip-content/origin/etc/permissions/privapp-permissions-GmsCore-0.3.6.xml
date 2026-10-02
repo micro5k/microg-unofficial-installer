@@ -17,6 +17,6 @@
         <permission name="android.permission.UPDATE_APP_OPS_STATS" />
         <permission name="android.permission.UPDATE_DEVICE_STATS" />
         <permission name="android.permission.WATCH_APPOPS" /> <!-- MinApi: 28 -->
-        <!-- %FAKE_PACKAGE_SIGNATURE% -->
+        <permission name="android.permission.FAKE_PACKAGE_SIGNATURE" />
     </privapp-permissions>
 </permissions>

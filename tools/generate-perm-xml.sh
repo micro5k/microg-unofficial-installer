@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.3.43'
+readonly SCRIPT_VERSION='0.4.0'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -432,11 +432,7 @@ append_perm_to_xml()
   case "${3:?}" in
     'privapp-permissions')
       case "${2}" in 23 | 24 | 25 | 26) ;; *) _xml_compat_info=" <!-- MinApi: ${2:?} -->" ;; esac
-      if test "${1:?}" = 'android.permission.FAKE_PACKAGE_SIGNATURE' && test "${PLACEHOLDERS:?}" = 'true'; then
-        printf '%s\n' "        <!-- %${1#"android.permission."}% -->${_xml_compat_info?}"
-      else
-        printf '%s\n' "        <permission name=\"${1:?}\" />${_xml_compat_info?}"
-      fi
+      printf '%s\n' "        <permission name=\"${1:?}\" />${_xml_compat_info?}"
       ;;
     'default-permissions')
       case "${2}" in 23) ;; *) _xml_compat_info=" <!-- MinApi: ${2:?} -->" ;; esac
@@ -509,18 +505,25 @@ parse_perms_and_generate_xml_files()
     _perm_is_dangerous='false'
     _perm_whitelist='false'
 
-    test "${SCRIPT_VERBOSE:?}" = 'false' || printf 1>&2 '%s\n' "${_perm?}:"
-
     case "${_perm:?}" in
-      *'.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION')
+      *.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION)
         continue
         ;;
-      'android.permission.FAKE_PACKAGE_SIGNATURE')
+      android.permission.FAKE_PACKAGE_SIGNATURE)
         _perm_fake_sign='true'
         continue
         ;;
       *) ;;
     esac
+
+    case "${VERBOSE}" in
+      0) ;;
+      *)
+        log_scope_begin
+        log_out "${_perm}:"
+        ;;
+    esac
+    log_scope_begin
 
     _no_api_difference='false'
     if _perm_decl_all="$(grep -r -H -m 1 -F -e "android:name=\"${_perm}\"" -- "${DATA_DIR:?}/perms")"; then
@@ -533,13 +536,15 @@ parse_perms_and_generate_xml_files()
       else
         log_warn "Unknown permission: ${_perm}"
       fi
-      # The permission cannot be found in any API, skip it
-      continue
+
+      log_scope_end
+      case "${VERBOSE}" in 0) ;; *) log_scope_end ;; esac
+      continue # The permission cannot be found in any API, skip it
     fi
 
     for _api in $(seq -- 23 "${MAX_API:?}"); do
       _perm_decl="$(printf '%s\n' "${_perm_decl_all:?}" | grep -F -e "perms/${PERMS_DATA_PREFIX?}-${_api:?}.xml:" -e '(standard input):')" || {
-        test "${SCRIPT_VERBOSE:?}" = 'false' || log_warn "The '${_perm?}' permission cannot be found on API ${_api?}"
+        case "${VERBOSE}" in 0) ;; *) log_warn "The '${_perm?}' permission cannot be found on API ${_api?}" ;; esac
         continue
       }
       : "${_perm_min_api:=${_api:?}}" # Set min API for this permission
@@ -563,13 +568,24 @@ parse_perms_and_generate_xml_files()
 
         *'|normal|'* | *'|preinstalled|'* | *'|invalid|'*) ;;
 
-        *) log_warn "Unknown protection level for '${_perm?}'$(test "${_no_api_difference:?}" = 'true' || printf '%s\n' " on API ${_api?}" || :)$(test "${SCRIPT_VERBOSE:?}" = 'false' || printf '%s\n' " => ${_perm_prot_level?}" || :)" ;;
+        *)
+          case "${VERBOSE}" in
+            0) ;;
+            *) log_warn "Unknown protection level for '${_perm?}'$(test "${_no_api_difference:?}" = 'true' || printf '%s\n' " on API ${_api?}" || :) => ${_perm_prot_level?}" ;;
+          esac
+          ;;
       esac
 
       test "${_no_api_difference:?}" = 'false' || break
     done
 
-    test "${SCRIPT_VERBOSE:?}" = 'false' || printf 1>&2 '%s\n' "Min API ${_perm_min_api?}"
+    case "${VERBOSE}" in
+      0) ;;
+      *)
+        log_out "Min API ${_perm_min_api?}"
+        log_scope_end
+        ;;
+    esac
 
     if test "${_perm_is_privileged?}" = 'true' && is_system_permission "${_perm:?}"; then
       _privileged_perm_list="${_privileged_perm_list?}${_perm:?}|${_perm_min_api:?}${NL:?}"
@@ -593,6 +609,8 @@ parse_perms_and_generate_xml_files()
       esac
       _dangerous_perm_list="${_dangerous_perm_list?}${_perm_group:?}|${_perm_after:?}|${_perm:?}|${_perm_whitelist:?}|${_perm_min_api:?}${NL:?}"
     fi
+
+    log_scope_end
   done
 
   if test "${_perm_fake_sign:?}" = 'true'; then
@@ -768,7 +786,7 @@ main()
 execute_script='true'
 no_pause=0
 STATUS=0
-SCRIPT_VERBOSE='false'
+VERBOSE=0
 PLACEHOLDERS='false'
 NO_CERT_DIGEST='false'
 
@@ -785,7 +803,7 @@ while test "$#" -gt 0; do
       # REUSE-IgnoreEnd
       ;;
 
-    -v) SCRIPT_VERBOSE='true' ;;
+    -v | --verbose) VERBOSE="$((VERBOSE + 1))" ;;
     --use-placeholders) PLACEHOLDERS='true' ;;
     --no-cert-digest) NO_CERT_DIGEST='true' ;;
 
