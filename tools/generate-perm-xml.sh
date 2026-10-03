@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.4.0'
+readonly SCRIPT_VERSION='0.4.1'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -468,8 +468,8 @@ parse_perms_and_generate_xml_files()
   local _backup_ifs="${IFS-}"
   local _filename _base_name _pkg_name _cert_sha256 _input _perm _api
   local _perm_decl_all _perm_decl _perm_prot_level _perm_flags _perm_whitelist _no_api_difference _perm_group _perm_after _perm_min_api
-  local _perm_is_privileged _perm_is_dangerous _perm_fake_sign
-  local _privileged_perm_list _dangerous_perm_list
+  local _privileged_perm_list='' _dangerous_perm_list=''
+  local _is_privileged _is_dangerous _is_fake_sign=0
 
   _base_name="${1%".apk"}"
   _pkg_name="${2:?}"
@@ -495,14 +495,10 @@ parse_perms_and_generate_xml_files()
   # - https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/permission/Permissions.md
   # - https://developer.android.com/reference/android/R.attr#protectionLevel
 
-  _privileged_perm_list=''
-  _dangerous_perm_list=''
-  _perm_fake_sign='false'
-
   for _perm in "${@}"; do
     _perm_min_api=''
-    _perm_is_privileged='false'
-    _perm_is_dangerous='false'
+    _is_privileged='false'
+    _is_dangerous='false'
     _perm_whitelist='false'
 
     case "${_perm:?}" in
@@ -510,7 +506,8 @@ parse_perms_and_generate_xml_files()
         continue
         ;;
       android.permission.FAKE_PACKAGE_SIGNATURE)
-        _perm_fake_sign='true'
+        _is_fake_sign=1
+        case "${VERBOSE}" in 0) ;; *) log_out "${_perm}:" ;; esac
         continue
         ;;
       *) ;;
@@ -519,11 +516,10 @@ parse_perms_and_generate_xml_files()
     case "${VERBOSE}" in
       0) ;;
       *)
-        log_scope_begin
         log_out "${_perm}:"
+        log_scope_begin
         ;;
     esac
-    log_scope_begin
 
     _no_api_difference='false'
     if _perm_decl_all="$(grep -r -H -m 1 -F -e "android:name=\"${_perm}\"" -- "${DATA_DIR:?}/perms")"; then
@@ -537,7 +533,6 @@ parse_perms_and_generate_xml_files()
         log_warn "Unknown permission: ${_perm}"
       fi
 
-      log_scope_end
       case "${VERBOSE}" in 0) ;; *) log_scope_end ;; esac
       continue # The permission cannot be found in any API, skip it
     fi
@@ -556,12 +551,12 @@ parse_perms_and_generate_xml_files()
       case "|${_perm_prot_level?}|" in
         *'|privileged|'* | *'|system|'* | *'|signatureOrSystem|'*)
           # NOTE: Exclude privileged permissions that were privileged only in APIs < 26, as privileged permission XMLs were introduced in API 26
-          if test "${_api:?}" -ge 26 || test "${_no_api_difference:?}" = 'true'; then _perm_is_privileged='true'; fi
+          if test "${_api:?}" -ge 26 || test "${_no_api_difference:?}" = 'true'; then _is_privileged='true'; fi
           ;;
 
         *'|dangerous|'*)
           # NOTE: Default runtime permission XMLs were introduced in API 23
-          _perm_is_dangerous='true'
+          _is_dangerous='true'
           _perm_flags="$(printf '%s\n' "${_perm_decl:?}" | grep -o -e 'android:permissionFlags="[^"]*"' | cut -d '"' -f '2' -s)" || _perm_flags=''
           case "|${_perm_flags?}|" in *'|hardRestricted|'* | *'|softRestricted|'*) _perm_whitelist='true' ;; *) ;; esac
           ;;
@@ -579,19 +574,11 @@ parse_perms_and_generate_xml_files()
       test "${_no_api_difference:?}" = 'false' || break
     done
 
-    case "${VERBOSE}" in
-      0) ;;
-      *)
-        log_out "Min API ${_perm_min_api?}"
-        log_scope_end
-        ;;
-    esac
-
-    if test "${_perm_is_privileged?}" = 'true' && is_system_permission "${_perm:?}"; then
+    if test "${_is_privileged?}" = 'true' && is_system_permission "${_perm:?}"; then
       _privileged_perm_list="${_privileged_perm_list?}${_perm:?}|${_perm_min_api:?}${NL:?}"
     fi
 
-    if test "${_perm_is_dangerous?}" = 'true'; then
+    if test "${_is_dangerous?}" = 'true'; then
       _perm_decl="$(get_permission_declaration "${_perm:?}" 28)" || _perm_decl=''
       _perm_group="$(printf '%s\n' "${_perm_decl?}" | grep -o -e 'android:permissionGroup="[^"]*"' | cut -d '"' -f '2' -s)" || _perm_group=''
       if test -z "${_perm_group?}"; then
@@ -610,13 +597,22 @@ parse_perms_and_generate_xml_files()
       _dangerous_perm_list="${_dangerous_perm_list?}${_perm_group:?}|${_perm_after:?}|${_perm:?}|${_perm_whitelist:?}|${_perm_min_api:?}${NL:?}"
     fi
 
-    log_scope_end
+    case "${VERBOSE}" in
+      0) ;;
+      *)
+        log_out "Min API ${_perm_min_api}"
+        log_scope_end
+        ;;
+    esac
   done
 
-  if test "${_perm_fake_sign:?}" = 'true'; then
-    _privileged_perm_list="${_privileged_perm_list?}android.permission.FAKE_PACKAGE_SIGNATURE|23${NL:?}"
-    _dangerous_perm_list="${_dangerous_perm_list?}z)Signature spoofing||android.permission.FAKE_PACKAGE_SIGNATURE|false|23${NL:?}"
-  fi
+  case "${_is_fake_sign}" in
+    1)
+      _privileged_perm_list="${_privileged_perm_list?}android.permission.FAKE_PACKAGE_SIGNATURE|23${NL:?}"
+      _dangerous_perm_list="${_dangerous_perm_list?}z)Signature spoofing||android.permission.FAKE_PACKAGE_SIGNATURE|false|23${NL:?}"
+      ;;
+    *) ;;
+  esac
 
   if test -n "${_privileged_perm_list?}"; then
     _filename="privapp-permissions-${_base_name:?}.xml"
@@ -768,11 +764,13 @@ main()
     fi
 
     log_status 'Parsing...'
+    log_scope_begin
     printf '%s\n' "${perm_list:?}" | parse_perms_and_generate_xml_files "${base_name?}" "${pkg_name?}" "${cert_sha256?}" || {
       # NOTE: Reserved error codes for this function => 3-19
       status="${?}"
       log_err "Failed to parse and generate XML files for package '${pkg_name?}' (exit code: ${status?})"
     }
+    log_scope_end
 
     shift
   done
