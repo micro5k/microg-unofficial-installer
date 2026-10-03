@@ -20,10 +20,11 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.39'
+readonly SCRIPT_VERSION='2.9.40'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
+readonly EX_USAGE=64
 readonly EX_UNAVAILABLE=69
 readonly EX_CONFIG=78
 
@@ -1119,7 +1120,7 @@ main()
 {
   local status=0 found=0 first=1 _device_id='' _selected=''
 
-  if test -z "${1-}" || test "${1}" = 'adb'; then
+  if test "${1}" = 'adb'; then
     INPUT_TYPE='adb'
     PROP_TYPE='A'
   else
@@ -1162,6 +1163,14 @@ main()
       return 11
     }
   else
+    case "${1}" in
+      '')
+        log_err 'Please specify one file to process'
+        return "${EX_USAGE?}"
+        ;;
+      *) ;;
+    esac
+
     _selected="${1:?}"
     test -f "${_selected}" || {
       log_err "Input file doesn't exist => '${_selected}'"
@@ -1248,7 +1257,7 @@ if test "${execute_script:?}" = 'true'; then
   if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
   log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
 
-  test "$#" -ne 0 || set -- ''
+  test "$#" -ne 0 || set -- 'adb'
   main "${@}" || STATUS="$?"
   restore_codepage
 fi
