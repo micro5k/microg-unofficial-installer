@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.4.1'
+readonly SCRIPT_VERSION='0.4.2'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -468,7 +468,7 @@ parse_perms_and_generate_xml_files()
   local _backup_ifs="${IFS-}"
   local _filename _base_name _pkg_name _cert_sha256 _input _perm _api
   local _perm_decl_all _perm_decl _perm_prot_level _perm_flags _perm_whitelist _no_api_difference _perm_group _perm_after _perm_min_api
-  local _privileged_perm_list='' _dangerous_perm_list=''
+  local _privileged_perms='' _dangerous_perms=''
   local _is_privileged _is_dangerous _is_fake_sign=0
 
   _base_name="${1%".apk"}"
@@ -507,7 +507,7 @@ parse_perms_and_generate_xml_files()
         ;;
       android.permission.FAKE_PACKAGE_SIGNATURE)
         _is_fake_sign=1
-        case "${VERBOSE}" in 0) ;; *) log_out "${_perm}:" ;; esac
+        case "${VERBOSE}" in 0) ;; *) log_out "${_perm}" ;; esac
         continue
         ;;
       *) ;;
@@ -516,7 +516,7 @@ parse_perms_and_generate_xml_files()
     case "${VERBOSE}" in
       0) ;;
       *)
-        log_out "${_perm}:"
+        log_out "${_perm}"
         log_scope_begin
         ;;
     esac
@@ -542,13 +542,13 @@ parse_perms_and_generate_xml_files()
         case "${VERBOSE}" in 0) ;; *) log_warn "The '${_perm?}' permission cannot be found on API ${_api?}" ;; esac
         continue
       }
-      : "${_perm_min_api:=${_api:?}}" # Set min API for this permission
+      : "${_perm_min_api:=${_api}}" # Set min API for this permission
       _perm_prot_level="$(printf '%s\n' "${_perm_decl:?}" | grep -o -e 'android:protectionLevel="[^"]*"' | cut -d '"' -f '2' -s)" || {
         log_err "Failed to the parse protection level of '${_perm?}' on API ${_api?}"
         continue
       }
 
-      case "|${_perm_prot_level?}|" in
+      case "|${_perm_prot_level}|" in
         *'|privileged|'* | *'|system|'* | *'|signatureOrSystem|'*)
           # NOTE: Exclude privileged permissions that were privileged only in APIs < 26, as privileged permission XMLs were introduced in API 26
           if test "${_api:?}" -ge 26 || test "${_no_api_difference:?}" = 'true'; then _is_privileged='true'; fi
@@ -575,7 +575,7 @@ parse_perms_and_generate_xml_files()
     done
 
     if test "${_is_privileged?}" = 'true' && is_system_permission "${_perm:?}"; then
-      _privileged_perm_list="${_privileged_perm_list?}${_perm:?}|${_perm_min_api:?}${NL:?}"
+      _privileged_perms="${_privileged_perms?}${_perm:?}|${_perm_min_api:?}${NL:?}"
     fi
 
     if test "${_is_dangerous?}" = 'true'; then
@@ -594,13 +594,15 @@ parse_perms_and_generate_xml_files()
         'android.permission.ACCESS_BACKGROUND_LOCATION') _perm_after='android.permission.ACCESS_FINE_LOCATION+' ;;
         *) _perm_after="${_perm:?} " ;;
       esac
-      _dangerous_perm_list="${_dangerous_perm_list?}${_perm_group:?}|${_perm_after:?}|${_perm:?}|${_perm_whitelist:?}|${_perm_min_api:?}${NL:?}"
+      _dangerous_perms="${_dangerous_perms?}${_perm_group:?}|${_perm_after:?}|${_perm:?}|${_perm_whitelist:?}|${_perm_min_api:?}${NL:?}"
     fi
 
     case "${VERBOSE}" in
       0) ;;
       *)
-        log_out "Min API ${_perm_min_api}"
+        if test "${_no_api_difference}" != 'true'; then
+          log_out "Min API ${_perm_min_api}"
+        fi
         log_scope_end
         ;;
     esac
@@ -608,17 +610,17 @@ parse_perms_and_generate_xml_files()
 
   case "${_is_fake_sign}" in
     1)
-      _privileged_perm_list="${_privileged_perm_list?}android.permission.FAKE_PACKAGE_SIGNATURE|23${NL:?}"
-      _dangerous_perm_list="${_dangerous_perm_list?}z)Signature spoofing||android.permission.FAKE_PACKAGE_SIGNATURE|false|23${NL:?}"
+      _privileged_perms="${_privileged_perms?}android.permission.FAKE_PACKAGE_SIGNATURE|23${NL:?}"
+      _dangerous_perms="${_dangerous_perms?}z)Signature spoofing||android.permission.FAKE_PACKAGE_SIGNATURE|false|23${NL:?}"
       ;;
     *) ;;
   esac
 
-  if test -n "${_privileged_perm_list?}"; then
+  if test -n "${_privileged_perms}"; then
     _filename="privapp-permissions-${_base_name:?}.xml"
     {
       begin_xml "${_pkg_name:?}" "${_cert_sha256?}" 'privapp-permissions'
-      printf '%s' "${_privileged_perm_list:?}" | while IFS='|' read -r NAME MIN_API; do
+      printf '%s' "${_privileged_perms}" | while IFS='|' read -r NAME MIN_API; do
         append_perm_to_xml "${NAME:?}" "${MIN_API}" 'privapp-permissions' '' '' || {
           log_err "Failed to append the '${NAME?}' permission on '${_filename?}'"
           return 6
@@ -628,12 +630,12 @@ parse_perms_and_generate_xml_files()
     } 1> "${OUTPUT_DIR:?}/${_filename:?}"
   fi
 
-  if test -n "${_dangerous_perm_list?}"; then
+  if test -n "${_dangerous_perms}"; then
     _filename="default-permissions-${_base_name:?}.xml"
     {
       begin_xml "${_pkg_name:?}" "${_cert_sha256?}" 'default-permissions'
       LAST_PERM_GROUP=''
-      printf '%s' "${_dangerous_perm_list:?}" | LC_ALL=C sort | while IFS='|' read -r GROUP _ NAME WHITELIST MIN_API; do
+      printf '%s' "${_dangerous_perms}" | LC_ALL=C sort | while IFS='|' read -r GROUP _ NAME WHITELIST MIN_API; do
         append_perm_to_xml "${NAME:?}" "${MIN_API}" 'default-permissions' "${GROUP:?}" "${WHITELIST:?}" || {
           log_err "Failed to append the '${NAME?}' permission on '${_filename?}'"
           return 7
