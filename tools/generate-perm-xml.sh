@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.4.2'
+readonly SCRIPT_VERSION='0.4.3'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -329,7 +329,7 @@ map_permission_group_to_label()
     'android.permission-group.SMS') printf '%s\n' 'SMS' ;;
     'android.permission-group.STORAGE') printf '%s\n' 'Storage / Files' ;;
 
-    *) printf '%s\n' "${1:?}" ;;
+    *) printf '%s\n' "${1}" ;;
   esac
 }
 
@@ -393,6 +393,19 @@ get_custom_permission_declaration()
 EOF
 
   # <permission-tree android:name="com.google.android.googleapps.permission.GOOGLE_AUTH"/>
+}
+
+load_permission_groups()
+{
+  PERMISSION_TO_GROUP_XML="$(grep -F -e 'android:permissionGroup' -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX}-28.xml" | LC_ALL=C tr -d '\\$\140\0')"
+  return "$?"
+}
+
+get_group_permission_declaration()
+{
+  grep -m 1 -F -e "android:name=\"${1}\"" 0<< EOF
+${PERMISSION_TO_GROUP_XML?}
+EOF
 }
 
 begin_xml()
@@ -467,7 +480,7 @@ parse_perms_and_generate_xml_files()
 {
   local _backup_ifs="${IFS-}"
   local _filename _base_name _pkg_name _cert_sha256 _input _perm _api
-  local _perm_decl_all _perm_decl _perm_prot_level _perm_flags _perm_whitelist _no_api_difference _perm_group _perm_after _perm_min_api
+  local _perm_decl_all _perm_decl='' _perm_prot_level _perm_flags _perm_whitelist _no_api_difference _perm_group _perm_after _perm_min_api
   local _privileged_perms='' _dangerous_perms=''
   local _is_privileged _is_dangerous _is_fake_sign=0
 
@@ -579,10 +592,9 @@ parse_perms_and_generate_xml_files()
     fi
 
     if test "${_is_dangerous?}" = 'true'; then
-      _perm_decl="$(get_permission_declaration "${_perm:?}" 28)" || _perm_decl=''
-      _perm_group="$(printf '%s\n' "${_perm_decl?}" | grep -o -e 'android:permissionGroup="[^"]*"' | cut -d '"' -f '2' -s)" || _perm_group=''
+      _perm_group="$(get_group_permission_declaration "${_perm}" | grep -o -e 'android:permissionGroup="[^"]*"' | cut -d '"' -f '2' -s || :)"
       if test -z "${_perm_group?}"; then
-        case "${_perm:?}" in
+        case "${_perm}" in
           'android.permission.ACCESS_BACKGROUND_LOCATION') _perm_group='android.permission-group.LOCATION' ;;
           'android.permission.BLUETOOTH_ADVERTISE' | 'android.permission.BLUETOOTH_CONNECT' | 'android.permission.BLUETOOTH_SCAN') _perm_group='android.permission-group.NEARBY_DEVICES' ;;
           'android.permission.POST_NOTIFICATIONS') _perm_group='android.permission-group.NOTIFICATIONS' ;;
@@ -594,7 +606,7 @@ parse_perms_and_generate_xml_files()
         'android.permission.ACCESS_BACKGROUND_LOCATION') _perm_after='android.permission.ACCESS_FINE_LOCATION+' ;;
         *) _perm_after="${_perm:?} " ;;
       esac
-      _dangerous_perms="${_dangerous_perms?}${_perm_group:?}|${_perm_after:?}|${_perm:?}|${_perm_whitelist:?}|${_perm_min_api:?}${NL:?}"
+      _dangerous_perms="${_dangerous_perms?}${_perm_group}|${_perm_after:?}|${_perm:?}|${_perm_whitelist:?}|${_perm_min_api:?}${NL:?}"
     fi
 
     case "${VERBOSE}" in
@@ -724,6 +736,8 @@ main()
 
   log_out_blank
   log_out "Output dir: ${OUTPUT_DIR?}"
+
+  load_permission_groups
 
   while test "$#" -gt 0; do
     reset_color
