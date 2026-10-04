@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.4.3'
+readonly SCRIPT_VERSION='0.4.4'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -333,11 +333,6 @@ map_permission_group_to_label()
   esac
 }
 
-get_permission_declaration()
-{
-  grep -m 1 -F -e "android:name=\"${1:?}\"" -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX?}-${2:?}.xml" || return 1
-}
-
 get_custom_permission_declaration()
 {
   grep -H -F -e "android:name=\"${1:?}\"" 0<< 'EOF'
@@ -404,7 +399,12 @@ load_permission_groups()
 get_group_permission_declaration()
 {
   grep -m 1 -F -e "android:name=\"${1}\"" 0<< EOF
-${PERMISSION_TO_GROUP_XML?}
+    ${PERMISSION_TO_GROUP_XML?}
+    android:name="android.permission.ACCESS_BACKGROUND_LOCATION" android:permissionGroup="android.permission-group.LOCATION"
+    android:name="android.permission.BLUETOOTH_ADVERTISE" android:permissionGroup="android.permission-group.NEARBY_DEVICES"
+    android:name="android.permission.BLUETOOTH_CONNECT" android:permissionGroup="android.permission-group.NEARBY_DEVICES"
+    android:name="android.permission.BLUETOOTH_SCAN" android:permissionGroup="android.permission-group.NEARBY_DEVICES"
+    android:name="android.permission.POST_NOTIFICATIONS" android:permissionGroup="android.permission-group.NOTIFICATIONS"
 EOF
 }
 
@@ -593,14 +593,6 @@ parse_perms_and_generate_xml_files()
 
     if test "${_is_dangerous?}" = 'true'; then
       _perm_group="$(get_group_permission_declaration "${_perm}" | grep -o -e 'android:permissionGroup="[^"]*"' | cut -d '"' -f '2' -s || :)"
-      if test -z "${_perm_group?}"; then
-        case "${_perm}" in
-          'android.permission.ACCESS_BACKGROUND_LOCATION') _perm_group='android.permission-group.LOCATION' ;;
-          'android.permission.BLUETOOTH_ADVERTISE' | 'android.permission.BLUETOOTH_CONNECT' | 'android.permission.BLUETOOTH_SCAN') _perm_group='android.permission-group.NEARBY_DEVICES' ;;
-          'android.permission.POST_NOTIFICATIONS') _perm_group='android.permission-group.NOTIFICATIONS' ;;
-          *) ;;
-        esac
-      fi
       _perm_group="$(map_permission_group_to_label "${_perm_group?}" || :)"
       case "${_perm:?}" in
         'android.permission.ACCESS_BACKGROUND_LOCATION') _perm_after='android.permission.ACCESS_FINE_LOCATION+' ;;
