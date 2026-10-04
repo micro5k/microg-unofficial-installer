@@ -242,9 +242,8 @@ restore_title()
 init()
 {
   export LANG='en_US.UTF-8'
-
-  fix_posix_emulation_if_needed
   set_utf8_codepage
+  fix_posix_emulation_if_needed
   color_init
   log_scope_init
   return 0

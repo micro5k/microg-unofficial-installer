@@ -18,7 +18,7 @@
 #region
 readonly SCRIPT_NAME='Certified Android devices list downloader'
 readonly SCRIPT_SHORTNAME='CertDevDl'
-readonly SCRIPT_VERSION='0.1.13'
+readonly SCRIPT_VERSION='0.1.14'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -164,6 +164,12 @@ log_err()
 
 init()
 {
+  if test 'true' = "${ENABLE_UTF8:=true}"; then
+    export LANG='en_US.UTF-8'
+    set_utf8_codepage
+  else
+    export LANG='C'
+  fi
   fix_posix_emulation_if_needed
   color_init
   log_scope_init
@@ -290,7 +296,7 @@ dl_and_convert_device_list()
     return "${?}"
   rm -f -- "${__fn_tmp_file?}.1.tmp" || return "${?}"
 
-  if test "${ENABLE_UTF8}" = 'true'; then
+  if test 'true' = "${ENABLE_UTF8}"; then
     mv -f -- "${__fn_tmp_file?}.2.tmp" "${__fn_file:?}" || return "${?}"
   else
     iconv_compat "${__fn_tmp_file?}.2.tmp" "${__fn_file:?}" -c -f 'UTF-8' -t 'WINDOWS-1252//IGNORE' || return "${?}"
@@ -311,7 +317,7 @@ main()
   export RETRY_DELAY="${RETRY_DELAY-}"     # Delay to wait after a failed request before a retry
   export MAX_ATTEMPTS="${MAX_ATTEMPTS:-3}" # Maximum number of total attempts allowed (per download)
 
-  export ENABLE_UTF8="${ENABLE_UTF8:-true}"
+  export ENABLE_UTF8
   # END: Global config
 
   if test -z "${RETRY_DELAY?}"; then
@@ -325,13 +331,6 @@ main()
       ;;
     *) ;;
   esac
-
-  if test "${ENABLE_UTF8?}" = 'true'; then
-    export LANG='en_US.UTF-8'
-    set_utf8_codepage
-  else
-    export LANG='C'
-  fi
 
   command -v "${WGET_CMD:?}" 1> /dev/null 2>&1 || {
     log_err 'wget is required'
