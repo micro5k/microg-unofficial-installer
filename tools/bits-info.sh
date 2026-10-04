@@ -840,7 +840,7 @@ detect_bitness_of_files()
 
   case "${1-}" in
     '')
-      log_err 'Missing required argument. Please specify one or more file paths to process'
+      log_err 'Missing required argument. Please specify one or more files to process'
       return 195
       ;;
     '__CAT_FAILED__')
