@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android ROM permissions XML generator'
 readonly SCRIPT_SHORTNAME='PermXmlGen'
-readonly SCRIPT_VERSION='0.4.4'
+readonly SCRIPT_VERSION='0.4.5'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2025'
 
@@ -400,11 +400,11 @@ get_group_permission_declaration()
 {
   grep -m 1 -F -e "android:name=\"${1}\"" 0<< EOF
     ${PERMISSION_TO_GROUP_XML?}
-    android:name="android.permission.ACCESS_BACKGROUND_LOCATION" android:permissionGroup="android.permission-group.LOCATION"
-    android:name="android.permission.BLUETOOTH_ADVERTISE" android:permissionGroup="android.permission-group.NEARBY_DEVICES"
-    android:name="android.permission.BLUETOOTH_CONNECT" android:permissionGroup="android.permission-group.NEARBY_DEVICES"
-    android:name="android.permission.BLUETOOTH_SCAN" android:permissionGroup="android.permission-group.NEARBY_DEVICES"
-    android:name="android.permission.POST_NOTIFICATIONS" android:permissionGroup="android.permission-group.NOTIFICATIONS"
+    <permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" android:permissionGroup="android.permission-group.LOCATION">
+    <permission android:name="android.permission.BLUETOOTH_ADVERTISE" android:permissionGroup="android.permission-group.NEARBY_DEVICES">
+    <permission android:name="android.permission.BLUETOOTH_CONNECT" android:permissionGroup="android.permission-group.NEARBY_DEVICES">
+    <permission android:name="android.permission.BLUETOOTH_SCAN" android:permissionGroup="android.permission-group.NEARBY_DEVICES">
+    <permission android:name="android.permission.POST_NOTIFICATIONS" android:permissionGroup="android.permission-group.NOTIFICATIONS">
 EOF
 }
 
