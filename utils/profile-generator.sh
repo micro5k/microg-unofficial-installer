@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.40'
+readonly SCRIPT_VERSION='2.9.41'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -1117,7 +1117,7 @@ generate_profile()
 
 main()
 {
-  local status=0 found=0 first=1 _device_id='' _selected=''
+  local status=0 found=0 first=1 _device_id='' _current=''
 
   if test "${1}" = 'adb'; then
     INPUT_TYPE='adb'
@@ -1162,34 +1162,40 @@ main()
       return 11
     }
   else
-    case "${1}" in
+    case "${1-}" in
       '')
-        log_err 'Please specify one file to process'
+        log_err 'Missing required argument. Please specify one or more files to process'
         return "${EX_USAGE?}"
         ;;
       *) ;;
     esac
 
-    _selected="${1:?}"
-    test -f "${_selected}" || {
-      log_err "Input file doesn't exist => '${_selected}'"
-      return 12
-    }
+    for _current in "$@"; do
+      test -f "${_current}" || {
+        log_err "Input file doesn't exist => '${_current}'"
+        status=12
+        continue
+      }
 
-    log_blank
-    log_selected_device "${_selected}"
+      if test "${first?}" = 0; then printf '\n=== DEVICE-BREAK ===\n\n'; else
+        first=0
+        log_blank
+      fi
+      log_selected_device "${_current}"
 
-    if grep -m 1 -q -e '^\[.*\]: \[.*\]' -- "${_selected}"; then
-      PROP_TYPE='G'
-    elif grep -m 1 -q -e '^.*\..*=' -- "${_selected}"; then
-      PROP_TYPE='B'
-      log_warn "Operating in restricted 'build.prop' mode. Profiles generated in this mode will be incomplete!!!"
-    else
-      log_err "Unknown input file => '${_selected}'"
-      return 13
-    fi
+      if grep -m 1 -q -e '^\[.*\]: \[.*\]' -- "${_current}"; then
+        PROP_TYPE='G'
+      elif grep -m 1 -q -e '^.*\..*=' -- "${_current}"; then
+        PROP_TYPE='B'
+        log_warn "Operating in restricted 'build.prop' mode. Profiles generated in this mode will be incomplete!!!"
+      else
+        log_err "Unknown input file => '${_current}'"
+        status=13
+        continue
+      fi
 
-    generate_profile "${_selected}" || status="$?"
+      generate_profile "${_current}" || status="$?"
+    done
   fi
 
   return "${status:?}"

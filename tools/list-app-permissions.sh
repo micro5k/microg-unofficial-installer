@@ -254,7 +254,7 @@ main()
 
   case "${1-}" in
     '')
-      log_err 'Missing required argument. Please specify one or more APK file paths to process'
+      log_err 'Missing required argument. Please specify one or more files to process'
       return "${EX_USAGE?}"
       ;;
     '__CAT_FAILED__')
