@@ -133,9 +133,9 @@ log_scope_end()
   return 0
 }
 
-log_stderr_selected()
+log_stderr_blank()
 {
-  printf 1>&2 '%b%s%b\n\n' "${CLR_YELLOW_BG_BLUE}" "SELECTED: ${1}" "${CLR_RESET}"
+  printf 1>&2 '\n'
   return 0
 }
 
@@ -145,9 +145,9 @@ log_status()
   return 0
 }
 
-log_stderr_blank()
+log_stderr_selected()
 {
-  printf 1>&2 '\n'
+  printf 1>&2 '%b%s%b\n\n' "${CLR_YELLOW_BG_BLUE}" "SELECTED: ${1}" "${CLR_RESET}"
   return 0
 }
 

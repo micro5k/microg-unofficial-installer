@@ -160,14 +160,15 @@ log_scope_end()
   return 0
 }
 
-log_stdout()
-{
-  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
-}
-
 log_stdout_blank()
 {
   printf '\n'
+  return 0
+}
+
+log_stderr_blank()
+{
+  printf 1>&2 '\n'
   return 0
 }
 
@@ -177,12 +178,6 @@ log_status()
     2) printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}" ;;
     *) printf 1>&3 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}" ;;
   esac
-  return 0
-}
-
-log_stderr_blank()
-{
-  printf 1>&2 '\n'
   return 0
 }
 
@@ -196,6 +191,11 @@ log_stdout_section()
 {
   printf '%b%s%b\n' "${CLR_CYAN}" "${1}" "${CLR_RESET}"
   return 0
+}
+
+log_stdout()
+{
+  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
 log_warn()

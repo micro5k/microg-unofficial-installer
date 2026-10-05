@@ -133,11 +133,6 @@ log_scope_end()
   return 0
 }
 
-log_stdout()
-{
-  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
-}
-
 log_stdout_blank()
 {
   printf '\n'
@@ -148,6 +143,11 @@ log_status()
 {
   printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
   return 0
+}
+
+log_stdout()
+{
+  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
 log_warn()
@@ -164,13 +164,14 @@ log_err()
 
 init()
 {
+  fix_posix_emulation_if_needed
   if test 'true' = "${ENABLE_UTF8:=true}"; then
     export LANG='en_US.UTF-8'
     set_utf8_codepage
   else
     export LANG='C'
   fi
-  fix_posix_emulation_if_needed
+
   color_init
   log_scope_init
   return 0

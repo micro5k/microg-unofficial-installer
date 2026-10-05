@@ -123,11 +123,6 @@ reset_color()
   printf 1>&2 '%b' "${CLR_RESET}"
 }
 
-log_stdout()
-{
-  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
-}
-
 log_stdout_blank()
 {
   printf '\n'
@@ -137,6 +132,11 @@ log_status()
 {
   printf 1>&2 '%b%s%b\n' "${CLR_GREEN}" "${1}" "${CLR_RESET}"
   return 0
+}
+
+log_stdout()
+{
+  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
 log_warn()
@@ -152,6 +152,8 @@ log_err()
 init()
 {
   fix_posix_emulation_if_needed
+  export LANG='en_US.UTF-8'
+
   color_init
   log_scope_init
   return 0

@@ -130,14 +130,14 @@ log_scope_end()
   return 0
 }
 
-log_stdout()
-{
-  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
-}
-
 log_stdout_blank()
 {
   printf '\n'
+}
+
+log_stdout()
+{
+  printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
 log_warn()
