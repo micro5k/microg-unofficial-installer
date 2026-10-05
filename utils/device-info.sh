@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.42'
+readonly SCRIPT_VERSION='2.9.43'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -53,6 +53,7 @@ readonly EX_UNAVAILABLE=69
   readonly ANDROID_15_SDK=35 # Not yet released
 }
 
+readonly DEVICE_SEP='\n=== DEVICE-BREAK ===\n\n'
 readonly NL='
 '
 #endregion
@@ -1690,7 +1691,7 @@ main()
     for _device_id in $(adb devices | grep -v -F -e 'List of devices' | cut -f 1 -s); do
       test -n "${_device_id?}" || continue
 
-      if test "${first?}" = 0; then printf '\n=== DEVICE-BREAK ===\n\n'; else
+      if test "${first?}" = 0; then printf '%b' "${DEVICE_SEP?}"; else
         first=0
         log_blank
       fi
@@ -1730,7 +1731,7 @@ main()
         continue
       }
 
-      if test "${first?}" = 0; then printf '\n=== DEVICE-BREAK ===\n\n'; else
+      if test "${first?}" = 0; then printf '%b' "${DEVICE_SEP?}"; else
         first=0
         log_blank
       fi
