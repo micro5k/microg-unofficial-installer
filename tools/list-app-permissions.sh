@@ -116,16 +116,19 @@ log_scope_end()
 set_yellow_color()
 {
   printf 1>&2 '%b' "${CLR_YELLOW}"
+  return 0
 }
 
 reset_color()
 {
   printf 1>&2 '%b' "${CLR_RESET}"
+  return 0
 }
 
 log_stdout_blank()
 {
   printf '\n'
+  return 0
 }
 
 log_status()
@@ -142,11 +145,13 @@ log_stdout()
 log_warn()
 {
   printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
+  return 0
 }
 
 log_err()
 {
   printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
+  return 0
 }
 
 init()

@@ -133,6 +133,7 @@ log_scope_end()
 log_stdout_blank()
 {
   printf '\n'
+  return 0
 }
 
 log_stdout()
@@ -147,6 +148,7 @@ log_warn()
   else
     printf 1>&2 '%b%*s%s%b\n' "${CLR_YELLOW_PLAIN}" "${LOG_LEVEL}" '' "WARNING: ${1}" "${CLR_RESET}"
   fi
+  return 0
 }
 
 log_err()
@@ -156,11 +158,13 @@ log_err()
   else
     printf 1>&2 '\n%b%s%b\n' "${CLR_RED}" "ERROR: ${1}" "${CLR_RESET}"
   fi
+  return 0
 }
 
 init()
 {
   fix_posix_emulation_if_needed
+
   color_init
   log_scope_init
   return 0
