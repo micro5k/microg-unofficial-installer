@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.41'
+readonly SCRIPT_VERSION='2.9.42'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -757,14 +757,14 @@ prop_get()
 auto_getprop_legacy()
 {
   prop_get "${1}" || return "$?"
-  printf '%s\n' "${RET_VAL}"
+  printf '%s\n' "${RET_VAL?}"
   return 0
 }
 
 is_boot_completed()
 {
   prop_get 'sys.boot_completed' || return 1
-  case "${RET_VAL}" in
+  case "${RET_VAL?}" in
     1) return 0 ;;
     *) ;;
   esac
@@ -773,17 +773,23 @@ is_boot_completed()
 
 ensure_boot_completed()
 {
-  if test "${INPUT_TYPE:?}" = 'adb' && test "${DEVICE_STATE:?}" = 'device'; then
-    is_boot_completed || {
-      log_warn 'Device has not finished booting yet, skipped'
-      return 1
-    }
-  elif test "${INPUT_TYPE:?}" = 'file' && test "${PROP_TYPE:?}" = 'G'; then
-    is_boot_completed || {
-      log_err 'Getprop comes from a device that has not finished booting yet, skipped'
-      return 1
-    }
-  fi
+  case "${PROP_TYPE?}" in
+    A)
+      if test "${DEVICE_STATE?}" = 'device'; then
+        is_boot_completed || {
+          log_warn 'Device has not finished booting yet, skipped'
+          return 1
+        }
+      fi
+      ;;
+    G)
+      is_boot_completed || {
+        log_err 'Getprop comes from a device that has not finished booting yet, skipped'
+        return 1
+      }
+      ;;
+    *) ;;
+  esac
   return 0
 }
 
@@ -1672,14 +1678,9 @@ main()
 {
   local status=0 found=0 first=1 _device_id='' _current=''
 
-  if test "${1}" = 'adb'; then
-    INPUT_TYPE='adb'
+  if test 'adb' = "${1-}"; then
     PROP_TYPE='A'
-  else
-    INPUT_TYPE='file'
-  fi
 
-  if test "${INPUT_TYPE:?}" = 'adb'; then
     verify_adb_mode_deps || return "$?"
     start_adb_server || {
       log_err 'Failed to start ADB'
