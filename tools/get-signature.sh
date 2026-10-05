@@ -124,12 +124,12 @@ reset_color()
   printf 1>&2 '%b' "${CLR_RESET}"
 }
 
-log_out()
+log_stdout()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
-log_out_blank()
+log_stdout_blank()
 {
   printf '\n'
 }
@@ -298,9 +298,9 @@ main()
 
   while test "$#" -gt 0; do
     reset_color
-    log_out_blank
+    log_stdout_blank
     base_name="$(basename "${1:-''}" || printf '%s\n' "${1:-''}" || :)"
-    log_out "Filename: ${base_name:?}"
+    log_stdout "Filename: ${base_name:?}"
 
     cert_sha256="$(get_apk_cert_sha256 "${1?}")" || {
       log_err "Failed to extract certificate SHA-256 fingerprint from '${1?}' (exit code: ${?})"
@@ -309,7 +309,7 @@ main()
       continue
     }
 
-    log_out "sha256-cert-digest=\"${cert_sha256?}\""
+    log_stdout "sha256-cert-digest=\"${cert_sha256?}\""
 
     shift
   done

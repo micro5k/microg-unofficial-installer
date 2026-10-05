@@ -133,12 +133,12 @@ log_scope_end()
   return 0
 }
 
-log_out()
+log_stdout()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
-log_out_blank()
+log_stdout_blank()
 {
   printf '\n'
   return 0
@@ -349,8 +349,8 @@ main()
     return "${EX_CONFIG?}"
   fi
 
-  log_out_blank
-  log_out 'Downloading...'
+  log_stdout_blank
+  log_stdout 'Downloading...'
   log_scope_begin
 
   dl_and_convert_device_list || {
@@ -359,7 +359,7 @@ main()
   }
 
   log_scope_end
-  log_out 'Done.'
+  log_stdout 'Done.'
 }
 #endregion
 

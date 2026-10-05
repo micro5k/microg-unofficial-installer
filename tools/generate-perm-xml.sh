@@ -134,12 +134,12 @@ reset_color()
   return 0
 }
 
-log_out()
+log_stdout()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
-log_out_blank()
+log_stdout_blank()
 {
   printf '\n'
   return 0
@@ -520,7 +520,7 @@ parse_perms_and_generate_xml_files()
         ;;
       android.permission.FAKE_PACKAGE_SIGNATURE)
         _is_fake_sign=1
-        case "${VERBOSE}" in 0) ;; *) log_out "${_perm}" ;; esac
+        case "${VERBOSE}" in 0) ;; *) log_stdout "${_perm}" ;; esac
         continue
         ;;
       *) ;;
@@ -529,7 +529,7 @@ parse_perms_and_generate_xml_files()
     case "${VERBOSE}" in
       0) ;;
       *)
-        log_out "${_perm}"
+        log_stdout "${_perm}"
         log_scope_begin
         ;;
     esac
@@ -605,7 +605,7 @@ parse_perms_and_generate_xml_files()
       0) ;;
       *)
         if test "${_no_api_difference}" != 'true'; then
-          log_out "Min API ${_perm_min_api}"
+          log_stdout "Min API ${_perm_min_api}"
         fi
         log_scope_end
         ;;
@@ -726,16 +726,16 @@ main()
   test -n "${OUTPUT_DIR?}" || OUTPUT_DIR="${BASE_DIR:?}/output"
   test -d "${OUTPUT_DIR:?}" || mkdir -p -- "${OUTPUT_DIR:?}" || return 21
 
-  log_out_blank
-  log_out "Output dir: ${OUTPUT_DIR?}"
+  log_stdout_blank
+  log_stdout "Output dir: ${OUTPUT_DIR?}"
 
   load_permission_groups
 
   while test "$#" -gt 0; do
     reset_color
-    log_out_blank
+    log_stdout_blank
     base_name="$(basename "${1:-''}" || printf '%s\n' "${1:-''}" || :)"
-    log_out "Filename: ${base_name:?}"
+    log_stdout "Filename: ${base_name:?}"
 
     log_status 'Using aapt...'
     set_yellow_color

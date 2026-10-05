@@ -123,12 +123,12 @@ reset_color()
   printf 1>&2 '%b' "${CLR_RESET}"
 }
 
-log_out()
+log_stdout()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
-log_out_blank()
+log_stdout_blank()
 {
   printf '\n'
 }
@@ -266,9 +266,9 @@ main()
 
   while test "$#" -gt 0; do
     reset_color
-    log_out_blank
+    log_stdout_blank
     base_name="$(basename "${1:-''}" || printf '%s\n' "${1:-''}" || :)"
-    log_out "Filename: ${base_name:?}"
+    log_stdout "Filename: ${base_name:?}"
 
     log_status 'Using aapt...'
     set_yellow_color

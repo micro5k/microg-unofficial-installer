@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.43'
+readonly SCRIPT_VERSION='2.9.44'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -133,7 +133,7 @@ log_scope_end()
   return 0
 }
 
-log_selected_device()
+log_stderr_selected()
 {
   printf 1>&2 '%b%s%b\n\n' "${CLR_YELLOW_BG_BLUE}" "SELECTED: ${1}" "${CLR_RESET}"
   return 0
@@ -1142,7 +1142,7 @@ main()
         first=0
         log_blank
       fi
-      log_selected_device "${_device_id?}"
+      log_stderr_selected "${_device_id?}"
 
       if detect_status_and_wait_connection "${_device_id?}"; then
         found=1
@@ -1183,7 +1183,7 @@ main()
         first=0
         log_blank
       fi
-      log_selected_device "${_current}"
+      log_stderr_selected "${_current}"
 
       if grep -m 1 -q -e '^\[.*\]: \[.*\]' -- "${_current}"; then
         PROP_TYPE='G'

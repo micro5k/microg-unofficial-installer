@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.43'
+readonly SCRIPT_VERSION='2.9.44'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -160,24 +160,24 @@ log_scope_end()
   return 0
 }
 
-log_out_selected_device()
+log_stdout_selected()
 {
   printf '%b%s%b\n\n' "${CLR_YELLOW_BG_BLUE}" "SELECTED: ${1}" "${CLR_RESET}"
   return 0
 }
 
-log_out_section()
+log_stdout_section()
 {
   printf '%b%s%b\n' "${CLR_CYAN}" "${1}" "${CLR_RESET}"
   return 0
 }
 
-log_out()
+log_stdout()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
-log_out_blank()
+log_stdout_blank()
 {
   printf '\n'
   return 0
@@ -1000,7 +1000,7 @@ is_phonesubinfo_response_valid()
 
 display_info()
 {
-  log_out "${1?}: ${2?}"
+  log_stdout "${1?}: ${2?}"
 }
 
 display_info_or_warn()
@@ -1081,7 +1081,7 @@ validate_and_display_info()
     return 2
   fi
 
-  log_out "${1?}: ${2?}"
+  log_stdout "${1?}: ${2?}"
 }
 
 open_device_status_info()
@@ -1516,8 +1516,8 @@ dump_device_info()
 
   BUILD_VERSION_SDK="$(get_and_check_prop 'ro.build.version.sdk')" || BUILD_VERSION_SDK='999'
 
-  log_out_section 'BASIC INFO'
-  log_out_blank
+  log_stdout_section 'BASIC INFO'
+  log_stdout_blank
 
   if EMU_NAME="$(get_and_check_prop_silent 'ro.boot.qemu.avd_name' | LC_ALL=C tr -- '_' ' ')"; then
     display_info 'Emulator' "${EMU_NAME?}"
@@ -1547,30 +1547,30 @@ dump_device_info()
     display_info_or_warn 'Device path' "${DEVICE_PATH?}" "$?" 'non-sensitive'
   }
 
-  log_out_blank
+  log_stdout_blank
 
   SERIAL_NUMBER="$(find_serialno)"
   display_info_or_warn 'Serial number' "${SERIAL_NUMBER?}" "$?"
   CPU_SERIAL_NUMBER="$(find_cpu_serialno "${SELECTED_DEVICE:?}")"
   display_info_or_warn 'CPU serial number' "${CPU_SERIAL_NUMBER?}" "$?"
 
-  log_out_blank
+  log_stdout_blank
 
   ANDROID_ID="$(get_android_id "${SELECTED_DEVICE:?}")"
   is_valid_android_id "${ANDROID_ID?}"
   display_info_or_warn 'Android ID' "${ANDROID_ID?}" "$?"
 
-  log_out_blank
+  log_stdout_blank
 
   DISPLAY_SIZE="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null size' | cut -d ':' -f '2-' -s | trim_space_left)"
   display_info_or_warn 'Display size' "${DISPLAY_SIZE?}" "$?" 'non-sensitive'
   DISPLAY_DENSITY="$(device_shell "${SELECTED_DEVICE:?}" 'wm 2> /dev/null density' | cut -d ':' -f '2-' -s | trim_space_left)"
   display_info_or_warn 'Display density' "${DISPLAY_DENSITY?}" "$?" 'non-sensitive'
 
-  log_out_blank
+  log_stdout_blank
 
-  log_out_section 'SLOT INFO'
-  log_out_blank
+  log_stdout_section 'SLOT INFO'
+  log_stdout_blank
 
   DATA_RAW_OPERATOR1="$(get_and_check_prop_silent 'gsm.sim.operator.alpha' || get_and_check_prop_silent 'gsm.sim.operator.orig.alpha' || :)"
   DATA_RAW_OPERATOR2="$(get_and_check_prop_silent 'gsm.operator.alpha' || get_and_check_prop_silent 'gsm.operator.orig.alpha' || :)"
@@ -1582,9 +1582,9 @@ dump_device_info()
 
   display_info 'Slot count' "${SLOT_COUNT?}"
 
-  log_out_blank
+  log_stdout_blank
 
-  log_out "DEFAULT SLOT"
+  log_stdout "DEFAULT SLOT"
   get_imei "${SELECTED_DEVICE:?}"
   get_iccid "${SELECTED_DEVICE:?}"
 
@@ -1593,11 +1593,11 @@ dump_device_info()
 
   get_line_number "${SELECTED_DEVICE:?}"
 
-  log_out_blank
+  log_stdout_blank
 
   local _index slot_state operator_current_slot
   for _index in $(seq "${SLOT_COUNT:?}"); do
-    log_out "SLOT ${_index:?}"
+    log_stdout "SLOT ${_index:?}"
     case "${_index:?}" in
       1)
         slot_state="${SLOT1_STATE?}"
@@ -1630,12 +1630,12 @@ dump_device_info()
       get_line_number_multi_slot "${SELECTED_DEVICE:?}" "${_index:?}"
     fi
 
-    log_out_blank
+    log_stdout_blank
   done
 
-  log_out_section 'ADVANCED INFO (root may be required)'
+  log_stdout_section 'ADVANCED INFO (root may be required)'
   adb_root "${SELECTED_DEVICE:?}"
-  log_out_blank
+  log_stdout_blank
 
   device_shell "${SELECTED_DEVICE:?}" "if test -e '/system' && test ! -e '/system/bin/sh'; then mount -t 'auto' -o 'ro' '/system' 2> /dev/null || :; fi"
   device_shell "${SELECTED_DEVICE:?}" "if test -e '/data' && test ! -e '/data/data'; then mount -t 'auto' -o 'ro' '/data' 2> /dev/null || :; fi"
@@ -1651,15 +1651,15 @@ dump_device_info()
     display_info_or_warn 'GSF ID (decimal)' "${GSF_ID_DEC?}" "$?"
   }
 
-  log_out_blank
+  log_stdout_blank
 
   ADVERTISING_ID="$(get_advertising_id "${SELECTED_DEVICE:?}")"
   validate_and_display_info 'Advertising ID' "${ADVERTISING_ID?}" 36
 
-  log_out_blank
+  log_stdout_blank
 
-  log_out_section 'EFS INFO (root may be required)'
-  log_out_blank
+  log_stdout_section 'EFS INFO (root may be required)'
+  log_stdout_blank
 
   parse_nv_data "${SELECTED_DEVICE:?}"
   validate_and_display_info 'Hardware version' "${HARDWARE_VERSION?}"
@@ -1695,7 +1695,7 @@ main()
         first=0
         log_blank
       fi
-      log_out_selected_device "${_device_id?}"
+      log_stdout_selected "${_device_id?}"
 
       if detect_status_and_wait_connection "${_device_id?}"; then
         found=1
@@ -1735,7 +1735,7 @@ main()
         first=0
         log_blank
       fi
-      log_out_selected_device "${_current}"
+      log_stdout_selected "${_current}"
 
       if grep -m 1 -q -e '^\[.*\]: \[.*\]' -- "${_current}"; then
         PROP_TYPE='G'

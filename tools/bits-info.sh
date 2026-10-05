@@ -130,12 +130,12 @@ log_scope_end()
   return 0
 }
 
-log_out()
+log_stdout()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
-log_out_blank()
+log_stdout_blank()
 {
   printf '\n'
 }
@@ -859,8 +859,8 @@ detect_bitness_of_files()
       detect_bitness_of_single_file "${1}" || ret_code="$((ret_code + 1))"
       shift
     done
-    log_out_blank
-    log_out "Unidentified files: ${ret_code}"
+    log_stdout_blank
+    log_stdout "Unidentified files: ${ret_code}"
   else
     detect_bitness_of_single_file "${1-}" || ret_code="${?}"
   fi

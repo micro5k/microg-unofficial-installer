@@ -140,12 +140,12 @@ log_scope_end()
   return 0
 }
 
-log_out()
+log_stdout()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
 }
 
-log_out_blank()
+log_stdout_blank()
 {
   printf '\n'
 }
@@ -322,8 +322,8 @@ main()
     return "${EX_CONFIG?}"
   fi
 
-  log_out_blank
-  log_out 'Downloading...'
+  log_stdout_blank
+  log_stdout 'Downloading...'
   log_scope_begin
   rm -f -- "${DATA_DIR:?}/perms/.completed" || return 20
   rm -f -- "${DATA_DIR:?}/perms/${PERMS_DATA_PREFIX:?}"-*.xml || return 21
@@ -333,7 +333,7 @@ main()
       log_err "Failed to read tag name for API ${api?}"
       return "${EX_SOFTWARE?}"
     }
-    log_out "API ${api?}: ${tag?}"
+    log_stdout "API ${api?}: ${tag?}"
     log_scope_begin
     fetch_and_extract_manifest_permissions_with_retry "${api:?}" "${tag:?}" || {
       log_err "Failed to download (or parse) API ${api?} XML"
@@ -346,7 +346,7 @@ main()
 
   touch -- "${DATA_DIR?}/perms/.completed" || return 23
   log_scope_end
-  log_out 'Done.'
+  log_stdout 'Done.'
 }
 #endregion
 
