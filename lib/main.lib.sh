@@ -1542,14 +1542,18 @@ init_cmdline()
   fi
   unset KILL_PPID
 
-  if test "${PLATFORM:?}" = 'win'; then unset JAVA_HOME; fi
+  if test "${PLATFORM?}" = 'win'; then
+    export BB_OVERRIDE_APPLETS='; make'
+    export MSYS='winsymlinks:nativestrict'
+    unset JAVA_HOME
+
+    if test -n "${GIT_SSH:="$(command 2> /dev/null -v 'TortoiseGitPlink' || :)"}"; then export GIT_SSH; else unset GIT_SSH; fi
+  fi
 
   # Set environment variables
   readonly UTILS_DIR="${MAIN_DIR:?}/utils"
   readonly UTILS_DATA_DIR="${UTILS_DIR:?}/data"
   export UTILS_DIR UTILS_DATA_DIR
-
-  if test -n "${GIT_SSH:="$(command 2> /dev/null -v 'TortoiseGitPlink' || :)"}"; then export GIT_SSH; else unset GIT_SSH; fi
 
   set_android_sdk_path_if_unset
   if test -n "${ANDROID_HOME-}"; then
@@ -1564,10 +1568,6 @@ init_cmdline()
   fi
   export AAPT_PATH="${AAPT_PATH:-$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt' || :)}"
   export APKSIGNER_PATH="${APKSIGNER_PATH:-$(find_android_build_tool 'apksigner' || command -v 'apksigner.bat' 2> /dev/null || :)}"
-
-  if test "${PLATFORM:?}" = 'win'; then
-    export BB_OVERRIDE_APPLETS='; make'
-  fi
 
   if command 1> /dev/null 2>&1 -v 'alias'; then
     alias 'dir'='ls'
