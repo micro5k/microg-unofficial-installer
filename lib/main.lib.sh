@@ -1390,6 +1390,42 @@ find_android_build_tool()
   printf '%s\n' "${__fn_tool_path:?}"
 }
 
+reg_query()
+{
+  RET_VAL="$(reg.exe 2> /dev/null query "${1?}" /v "${2?}" | grep -o -e "${3?}[[:space:]][[:space:]]*[^[:cntrl:]]*")" || {
+    RET_VAL=''
+    return 1
+  }
+  RET_VAL="${RET_VAL#"${3}"}"
+  RET_VAL="${RET_VAL#"${RET_VAL%%[![:space:]]*}"}"
+  return 0
+}
+
+find_tortoise_ssh()
+{
+  local __fn_retval='' _target=''
+
+  for _target in 'HKCU\SOFTWARE\TortoiseGit' 'HKLM\SOFTWARE\TortoiseGit' 'fallback'; do
+    case "${_target}" in
+      'fallback')
+        __fn_retval="$(command -v TortoiseGitPlink 2> /dev/null)" || __fn_retval=''
+        ;;
+      *)
+        if reg_query "${_target}" 'SSH' 'REG_SZ' && test -n "${RET_VAL?}"; then
+          __fn_retval="$(command -v "${RET_VAL}" 2> /dev/null)" || __fn_retval=''
+        fi
+        ;;
+    esac
+
+    test -z "${__fn_retval}" || {
+      printf '%s\n' "${__fn_retval}"
+      return 0
+    }
+  done
+
+  return 1
+}
+
 init_base()
 {
   local _main_dir
@@ -1547,7 +1583,8 @@ init_cmdline()
     export MSYS='winsymlinks:nativestrict'
     unset JAVA_HOME
 
-    if test -n "${GIT_SSH:="$(command 2> /dev/null -v 'TortoiseGitPlink' || :)"}"; then export GIT_SSH; else unset GIT_SSH; fi
+    : "${GIT_SSH:=$(find_tortoise_ssh || :)}"
+    test -z "${GIT_SSH}" || export GIT_SSH
   fi
 
   # Set environment variables
