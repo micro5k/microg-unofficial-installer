@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.44'
+readonly SCRIPT_VERSION='2.9.45'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -160,18 +160,6 @@ log_scope_end()
   return 0
 }
 
-log_stdout_selected()
-{
-  printf '%b%s%b\n\n' "${CLR_YELLOW_BG_BLUE}" "SELECTED: ${1}" "${CLR_RESET}"
-  return 0
-}
-
-log_stdout_section()
-{
-  printf '%b%s%b\n' "${CLR_CYAN}" "${1}" "${CLR_RESET}"
-  return 0
-}
-
 log_stdout()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
@@ -192,9 +180,21 @@ log_status()
   return 0
 }
 
-log_blank()
+log_stderr_blank()
 {
   printf 1>&2 '\n'
+  return 0
+}
+
+log_stdout_selected()
+{
+  printf '%b%s%b\n\n' "${CLR_YELLOW_BG_BLUE}" "SELECTED: ${1}" "${CLR_RESET}"
+  return 0
+}
+
+log_stdout_section()
+{
+  printf '%b%s%b\n' "${CLR_CYAN}" "${1}" "${CLR_RESET}"
   return 0
 }
 
@@ -231,13 +231,6 @@ dev_status_init()
   return 0
 }
 
-dev_status_done()
-{
-  test "${DEV_WAIT_SEEN?}" = 0 || printf 1>&2 '\n'
-  unset DEV_WAIT_SEEN
-  return 0
-}
-
 dev_status_not_ready()
 {
   if test "${DEV_WAIT_SEEN?}" = 0; then
@@ -256,6 +249,13 @@ dev_status_waiting()
   else
     printf 1>&2 '%b%s%b' "${CLR_GREEN_PLAIN}" '.' "${CLR_RESET}"
   fi
+  return 0
+}
+
+dev_status_done()
+{
+  test "${DEV_WAIT_SEEN?}" = 0 || printf 1>&2 '\n'
+  unset DEV_WAIT_SEEN
   return 0
 }
 
@@ -298,9 +298,10 @@ restore_title()
 
 init()
 {
+  fix_posix_emulation_if_needed
   export LANG='en_US.UTF-8'
   set_utf8_codepage
-  fix_posix_emulation_if_needed
+
   color_init
   log_scope_init
 
@@ -1693,7 +1694,7 @@ main()
 
       if test "${first?}" = 0; then printf '%b' "${DEVICE_SEP?}"; else
         first=0
-        log_blank
+        log_stderr_blank
       fi
       log_stdout_selected "${_device_id?}"
 
@@ -1733,7 +1734,7 @@ main()
 
       if test "${first?}" = 0; then printf '%b' "${DEVICE_SEP?}"; else
         first=0
-        log_blank
+        log_stderr_blank
       fi
       log_stdout_selected "${_current}"
 

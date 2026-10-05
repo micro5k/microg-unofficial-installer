@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.44'
+readonly SCRIPT_VERSION='2.9.45'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -145,7 +145,7 @@ log_status()
   return 0
 }
 
-log_blank()
+log_stderr_blank()
 {
   printf 1>&2 '\n'
   return 0
@@ -175,13 +175,6 @@ dev_status_init()
   return 0
 }
 
-dev_status_done()
-{
-  test "${DEV_WAIT_SEEN?}" = 0 || printf 1>&2 '\n'
-  unset DEV_WAIT_SEEN
-  return 0
-}
-
 dev_status_not_ready()
 {
   if test "${DEV_WAIT_SEEN?}" = 0; then
@@ -200,6 +193,13 @@ dev_status_waiting()
   else
     printf 1>&2 '%b%s%b' "${CLR_GREEN_PLAIN}" '.' "${CLR_RESET}"
   fi
+  return 0
+}
+
+dev_status_done()
+{
+  test "${DEV_WAIT_SEEN?}" = 0 || printf 1>&2 '\n'
+  unset DEV_WAIT_SEEN
   return 0
 }
 
@@ -242,9 +242,10 @@ restore_title()
 
 init()
 {
+  fix_posix_emulation_if_needed
   export LANG='en_US.UTF-8'
   set_utf8_codepage
-  fix_posix_emulation_if_needed
+
   color_init
   log_scope_init
   return 0
@@ -1140,7 +1141,7 @@ main()
 
       if test "${first?}" = 0; then printf '%b' "${DEVICE_SEP?}"; else
         first=0
-        log_blank
+        log_stderr_blank
       fi
       log_stderr_selected "${_device_id?}"
 
@@ -1181,7 +1182,7 @@ main()
 
       if test "${first?}" = 0; then printf '%b' "${DEVICE_SEP?}"; else
         first=0
-        log_blank
+        log_stderr_blank
       fi
       log_stderr_selected "${_current}"
 
