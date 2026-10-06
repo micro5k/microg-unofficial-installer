@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.45'
+readonly SCRIPT_VERSION='2.9.46'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -85,16 +85,8 @@ restore_codepage()
 
 color_init()
 {
-  CLR_RESET=''
-  CLR_RED=''
-  CLR_GREEN_PLAIN=''
-  CLR_GREEN=''
-  CLR_YELLOW_PLAIN=''
-  CLR_YELLOW=''
-  CLR_YELLOW_BG_BLUE=''
-  CLR_MAGENTA=''
-  CLR_CYAN=''
-  CLR_LINE=''
+  CLR_RESET='' CLR_RED='' CLR_GREEN_PLAIN='' CLR_GREEN='' CLR_YELLOW_PLAIN='' CLR_YELLOW='' CLR_YELLOW_BG_BLUE='' CLR_MAGENTA='' CLR_CYAN='' CLR_LINE=''
+  CLRO_RESET='' CLRO_RED='' CLRO_GREEN_PLAIN='' CLRO_GREEN='' CLRO_YELLOW_PLAIN='' CLRO_YELLOW='' CLRO_YELLOW_BG_BLUE='' CLRO_MAGENTA='' CLRO_CYAN='' CLRO_LINE=''
 
   # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
   if test -z "${NO_COLOR-}" && test -t 2; then
@@ -108,6 +100,19 @@ color_init()
     CLR_MAGENTA='\033[1;35m'
     CLR_CYAN='\033[1;36m'
     CLR_LINE='\r        \r'
+  fi
+  # shellcheck disable=SC2034 # IGNORE: 'foo' appears unused
+  if test -z "${NO_COLOR-}" && test -t 1; then
+    CLRO_RESET='\033[0m'
+    CLRO_RED='\033[1;31m'
+    CLRO_GREEN_PLAIN='\033[32m'
+    CLRO_GREEN='\033[1;32m'
+    CLRO_YELLOW_PLAIN='\033[33m'
+    CLRO_YELLOW='\033[1;33m'
+    CLRO_YELLOW_BG_BLUE='\033[1;33;44m'
+    CLRO_MAGENTA='\033[1;35m'
+    CLRO_CYAN='\033[1;36m'
+    CLRO_LINE='\r        \r'
   fi
   return 0
 }
@@ -132,6 +137,14 @@ log_scope_end()
   return 0
 }
 
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
+log_stdout_blank()
+{
+  printf '\n'
+  return 0
+}
+
+# shellcheck disable=SC2329 # NOTE: Standard boilerplate function; may not be executed in this specific script
 log_stderr_blank()
 {
   printf 1>&2 '\n'
