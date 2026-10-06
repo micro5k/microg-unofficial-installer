@@ -55,9 +55,8 @@ fix_posix_emulation_if_needed()
       case "${PATH-}" in '/usr/bin:'*) ;; *) PATH="/usr/bin:${PATH:-/bin}" ;; esac
     fi
 
-    # Resolve an issue where dragging and dropping a file onto the script inexplicably resets the
-    #  working directory to 'C:\WINDOWS\system32'
-    # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
+    # NOTE: Fixes an issue where dragging and dropping a file onto the script inexplicably resets the working directory to 'C:\WINDOWS\system32'
+    # shellcheck disable=SC3028,SC2128 # IGNORE: In POSIX sh, BASH_SOURCE is undefined / Expanding an array without an index only gives the first element
     if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
       cd "${BASH_SOURCE}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
     fi
@@ -148,6 +147,7 @@ log_status()
 log_stdout()
 {
   printf '%*s%s\n' "${LOG_LEVEL}" '' "${1}"
+  return 0
 }
 
 log_warn()
