@@ -84,7 +84,7 @@ fix_posix_emulation_if_needed()
     #  working directory to 'C:\WINDOWS\system32'
     # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
     if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
-      cd "${BASH_SOURCE?}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
+      cd "${BASH_SOURCE}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
     fi
   fi
   return 0
@@ -264,7 +264,7 @@ set_title()
   if test "${CI:-false}" != 'false'; then return 1; fi
   TITLE_SET='true'
 
-  if command 1> /dev/null -v title; then
+  if command -v 'title' 1> /dev/null 2>&1; then
     PREVIOUS_TITLE="$(title)" # Save current title
     title "${1:?}"            # Set new title
   elif test -t 1; then
@@ -276,13 +276,14 @@ set_title()
   else
     TITLE_SET='false'
   fi
+  return 0
 }
 
 restore_title()
 {
   if test "${CI:-false}" != 'false' || test "${TITLE_SET:-false}" = 'false'; then return 1; fi
 
-  if command 1> /dev/null -v title; then
+  if command -v 'title' 1> /dev/null 2>&1; then
     title "${PREVIOUS_TITLE-}" # Restore saved title
     PREVIOUS_TITLE=''
   elif test -t 1; then
@@ -294,6 +295,7 @@ restore_title()
   fi
 
   TITLE_SET='false'
+  return 0
 }
 
 init()
@@ -641,16 +643,17 @@ convert_dec_to_hex()
 anonymize_string()
 {
   printf '%s\n' "${1?}" | tr '[:digit:]' '0' | tr 'a-f' 'f' | tr 'g-z' 'x' | tr 'A-F' 'F' | tr 'G-Z' 'X'
+  return $?
 }
 
 anonymize_code()
 {
   local _string _prefix_length
 
-  if test "${#1}" -lt 2; then
+  test "${#1}" -gt 1 || {
     anonymize_string "${1?}"
-    return
-  fi
+    return $?
+  }
 
   _prefix_length="$((${#1} / 2))"
   if test "${_prefix_length:?}" -gt 6; then _prefix_length='6'; fi
@@ -659,6 +662,7 @@ anonymize_code()
 
   _string="$(printf '%s\n' "${1:?}" | cut -c "$((${_prefix_length:?} + 1))-")"
   anonymize_string "${_string:?}"
+  return $?
 }
 
 is_valid_serial()

@@ -85,7 +85,7 @@ fix_posix_emulation_if_needed()
     #  working directory to 'C:\WINDOWS\system32'
     # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
     if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
-      cd "${BASH_SOURCE?}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
+      cd "${BASH_SOURCE}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
     fi
   fi
   return 0
@@ -221,6 +221,7 @@ final_cleanup()
     # Clean perms dir if empty
     rmdir "${DATA_DIR:?}/perms" 2> /dev/null || :
   fi
+  return 0
 }
 #endregion
 
@@ -228,7 +229,8 @@ final_cleanup()
 #region
 dl()
 {
-  "${WGET_CMD:?}" -q -t 1 -O "${2:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" -q -t 1 -O "${2:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" -- "${1:?}"
+  return "${?}"
 }
 
 fetch_and_extract_manifest_permissions()
@@ -352,6 +354,8 @@ main()
   touch -- "${DATA_DIR?}/perms/.completed" || return 23
   log_scope_end
   log_stdout 'Done.'
+
+  return 0
 }
 #endregion
 

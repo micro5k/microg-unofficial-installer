@@ -59,7 +59,7 @@ fix_posix_emulation_if_needed()
     #  working directory to 'C:\WINDOWS\system32'
     # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
     if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
-      cd "${BASH_SOURCE?}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
+      cd "${BASH_SOURCE}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
     fi
   fi
   return 0
@@ -218,6 +218,7 @@ final_cleanup()
   if test -n "${DATA_DIR-}" && test -d "${DATA_DIR}"; then
     rm -f -- "${DATA_DIR:?}"/*.tmp || :
   fi
+  return 0
 }
 #endregion
 
@@ -256,7 +257,8 @@ iconv_compat()
 
 dl()
 {
-  "${WGET_CMD:?}" -q -t 1 -O "${2:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --no-cache -- "${1:?}" || return "${?}"
+  "${WGET_CMD:?}" -q -t 1 -O "${2:?}" -U "${DL_UA:?}" --header "${DL_ACCEPT_HEADER:?}" --header "${DL_ACCEPT_LANG_HEADER:?}" --no-cache -- "${1:?}"
+  return "${?}"
 }
 
 dl_with_retry()
@@ -361,6 +363,8 @@ main()
 
   log_scope_end
   log_stdout 'Done.'
+
+  return 0
 }
 #endregion
 

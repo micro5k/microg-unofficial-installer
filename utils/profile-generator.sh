@@ -59,7 +59,7 @@ fix_posix_emulation_if_needed()
     #  working directory to 'C:\WINDOWS\system32'
     # shellcheck disable=SC3028 # IGNORE: In POSIX sh, BASH_SOURCE is undefined
     if test "$(/usr/bin/cygpath -m -- "${PWD:?}" || :)" = "$(/usr/bin/cygpath -m -S || :)" && test -n "${BASH_SOURCE-}"; then
-      cd "${BASH_SOURCE?}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
+      cd "${BASH_SOURCE}/.." || printf 1>&2 '%s\n' 'ERROR: Failed to set the correct working directory'
     fi
   fi
   return 0
@@ -208,7 +208,7 @@ set_title()
   if test "${CI:-false}" != 'false'; then return 1; fi
   TITLE_SET='true'
 
-  if command 1> /dev/null -v title; then
+  if command -v 'title' 1> /dev/null 2>&1; then
     PREVIOUS_TITLE="$(title)" # Save current title
     title "${1:?}"            # Set new title
   elif test -t 1; then
@@ -220,13 +220,14 @@ set_title()
   else
     TITLE_SET='false'
   fi
+  return 0
 }
 
 restore_title()
 {
   if test "${CI:-false}" != 'false' || test "${TITLE_SET:-false}" = 'false'; then return 1; fi
 
-  if command 1> /dev/null -v title; then
+  if command -v 'title' 1> /dev/null 2>&1; then
     title "${PREVIOUS_TITLE-}" # Restore saved title
     PREVIOUS_TITLE=''
   elif test -t 1; then
@@ -238,6 +239,7 @@ restore_title()
   fi
 
   TITLE_SET='false'
+  return 0
 }
 
 init()
