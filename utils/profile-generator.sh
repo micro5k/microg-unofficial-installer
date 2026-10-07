@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.46'
+readonly SCRIPT_VERSION='2.9.47'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -66,6 +66,7 @@ fix_posix_emulation_if_needed()
 
 set_utf8_codepage()
 {
+  test -z "${PREVIOUS_CODEPAGE-}" || return 0
   if command -v 'chcp.com' 1> /dev/null 2>&1 && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2' -s | tr -d ' \r')" && test "${PREVIOUS_CODEPAGE}" -ne 65001; then
     'chcp.com' 1> /dev/null 65001 || :
   else
@@ -76,10 +77,9 @@ set_utf8_codepage()
 
 restore_codepage()
 {
-  if test -n "${PREVIOUS_CODEPAGE-}"; then
-    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE}" || :
-    PREVIOUS_CODEPAGE=''
-  fi
+  test -n "${PREVIOUS_CODEPAGE-}" || return 0
+  'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE}" || :
+  PREVIOUS_CODEPAGE=''
   return 0
 }
 
@@ -360,10 +360,6 @@ verify_adb_mode_deps()
     log_err 'adb is required'
     return "${EX_UNAVAILABLE?}"
   }
-  command -v 'timeout' 1> /dev/null 2>&1 || {
-    log_err 'timeout is required'
-    return "${EX_UNAVAILABLE?}"
-  }
   return 0
 }
 
@@ -455,22 +451,22 @@ detect_status_and_wait_connection()
 
   if test "${2:-1}" = 1; then
     case "${__fn_dev_state}" in
-      'device' | 'recovery' | 'sideload' | 'rescue' | 'bootloader') DEVICE_STATE="${__fn_dev_state?}" ;;
+      'device' | 'recovery' | 'sideload' | 'rescue' | 'bootloader') DEVICE_STATE="${__fn_dev_state}" ;;
       *)
         dev_status_done
-        log_err "Unexpected device state: '${__fn_dev_state?}'"
+        log_err "Unexpected device state: '${__fn_dev_state}'"
         return 11
         ;;
     esac
-  elif test "${__fn_dev_state?}" != "${DEVICE_STATE?}"; then
+  elif test "${__fn_dev_state}" != "${DEVICE_STATE:?}"; then
     dev_status_done
-    log_err "Device state mismatch: expected '${DEVICE_STATE?}', got '${__fn_dev_state?}'"
+    log_err "Device state mismatch: expected '${DEVICE_STATE}', got '${__fn_dev_state}'"
     return 12
   fi
 
   dev_status_waiting
   dev_status_done
-  adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE?}"
+  adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE}"
   return "$?"
 }
 
@@ -484,7 +480,7 @@ csv_decode_field()
 {
   local __fn_field_val="${1}"
 
-  case "${__fn_field_val?}" in
+  case "${__fn_field_val}" in
     '"'*'"')
       __fn_field_val="${__fn_field_val#\"}"
       __fn_field_val="${__fn_field_val%\"}"
@@ -514,7 +510,6 @@ is_all_zeros()
   if test -n "${1?}" && test "$(printf '%s\n' "${1:?}" | tr -d '0' || true)" = ''; then
     return 0 # True
   fi
-
   return 1 # False
 }
 
@@ -529,13 +524,13 @@ is_valid_value()
 
 lc_text()
 {
-  printf '%s' "${1}" | tr '[:upper:]' '[:lower:]'
+  printf '%s' "${1}" | tr -- '[:upper:]' '[:lower:]'
   return "$?"
 }
 
 uc_first_char()
 {
-  printf '%s' "${1%"${1#?}"}" | tr '[:lower:]' '[:upper:]' || return "$?"
+  printf '%s' "${1%"${1#?}"}" | tr -- '[:lower:]' '[:upper:]' || return "$?"
   printf '%s' "${1#?}"
   return 0
 }
@@ -552,7 +547,6 @@ compare_nocase()
   if test "$(lc_text "${1?}" || true)" = "$(lc_text "${2?}" || true)"; then
     return 0 # True
   fi
-
   return 1 # False
 }
 
@@ -587,7 +581,6 @@ is_valid_serial()
   if test "${#1}" -lt 2 || is_all_zeros "${1:?}" || is_string_nocase_starting_with 'EMULATOR' "${1:?}"; then
     return 1 # NOT valid
   fi
-
   return 0 # Valid
 }
 
@@ -601,6 +594,7 @@ get_device_live_prop()
 dump_device_props()
 {
   adb -s "${1}" shell 'getprop' | LC_ALL=C tr -d '\r'
+  return "$?"
 }
 
 get_device_cached_prop()
@@ -630,9 +624,9 @@ prop_get()
 {
   RET_VAL=''
   case "${PROP_TYPE}" in
-    A) get_device_cached_prop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
-    G) parse_getprop_dump "${SELECTED_DEVICE}" "${1}" || return 1 ;;
-    B) parse_build_prop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
+    A) get_device_cached_prop "${SELECTED_DEVICE}" "${1}" || return "$?" ;;
+    G) parse_getprop_dump "${SELECTED_DEVICE}" "${1}" || return "$?" ;;
+    B) parse_build_prop "${SELECTED_DEVICE}" "${1}" || return "$?" ;;
     *) return 2 ;;
   esac
   return 0
@@ -648,7 +642,7 @@ auto_getprop_legacy()
 
 is_boot_completed()
 {
-  prop_get 'sys.boot_completed' || return 1
+  prop_get 'sys.boot_completed' || return "$?"
   case "${RET_VAL?}" in
     1) return 0 ;;
     *) ;;
@@ -811,6 +805,8 @@ generate_rom_info()
       EMU_NAME=''
     fi
   fi
+
+  return 0
 }
 
 has_invalid_chars_for_device_search()
@@ -883,6 +879,7 @@ generate_device_info()
   fi
 
   printf '%s\n' "$(uc_first_char "${_info?}" || :)" | sed -e "$(printf '%b' 's|\0342\0200\0235|"|g')" | xml_encode_field
+  return "$?"
 }
 
 find_bootloader()
@@ -900,6 +897,7 @@ find_bootloader()
   fi
 
   printf '%s' "${_val?}"
+  return 0
 }
 
 find_hardware()
@@ -917,6 +915,7 @@ find_hardware()
   fi
 
   printf '%s' "${_val?}"
+  return 0
 }
 
 find_radio()
@@ -940,6 +939,7 @@ find_radio()
   fi
 
   printf '%s' "${_val?}"
+  return 0
 }
 
 find_serialno()
@@ -968,29 +968,32 @@ find_serialno()
   fi
 
   printf '%s' "${_val?}"
+  return 0
 }
 
 anonymize_string()
 {
   printf '%s\n' "${1?}" | tr '[:digit:]' '0' | tr 'a-f' 'f' | tr 'g-z' 'x' | tr 'A-F' 'F' | tr 'G-Z' 'X'
+  return "$?"
 }
 
 anonymize_code()
 {
   local _string _prefix_length
 
-  if test "${#1}" -lt 2; then
+  test "${#1}" -gt 1 || {
     anonymize_string "${1?}"
-    return
-  fi
+    return "$?"
+  }
 
   _prefix_length="$((${#1} / 2))"
   if test "${_prefix_length:?}" -gt 6; then _prefix_length='6'; fi
 
-  printf '%s\n' "${1:?}" | cut -c "-${_prefix_length:?}" | LC_ALL=C tr -d '\n'
+  printf '%s\n' "${1:?}" | cut -c "-${_prefix_length:?}" | LC_ALL=C tr -d '\n' || return "$?"
 
   _string="$(printf '%s\n' "${1:?}" | cut -c "$((${_prefix_length:?} + 1))-")"
   anonymize_string "${_string:?}"
+  return "$?"
 }
 
 generate_profile()
@@ -1168,6 +1171,7 @@ main()
           status=1
           continue
         fi
+
         generate_profile "${_device_id?}" || status="$?"
       else
         log_warn 'Device is offline/unauthorized, skipped'
@@ -1276,8 +1280,8 @@ done
 #region
 if test "${execute_script:?}" = 'true'; then
   init
-  if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
-  log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
+  if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME?} v${SCRIPT_VERSION?} by ${SCRIPT_AUTHOR?}"; fi
+  log_status "${SCRIPT_NAME?} v${SCRIPT_VERSION?} by ${SCRIPT_AUTHOR?}"
 
   test "$#" -ne 0 || set -- 'adb'
   main "${@}" || STATUS="$?"

@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.46'
+readonly SCRIPT_VERSION='2.9.47'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -91,6 +91,7 @@ fix_posix_emulation_if_needed()
 
 set_utf8_codepage()
 {
+  test -z "${PREVIOUS_CODEPAGE-}" || return 0
   if command -v 'chcp.com' 1> /dev/null 2>&1 && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2' -s | tr -d ' \r')" && test "${PREVIOUS_CODEPAGE}" -ne 65001; then
     'chcp.com' 1> /dev/null 65001 || :
   else
@@ -101,10 +102,9 @@ set_utf8_codepage()
 
 restore_codepage()
 {
-  if test -n "${PREVIOUS_CODEPAGE-}"; then
-    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE}" || :
-    PREVIOUS_CODEPAGE=''
-  fi
+  test -n "${PREVIOUS_CODEPAGE-}" || return 0
+  'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE}" || :
+  PREVIOUS_CODEPAGE=''
   return 0
 }
 
@@ -510,22 +510,22 @@ detect_status_and_wait_connection()
 
   if test "${2:-1}" = 1; then
     case "${__fn_dev_state}" in
-      'device' | 'recovery' | 'sideload' | 'rescue' | 'bootloader') DEVICE_STATE="${__fn_dev_state?}" ;;
+      'device' | 'recovery' | 'sideload' | 'rescue' | 'bootloader') DEVICE_STATE="${__fn_dev_state}" ;;
       *)
         dev_status_done
-        log_err "Unexpected device state: '${__fn_dev_state?}'"
+        log_err "Unexpected device state: '${__fn_dev_state}'"
         return 11
         ;;
     esac
-  elif test "${__fn_dev_state?}" != "${DEVICE_STATE?}"; then
+  elif test "${__fn_dev_state}" != "${DEVICE_STATE:?}"; then
     dev_status_done
-    log_err "Device state mismatch: expected '${DEVICE_STATE?}', got '${__fn_dev_state?}'"
+    log_err "Device state mismatch: expected '${DEVICE_STATE}', got '${__fn_dev_state}'"
     return 12
   fi
 
   dev_status_waiting
   dev_status_done
-  adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE?}"
+  adb 2> /dev/null -s "${1:?}" "wait-for-${DEVICE_STATE}"
   return "$?"
 }
 
@@ -534,34 +534,38 @@ is_timeout()
   if test "${1:?}" -eq 124 || test "${1:?}" -eq 143; then
     return 0 # Timed out
   fi
-
   return 1 # OK
 }
 
 adb_unfroze()
 {
   case "${PROP_TYPE}" in A) ;; *) return 0 ;; esac
+
   log_non_fatal 'adb was frozen, reconnecting...'
-  adb 1> /dev/null 2>&1 -s "${1:?}" reconnect # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
-  detect_status_and_wait_connection "${1:?}" 0
+  # Root and unroot commands may freeze the adb connection of some devices, workaround the problem
+  adb 1> /dev/null 2>&1 -s "${1:?}" reconnect || :
+
+  detect_status_and_wait_connection "${1}" 0
+  return "$?"
 }
 
 adb_root()
 {
   case "${PROP_TYPE}" in A) ;; *) return 0 ;; esac
-  if test "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '\r' || true)" = 'root'; then return 0; fi # Already rooted
+  if test 'root' = "$(adb 2>&1 -s "${1:?}" shell 'whoami' | LC_ALL=C tr -d '\r' || :)"; then return 0; fi # Already rooted
 
   timeout 1> /dev/null 2>&1 -- 6 adb -s "${1:?}" root
   if is_timeout "$?"; then
-    adb_unfroze "${1:?}"
+    adb_unfroze "${1}"
     return 0
   fi
 
-  detect_status_and_wait_connection "${1:?}" 0
+  detect_status_and_wait_connection "${1}" 0
 
   # Dummy command to check if adb is frozen
-  timeout -- 3 adb -s "${1:?}" shell ':'
-  if is_timeout "$?"; then adb_unfroze "${1:?}"; fi
+  timeout -- 3 adb -s "${1}" shell ':'
+  if is_timeout "$?"; then adb_unfroze "${1}"; fi
+  return "$?"
 }
 
 is_all_zeros()
@@ -569,7 +573,6 @@ is_all_zeros()
   if test -n "${1?}" && test "$(printf '%s\n' "${1:?}" | tr -d '0' || true)" = ''; then
     return 0 # True
   fi
-
   return 1 # False
 }
 
@@ -587,13 +590,12 @@ is_valid_length()
   if test "${#1}" -lt "${2:?}" || test "${#1}" -gt "${3:?}"; then
     return 1 # NOT valid
   fi
-
   return 0 # Valid
 }
 
 lc_text()
 {
-  printf '%s' "${1}" | tr '[:upper:]' '[:lower:]'
+  printf '%s' "${1}" | tr -- '[:upper:]' '[:lower:]'
   return "$?"
 }
 
@@ -602,7 +604,6 @@ compare_nocase()
   if test "$(lc_text "${1?}" || true)" = "$(lc_text "${2?}" || true)"; then
     return 0 # True
   fi
-
   return 1 # False
 }
 
@@ -632,23 +633,25 @@ trim_space_on_sides()
 
   _var="${_var# }"
   printf '%s' "${_var% }"
+  return 0
 }
 
 convert_dec_to_hex()
 {
-  if test -z "${1?}"; then return; fi
+  if test -z "${1?}"; then return 0; fi
 
-  if command 1> /dev/null -v bc; then
-    printf 'obase=16;%s\n' "${1?}" | bc -s | tr '[:upper:]' '[:lower:]'
+  if command -v 'bc' 1> /dev/null 2>&1; then
+    printf 'obase=16;%s\n' "${1}" | bc -s | tr '[:upper:]' '[:lower:]'
   else
-    printf '%x\n' "${1?}"
+    printf '%x\n' "${1}"
   fi
+  return "$?"
 }
 
 anonymize_string()
 {
   printf '%s\n' "${1?}" | tr '[:digit:]' '0' | tr 'a-f' 'f' | tr 'g-z' 'x' | tr 'A-F' 'F' | tr 'G-Z' 'X'
-  return $?
+  return "$?"
 }
 
 anonymize_code()
@@ -657,17 +660,17 @@ anonymize_code()
 
   test "${#1}" -gt 1 || {
     anonymize_string "${1?}"
-    return $?
+    return "$?"
   }
 
   _prefix_length="$((${#1} / 2))"
   if test "${_prefix_length:?}" -gt 6; then _prefix_length='6'; fi
 
-  printf '%s\n' "${1:?}" | cut -c "-${_prefix_length:?}" | LC_ALL=C tr -d '\n'
+  printf '%s\n' "${1:?}" | cut -c "-${_prefix_length:?}" | LC_ALL=C tr -d '\n' || return "$?"
 
   _string="$(printf '%s\n' "${1:?}" | cut -c "$((${_prefix_length:?} + 1))-")"
   anonymize_string "${_string:?}"
-  return $?
+  return "$?"
 }
 
 is_valid_serial()
@@ -675,7 +678,6 @@ is_valid_serial()
   if test "${#1}" -lt 2 || is_all_zeros "${1:?}"; then
     return 1 # NOT valid
   fi
-
   return 0 # Valid
 }
 
@@ -684,7 +686,6 @@ is_valid_android_id()
   if test "${#1}" -ne 16 || test "${1:?}" = '9774d56d682e549c'; then
     return 1 # NOT valid
   fi
-
   return 0 # Valid
 }
 
@@ -695,7 +696,6 @@ is_valid_imei()
   if test "${#1}" -ne 15 || test "${1:?}" = '000000000000000' || test "${1:?}" = '004999010640000'; then
     return 1 # NOT valid
   fi
-
   return 0 # Valid
 }
 
@@ -704,7 +704,6 @@ is_valid_line_number()
   if printf '%s\n' "${1?}" | grep -q -e '^+\{0,1\}[0-9-]\{5,15\}$'; then
     return 0 # Valid
   fi
-
   return 1 # NOT valid
 }
 
@@ -713,7 +712,6 @@ is_valid_color()
   if test -z "${1?}" || compare_nocase "${1:?}" 'Unknown touchpad'; then
     return 1 # NOT valid
   fi
-
   return 0 # Valid
 }
 
@@ -727,6 +725,7 @@ get_device_live_prop()
 dump_device_props()
 {
   adb -s "${1}" shell 'getprop' | LC_ALL=C tr -d '\r'
+  return "$?"
 }
 
 get_device_cached_prop()
@@ -756,9 +755,9 @@ prop_get()
 {
   RET_VAL=''
   case "${PROP_TYPE}" in
-    A) get_device_cached_prop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
-    G) parse_getprop_dump "${SELECTED_DEVICE}" "${1}" || return 1 ;;
-    B) parse_build_prop "${SELECTED_DEVICE}" "${1}" || return 1 ;;
+    A) get_device_cached_prop "${SELECTED_DEVICE}" "${1}" || return "$?" ;;
+    G) parse_getprop_dump "${SELECTED_DEVICE}" "${1}" || return "$?" ;;
+    B) parse_build_prop "${SELECTED_DEVICE}" "${1}" || return "$?" ;;
     *) return 2 ;;
   esac
   return 0
@@ -774,7 +773,7 @@ auto_getprop_legacy()
 
 is_boot_completed()
 {
-  prop_get 'sys.boot_completed' || return 1
+  prop_get 'sys.boot_completed' || return "$?"
   case "${RET_VAL?}" in
     1) return 0 ;;
     *) ;;
@@ -833,6 +832,7 @@ device_get_file_content()
 {
   case "${PROP_TYPE}" in A) ;; *) return 1 ;; esac
   adb -s "${1:?}" shell "test -r '${2:?}' && cat '${2}'" | LC_ALL=C tr -d '\r'
+  return "$?"
 }
 
 find_serialno()
@@ -860,6 +860,7 @@ find_serialno()
   fi
 
   printf '%s' "${_val?}"
+  return 0
 }
 
 find_cpu_serialno()
@@ -873,12 +874,14 @@ find_cpu_serialno()
   fi
 
   printf '%s' "${_val?}"
+  return 0
 }
 
 get_android_id()
 {
   local _val
   _val="$(device_shell "${1:?}" 'settings 2> /dev/null get secure android_id')" && test -n "${_val?}" && printf '%016x' "0x${_val:?}"
+  return "$?"
 }
 
 get_gsf_id()
@@ -899,6 +902,7 @@ get_gsf_id()
   _val="$(printf '%s' "${_val?}" | grep -m 1 -e 'value' | cut -d '=' -f '2-' -s)"
 
   printf '%s' "${_val# }"
+  return 0
 }
 
 get_advertising_id()
@@ -912,6 +916,7 @@ get_advertising_id()
   adid="$(printf '%s' "${adid?}" | grep -m 1 -o -e '"adid_key"[^<]*' | grep -o -e ">.*$")"
 
   printf '%s' "${adid#>}"
+  return 0
 }
 
 get_device_color()
@@ -929,6 +934,7 @@ get_device_color()
   fi
 
   display_info_or_warn 'Device color' "${_val?}" 0 'non-sensitive'
+  return "$?"
 }
 
 get_device_back_color()
@@ -942,6 +948,7 @@ get_device_back_color()
   fi
 
   display_info_or_warn 'Device back color' "${_val?}" 0 'non-sensitive'
+  return "$?"
 }
 
 device_shell()
@@ -981,6 +988,7 @@ apply_phonesubinfo_deviation()
   fi
 
   printf '%s' "${__fn_mcode}"
+  return 0
 }
 
 call_phonesubinfo()
@@ -993,6 +1001,7 @@ call_phonesubinfo()
 
   test "$#" -ne 0 || set -- '' # Avoid issues on Bash under Mac
   adb -s "${__fn_dev}" shell "service call iphonesubinfo ${__fn_mcode} $*" | LC_ALL=C cut -d "'" -f 2 -s | LC_ALL=C tr -d -s -- '.[:cntrl:]' ' ' | trim_space_on_sides
+  return "$?"
 }
 # https://android.googlesource.com/platform/frameworks/base/+/master/telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl
 # https://android.googlesource.com/platform/frameworks/opt/telephony/+/master/src/java/com/android/internal/telephony/PhoneSubInfoController.java
@@ -1004,13 +1013,13 @@ is_phonesubinfo_response_valid()
   if test -z "${1?}" || contains 'Requires READ_PHONE_STATE' "${1?}" || contains 'does not belong to' "${1?}" || contains 'Parcel data not fully consumed' "${1?}"; then
     return 1
   fi
-
   return 0
 }
 
 display_info()
 {
   log_stdout "${1?}: ${2?}"
+  return 0
 }
 
 display_info_or_warn()
@@ -1092,6 +1101,7 @@ validate_and_display_info()
   fi
 
   log_stdout "${1?}: ${2?}"
+  return 0
 }
 
 open_device_status_info()
@@ -1146,6 +1156,8 @@ open_device_status_info()
   '
 
   adb -s "${_device:?}" shell 'svc 2> /dev/null power stayon false'
+
+  return 0
 }
 
 get_kernel_version()
@@ -1222,7 +1234,9 @@ get_imei_via_MMI_code()
     cut -d '"' -f '2' -s |
     LC_ALL=C tr -d ' '
 
-  adb 1> /dev/null 2>&1 -s "${_device:?}" shell 'input keyevent KEYCODE_HOME; svc power stayon false' || true
+  adb 1> /dev/null 2>&1 -s "${_device:?}" shell 'input keyevent KEYCODE_HOME; svc power stayon false' || :
+
+  return 0
 }
 
 get_imei_multi_slot()
@@ -1236,9 +1250,9 @@ get_imei_multi_slot()
     if test "${_slot:?}" -eq 1; then
       is_valid_imei "${INFO_IMEI?}"
       display_phonesubinfo_or_warn 'IMEI' "${INFO_IMEI?}" "$?"
+      return "$?"
     fi
-
-    return # No multi-SIM support
+    return 0 # No multi-SIM support
   fi
 
   # Function: String getDeviceIdForPhone(int phoneId, String callingPackage, optional String callingFeatureId)
@@ -1264,6 +1278,7 @@ get_imei_multi_slot()
 
   is_valid_imei "${_val?}"
   display_phonesubinfo_or_warn 'IMEI' "${_val?}" "$?"
+  return "$?"
 }
 
 get_imei()
@@ -1326,6 +1341,8 @@ get_imei()
   #INFO_IMEI_SV="${_val?}"
   is_valid_length "${_val?}" 2 2
   display_phonesubinfo_or_warn 'IMEI SV' "${_val?}" "$?" 'non-sensitive'
+
+  return 0
 }
 
 get_line_number_multi_slot()
@@ -1339,9 +1356,9 @@ get_line_number_multi_slot()
     if test "${_slot:?}" -eq 1; then
       is_valid_line_number "${INFO_LINE_NUMBER?}"
       display_phonesubinfo_or_warn 'Line number' "${INFO_LINE_NUMBER?}" "$?"
+      return "$?"
     fi
-
-    return # No multi-SIM support
+    return 0 # No multi-SIM support
   fi
 
   # Function: String getLine1NumberForSubscriber(int subId, String callingPackage, optional String callingFeatureId)
@@ -1374,6 +1391,7 @@ get_line_number_multi_slot()
 
   is_valid_line_number "${_val?}"
   display_phonesubinfo_or_warn 'Line number' "${_val?}" "$?"
+  return "$?"
 }
 
 get_line_number()
@@ -1401,6 +1419,7 @@ get_line_number()
   INFO_LINE_NUMBER="${_val?}"
   is_valid_line_number "${_val?}"
   display_phonesubinfo_or_warn 'Line number' "${_val?}" "$?"
+  return "$?"
 }
 
 get_iccid()
@@ -1424,6 +1443,7 @@ get_iccid()
   fi
   is_valid_length "${_val?}" 19 20
   display_phonesubinfo_or_warn 'ICCID (SIM serial number)' "${_val?}" "$?"
+  return "$?"
 }
 
 parse_nv_data()
@@ -1477,11 +1497,12 @@ get_slot_info()
     log_warn 'Unable to get slot count, defaulting to 1'
     #printf '%s\n' '1'
     SLOT_COUNT='1'
-    return
+    return 0
   fi
 
   #printf '%s\n' "${_i:?}"
   SLOT_COUNT="${_i:?}"
+  return 0
 }
 
 parse_prop_helper_multi_slot()
@@ -1489,8 +1510,9 @@ parse_prop_helper_multi_slot()
   if test "${1:?}" -eq 1; then
     printf '%s\n' "${2?}" | cut -d ',' -f '1'
   else
-    printf '%s\n' "${2?}" | cut -d ',' -f "${1:?}" -s
+    printf '%s\n' "${2?}" | cut -d ',' -f "${1}" -s
   fi
+  return "$?"
 }
 
 get_operator_alpha_multi_slot()
@@ -1509,6 +1531,7 @@ get_operator_alpha_multi_slot()
   fi
 
   printf '%s\n' "${_val:?}"
+  return 0
 }
 
 dump_device_info()
@@ -1832,8 +1855,8 @@ done
 #region
 if test "${execute_script:?}" = 'true'; then
   init
-  if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ale5000"; fi
-  log_status "${SCRIPT_NAME:?} v${SCRIPT_VERSION:?} by ${SCRIPT_AUTHOR:?}"
+  if test "${change_title:?}" = 'true'; then set_title "${SCRIPT_NAME?} v${SCRIPT_VERSION?} by ${SCRIPT_AUTHOR?}"; fi
+  log_status "${SCRIPT_NAME?} v${SCRIPT_VERSION?} by ${SCRIPT_AUTHOR?}"
 
   test "$#" -ne 0 || set -- 'adb'
   main "${@}" || STATUS="$?"

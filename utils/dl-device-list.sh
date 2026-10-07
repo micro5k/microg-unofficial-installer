@@ -66,6 +66,7 @@ fix_posix_emulation_if_needed()
 
 set_utf8_codepage()
 {
+  test -z "${PREVIOUS_CODEPAGE-}" || return 0
   if command -v 'chcp.com' 1> /dev/null 2>&1 && PREVIOUS_CODEPAGE="$(chcp.com 2> /dev/null | cut -d ':' -f '2' -s | tr -d ' \r')" && test "${PREVIOUS_CODEPAGE}" -ne 65001; then
     'chcp.com' 1> /dev/null 65001 || :
   else
@@ -76,10 +77,9 @@ set_utf8_codepage()
 
 restore_codepage()
 {
-  if test -n "${PREVIOUS_CODEPAGE-}"; then
-    'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE}" || :
-    PREVIOUS_CODEPAGE=''
-  fi
+  test -n "${PREVIOUS_CODEPAGE-}" || return 0
+  'chcp.com' 1> /dev/null "${PREVIOUS_CODEPAGE}" || :
+  PREVIOUS_CODEPAGE=''
   return 0
 }
 
