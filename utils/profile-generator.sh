@@ -1136,7 +1136,7 @@ generate_profile()
 </profile>"
   # REUSE-IgnoreEnd
 
-  unset ALL_PROPS RET_VAL
+  unset DEVICE_STATE ALL_PROPS RET_VAL
   return 0
 }
 

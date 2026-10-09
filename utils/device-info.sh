@@ -1704,7 +1704,7 @@ dump_device_info()
   EFS_SERIALNO="$(device_get_file_content "${SELECTED_DEVICE:?}" '/efs/FactoryApp/serial_no')"
   validate_and_display_info 'Serial number' "${EFS_SERIALNO?}"
 
-  unset ALL_PROPS RET_VAL
+  unset DEVICE_STATE ALL_PROPS RET_VAL
   return 0
 }
 
