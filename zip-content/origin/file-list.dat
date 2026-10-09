@@ -9,7 +9,7 @@ priv-app/FakeStore-0.3.6|19||Phonesky||com.android.vending|7bfafc73d4456b73a9fa8
 priv-app/FakeStoreA5K|14||Phonesky||com.android.vending|3efe876c1f79414cdf047a327f2ba396760ed1f1934e958eb69f7f3cf9ef4f74
 priv-app/FakeStoreLegacy|8|13|Phonesky||com.android.vending|2106d703f594da40968558f050e29d0bc56552bd44917595e8ebb0faf92fb070
 priv-app/GsfProxyA5K|9||GoogleServicesFramework||com.google.android.gsf|4063126dafd3d88bc2d1b05806d50287ca4e0a3bc417ed41f12db96a5e3732cc
-priv-app/FDroidPrivilegedExtension|8||FDroidPrivilegedExtension||org.fdroid.fdroid.privileged|1008525a17b4f6a93ac690f9c50dcb675b6bebf53d2879dbc98ba65a1cb2e28d
+priv-app/FDroidPrivilegedExtension|8||FDroidPrivilegedExtension||org.fdroid.fdroid.privileged|6261445e671bea58fd8d5b7c10140845a44a01940cc2e1ad8c52e3aa4a264e94
 priv-app/AuroraServices|21||AuroraServices||com.aurora.services|f03f3768f1955907ec313ae497cfd92b4f6f58ee1c01b6b38bd0b6a2a9a50593
 app/LegacyNetworkLocation|9|18|NetworkLocation||com.google.android.location|f87deddad02afc0176fd3033e3dc68d8bebabc6fe706d752bcd900e0c6f6e192
 app/DejaVuBackend|18||DejaVuBackend||org.fitchfamily.android.dejavu|1254b0b39b3446f934ec97a922923d3d135ce9c8f1243c6deb129379d50bb1c7
