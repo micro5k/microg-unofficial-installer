@@ -6,7 +6,7 @@
 
 # Code of conduct
 
-Our community code of conduct is maintained in reStructuredText format. 
+Our community code of conduct is maintained in reStructuredText format.
 
 Please read the full text here:
 👉 **[Code of conduct](./docs/CODE_OF_CONDUCT.rst)**

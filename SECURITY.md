@@ -1,9 +1,12 @@
 <!--
-    SPDX-FileCopyrightText: 2023 ale5000
-    SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
+    SPDX-FileCopyrightText: NONE
+    SPDX-License-Identifier: CC0-1.0
     SPDX-FileType: DOCUMENTATION
 -->
 
 # Security policy
 
-You will find the security policy [here](./docs/SECURITY.rst).
+The official security policy for this project is maintained in reStructuredText format.
+
+Please read the full text here:
+👉 **[Security policy](./docs/SECURITY.rst)**
