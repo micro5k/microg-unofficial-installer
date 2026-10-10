@@ -271,7 +271,7 @@ language = "en"
 rst_epilog = "\n.. |release| replace:: v{0}\n".format(release)
 
 # Options for source files
-exclude_patterns = ["CONTRIBUTORS.md"]
+exclude_patterns = ["CODE_OF_CONDUCT.md", "CONTRIBUTORS.md"]
 master_doc = "index"
 source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
