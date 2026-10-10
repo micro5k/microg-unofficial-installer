@@ -59,3 +59,9 @@ funny.
 
    CONTRIBUTING
    BUILD
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Community guidelines
+
+   CODE_OF_CONDUCT
