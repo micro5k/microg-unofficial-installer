@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.47'
+readonly SCRIPT_VERSION='2.9.48'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -1540,6 +1540,14 @@ dump_device_info()
   ALL_PROPS=''
   ensure_boot_completed || return 3
 
+  case "${OPEN_DEVICE_STATUS_INFO_ONLY?}" in
+    true)
+      open_device_status_info "${1}"
+      return "$?"
+      ;;
+    *) ;;
+  esac
+
   if test "${PRIVACY_MODE?}" = 'true'; then
     log_warn 'PRIVACY MODE is enabled, all sensitive data will be anonymized!'
   fi
@@ -1704,7 +1712,7 @@ dump_device_info()
   EFS_SERIALNO="$(device_get_file_content "${SELECTED_DEVICE:?}" '/efs/FactoryApp/serial_no')"
   validate_and_display_info 'Serial number' "${EFS_SERIALNO?}"
 
-  unset DEVICE_STATE ALL_PROPS RET_VAL
+  unset ALL_PROPS SELECTED_DEVICE DEVICE_STATE RET_VAL
   return 0
 }
 
@@ -1732,12 +1740,6 @@ main()
 
       if detect_status_and_wait_connection "${_device_id?}"; then
         found=1
-
-        if test "${OPEN_DEVICE_STATUS_INFO_ONLY?}" = 'true'; then
-          open_device_status_info "${_device_id?}" || status="$?"
-          continue
-        fi
-
         dump_device_info "${_device_id?}" || status="$?"
       else
         log_warn 'Device is offline/unauthorized, skipped'
