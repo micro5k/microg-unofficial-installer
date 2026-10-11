@@ -53,8 +53,8 @@ Although you may find various references to *Magisk* in the code, support is
 
 .. _readme-download:
 
-Download
-========
+Download & Installation
+=======================
 
 Grab the latest stable release or, if you like to live dangerously, the nightly
 build. The badges below show the current version and download statistics.
@@ -75,8 +75,8 @@ build. The badges below show the current version and download statistics.
    :alt: GitHub: downloads of the latest OSS nightly
    :target: ./docs/INSTRUCTIONS.rst
 
-`Read before you flash <./docs/INSTRUCTIONS.rst>`_ *(ten minutes of reading
-beats one hour of re-flashing)*
+`Read the installation instructions before you flash <./docs/INSTRUCTIONS.rst>`_
+*(ten minutes of reading beats one hour of re-flashing)*
 
 
 Code analysis
