@@ -13,4 +13,5 @@ Please read the full text here:
 
 ---
 
-*NOTE: If you are looking to report a violation, please follow the enforcement instructions detailed inside the `.rst` file.*
+*NOTE: If you are looking to report a violation, please follow the enforcement
+instructions detailed inside the `.rst` file.*

@@ -6,7 +6,8 @@
 
 # Security policy
 
-The official security policy for this project is maintained in reStructuredText format.
+The official security policy for this project is maintained in reStructuredText
+format.
 
 Please read the full text here:
 👉 **[Security policy](./docs/SECURITY.rst)**

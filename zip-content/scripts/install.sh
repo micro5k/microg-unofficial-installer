@@ -27,7 +27,7 @@ setup_fakestore()
 rollback_complete_callback()
 {
   case "${1:?}" in
-    'Google Play Store' | 'Google Play Store (legacy)')
+    'Play Store' | 'Play Store (legacy)')
       # Fallback to FakeStore
       setup_fakestore
       ;;
@@ -104,11 +104,11 @@ if test "${SETUP_TYPE:?}" = 'install'; then
 
   # Store selection
   SELECTED_MARKET='FakeStore'
-  if test "${SUPPORTED_ARCH:?}" = 'true' && setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store' 'PlayStore' 'priv-app' true; then
+  if test "${SUPPORTED_ARCH:?}" = 'true' && setup_app "${APP_PLAYSTORE?}" '' 'Play Store' 'PlayStore' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
-  elif setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store (legacy)' 'PlayStore7' 'priv-app' true; then
+  elif setup_app "${APP_PLAYSTORE?}" '' 'Play Store (legacy)' 'PlayStore7' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
-  elif setup_app "${APP_PLAYSTORE?}" '' 'Google Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
+  elif setup_app "${APP_PLAYSTORE?}" '' 'Play Store (legacy)' 'PlayStoreLegacy' 'priv-app' true; then
     SELECTED_MARKET='PlayStore'
   else
     # Fallback to FakeStore
