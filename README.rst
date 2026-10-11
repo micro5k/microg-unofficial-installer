@@ -29,8 +29,11 @@ Description
 microG unofficial installer is a flashable zip created by ale5000 for a simple
 installation of microG on Android from 2.2 to 16.
 
-No in-depth Android knowledge needed — the installer takes care of the hard
-parts. ✨
+No in-depth Android knowledge needed, the installer takes care of the hard parts
+anyway. ✨
+
+The installer automatically cleans up conflicting GApps and only the conflicting
+ones because it's polite like that. 🎩
 
 This project is available on GitHub_, on GitLab_, as well as on XDA_.
 
