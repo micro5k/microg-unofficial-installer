@@ -145,12 +145,23 @@ development!
    faster.)*
 
 
+Commercial use notice
+=====================
+
+Commercial use, commercial redistribution, and corporate deployment of this
+software are permitted. Thanks to the **Archive Packaging Exception** applied to
+the core installer files, you can safely bundle those components inside your own
+installable archives (such as recovery-flashable ZIPs, ROMs, or compressed
+packages) without the GPLv3 copyleft terms extending to your independent,
+non-derived modules.
+
+
 License
 =======
 
 This project is licensed under the **GNU General Public License v3 or later**
-(GPLv3+), with the **Archive Packaging Exception** to facilitate distribution in
-compressed packages.
+(GPLv3+), with the **Archive Packaging Exception** to facilitate safe
+redistribution in compressed packages.
 
 -  **Core license**: The full text of the GPLv3 can be found in `LICENSE.rst
    <./LICENSE.rst>`__.
@@ -162,12 +173,15 @@ archives (such as flashable ZIPs or tarballs) alongside proprietary or
 differently licensed modules, provided those modules are independent and not
 derived from this software.
 
-**Note for developers:** The following SPDX identifier is used in this project's
-source files to enable the archive packaging exception:
+**Note for developers:** The following SPDX identifier is used in the core
+installer files to enable the archive packaging exception:
 
-.. code:: yaml
+.. code:: http
 
    SPDX-License-Identifier: GPL-3.0-or-later WITH LicenseRef-Archive-packaging-exception
+
+Other components within this repository remain subject to their respective
+upstream licenses.
 
 
 Copyright
