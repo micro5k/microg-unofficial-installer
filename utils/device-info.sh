@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.48'
+readonly SCRIPT_VERSION='2.9.49'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -1712,7 +1712,7 @@ dump_device_info()
   EFS_SERIALNO="$(device_get_file_content "${SELECTED_DEVICE:?}" '/efs/FactoryApp/serial_no')"
   validate_and_display_info 'Serial number' "${EFS_SERIALNO?}"
 
-  unset ALL_PROPS SELECTED_DEVICE DEVICE_STATE RET_VAL
+  DEVICE_STATE=''
   return 0
 }
 
@@ -1788,6 +1788,7 @@ main()
     done
   fi
 
+  unset ALL_PROPS SELECTED_DEVICE DEVICE_STATE RET_VAL
   return "${status:?}"
 }
 

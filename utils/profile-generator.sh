@@ -20,7 +20,7 @@
 #region
 readonly SCRIPT_NAME='Android device profile generator'
 readonly SCRIPT_SHORTNAME='DevProfGen'
-readonly SCRIPT_VERSION='2.9.48'
+readonly SCRIPT_VERSION='2.9.49'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -1136,7 +1136,7 @@ generate_profile()
 </profile>"
   # REUSE-IgnoreEnd
 
-  unset ALL_PROPS SELECTED_DEVICE DEVICE_STATE RET_VAL
+  DEVICE_STATE=''
   return 0
 }
 
@@ -1219,6 +1219,7 @@ main()
     done
   fi
 
+  unset ALL_PROPS SELECTED_DEVICE DEVICE_STATE RET_VAL
   return "${status:?}"
 }
 
