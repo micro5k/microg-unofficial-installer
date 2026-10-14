@@ -22,7 +22,7 @@
 #region
 readonly SCRIPT_NAME='Android device info extractor'
 readonly SCRIPT_SHORTNAME='DevInfo'
-readonly SCRIPT_VERSION='2.9.50'
+readonly SCRIPT_VERSION='2.9.51'
 readonly SCRIPT_AUTHOR='ale5000'
 readonly SCRIPT_YEAR='2023'
 
@@ -50,7 +50,10 @@ readonly EX_UNAVAILABLE=69
   readonly ANDROID_12_1_SDK=32
   readonly ANDROID_13_SDK=33
   readonly ANDROID_14_SDK=34
-  readonly ANDROID_15_SDK=35 # Not yet released
+  readonly ANDROID_15_SDK=35
+  readonly ANDROID_16_SDK=36
+  readonly ANDROID_17_SDK=37
+  readonly ANDROID_18_SDK=38 # Not yet released
 }
 
 readonly DEVICE_SEP='\n=== DEVICE-BREAK ===\n\n'
@@ -1297,14 +1300,14 @@ get_imei_multi_slot()
     return 0 # No multi-SIM support
   fi
 
-  # Function: String getDeviceIdForPhone(int phoneId, String callingPackage, optional String callingFeatureId)
-  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+  # Function: String getDeviceIdForPhone(int phoneId, String callingPackage, optional String callingFeatureId);
+  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_17_SDK?}"; then
     :
-  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 4 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 11-14
-  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK?}"; then
+    _val="$(call_phonesubinfo "${1:?}" 4 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 11-17
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK?}"; then
     _val="$(call_phonesubinfo "${1:?}" 3 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 5.1-10
-  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK?}"; then
     _val="$(call_phonesubinfo "${1:?}" 2 i32 "${_slot_index:?}")" # Android 5.0 (need test)
   fi
 
@@ -1331,7 +1334,7 @@ get_imei()
   if _val="$(device_shell "${1:?}" 'dumpsys iphonesubinfo' | grep -m 1 -F -e 'Device ID' | cut -d '=' -f '2-' -s | trim_space_on_sides)" && is_valid_imei "${_val?}"; then
     : # Presumably Android 1.0-4.4W (but it doesn't work on all devices)
   elif _val="$(call_phonesubinfo "${1:?}" 1 s16 'com.android.shell')" && is_valid_imei "${_val?}"; then
-    : # Android 1.0-14 => Function: String getDeviceId(String callingPackage)
+    : # Android 1.0-17 => Function: String getDeviceId(String callingPackage);
   elif _tmp="$(get_and_check_prop_silent 'gsm.baseband.imei')"; then
     _val="${_tmp:?}"
   elif _tmp="$(get_and_check_prop_silent 'ro.gsm.imei')"; then
@@ -1365,13 +1368,13 @@ get_imei()
   is_valid_imei "${_val?}"
   display_phonesubinfo_or_warn 'IMEI' "${_val?}" "$?"
 
-  # Function: String getDeviceSvn(String callingPackage, optional String callingFeatureId)
+  # Function: String getDeviceSvn(String callingPackage, optional String callingFeatureId);
   if test -n "${_imei_sv?}"; then
     _val="${_imei_sv:?}"
-  elif test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+  elif test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_17_SDK:?}"; then
     _val=''
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 6 s16 'com.android.shell')" || _val='' # Android 11-14
+    _val="$(call_phonesubinfo "${1:?}" 6 s16 'com.android.shell')" || _val='' # Android 11-17
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
     _val="$(call_phonesubinfo "${1:?}" 5 s16 'com.android.shell')" || _val='' # Android 5.1-10
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
@@ -1403,9 +1406,11 @@ get_line_number_multi_slot()
     return 0 # No multi-SIM support
   fi
 
-  # Function: String getLine1NumberForSubscriber(int subId, String callingPackage, optional String callingFeatureId)
-  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+  # Function: String getLine1NumberForSubscriber(int subId, String callingPackage, optional String callingFeatureId);
+  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_17_SDK:?}"; then
     :
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_15_SDK:?}"; then
+    _val="$(call_phonesubinfo "${1:?}" 17 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 15-17
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
     _val="$(call_phonesubinfo "${1:?}" 16 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
@@ -1417,9 +1422,11 @@ get_line_number_multi_slot()
   fi
 
   if ! is_valid_line_number "${_val?}"; then
-    # Function: String getMsisdnForSubscriber(int subId, String callingPackage, optional String callingFeatureId)
-    if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+    # Function: String getMsisdnForSubscriber(int subId, String callingPackage, optional String callingFeatureId);
+    if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_17_SDK:?}"; then
       :
+    elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_15_SDK:?}"; then
+      _val="$(call_phonesubinfo "${1:?}" 21 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 15-17
     elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
       _val="$(call_phonesubinfo "${1:?}" 20 i32 "${_slot_index:?}" s16 'com.android.shell')" # Android 11-14
     elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
@@ -1441,9 +1448,11 @@ get_line_number()
   local _val
   _val=''
 
-  # Function: String getLine1Number(String callingPackage, optional String callingFeatureId)
-  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+  # Function: String getLine1Number(String callingPackage, optional String callingFeatureId);
+  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_17_SDK:?}"; then
     :
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_15_SDK:?}"; then
+    _val="$(call_phonesubinfo "${1:?}" 16 s16 'com.android.shell')" # Android 15-17
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
     _val="$(call_phonesubinfo "${1:?}" 15 s16 'com.android.shell')" # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
@@ -1468,16 +1477,19 @@ get_iccid()
 {
   local _val=''
 
-  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_14_SDK:?}"; then
+  # Function: String getIccSerialNumber(String callingPackage);
+  if test "${BUILD_VERSION_SDK:?}" -gt "${ANDROID_17_SDK:?}"; then
     :
+  elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_15_SDK:?}"; then
+    _val="$(call_phonesubinfo "${1:?}" 13 s16 'com.android.shell')" || _val='' # Android 15-17
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_11_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 12 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 12 s16 'com.android.shell')" || _val='' # Android 11-14
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_9_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 10 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 10 s16 'com.android.shell')" || _val='' # Android 9-10
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_1_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 11 s16 'com.android.shell')" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 11 s16 'com.android.shell')" || _val='' # Android 5.1-8.1
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_5_SDK:?}"; then
-    _val="$(call_phonesubinfo "${1:?}" 9)" || _val=''
+    _val="$(call_phonesubinfo "${1:?}" 9)" || _val='' # Android 5.0
   elif test "${BUILD_VERSION_SDK:?}" -ge "${ANDROID_4_3_SDK:?}"; then
     _val="$(call_phonesubinfo "${1:?}" 5)" || _val=''
   else
