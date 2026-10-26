@@ -1606,6 +1606,8 @@ init_cmdline()
   export AAPT_PATH="${AAPT_PATH:-$(find_android_build_tool 'aapt2' || find_android_build_tool 'aapt' || :)}"
   export APKSIGNER_PATH="${APKSIGNER_PATH:-$(find_android_build_tool 'apksigner' || command -v 'apksigner.bat' 2> /dev/null || :)}"
 
+  export PYTHONUTF8=1
+
   if command 1> /dev/null 2>&1 -v 'alias'; then
     alias 'dir'='ls'
     alias 'cd..'='cd ..'

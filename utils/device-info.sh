@@ -1691,7 +1691,7 @@ dump_device_info()
   log_stdout_blank
 
   local _index slot_state operator_current_slot
-  for _index in $(seq "${SLOT_COUNT:?}"); do
+  for _index in $(seq "${SLOT_COUNT?}"); do
     log_stdout "SLOT ${_index:?}"
     case "${_index:?}" in
       1)
