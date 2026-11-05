@@ -10,7 +10,7 @@ microG unofficial installer
 :Author:
    `ale5000 <https://github.com/ale5000-git>`_
 
-.. image:: https://app.readthedocs.org/projects/microg-unofficial-installer/badge/?version=latest
+.. image:: https://app.readthedocs.org/projects/microg-unofficial-installer/badge/?version=latest&style=flat
    :alt: Documentation status
    :target: https://microg-unofficial-installer.readthedocs.io/en/latest/
 
