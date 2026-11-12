@@ -2235,6 +2235,22 @@ verify_disk_space()
   return 1
 }
 
+prepare_zips_config_dirs()
+{
+  export ZIPS_SYS_CONF_DIR="${DEST_PATH:?}/etc/zips"
+  if test ! -d "${ZIPS_SYS_CONF_DIR?}"; then
+    mkdir -p "${ZIPS_SYS_CONF_DIR?}" || ui_error "Cannot create directory '${ZIPS_SYS_CONF_DIR?}'"
+    set_perm 0 0 0750 "${ZIPS_SYS_CONF_DIR?}"
+  fi
+
+  export ZIPS_DATA_CONF_DIR="${DATA_PATH:-/missing}/local/.zips"
+  if test -n "${DATA_PATH?}" && test ! -d "${ZIPS_DATA_CONF_DIR?}" && test -f "${DATA_PATH}/system/packages.xml" && test -e "${DATA_PATH}/local"; then
+    mkdir -p "${ZIPS_DATA_CONF_DIR?}" || ui_error "Cannot create directory '${ZIPS_DATA_CONF_DIR?}'"
+    chown 2000:2000 "${ZIPS_DATA_CONF_DIR?}" || ui_warning "Cannot set shell ownership on '${ZIPS_DATA_CONF_DIR?}'"
+    chmod 0770 "${ZIPS_DATA_CONF_DIR?}" || ui_warning "Cannot set permissions on '${ZIPS_DATA_CONF_DIR?}'"
+  fi
+}
+
 perform_secure_copy_to_device()
 {
   if test ! -d "${TMP_PATH:?}/files/${1:?}"; then return 0; fi
@@ -2292,13 +2308,16 @@ perform_installation()
   ui_msg 'Installing...'
   test "${DRY_RUN:?}" -eq 0 || return
 
-  if test ! -d "${SYS_PATH:?}/etc/zips"; then
-    mkdir -p "${SYS_PATH:?}/etc/zips" || ui_error "Failed to create the dir '${SYS_PATH:?}/etc/zips'"
-    set_perm 0 0 0750 "${SYS_PATH:?}/etc/zips"
-  fi
-  set_perm 0 0 0640 "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+  prepare_zips_config_dirs
 
-  perform_secure_copy_to_device 'etc/zips'
+  set_perm 0 0 0640 "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
+  cp -p -f -- "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop" "${ZIPS_SYS_CONF_DIR?}/${MODULE_ID:?}.prop" || ui_error "Failed to copy 'etc/zips/${MODULE_ID:?}.prop' to the device (${ZIPS_SYS_CONF_DIR?})"
+  if test -n "${DATA_PATH?}" && test -e "${ZIPS_DATA_CONF_DIR?}"; then
+    cp -p -f -- "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop" "${ZIPS_DATA_CONF_DIR?}/${MODULE_ID:?}.prop" || ui_error "Failed to copy 'etc/zips/${MODULE_ID:?}.prop' to the device (${ZIPS_DATA_CONF_DIR?})"
+    chown 2000:2000 "${ZIPS_DATA_CONF_DIR?}/${MODULE_ID:?}.prop" || ui_warning "Cannot set shell ownership on '${ZIPS_DATA_CONF_DIR?}/${MODULE_ID:?}.prop'"
+    chmod 0660 "${ZIPS_DATA_CONF_DIR?}/${MODULE_ID:?}.prop" || ui_warning "Cannot set permissions on '${ZIPS_DATA_CONF_DIR?}/${MODULE_ID:?}.prop'"
+  fi
+
   perform_secure_copy_to_device 'etc/permissions'
 
   local _entry
