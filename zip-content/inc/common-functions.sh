@@ -1049,10 +1049,10 @@ parse_setting()
   fi
 
   # Fallback to the last choice
-  if test "${_sett_use_prev_choice:?}" = 'true' && _var="$(simple_file_getprop "${_sett_name:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
+  if test "${_sett_use_prev_choice:?}" = 'true' && _var="$(simple_file_getprop "${_sett_name:?}" "${TMP_PATH?}/cache/${MODULE_ID?}.prop")" && test -n "${_var?}"; then
     printf '%s\n' "${_var:?}"
     return
-  elif test "${_sett_use_prev_choice:?}" = 'custom' && _var="$(simple_file_getprop "${5:?}" "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" && test -n "${_var?}"; then
+  elif test "${_sett_use_prev_choice:?}" = 'custom' && _var="$(simple_file_getprop "${5:?}" "${TMP_PATH?}/cache/${MODULE_ID?}.prop")" && test -n "${_var?}"; then
     case "${_var:?}" in
       "${6:?}") printf '%s\n' '1' ;;
       *) printf '%s\n' '0' ;;
@@ -1458,6 +1458,7 @@ reset_unmount_vars()
 initialize()
 {
   local _raw_arch_list _additional_data_mountpoint
+  local _search_path=''
 
   reset_unmount_vars
 
@@ -1499,11 +1500,14 @@ initialize()
 
   _get_local_settings
 
-  DRY_RUN="$(parse_setting 'general' 'DRY_RUN' "${DRY_RUN:?}" 'false')"
-  KEY_TEST_ONLY="$(parse_setting 'general' 'KEY_TEST_ONLY' "${KEY_TEST_ONLY:?}" 'false')"
+  # IMPORTANT: Since the previous settings file is not cached yet, it is only safe to call parse_setting here with the fourth parameter set to "false"
+  {
+    DRY_RUN="$(parse_setting 'general' 'DRY_RUN' "${DRY_RUN:?}" 'false')"
+    KEY_TEST_ONLY="$(parse_setting 'general' 'KEY_TEST_ONLY' "${KEY_TEST_ONLY:?}" 'false')"
 
-  LIVE_SETUP_DEFAULT="$(parse_setting 'general' 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
-  LIVE_SETUP_TIMEOUT="$(parse_setting 'general' 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
+    LIVE_SETUP_DEFAULT="$(parse_setting 'general' 'LIVE_SETUP_DEFAULT' "${LIVE_SETUP_DEFAULT:?}" 'false')"
+    LIVE_SETUP_TIMEOUT="$(parse_setting 'general' 'LIVE_SETUP_TIMEOUT' "${LIVE_SETUP_TIMEOUT:?}" 'false')"
+  }
 
   case "${KEY_TEST_ONLY?}" in 0 | 1) ;; *) KEY_TEST_ONLY=1 ;; esac
   if test "${KEY_TEST_ONLY:?}" -eq 1; then DRY_RUN=2; fi
@@ -1591,7 +1595,21 @@ initialize()
   ui_debug ''
   _timeout_check
 
-  cp -pf "${SYS_PATH:?}/build.prop" "${TMP_PATH:?}/build.prop" # Cache the file for faster access
+  # Cache files for faster access
+  {
+    create_dir "${TMP_PATH?}/cache"
+
+    cp -p -f -- "${SYS_PATH:?}/build.prop" "${TMP_PATH?}/build.prop"
+
+    for _search_path in "${SYS_PATH?}"; do # "${SYS_EXT_PATH?}" "${PRODUCT_PATH?}" "${DATA_PATH?}"
+      test -n "${_search_path}" || continue
+      if test -f "${_search_path}/etc/zips/${MODULE_ID:?}.prop"; then
+        cp -p -f -- "${_search_path}/etc/zips/${MODULE_ID?}.prop" "${TMP_PATH?}/cache/${MODULE_ID?}.prop" || ui_error "Failed to cache '${MODULE_ID?}.prop' from '${_search_path}'"
+        ui_debug "Found: ${_search_path}/etc/zips/${MODULE_ID?}.prop"
+        break
+      fi
+    done
+  }
 
   PREV_INSTALL_FAILED='false'
   if test -f "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed"; then
@@ -1603,7 +1621,7 @@ initialize()
   export PREV_INSTALL_FAILED
 
   # Previously installed version code (0 if not already installed or broken)
-  PREV_MODULE_VERCODE="$(simple_file_getprop 'install.version.code' "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop")" || PREV_MODULE_VERCODE=''
+  PREV_MODULE_VERCODE="$(simple_file_getprop 'install.version.code' "${TMP_PATH?}/cache/${MODULE_ID?}.prop")" || PREV_MODULE_VERCODE=''
   case "${PREV_MODULE_VERCODE?}" in
     '') PREV_MODULE_VERCODE='0' ;; # Empty (not installed)
     *[!0-9]*)                      # Broken data
