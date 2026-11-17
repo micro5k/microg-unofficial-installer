@@ -1474,6 +1474,7 @@ initialize()
   VENDOR_RW='false'
   PRODUCT_RW='false'
   SYS_EXT_RW='false'
+  DATA_RW='false'
 
   # Make sure that the commands are still overridden here (most shells don't have the ability to export functions)
   if test "${TEST_INSTALL:-false}" != 'false' && test -f "${RS_OVERRIDE_SCRIPT:?}"; then
@@ -1593,7 +1594,6 @@ initialize()
   fi
 
   _find_and_mount_system
-  ui_debug ''
 
   if mount_partition_if_possible 'vendor' "${SLOT_SUFFIX:+vendor}${SLOT_SUFFIX-}${NL:?}vendor${NL:?}"; then
     VENDOR_PATH="${LAST_MOUNTPOINT:?}"
@@ -1760,20 +1760,30 @@ initialize()
   remount_read_write "${SYS_MOUNTPOINT:?}" || ui_error "Remounting '${SYS_MOUNTPOINT?}' failed!!!" 30
 
   if test -n "${VENDOR_PATH?}"; then
-    remount_read_write_if_possible "${VENDOR_PATH:?}" false && VENDOR_RW='true'
+    remount_read_write_if_possible "${VENDOR_PATH}" false && VENDOR_RW='true'
   fi
   if test -n "${PRODUCT_PATH?}"; then
-    remount_read_write_if_possible "${PRODUCT_PATH:?}" false && PRODUCT_RW='true'
+    remount_read_write_if_possible "${PRODUCT_PATH}" false && PRODUCT_RW='true'
   fi
   if test -n "${SYS_EXT_PATH?}"; then
-    remount_read_write_if_possible "${SYS_EXT_PATH:?}" false && SYS_EXT_RW='true'
+    remount_read_write_if_possible "${SYS_EXT_PATH}" false && SYS_EXT_RW='true'
   fi
   export VENDOR_RW PRODUCT_RW SYS_EXT_RW
 
   if test -n "${DATA_PATH?}"; then
-    remount_read_write_if_possible "${DATA_PATH?}" false || ui_warning "The data partition cannot be remounted as read-write; I suggest to manually performing a factory reset after flashing this ZIP."
+    # NOTE: Only modify the data partition if Android has booted at least once and was decrypted properly; otherwise, modifying it is unsafe.
+    if
+      test -f "${DATA_PATH}/system/packages.xml" &&
+        test -d "${DATA_PATH}/local" &&
+        remount_read_write_if_possible "${DATA_PATH}" false &&
+        test -w "${DATA_PATH}"
+    then
+      DATA_RW='true'
+    else
+      ui_warning "The data partition cannot be remounted as read-write or it is empty."
+    fi
   else
-    DATA_PATH='/data' # ToDO: Remove once all the code is fixed to handle the empty value
+    DATA_PATH='/data' # TODO: Remove once all the code is fixed to handle the empty value
   fi
 
   display_basic_info
@@ -2274,7 +2284,7 @@ prepare_zips_config_dirs()
   export ZIPS_DATA_CONF_DIR="${DATA_PATH?}/local/.zips"
   if test -n "${DATA_PATH}" && test -d "${ZIPS_DATA_CONF_DIR?}"; then
     :
-  elif test -n "${DATA_PATH}" && test -f "${DATA_PATH}/system/packages.xml" && test -d "${DATA_PATH}/local"; then
+  elif test "${DATA_RW?}" = 'true'; then
     mkdir -p "${ZIPS_DATA_CONF_DIR?}" || ui_error "Cannot create directory '${ZIPS_DATA_CONF_DIR?}'"
     chown 2000:2000 "${ZIPS_DATA_CONF_DIR?}" || ui_warning "Cannot set shell ownership on '${ZIPS_DATA_CONF_DIR?}'"
     chmod 0770 "${ZIPS_DATA_CONF_DIR?}" || ui_warning "Cannot set permissions on '${ZIPS_DATA_CONF_DIR?}'"
@@ -2344,7 +2354,7 @@ perform_installation()
 
   set_perm 0 0 0640 "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop"
   cp -p -f -- "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop" "${ZIPS_SYS_CONF_DIR?}/${MODULE_ID:?}.prop" || ui_error "Failed to copy 'etc/zips/${MODULE_ID:?}.prop' to the device (${ZIPS_SYS_CONF_DIR?})"
-  if test -n "${ZIPS_DATA_CONF_DIR?}"; then
+  if test -n "${ZIPS_DATA_CONF_DIR?}" && test "${DATA_RW?}" = 'true'; then
     cp -p -f -- "${TMP_PATH:?}/files/etc/zips/${MODULE_ID:?}.prop" "${ZIPS_DATA_CONF_DIR?}/${MODULE_ID:?}.prop" || ui_error "Failed to copy 'etc/zips/${MODULE_ID:?}.prop' to the device (${ZIPS_DATA_CONF_DIR?})"
     chown 2000:2000 "${ZIPS_DATA_CONF_DIR?}/${MODULE_ID:?}.prop" || ui_warning "Cannot set shell ownership on '${ZIPS_DATA_CONF_DIR?}/${MODULE_ID:?}.prop'"
     chmod 0660 "${ZIPS_DATA_CONF_DIR?}/${MODULE_ID:?}.prop" || ui_warning "Cannot set permissions on '${ZIPS_DATA_CONF_DIR?}/${MODULE_ID:?}.prop'"
@@ -2616,7 +2626,7 @@ reset_gms_data_of_all_apps()
 {
   test "${DRY_RUN:?}" -eq 0 || return
 
-  if test -n "${DATA_PATH?}" && test -e "${DATA_PATH:?}/data"; then
+  if test -n "${DATA_PATH?}" && test -e "${DATA_PATH?}/data"; then
     ui_debug 'Resetting GMS data of all apps...'
     find "${DATA_PATH:?}"/data/*/shared_prefs -name 'com.google.android.gms.*.xml' -delete
     validate_return_code_warning "$?" 'Failed to reset GMS data of all apps'
