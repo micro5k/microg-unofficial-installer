@@ -243,7 +243,7 @@ jobs:
       - name: "Await the twin coverage workflow"
         id: "await-coverage"
         uses: actions/github-script@v9
-        timeout-minutes: 20
+        timeout-minutes: 15
         with:
           script: |
             const repo = { owner: context.repo.owner, repo: context.repo.repo };
@@ -265,13 +265,14 @@ jobs:
               return;
             }
             // Polling loop: wait actively until the target workflow run is completed
-            while(['in_progress', 'queued', 'waiting'].includes(run.status)) {
+            const transientStatuses = ['requested', 'pending', 'queued', 'waiting', 'in_progress'];
+            while(transientStatuses.includes(run.status)) {
               console.log(`Coverage workflow is ${run.status}. Waiting 30 seconds...`);
               await new Promise(r => setTimeout(r, 30000));
               run = (await github.rest.actions.getWorkflowRun({ ...repo, run_id: run.id })).data;
             }
             const ok = run.conclusion === 'success';
-            if(!ok) core.notice(`Coverage workflow ended with status: ${run.conclusion}. Proceeding without coverage data.`);
+            if(!ok) core.notice(`Coverage workflow ended with conclusion: ${run.conclusion}. Proceeding without coverage data.`);
             core.setOutput('run_id', ok ? run.id : '');
       - name: "Get JSON coverage report"
         id: "download-coverage"
