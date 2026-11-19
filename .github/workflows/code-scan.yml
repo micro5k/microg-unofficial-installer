@@ -245,18 +245,19 @@ jobs:
         uses: actions/github-script@v9
         timeout-minutes: 15
         with:
+          retries: 1
           script: |
             const repo = { owner: context.repo.owner, repo: context.repo.repo };
             const sha = context.payload.pull_request?.head.sha || context.sha;
             const branch = context.payload.pull_request ? context.payload.pull_request.head.ref : context.ref.replace('refs/heads/', '');
-            // Search coverage workflow (2 attempts)
+            // Search coverage workflow (5 attempts)
             let run = null;
-            for(let i = 0; i < 2; i++) {
+            for(let i = 1; true; i++) {
               const { data: { workflow_runs } } = await github.rest.actions.listWorkflowRuns({
                 ...repo, workflow_id: 'coverage.yml', head_sha: sha, branch, event: context.eventName
               });
-              run = workflow_runs[0]; // Newest matching run is natively at index 0
-              if(run || i === 1) break;
+              run = workflow_runs?.[0]; // Newest matching run is natively at index 0
+              if(run || i >= 5) break;
               await new Promise(r => setTimeout(r, 5000));
             }
             if(!run) {
@@ -272,7 +273,7 @@ jobs:
               run = (await github.rest.actions.getWorkflowRun({ ...repo, run_id: run.id })).data;
             }
             const ok = run.conclusion === 'success';
-            if(!ok) core.notice(`Coverage workflow ended with conclusion: ${run.conclusion}. Proceeding without coverage data.`);
+            if(!ok) core.notice(`Coverage workflow ended with conclusion: ${run.conclusion} (status: ${run.status}). Proceeding without coverage data.`);
             core.setOutput('run_id', ok ? run.id : '');
       - name: "Get JSON coverage report"
         id: "download-coverage"
