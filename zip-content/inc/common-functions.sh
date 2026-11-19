@@ -1861,7 +1861,7 @@ deinitialize()
 
 clean_previous_installations()
 {
-  local _initial_free_space
+  local _initial_free_space='' _search_path=''
 
   if test "${SETUP_TYPE?}" != 'uninstall'; then
     ui_msg_empty_line
@@ -1878,7 +1878,14 @@ clean_previous_installations()
   # shellcheck source=SCRIPTDIR/../scripts/uninstall.sh
   command . "${TMP_PATH:?}/uninstall.sh" || ui_error "Sourcing uninstall script failed with error: ${?}"
 
-  delete "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.prop"
+  for _search_path in "${DATA_PATH?}" "${PRODUCT_PATH?}" "${SYS_EXT_PATH?}" "${SYS_PATH?}"; do
+    case "${_search_path}" in
+      '') continue ;;
+      "${DATA_PATH}") _search_path="${_search_path}/local/.zips" ;;
+      *) _search_path="${_search_path}/etc/zips" ;;
+    esac
+    delete "${_search_path}/${MODULE_ID:?}.prop"
+  done
 
   if test "${SETUP_TYPE?}" != 'uninstall'; then
     _wait_free_space_changes 5 "${_initial_free_space:?}" # Reclaiming free space may take some time
@@ -2696,9 +2703,9 @@ move_dir_content()
 delete()
 {
   for filename in "${@}"; do
-    if test -e "${filename?}"; then
-      ui_debug "Deleting '${filename?}'..."
-      rm -rf -- "${filename:?}" || ui_error 'Failed to delete files/folders in delete()' 103
+    if test -e "${filename}"; then
+      ui_debug "Deleting '${filename}'..."
+      rm -r -f -- "${filename:?}" || ui_error 'Failed to delete files/folders in delete()' 103
     fi
   done
 }
