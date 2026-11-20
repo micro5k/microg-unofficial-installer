@@ -1320,6 +1320,63 @@ is_architecture_still_supported_by_Android()
   return 1
 }
 
+prepare_zips_config_dirs()
+{
+  export ZIPS_SYS_CONF_DIR="${DEST_PATH:?}/etc/zips"
+  if test ! -d "${ZIPS_SYS_CONF_DIR?}"; then
+    mkdir -p "${ZIPS_SYS_CONF_DIR?}" || ui_error "Cannot create directory '${ZIPS_SYS_CONF_DIR?}'"
+    set_perm 0 0 0750 "${ZIPS_SYS_CONF_DIR?}"
+  fi
+
+  export ZIPS_DATA_CONF_DIR="${DATA_PATH?}/local/.zips"
+  if test -n "${DATA_PATH}" && test -d "${ZIPS_DATA_CONF_DIR?}"; then
+    :
+  elif test "${DATA_RW?}" = 'true'; then
+    mkdir -p "${ZIPS_DATA_CONF_DIR?}" || ui_error "Cannot create directory '${ZIPS_DATA_CONF_DIR?}'"
+    chown 2000:2000 "${ZIPS_DATA_CONF_DIR?}" || ui_warning "Cannot set shell ownership on '${ZIPS_DATA_CONF_DIR?}'"
+    chmod 0770 "${ZIPS_DATA_CONF_DIR?}" || ui_warning "Cannot set permissions on '${ZIPS_DATA_CONF_DIR?}'"
+  else
+    ZIPS_DATA_CONF_DIR=''
+  fi
+}
+
+cache_zip_config()
+{
+  local _search_path=''
+
+  for _search_path in "${SYS_PATH?}" "${SYS_EXT_PATH?}" "${PRODUCT_PATH?}" "${DATA_PATH?}"; do
+    case "${_search_path}" in
+      '') continue ;;
+      "${DATA_PATH}") _search_path="${_search_path}/local/.zips" ;;
+      *) _search_path="${_search_path}/etc/zips" ;;
+    esac
+
+    if test -f "${_search_path}/${1}"; then
+      cp -p -f -- "${_search_path}/${1}" "${TMP_PATH?}/cache/${1}" || ui_error "Failed to cache '${1}' from '${_search_path}'"
+      ui_debug "Found: ${_search_path}/${1}"
+      ui_debug ''
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+delete_zip_config()
+{
+  local _search_path=''
+
+  for _search_path in "${DATA_PATH?}" "${PRODUCT_PATH?}" "${SYS_EXT_PATH?}" "${SYS_PATH?}"; do
+    case "${_search_path}" in
+      '') continue ;;
+      "${DATA_PATH}") _search_path="${_search_path}/local/.zips" ;;
+      *) _search_path="${_search_path}/etc/zips" ;;
+    esac
+    delete "${_search_path}/${1:?}"
+  done
+  return 0
+}
+
 append_to_ld_library_path()
 {
   if test -d "${1:?}"; then
@@ -1459,7 +1516,6 @@ initialize()
 {
   local _raw_arch_list
   local _additional_data_mountpoint=''
-  local _search_path=''
 
   reset_unmount_vars
 
@@ -1644,21 +1700,7 @@ initialize()
     create_dir "${TMP_PATH?}/cache"
 
     cp -p -f -- "${SYS_PATH:?}/build.prop" "${TMP_PATH?}/build.prop"
-
-    for _search_path in "${SYS_PATH?}" "${SYS_EXT_PATH?}" "${PRODUCT_PATH?}" "${DATA_PATH?}"; do
-      case "${_search_path}" in
-        '') continue ;;
-        "${DATA_PATH}") _search_path="${_search_path}/local/.zips" ;;
-        *) _search_path="${_search_path}/etc/zips" ;;
-      esac
-
-      if test -f "${_search_path}/${MODULE_ID:?}.prop"; then
-        cp -p -f -- "${_search_path}/${MODULE_ID?}.prop" "${TMP_PATH?}/cache/${MODULE_ID?}.prop" || ui_error "Failed to cache '${MODULE_ID?}.prop' from '${_search_path}'"
-        ui_debug "Found: ${_search_path}/${MODULE_ID?}.prop"
-        ui_debug ''
-        break
-      fi
-    done
+    cache_zip_config "${MODULE_ID?}.prop" || :
   }
 
   PREV_INSTALL_FAILED='false'
@@ -1861,7 +1903,7 @@ deinitialize()
 
 clean_previous_installations()
 {
-  local _initial_free_space='' _search_path=''
+  local _initial_free_space=''
 
   if test "${SETUP_TYPE?}" != 'uninstall'; then
     ui_msg_empty_line
@@ -1878,14 +1920,7 @@ clean_previous_installations()
   # shellcheck source=SCRIPTDIR/../scripts/uninstall.sh
   command . "${TMP_PATH:?}/uninstall.sh" || ui_error "Sourcing uninstall script failed with error: ${?}"
 
-  for _search_path in "${DATA_PATH?}" "${PRODUCT_PATH?}" "${SYS_EXT_PATH?}" "${SYS_PATH?}"; do
-    case "${_search_path}" in
-      '') continue ;;
-      "${DATA_PATH}") _search_path="${_search_path}/local/.zips" ;;
-      *) _search_path="${_search_path}/etc/zips" ;;
-    esac
-    delete "${_search_path}/${MODULE_ID:?}.prop"
-  done
+  delete_zip_config "${MODULE_ID?}.prop"
 
   if test "${SETUP_TYPE?}" != 'uninstall'; then
     _wait_free_space_changes 5 "${_initial_free_space:?}" # Reclaiming free space may take some time
@@ -2278,26 +2313,6 @@ verify_disk_space()
   if test "${_free_space_bytes:?}" -gt "${_needed_space_bytes:?}"; then return 0; fi
 
   return 1
-}
-
-prepare_zips_config_dirs()
-{
-  export ZIPS_SYS_CONF_DIR="${DEST_PATH:?}/etc/zips"
-  if test ! -d "${ZIPS_SYS_CONF_DIR?}"; then
-    mkdir -p "${ZIPS_SYS_CONF_DIR?}" || ui_error "Cannot create directory '${ZIPS_SYS_CONF_DIR?}'"
-    set_perm 0 0 0750 "${ZIPS_SYS_CONF_DIR?}"
-  fi
-
-  export ZIPS_DATA_CONF_DIR="${DATA_PATH?}/local/.zips"
-  if test -n "${DATA_PATH}" && test -d "${ZIPS_DATA_CONF_DIR?}"; then
-    :
-  elif test "${DATA_RW?}" = 'true'; then
-    mkdir -p "${ZIPS_DATA_CONF_DIR?}" || ui_error "Cannot create directory '${ZIPS_DATA_CONF_DIR?}'"
-    chown 2000:2000 "${ZIPS_DATA_CONF_DIR?}" || ui_warning "Cannot set shell ownership on '${ZIPS_DATA_CONF_DIR?}'"
-    chmod 0770 "${ZIPS_DATA_CONF_DIR?}" || ui_warning "Cannot set permissions on '${ZIPS_DATA_CONF_DIR?}'"
-  else
-    ZIPS_DATA_CONF_DIR=''
-  fi
 }
 
 perform_secure_copy_to_device()
