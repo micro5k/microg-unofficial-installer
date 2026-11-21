@@ -1340,7 +1340,7 @@ prepare_zips_config_dirs()
   fi
 }
 
-cache_zip_config()
+find_or_cache_zip_config()
 {
   local _search_path=''
 
@@ -1352,9 +1352,11 @@ cache_zip_config()
     esac
 
     if test -f "${_search_path}/${1}"; then
-      cp -p -f -- "${_search_path}/${1}" "${TMP_PATH?}/cache/${1}" || ui_error "Failed to cache '${1}' from '${_search_path}'"
-      ui_debug "Found: ${_search_path}/${1}"
-      ui_debug ''
+      if test "${2:-true}" = 'true'; then
+        cp -p -f -- "${_search_path}/${1}" "${TMP_PATH?}/cache/${1}" || ui_error "Failed to cache '${1}' from '${_search_path}'"
+        ui_debug "Found: ${_search_path}/${1}"
+        ui_debug ''
+      fi
       return 0
     fi
   done
@@ -1372,7 +1374,7 @@ delete_zip_config()
       "${DATA_PATH}") _search_path="${_search_path}/local/.zips" ;;
       *) _search_path="${_search_path}/etc/zips" ;;
     esac
-    delete "${_search_path}/${1:?}"
+    test "${DRY_RUN:?}" -ne 0 || delete "${_search_path}/${1:?}"
   done
   return 0
 }
@@ -1700,11 +1702,11 @@ initialize()
     create_dir "${TMP_PATH?}/cache"
 
     cp -p -f -- "${SYS_PATH:?}/build.prop" "${TMP_PATH?}/build.prop"
-    cache_zip_config "${MODULE_ID?}.prop" || :
+    find_or_cache_zip_config "${MODULE_ID?}.prop" || :
   }
 
   PREV_INSTALL_FAILED='false'
-  if test -f "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed"; then
+  if find_or_cache_zip_config "${MODULE_ID?}.failed" 'false'; then
     PREV_INSTALL_FAILED='true'
     ui_warning 'The previous installation has failed!!!'
     ui_msg_empty_line
@@ -2417,12 +2419,12 @@ perform_installation()
 
 finalize_correctly()
 {
-  test "${DRY_RUN:?}" -ne 0 || rm -f -- "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || :
+  delete_zip_config "${MODULE_ID?}.failed"
 
   case "${SETUP_TYPE?}" in
     'install') ui_msg 'Installation finished.' ;;
     'uninstall')
-      delete_dir_if_empty "${SYS_PATH:?}/etc/zips"
+      test "${DRY_RUN:?}" -ne 0 || test ! -d "${SYS_PATH?}/etc/zips" || rmdir --ignore-fail-on-non-empty -- "${SYS_PATH?}/etc/zips" || :
       ui_msg 'Uninstallation finished.'
       ;;
     *) ui_error 'Invalid setup type' ;;
@@ -2430,6 +2432,7 @@ finalize_correctly()
 
   deinitialize
   touch "${TMP_PATH:?}/installed"
+  return "$?"
 }
 
 # Error checking functions
