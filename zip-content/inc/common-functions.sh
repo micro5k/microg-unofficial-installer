@@ -94,6 +94,15 @@ ui_error()
   _error_code=91
   test -z "${2-}" || _error_code="${2:?}"
 
+  if test "${DRY_RUN:-0}" -eq 0 && test -n "${MODULE_ID-}"; then
+    if test -n "${ZIPS_SYS_CONF_DIR-}"; then
+      touch 2> /dev/null "${ZIPS_SYS_CONF_DIR}/${MODULE_ID}.failed" || :
+    fi
+    if test -n "${ZIPS_DATA_CONF_DIR-}" && test "${DATA_RW-}" = 'true'; then
+      touch 2> /dev/null "${ZIPS_DATA_CONF_DIR}/${MODULE_ID}.failed" || :
+    fi
+  fi
+
   if test "${BASIC_INFO_DISPLAYED-}" != 'true' && test "${BASIC_INFO_READY-}" = 'true'; then
     display_basic_info
   fi
@@ -2345,8 +2354,6 @@ perform_secure_copy_to_device()
       fi
     done
   fi
-
-  touch 2> /dev/null "${SYS_PATH:?}/etc/zips/${MODULE_ID:?}.failed" || :
 
   ui_debug ''
   display_free_space "${DEST_PATH:?}" "$(get_free_disk_space_of_partition "${DEST_PATH:?}" || :)" 'true'
