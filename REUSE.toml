@@ -5,6 +5,7 @@ path = [
   ".public-keys/*.gpg",
   "fastlane/metadata/android/en-US/*.txt",
   "gradle/wrapper/gradle-wrapper.properties",
+  "gradle/verification-metadata.xml",
   ".all-contributorsrc",
   "Gemfile.lock",
   "allowed_signers"

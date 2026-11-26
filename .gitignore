@@ -44,7 +44,7 @@ desktop.ini
 /.gradle/
 /build/
 /gradle/gradle-daemon-jvm.properties
-/gradle/verification-metadata.xml
+/gradle/verification-keyring.gpg
 /maven-client/build/
 
 # Local Gradle configuration files
